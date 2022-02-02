@@ -16,7 +16,7 @@ typedef NS_OPTIONS(NSUInteger, EnterpriseSignInRestrictions) {
   kNoEnterpriseRestriction = 0,
   kEnterpriseForceSignIn = 1 << 0,
   kEnterpriseRestrictAccounts = 1 << 1,
-
+  kEnterpriseSyncTypesListDisabled = 1 << 2,
 };
 
 // Returns YES if some account restrictions are set.
@@ -24,9 +24,6 @@ bool IsRestrictAccountsToPatternsEnabled();
 
 // Returns true if force signIn is set.
 bool IsForceSignInEnabled();
-
-// Returns true if force signIn is set.
-bool IsSyncTypesListEnabled();
 
 // Returns true if the |dataType| is managed by policies (i.e. is not syncable).
 bool IsManagedSyncDataType(ChromeBrowserState* browserState,
@@ -36,6 +33,10 @@ bool IsManagedSyncDataType(ChromeBrowserState* browserState,
 bool HasManagedSyncDataType(ChromeBrowserState* browserState);
 
 // Returns current EnterpriseSignInRestrictions.
-EnterpriseSignInRestrictions GetEnterpriseSignInRestrictions();
+EnterpriseSignInRestrictions GetEnterpriseSignInRestrictions(
+    ChromeBrowserState* browserState);
+
+// true if sync is disabled.
+bool IsSyncDisabledByPolicy(ChromeBrowserState* browserState);
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_ENTERPRISE_ENTERPRISE_UTILS_H_

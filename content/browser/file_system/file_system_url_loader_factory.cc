@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -46,6 +45,7 @@
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
+#include "storage/browser/file_system/file_system_request_info.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -56,7 +56,6 @@ using filesystem::mojom::DirectoryEntry;
 using storage::FileStreamReader;
 using storage::FileSystemContext;
 using storage::FileSystemOperation;
-using storage::FileSystemRequestInfo;
 using storage::FileSystemURL;
 using storage::VirtualPath;
 
@@ -68,6 +67,7 @@ struct FactoryParams {
   int frame_tree_node_id;
   scoped_refptr<FileSystemContext> file_system_context;
   std::string storage_domain;
+  blink::StorageKey storage_key;
 };
 
 constexpr size_t kDefaultFileSystemUrlPipeSize = 65536;
@@ -204,13 +204,12 @@ class FileSystemEntryURLLoader
         }
       }
     }
-    // TODO(https://crbug.com/1221308): function will use StorageKey for the
-    // receiver frame/worker in future CL
-    url_ = params_.file_system_context->CrackURL(
-        request.url, blink::StorageKey(url::Origin::Create(request.url)));
+    url_ =
+        params_.file_system_context->CrackURL(request.url, params_.storage_key);
     if (!url_.is_valid()) {
-      const FileSystemRequestInfo request_info = {
-          request.url, params_.storage_domain, params_.frame_tree_node_id};
+      const storage::FileSystemRequestInfo request_info = {
+          request.url, params_.storage_domain, params_.frame_tree_node_id,
+          params_.storage_key};
       params_.file_system_context->AttemptAutoMountForURLRequest(
           request_info,
           base::BindOnce(&FileSystemEntryURLLoader::DidAttemptAutoMount,
@@ -669,10 +668,11 @@ CreateFileSystemURLLoaderFactory(
     int render_process_host_id,
     int frame_tree_node_id,
     scoped_refptr<FileSystemContext> file_system_context,
-    const std::string& storage_domain) {
+    const std::string& storage_domain,
+    const blink::StorageKey& storage_key) {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
   FactoryParams params = {render_process_host_id, frame_tree_node_id,
-                          file_system_context, storage_domain};
+                          file_system_context, storage_domain, storage_key};
 
   // The FileSystemURLLoaderFactory will delete itself when there are no more
   // receivers - see the network::SelfDeletingURLLoaderFactory::OnDisconnect

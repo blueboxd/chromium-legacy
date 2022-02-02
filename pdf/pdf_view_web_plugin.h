@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/pdf_accessibility_action_handler.h"
@@ -56,6 +58,7 @@ class PdfAccessibilityDataHandler;
 // Skeleton for a `blink::WebPlugin` to replace `OutOfProcessInstance`.
 class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public blink::WebPlugin,
+                               public pdf::mojom::PdfListener,
                                public BlinkUrlLoader::Client,
                                public PostMessageReceiver::Client,
                                public SkiaGraphics::Client,
@@ -241,6 +244,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
                                 int32_t result,
                                 base::TimeDelta delay) override;
 
+  // pdf::mojom::PdfListener:
+  void SetCaretPosition(const gfx::PointF& position) override;
+  void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
+  void SetSelectionBounds(const gfx::PointF& base,
+                          const gfx::PointF& extent) override;
+
   // BlinkUrlLoader::Client:
   bool IsValid() const override;
   blink::WebURL CompleteURL(const blink::WebString& partial_url) const override;
@@ -281,13 +290,13 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void SaveAs() override;
   void InitImageData(const gfx::Size& size) override;
   void SetFormTextFieldInFocus(bool in_focus) override;
-  void SetAccessibilityDocInfo(const AccessibilityDocInfo& doc_info) override;
+  void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) override;
   void SetAccessibilityPageInfo(AccessibilityPageInfo page_info,
                                 std::vector<AccessibilityTextRunInfo> text_runs,
                                 std::vector<AccessibilityCharInfo> chars,
                                 AccessibilityPageObjects page_objects) override;
   void SetAccessibilityViewportInfo(
-      const AccessibilityViewportInfo& viewport_info) override;
+      AccessibilityViewportInfo viewport_info) override;
   void NotifyFindResultsChanged(int total, bool final_result) override;
   void NotifyFindTickmarks(const std::vector<gfx::Rect>& tickmarks) override;
   void SetContentRestrictions(int content_restrictions) override;
@@ -367,6 +376,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Used to access find-in-page interface provided by the PDF extension.
   mojo::Remote<pdf::mojom::PdfFindInPage> find_remote_;
 
+  mojo::Receiver<pdf::mojom::PdfListener> listener_receiver_{this};
+
   // The id of the current find operation, or -1 if no current operation is
   // present.
   int find_identifier_ = -1;
@@ -415,7 +426,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // The metafile in which to save the printed output. Assigned a value only
   // between `PrintBegin()` and `PrintEnd()` calls.
-  printing::MetafileSkia* printing_metafile_ = nullptr;
+  raw_ptr<printing::MetafileSkia> printing_metafile_ = nullptr;
 
   // The indices of pages to print.
   std::vector<int> pages_to_print_;

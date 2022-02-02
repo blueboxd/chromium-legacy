@@ -5,7 +5,6 @@
 #include "extensions/browser/extension_message_filter.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
@@ -70,8 +69,8 @@ class ShutdownNotifierFactory
 // *does* host this specific extension at this point in time.)
 bool CanRendererHostExtensionOrigin(int render_process_id,
                                     const std::string& extension_id) {
-  GURL extension_url = Extension::GetBaseURLFromExtensionId(extension_id);
-  url::Origin extension_origin = url::Origin::Create(extension_url);
+  url::Origin extension_origin =
+      Extension::CreateOriginFromExtensionId(extension_id);
   auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
   return policy->CanAccessDataForOrigin(render_process_id, extension_origin);
 }
@@ -112,25 +111,23 @@ bool IsValidMessagingSource(RenderProcessHost& process,
             ContentScriptTracker::DidProcessRunContentScriptFromExtension(
                 process, extension_id);
         if (!is_content_script_expected) {
-          // TODO(https://crbug.com/1212918): Re-enable the enforcement (i.e.
-          // replace the UmaHistogramSparse call with a call to
-          // ReceivedBadMessage and returning false) after investigating and
-          // fixing the root cause of incorrect behavior reports coming from the
-          // end users.
+          // TODO(https://crbug.com/1212918): Remove some of the more excessive
+          // tracing once there are no more bad message reports to investigate.
+          // (Remove here + in ContentScriptTracker.)
           TRACE_EVENT_INSTANT("extensions",
                               "IsValidMessagingSource: kTab: bad message",
                               ChromeTrackEvent::kRenderProcessHost, process,
                               ChromeTrackEvent::kChromeExtensionId,
                               ExtensionIdForTracing(extension_id));
-          base::UmaHistogramSparse(
-              "Stability.BadMessageTerminated.Extensions",
+          bad_message::ReceivedBadMessage(
+              &process,
               bad_message::EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT);
-        } else {
-          TRACE_EVENT_INSTANT("extensions", "IsValidMessagingSource: kTab: ok",
-                              ChromeTrackEvent::kRenderProcessHost, process,
-                              ChromeTrackEvent::kChromeExtensionId,
-                              ExtensionIdForTracing(extension_id));
+          return false;
         }
+        TRACE_EVENT_INSTANT("extensions", "IsValidMessagingSource: kTab: ok",
+                            ChromeTrackEvent::kRenderProcessHost, process,
+                            ChromeTrackEvent::kChromeExtensionId,
+                            ExtensionIdForTracing(extension_id));
       }
       return true;
   }

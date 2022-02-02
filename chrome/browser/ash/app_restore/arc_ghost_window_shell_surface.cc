@@ -28,7 +28,7 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
     ArcWindowHandler* window_handler,
     const std::string& app_id,
     int window_id,
-    gfx::Rect bounds,
+    const gfx::Rect& bounds,
     app_restore::AppRestoreData* restore_data,
     base::RepeatingClosure close_callback) {
   int64_t display_id_value =
@@ -59,7 +59,7 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
       bounds));
   shell_surface->set_close_callback(std::move(close_callback));
 
-  shell_surface->SetAppId(app_id.c_str());
+  shell_surface->SetAppId(app_id);
   shell_surface->SetBounds(display_id_value, bounds);
 
   if (restore_data->maximum_size.has_value())
@@ -95,6 +95,11 @@ std::unique_ptr<exo::ClientControlledShellSurface> InitArcGhostWindow(
     shell_surface->SetMinimized();
     shell_surface->controller_surface()->Commit();
   }
+
+  // Reset the same bounds, to make sure white background can be located in
+  // correct place. Without this operation, the white background will not
+  // at the same location with window bounds.
+  shell_surface->SetBounds(display_id_value, bounds);
 
   return shell_surface;
 }

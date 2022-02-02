@@ -92,6 +92,8 @@ class BASE_EXPORT PartitionRefCount {
     CheckCookie();
 #endif
 
+    // TODO(bartekn): Make the double-free check more effective. Once freed, the
+    // ref-count is overwritten by an encoded freelist-next pointer.
     int32_t old_count = count_.fetch_sub(1, std::memory_order_release);
     if (UNLIKELY(!(old_count & 1)))
       DoubleFreeOrCorruptionDetected();
@@ -142,12 +144,19 @@ class BASE_EXPORT PartitionRefCount {
     return static_cast<uint32_t>(reinterpret_cast<uintptr_t>(this)) ^
            kCookieSalt;
   }
+#endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
 
+  // Note that in free slots, this is overwritten by encoded freelist
+  // pointer(s). The way the pointers are encoded on 64-bit little-endian
+  // architectures, count_ happens stay even, which works well with the
+  // double-free-detection in ReleaseFromAllocator(). Don't change the layout of
+  // this class, to preserve this functionality.
+  std::atomic<int32_t> count_{1};
+
+#if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
   static constexpr uint32_t kCookieSalt = 0xc01dbeef;
   volatile uint32_t brp_cookie_;
 #endif  // DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)
-
-  std::atomic<int32_t> count_{1};
 };
 
 ALWAYS_INLINE PartitionRefCount::PartitionRefCount()

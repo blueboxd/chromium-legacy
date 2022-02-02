@@ -235,18 +235,18 @@ bool TaskQueue::HasTaskToRunImmediatelyOrReadyDelayedTask() const {
   return impl_->HasTaskToRunImmediatelyOrReadyDelayedTask();
 }
 
-absl::optional<DelayedWakeUp> TaskQueue::GetNextDesiredWakeUp() {
+absl::optional<WakeUp> TaskQueue::GetNextDesiredWakeUp() {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return absl::nullopt;
   return impl_->GetNextDesiredWakeUp();
 }
 
-void TaskQueue::UpdateDelayedWakeUp(LazyNow* lazy_now) {
+void TaskQueue::UpdateWakeUp(LazyNow* lazy_now) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (!impl_)
     return;
-  impl_->UpdateDelayedWakeUp(lazy_now);
+  impl_->UpdateWakeUp(lazy_now);
 }
 
 void TaskQueue::SetQueuePriority(TaskQueue::QueuePriority priority) {
@@ -275,20 +275,6 @@ void TaskQueue::RemoveTaskObserver(TaskObserver* task_observer) {
   if (!impl_)
     return;
   impl_->RemoveTaskObserver(task_observer);
-}
-
-void TaskQueue::SetTimeDomain(TimeDomain* time_domain) {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  if (!impl_)
-    return;
-  impl_->SetTimeDomain(time_domain);
-}
-
-TimeDomain* TaskQueue::GetTimeDomain() const {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  if (!impl_)
-    return nullptr;
-  return impl_->GetTimeDomain();
 }
 
 void TaskQueue::SetBlameContext(trace_event::BlameContext* blame_context) {

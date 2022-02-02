@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
@@ -74,7 +73,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
   void OnSignedExchangeReceived(
       const absl::optional<SignedExchangeEnvelope>& envelope,
       const scoped_refptr<net::X509Certificate>& certificate,
-      const net::SSLInfo* ssl_info);
+      const absl::optional<net::SSLInfo>& ssl_info);
 
  private:
   const GURL outer_request_url_;

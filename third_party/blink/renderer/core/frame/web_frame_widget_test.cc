@@ -131,7 +131,7 @@ TEST_F(WebFrameWidgetSimTest, FrameSinkIdHitTestAPI) {
 
 #if defined(OS_ANDROID)
 TEST_F(WebFrameWidgetSimTest, ForceSendMetadataOnInput) {
-  cc::LayerTreeHost* layer_tree_host =
+  const cc::LayerTreeHost* layer_tree_host =
       WebView().MainFrameViewWidget()->LayerTreeHostForTesting();
   // We should not have any force send metadata requests at start.
   EXPECT_FALSE(
@@ -214,7 +214,7 @@ class MockHandledEventCallback {
                       InputHandlerProxy::DidOverscrollParams*,
                       absl::optional<cc::TouchAction>));
 
-  WebWidget::HandledEventCallback GetCallback() {
+  WidgetBaseInputHandler::HandledEventCallback GetCallback() {
     return base::BindOnce(&MockHandledEventCallback::HandleCallback,
                           base::Unretained(this));
   }
@@ -283,7 +283,7 @@ class WebFrameWidgetImplSimTest : public SimTest {
   }
 
   void SendInputEvent(const WebInputEvent& event,
-                      WebWidget::HandledEventCallback callback) {
+                      WidgetBaseInputHandler::HandledEventCallback callback) {
     MockMainFrameWidget()->ProcessInputEventSynchronouslyForTesting(
         WebCoalescedInputEvent(event.Clone(), {}, {}, ui::LatencyInfo()),
         std::move(callback));

@@ -4,6 +4,7 @@
 
 #include "net/cert/cert_verify_proc_android.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -105,14 +106,11 @@ bool PerformAIAFetchAndAddResultToVector(scoped_refptr<CertNetFetcher> fetcher,
   Error error;
   std::vector<uint8_t> aia_fetch_bytes;
   request->WaitForResult(&error, &aia_fetch_bytes);
-  base::UmaHistogramSparse("Net.Certificate.AndroidAIAFetchError",
-                           std::abs(error));
   if (error != OK)
     return false;
   CertErrors errors;
   return ParsedCertificate::CreateAndAddToVector(
-      x509_util::CreateCryptoBuffer(aia_fetch_bytes.data(),
-                                    aia_fetch_bytes.size()),
+      x509_util::CreateCryptoBuffer(aia_fetch_bytes),
       x509_util::DefaultParseCertificateOptions(), cert_list, &errors);
 }
 
@@ -258,9 +256,6 @@ bool VerifyFromAndroidTrustManager(
     status = TryVerifyWithAIAFetching(cert_bytes, hostname,
                                       std::move(cert_net_fetcher),
                                       verify_result, &verified_chain);
-    UMA_HISTOGRAM_BOOLEAN(
-        "Net.Certificate.VerificationSuccessAfterAIAFetchingNeeded",
-        status == android::CERT_VERIFY_STATUS_ANDROID_OK);
   }
 
   switch (status) {

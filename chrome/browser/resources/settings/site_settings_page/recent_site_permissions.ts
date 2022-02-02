@@ -6,12 +6,12 @@ import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import '../settings_shared_css.js';
+import '../i18n_setup.js';
 
 import {CrTooltipIconElement} from 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -201,8 +201,6 @@ export class SettingsRecentSitePermissionsElement extends
         return this.i18n('siteSettingsFontAccessMidSentence');
       case ContentSettingsTypes.IDLE_DETECTION:
         return this.i18n('siteSettingsIdleDetectionMidSentence');
-      case ContentSettingsTypes.FILE_HANDLING:
-        return this.i18n('siteSettingsFileHandlingMidSentence');
       default:
         return '';
     }
@@ -407,6 +405,12 @@ export class SettingsRecentSitePermissionsElement extends
       this.focusLastSelected_();
       this.shouldFocusAfterPopulation_ = false;
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-recent-site-permissions': SettingsRecentSitePermissionsElement;
   }
 }
 

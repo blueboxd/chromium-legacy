@@ -198,10 +198,10 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
     const Vector<AppliedTextDecoration>& decorations =
         style.AppliedTextDecorations();
     for (const AppliedTextDecoration& decoration : decorations) {
-      if (EnumHasFlags(decoration.Lines(), TextDecoration::kUnderline))
-        PaintDecoration(paint_info, TextDecoration::kUnderline, fragment);
-      if (EnumHasFlags(decoration.Lines(), TextDecoration::kOverline))
-        PaintDecoration(paint_info, TextDecoration::kOverline, fragment);
+      if (EnumHasFlags(decoration.Lines(), TextDecorationLine::kUnderline))
+        PaintDecoration(paint_info, TextDecorationLine::kUnderline, fragment);
+      if (EnumHasFlags(decoration.Lines(), TextDecorationLine::kOverline))
+        PaintDecoration(paint_info, TextDecorationLine::kOverline, fragment);
     }
 
     for (int i = 0; i < 3; i++) {
@@ -232,8 +232,8 @@ void SVGInlineTextBoxPainter::PaintTextFragments(
     // Spec: Line-through should be drawn after the text is filled and stroked;
     // thus, the line-through is rendered on top of the text.
     for (const AppliedTextDecoration& decoration : decorations) {
-      if (EnumHasFlags(decoration.Lines(), TextDecoration::kLineThrough))
-        PaintDecoration(paint_info, TextDecoration::kLineThrough, fragment);
+      if (EnumHasFlags(decoration.Lines(), TextDecorationLine::kLineThrough))
+        PaintDecoration(paint_info, TextDecorationLine::kLineThrough, fragment);
     }
   }
 }
@@ -295,7 +295,8 @@ static inline LayoutObject* FindLayoutObjectDefininingTextDecoration(
         LineLayoutAPIShim::LayoutObjectFrom(parent_box->GetLineLayoutItem());
 
     if (layout_object->Style() &&
-        layout_object->StyleRef().GetTextDecoration() != TextDecoration::kNone)
+        layout_object->StyleRef().GetTextDecorationLine() !=
+            TextDecorationLine::kNone)
       break;
 
     parent_box = parent_box->Parent();
@@ -307,24 +308,25 @@ static inline LayoutObject* FindLayoutObjectDefininingTextDecoration(
 
 // Offset from the baseline for |decoration|. Positive offsets are above the
 // baseline.
-static inline float BaselineOffsetForDecoration(TextDecoration decoration,
+static inline float BaselineOffsetForDecoration(TextDecorationLine decoration,
                                                 const FontMetrics& font_metrics,
                                                 float thickness) {
   // FIXME: For SVG Fonts we need to use the attributes defined in the
   // <font-face> if specified.
   // Compatible with Batik/Presto.
-  if (decoration == TextDecoration::kUnderline)
+  if (decoration == TextDecorationLine::kUnderline)
     return -thickness * 1.5f;
-  if (decoration == TextDecoration::kOverline)
+  if (decoration == TextDecorationLine::kOverline)
     return font_metrics.FloatAscent() - thickness;
-  if (decoration == TextDecoration::kLineThrough)
+  if (decoration == TextDecorationLine::kLineThrough)
     return font_metrics.FloatAscent() * 3 / 8.0f;
 
   NOTREACHED();
   return 0.0f;
 }
 
-static inline float ThicknessForDecoration(TextDecoration, const Font& font) {
+static inline float ThicknessForDecoration(TextDecorationLine,
+                                           const Font& font) {
   // FIXME: For SVG Fonts we need to use the attributes defined in the
   // <font-face> if specified.
   // Compatible with Batik/Presto
@@ -332,11 +334,11 @@ static inline float ThicknessForDecoration(TextDecoration, const Font& font) {
 }
 
 void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
-                                              TextDecoration decoration,
+                                              TextDecorationLine decoration,
                                               const SVGTextFragment& fragment) {
   if (svg_inline_text_box_.GetLineLayoutItem()
           .StyleRef()
-          .TextDecorationsInEffect() == TextDecoration::kNone)
+          .TextDecorationsInEffect() == TextDecorationLine::kNone)
     return;
 
   if (fragment.width <= 0)
@@ -368,13 +370,13 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
 
   float decoration_offset = BaselineOffsetForDecoration(
       decoration, font_data->GetFontMetrics(), thickness);
-  FloatPoint decoration_origin(fragment.x,
-                               fragment.y - decoration_offset / scaling_factor);
+  gfx::PointF decoration_origin(
+      fragment.x, fragment.y - decoration_offset / scaling_factor);
 
   Path path;
   path.AddRect(
-      FloatRect(decoration_origin,
-                FloatSize(fragment.width, thickness / scaling_factor)));
+      gfx::RectF(decoration_origin,
+                 gfx::SizeF(fragment.width, thickness / scaling_factor)));
 
   AutoDarkMode auto_dark_mode(
       PaintAutoDarkMode(decoration_style, DarkModeFilter::ElementRole::kSVG));
@@ -501,7 +503,7 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   float scaling_factor = text_layout_object.ScalingFactor();
   DCHECK(scaling_factor);
 
-  FloatPoint text_origin(fragment.x, fragment.y);
+  gfx::PointF text_origin(fragment.x, fragment.y);
 
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context, false);
@@ -643,13 +645,12 @@ Vector<SVGTextFragmentWithRange> SVGInlineTextBoxPainter::CollectTextMatches(
   const Vector<SVGTextFragmentWithRange> empty_text_match_list;
 
   // SVG does not support grammar or spellcheck markers, so skip anything but
-  // TextMarkerBase types.
+  // TextFragmentMarker and TextMatchMarker types.
   if (marker.GetType() != DocumentMarker::kTextMatch &&
       marker.GetType() != DocumentMarker::kTextFragment)
     return empty_text_match_list;
 
-  if (marker.GetType() == DocumentMarker::kTextMatch &&
-      !InlineLayoutObject()
+  if (!InlineLayoutObject()
            .GetFrame()
            ->GetEditor()
            .MarkedTextMatchesAreHighlighted())
@@ -688,7 +689,7 @@ SVGInlineTextBoxPainter::CollectFragmentsInRange(int start_position,
 void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     const PaintInfo& paint_info,
     const PhysicalOffset& point,
-    const TextMarkerBase& marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =
@@ -697,7 +698,10 @@ void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
     return;
 
   Color text_color = LayoutTheme::GetTheme().PlatformTextSearchColor(
-      marker.IsActiveMatch(), style.UsedColorScheme());
+      marker.GetType() == DocumentMarker::kTextMatch
+          ? To<TextMatchMarker>(marker).IsActiveMatch()
+          : false,
+      style.UsedColorScheme());
 
   PaintFlags fill_flags;
   fill_flags.setColor(text_color.Rgb());
@@ -731,7 +735,7 @@ void SVGInlineTextBoxPainter::PaintTextMarkerForeground(
 void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     const PaintInfo& paint_info,
     const PhysicalOffset& point,
-    const TextMarkerBase& marker,
+    const DocumentMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
   const Vector<SVGTextFragmentWithRange> text_match_info_list =
@@ -740,7 +744,10 @@ void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
     return;
 
   Color color = LayoutTheme::GetTheme().PlatformTextSearchHighlightColor(
-      marker.IsActiveMatch(), style.UsedColorScheme());
+      marker.GetType() == DocumentMarker::kTextMatch
+          ? To<TextMatchMarker>(marker).IsActiveMatch()
+          : false,
+      style.UsedColorScheme());
   for (const SVGTextFragmentWithRange& text_match_info : text_match_info_list) {
     const SVGTextFragment& fragment = text_match_info.fragment;
 
@@ -749,9 +756,10 @@ void SVGInlineTextBoxPainter::PaintTextMarkerBackground(
       state_saver.Save();
       paint_info.context.ConcatCTM(fragment.BuildFragmentTransform());
     }
-    FloatRect fragment_rect = svg_inline_text_box_.SelectionRectForTextFragment(
-        fragment, text_match_info.start_position, text_match_info.end_position,
-        style);
+    gfx::RectF fragment_rect =
+        svg_inline_text_box_.SelectionRectForTextFragment(
+            fragment, text_match_info.start_position,
+            text_match_info.end_position, style);
     paint_info.context.SetFillColor(color);
     paint_info.context.FillRect(
         fragment_rect,

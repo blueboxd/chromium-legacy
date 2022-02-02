@@ -119,6 +119,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Platform.Cast.MeminfoMemAvailable2" units="MiB"
     expires_after="2021-11-30">
+  <obsolete>
+    Removed from code Nov 2021, expiry approaching and we don't use this data
+    any longer (newer cgroup memory data is more useful).
+  </obsolete>
   <owner>halliwell@chromium.org</owner>
   <summary>
     /proc/meminfo's 'MemAvailable' in MiB. Collected every 5s on Cast devices
@@ -128,6 +132,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Platform.Cast.MeminfoMemFreeDerived2" units="MiB"
     expires_after="2021-11-30">
+  <obsolete>
+    Removed from code Nov 2021, expiry approaching and we don't use this data
+    any longer (newer cgroup memory data is more useful).
+  </obsolete>
   <owner>halliwell@chromium.org</owner>
   <summary>
     Collect free + buffers + cache memory in MiB every 5s on Cast devices,
@@ -157,17 +165,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.CpuUsage" units="%" expires_after="2021-07-02">
-  <owner>sonnyrao@chromium.org</owner>
-  <owner>cast-analytics@google.com</owner>
-  <summary>
-    Peak total (single core) CPU usage for the last sample interval. The sample
-    interval may vary from seconds to several minutes.
-  </summary>
-</histogram>
-
 <histogram name="Platform.Cr50.BoardIdFlags" enum="Cr50BoardIdFlags"
-    expires_after="2022-03-20">
+    expires_after="2022-05-22">
   <owner>apronin@chromium.org</owner>
   <owner>vbendeb@chromium.org</owner>
   <summary>
@@ -190,7 +189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Cr50.FlashLog" enum="Cr50FlashLogs"
-    expires_after="2022-03-20">
+    expires_after="2022-05-22">
   <owner>apronin@chromium.org</owner>
   <owner>vbendeb@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -214,7 +213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Cr50.RlzOfBoardIdMismatch" enum="Cr50CrosRlzCodes"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>vbendeb@chromium.org</owner>
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -475,7 +474,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.IntelMaxMicroArchitecture"
-    enum="IntelMaxMicroArchitecture" expires_after="2022-04-03">
+    enum="IntelMaxMicroArchitecture" expires_after="2022-06-05">
   <owner>fbarchard@chromium.org</owner>
   <owner>pwnall@chromium.org</owner>
   <summary>
@@ -730,6 +729,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS total anonymous memory (active + inactive) as % of total memory
     750 minutes after boot.
+  </summary>
+</histogram>
+
+<histogram name="Platform.MiniDiag.Launch" units="launches"
+    expires_after="2022-05-18">
+  <owner>roccochen@chromium.org</owner>
+  <owner>chromeos-minidiag-eng@google.com</owner>
+  <summary>
+    Total number of launches of the MiniDiag (pre-boot diagnostic tool) since
+    the last upload. This metrics is recorded right after booting into ChromeOS.
+    This metrics leverages a coreboot command, elogtool, to retrieve the event
+    log and count launch events.
   </summary>
 </histogram>
 
@@ -1275,7 +1286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.TimeToTakeOwnership" units="ms"
-    expires_after="2022-04-04">
+    expires_after="2022-06-05">
   <owner>yich@google.com</owner>
   <owner>cylai@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -1331,7 +1342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Trunks.TpmErrorCode" enum="TPMResponseCode"
-    expires_after="2022-03-20">
+    expires_after="2022-05-22">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1355,7 +1366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.UnaggregatedUsageTime" units="seconds"
-    expires_after="2022-04-03">
+    expires_after="2022-10-03">
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>
@@ -1370,7 +1381,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.UnaggregatedUsageTimeTooBig" units="seconds"
-    expires_after="2022-01-08">
+    expires_after="2022-07-08">
   <owner>mutexlox@chromium.org</owner>
   <owner>iby@chromium.org</owner>
   <owner>cros-telemetry@google.com</owner>

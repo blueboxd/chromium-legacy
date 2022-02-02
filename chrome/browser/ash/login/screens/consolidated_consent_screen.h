@@ -42,6 +42,7 @@ class ConsolidatedConsentScreen
    public:
     // Called when the user accepts terms of service.
     virtual void OnConsolidatedConsentAccept() = 0;
+    virtual void OnConsolidatedConsentScreenDestroyed() = 0;
   };
 
   using TView = ConsolidatedConsentScreenView;
@@ -59,6 +60,10 @@ class ConsolidatedConsentScreen
   // Called when the screen is being destroyed. This should call Unbind() on the
   // associated View if this class is destroyed before that.
   void OnViewDestroyed(ConsolidatedConsentScreenView* view);
+
+  void set_exit_callback_for_testing(const ScreenExitCallback& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
 
   const ScreenExitCallback& get_exit_callback_for_testing() {
     return exit_callback_;
@@ -102,8 +107,7 @@ class ConsolidatedConsentScreen
 
   bool is_child_account_ = false;
 
-  // To track if ARC preference is managed.
-  bool arc_managed_ = false;
+  bool is_enterprise_managed_account_ = false;
 
   // To track if optional ARC features are managed preferences.
   bool backup_restore_managed_ = false;

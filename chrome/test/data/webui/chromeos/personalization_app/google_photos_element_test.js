@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {GooglePhotos} from 'chrome://personalization/trusted/google_photos_element.js';
+import {GooglePhotos} from 'chrome://personalization/trusted/wallpaper/google_photos_element.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {waitAfterNextRender} from '../../test_util.js';
+
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
 
@@ -31,6 +33,8 @@ export function GooglePhotosTest() {
       'googlePhotosLabel': 'Google Photos',
       'googlePhotosAlbumsTabLabel': 'Albums',
       'googlePhotosPhotosTabLabel': 'Photos',
+      'googlePhotosZeroStateMessage':
+          'No image available. To add photos, go to $1',
     });
 
     const mocks = baseSetup();
@@ -45,10 +49,15 @@ export function GooglePhotosTest() {
   test('displays only photos content', async () => {
     // Tabs and albums content are not displayed if albums are absent.
     personalizationStore.data.googlePhotos.albums = null;
+    personalizationStore.data.googlePhotos.photos = Array.from({length: 1});
     personalizationStore.data.loading.googlePhotos.albums = false;
+    personalizationStore.data.loading.googlePhotos.photos = false;
 
     googlePhotosElement = initElement(GooglePhotos.is, {hidden: false});
     await waitAfterNextRender(googlePhotosElement);
+
+    // Zero state should be absent.
+    assertEquals(querySelector('#zeroState'), null);
 
     // Tabs should be absent.
     assertEquals(querySelector('.tabStrip'), null);
@@ -65,10 +74,15 @@ export function GooglePhotosTest() {
   test('displays tabs and content for photos and albums', async () => {
     // Tabs and albums content are only displayed if albums are present.
     personalizationStore.data.googlePhotos.albums = Array.from({length: 1});
+    personalizationStore.data.googlePhotos.photos = Array.from({length: 1});
     personalizationStore.data.loading.googlePhotos.albums = false;
+    personalizationStore.data.loading.googlePhotos.photos = false;
 
     googlePhotosElement = initElement(GooglePhotos.is, {hidden: false});
     await waitAfterNextRender(googlePhotosElement);
+
+    // Zero state should be absent.
+    assertEquals(querySelector('#zeroState'), null);
 
     // Photos tab should be present, visible, and pressed.
     const photosTab = querySelector('#photosTab');
@@ -117,5 +131,40 @@ export function GooglePhotosTest() {
     assertFalse(albumsTab.hidden);
     assertEquals(albumsTab.getAttribute('aria-pressed'), 'false');
     assertTrue(albumsContent.hidden);
+  });
+
+  test('displays zero state when there is no content', async () => {
+    personalizationStore.data.googlePhotos.albums = [];
+    personalizationStore.data.googlePhotos.photos = [];
+    personalizationStore.data.loading.googlePhotos.albums = false;
+    personalizationStore.data.loading.googlePhotos.photos = false;
+
+    googlePhotosElement = initElement(GooglePhotos.is, {hidden: false});
+    await waitAfterNextRender(googlePhotosElement);
+
+    // Photos tab should be absent.
+    assertEquals(querySelector('#photosTab'), null);
+
+    // Photos content should be absent.
+    assertEquals(querySelector('#photosContent'), null);
+
+    // Albums tab should be absent.
+    assertEquals(querySelector('#albumsTab'), null);
+
+    // Albums content should be absent.
+    assertEquals(querySelector('#albumsContent'), null);
+
+    // Zero state should be present and visible.
+    const zeroState = querySelector('#zeroState');
+    assertTrue(!!zeroState);
+    assertFalse(zeroState.hidden);
+
+    const message =
+        googlePhotosElement.i18nAdvanced('googlePhotosZeroStateMessage', {
+          substitutions: [
+            '<a target="_blank" href="https://photos.google.com">photos.google.com</a>'
+          ]
+        });
+    assertEquals(querySelector('#zeroStateText').innerHTML, message);
   });
 }

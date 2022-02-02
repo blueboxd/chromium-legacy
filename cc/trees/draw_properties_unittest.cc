@@ -12,6 +12,7 @@
 
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -104,8 +105,8 @@ class DrawPropertiesTestBase : public LayerTreeImplTestBase {
     // TODO(https://crbug.com/939968) This call should be handled by
     // FakeLayerTreeHost instead of manually pushing the properties from the
     // layer tree host to the pending tree.
-    LayerTreeHost::PushLayerTreePropertiesTo(host()->pending_commit_state(),
-                                             host_impl()->pending_tree());
+    host_impl()->pending_tree()->PullLayerTreePropertiesFrom(
+        *host()->GetPendingCommitState());
 
     UpdateDrawProperties(host_impl()->pending_tree());
   }
@@ -309,7 +310,7 @@ TEST_F(DrawPropertiesTest, TransformsForSingleLayer) {
 }
 
 TEST_F(DrawPropertiesTest, TransformsAboutScrollOffset) {
-  const gfx::Vector2dF kScrollOffset(50, 100);
+  const gfx::PointF kScrollOffset(50, 100);
   const gfx::Vector2dF kScrollDelta(2.34f, 5.67f);
   const gfx::Vector2d kMaxScrollOffset(200, 200);
   const gfx::PointF kScrollLayerPosition(-kScrollOffset.x(),
@@ -4177,7 +4178,7 @@ TEST_F(DrawPropertiesTest, ClipParentScrolledInterveningLayer) {
   CopyProperties(render_surface2, clip_child);
   clip_child->SetClipTreeIndex(clip_parent->clip_tree_index());
 
-  SetScrollOffset(intervening, gfx::Vector2dF(3, 3));
+  SetScrollOffset(intervening, gfx::PointF(3, 3));
   UpdateActiveTreeDrawProperties();
 
   EXPECT_TRUE(GetRenderSurface(root));
@@ -4736,9 +4737,9 @@ class DrawPropertiesStickyPositionTest : public DrawPropertiesTest {
   scoped_refptr<Layer> container_;
   scoped_refptr<Layer> scroller_;
   scoped_refptr<Layer> sticky_pos_;
-  LayerImpl* root_impl_;
-  LayerImpl* scroller_impl_;
-  LayerImpl* sticky_pos_impl_;
+  raw_ptr<LayerImpl> root_impl_;
+  raw_ptr<LayerImpl> scroller_impl_;
+  raw_ptr<LayerImpl> sticky_pos_impl_;
 };
 
 TEST_F(DrawPropertiesStickyPositionTest, StickyPositionTop) {
@@ -5121,7 +5122,7 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionMainThreadUpdates) {
       sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Now the main thread commits the new position of the sticky element.
-  SetScrollOffset(scroller_.get(), gfx::Vector2dF(15, 15));
+  SetScrollOffset(scroller_.get(), gfx::PointF(15, 15));
   // Shift the layer by -offset_for_position_sticky.
   SetPostTranslation(sticky_pos_.get(),
                      gfx::PointF(10, 25) - gfx::PointF(0, 5));
@@ -5192,7 +5193,7 @@ TEST_F(DrawPropertiesStickyPositionTest, StickyPositionCompositedContainer) {
       sticky_pos_impl_->ScreenSpaceTransform().To2dTranslation());
 
   // Now the main thread commits the new position of the sticky element.
-  SetScrollOffset(scroller_.get(), gfx::Vector2dF(0, 25));
+  SetScrollOffset(scroller_.get(), gfx::PointF(0, 25));
   // Shift the layer by -offset_for_position_sticky.
   SetPostTranslation(sticky_pos_.get(),
                      gfx::PointF(0, 15) - gfx::PointF(0, 5) +
@@ -6365,7 +6366,7 @@ TEST_F(DrawPropertiesTest, UpdateScrollChildPosition) {
   UpdateActiveTreeDrawProperties();
   EXPECT_EQ(gfx::Rect(25, 25), scroll_child->visible_layer_rect());
 
-  SetScrollOffset(scroll_parent, gfx::Vector2dF(0.f, 10.f));
+  SetScrollOffset(scroll_parent, gfx::PointF(0.f, 10.f));
   UpdateActiveTreeDrawProperties();
   EXPECT_EQ(gfx::Rect(0, 5, 25, 25), scroll_child->visible_layer_rect());
 

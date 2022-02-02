@@ -8,8 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -136,7 +135,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // status.
   void HandleRefreshTPMFirmwareUpdateStatus(const base::ListValue* args);
   void RefreshTPMFirmwareUpdateStatus(
-      const std::set<chromeos::tpm_firmware_update::Mode>& modes);
+      const std::set<ash::tpm_firmware_update::Mode>& modes);
 #endif
 
   // Checks for and applies update.
@@ -158,6 +157,8 @@ class AboutHandler : public settings::SettingsPageUIHandler,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void HandleOpenDiagnostics(const base::ListValue* args);
+
+  void HandleOpenFirmwareUpdates(const base::ListValue* args);
 
   void HandleGetRegulatoryInfo(const base::ListValue* args);
 
@@ -182,7 +183,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
                           chromeos::UpdateEngineClient::EolInfo eol_info);
 #endif
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Specialized instance of the VersionUpdater used to update the browser.
   std::unique_ptr<VersionUpdater> version_updater_;
@@ -194,7 +195,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   bool apply_changes_from_upgrade_observer_;
 
   // Override to test the EOL string displayed in the About details page.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   // Used for callbacks.
   base::WeakPtrFactory<AboutHandler> weak_factory_{this};

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -166,7 +166,7 @@ class RemoteCopyBrowserTest : public InProcessBrowserTest {
  protected:
   base::HistogramTester histograms_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
-  SharingService* sharing_service_;
+  raw_ptr<SharingService> sharing_service_;
   std::unique_ptr<net::EmbeddedTestServer> server_;
 };
 
@@ -180,10 +180,6 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, Text) {
   // The text is in the clipboard and a notification is shown.
   std::vector<std::u16string> types = GetAvailableClipboardTypes();
   size_t expected_size = 1u;
-#if defined(OS_LINUX)
-  // Ozone/X11 and Wayland also set kMimeTypeTextUtf8 along with kMimeTypeText.
-  expected_size = 2u;
-#endif
   ASSERT_EQ(expected_size, types.size());
   ASSERT_EQ(ui::kMimeTypeText, base::UTF16ToASCII(types[0]));
   if (expected_size == 2u)
@@ -242,10 +238,6 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   // The text is in the clipboard.
   std::vector<std::u16string> types = GetAvailableClipboardTypes();
   size_t expected_size = 1u;
-#if defined(OS_LINUX)
-  // Ozone/X11 and Wayland also set kMimeTypeTextUtf8 along with kMimeTypeText.
-  expected_size = 2u;
-#endif
   ASSERT_EQ(expected_size, types.size());
   ASSERT_EQ(ui::kMimeTypeText, base::UTF16ToASCII(types[0]));
   if (expected_size == 2u)

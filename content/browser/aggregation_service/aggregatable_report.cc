@@ -27,7 +27,7 @@
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
-#include "third_party/distributed_point_functions/src/dpf/distributed_point_function.h"
+#include "third_party/distributed_point_functions/code/dpf/distributed_point_function.h"
 #include "url/origin.h"
 
 namespace content {
@@ -48,7 +48,7 @@ constexpr char kVersionKey[] = "version";
 constexpr char kVersionValue[] = "";
 
 // Payload contents:
-constexpr char kHierarchicalHistogramValue[] = "hierarchical-histogram";
+constexpr char kHistogramValue[] = "histogram";
 constexpr char kOperationKey[] = "operation";
 constexpr char kReportingOriginKey[] = "reporting_origin";
 
@@ -61,9 +61,7 @@ std::vector<DpfParameters> ConstructDpfParameters() {
   for (size_t i = 0; i < AggregatableReport::kBucketDomainBitLength; i++) {
     parameters[i].set_log_domain_size(i + 1);
 
-    // TODO(crbug.com/1227772): deprecated, replace with ValueType when we roll
-    // the DPF library.
-    parameters[i].set_element_bitsize(
+    parameters[i].mutable_value_type()->mutable_integer()->set_bitsize(
         AggregatableReport::kValueDomainBitLength);
   }
 
@@ -73,9 +71,8 @@ std::vector<DpfParameters> ConstructDpfParameters() {
 // Returns empty vector in case of error.
 std::vector<DpfKey> GenerateDpfKeys(
     const AggregationServicePayloadContents& contents) {
-  DCHECK_EQ(
-      contents.operation,
-      AggregationServicePayloadContents::Operation::kHierarchicalHistogram);
+  DCHECK_EQ(contents.operation,
+            AggregationServicePayloadContents::Operation::kHistogram);
   DCHECK_EQ(contents.processing_type,
             AggregationServicePayloadContents::ProcessingType::kTwoParty);
 
@@ -149,7 +146,7 @@ std::vector<std::vector<uint8_t>> ConstructUnencryptedTwoPartyPayloads(
 
     value.emplace(kReportingOriginKey,
                   payload_contents.reporting_origin.Serialize());
-    value.emplace(kOperationKey, kHierarchicalHistogramValue);
+    value.emplace(kOperationKey, kHistogramValue);
     value.emplace("dpf_key", std::move(serialized_key));
 
     absl::optional<std::vector<uint8_t>> unencrypted_payload =
@@ -182,12 +179,15 @@ std::vector<std::vector<uint8_t>> ConstructUnencryptedSingleServerPayloads(
 
     value.emplace(kReportingOriginKey,
                   payload_contents.reporting_origin.Serialize());
-    value.emplace(kOperationKey, kHierarchicalHistogramValue);
+    value.emplace(kOperationKey, kHistogramValue);
 
-    cbor::Value::MapValue data;
+    // TODO(crbug.com/1272030): Support multiple contributions in one payload.
+    cbor::Value::ArrayValue data;
     if (i == index_to_populate) {
-      data.emplace("bucket", payload_contents.bucket);
-      data.emplace("value", payload_contents.value);
+      cbor::Value::MapValue data_map;
+      data_map.emplace("bucket", payload_contents.bucket);
+      data_map.emplace("value", payload_contents.value);
+      data.push_back(cbor::Value(std::move(data_map)));
     }
     value.emplace("data", std::move(data));
 

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_evaluation_result.h"
@@ -131,8 +131,7 @@ bool ModuleScript::RunScriptOnWorkerOrWorklet(
   // promises are considered synchronous failures in service workers.
   //
   // https://github.com/w3c/ServiceWorker/pull/1444
-  if (base::FeatureList::IsEnabled(features::kTopLevelAwait) &&
-      global_scope.IsServiceWorkerGlobalScope() &&
+  if (global_scope.IsServiceWorkerGlobalScope() &&
       result.GetResultType() == ScriptEvaluationResult::ResultType::kSuccess) {
     v8::Local<v8::Promise> promise = result.GetSuccessValue().As<v8::Promise>();
     DCHECK_NE(promise->State(), v8::Promise::kPending);

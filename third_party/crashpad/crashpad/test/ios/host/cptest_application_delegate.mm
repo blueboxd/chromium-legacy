@@ -92,7 +92,18 @@ OperationStatus GetPendingReports(std::vector<Report>* pending_reports) {
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   // Start up crashpad.
-  if (client_.StartCrashpadInProcessHandler(GetDatabaseDir(), "", {})) {
+  std::map<std::string, std::string> annotations = {
+      {"prod", "xcuitest"}, {"ver", "1"}, {"plat", "iOS"}, {"crashpad", "yes"}};
+
+  NSArray<NSString*>* arguments = [[NSProcessInfo processInfo] arguments];
+  if ([arguments containsObject:@"--alternate-client-annotations"]) {
+    annotations = {{"prod", "some_app"},
+                   {"ver", "42"},
+                   {"plat", "macOS"},
+                   {"crashpad", "no"}};
+  }
+  if (client_.StartCrashpadInProcessHandler(
+          GetDatabaseDir(), "", annotations)) {
     client_.ProcessIntermediateDumps();
   }
 
@@ -203,6 +214,26 @@ OperationStatus GetPendingReports(std::vector<Report>* pending_reports) {
   return [dict passByValue];
 }
 
+- (NSDictionary*)getProcessAnnotations {
+  std::vector<Report> pending_reports;
+  OperationStatus status = GetPendingReports(&pending_reports);
+  if (status != crashpad::CrashReportDatabase::kNoError ||
+      pending_reports.size() != 1) {
+    return @{};
+  }
+
+  auto reader = std::make_unique<crashpad::FileReader>();
+  reader->Open(pending_reports[0].file_path);
+  crashpad::ProcessSnapshotMinidump process_snapshot;
+  process_snapshot.Initialize(reader.get());
+  NSDictionary* dict = [@{} mutableCopy];
+  for (const auto& kv : process_snapshot.AnnotationsSimpleMap()) {
+    [dict setValue:@(kv.second.c_str()) forKey:@(kv.first.c_str())];
+  }
+
+  return [dict passByValue];
+}
+
 - (void)crashBadAccess {
   strcpy(nullptr, "bla");
 }
@@ -256,6 +287,18 @@ OperationStatus GetPendingReports(std::vector<Report>* pending_reports) {
   } @catch (NSException* exception) {
   } @finally {
   }
+}
+
+- (void)crashCoreAutoLayoutSinkhole {
+  // EDO has its own sinkhole, so dispatch this away.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UIView* unattachedView = [[UIView alloc] init];
+    UIWindow* window = [UIApplication sharedApplication].windows[0];
+    [NSLayoutConstraint activateConstraints:@[
+      [window.rootViewController.view.bottomAnchor
+          constraintEqualToAnchor:unattachedView.bottomAnchor],
+    ]];
+  });
 }
 
 - (void)crashRecursion {

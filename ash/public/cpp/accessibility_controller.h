@@ -12,7 +12,6 @@
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback.h"
-#include "base/macros.h"
 
 namespace gfx {
 class Rect;
@@ -170,10 +169,12 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
                                       base::OnceClosure on_cancel_callback,
                                       base::OnceClosure on_close_callback) {}
 
-  // Updates the enabled state and tooltip of the dictation button in the status
-  // tray when speech recognition file download state changes.
+  // Updates the enabled state, tooltip, and progress ring of the dictation
+  // button in the status tray when speech recognition file download state
+  // changes. `download_progress` indicates SODA download progress and is
+  // guaranteed to be between 0 and 100 (inclusive).
   virtual void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
-      bool download_in_progress) = 0;
+      int download_progress) = 0;
 
   // Shows a notification card in the message center informing the user that
   // speech recognition files have either downloaded successfully or failed.

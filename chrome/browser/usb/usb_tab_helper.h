@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_USB_USB_TAB_HELPER_H_
 #define CHROME_BROWSER_USB_USB_TAB_HELPER_H_
 
-#include "base/macros.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -29,13 +28,11 @@ class UsbTabHelper : public content::WebContentsUserData<UsbTabHelper> {
   explicit UsbTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<UsbTabHelper>;
 
-  void NotifyIsDeviceConnectedChanged(bool is_device_connected) const;
+  void NotifyIsDeviceConnectedChanged(bool is_device_connected);
 
   // Initially no device is connected, type int is used as there can be many
   // devices connected to single UsbTabHelper.
   int device_connection_count_ = 0;
-
-  content::WebContents* web_contents_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

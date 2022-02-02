@@ -10,9 +10,7 @@
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
@@ -48,13 +46,18 @@ class EnrollmentScreen
       public EnrollmentScreenView::Controller,
       public policy::ActiveDirectoryJoinDelegate {
  public:
-  enum class Result { COMPLETED, BACK, SKIPPED_FOR_TESTS, TPM_ERROR };
+  enum class Result {
+    COMPLETED,
+    BACK,
+    SKIPPED_FOR_TESTS,
+    TPM_ERROR,
+    TPM_DBUS_ERROR
+  };
 
   static std::string GetResultString(Result result);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  using TpmStatusCallback =
-      chromeos::TpmManagerClient::GetTpmNonsensitiveStatusCallback;
+  using TpmStatusCallback = chromeos::TpmManagerClient::TakeOwnershipCallback;
   EnrollmentScreen(EnrollmentScreenView* view,
                    const ScreenExitCallback& exit_callback);
 
@@ -110,11 +113,11 @@ class EnrollmentScreen
     exit_callback_ = callback;
   }
 
-  void set_tpm_check_callback_for_testing(TpmStatusCallback&& callback) {
-    tpm_check_callback_for_testing_ = std::move(callback);
+  void set_tpm_ownership_callback_for_testing(TpmStatusCallback&& callback) {
+    tpm_ownership_callback_for_testing_ = std::move(callback);
   }
 
-  TpmStatusCallback get_tpm_check_callback_for_testing() {
+  TpmStatusCallback get_tpm_ownership_callback_for_testing() {
     return base::BindOnce(&EnrollmentScreen::OnTpmStatusResponse,
                           weak_ptr_factory_.GetWeakPtr());
   }
@@ -217,15 +220,19 @@ class EnrollmentScreen
                                authpolicy::ErrorType error,
                                const std::string& machine_domain);
 
-  // Initiates TPM check.
-  void CheckTpmStatus();
+  // Tries to take TPM ownership.
+  void TakeTpmOwnership();
   // Processes a reply from tpm_manager.
-  void OnTpmStatusResponse(
-      const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply);
+  void OnTpmStatusResponse(const ::tpm_manager::TakeOwnershipReply& reply);
+  // Checks install attribute status to make sure that it is FIRST_INSTALL, in
+  // this case we proceed with the enrollment. In other cases we either try to
+  // wait for the FIRST_INSTALL status, or show a TpmErrorScreen with an ability
+  // to reboot the device.
+  void CheckInstallAttributesState();
 
   EnrollmentScreenView* view_;
   ScreenExitCallback exit_callback_;
-  absl::optional<TpmStatusCallback> tpm_check_callback_for_testing_;
+  absl::optional<TpmStatusCallback> tpm_ownership_callback_for_testing_;
   policy::EnrollmentConfig config_;
   policy::EnrollmentConfig enrollment_config_;
 
@@ -235,8 +242,14 @@ class EnrollmentScreen
 
   bool enrollment_failed_once_ = false;
   bool enrollment_succeeded_ = false;
+
   // Check tpm before enrollment starts if --tpm-is-dynamic switch is enabled.
   bool tpm_checked_ = false;
+  // Number of retries to get other than TPM_NOT_OWNED install attributes state.
+  int install_state_retries_ = 0;
+  // Timer for install attribute to resolve.
+  base::OneShotTimer wait_state_timer_;
+
   std::string enrolling_user_domain_;
   std::unique_ptr<base::ElapsedTimer> elapsed_timer_;
   net::BackoffEntry::Policy retry_policy_;

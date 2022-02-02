@@ -2,14 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrA11yAnnouncerElement} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from '../read_later_api_proxy.js';
 
 import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT, getBookmarkFromElement, isBookmarkFolderElement} from './bookmark_folder.js';
-import {BookmarksApiProxy} from './bookmarks_api_proxy.js';
+import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
 import {BookmarksDragManager} from './bookmarks_drag_manager.js';
 
 // Key for localStorage object that refers to all the open folders.
 export const LOCAL_STORAGE_OPEN_FOLDERS_KEY = 'openFolders';
+
+function getBookmarkName(bookmark: chrome.bookmarks.BookmarkTreeNode): string {
+  return bookmark.title || bookmark.url || '';
+}
 
 export class BookmarksListElement extends PolymerElement {
   static get is() {
@@ -34,9 +42,12 @@ export class BookmarksListElement extends PolymerElement {
     };
   }
 
-  private bookmarksApi_: BookmarksApiProxy = BookmarksApiProxy.getInstance();
+  private bookmarksApi_: BookmarksApiProxy =
+      BookmarksApiProxyImpl.getInstance();
   private bookmarksDragManager_: BookmarksDragManager =
       new BookmarksDragManager(this);
+  private readLaterApi_: ReadLaterApiProxy =
+      ReadLaterApiProxyImpl.getInstance();
   private listeners_ = new Map<string, Function>();
   private folders_: chrome.bookmarks.BookmarkTreeNode[];
   private openFolders_: string[];
@@ -85,6 +96,10 @@ export class BookmarksListElement extends PolymerElement {
 
       this.bookmarksDragManager_.startObserving();
     });
+    if (loadTimeData.getBoolean('unifiedSidePanel')) {
+      // Show the UI as soon as the app is connected.
+      this.readLaterApi_.showUI();
+    }
   }
 
   disconnectedCallback() {
@@ -109,9 +124,29 @@ export class BookmarksListElement extends PolymerElement {
     }
     return parent.children.findIndex((child) => child.id === bookmark.id);
   }
+
   /** BookmarksDragDelegate */
   isFolderOpen(bookmark: chrome.bookmarks.BookmarkTreeNode): boolean {
     return this.openFolders_.some(id => bookmark.id === id);
+  }
+
+  /** BookmarksDragDelegate */
+  onFinishDrop(bookmarks: chrome.bookmarks.BookmarkTreeNode[]): void {
+    if (bookmarks.length === 0 || bookmarks[0]!.id === undefined) {
+      return;
+    }
+
+    this.focusBookmark_(bookmarks[0]!.id);
+
+    // <if expr="is_macosx">
+    // On Mac, the hover effect on the dragged item can linger on before the
+    // user moves the pointer after drop. Reset pointer events on the whole
+    // list temporarily to reset the effect.
+    this.style.pointerEvents = 'none';
+    setTimeout(() => {
+      this.style.pointerEvents = 'auto';
+    }, 50);
+    // </if>
   }
 
   /** BookmarksDragDelegate */
@@ -203,6 +238,11 @@ export class BookmarksListElement extends PolymerElement {
       parent.children = [];
     }
     this.splice(`${pathToParentString}.children`, node.index!, 0, node);
+    afterNextRender(this, () => {
+      this.focusBookmark_(node.id);
+      CrA11yAnnouncerElement.getInstance().announce(
+          loadTimeData.getStringF('bookmarkCreated', getBookmarkName(node)));
+    });
   }
 
   private changeFolderOpenStatus_(id: string, open: boolean) {
@@ -245,6 +285,8 @@ export class BookmarksListElement extends PolymerElement {
       this.bookmarksApi_.cutBookmark(bookmarkData.id);
     } else if (event.key === 'c') {
       this.bookmarksApi_.copyBookmark(bookmarkData.id);
+      CrA11yAnnouncerElement.getInstance().announce(loadTimeData.getStringF(
+          'bookmarkCopied', getBookmarkName(bookmarkData)));
     } else if (event.key === 'v') {
       if (isBookmarkFolderElement(eventTarget)) {
         this.bookmarksApi_.pasteToBookmark(bookmarkData.id);
@@ -284,7 +326,7 @@ export class BookmarksListElement extends PolymerElement {
     const oldParentPath = this.findPathToId_(movedInfo.oldParentId);
     const oldParentPathString = this.getPathString_(oldParentPath);
     const oldParent = oldParentPath[oldParentPath.length - 1];
-    const movedNode = oldParent!.children![movedInfo.oldIndex];
+    const movedNode = oldParent!.children![movedInfo.oldIndex]!;
     Object.assign(
         movedNode, {index: movedInfo.index, parentId: movedInfo.parentId});
     this.splice(`${oldParentPathString}.children`, movedInfo.oldIndex, 1);
@@ -298,6 +340,15 @@ export class BookmarksListElement extends PolymerElement {
     }
     this.splice(
         `${newParentPathString}.children`, movedInfo.index, 0, movedNode);
+
+    if (movedInfo.oldParentId === movedInfo.parentId) {
+      CrA11yAnnouncerElement.getInstance().announce(loadTimeData.getStringF(
+          'bookmarkReordered', getBookmarkName(movedNode)));
+    } else {
+      CrA11yAnnouncerElement.getInstance().announce(loadTimeData.getStringF(
+          'bookmarkMoved', getBookmarkName(movedNode),
+          getBookmarkName(newParent!)));
+    }
   }
 
   private onRemoved_(id: string) {
@@ -308,6 +359,36 @@ export class BookmarksListElement extends PolymerElement {
     this.splice(
         `${oldParentPathString}.children`,
         oldParent.children!.indexOf(removedNode), 1);
+
+    CrA11yAnnouncerElement.getInstance().announce(loadTimeData.getStringF(
+        'bookmarkDeleted', getBookmarkName(removedNode)));
+  }
+
+  private focusBookmark_(id: string) {
+    const path = this.findPathToId_(id);
+    if (path.length === 0) {
+      // Could not find bookmark.
+      return;
+    }
+
+    const rootBookmark = path.shift();
+    const rootBookmarkElement =
+        this.shadowRoot!.querySelector(`#bookmark-${rootBookmark!.id}`) as
+        BookmarkFolderElement;
+    if (!rootBookmarkElement) {
+      return;
+    }
+
+    const bookmarkElement = rootBookmarkElement.getFocusableElement(path);
+    if (bookmarkElement) {
+      bookmarkElement.focus();
+    }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'bookmarks-list': BookmarksListElement;
   }
 }
 

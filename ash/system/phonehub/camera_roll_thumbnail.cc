@@ -4,12 +4,12 @@
 
 #include "ash/system/phonehub/camera_roll_thumbnail.h"
 
+#include "ash/components/phonehub/camera_roll_manager.h"
+#include "ash/components/phonehub/user_action_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/phonehub/camera_roll_manager.h"
-#include "chromeos/components/phonehub/user_action_recorder.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/highlight_path_generator.h"
 
@@ -29,9 +29,9 @@ constexpr int kCameraRollThumbnailVideoIconSize = 20;
 
 CameraRollThumbnail::CameraRollThumbnail(
     const int index,
-    const chromeos::phonehub::CameraRollItem& item,
-    chromeos::phonehub::CameraRollManager* camera_roll_manager,
-    chromeos::phonehub::UserActionRecorder* user_action_recorder)
+    const phonehub::CameraRollItem& item,
+    phonehub::CameraRollManager* camera_roll_manager,
+    phonehub::UserActionRecorder* user_action_recorder)
     : views::MenuButton(base::BindRepeating(&CameraRollThumbnail::ButtonPressed,
                                             base::Unretained(this))),
       index_(index),

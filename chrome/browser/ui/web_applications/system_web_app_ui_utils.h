@@ -21,6 +21,8 @@ class Profile;
 
 namespace web_app {
 
+class WebAppProvider;
+
 // Returns the system app type for the given App ID.
 absl::optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
                                                           AppId app_id);
@@ -81,6 +83,12 @@ void LaunchSystemWebAppAsync(
 // executing). Useful for testing SWA launch behaviors.
 void FlushSystemWebAppLaunchesForTesting(Profile* profile);
 
+// Utility function to set up launch files and launch directory as appropriate.
+void SetLaunchFiles(bool should_include_launch_directory,
+                    const apps::AppLaunchParams& params,
+                    content::WebContents* web_contents,
+                    WebAppProvider* provider);
+
 // Implementation of LaunchSystemWebApp. Do not use this before discussing your
 // use case with the System Web Apps team.
 Browser* LaunchSystemWebAppImpl(Profile* profile,
@@ -88,12 +96,12 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
                                 const GURL& url,
                                 const apps::AppLaunchParams& params);
 
-// Returns a browser that is hosting the given system app type and browser type,
-// or nullptr if not found.
-Browser* FindSystemWebAppBrowser(
-    Profile* profile,
-    SystemAppType app_type,
-    Browser::Type browser_type = Browser::TYPE_APP);
+// Returns a browser that is hosting the given system |app_type|,
+// |browser_type| and |url| (if not empty) or nullptr if not found.
+Browser* FindSystemWebAppBrowser(Profile* profile,
+                                 SystemAppType app_type,
+                                 Browser::Type browser_type = Browser::TYPE_APP,
+                                 const GURL& url = GURL());
 
 // Returns true if the |browser| is a system web app.
 bool IsSystemWebApp(Browser* browser);

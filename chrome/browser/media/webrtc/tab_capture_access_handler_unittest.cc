@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -121,7 +120,8 @@ TEST_F(TabCaptureAccessHandlerTest, DlpRestricted) {
       web_contents(), /*extension_id=*/"", /*is_anonymous=*/false,
       GURL("http://origin/"), source, /*extension_name=*/"", web_contents());
 
-  blink::mojom::MediaStreamRequestResult result;
+  blink::mojom::MediaStreamRequestResult result =
+      blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED;
   blink::MediaStreamDevices devices;
   ProcessRequest(source, &result, &devices);
 

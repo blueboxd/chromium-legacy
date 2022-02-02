@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/throttle_observer.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -22,7 +21,7 @@ namespace arc {
 
 // This class observes ARC app launches and sets its state to active while an
 // app is being launched.
-class ArcAppLaunchThrottleObserver : public chromeos::ThrottleObserver,
+class ArcAppLaunchThrottleObserver : public ash::ThrottleObserver,
                                      public ArcAppListPrefs::Observer,
                                      public AppLaunchObserver {
  public:
@@ -34,7 +33,7 @@ class ArcAppLaunchThrottleObserver : public chromeos::ThrottleObserver,
 
   ~ArcAppLaunchThrottleObserver() override;
 
-  // chromeos::ThrottleObserver:
+  // ash::ThrottleObserver:
   void StartObserving(content::BrowserContext* context,
                       const ObserverStateChangedCallback& callback) override;
   void StopObserving() override;

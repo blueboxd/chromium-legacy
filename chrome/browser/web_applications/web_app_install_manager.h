@@ -13,6 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
@@ -78,6 +79,10 @@ class WebAppInstallManager final : public SyncInstallDelegate {
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback);
 
+  void InstallSubApp(const AppId& parent_app_id,
+                     const GURL& install_url,
+                     OnceInstallCallback callback);
+
   // Starts a background web app installation process for a given
   // |web_contents|.
   void InstallWebAppWithParams(content::WebContents* web_contents,
@@ -112,6 +117,14 @@ class WebAppInstallManager final : public SyncInstallDelegate {
       const absl::optional<WebAppInstallParams>& install_params,
       webapps::WebappInstallSource install_source,
       OnceInstallCallback callback);
+
+  // Returns whether the an installation is already running with the
+  // same web contents.
+  bool IsInstallingForWebContents(
+      const content::WebContents* web_contents) const;
+
+  // Returns the number of running web app installations.
+  std::size_t GetInstallTaskCountForTesting() const;
 
   // For the new USS-based system only. SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
@@ -187,26 +200,31 @@ class WebAppInstallManager final : public SyncInstallDelegate {
     PendingTask(PendingTask&&);
     ~PendingTask();
 
-    const WebAppInstallTask* task = nullptr;
+    raw_ptr<const WebAppInstallTask> task = nullptr;
     base::OnceClosure start;
   };
 
   void OnWebContentsReadyRunTask(PendingTask pending_task,
                                  WebAppUrlLoader::Result result);
 
-  void LogErrorObject(const char* stage, base::Value object);
+  void MaybeWriteErrorLog();
+  void OnWriteErrorLog(Result result);
+  void OnReadErrorLog(Result result, base::Value error_log);
+
+  void LogErrorObject(base::Value object);
+  void LogErrorObjectAtStage(const char* stage, base::Value object);
   void LogUrlLoaderError(const char* stage,
                          const PendingTask& task,
                          WebAppUrlLoader::Result result);
 
   DataRetrieverFactory data_retriever_factory_;
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
   std::unique_ptr<WebAppUrlLoader> url_loader_;
 
-  WebAppRegistrar* registrar_ = nullptr;
-  OsIntegrationManager* os_integration_manager_ = nullptr;
-  WebAppInstallFinalizer* finalizer_ = nullptr;
+  raw_ptr<WebAppRegistrar> registrar_ = nullptr;
+  raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
+  raw_ptr<WebAppInstallFinalizer> finalizer_ = nullptr;
 
   bool disable_web_app_sync_install_for_testing_ = false;
 
@@ -217,7 +235,7 @@ class WebAppInstallManager final : public SyncInstallDelegate {
 
   using TaskQueue = base::queue<PendingTask>;
   TaskQueue task_queue_;
-  const WebAppInstallTask* current_queued_task_ = nullptr;
+  raw_ptr<const WebAppInstallTask> current_queued_task_ = nullptr;
 
   // A single WebContents, shared between tasks in |task_queue_|.
   std::unique_ptr<content::WebContents> web_contents_;
@@ -225,6 +243,8 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   bool started_ = false;
 
   std::unique_ptr<ErrorLog> error_log_;
+  bool error_log_updated_ = false;
+  bool error_log_writing_in_progress_ = false;
 
   base::WeakPtrFactory<WebAppInstallManager> weak_ptr_factory_{this};
 };

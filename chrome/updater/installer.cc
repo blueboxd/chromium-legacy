@@ -12,6 +12,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -19,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/updater/action_handler.h"
 #include "chrome/updater/constants.h"
+#include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
 #include "components/crx_file/crx_verifier.h"
@@ -48,18 +50,21 @@ absl::optional<base::FilePath> GetAppInstallDir(UpdaterScope scope,
 
 }  // namespace
 
-Installer::Installer(const std::string& app_id,
-                     const std::string& target_channel,
-                     const std::string& target_version_prefix,
-                     bool rollback_allowed,
-                     bool update_disabled,
-                     scoped_refptr<PersistedData> persisted_data)
+Installer::Installer(
+    const std::string& app_id,
+    const std::string& target_channel,
+    const std::string& target_version_prefix,
+    bool rollback_allowed,
+    bool update_disabled,
+    UpdateService::PolicySameVersionUpdate policy_same_version_update,
+    scoped_refptr<PersistedData> persisted_data)
     : updater_scope_(GetUpdaterScope()),
       app_id_(app_id),
       rollback_allowed_(rollback_allowed),
       target_channel_(target_channel),
       target_version_prefix_(target_version_prefix),
       update_disabled_(update_disabled),
+      policy_same_version_update_(policy_same_version_update),
       persisted_data_(persisted_data) {}
 
 Installer::~Installer() {
@@ -91,13 +96,17 @@ update_client::CrxComponent Installer::MakeCrxComponent() {
       crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
   component.app_id = app_id_;
   component.ap = ap_;
+  component.ap = persisted_data_->GetBrandCode(app_id_);
   component.name = app_id_;
   component.version = pv_;
   component.fingerprint = fingerprint_;
   component.channel = target_channel_;
   component.rollback_allowed = rollback_allowed_;
+  component.same_version_update_allowed =
+      policy_same_version_update_ ==
+      UpdateService::PolicySameVersionUpdate::kAllowed;
   component.target_version_prefix = target_version_prefix_;
-  component.supports_group_policy_enable_component_updates = update_disabled_;
+  component.updates_enabled = !update_disabled_;
 
   return component;
 }
@@ -258,13 +267,14 @@ absl::optional<base::FilePath> Installer::GetCurrentInstallDir() const {
   return path->AppendASCII(pv_.GetString());
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 Installer::Result Installer::RunApplicationInstaller(
-    const base::FilePath& app_installer,
-    const std::string& arguments) {
-  NOTREACHED();
+    const base::FilePath& /*app_installer*/,
+    const std::string& /*arguments*/,
+    ProgressCallback /*progress_callback*/) {
+  NOTIMPLEMENTED();
   return Installer::Result(-1);
 }
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX)
 
 }  // namespace updater

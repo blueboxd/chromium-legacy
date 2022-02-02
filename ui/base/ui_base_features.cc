@@ -35,14 +35,12 @@ const base::Feature kApplyNativeOcclusionToCompositor{
 
 // Field trial param name for `kApplyNativeOcclusionToCompositor`.
 const char kApplyNativeOcclusionToCompositorType[] = "type";
-// Indicates occlusion should be applied to the compositor.
-const char kApplyNativeOcclusionToCompositorTypeApplyOnly[] = "apply";
-// Indicates occlusion should be applied to the compositor, and when occluded
-// the root surface should be evicted when hidden/occluded.
-const char kApplyNativeOcclusionToCompositorTypeApplyAndEvict[] =
-    "apply-and-evict";
-// Indicates the root surface should be evicted when hidden/occluded.
-const char kApplyNativeOcclusionToCompositorTypeEvictOnly[] = "evict";
+// When the WindowTreeHost is occluded or hidden, resources are released and
+// the compositor is hidden. See WindowTreeHost for specifics on what this
+// does.
+const char kApplyNativeOcclusionToCompositorTypeRelease[] = "release";
+// When the WindowTreeHost is occluded the frame rate is throttled.
+const char kApplyNativeOcclusionToCompositorTypeThrottle[] = "throttle";
 
 // If enabled, calculate native window occlusion - Windows-only.
 const base::Feature kCalculateNativeWinOcclusion{
@@ -297,15 +295,6 @@ const base::Feature kResamplingScrollEventsExperimentalPrediction{
     "ResamplingScrollEventsExperimentalPrediction",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsUsingOzonePlatform() {
-#if defined(USE_X11) && !defined(USE_OZONE)
-
-#error Non-Ozone/X11 builds are no longer supported
-
-#endif  // defined(USE_X11) || defined(USE_OZONE)
-  return true;
-}
-
 const char kPredictorNameLsq[] = "lsq";
 const char kPredictorNameKalman[] = "kalman";
 const char kPredictorNameLinearFirst[] = "linear_first";
@@ -336,6 +325,13 @@ bool IsSwipeToMoveCursorEnabled() {
       base::FeatureList::IsEnabled(kSwipeToMoveCursor);
 #endif
   return enabled;
+}
+
+// Enable raw draw for tiles.
+const base::Feature kRawDraw{"RawDraw", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsUsingRawDraw() {
+  return base::FeatureList::IsEnabled(kRawDraw);
 }
 
 }  // namespace features

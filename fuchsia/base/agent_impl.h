@@ -17,7 +17,6 @@
 #include "base/containers/flat_map.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_provider_impl.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 
 namespace cr_fuchsia {
@@ -110,6 +109,10 @@ class AgentImpl : public ::fuchsia::modular::Agent {
   // create per-component data structures and services.
   AgentImpl(sys::OutgoingDirectory* outgoing_directory,
             CreateComponentStateCallback create_component_state_callback);
+
+  AgentImpl(const AgentImpl&) = delete;
+  AgentImpl& operator=(const AgentImpl&) = delete;
+
   ~AgentImpl() override;
 
   // fuchsia::modular::Agent implementation.
@@ -132,8 +135,6 @@ class AgentImpl : public ::fuchsia::modular::Agent {
   // Owns the ComponentState instances for each connected component.
   base::flat_map<std::string, std::unique_ptr<ComponentStateBase>>
       active_components_;
-
-  DISALLOW_COPY_AND_ASSIGN(AgentImpl);
 };
 
 }  // namespace cr_fuchsia

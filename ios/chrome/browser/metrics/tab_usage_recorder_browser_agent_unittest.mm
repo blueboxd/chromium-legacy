@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/ignore_result.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"

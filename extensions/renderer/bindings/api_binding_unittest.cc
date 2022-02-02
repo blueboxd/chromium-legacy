@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -24,6 +24,7 @@
 #include "extensions/renderer/bindings/api_signature.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "extensions/renderer/bindings/binding_access_checker.h"
+#include "extensions/renderer/bindings/exception_handler.h"
 #include "extensions/renderer/bindings/test_interaction_provider.h"
 #include "extensions/renderer/bindings/test_js_runner.h"
 #include "gin/arguments.h"
@@ -166,11 +167,13 @@ class APIBindingUnittest : public APIBindingTest {
   void SetUp() override {
     APIBindingTest::SetUp();
     interaction_provider_ = std::make_unique<TestInteractionProvider>();
+    binding::AddConsoleError null_console_error;
+    exception_handler_ = std::make_unique<ExceptionHandler>(null_console_error);
     request_handler_ = std::make_unique<APIRequestHandler>(
         base::BindRepeating(&APIBindingUnittest::OnFunctionCall,
                             base::Unretained(this)),
-        APILastError(APILastError::GetParent(), binding::AddConsoleError()),
-        nullptr, interaction_provider_.get());
+        APILastError(APILastError::GetParent(), null_console_error),
+        exception_handler_.get(), interaction_provider_.get());
   }
 
   void TearDown() override {
@@ -346,6 +349,7 @@ class APIBindingUnittest : public APIBindingTest {
   std::unique_ptr<APIBinding> binding_;
   std::unique_ptr<APIEventHandler> event_handler_;
   std::unique_ptr<TestInteractionProvider> interaction_provider_;
+  std::unique_ptr<ExceptionHandler> exception_handler_;
   std::unique_ptr<APIRequestHandler> request_handler_;
   std::unique_ptr<BindingAccessChecker> access_checker_;
   APITypeReferenceMap type_refs_;
@@ -1977,8 +1981,7 @@ TEST_F(APIBindingUnittest, TestPromisesWithJSCustomCallback) {
   const char kRegisterHook[] = R"(
       (function(hooks) {
         hooks.setCustomCallback('supportsPromises',
-                                (name, request, callback, response) => {
-          this.methodName = name;
+                                (callback, response) => {
           this.response = response;
           this.resolveCallback = callback;
           if (response == 'resolveNow')
@@ -2012,9 +2015,6 @@ TEST_F(APIBindingUnittest, TestPromisesWithJSCustomCallback) {
                                        std::string());
     // The promise should still be unfulfilled until the callback is invoked.
     EXPECT_EQ(v8::Promise::kPending, promise->State());
-    EXPECT_EQ(
-        R"("test.supportsPromises")",
-        GetStringPropertyFromObject(context->Global(), context, "methodName"));
     v8::Local<v8::Function> resolve_callback;
     ASSERT_TRUE(GetPropertyFromObjectAs(context->Global(), context,
                                         "resolveCallback", &resolve_callback));

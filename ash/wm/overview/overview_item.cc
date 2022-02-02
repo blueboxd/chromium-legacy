@@ -208,7 +208,7 @@ bool OverviewItem::Contains(const aura::Window* target) const {
 }
 
 void OverviewItem::HideForDesksTemplatesGrid() {
-  transform_window_.window()->layer()->SetOpacity(0.0f);
+  DCHECK(item_widget_);
   item_widget_->GetLayer()->SetOpacity(0.0f);
 
   for (aura::Window* transient_child :
@@ -222,8 +222,9 @@ void OverviewItem::HideForDesksTemplatesGrid() {
 }
 
 void OverviewItem::RevertHideForDesksTemplatesGrid() {
-  transform_window_.window()->layer()->SetOpacity(1.0f);
-  item_widget_->GetLayer()->SetOpacity(1.0f);
+  // `item_widget_` may be null during shutdown if the window is minimized.
+  if (item_widget_)
+    item_widget_->GetLayer()->SetOpacity(1.0f);
 
   for (aura::Window* transient_child :
        GetTransientTreeIterator(transform_window_.window())) {
@@ -1201,7 +1202,7 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   ScopedOverviewTransformWindow::ScopedAnimationSettings animation_settings;
   transform_window_.BeginScopedAnimation(animation_type, &animation_settings);
   if (animation_type == OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW &&
-      !animation_settings.empty()) {
+      !animation_settings.empty() && !GetWindow()->is_destroying()) {
     animation_settings.front()->AddObserver(new AnimationObserver{
         base::BindOnce(&OverviewItem::OnItemBoundsAnimationStarted,
                        weak_ptr_factory_.GetWeakPtr()),

@@ -11,6 +11,8 @@
 // #import {Oobe} from '../cr_ui.m.js'
 // #import {$} from 'chrome://resources/js/util.m.js';
 
+// #import {MessageType, ProblemType} from 'chrome://resources/cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js';
+
 cr.define('cr.ui.login.debug', function() {
   const DEBUG_BUTTON_STYLE = `
       height:20px;
@@ -211,7 +213,10 @@ cr.define('cr.ui.login.debug', function() {
         {
           id: 'success',
           trigger: (screen) => {
-            screen.updateCountdownString('60 seconds');
+            screen.updateCountdownString(
+                'Your device will shut down in 60 seconds. Remove the USB \
+                 before turning your device back on. Then you can start using \
+                 CloudReady 2.0.');
             screen.showStep('success');
           },
         },
@@ -300,7 +305,7 @@ cr.define('cr.ui.login.debug', function() {
           id: 'require-permission-celluar',
           trigger: (screen) => {
             screen.onBeforeShow();
-            screen.setRequiresPermissionForCellular(true);
+            screen.setUpdateState('cellular');
           },
         },
       ],
@@ -351,8 +356,24 @@ cr.define('cr.ui.login.debug', function() {
       // Remove this step from preview here, because it can only occur during
       // enterprise enrollment step and it is already available there in debug
       // overlay.
-      handledSteps: 'unlock',
+      handledSteps: 'unlock,creds',
       suffix: 'E',
+      states: [
+        {
+          id: 'unlock',
+          trigger: (screen) => {
+            screen.setUIStep('unlock');
+          },
+          data: {},
+        },
+        {
+          id: 'creds',
+          trigger: (screen) => {
+            screen.setUIStep('creds');
+          },
+          data: {},
+        },
+      ],
     },
     {
       id: 'enterprise-enrollment',
@@ -624,10 +645,6 @@ cr.define('cr.ui.login.debug', function() {
       ],
     },
     {
-      id: 'tpm-error-message',
-      kind: ScreenKind.ERROR,
-    },
-    {
       // Failure during SAML flow.
       id: 'fatal-error',
       kind: ScreenKind.ERROR,
@@ -847,6 +864,14 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'lacros-data-migration',
       kind: ScreenKind.OTHER,
+      defaultState: 'default',
+      handledSteps: 'skip-revealed',
+      states: [{
+        id: 'skip-revealed',
+        trigger: (screen) => {
+          screen.showSkipButton();
+        }
+      }],
     },
     {
       id: 'terms-of-service',
@@ -900,6 +925,7 @@ cr.define('cr.ui.login.debug', function() {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: false,
+            isEnterpriseManagedAccount: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
@@ -911,6 +937,7 @@ cr.define('cr.ui.login.debug', function() {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: true,
+            isEnterpriseManagedAccount: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
@@ -922,6 +949,7 @@ cr.define('cr.ui.login.debug', function() {
             isArcEnabled: true,
             isDemo: true,
             isChildAccount: false,
+            isEnterpriseManagedAccount: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
@@ -933,6 +961,23 @@ cr.define('cr.ui.login.debug', function() {
             isArcEnabled: false,
             isDemo: false,
             isChildAccount: false,
+            isEnterpriseManagedAccount: false,
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'managed-account',
+          trigger: (screen) => {
+            screen.setBackupMode(true, true);
+            screen.setLocationMode(false, true);
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            isEnterpriseManagedAccount: true,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
@@ -947,6 +992,7 @@ cr.define('cr.ui.login.debug', function() {
             isArcEnabled: true,
             isDemo: false,
             isChildAccount: false,
+            isEnterpriseManagedAccount: false,
             googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
             crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
             countryCode: 'us',
@@ -1003,6 +1049,10 @@ cr.define('cr.ui.login.debug', function() {
           },
         },
       ]
+    },
+    {
+      id: 'hw-data-collection',
+      kind: ScreenKind.OTHER,
     },
     {
       id: 'fingerprint-setup',

@@ -23,7 +23,6 @@
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -91,6 +90,7 @@ class ClientSideDetectionService : public KeyedService {
   void RemoveClientSideDetectionHost(ClientSideDetectionHost* host);
 
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           base::Time start_time,
                            std::unique_ptr<std::string> response_body);
 
   // Sends a request to the SafeBrowsing servers with the ClientPhishingRequest.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/system_notification_manager.h"
 
+#include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -533,6 +533,9 @@ void SystemNotificationManager::HandleEvent(const extensions::Event& event) {
   if (event_arguments.size() < 1) {
     return;
   }
+  // For some events we always display a system notification regardless of if
+  // there are any SWA windows open.
+  bool force_as_system_notification = false;
   std::unique_ptr<message_center::Notification> notification;
   switch (event.histogram_value) {
     case extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_SYNC_ERROR:
@@ -540,6 +543,7 @@ void SystemNotificationManager::HandleEvent(const extensions::Event& event) {
       break;
     case extensions::events::FILE_MANAGER_PRIVATE_ON_DRIVE_CONFIRM_DIALOG:
       notification = MakeDriveConfirmDialogNotification(event, event_arguments);
+      force_as_system_notification = true;
       break;
     case extensions::events::FILE_MANAGER_PRIVATE_ON_FILE_TRANSFERS_UPDATED:
     case extensions::events::FILE_MANAGER_PRIVATE_ON_PIN_TRANSFERS_UPDATED:
@@ -551,6 +555,13 @@ void SystemNotificationManager::HandleEvent(const extensions::Event& event) {
   }
 
   if (notification) {
+    // Check if we need to remove any progress notification when there
+    // are active SWA windows.
+    if (!force_as_system_notification && DoFilesSwaWindowsExist()) {
+      GetNotificationDisplayService()->Close(
+          NotificationHandler::Type::TRANSIENT, notification->id());
+      return;
+    }
     GetNotificationDisplayService()->Display(
         NotificationHandler::Type::TRANSIENT, *notification,
         /*metadata=*/nullptr);

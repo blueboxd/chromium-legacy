@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "components/sync/model/string_ordinal.h"
+#include "components/sync/protocol/app_list_specifics.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
@@ -54,6 +55,54 @@ enum class AppListConfigType {
   kDense,
 };
 
+// A structure holding an item icon' color information.
+class ASH_PUBLIC_EXPORT IconColor {
+ public:
+  // The minimum value of a valid hue. It is also the hue for the color that is
+  // close or equal to pure white.
+  static constexpr int kHueMin = -1;
+
+  // The maximum value of a valid hue. It is also the hue for the color that is
+  // close or equal to pure black.
+  static constexpr int kHueMax = 360;
+
+  static constexpr int kHueInvalid = kHueMin - 1;
+
+  IconColor();
+  IconColor(sync_pb::AppListSpecifics::ColorGroup background_color, int hue);
+  IconColor(const IconColor&);
+  IconColor& operator=(const IconColor&);
+  ~IconColor();
+
+  // The overloaded rational operators. NOTE: these operators assume that
+  // operands are valid.
+  bool operator<(const IconColor&);
+  bool operator>(const IconColor&);
+  bool operator>=(const IconColor&);
+  bool operator<=(const IconColor&);
+  bool operator==(const IconColor&);
+  bool operator!=(const IconColor&);
+
+  // Returns true only when all data members are valid: `background_color_` is
+  // non-empty and `hue_` is in the valid range.
+  bool IsValid() const;
+
+  sync_pb::AppListSpecifics::ColorGroup background_color() const {
+    return background_color_;
+  }
+  int hue() const { return hue_; }
+
+ private:
+  // Indicates an icon's background color.
+  sync_pb::AppListSpecifics::ColorGroup background_color_ =
+      sync_pb::AppListSpecifics::COLOR_EMPTY;
+
+  // Indicates an icon's hue. NOTE: `hue_` falls in the range of [-1,360] that
+  // is different from the normal range which is [0, 360). See the comments for
+  // `kHueMin` and `kHueMax`.
+  int hue_ = kHueInvalid;
+};
+
 // A structure holding the common information which is sent between ash and,
 // chrome representing an app list item.
 struct ASH_PUBLIC_EXPORT AppListItemMetadata {
@@ -61,10 +110,8 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   AppListItemMetadata(const AppListItemMetadata& rhs);
   ~AppListItemMetadata();
 
-  std::string id;          // Id of the app list item.
-  std::string name;        // Corresponding app/folder's name of the item.
-  std::string short_name;  // Corresponding app's short name of the item. Empty
-                           // if the app doesn't have one or it's a folder.
+  std::string id;    // Id of the app list item.
+  std::string name;  // Corresponding app/folder's name of the item.
 
   AppStatus app_status = AppStatus::kReady;  // App status.
 
@@ -77,8 +124,14 @@ struct ASH_PUBLIC_EXPORT AppListItemMetadata {
   bool is_page_break = false;  // Whether this item is a "page break" item.
   SkColor badge_color = SK_ColorWHITE;  // Notification badge color.
 
+  // Whether the app was installed this session and has not yet been launched.
+  bool is_new_install = false;
+
   int icon_version = 0;  // An int represent icon version. If changed, `icon`
                          // should be reloaded.
+
+  // The item's icon color.
+  IconColor icon_color;
 };
 
 // All possible orders to sort app list items.
@@ -101,6 +154,18 @@ enum class RequestPositionUpdateReason {
   kFixItem,
 
   // Move an item.
+  kMoveItem
+};
+
+// Lists the reasons that ash requests to move an item into a folder.
+enum class RequestMoveToFolderReason {
+  // Merge two items and move the first item to the created folder.
+  kMergeFirstItem,
+
+  // Merge two items and move the second item to the created folder.
+  kMergeSecondItem,
+
+  // Move an item to an existed folder.
   kMoveItem
 };
 
@@ -151,17 +216,18 @@ enum class AppListLaunchedFrom {
   kLaunchedFromSuggestionChip = 2,
   kLaunchedFromShelf = 3,
   kLaunchedFromSearchBox = 4,
-  kMaxValue = kLaunchedFromSearchBox,
+  kLaunchedFromRecentApps = 5,
+  kLaunchedFromContinueTask = 6,
+  kMaxValue = kLaunchedFromContinueTask,
 };
 
-// The UI representation of the search result. Currently all search results
-// that are not apps (OminboxResult, LauncherSearcResult, etc.) are grouped
-// into kSearchResult. Meanwhile SearchResultTileItemView (shown in zero state)
-// and suggested chips are considered kAppSearchResult.
-enum class AppListLaunchType {
-  kSearchResult = 0,
-  kAppSearchResult,
-};
+// The UI representation of the app that's being launched. Currently all search
+// results that are not apps (OminboxResult, LauncherSearcResult, etc.) are
+// grouped into kSearchResult. Meanwhile app search results, apps that appear in
+// the recent apps section, and suggested chips (if productivity launcher is
+// disabled) are considered kAppSearchResult. kApp is used for apps launched
+// from the apps grid.
+enum class AppListLaunchType { kSearchResult, kAppSearchResult, kApp };
 
 // Type of the search result, which is set in Chrome. These values are persisted
 // to logs. Entries should not be renumbered and numeric values should never be
@@ -195,6 +261,9 @@ enum class AppListSearchResultType {
   kMaxValue = kDriveSearch,
 };
 
+ASH_PUBLIC_EXPORT bool IsAppListSearchResultAnApp(
+    AppListSearchResultType result_type);
+
 // The different categories a search result can be part of. Every search result
 // to be displayed in the search box should be associated with one category. It
 // is an error for results displayed in the search box to have a kUnknown
@@ -225,9 +294,9 @@ enum SearchResultDisplayType {
   kList = 1,  // Displays in search list
   kTile = 2,  // Displays in search tiles
   // kRecommendation = 3  // No longer used, split between kTile and kChip
-  kCard = 4,      // Displays in answer cards
-  kChip = 5,      // Displays in suggestion chips
-  kContinue = 6,  // Displays in the Continue section
+  kAnswerCard = 4,  // Displays in answer cards
+  kChip = 5,        // Displays in suggestion chips
+  kContinue = 6,    // Displays in the Continue section
   // Add new values here
   kLast,  // Don't use over IPC
 };
@@ -300,10 +369,6 @@ struct ASH_PUBLIC_EXPORT SearchResultIconInfo {
   SearchResultIconShape shape = SearchResultIconShape::kDefault;
 };
 
-// Returns SearchResultActionType mapped for |button_index|.
-ASH_PUBLIC_EXPORT SearchResultActionType
-GetSearchResultActionType(int button_index);
-
 // A tagged range in search result text.
 struct ASH_PUBLIC_EXPORT SearchResultTag {
   // Similar to ACMatchClassification::Style, the style values are not
@@ -329,12 +394,14 @@ using SearchResultTags = std::vector<SearchResultTag>;
 // button with the label text will be used.
 struct ASH_PUBLIC_EXPORT SearchResultAction {
   SearchResultAction();
-  SearchResultAction(const gfx::ImageSkia& image,
+  SearchResultAction(SearchResultActionType type,
+                     const gfx::ImageSkia& image,
                      const std::u16string& tooltip_text,
                      bool visible_on_hover);
   SearchResultAction(const SearchResultAction& other);
   ~SearchResultAction();
 
+  SearchResultActionType type;
   gfx::ImageSkia image;
   std::u16string tooltip_text;
   // Visible when button or its parent row in hover state.

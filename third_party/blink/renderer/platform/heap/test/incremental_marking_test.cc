@@ -9,9 +9,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_counted_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_objects.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
@@ -1114,7 +1118,7 @@ TEST_F(IncrementalMarkingTest, StepDuringObjectConstruction) {
             holder->set_value(thiz);
             // Finish call incremental steps.
             driver->TriggerMarkingSteps(
-                BlinkGC::StackState::kHeapPointersOnStack);
+                ThreadState::StackState::kMayContainHeapPointers);
           },
           &driver, holder.Get()),
       MakeGarbageCollected<LinkedObject>());
@@ -1142,7 +1146,7 @@ TEST_F(IncrementalMarkingTest, StepDuringMixinObjectConstruction) {
             holder->set_value(thiz);
             // Finish call incremental steps.
             driver->TriggerMarkingSteps(
-                BlinkGC::StackState::kHeapPointersOnStack);
+                ThreadState::StackState::kMayContainHeapPointers);
           },
           &driver, holder.Get()),
       MakeGarbageCollected<LinkedObject>());

@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace gcm {
 class GCMDriver;
@@ -48,7 +48,7 @@ class InstanceIDDriver {
  private:
   // Owned by GCMProfileServiceFactory, which is a dependency of
   // InstanceIDProfileServiceFactory, which owns this.
-  gcm::GCMDriver* gcm_driver_;
+  raw_ptr<gcm::GCMDriver> gcm_driver_;
 
   std::map<std::string, std::unique_ptr<InstanceID>> instance_id_map_;
 };

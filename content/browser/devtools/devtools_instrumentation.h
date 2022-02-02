@@ -53,6 +53,7 @@ namespace content {
 class BackForwardCacheCanStoreDocumentResult;
 class BrowserContext;
 class DevToolsAgentHostImpl;
+class FencedFrame;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
@@ -233,6 +234,10 @@ void PortalAttached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalDetached(RenderFrameHostImpl* render_frame_host_impl);
 void PortalActivated(RenderFrameHostImpl* render_frame_host_impl);
 
+void FencedFrameCreated(
+    base::SafeRef<RenderFrameHostImpl> owner_render_frame_host,
+    FencedFrame* fenced_frame);
+
 void ReportSameSiteCookieIssue(
     RenderFrameHostImpl* render_frame_host_impl,
     const network::mojom::CookieOrLineWithAccessResultPtr& excluded_cookie,
@@ -285,6 +290,29 @@ void OnWebTransportHandshakeFailed(
 void OnServiceWorkerMainScriptFetchingFailed(
     const GlobalRenderFrameHostId& requesting_frame_id,
     const std::string& error);
+
+// Fires `Network.onLoadingFailed` event for a dedicated worker main script.
+// Used for PlzDedicatedWorker.
+void OnWorkerMainScriptLoadingFailed(
+    const GURL& url,
+    const base::UnguessableToken& worker_token,
+    FrameTreeNode* ftn,
+    RenderFrameHostImpl* ancestor_rfh,
+    const network::URLLoaderCompletionStatus& status);
+
+// Fires `Network.onLoadingFinished` event for a dedicated worker main script.
+// Used for PlzDedicatedWorker.
+void OnWorkerMainScriptLoadingFinished(
+    FrameTreeNode* ftn,
+    const base::UnguessableToken& worker_token,
+    const network::URLLoaderCompletionStatus& status);
+
+// Fires `Network.onRequestWillBeSent` event for a dedicated worker and shared
+// worker main script. Used for PlzDedicatedWorker/PlzSharedWorker.
+void OnWorkerMainScriptRequestWillBeSent(
+    FrameTreeNode* ftn,
+    const base::UnguessableToken& worker_token,
+    const network::ResourceRequest& request);
 
 // Adds a message from a worklet to the devtools console. This is specific to
 // FLEDGE auction worklet and shared storage worklet where the message may

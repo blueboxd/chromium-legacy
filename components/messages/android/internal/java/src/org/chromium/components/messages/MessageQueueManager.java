@@ -245,7 +245,7 @@ class MessageQueueManager implements ScopeChangeController.Delegate {
             if (isActive == null || !isActive) continue;
             for (MessageState candidate : queue) {
                 boolean shouldShow = candidate.handler.shouldShow();
-                Log.w(TAG, "MessageStateHandler#shouldShow for message ID %s returned %s.",
+                Log.d(TAG, "MessageStateHandler#shouldShow for message ID %s returned %s.",
                         candidate.handler.getMessageIdentifier(), shouldShow);
                 if (shouldShow
                         && (nextMessage == null

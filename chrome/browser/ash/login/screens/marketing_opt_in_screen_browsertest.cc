@@ -124,7 +124,7 @@ class MarketingOptInScreenTest : public OobeBaseTest,
   void OptIn();
   void OptOut();
 
-  void ExpectGeolocationMetric(bool resolved, int length);
+  void ExpectGeolocationMetric(bool resolved);
   void WaitForScreenExit();
 
   // US as default location for non-parameterized tests.
@@ -273,8 +273,7 @@ void MarketingOptInScreenTest::OptOut() {
   test::OobeJS().ExpectHasNoAttribute("checked", kChromebookEmailToggle);
 }
 
-void MarketingOptInScreenTest::ExpectGeolocationMetric(bool resolved,
-                                                       int length) {
+void MarketingOptInScreenTest::ExpectGeolocationMetric(bool resolved) {
   histogram_tester_.ExpectUniqueSample(
       "OOBE.MarketingOptInScreen.GeolocationResolve",
       resolved
@@ -282,10 +281,6 @@ void MarketingOptInScreenTest::ExpectGeolocationMetric(bool resolved,
                 kCountrySuccessfullyDetermined
           : MarketingOptInScreen::GeolocationEvent::kCouldNotDetermineCountry,
       1);
-  if (resolved) {
-    histogram_tester_.ExpectUniqueSample(
-        "OOBE.MarketingOptInScreen.GeolocationResolveLength", length, 1);
-  }
 }
 
 void MarketingOptInScreenTest::WaitForScreenExit() {
@@ -503,6 +498,7 @@ class MarketingTestCountryCodes : public MarketingOptInScreenTestWithRequest,
 
 // Tests that the given timezone resolves to the correct location and
 // generates a request for the server with the correct region code.
+// TODO(crbug.com/1268208): Fix flaky test.
 IN_PROC_BROWSER_TEST_P(MarketingTestCountryCodes, CountryCodes) {
   const RegionToCodeMap param = GetParam();
   ShowMarketingOptInScreen();
@@ -531,7 +527,7 @@ IN_PROC_BROWSER_TEST_P(MarketingTestCountryCodes, CountryCodes) {
                                        1);
 
   // Expect successful geolocation resolve.
-  ExpectGeolocationMetric(true, std::string(param.country_code).size());
+  ExpectGeolocationMetric(/*resolved=*/true);
 }
 
 // Test all the countries lists.
@@ -571,10 +567,7 @@ IN_PROC_BROWSER_TEST_P(MarketingDisabledExtraCountries, OptInNotVisible) {
   ExpectNoOptInOption();
   TapOnGetStartedAndWaitForScreenExit();
 
-  if (param.is_unknown_country)
-    ExpectGeolocationMetric(false, 0);
-  else
-    ExpectGeolocationMetric(true, std::string(param.country_code).size());
+  ExpectGeolocationMetric(/*resolved=*/!param.is_unknown_country);
 }
 
 // Tests that countries from the extended list
@@ -596,29 +589,6 @@ INSTANTIATE_TEST_SUITE_P(MarketingOptInUnknownCountries,
                          MarketingDisabledExtraCountries,
                          testing::ValuesIn(kUnknownCountry),
                          RegionAsParameterInterface::ParamInfoToString);
-
-class MarketingOptInScreenTestDisabled : public MarketingOptInScreenTest {
- public:
-  MarketingOptInScreenTestDisabled() {
-    feature_list_.Reset();
-    // Disable kOobeMarketingScreen to disable marketing screen.
-    feature_list_.InitWithFeatures({}, {::features::kOobeMarketingScreen});
-  }
-
-  ~MarketingOptInScreenTestDisabled() override = default;
-};
-
-IN_PROC_BROWSER_TEST_F(MarketingOptInScreenTestDisabled, FeatureDisabled) {
-  ShowMarketingOptInScreen();
-
-  WaitForScreenExit();
-  EXPECT_EQ(screen_result_.value(),
-            MarketingOptInScreen::Result::NOT_APPLICABLE);
-  histogram_tester_.ExpectTotalCount(
-      "OOBE.StepCompletionTimeByExitReason.Marketing-opt-in.Next", 0);
-  histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Marketing-opt-in",
-                                     0);
-}
 
 class MarketingOptInScreenTestChildUser : public MarketingOptInScreenTest {
  protected:

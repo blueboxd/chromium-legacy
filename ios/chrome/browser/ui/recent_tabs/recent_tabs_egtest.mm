@@ -6,7 +6,12 @@
 #import <string>
 
 #include "base/ios/ios_util.h"
+#include "base/strings/sys_string_conversions.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
+#include "components/policy/policy_constants.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/policy/policy_app_interface.h"
+#import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -80,6 +85,19 @@ GURL TestPageURL() {
 
 @implementation RecentTabsTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  if ([self isRunningTest:@selector(testSyncTypesListDisabled)]) {
+    // Configure the policy.
+    config.additional_args.push_back(
+        "-" + base::SysNSStringToUTF8(kPolicyLoaderIOSConfigurationKey));
+    config.additional_args.push_back(
+        "<dict><key>SyncTypesListDisabled</key><array><string>tabs</"
+        "string></array></dict>");
+  }
+  return config;
+}
+
 - (void)setUp {
   [super setUp];
   [ChromeEarlGrey clearBrowsingHistory];
@@ -88,6 +106,12 @@ GURL TestPageURL() {
       std::string(kHTMLOfTestPage),
   }});
   [RecentTabsAppInterface clearCollapsedListViewSectionStates];
+}
+
+// Tear down called once per test.
+- (void)tearDown {
+  [super tearDown];
+  [PolicyAppInterface clearPolicies];
 }
 
 // Tests that a closed tab appears in the Recent Tabs panel, and that tapping
@@ -322,7 +346,8 @@ GURL TestPageURL() {
 }
 
 // Tests the Open in New Window action on a recent tab's context menu.
-- (void)testContextMenuOpenInNewWindow {
+// Test is flaky. https://crbug.com/1273942.
+- (void)DISABLED_testContextMenuOpenInNewWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported]) {
     EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
   }
@@ -383,6 +408,47 @@ GURL TestPageURL() {
   [[EarlGrey selectElementWithMatcher:exitMatcher] performAction:grey_tap()];
   // Wait until the recent tabs panel is dismissed.
   [ChromeEarlGreyUI waitForAppToIdle];
+}
+
+// Tests that the sign-in promo isn't shown and the 'Other Devices' section is
+// managed when the SyncDisabled policy is enabled.
+- (void)testSyncDisabled {
+  policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
+
+  // Dismiss the popup.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_SYNC_SYNC_DISABLED_CONTINUE)),
+                            grey_userInteractionEnabled(), nil)]
+      performAction:grey_tap()];
+
+  OpenRecentTabsPanel();
+
+  // Check that the sign-in promo is not visible.
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+
+  // Check that the 'Other Devices' section is managed.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_RECENT_TABS_DISABLED_BY_ORGANIZATION)),
+                            grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that the sign-in promo isn't shown and the 'Other Devices' section is
+// managed when the SyncTypesListDisabled tabs item policy is selected.
+- (void)testSyncTypesListDisabled {
+  OpenRecentTabsPanel();
+
+  // Check that the sign-in promo is not visible.
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
+
+  // Check that the 'Other Devices' section is managed.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityLabel(l10n_util::GetNSString(
+                                IDS_IOS_RECENT_TABS_DISABLED_BY_ORGANIZATION)),
+                            grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

@@ -12,6 +12,7 @@ include_rules = [
   "-chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java",
   "-chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity2.java",
 
+  "+ash/components/arc",
   "+chrome/android/native_j_unittests_jni_headers",
   "+chrome/android/chrome_jni_headers",
   "+chrome/android/features/autofill_assistant/jni_headers",
@@ -39,6 +40,7 @@ include_rules = [
   "+components/about_ui",
   "+components/account_id",
   "+components/federated_learning",
+  # TODO(b/129295708): Remove after move is complete.
   "+components/arc",
   "+components/accuracy_tips",
   "+components/account_manager_core",
@@ -76,6 +78,7 @@ include_rules = [
   "+components/browser_watcher",
   "+components/browsing_data/content",
   "+components/browsing_data/core",
+  "+components/custom_handlers",
   "+components/captive_portal",
   "+components/cast_certificate",
   "+components/cast_channel",
@@ -87,6 +90,7 @@ include_rules = [
   "+components/chrome_cleaner/test",
   "+components/chromeos_camera",
   "+components/client_hints/browser",
+  "+components/client_hints/common",
   "+components/cloud_devices/common",
   "+components/commerce",
   "+components/component_updater",
@@ -419,6 +423,7 @@ include_rules = [
   "+services/proxy_resolver",  # Android runs the packaged proxy resolver
                                # service in process and needs impl access.
   "+services/proxy_resolver/public/mojom",
+  "+services/proxy_resolver_win/public/mojom",
   "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/mojom",
   "+services/shape_detection/public/mojom",
@@ -444,6 +449,7 @@ include_rules = [
   "+ash/public",
   "+ash/keyboard/ui/grit",
   "+ash/keyboard/ui/resources",
+  "+ash/services",
 
   # The message center should only be accessed through
   # //chrome/browser/notifications.
@@ -529,11 +535,6 @@ specific_include_rules = {
     # The following is used to call the org.freedesktop.FileManager1
     # DBus interface to highlight a file within its parent folder
     "+dbus"
-  ],
-  "platform_util_mac.mm": [
-    # The following is used to forward methods to an NSWindow in another
-    # process, via the views::Widget API.
-    "+ui/views/widget/widget.h",
   ],
   "exo_parts\.cc": [
     "+ash/shell.h",

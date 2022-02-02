@@ -42,6 +42,7 @@
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/cast_web_contents.h"
 #include "chromecast/browser/cast_web_preferences.h"
+#include "chromecast/browser/cast_web_service.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/general_audience_browsing_navigation_throttle.h"
@@ -53,6 +54,7 @@
 #include "chromecast/browser/service_manager_context.h"
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/common/user_agent.h"
+#include "chromecast/external_mojo/broker_service/broker_service.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
 #include "chromecast/media/cdm/cast_cdm_origin_provider.h"
@@ -187,16 +189,6 @@ CastContentBrowserClient::~CastContentBrowserClient() {
   cast_network_contexts_.reset();
 }
 
-void CastContentBrowserClient::InitializeExternalConnector() {
-  auto* service_manager_connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  broker_service_ =
-      std::make_unique<external_mojo::BrokerService>(service_manager_connector);
-  connector_ = external_service_support::ExternalConnector::Create(
-      broker_service_->CreateConnector());
-  media_connector_ = connector_->Clone();
-}
-
 std::unique_ptr<ServiceConnector>
 CastContentBrowserClient::CreateServiceConnector() {
   return std::make_unique<ServiceConnector>();
@@ -208,8 +200,11 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
         cast_system_memory_pressure_evaluator_adjuster,
     PrefService* pref_service,
     media::VideoPlaneController* video_plane_controller,
-    CastWindowManager* window_manager) {
-  return std::make_unique<CastServiceSimple>(browser_context, window_manager);
+    CastWindowManager* window_manager,
+    CastWebService* web_service,
+    DisplaySettingsManager* display_settings_manager,
+    AccessibilityServiceImpl* accessibility_service) {
+  return std::make_unique<CastServiceSimple>(web_service);
 }
 
 media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
@@ -286,7 +281,8 @@ CastContentBrowserClient::CreateAudioManager(
       std::move(audio_thread), audio_log_factory, cast_session_id_map,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      content::GetUIThreadTaskRunner({}), GetMediaTaskRunner(), connector(),
+      content::GetUIThreadTaskRunner({}), GetMediaTaskRunner(),
+      browser_main_parts()->connector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #elif defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(kEnableChromeAudioManagerAndroid)) {
@@ -299,13 +295,14 @@ CastContentBrowserClient::CreateAudioManager(
       std::move(audio_thread), audio_log_factory, cast_session_id_map,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      GetMediaTaskRunner(), connector());
+      GetMediaTaskRunner(), browser_main_parts()->connector());
 #else
   return std::make_unique<media::CastAudioManager>(
       std::move(audio_thread), audio_log_factory, cast_session_id_map,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      content::GetUIThreadTaskRunner({}), GetMediaTaskRunner(), connector(),
+      content::GetUIThreadTaskRunner({}), GetMediaTaskRunner(),
+      browser_main_parts()->connector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #endif
 }
@@ -357,10 +354,10 @@ std::vector<std::string> CastContentBrowserClient::GetStartupServices() {
 
 std::unique_ptr<content::BrowserMainParts>
 CastContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters) {
+    content::MainFunctionParams parameters) {
   DCHECK(!cast_browser_main_parts_);
 
-  auto main_parts = CastBrowserMainParts::Create(parameters, this);
+  auto main_parts = CastBrowserMainParts::Create(std::move(parameters), this);
 
   cast_browser_main_parts_ = main_parts.get();
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
@@ -955,6 +952,15 @@ bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
 #endif
 }
 
+bool CastContentBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
+    const url::Origin& origin) {
+#if BUILDFLAG(ENABLE_CHROMECAST_WEBUI)
+  return cast_browser_main_parts_->web_service()->IsCastWebUIOrigin(origin);
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_CHROMECAST_WEBUI)
+}
+
 std::string CastContentBrowserClient::GetUserAgent() {
   return chromecast::GetUserAgent();
 }
@@ -963,7 +969,7 @@ void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {
   DCHECK(!general_audience_browsing_service_);
   general_audience_browsing_service_ =
       std::make_unique<GeneralAudienceBrowsingService>(
-          connector(),
+          browser_main_parts()->connector(),
           cast_network_contexts_->GetSystemSharedURLLoaderFactory());
 }
 
@@ -983,7 +989,7 @@ void CastContentBrowserClient::BindMediaRenderer(
           GetCmaBackendFactory(), std::move(media_task_runner),
           GetVideoModeSwitcher(), GetVideoResolutionPolicy(),
           base::UnguessableToken::Create(), nullptr /* frame_interfaces */,
-          connector()),
+          browser_main_parts()->connector()),
       std::move(receiver));
 }
 

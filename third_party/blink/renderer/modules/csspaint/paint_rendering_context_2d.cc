@@ -10,13 +10,15 @@
 namespace blink {
 
 PaintRenderingContext2D::PaintRenderingContext2D(
-    const IntSize& container_size,
+    const gfx::Size& container_size,
     const PaintRenderingContext2DSettings* context_settings,
     float zoom,
-    float device_scale_factor)
+    float device_scale_factor,
+    PaintWorkletGlobalScope* global_scope)
     : container_size_(container_size),
       context_settings_(context_settings),
-      effective_zoom_(zoom) {
+      effective_zoom_(zoom),
+      global_scope_(global_scope) {
   InitializePaintRecorder();
 
   clip_antialiasing_ = kAntiAliased;
@@ -118,8 +120,7 @@ void PaintRenderingContext2D::ValidateStateStackWithCanvas(
 }
 
 sk_sp<PaintFilter> PaintRenderingContext2D::StateGetFilter() {
-  return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()),
-                                                this);
+  return GetState().GetFilterForOffscreenCanvas(container_size_, this);
 }
 
 CanvasColorParams PaintRenderingContext2D::GetCanvas2DColorParams() const {

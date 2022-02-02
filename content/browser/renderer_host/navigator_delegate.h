@@ -31,7 +31,7 @@ struct OpenURLParams;
 
 // A delegate API used by Navigator to notify its embedder of navigation
 // related events.
-class CONTENT_EXPORT NavigatorDelegate {
+class NavigatorDelegate {
  public:
   // Called when a navigation started. The same NavigationHandle will be
   // provided for events related to the same navigation.

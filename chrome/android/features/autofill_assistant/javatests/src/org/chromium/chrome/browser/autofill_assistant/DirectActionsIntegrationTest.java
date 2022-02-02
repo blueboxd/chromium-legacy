@@ -40,6 +40,7 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -57,7 +58,7 @@ import org.chromium.chrome.browser.directactions.FakeDirectActionReporter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -85,7 +86,6 @@ public class DirectActionsIntegrationTest {
     Callback<Bundle> mDirectActionResultCallback;
 
     private AutofillAssistantModuleEntry mModuleEntry;
-    private AssistantDependenciesImpl mAssistantDependencies;
     private DirectActionHandler mDirectActionHandler;
     private FakeDirectActionReporter mDirectActionReporter;
 
@@ -96,22 +96,19 @@ public class DirectActionsIntegrationTest {
             mModuleEntry =
                     AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled();
             assert mModuleEntry != null;
-            mAssistantDependencies =
-                    (AssistantDependenciesImpl) AutofillAssistantFacade.createDependencies(
-                            mTestRule.getActivity(), mModuleEntry);
+            AssistantDependencies dependencies = AutofillAssistantFacade.createDependencies(
+                    mTestRule.getActivity(), mModuleEntry);
             mDirectActionHandler = AutofillAssistantFacade.createDirectActionHandler(
-                    mTestRule.getActivity(), mAssistantDependencies.getBottomSheetController(),
-                    mAssistantDependencies.getBrowserControls(),
-                    mAssistantDependencies.getCompositorViewHolder(),
-                    mAssistantDependencies.getActivityTabProvider());
+                    mTestRule.getActivity(), dependencies.getBottomSheetController(),
+                    dependencies.getBrowserControls(), dependencies.getRootView(),
+                    dependencies.getActivityTabProvider());
         });
     }
 
     @Test
     @MediumTest
-    @Features.
-    EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS})
+    @EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, AssistantFeatures.AUTOFILL_ASSISTANT_NAME,
+            AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS_NAME})
     public void
     testOnboardingAndStart() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(false);
@@ -154,9 +151,8 @@ public class DirectActionsIntegrationTest {
 
     @Test
     @MediumTest
-    @Features.
-    EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS})
+    @EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, AssistantFeatures.AUTOFILL_ASSISTANT_NAME,
+            AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS_NAME})
     public void
     testOnboardingAndStartShowsErrorMessageIfRequested() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(false);
@@ -190,9 +186,8 @@ public class DirectActionsIntegrationTest {
      */
     @Test
     @MediumTest
-    @Features.
-    EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS})
+    @EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, AssistantFeatures.AUTOFILL_ASSISTANT_NAME,
+            AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS_NAME})
     public void
     testOnboardingTwice() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(false);
@@ -245,9 +240,9 @@ public class DirectActionsIntegrationTest {
      */
     @Test
     @MediumTest
-    @Features.
-    EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, ChromeFeatureList.AUTOFILL_ASSISTANT,
-            ChromeFeatureList.AUTOFILL_ASSISTANT_DIRECT_ACTIONS})
+    @EnableFeatures({ChromeFeatureList.DIRECT_ACTIONS, AssistantFeatures.AUTOFILL_ASSISTANT_NAME,
+            AssistantFeatures.AUTOFILL_ASSISTANT_DIRECT_ACTIONS_NAME})
+    @DisabledTest(message = "https://crbug.com/1272997")
     public void
     testStatusMessageResetsBetweenRuns() {
         AutofillAssistantPreferencesUtil.setInitialPreferences(true);

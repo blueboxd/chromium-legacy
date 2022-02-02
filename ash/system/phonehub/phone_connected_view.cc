@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/components/phonehub/notification_access_manager.h"
+#include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/camera_roll_view.h"
@@ -17,8 +19,6 @@
 #include "ash/system/phonehub/task_continuation_view.h"
 #include "ash/system/phonehub/ui_constants.h"
 #include "ash/system/tray/tray_constants.h"
-#include "chromeos/components/phonehub/notification_access_manager.h"
-#include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -31,7 +31,7 @@
 namespace ash {
 
 PhoneConnectedView::PhoneConnectedView(
-    chromeos::phonehub::PhoneHubManager* phone_hub_manager) {
+    phonehub::PhoneHubManager* phone_hub_manager) {
   SetID(PhoneHubViewID::kPhoneConnectedView);
 
   auto setup_layered_view = [](views::View* view) {

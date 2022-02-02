@@ -455,6 +455,15 @@ void FinalizeGetMediaDeviceIDForHMAC(
                         base::BindOnce(std::move(callback), absl::nullopt));
 }
 
+bool EnableChangeSourceForDevice(const MediaStreamDevice& device) {
+  DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
+  return media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS &&
+         (device.type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+          (device.type == MediaStreamType::DISPLAY_VIDEO_CAPTURE &&
+           base::FeatureList::IsEnabled(
+               media::kShareThisTabInsteadButtonGetDisplayMedia)));
+}
+
 #if !defined(OS_ANDROID)
 base::TimeDelta GetConditionalFocusWindow() {
   const std::string custom_window =
@@ -475,6 +484,139 @@ base::TimeDelta GetConditionalFocusWindow() {
   return base::Seconds(1);
 }
 #endif
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MediaStreamRequestResult2 {
+  kOk = 0,
+  kPermissionDenied = 1,
+  kPermissionDismissed = 2,
+  kInvalidState = 3,
+  kNoHardware = 4,
+  kInvalidSecurityOrigin = 5,
+  kTabCaptureFailure = 6,
+  kScreenCaptureFailure = 7,
+  kCaptureFailure = 8,
+  kConstraintNotSatisfied = 9,
+  kTrackStartFailureAudio = 10,
+  kTrackStartFailureVideo = 11,
+  kNotSupported = 12,
+  kFailedDueToShutdown = 13,
+  kKillSwitchOn = 14,
+  kSystemPermissionDenied = 15,
+  kDeviceInUse = 16,
+  kMaxValue = kDeviceInUse
+};
+
+void RecordMediaStreamRequestResult2(blink::mojom::MediaStreamType video_type,
+                                     MediaStreamRequestResult2 result2) {
+  switch (video_type) {
+    case blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE:
+      base::UmaHistogramEnumeration(
+          "Media.MediaStreamManager.DesktopVideoDeviceUpdate", result2);
+      return;
+    case blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE:
+      base::UmaHistogramEnumeration(
+          "Media.MediaStreamManager.DisplayVideoDeviceUpdate", result2);
+      return;
+    default:
+      return;
+  }
+}
+
+void RecordMediaDeviceUpdateResponseMetric(
+    blink::mojom::MediaStreamType video_type,
+    MediaStreamRequestResult result) {
+  switch (result) {
+    case MediaStreamRequestResult::OK:
+      RecordMediaStreamRequestResult2(video_type,
+                                      MediaStreamRequestResult2::kOk);
+      return;
+    case MediaStreamRequestResult::PERMISSION_DENIED:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kPermissionDenied);
+      return;
+    case MediaStreamRequestResult::PERMISSION_DISMISSED:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kPermissionDismissed);
+      return;
+    case MediaStreamRequestResult::INVALID_STATE:
+      RecordMediaStreamRequestResult2(video_type,
+                                      MediaStreamRequestResult2::kInvalidState);
+      return;
+    case MediaStreamRequestResult::NO_HARDWARE:
+      RecordMediaStreamRequestResult2(video_type,
+                                      MediaStreamRequestResult2::kNoHardware);
+      return;
+    case MediaStreamRequestResult::INVALID_SECURITY_ORIGIN:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kInvalidSecurityOrigin);
+      return;
+    case MediaStreamRequestResult::TAB_CAPTURE_FAILURE:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kTabCaptureFailure);
+      return;
+    case MediaStreamRequestResult::SCREEN_CAPTURE_FAILURE:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kScreenCaptureFailure);
+      return;
+    case MediaStreamRequestResult::CAPTURE_FAILURE:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kCaptureFailure);
+      return;
+    case MediaStreamRequestResult::CONSTRAINT_NOT_SATISFIED:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kConstraintNotSatisfied);
+      return;
+    case MediaStreamRequestResult::TRACK_START_FAILURE_AUDIO:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kTrackStartFailureAudio);
+      return;
+    case MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kTrackStartFailureVideo);
+      return;
+    case MediaStreamRequestResult::NOT_SUPPORTED:
+      RecordMediaStreamRequestResult2(video_type,
+                                      MediaStreamRequestResult2::kNotSupported);
+      return;
+    case MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kFailedDueToShutdown);
+      return;
+    case MediaStreamRequestResult::KILL_SWITCH_ON:
+      RecordMediaStreamRequestResult2(video_type,
+                                      MediaStreamRequestResult2::kKillSwitchOn);
+      return;
+    case MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED:
+      RecordMediaStreamRequestResult2(
+          video_type, MediaStreamRequestResult2::kSystemPermissionDenied);
+      return;
+    case MediaStreamRequestResult::DEVICE_IN_USE:
+      RecordMediaStreamRequestResult2(video_type,
+                                      MediaStreamRequestResult2::kDeviceInUse);
+      return;
+    case MediaStreamRequestResult::NUM_MEDIA_REQUEST_RESULTS:
+      break;
+  }
+  NOTREACHED();
+}
+
+void RecordMediaStreamRequestResponseMetric(
+    blink::mojom::MediaStreamType video_type,
+    blink::MediaStreamRequestType request_type,
+    MediaStreamRequestResult result) {
+  switch (request_type) {
+    case blink::MEDIA_DEVICE_UPDATE:
+      RecordMediaDeviceUpdateResponseMetric(video_type, result);
+      return;
+    case blink::MEDIA_DEVICE_ACCESS:
+    case blink::MEDIA_GENERATE_STREAM:
+    case blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY:
+      return;
+  }
+}
+
 }  // namespace
 
 // MediaStreamManager::DeviceRequest represents a request to either enumerate
@@ -561,7 +703,8 @@ class MediaStreamManager::DeviceRequest {
         salt_and_origin.origin.GetURL(), user_gesture, request_type_,
         requested_audio_device_id, requested_video_device_id, audio_type_,
         video_type_, controls.disable_local_echo,
-        controls.request_pan_tilt_zoom_permission);
+        controls.request_pan_tilt_zoom_permission,
+        controls.region_capture_capable);
   }
 
   // Creates a tab capture specific MediaStreamRequest object that is used by
@@ -575,7 +718,8 @@ class MediaStreamManager::DeviceRequest {
         target_render_process_id, target_render_frame_id, page_request_id,
         salt_and_origin.origin.GetURL(), user_gesture, request_type_, "", "",
         audio_type_, video_type_, controls.disable_local_echo,
-        /*request_pan_tilt_zoom_permission=*/false);
+        /*request_pan_tilt_zoom_permission=*/false,
+        controls.region_capture_capable);
   }
 
   bool HasUIRequest() const { return ui_request_.get() != nullptr; }
@@ -2300,6 +2444,9 @@ void MediaStreamManager::HandleAccessRequestResponse(
       label.c_str(), RequestTypeToString(request->request_type()),
       RequestResultToString(result)));
 
+  RecordMediaStreamRequestResponseMetric(request->video_type(),
+                                         request->request_type(), result);
+
   if (request->request_type() == blink::MEDIA_DEVICE_ACCESS) {
     FinalizeMediaAccessRequest(label, request, devices);
     return;
@@ -2619,7 +2766,7 @@ std::string MediaStreamManager::GetHMACForMediaDeviceID(
   // CrOS and this check failed when tested on an experimental builder. Revert
   // https://crrev.com/c/2932244 to enable it. See go/chrome-dcheck-on-cros
   // or http://crbug.com/1113456 for more details.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK(!raw_unique_id.empty());
 #endif
   if (raw_unique_id == media::AudioDeviceDescription::kDefaultDeviceId ||
@@ -2755,13 +2902,10 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
       RequestTypeToString(request->request_type())));
 
   // Show "Change source" button on notification bar only for tab sharing by
-  // desktopCapture API.
-  bool enable_change_source = std::any_of(
-      request->devices.cbegin(), request->devices.cend(), [](auto device) {
-        DesktopMediaID media_id = DesktopMediaID::Parse(device.id);
-        return device.type == MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE &&
-               media_id.type == DesktopMediaID::TYPE_WEB_CONTENTS;
-      });
+  // desktopCapture API or getDisplayMedia.
+  bool enable_change_source =
+      std::any_of(request->devices.cbegin(), request->devices.cend(),
+                  &EnableChangeSourceForDevice);
 
   MediaStreamUI::SourceCallback device_changed_cb;
   if (enable_change_source &&

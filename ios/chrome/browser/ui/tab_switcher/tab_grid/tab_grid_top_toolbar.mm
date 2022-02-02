@@ -19,8 +19,9 @@
 namespace {
 // The space after the new tab toolbar button item. Calculated to have
 // approximately 33 pts between the plus button and the done button.
-const int kNewTabButtonTrailingSpace = 20;
+const int kIconButtonAdditionalSpace = 20;
 const int kSelectionModeButtonSize = 17;
+const int kSearchBarTrailingSpace = 20;
 }
 
 @interface TabGridTopToolbar () <UIToolbarDelegate>
@@ -30,14 +31,21 @@ const int kSelectionModeButtonSize = 17;
   UIBarButtonItem* _leadingButton;
   UIBarButtonItem* _spaceItem;
   UIBarButtonItem* _newTabButton;
-  UIBarButtonItem* _fixedTrailingSpaceItem;
+  UIBarButtonItem* _iconButtonAdditionalSpaceItem;
   UIBarButtonItem* _selectionModeFixedSpace;
   UIBarButtonItem* _selectAllButton;
   UIBarButtonItem* _selectedTabsItem;
+  UIBarButtonItem* _searchButton;
   UIBarButtonItem* _doneButton;
   UIBarButtonItem* _closeAllOrUndoButton;
   UIBarButtonItem* _editButton;
   UIBarButtonItem* _pageControlItem;
+  // Search mode
+  UISearchBar* _searchBar;
+  UIBarButtonItem* _searchBarItem;
+  UIBarButtonItem* _cancelSearchButton;
+  UIView* _searchBarView;
+
   BOOL _undoActive;
 }
 
@@ -82,9 +90,23 @@ const int kSelectionModeButtonSize = 17;
   _selectAllButton.action = action;
 }
 
+- (void)setSearchButtonTarget:(id)target action:(SEL)action {
+  _searchButton.target = target;
+  _searchButton.action = action;
+}
+
+- (void)setSearchBarDelegate:(id<UISearchBarDelegate>)delegate {
+  _searchBar.delegate = delegate;
+}
+
 - (void)setDoneButtonTarget:(id)target action:(SEL)action {
   _doneButton.target = target;
   _doneButton.action = action;
+}
+
+- (void)setCancelSearchButtonTarget:(id)target action:(SEL)action {
+  _cancelSearchButton.target = target;
+  _cancelSearchButton.action = action;
 }
 
 - (void)setNewTabButtonEnabled:(BOOL)enabled {
@@ -195,12 +217,45 @@ const int kSelectionModeButtonSize = 17;
 
 #pragma mark - Private
 
+- (void)configureSearchModeForTraitCollection:
+    (UITraitCollection*)traitCollection {
+  DCHECK_EQ(_mode, TabGridModeSearch);
+  CGFloat widthModifier = 1;
+
+  // In the landscape mode the search bar size should only span half of the
+  // width of the toolbar.
+  if (![self shouldUseCompactLayout:traitCollection])
+    widthModifier = kTabGridSearchBarNonCompactWidthRatioModifier;
+
+  CGFloat cancelWidth = [_selectAllButton.title sizeWithAttributes:nil].width;
+  CGFloat barWidth =
+      (self.bounds.size.width - kSearchBarTrailingSpace - cancelWidth) *
+      kTabGridSearchBarWidthRatio * widthModifier;
+  // Update the search bar size based on the container size.
+  _searchBar.frame = CGRectMake(0, 0, barWidth, kTabGridSearchBarHeight);
+  _searchBarView.frame = CGRectMake(0, 0, barWidth, kTabGridSearchBarHeight);
+  [self setNeedsLayout];
+  [self setItems:@[ _searchBarItem, _spaceItem, _cancelSearchButton ]
+        animated:YES];
+  [_searchBar becomeFirstResponder];
+}
+
 - (void)setItemsForTraitCollection:(UITraitCollection*)traitCollection {
+  if (_mode == TabGridModeSearch) {
+    [self configureSearchModeForTraitCollection:traitCollection];
+    return;
+  }
   UIBarButtonItem* centralItem = _pageControlItem;
   UIBarButtonItem* trailingButton = _doneButton;
   _selectionModeFixedSpace.width = 0;
-  if (traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
-      traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact) {
+  if ([self shouldUseCompactLayout:traitCollection]) {
+    if (IsTabsSearchEnabled() && _mode == TabGridModeNormal &&
+        _page != TabGridPageRemoteTabs) {
+      _leadingButton = _searchButton;
+    } else {
+      _leadingButton = _spaceItem;
+    }
+
     if (_mode == TabGridModeSelection) {
       // In the selection mode, Done button is much smaller than SelectAll
       // we need to calculate the difference on the width and use it as a
@@ -211,7 +266,10 @@ const int kSelectionModeButtonSize = 17;
         _selectionModeFixedSpace, trailingButton
       ]];
     } else {
-      [self setItems:@[ _spaceItem, centralItem, _spaceItem ]];
+      trailingButton = _spaceItem;
+      [self setItems:@[
+        _leadingButton, _spaceItem, centralItem, _spaceItem, trailingButton
+      ]];
     }
     return;
   }
@@ -227,7 +285,7 @@ const int kSelectionModeButtonSize = 17;
     // cases, there is a floating new tab button on the bottom.
     [self setItems:@[
       _leadingButton, _spaceItem, centralItem, _spaceItem, _newTabButton,
-      _fixedTrailingSpaceItem, trailingButton
+      _iconButtonAdditionalSpaceItem, trailingButton
     ]];
     return;
   }
@@ -239,6 +297,15 @@ const int kSelectionModeButtonSize = 17;
     _selectionModeFixedSpace.width = [self selectionModeFixedSpaceWidth];
     centralItem = _selectedTabsItem;
     _leadingButton = _selectAllButton;
+  }
+
+  if (IsTabsSearchEnabled() && _mode == TabGridModeNormal &&
+      _page != TabGridPageRemoteTabs) {
+    [self setItems:@[
+      _leadingButton, _iconButtonAdditionalSpaceItem, _searchButton, _spaceItem,
+      centralItem, _spaceItem, trailingButton
+    ]];
+    return;
   }
 
   [self setItems:@[
@@ -318,17 +385,46 @@ const int kSelectionModeButtonSize = 17;
                                      forState:UIControlStateDisabled];
   }
 
+  if (IsTabsSearchEnabled()) {
+    _searchButton = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemSearch
+                             target:nil
+                             action:nil];
+    _searchButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
+    _searchButton.accessibilityIdentifier = kTabGridSearchButtonIdentifier;
+
+    _searchBar = [[UISearchBar alloc] init];
+    _searchBar.placeholder =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_SEARCHBAR_PLACEHOLDER);
+    // Cancel Button for the searchbar doesn't appear in ipadOS. Disable it and
+    // create a custom cancel button.
+    _searchBar.showsCancelButton = NO;
+    _cancelSearchButton = [[UIBarButtonItem alloc] init];
+    _cancelSearchButton.style = UIBarButtonItemStyleDone;
+    _cancelSearchButton.tintColor =
+        UIColorFromRGB(kTabGridToolbarTextButtonColor);
+    _cancelSearchButton.accessibilityIdentifier =
+        kTabGridCancelButtonIdentifier;
+    _cancelSearchButton.title =
+        l10n_util::GetNSString(IDS_IOS_TAB_GRID_CANCEL_BUTTON);
+    _searchBarView = [[UIView alloc] initWithFrame:_searchBar.frame];
+    [_searchBarView addSubview:_searchBar];
+    [_searchBarView sizeToFit];
+    _searchBarItem =
+        [[UIBarButtonItem alloc] initWithCustomView:_searchBarView];
+  }
+
   _newTabButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemAdd
                            target:nil
                            action:nil];
   _newTabButton.tintColor = UIColorFromRGB(kTabGridToolbarTextButtonColor);
 
-  _fixedTrailingSpaceItem = [[UIBarButtonItem alloc]
+  _iconButtonAdditionalSpaceItem = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
                            target:nil
                            action:nil];
-  _fixedTrailingSpaceItem.width = kNewTabButtonTrailingSpace;
+  _iconButtonAdditionalSpaceItem.width = kIconButtonAdditionalSpace;
 
   _spaceItem = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
@@ -341,6 +437,12 @@ const int kSelectionModeButtonSize = 17;
                            action:nil];
 
   [self setItemsForTraitCollection:self.traitCollection];
+}
+
+// Returns YES if should use compact bottom toolbar layout.
+- (BOOL)shouldUseCompactLayout:(UITraitCollection*)traitCollection {
+  return traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular &&
+         traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassCompact;
 }
 
 @end

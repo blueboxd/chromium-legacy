@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
 
@@ -36,8 +34,9 @@ class ShellMainDelegate : public ContentMainDelegate {
   bool BasicStartupComplete(int* exit_code) override;
   bool ShouldCreateFeatureList() override;
   void PreSandboxStartup() override;
-  int RunProcess(const std::string& process_type,
-                 const MainFunctionParams& main_function_params) override;
+  absl::variant<int, MainFunctionParams> RunProcess(
+      const std::string& process_type,
+      MainFunctionParams main_function_params) override;
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif

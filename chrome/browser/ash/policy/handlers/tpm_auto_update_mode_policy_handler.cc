@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/cros_settings_provider.h"
 #include "base/bind.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -16,8 +18,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -43,18 +43,18 @@ policy::AutoUpdateMode GetTPMAutoUpdateModeSetting(
     return policy::AutoUpdateMode::kNever;
   }
 
-  chromeos::CrosSettingsProvider::TrustedStatus status =
+  ash::CrosSettingsProvider::TrustedStatus status =
       cros_settings->PrepareTrustedValues(callback);
-  if (status != chromeos::CrosSettingsProvider::TRUSTED)
+  if (status != ash::CrosSettingsProvider::TRUSTED)
     return policy::AutoUpdateMode::kNever;
   const base::Value* tpm_settings =
-      cros_settings->GetPref(chromeos::kTPMFirmwareUpdateSettings);
+      cros_settings->GetPref(ash::kTPMFirmwareUpdateSettings);
 
   if (!tpm_settings)
     return policy::AutoUpdateMode::kNever;
 
   const base::Value* const auto_update_mode = tpm_settings->FindKeyOfType(
-      chromeos::tpm_firmware_update::kSettingsKeyAutoUpdateMode,
+      ash::tpm_firmware_update::kSettingsKeyAutoUpdateMode,
       base::Value::Type::INTEGER);
 
   // Policy not set.
@@ -84,7 +84,7 @@ TPMAutoUpdateModePolicyHandler::TPMAutoUpdateModePolicyHandler(
     : cros_settings_(cros_settings), local_state_(local_state) {
   DCHECK(local_state_);
   policy_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kTPMFirmwareUpdateSettings,
+      ash::kTPMFirmwareUpdateSettings,
       base::BindRepeating(&TPMAutoUpdateModePolicyHandler::OnPolicyChanged,
                           weak_factory_.GetWeakPtr()));
 
@@ -129,7 +129,7 @@ void TPMAutoUpdateModePolicyHandler::OnPolicyChanged() {
 
 void TPMAutoUpdateModePolicyHandler::CheckForUpdate(
     base::OnceCallback<void(bool)> callback) {
-  chromeos::tpm_firmware_update::UpdateAvailable(
+  ash::tpm_firmware_update::UpdateAvailable(
       std::move(callback), kFirmwareAvailabilityCheckerTimeout);
 }
 

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/dcheck_is_on.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -360,8 +360,8 @@ void ExtensionFunction::EnsureShutdownNotifierFactoryBuilt() {
 void ExtensionFunction::ResponseValueObject::SetFunctionResults(
     ExtensionFunction* function,
     base::Value results) {
-  DCHECK(!function->results_) << "Function " << function->name_
-                              << "already has results set.";
+  DCHECK(!function->results_)
+      << "Function " << function->name_ << " already has results set.";
   function->results_ =
       base::ListValue::From(base::Value::ToUniquePtrValue(std::move(results)));
 }
@@ -408,7 +408,7 @@ class ExtensionFunction::RenderFrameHostTracker
         function_->OnMessageReceived(message);
   }
 
-  ExtensionFunction* function_;  // Owns us.
+  raw_ptr<ExtensionFunction> function_;  // Owns us.
 };
 
 ExtensionFunction::ExtensionFunction() {
@@ -764,10 +764,7 @@ void ExtensionFunction::WriteToConsole(blink::mojom::ConsoleMessageLevel level,
   // RenderFrameHost.
   if (!render_frame_host_)
     return;
-  // Only the main frame handles dev tools messages.
-  WebContents::FromRenderFrameHost(render_frame_host_)
-      ->GetMainFrame()
-      ->AddMessageToConsole(level, message);
+  render_frame_host_->AddMessageToConsole(level, message);
 }
 
 void ExtensionFunction::SetTransferredBlobUUIDs(
@@ -792,7 +789,15 @@ void ExtensionFunction::SendResponseImpl(bool success) {
   if (!results_)
     results_ = std::make_unique<base::ListValue>();
 
-  std::move(response_callback_).Run(response, *results_, GetError());
+  base::Value results;
+  if (preserve_results_for_testing_) {
+    // Keep |results_| untouched.
+    results = results_->Clone();
+  } else {
+    results = std::move(*results_);
+  }
+
+  std::move(response_callback_).Run(response, std::move(results), GetError());
   LogUma(success, timer_.Elapsed(), histogram_value_);
 
   OnResponded();

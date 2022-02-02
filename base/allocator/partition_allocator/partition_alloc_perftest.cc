@@ -22,7 +22,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
 
-#if defined(OS_ANDROID) || defined(ARCH_CPU_32_BITS)
+#if defined(OS_ANDROID) || defined(ARCH_CPU_32_BITS) || \
+    (defined(OS_FUCHSIA) && defined(ARCH_CPU_ARM64))
 // Some tests allocate many GB of memory, which can cause issues on Android and
 // address-space exhaustion for any 32-bit process.
 #define MEMORY_CONSTRAINED
@@ -384,12 +385,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
         ::testing::Values(1, 2, 3, 4),
         ::testing::Values(AllocatorType::kSystem,
-                          AllocatorType::kPartitionAlloc
-#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-                          ,
-                          AllocatorType::kPartitionAllocWithThreadCache
-#endif
-                          )));
+                          AllocatorType::kPartitionAlloc,
+                          AllocatorType::kPartitionAllocWithThreadCache)));
 
 // This test (and the other one below) allocates a large amount of memory, which
 // can cause issues on Android.

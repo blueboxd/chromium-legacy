@@ -52,6 +52,8 @@ class AvdException(Exception):
       message_parts.append('  stderr:')
       message_parts.extend('    %s' % line for line in stderr.splitlines())
 
+    # avd.py is executed with python2.
+    # pylint: disable=R1725
     super(AvdException, self).__init__('\n'.join(message_parts))
 
 
@@ -67,7 +69,7 @@ def _Load(avd_proto_path):
     return text_format.Merge(avd_proto_file.read(), avd_pb2.Avd())
 
 
-class _AvdManagerAgent(object):
+class _AvdManagerAgent:
   """Private utility for interacting with avdmanager."""
 
   def __init__(self, avd_home, sdk_root):
@@ -154,10 +156,12 @@ class _AvdManagerAgent(object):
       for line in cmd_helper.IterCmdOutputLines(delete_cmd, env=self._env):
         logging.info('  %s', line)
     except subprocess.CalledProcessError as e:
+      # avd.py is executed with python2.
+      # pylint: disable=W0707
       raise AvdException('AVD deletion failed: %s' % str(e), command=delete_cmd)
 
 
-class AvdConfig(object):
+class AvdConfig:
   """Represents a particular AVD configuration.
 
   This class supports creation, installation, and execution of an AVD
@@ -359,9 +363,10 @@ class AvdConfig(object):
             for line in cmd_helper.IterCmdOutputLines(cipd_create_cmd):
               logging.info('    %s', line)
           except subprocess.CalledProcessError as e:
-            raise AvdException(
-                'CIPD package creation failed: %s' % str(e),
-                command=cipd_create_cmd)
+            # avd.py is executed with python2.
+            # pylint: disable=W0707
+            raise AvdException('CIPD package creation failed: %s' % str(e),
+                               command=cipd_create_cmd)
 
     finally:
       if not keep:
@@ -419,10 +424,11 @@ class AvdConfig(object):
         for line in cmd_helper.IterCmdOutputLines(ensure_cmd):
           logging.info('    %s', line)
       except subprocess.CalledProcessError as e:
-        raise AvdException(
-            'Failed to install CIPD package %s: %s' % (pkg.package_name,
-                                                       str(e)),
-            command=ensure_cmd)
+        # avd.py is executed with python2.
+        # pylint: disable=W0707
+        raise AvdException('Failed to install CIPD package %s: %s' %
+                           (pkg.package_name, str(e)),
+                           command=ensure_cmd)
 
   def _MakeWriteable(self):
     # The emulator requires that some files are writable.
@@ -505,7 +511,7 @@ class AvdConfig(object):
     return instance
 
 
-class _AvdInstance(object):
+class _AvdInstance:
   """Represents a single running instance of an AVD.
 
   This class should only be created directly by AvdConfig.StartInstance,
@@ -537,6 +543,7 @@ class _AvdInstance(object):
             window=False,
             writable_system=False,
             gpu_mode=_DEFAULT_GPU_MODE,
+            wipe_data=False,
             debug_tags=None):
     """Starts the emulator running an instance of the given AVD."""
 
@@ -552,6 +559,8 @@ class _AvdInstance(object):
           '-no-boot-anim',
       ]
 
+      if wipe_data:
+        emulator_cmd.append('-wipe-data')
       if read_only:
         emulator_cmd.append('-read-only')
       if not snapshot_save:
@@ -607,6 +616,8 @@ class _AvdInstance(object):
         logging.info('%s started', self._emulator_serial)
       except Exception as e:
         self.Stop()
+        # avd.py is executed with python2.
+        # pylint: disable=W0707
         raise AvdException('Emulator failed to start: %s' % str(e))
 
   def Stop(self):

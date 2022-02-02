@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">Көнүгүү аймагы: Ылдый түшүүчү тизмелер</translation>
 <translation id="1195238899008218998">Соңку сөз</translation>
 <translation id="1197088940767939838">Кызгылт сары</translation>
+<translation id="1198865190323699001">Тийүү жаңсоолору</translation>
 <translation id="1201402288615127009">Кийинки</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Кийинки 4-деңгээлдин башкы аталышы жок</translation>
@@ -389,6 +390,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{оң кашаа}other{# оң кашаалар}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{суроо белгиси}other{# суроо белгиси}}</translation>
+<translation id="3505359110822747654">ChromeVox менюларын жыйыштыруу</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{каре}other{# каре}}</translation>
 <translation id="352577523970648069">Түзөтүлүүчү текст талаасы</translation>
 <translation id="3538907380453898475">сүрөттөмө тизмеси</translation>

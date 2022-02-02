@@ -4,11 +4,11 @@
   <message name="IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT" desc="Tooltip for the Global Media Controls icon, which appears in the toolbar. The tooltip appears on mouseover of the icon.">
    Control your music, videos, and more
   </message>
-  <message name="IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_LABEL" desc="Label to prompt users to select an audio or cast device to play from.">
-   Select a device:
+  <message name="IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_LABEL_WITH_COLON" desc="Label to prompt users to select an audio or cast device to play from.">
+   Cast to a device:
   </message>
-  <message name="IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_BUTTON_LABEL" desc="Label for a button that opens a menu for picking an audio or cast device to play from.">
-   Select a device
+  <message name="IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_LABEL" desc="Label for a button that opens a menu for picking an audio or cast device to play from.">
+   Cast to a device
   </message>
   <message name="IDS_GLOBAL_MEDIA_CONTROLS_STOP_CASTING_BUTTON_LABEL" desc="Label for a button that stops the current cast session.">
    Stop casting
@@ -18,6 +18,9 @@
   </message>
   <message name="IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION" desc="Label for the toggle that enables the Live Caption feature.">
    Live Caption
+  </message>
+  <message name="IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_SHOW_LANGUAGE" desc="Label for the toggle that enables the Live Caption feature. This toggle shows the user which language they have selected for captioning.">
+   Live Caption - <ph name="LANGUAGE">$1<ex>English</ex></ph>
   </message>
   <message name="IDS_GLOBAL_MEDIA_CONTROLS_LIVE_CAPTION_DOWNLOAD_PROGRESS" desc="Download progress indicator after Live Caption is enabled. The user needs to download certain files for the feature to work.">
    Downloading... <ph name="PERCENT">$1<ex>17</ex></ph>%
@@ -36,6 +39,9 @@
   </message>
   <message name="IDS_GLOBAL_MEDIA_CONTROLS_CONTROL_CAST_SESSIONS_PROMO" desc="Text shown on promotional UI appearing next to the global media controls button to promote controlling cast sessions.">
    Control the media you're casting
+  </message>
+  <message name="IDS_MEDIA_TOOLBAR_CONTEXT_REPORT_CAST_ISSUE" desc="Title of the toolbar button's context menu item, which, on click, opens a page to report an issue with Cast.">
+    Report an issue with Google Cast
   </message>
 
 </grit-part>

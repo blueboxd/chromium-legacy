@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.feed.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
 import org.chromium.chrome.browser.feed.NtpFeedSurfaceLifecycleManager;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator;
-import org.chromium.chrome.browser.feed.hooks.FeedHooksImpl;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
@@ -208,8 +207,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         }
 
         @Override
-        public void focusSearchBox(
-                boolean beginVoiceSearch, String pastedText, boolean fromQueryTile) {
+        public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {
             if (mIsDestroyed) return;
             if (VrModuleProvider.getDelegate().isInVr()) return;
             if (mVoiceRecognitionHandler != null && beginVoiceSearch) {
@@ -217,10 +215,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                         VoiceRecognitionHandler.VoiceInteractionSource.NTP);
             } else if (mOmniboxStub != null) {
                 mOmniboxStub.setUrlBarFocus(true, pastedText,
-                        pastedText == null
-                                ? OmniboxFocusReason.FAKE_BOX_TAP
-                                : (fromQueryTile ? OmniboxFocusReason.QUERY_TILES_NTP_TAP
-                                                 : OmniboxFocusReason.FAKE_BOX_LONG_PRESS));
+                        pastedText == null ? OmniboxFocusReason.FAKE_BOX_TAP
+                                           : OmniboxFocusReason.FAKE_BOX_LONG_PRESS);
             }
         }
 
@@ -473,7 +469,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 new FeedLaunchReliabilityLoggingState(SurfaceType.NEW_TAB_PAGE, mConstructedTimeNs),
                 FeedSwipeRefreshLayout.create(activity, R.id.toolbar_container),
                 /* overScrollDisabled= */ false, /* viewportView= */ null, actionDelegate,
-                HelpAndFeedbackLauncherImpl.getInstance(), FeedHooksImpl.getInstance());
+                HelpAndFeedbackLauncherImpl.getInstance());
 
         // Record the timestamp at which the new tab page's construction started.
         uma.trackTimeToFirstDraw(mFeedSurfaceProvider.getView(), mConstructedTimeNs);

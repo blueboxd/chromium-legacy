@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -153,9 +154,9 @@ class FakeScreenEnumerationTest : public ScreenEnumerationTest {
   Shell* test_shell() { return test_shell_; }
 
  private:
-  display::Screen* original_screen_ = nullptr;
+  raw_ptr<display::Screen> original_screen_ = nullptr;
   display::ScreenBase screen_;
-  Shell* test_shell_ = nullptr;
+  raw_ptr<Shell> test_shell_ = nullptr;
 };
 
 // TODO(crbug.com/1042990): Windows crashes static casting to ScreenWin.
@@ -318,6 +319,7 @@ IN_PROC_BROWSER_TEST_F(FakeScreenEnumerationTest,
   EXPECT_EQ("0", EvalJs(test_shell(), "document.title"));
 
   // An event is sent when Screen work area changes.
+  // work_area translates into Screen.available_rect.
   display::Display display = screen()->display_list().displays()[0];
   display.set_work_area(gfx::Rect(101, 102, 903, 904));
   EXPECT_NE(0u, screen()->display_list().UpdateDisplay(display));

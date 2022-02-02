@@ -11,9 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/account_id/account_id.h"
 #include "storage/browser/file_system/file_system_backend.h"

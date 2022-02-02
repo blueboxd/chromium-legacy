@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/base64.h"
-#include "base/macros.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmpp/jid.h"
@@ -22,8 +21,8 @@ class SendPingTaskTest : public testing::Test {
  public:
   SendPingTaskTest() {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SendPingTaskTest);
+  SendPingTaskTest(const SendPingTaskTest&) = delete;
+  SendPingTaskTest& operator=(const SendPingTaskTest&) = delete;
 };
 
 TEST_F(SendPingTaskTest, MakePingStanza) {

@@ -5,11 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_INSPECTOR_ACCESSIBILITY_AGENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_INSPECTOR_ACCESSIBILITY_AGENT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
+#include "third_party/blink/renderer/core/inspector/protocol/accessibility.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "ui/accessibility/ax_enums.mojom-blink.h"
 
 namespace blink {
 
@@ -53,6 +53,15 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       protocol::Maybe<String> frame_id,
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
+  protocol::Response getRootAXNode(
+      protocol::Maybe<String> frame_id,
+      std::unique_ptr<protocol::Accessibility::AXNode>* node) override;
+  protocol::Response getAXNodeAndAncestors(
+      protocol::Maybe<int> dom_node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id,
+      std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*
+          out_nodes) override;
   protocol::Response getChildAXNodes(
       const String& in_id,
       protocol::Maybe<String> frame_id,
@@ -67,7 +76,12 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;
 
+  void AXEventFired(AXObject* object, ax::mojom::blink::Event event);
+  void AXObjectModified(AXObject* object, bool subtree);
+
  private:
+  void RefreshFrontendNodes();
+  bool MarkAXObjectDirty(AXObject* ax_object);
   // Unconditionally enables the agent, even if |enabled_.Get()==true|.
   // For idempotence, call enable().
   void EnableAndReset();
@@ -78,7 +92,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
       int backend_node_id) const;
   std::unique_ptr<AXNode> BuildProtocolAXNodeForAXObject(
       AXObject&,
-      bool force_name_and_role) const;
+      bool force_name_and_role = false) const;
   std::unique_ptr<AXNode> BuildProtocolAXNodeForIgnoredAXObject(
       AXObject&,
       bool force_name_and_role) const;
@@ -99,6 +113,8 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   Member<InspectedFrames> inspected_frames_;
   Member<InspectorDOMAgent> dom_agent_;
   InspectorAgentState::Boolean enabled_;
+  HashSet<AXID> nodes_requested_;
+  HeapHashSet<WeakMember<AXObject>> dirty_nodes_;
 
   // The agent needs to keep AXContext because it enables caching of a11y nodes.
   HeapHashMap<WeakMember<Document>, std::unique_ptr<AXContext>>

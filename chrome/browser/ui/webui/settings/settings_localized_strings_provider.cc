@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -93,7 +93,6 @@
 #include "ui/strings/grit/ui_strings.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #include "chromeos/lacros/lacros_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -210,7 +209,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
                           profile->IsGuestSession());
 #endif
 
-  html_source->AddBoolean("isSupervised", profile->IsSupervised());
+  html_source->AddBoolean("isSupervised", profile->IsChild());
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -1008,6 +1007,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"addPasswordStorePickerA11yDescription",
        IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_ACCESSIBLE_NAME},
       {"usernameAlreadyUsed", IDS_SETTINGS_PASSWORD_USERNAME_ALREADY_USED},
+      {"missingTLD", IDS_SETTINGS_PASSWORD_MISSING_TLD},
+      {"viewExistingPassword", IDS_SETTINGS_PASSWORD_VIEW_EXISTING_PASSWORD},
+      {"viewExistingPasswordAriaDescription",
+       IDS_SETTINGS_PASSWORD_VIEW_EXISTING_PASSWORD_ARIA_DESCRIPTION},
       {"copyPassword", IDS_SETTINGS_PASSWORD_COPY},
       {"passwordStoredOnDevice", IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE},
       {"passwordStoredInAccount", IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT},
@@ -1092,7 +1095,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TRUSTED_VAULT_OPT_IN_SUB_LABEL},
       {"noSearchResults", IDS_SEARCH_NO_RESULTS},
       {"searchResultsPlural", IDS_SEARCH_RESULTS_PLURAL},
-      {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR}};
+      {"searchResultsSingular", IDS_SEARCH_RESULTS_SINGULAR},
+      {"showPasswordLabel", IDS_SETTINGS_PASSWORD_SHOW_PASSWORD_A11Y},
+      {"hidePasswordLabel", IDS_SETTINGS_PASSWORD_HIDE_PASSWORD_A11Y}};
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
@@ -1338,14 +1343,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean("isAccountManagerEnabled",
                           ash::IsAccountManagerAvailable(profile));
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  html_source->AddBoolean("isAccountManagerEnabled",
-                          IsAccountManagerAvailable(profile));
-  // On Lacros, signout is only supported for secondary profiles without account
-  // consistency.
   html_source->AddBoolean(
-      "isSignoutSupported",
-      !base::FeatureList::IsEnabled(kMultiProfileAccountConsistency) &&
-          !profile->IsMainProfile());
+      "isAccountManagerEnabled",
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile));
 #endif
 
   AddSignOutDialogStrings(html_source, profile);
@@ -1634,6 +1634,14 @@ void AddPrivacyReviewStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_SUB_HEADER},
       {"privacyReviewCompletionCardLeaveButton",
        IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_LEAVE_BUTTON},
+      {"privacyReviewCompletionCardPrivacySandboxLabel",
+       IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_PRIVACY_SANDBOX_LABEL},
+      {"privacyReviewCompletionCardPrivacySandboxSubLabel",
+       IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_PRIVACY_SANDBOX_SUB_LABEL},
+      {"privacyReviewCompletionCardWaaLabel",
+       IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_WAA_LABEL},
+      {"privacyReviewCompletionCardWaaSubLabel",
+       IDS_SETTINGS_PRIVACY_REVIEW_COMPLETION_CARD_WAA_SUB_LABEL},
       {"privacyReviewMsbbCardHeader",
        IDS_SETTINGS_PRIVACY_REVIEW_MSBB_CARD_HEADER},
       {"privacyReviewMsbbFeatureDescription1",
@@ -1851,8 +1859,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"androidSmsNote", IDS_SETTINGS_ANDROID_SMS_NOTE},
 #endif
-    {"appCacheOrigin", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
-    {"cookieAppCache", IDS_SETTINGS_COOKIES_APPLICATION_CACHE},
     {"cookieCacheStorage", IDS_SETTINGS_COOKIES_CACHE_STORAGE},
     {"cookieDatabaseStorage", IDS_SETTINGS_COOKIES_DATABASE_STORAGE},
     {"cookieFileSystem", IDS_SETTINGS_COOKIES_FILE_SYSTEM},
@@ -1864,7 +1870,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"embeddedOnAnyHost", IDS_SETTINGS_EXCEPTIONS_EMBEDDED_ON_ANY_HOST},
     {"embeddedOnHost", IDS_SETTINGS_EXCEPTIONS_EMBEDDED_ON_HOST},
     {"editSiteTitle", IDS_SETTINGS_EDIT_SITE_TITLE},
-    {"appCacheManifest", IDS_SETTINGS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL},
     {"cacheStorageLastModified",
      IDS_SETTINGS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
     {"cacheStorageOrigin", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
@@ -2407,16 +2412,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_DEVICE_USE_ALLOWED_EXCEPTIONS},
     {"siteSettingsDeviceUseBlockedExceptions",
      IDS_SETTINGS_SITE_SETTINGS_DEVICE_USE_BLOCKED_EXCEPTIONS},
-    {"siteSettingsFileHandlingDescription",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_DESCRIPTION},
-    {"siteSettingsFileHandlingAllowed",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_ALLOWED},
-    {"siteSettingsFileHandlingBlocked",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_BLOCKED},
-    {"siteSettingsFileHandlingAllowedExceptions",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_ALLOWED_EXCEPTIONS},
-    {"siteSettingsFileHandlingBlockedExceptions",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_BLOCKED_EXCEPTIONS},
     {"siteSettingsFileSystemWriteDescription",
      IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_WRITE_DESCRIPTION},
     {"siteSettingsFileSystemWriteAllowed",
@@ -2641,13 +2636,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_IDLE_DETECTION_ASK},
     {"siteSettingsIdleDetectionBlock",
      IDS_SETTINGS_SITE_SETTINGS_IDLE_DETECTION_BLOCK},
-    {"siteSettingsFileHandling", IDS_SITE_SETTINGS_TYPE_FILE_HANDLING},
-    {"siteSettingsFileHandlingMidSentence",
-     IDS_SITE_SETTINGS_TYPE_FILE_HANDLING_MID_SENTENCE},
-    {"siteSettingsFileHandlingAsk",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_ASK},
-    {"siteSettingsFileHandlingBlock",
-     IDS_SETTINGS_SITE_SETTINGS_FILE_HANDLING_BLOCK},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -2775,22 +2763,40 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
       {"securityKeysBioEnrollmentNameLabelTooLong",
        IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL_TOO_LONG},
       {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
-      {"securityKeysCredentialWebsite",
-       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE},
       {"securityKeysNoCredentialManagement",
        IDS_SETTINGS_SECURITY_KEYS_NO_CREDENTIAL_MANAGEMENT},
       {"securityKeysCredentialManagementRemoved",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_REMOVED},
       {"securityKeysCredentialManagementDesc",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DESC},
+      {"securityKeysCredentialManagementConfirmDeleteTitle",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_CONFIRM_DELETE_TITLE},
       {"securityKeysCredentialManagementDialogTitle",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DIALOG_TITLE},
+      {"securityKeysUpdateCredentialDialogTitle",
+       IDS_SETTINGS_SECURITY_KEYS_UPDATE_CREDENTIAL_DIALOG_TITLE},
+      {"securityKeysCredentialWebsiteLabel",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_WEBSITE_LABEL},
+      {"securityKeysCredentialUsernameLabel",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_USERNAME_LABEL},
+      {"securityKeysCredentialDisplayNameLabel",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_DISPLAYNAME_LABEL},
       {"securityKeysCredentialManagementLabel",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_LABEL},
+      {"securityKeysCredentialManagementDeleteSuccess",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DELETE_SUCCESS},
+      {"securityKeysCredentialManagementDeleteFailed",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DELETE_FAILED},
+      {"securityKeysCredentialManagementUpdateSuccess",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_UPDATE_SUCCESS},
+      {"securityKeysCredentialManagementUpdateFailed",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_UPDATE_FAILED},
+      {"securityKeysCredentialManagementConfirmDeleteCredential",
+       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_CONFIRM_DELETE_CREDENTIAL},
+      {"securityKeysInputTooLong",
+       IDS_SETTINGS_SECURITY_KEYS_INPUT_ERROR_TOO_LONG},
       {"securityKeysCredentialManagementNoCredentials",
        IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_CREDENTIALS},
-      {"securityKeysCredentialUsername",
-       IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_USERNAME},
       {"securityKeysCurrentPIN", IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN},
       {"securityKeysCurrentPINIntro",
        IDS_SETTINGS_SECURITY_KEYS_CURRENT_PIN_INTRO},
@@ -2856,6 +2862,11 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
                           !win_native_api_available);
 }
 
+void AddIPHStrings(content::WebUIDataSource* html_source) {
+  html_source->AddBoolean("iphDemoEnabled", base::FeatureList::IsEnabled(
+                                                features::kIPHInWebUIDemo));
+}
+
 }  // namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
@@ -2875,6 +2886,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddCommonStrings(html_source, profile);
   AddDownloadsStrings(html_source);
   AddExtensionsStrings(html_source);
+  AddIPHStrings(html_source);
   AddLanguagesStrings(html_source, profile);
   AddOnStartupStrings(html_source);
   AddPeopleStrings(html_source, profile);

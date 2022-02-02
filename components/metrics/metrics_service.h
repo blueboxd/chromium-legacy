@@ -15,7 +15,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_flattener.h"
@@ -182,6 +182,9 @@ class MetricsService : public base::HistogramFlattener {
   // If called after initial logs are recorded, then this will flush all logs
   // before the user log store is unset.
   void UnsetUserLogStore();
+
+  // Returns true if a user log store has been bound.
+  bool HasUserLogStore();
 
   // Initializes per-user metrics collection. Logs recorded during a user
   // session will be stored within each user's directory and consent to send
@@ -382,16 +385,16 @@ class MetricsService : public base::HistogramFlattener {
 
   // Used to manage various metrics reporting state prefs, such as client id,
   // low entropy source and whether metrics reporting is enabled. Weak pointer.
-  MetricsStateManager* const state_manager_;
+  const raw_ptr<MetricsStateManager> state_manager_;
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
-  MetricsServiceClient* const client_;
+  const raw_ptr<MetricsServiceClient> client_;
 
   // Registered metrics providers.
   DelegatingProvider delegating_provider_;
 
-  PrefService* local_state_;
+  raw_ptr<PrefService> local_state_;
 
   base::ActionCallback action_callback_;
 

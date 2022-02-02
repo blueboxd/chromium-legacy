@@ -25,20 +25,9 @@
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/common/string_util.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/ranking/category_item_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/category_usage_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
-#include "chrome/browser/ui/app_list/search/ranking/removed_results_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/score_normalizing_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/top_match_ranker.h"
-#include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/search_metrics_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/chip_ranker.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "components/metrics/structured/structured_mojo_events.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -61,16 +50,6 @@ SearchControllerImplNew::SearchControllerImplNew(
 
 SearchControllerImplNew::~SearchControllerImplNew() {}
 
-void SearchControllerImplNew::InitializeRankers() {
-  // TODO(crbug.com/1199206): Add an extra state to the chrome flag that allows
-  // toggling between the CategoryItemRanker and CategoryUsageRanker.
-  ranker_->AddRanker(std::make_unique<ScoreNormalizingRanker>(profile_));
-  ranker_->AddRanker(std::make_unique<CategoryUsageRanker>(profile_));
-  ranker_->AddRanker(std::make_unique<TopMatchRanker>());
-  ranker_->AddRanker(std::make_unique<FilteringRanker>());
-  ranker_->AddRanker(std::make_unique<RemovedResultsRanker>());
-}
-
 void SearchControllerImplNew::Start(const std::u16string& query) {
   session_start_ = base::Time::Now();
 
@@ -80,7 +59,7 @@ void SearchControllerImplNew::Start(const std::u16string& query) {
 
   last_query_ = query;
   results_.clear();
-  categories_.clear();
+  categories_ = CreateAllCategories();
   for (Observer& observer : observer_list_)
     observer.OnResultsCleared();
 
@@ -120,15 +99,25 @@ void SearchControllerImplNew::InvokeResultAction(
   if (!result)
     return;
 
-  if (result->result_type() == ash::AppListSearchResultType::kOmnibox) {
-    // Special case: Omnibox results.
-    // These are handled by the Omnibox autocomplete controller. The Omnibox is
-    // unique amongst our search providers in that it has a backend which
-    // supports result removal.
-    result->InvokeAction(action);
-  } else if (action == ash::SearchResultActionType::kRemove) {
-    // All other result removals are handled by the ranking system.
+  // In the general case, actions are forwarded to the RemovedResultsRanker.
+  // Currently only "remove" actions are supported (and not e.g. "append"
+  // actions).
+  //
+  // In the special case, actions are delegated to the result itself. This is
+  // when, for example, supported actions can be handled by a provider backend,
+  // as is the case with some actions for some Omnibox results. At the moment we
+  // are temporarily handling Omnibox result removal requests in the general
+  // case, using RemovedResultsRanker, because the omnibox autocomplete
+  // controller supports removal of zero-state results but not of non-zero state
+  // results.
+  //
+  // TODO(crbug.com/1272361): Call result->InvokeAction(action) for all Omnibox
+  // action requests, once the autocomplete controller supports removal of
+  // non-zero state results.
+  if (action == ash::SearchResultActionType::kRemove) {
     ranker_->Remove(result);
+  } else if (result->result_type() == ash::AppListSearchResultType::kOmnibox) {
+    result->InvokeAction(action);
   }
 }
 
@@ -161,8 +150,10 @@ void SearchControllerImplNew::SetResults(
 
   results_[provider_type] = std::move(results);
 
-  // Update ranking of all results and categories.
-  ranker_->Rank(results_, categories_, provider_type);
+  // Update ranking of all results and categories. This ordering is important,
+  // as result scores may affect category scores.
+  ranker_->UpdateResultRanks(results_, provider_type);
+  ranker_->UpdateCategoryRanks(results_, categories_, provider_type);
 
   // Compile a single list of results and sort by their relevance.
   std::vector<ChromeSearchResult*> all_results;
@@ -195,13 +186,11 @@ void SearchControllerImplNew::SetResults(
             });
 
   // Create a vector of categories in display order.
-  std::vector<std::pair<Category, double>> sorted_category_pairs(
-      categories_.begin(), categories_.end());
-  std::sort(sorted_category_pairs.begin(), sorted_category_pairs.end(),
-            [](const auto& a, const auto& b) { return a.second > b.second; });
-  std::vector<Category> sorted_categories;
-  for (const auto& pair : sorted_category_pairs)
-    sorted_categories.push_back(pair.first);
+  std::sort(categories_.begin(), categories_.end(),
+            [](const auto& a, const auto& b) { return a.score > b.score; });
+  std::vector<Category> category_enums;
+  for (const auto& category : categories_)
+    category_enums.push_back(category.category);
 
   if (!observer_list_.empty()) {
     std::vector<const ChromeSearchResult*> observer_results;
@@ -211,7 +200,7 @@ void SearchControllerImplNew::SetResults(
       observer.OnResultsAdded(last_query_, observer_results);
   }
 
-  model_updater_->PublishSearchResults(all_results, sorted_categories);
+  model_updater_->PublishSearchResults(all_results, category_enums);
 }
 
 ChromeSearchResult* SearchControllerImplNew::FindSearchResult(

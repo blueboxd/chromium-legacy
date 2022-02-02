@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="102360288709523007">Отправлять в Google статистику использования и отчеты о сбоях</translation>
+<translation id="1047130070405668746">Выберите Chromium.</translation>
 <translation id="1185134272377778587">О Chromium</translation>
 <translation id="1257458525759135959">Чтобы сохранять изображения, нажмите "Настройки" и предоставьте Chromium доступ к вашим фото.</translation>
 <translation id="1289216811211435351">Переходите на Chromium</translation>
@@ -13,10 +14,12 @@
 <translation id="1531155317299575425">Показывать подсказки для входа в Chromium</translation>
 <translation id="1584569488888892906">Браузер Chromium стал ещё быстрее, удобнее и безопаснее.</translation>
 <translation id="1617663976202781617">Данные, сохраненные с помощью синхронизации Chromium</translation>
+<translation id="1722370509450468186">Пароль будет сохранен в вашем аккаунте (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Данные Chromium удалены</translation>
 <translation id="1838412507805038478">Данные Chromium подтверждают, что сертификат сайта выпущен компанией <ph name="ISSUER" />.</translation>
 <translation id="1843424232666537147">В Chromium можно устанавливать параметры обработки данных в Интернете и скорости загрузки веб-страниц.
 <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
+<translation id="1867772173333403444">4. Выберите Chromium.</translation>
 <translation id="2006345422933397527">Браузеру Chromium не удалось проверить наличие обновлений. Убедитесь, что устройство подключено к Интернету.</translation>
 <translation id="2054703085270098503">Безопасная работа с Chromium</translation>
 <translation id="2168108852149185974">Некоторые дополнения вызывают сбой Chromium. Необходимо удалить:</translation>
@@ -78,6 +81,7 @@
 <translation id="7099326575020694068">Chromium не может использовать камеру в режиме Split View.</translation>
 <translation id="7108914401277488191">Успевайте ещё больше с Chromium</translation>
 <translation id="7118091470949186573">При переходе по ссылкам в сообщениях, документах и других приложениях будет открываться браузер Chromium.</translation>
+<translation id="7175400662502680481">Ваш пароль раскрыт из-за утечки данных. Измените его прямо сейчас в Диспетчере паролей.</translation>
 <translation id="7208566199746267865">Чтобы сэкономить ваше время, Chromium будет использовать аккаунты, сохраненные на вашем устройстве. Добавить или удалить их можно в настройках.</translation>
 <translation id="725427773388857052">Chromium поможет обеспечить защиту от утечки данных, подозрительных сайтов и других проблем с безопасностью.</translation>
 <translation id="7269362888766543920">Некоторые дополнения вызывают сбой Chromium. Попробуйте удалить их.</translation>

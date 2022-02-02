@@ -6,14 +6,17 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/mojom/cursor_type.mojom.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/cursor/platform_cursor.h"
 #include "ui/base/x/x11_cursor.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
+namespace {
 
 using mojom::CursorType;
+
+}  // namespace
 
 TEST(X11CursorFactoryTest, InvisibleCursor) {
   X11CursorFactory factory;

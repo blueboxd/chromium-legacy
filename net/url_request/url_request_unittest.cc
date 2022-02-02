@@ -10,6 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
+
 // This must be before Windows headers
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -151,6 +153,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
@@ -317,7 +320,7 @@ class PriorityMonitoringURLRequestJob : public URLRequestTestJob {
   }
 
  private:
-  RequestPriority* const request_priority_;
+  const raw_ptr<RequestPriority> request_priority_;
 };
 
 // Do a case-insensitive search through |haystack| for |needle|.
@@ -664,6 +667,25 @@ class OCSPErrorTestDelegate : public TestDelegate {
   bool on_ssl_certificate_error_called_ = false;
   SSLInfo ssl_info_;
 };
+
+#if !defined(OS_IOS)
+// Compute the root cert's SPKI hash on the fly, to avoid hardcoding it within
+// tests.
+bool GetTestRootCertSPKIHash(SHA256HashValue* root_hash) {
+  scoped_refptr<X509Certificate> root_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
+  if (!root_cert)
+    return false;
+  base::StringPiece root_spki;
+  if (!asn1::ExtractSPKIFromDERCert(
+          x509_util::CryptoBufferAsStringPiece(root_cert->cert_buffer()),
+          &root_spki)) {
+    return false;
+  }
+  crypto::SHA256HashString(root_spki, root_hash, sizeof(SHA256HashValue));
+  return true;
+}
+#endif
 
 }  // namespace
 
@@ -1039,7 +1061,7 @@ class URLRequestLoadTimingTest : public URLRequestTest {
   }
 
  private:
-  URLRequestInterceptorWithLoadTimingInfo* interceptor_;
+  raw_ptr<URLRequestInterceptorWithLoadTimingInfo> interceptor_;
 };
 
 // "Normal" LoadTimingInfo as returned by a job.  Everything is in order, not
@@ -3082,34 +3104,6 @@ TEST_P(URLRequestSameSiteCookiesTest, SettingSameSiteCookies) {
     EXPECT_EQ(expected_lax_status,
               req->maybe_stored_cookies()[1].access_result.status);
   }
-
-  {
-    TestDelegate d;
-    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
-        test_server.GetURL(kHost,
-                           "/set-cookie?Strict7=1;SameSite=Strict&"
-                           "Lax7=1;SameSite=Lax"),
-        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    req->set_isolation_info(IsolationInfo::Create(
-        IsolationInfo::RequestType::kOther, kOrigin, kOrigin, kSiteForCookies,
-        {} /* party_context */));
-    req->set_site_for_cookies(kSiteForCookies);
-    req->set_initiator(kCrossOrigin);
-    req->set_force_main_frame_for_same_site_cookies(true);
-
-    // 'SameSite' cookies are settable from lax same-site contexts (same-origin
-    // site_for_cookies, cross-site initiator, main frame navigation), so this
-    // request should result in two cookies being set.
-    expected_cookies += 2;
-    expected_network_delegate_set_cookie_count += 2;
-
-    req->Start();
-    d.RunUntilComplete();
-    EXPECT_EQ(expected_cookies,
-              static_cast<int>(GetAllCookies(&default_context()).size()));
-    EXPECT_EQ(expected_network_delegate_set_cookie_count,
-              network_delegate.set_cookie_count());
-  }
 }
 
 // Tests special chrome:// scheme that is supposed to always attach SameSite
@@ -5085,7 +5079,7 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     std::move(callback_).Run();
   }
 
-  URLRequest* url_request_;
+  raw_ptr<URLRequest> url_request_;
   const int expected_first_load_state_;
   const int expected_second_load_state_;
   const int expected_third_load_state_;
@@ -9104,7 +9098,7 @@ class FailingHttpTransactionFactory : public HttpTransactionFactory {
   HttpNetworkSession* GetSession() override { return network_session_; }
 
  private:
-  HttpNetworkSession* network_session_;
+  raw_ptr<HttpNetworkSession> network_session_;
 };
 
 }  // namespace
@@ -10481,14 +10475,13 @@ class HTTPSFallbackTest : public TestWithTaskEnvironment {
     return ssl_config_service_.get();
   }
 
-  void DoFallbackTest(const SpawnedTestServer::SSLOptions& ssl_options) {
+  void DoFallbackTest(const SSLServerConfig& ssl_config) {
     DCHECK(!request_);
     context_.Init();
     delegate_.set_allow_certificate_errors(true);
 
-    SpawnedTestServer test_server(
-        SpawnedTestServer::TYPE_HTTPS, ssl_options,
-        base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+    EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
+    test_server.SetSSLConfig(EmbeddedTestServer::CERT_OK, ssl_config);
     ASSERT_TRUE(test_server.Start());
 
     request_ = context_.CreateRequest(test_server.GetURL("/"), DEFAULT_PRIORITY,
@@ -10519,34 +10512,44 @@ class HTTPSFallbackTest : public TestWithTaskEnvironment {
 
 // Tests the TLS 1.0 fallback doesn't happen.
 TEST_F(HTTPSFallbackTest, TLSv1NoFallback) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_1;
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_hello_callback_for_testing =
+      base::BindRepeating([](const SSL_CLIENT_HELLO* client_hello) {
+        // Reject ClientHellos with version >= TLS 1.1.
+        return client_hello->version <= TLS1_VERSION;
+      });
 
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_config));
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
 // Tests the TLS 1.1 fallback doesn't happen.
 TEST_F(HTTPSFallbackTest, TLSv1_1NoFallback) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_2;
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_hello_callback_for_testing =
+      base::BindRepeating([](const SSL_CLIENT_HELLO* client_hello) {
+        // Reject ClientHellos with version >= TLS 1.2.
+        return client_hello->version <= TLS1_1_VERSION;
+      });
 
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_config));
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
 // Tests the TLS 1.2 fallback doesn't happen.
 TEST_F(HTTPSFallbackTest, TLSv1_2NoFallback) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_3;
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_hello_callback_for_testing =
+      base::BindRepeating([](const SSL_CLIENT_HELLO* client_hello) {
+        // Reject ClientHellos with a supported_versions extension. TLS 1.3 is
+        // signaled via an extension rather than the legacy version field.
+        const uint8_t* data;
+        size_t len;
+        return !SSL_early_callback_ctx_extension_get(
+            client_hello, TLSEXT_TYPE_supported_versions, &data, &len);
+      });
 
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
+  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_config));
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
@@ -10707,22 +10710,6 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
   TestURLRequestContext context_;
 };
 
-// SHA256 hash of the testserver root_ca_cert DER.
-// openssl x509 -in root_ca_cert.pem -outform der | \
-//   openssl dgst -sha256 -binary | xxd -i
-static const SHA256HashValue kTestRootCertHash = {
-    {0xb2, 0xab, 0xa3, 0xa5, 0xd4, 0x11, 0x56, 0xcb, 0xb9, 0x23, 0x35,
-     0x07, 0x6d, 0x0b, 0x51, 0xbe, 0xd3, 0xee, 0x2e, 0xab, 0xe7, 0xab,
-     0x6b, 0xad, 0xcc, 0x2a, 0xfa, 0x35, 0xfb, 0x8e, 0x31, 0x5e}};
-
-// SHA256 hash of the DER SPKI of the testserver root_ca_cert.
-// openssl x509 -in root_ca_cert.pem -pubkey -noout | \
-//   openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | xxd -i
-static const SHA256HashValue kTestRootCertSPKIHash = {
-    {0x57, 0x2a, 0x4f, 0xdd, 0x55, 0x8b, 0xec, 0xe6, 0xaa, 0x4c, 0x9e,
-     0xe6, 0x20, 0x17, 0xa1, 0x59, 0x89, 0x6f, 0xf2, 0x48, 0x4f, 0xb8,
-     0x51, 0xe9, 0x5a, 0x27, 0x9a, 0xad, 0x92, 0x36, 0x62, 0x32}};
-
 // The test EV policy OID used for generated certs.
 static const char kOCSPTestCertPolicy[] = "1.3.6.1.4.1.11129.2.4.1";
 
@@ -10731,8 +10718,13 @@ class HTTPSOCSPTest : public HTTPSCertNetFetchingTest {
   void SetUp() override {
     HTTPSCertNetFetchingTest::SetUp();
 
+    scoped_refptr<X509Certificate> root_cert =
+        ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
+    ASSERT_TRUE(root_cert);
+
     ev_test_policy_ = std::make_unique<ScopedTestEVPolicy>(
-        EVRootCAMetadata::GetInstance(), kTestRootCertHash,
+        EVRootCAMetadata::GetInstance(),
+        X509Certificate::CalculateFingerprint256(root_cert->cert_buffer()),
         kOCSPTestCertPolicy);
   }
 
@@ -11562,8 +11554,10 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetCovered) {
       EmbeddedTestServer::OCSPConfig::ResponseType::kInvalidResponse);
 
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
+  SHA256HashValue root_cert_spki_hash;
+  ASSERT_TRUE(GetTestRootCertSPKIHash(&root_cert_spki_hash));
   cert_verifier_config.crl_set =
-      CRLSet::ForTesting(false, &kTestRootCertSPKIHash, "", "", {});
+      CRLSet::ForTesting(false, &root_cert_spki_hash, "", "", {});
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
   CertStatus cert_status;
@@ -11670,8 +11664,10 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
   ASSERT_TRUE(test_server.Start());
 
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
+  SHA256HashValue root_cert_spki_hash;
+  ASSERT_TRUE(GetTestRootCertSPKIHash(&root_cert_spki_hash));
   cert_verifier_config.crl_set =
-      CRLSet::ForTesting(false, &kTestRootCertSPKIHash,
+      CRLSet::ForTesting(false, &root_cert_spki_hash,
                          test_server.GetCertificate()->serial_number(), "", {});
   context_.cert_verifier()->SetConfig(cert_verifier_config);
 
@@ -11895,17 +11891,8 @@ TEST_F(HTTPSLocalCRLSetTest, InterceptionBlockedAllowOverrideOnHSTS) {
 
   // Configure for kHSTSSubdomainWithKnownInterception
   CertVerifyResult sts_sub_result = fake_result;
-  // Compute the root cert's hash on the fly, to avoid hardcoding it within
-  // tests.
-  scoped_refptr<X509Certificate> root_cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
-  ASSERT_TRUE(root_cert);
-  base::StringPiece root_spki;
-  ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(
-      x509_util::CryptoBufferAsStringPiece(root_cert->cert_buffer()),
-      &root_spki));
   SHA256HashValue root_hash;
-  crypto::SHA256HashString(root_spki, &root_hash, sizeof(root_hash));
+  ASSERT_TRUE(GetTestRootCertSPKIHash(&root_hash));
   sts_sub_result.public_key_hashes.push_back(HashValue(root_hash));
   sts_sub_result.cert_status |=
       CERT_STATUS_REVOKED | CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED;
@@ -13044,6 +13031,30 @@ TEST_F(URLRequestTest, OnConnectedCallbackAsyncError) {
   req->Start();
   d.RunUntilComplete();
   EXPECT_THAT(d.request_status(), IsError(ERR_FAILED));
+}
+
+TEST_F(URLRequestTest, SetURLChain) {
+  TestDelegate d;
+  {
+    GURL original_url("http://localhost");
+    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+        original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    EXPECT_EQ(r->url_chain().size(), 1u);
+    EXPECT_EQ(r->url_chain()[0], original_url);
+
+    const std::vector<GURL> url_chain = {
+        GURL("http://foo.test"),
+        GURL("http://bar.test"),
+        GURL("http://baz.test"),
+    };
+
+    r->SetURLChain(url_chain);
+
+    EXPECT_EQ(r->url_chain().size(), 3u);
+    EXPECT_EQ(r->url_chain()[0], url_chain[0]);
+    EXPECT_EQ(r->url_chain()[1], url_chain[1]);
+    EXPECT_EQ(r->url_chain()[2], original_url);
+  }
 }
 
 }  // namespace net

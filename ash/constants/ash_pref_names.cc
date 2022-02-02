@@ -140,7 +140,7 @@ const char kSuggestedContentEnabled[] = "settings.suggested_content_enabled";
 // the Chrome OS launcher.
 const char kLauncherResultEverLaunched[] = "launcher.result_ever_launched";
 
-// Dictioanry pref to store data on the distribution of provider relevance
+// Dictionary pref to store data on the distribution of provider relevance
 // scores for the launcher normalizer.
 const char kLauncherSearchNormalizerParameters[] =
     "launcher.search_normalizer_parameters";
@@ -394,6 +394,12 @@ const char kAllowMGSToStoreDisplayProperties[] =
 // A boolean pref that enable fullscreen alert bubble.
 // TODO(zxdan): Change to an allowlist in M89.
 const char kFullscreenAlertEnabled[] = "ash.fullscreen_alert_enabled";
+// A list of URLs that are exempt from ash's fullscreen notification. To prevent
+// fake login screens, the notification is normally shown when the device
+// returns from sleep, low brightness or the lock screen and is still in full
+// screen mode.
+const char kFullscreenNotificationUrlExemptList[] =
+    "ash.fullscreen_notification_url_exempt_list";
 
 // A boolean pref storing whether the gesture education notification has ever
 // been shown to the user, which we use to stop showing it again.
@@ -598,6 +604,9 @@ const char kPowerSmartDimEnabled[] = "power.smart_dim_enabled";
 // Boolean controlling whether ALS logging is enabled.
 const char kPowerAlsLoggingEnabled[] = "power.als_logging_enabled";
 
+// Boolean controlling whether quick dim is enabled.
+const char kPowerQuickDimEnabled[] = "power.quick_dim_enabled";
+
 // Boolean controlling whether the settings is enabled. This pref is intended to
 // be set only by policy not by user.
 const char kOsSettingsEnabled[] = "os_settings_enabled";
@@ -659,6 +668,9 @@ const char kUserBluetoothAdapterEnabled[] =
 const char kSystemBluetoothAdapterEnabled[] =
     "ash.system.bluetooth.adapter_enabled";
 
+// Boolean pref to persist the expanded state of the system tray across reboots.
+const char kSystemTrayExpanded[] = "ash.system_tray.expanded";
+
 // A boolean pref which determines whether tap-dragging is enabled.
 const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
 
@@ -699,7 +711,7 @@ const char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
 const char kQuickUnlockTimeout[] = "quick_unlock_timeout";
 
 // Dictionary prefs in local state that keeps information about detachable
-// bases - for exmaple the last used base per user.
+// bases - for example the last used base per user.
 const char kDetachableBaseDevices[] = "ash.detachable_base.devices";
 
 // Pref storing the number of sessions in which Assistant onboarding was shown.
@@ -841,7 +853,7 @@ const char kNextImeShortcutReminderDismissed[] =
 // legacy shortcuts.
 const char kDeviceI18nShortcutsEnabled[] = "ash.device_i18n_shortcuts_enabled";
 
-// An integet pref that tracks how many times the user has been shown the
+// An integer pref that tracks how many times the user has been shown the
 // notification about shortcuts changing.
 const char kImprovedShortcutsNotificationShownCount[] =
     "ash.improved_shortcuts_notification_shown_count";
@@ -870,6 +882,34 @@ const char kPreconfiguredDeskTemplates[] = "ash.preconfigured_desk_templates";
 // flow during onboarding.
 const char kProjectorCreationFlowEnabled[] =
     "ash.projector.creationFlowEnabled";
+
+// A boolean pref that indicates whether the migration of Chromad devices to
+// cloud management can be started.
+const char kChromadToCloudMigrationEnabled[] =
+    "ash.chromad_to_cloud_migration_enabled";
+
+// A string pref that tracks the language installed for the Projector creation
+// flow.
+const char kProjectorCreationFlowLanguage[] =
+    "ash.projector.creationFlowLanguage";
+
+// List of Drive Folder Shortcuts in the Files app. Used to sync the shortcuts
+// across devices.
+const char kFilesAppFolderShortcuts[] = "ash.filesapp.folder_shortcuts";
+
+// A boolean pref that indicates if the Files app UI prefs have migrated from
+// the Chrome app to System Web App.
+const char kFilesAppUIPrefsMigrated[] = "ash.filesapp.ui_prefs_migrated";
+
+// An integer pref counting the number of times the Onboarding flow has been
+// shown to the user inside the Projector Gallery.
+const char kProjectorGalleryOnboardingShowCount[] =
+    "ash.projector.galleryOnboardingShowCount";
+
+// An integer pref counting the number of times the Onboarding flow has been
+// shown to the user inside the Projector Viewer.
+const char kProjectorViewerOnboardingShowCount[] =
+    "ash.projector.viewerOnboardingShowCount";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

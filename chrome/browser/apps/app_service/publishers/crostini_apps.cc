@@ -7,17 +7,17 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_package_service.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
+#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -57,24 +57,6 @@ bool ShouldShowDisplayDensityMenuItem(const std::string& app_id,
   return d.device_scale_factor() != 1.0;
 }
 
-constexpr char delimiter[] = "{.}";
-
-std::string ShortcutIdFromContainerId(const crostini::ContainerId& id) {
-  return base::StrCat({id.vm_name, delimiter, id.container_name});
-}
-
-base::flat_map<std::string, std::string> ExtrasFromShortcutId(
-    const std::string& shortcut_id) {
-  std::vector<std::string> pieces = base::SplitStringUsingSubstr(
-      shortcut_id, delimiter, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  auto extras = base::flat_map<std::string, std::string>();
-  if (pieces.size() == 2) {
-    extras["vm_name"] = pieces[0];
-    extras["container_name"] = pieces[1];
-  }
-  return extras;
-}
-
 }  // namespace
 
 namespace apps {
@@ -83,9 +65,7 @@ CrostiniApps::CrostiniApps(AppServiceProxy* proxy)
     : AppPublisher(proxy),
       profile_(proxy->profile()),
       registry_(nullptr),
-      crostini_enabled_(false) {
-  Initialize(proxy->AppService());
-}
+      crostini_enabled_(false) {}
 
 CrostiniApps::~CrostiniApps() {
   if (registry_) {
@@ -93,8 +73,7 @@ CrostiniApps::~CrostiniApps() {
   }
 }
 
-void CrostiniApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service) {
+void CrostiniApps::Initialize() {
   DCHECK(profile_);
   if (!crostini::CrostiniFeatures::Get()->CouldBeAllowed(profile_)) {
     return;
@@ -114,7 +93,10 @@ void CrostiniApps::Initialize(
       base::BindRepeating(&CrostiniApps::OnCrostiniEnabledChanged,
                           base::Unretained(this)));
 
-  PublisherBase::Initialize(app_service, apps::mojom::AppType::kCrostini);
+  PublisherBase::Initialize(proxy()->AppService(),
+                            apps::mojom::AppType::kCrostini);
+
+  RegisterPublisher(AppType::kCrostini);
 
   std::vector<std::unique_ptr<App>> apps;
   for (const auto& pair :
@@ -136,6 +118,23 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
   registry_->LoadIcon(app_id, icon_key, icon_type, size_hint_in_dip,
                       allow_placeholder_icon, IDR_LOGO_CROSTINI_DEFAULT,
                       std::move(callback));
+}
+
+void CrostiniApps::LaunchAppWithParams(AppLaunchParams&& params,
+                                       LaunchCallback callback) {
+  auto event_flags = apps::GetEventFlags(params.container, params.disposition,
+                                         /*prefer_container=*/false);
+  auto window_info = apps::MakeWindowInfo(params.display_id);
+  if (params.intent) {
+    LaunchAppWithIntent(params.app_id, event_flags, std::move(params.intent),
+                        params.launch_source, std::move(window_info),
+                        base::DoNothing());
+  } else {
+    Launch(params.app_id, event_flags, params.launch_source,
+           std::move(window_info));
+  }
+  // TODO(crbug.com/1244506): Add launch return value.
+  std::move(callback).Run(LaunchResult());
 }
 
 void CrostiniApps::Connect(
@@ -170,8 +169,7 @@ void CrostiniApps::LoadIcon(const std::string& app_id,
     return;
   }
 
-  std::unique_ptr<IconKey> key =
-      ConvertMojomIconKeyToIconKey(std::move(icon_key));
+  std::unique_ptr<IconKey> key = ConvertMojomIconKeyToIconKey(icon_key);
   registry_->LoadIcon(app_id, *key, ConvertMojomIconTypeToIconType(icon_type),
                       size_hint_in_dip, allow_placeholder_icon,
                       IDR_LOGO_CROSTINI_DEFAULT,
@@ -213,23 +211,6 @@ void CrostiniApps::Uninstall(const std::string& app_id,
       ->QueueUninstallApplication(app_id);
 }
 
-void CrostiniApps::AddTerminalShortcuts(apps::mojom::MenuItemsPtr* menu_items) {
-  const base::Value* container_list =
-      profile_->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
-  if (container_list && container_list->GetList().size() > 1) {
-    int command_id = ash::LAUNCH_APP_SHORTCUT_FIRST;
-    for (const auto& dict : container_list->GetList()) {
-      crostini::ContainerId id(dict);
-      if (!id.vm_name.empty() && !id.container_name.empty()) {
-        std::string shortcut_id = ShortcutIdFromContainerId(id);
-        std::string label = base::StrCat({id.vm_name, ":", id.container_name});
-        AddShortcutCommandItem(command_id++, shortcut_id, label,
-                               gfx::ImageSkia(), menu_items);
-      }
-    }
-  }
-}
-
 void CrostiniApps::GetMenuModel(const std::string& app_id,
                                 apps::mojom::MenuType menu_type,
                                 int64_t display_id,
@@ -245,14 +226,7 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
   }
 
   if (app_id == crostini::kCrostiniTerminalSystemAppId) {
-    AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, &menu_items);
-    if (crostini::IsCrostiniRunning(profile_)) {
-      AddCommandItem(ash::SHUTDOWN_GUEST_OS,
-                     IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM, &menu_items);
-    }
-    if (crostini::CrostiniFeatures::Get()->IsMultiContainerAllowed(profile_)) {
-      AddTerminalShortcuts(&menu_items);
-    }
+    crostini::AddTerminalMenuItems(profile_, &menu_items);
   }
 
   if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
@@ -282,7 +256,13 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
     }
   }
 
-  std::move(callback).Run(std::move(menu_items));
+  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
+    crostini::AddTerminalMenuShortcuts(profile_, ash::LAUNCH_APP_SHORTCUT_FIRST,
+                                       std::move(menu_items),
+                                       std::move(callback));
+  } else {
+    std::move(callback).Run(std::move(menu_items));
+  }
 }
 
 void CrostiniApps::ExecuteContextMenuCommand(const std::string& app_id,
@@ -290,10 +270,8 @@ void CrostiniApps::ExecuteContextMenuCommand(const std::string& app_id,
                                              const std::string& shortcut_id,
                                              int64_t display_id) {
   if (app_id == crostini::kCrostiniTerminalSystemAppId) {
-    apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
-    intent->extras = ExtrasFromShortcutId(shortcut_id);
-    crostini::LaunchCrostiniAppWithIntent(profile_, app_id, display_id,
-                                          std::move(intent));
+    crostini::ExecuteTerminalMenuShortcutCommand(profile_, shortcut_id,
+                                                 display_id);
   }
 }
 
@@ -356,6 +334,7 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
   app->show_in_launcher = show;
   app->show_in_shelf = show;
   app->show_in_search = apps::mojom::OptionalBool::kTrue;
+  app->handles_intents = show;
   PublisherBase::Publish(std::move(app), subscribers_);
 }
 

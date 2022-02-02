@@ -98,6 +98,8 @@ group("browser") {
 
 cast_source_set("browser_base") {
   sources = [
+    "accessibility/accessibility_service_impl.cc",
+    "accessibility/accessibility_service_impl.h",
     "application_media_info_manager.cc",
     "application_media_info_manager.h",
     "audio_socket_broker.cc",
@@ -225,6 +227,7 @@ cast_source_set("browser_base") {
     "//chromecast/browser/webui/mojom",
     "//chromecast/common",
     "//chromecast/common:activity_url_filter",
+    "//chromecast/common:cors_exempt_headers",
     "//chromecast/common:queryable_data",
     "//chromecast/common/media",
     "//chromecast/external_mojo/broker_service",
@@ -245,9 +248,12 @@ cast_source_set("browser_base") {
     "//chromecast/net:connectivity_checker",
     "//chromecast/net:socket_util",
     "//chromecast/service",
+    "//chromecast/ui:display_settings_manager",
+    "//chromecast/ui:display_settings_public",
     "//components/cast/message_port:message_port_cast",
     "//components/cdm/browser",
     "//components/download/public/common:public",
+    "//components/heap_profiling/multi_process",
     "//components/media_control/browser",
     "//components/memory_pressure",
     "//components/metrics",
@@ -267,6 +273,9 @@ cast_source_set("browser_base") {
     "//components/proxy_config",
     "//components/safe_search_api",
     "//components/safe_search_api:safe_search_client",
+    "//components/services/heap_profiling",
+    "//components/services/heap_profiling/public/cpp",
+    "//components/services/heap_profiling/public/mojom",
     "//components/viz/service",
     "//content/public/browser",
     "//content/public/common",
@@ -307,17 +316,7 @@ cast_source_set("browser_base") {
       "//components/embedder_support/android:view",
     ]
   } else {
-    sources += [
-      "cast_display_configurator.cc",
-      "cast_display_configurator.h",
-      "cast_touch_device_manager.cc",
-      "cast_touch_device_manager.h",
-    ]
-
-    deps += [
-      "//mojo/public/cpp/bindings",
-      "//ui/aura",
-    ]
+    deps += [ ":display_configurator" ]
   }
 
   if (is_linux || is_chromeos) {
@@ -342,6 +341,7 @@ cast_source_set("browser_base") {
 
     deps += [
       "//chromecast/ui:media_control_ui",
+      "//ui/aura",
       "//ui/views:views",
     ]
 
@@ -363,15 +363,6 @@ cast_source_set("browser_base") {
     deps += [
       "//components/crash/content/browser",
       "//components/crash/core/app",
-    ]
-
-    # TODO(crbug.com/933142): Fuchsia needs its own methods to bridge with heap
-    # profiling service
-    deps += [
-      "//components/heap_profiling/multi_process",
-      "//components/services/heap_profiling",
-      "//components/services/heap_profiling/public/cpp",
-      "//components/services/heap_profiling/public/mojom",
     ]
   }
 
@@ -546,6 +537,32 @@ cast_source_set("browser_base") {
 
     defines = [ "USE_INTERNAL_OVERLAY_MANIFESTS=1" ]
   }
+}
+
+cast_source_set("display_configurator") {
+  sources = [
+    "cast_display_configurator.cc",
+    "cast_display_configurator.h",
+    "cast_touch_device_manager.cc",
+    "cast_touch_device_manager.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast:chromecast_buildflags",
+    "//chromecast/base",
+    "//chromecast/graphics",
+    "//chromecast/public",
+    "//ui/display",
+    "//ui/events/devices",
+    "//ui/gfx/geometry",
+  ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+
+  public_configs = [ "//skia:skia_config" ]
 }
 
 cast_source_set("simple_main_parts") {
@@ -729,6 +746,7 @@ cast_source_set("unittests") {
 
   deps = [
     ":browser",
+    ":display_configurator",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -769,10 +787,10 @@ cast_source_set("unittests") {
 if (is_android) {
   generate_jni("jni_headers") {
     sources = [
+      "android/apk/src/org/chromium/chromecast/shell/CastAccessibilityHelper.java",
       "android/apk/src/org/chromium/chromecast/shell/CastContentWindowAndroid.java",
       "android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java",
       "android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java",
-      "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     ]
   }
 

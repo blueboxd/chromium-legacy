@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_surface.h"
 #include "ash/public/cpp/external_arc/message_center/arc_notification_view.h"
@@ -13,7 +14,6 @@
 #include "ash/style/ash_color_provider.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -661,9 +661,8 @@ void ArcNotificationContentView::Layout() {
     const gfx::Size surface_size = surface_->GetSize();
     if (!surface_size.IsEmpty()) {
       const float factor =
-          static_cast<float>(message_center::kNotificationWidth -
-                             kScrollBarWidth) /
-          (surface_size.width());
+          static_cast<float>(message_center::kNotificationWidth) /
+          surface_size.width();
       transform.Scale(factor, factor);
     }
 
@@ -763,6 +762,13 @@ void ArcNotificationContentView::OnThemeChanged() {
   // OnThemeChanged may be called before container is set.
   if (GetWidget() && GetNativeViewContainer())
     UpdateMask(true);
+
+  if (ash::features::IsNotificationsRefreshEnabled()) {
+    // Adjust control button color.
+    control_buttons_view_.SetButtonIconColors(
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary));
+  }
 }
 
 void ArcNotificationContentView::OnRemoteInputActivationChanged(

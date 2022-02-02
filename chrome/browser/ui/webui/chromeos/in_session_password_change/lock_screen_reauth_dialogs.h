@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_LOCK_SCREEN_REAUTH_DIALOGS_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_LOCK_SCREEN_REAUTH_DIALOGS_H_
 
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/base_lock_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -18,8 +18,9 @@ namespace chromeos {
 
 class LockScreenNetworkDialog;
 
-class LockScreenStartReauthDialog : public BaseLockDialog,
-                                    public NetworkStateHandlerObserver {
+class LockScreenStartReauthDialog
+    : public BaseLockDialog,
+      public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   LockScreenStartReauthDialog();
   LockScreenStartReauthDialog(LockScreenStartReauthDialog const&) = delete;
@@ -30,23 +31,44 @@ class LockScreenStartReauthDialog : public BaseLockDialog,
   bool IsRunning();
   int GetDialogWidth();
 
-  void CloseLockScreenNetworkDialog();
+  void DismissLockScreenNetworkDialog();
   void ShowLockScreenNetworkDialog();
   static gfx::Size CalculateLockScreenReauthDialogSize(
       bool is_new_layout_enabled);
 
+  // Used for waiting for the network dialog in tests.
+  // Similar methods exist for the main dialog in InSessionPasswordSyncManager.
+  bool IsNetworkDialogLoadedForTesting(base::OnceClosure callback);
+  void OnNetworkDialogReadyForTesting();
+
+  LockScreenNetworkDialog* get_network_dialog_for_testing() {
+    return lock_screen_network_dialog_.get();
+  }
+
+  bool is_network_dialog_visible_for_testing() {
+    return is_network_dialog_visible_;
+  }
+
  private:
   void OnProfileCreated(Profile* profile, Profile::CreateStatus status);
   void OnDialogClosed(const std::string& json_retval) override;
+  void DeleteLockScreenNetworkDialog();
 
-  // NetworkStateHandlerObserver:
-  void NetworkConnectionStateChanged(const NetworkState* network) override;
-  void DefaultNetworkChanged(const NetworkState* network) override;
+  // NetworkStateInformer::NetworkStateInformerObserver:
+  void UpdateState(NetworkError::ErrorReason reason) override;
 
-  std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
+  scoped_refptr<chromeos::NetworkStateInformer> network_state_informer_;
+  bool is_network_dialog_visible_ = false;
+
+  base::ScopedObservation<NetworkStateInformer, NetworkStateInformerObserver>
+      scoped_observation_{this};
 
   std::unique_ptr<LockScreenNetworkDialog> lock_screen_network_dialog_;
-  Profile* profile_;
+  Profile* profile_ = nullptr;
+
+  // A callback that is used to notify tests that the network dialog is loaded.
+  base::OnceClosure on_network_dialog_loaded_callback_for_testing_;
+  bool is_network_dialog_loaded_for_testing_ = false;
 
   base::WeakPtrFactory<LockScreenStartReauthDialog> weak_factory_{this};
 };

@@ -12,10 +12,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace gfx {
-class RenderingPipeline;
-}
-
 namespace gpu {
 class CommandBufferTaskExecutor;
 }  // namespace gpu
@@ -23,6 +19,7 @@ class CommandBufferTaskExecutor;
 namespace viz {
 
 class GpuServiceImpl;
+class HintSessionFactory;
 
 // Starts and runs the VizCompositorThread. The thread will be started when this
 // object is constructed. Objects on the thread will be initialized after
@@ -46,7 +43,7 @@ class VizCompositorThreadRunner {
       mojom::FrameSinkManagerParamsPtr params,
       gpu::CommandBufferTaskExecutor* task_executor,
       GpuServiceImpl* gpu_service,
-      gfx::RenderingPipeline* gpu_pipeline) = 0;
+      HintSessionFactory* hint_session_factory) = 0;
 };
 
 }  // namespace viz

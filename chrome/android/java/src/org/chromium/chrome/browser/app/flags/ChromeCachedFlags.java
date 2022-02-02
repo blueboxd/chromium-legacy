@@ -90,6 +90,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.FEED_LOADING_PLACEHOLDER);
                 add(ChromeFeatureList
                                 .GIVE_JAVA_UI_THREAD_DEFAULT_TASK_TRAITS_USER_BLOCKING_PRIORITY);
+                add(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
                 add(ChromeFeatureList.IMMERSIVE_UI_MODE);
                 add(ChromeFeatureList.INSTANT_START);
                 add(ChromeFeatureList.INSTANCE_SWITCHER);
@@ -105,6 +106,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT);
                 add(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID);
                 add(ChromeFeatureList.TAB_GROUPS_ANDROID);
+                add(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
                 add(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID);
                 add(ChromeFeatureList.TAB_TO_GTS_ANIMATION);
                 add(ChromeFeatureList.THEME_REFACTOR_ANDROID);
@@ -142,6 +144,7 @@ public class ChromeCachedFlags {
                         add(StartSurfaceConfiguration.SIGNIN_PROMO_NTP_RESET_AFTER_HOURS);
                         add(StartSurfaceConfiguration.SPARE_RENDERER_DELAY_MS);
                         add(StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES);
+                        add(StartSurfaceConfiguration.START_SURFACE_EXCLUDE_QUERY_TILES);
                         add(StartSurfaceConfiguration.START_SURFACE_HIDE_INCOGNITO_SWITCH_NO_TAB);
                         add(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY);
                         add(StartSurfaceConfiguration.START_SURFACE_OPEN_NTP_INSTEAD_OF_START);

@@ -161,7 +161,7 @@ class FamilyUserAppMetricsTest
                              apps::mojom::AppType::kCrostini));
     deltas.push_back(MakeApp(/*app_id=*/"e", /*app_name=*/"extension",
                              /*last_launch_time=*/base::Time::Now(),
-                             apps::mojom::AppType::kExtension));
+                             apps::mojom::AppType::kChromeApp));
     deltas.push_back(MakeApp(/*app_id=*/"w", /*app_name=*/"web",
                              /*last_launch_time=*/base::Time::Now(),
                              apps::mojom::AppType::kWeb));
@@ -180,7 +180,7 @@ class FamilyUserAppMetricsTest
     deltas.push_back(MakeApp(
         /*app_id=*/"lca", /*app_name=*/"lacros chrome app",
         /*last_launch_time=*/base::Time::Now() - kOneDay,
-        apps::mojom::AppType::kStandaloneBrowserExtension));
+        apps::mojom::AppType::kStandaloneBrowserChromeApp));
     deltas.push_back(MakeApp(
         /*app_id=*/"r", /*app_name=*/"remote",
         /*last_launch_time=*/base::Time::Now() - kOneDay,
@@ -194,16 +194,13 @@ class FamilyUserAppMetricsTest
     cache.OnApps(std::move(deltas), apps::mojom::AppType::kUnknown,
                  false /* should_notify_initialized */);
 
-    apps::InstanceRegistry::Instances instances;
     apps::InstanceRegistry& instance_registry =
         apps::AppServiceProxyFactory::GetForProfile(profile())
             ->InstanceRegistry();
     window_ = std::make_unique<aura::Window>(nullptr);
     window_->Init(ui::LAYER_NOT_DRAWN);
-    instances.push_back(std::make_unique<apps::Instance>(
-        /*app_id=*/"a",
-        apps::Instance::InstanceKey::ForWindowBasedApp(window_.get())));
-    instance_registry.OnInstances(instances);
+    instance_registry.CreateOrUpdateInstance(
+        apps::InstanceParams(/*app_id=*/"a", window_.get()));
   }
 
   SupervisedUserService* supervised_user_service() {
@@ -309,7 +306,7 @@ TEST_P(FamilyUserAppMetricsTest, FastForwardOneDay) {
   const apps::mojom::AppType fresh_app_types[7] = {
       apps::mojom::AppType::kUnknown,   apps::mojom::AppType::kArc,
       apps::mojom::AppType::kBuiltIn,   apps::mojom::AppType::kCrostini,
-      apps::mojom::AppType::kExtension, apps::mojom::AppType::kWeb,
+      apps::mojom::AppType::kChromeApp, apps::mojom::AppType::kWeb,
       apps::mojom::AppType::kBorealis,
   };
   // Launched over 28 days ago and dropped from the count.

@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/platform/crypto.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
@@ -572,6 +572,19 @@ bool CheckSourceAndReportViolation(
     suffix = suffix + " Note that '" + effective_directive_name +
              "' was not explicitly set, so '" + directive_name +
              "' is used as a fallback.";
+  }
+
+  // Wildcards match network schemes ('http', 'https', 'ws', 'wss'), and the
+  // scheme of the protected resource:
+  // https://w3c.github.io/webappsec-csp/#match-url-to-source-expression. Other
+  // schemes, including custom schemes, must be explicitly listed in a source
+  // list.
+  if (directive.source_list->allow_star) {
+    suffix = suffix +
+             " Note that '*' matches only URLs with network schemes ('http', "
+             "'https', 'ws', 'wss'), or URLs whose scheme matches `self`'s "
+             "scheme. " +
+             url.Protocol() + ":' must be added explicitely.";
   }
 
   String raw_directive =

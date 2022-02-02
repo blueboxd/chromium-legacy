@@ -34,6 +34,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Printing.ConversionSize.EmfWithGdiText" units="KB"
     expires_after="2022-09-30">
+  <obsolete>
+    Removed 2021-11.
+  </obsolete>
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -54,6 +57,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Printing.ConversionSize.EmfWithReducedRasterizationAndGdiText"
     units="KB" expires_after="2022-09-30">
+  <obsolete>
+    Removed 2021-11.
+  </obsolete>
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -104,7 +110,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.AddressResolutionResult" enum="BooleanSuccess"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>skau@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -152,7 +158,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>skau@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -390,7 +396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.UnknownPpdColorModel" enum="Boolean"
-    expires_after="2022-03-31">
+    expires_after="2022-06-05">
   <owner>dhoss@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -455,7 +461,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Printing.PrintBackend.DriversRequiringElevatedPrivilegeEncountered"
-    enum="BooleanFound" expires_after="2022-03-31">
+    enum="BooleanFound" expires_after="2022-06-05">
   <owner>awscreen@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>

@@ -43,7 +43,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 #endif
@@ -342,31 +341,29 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // Initialize Ozone GPU after the watchdog in case it hangs. The sandbox
   // may also have started at this point.
   std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing;
-  if (features::IsUsingOzonePlatform()) {
-    ui::OzonePlatform::InitParams params;
-    params.single_process = false;
-    params.enable_native_gpu_memory_buffers =
-        gpu_preferences.enable_native_gpu_memory_buffers;
+  ui::OzonePlatform::InitParams params;
+  params.single_process = false;
+  params.enable_native_gpu_memory_buffers =
+      gpu_preferences.enable_native_gpu_memory_buffers;
 
-    // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
-    // Therefore, we only allow or disallow sync and real buffer page flip
-    // testing for ash-chrome.
+  // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
+  // Therefore, we only allow or disallow sync and real buffer page flip
+  // testing for ash-chrome.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing =
-        gpu_preferences_.enable_chromeos_direct_video_decoder;
+  params.allow_sync_and_real_buffer_page_flip_testing =
+      gpu_preferences_.enable_chromeos_direct_video_decoder;
 #else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing = true;
+  params.allow_sync_and_real_buffer_page_flip_testing = true;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    ui::OzonePlatform::InitializeForGPU(params);
-    // We need to get supported formats before sandboxing to avoid an known
-    // issue which breaks the camera preview. (b/166850715)
-    supported_buffer_formats_for_texturing =
-        ui::OzonePlatform::GetInstance()
-            ->GetSurfaceFactoryOzone()
-            ->GetSupportedFormatsForTexturing();
-  }
+  ui::OzonePlatform::InitializeForGPU(params);
+  // We need to get supported formats before sandboxing to avoid an known
+  // issue which breaks the camera preview. (b/166850715)
+  supported_buffer_formats_for_texturing =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->GetSupportedFormatsForTexturing();
 #endif
 
   if (!gl_use_swiftshader_) {
@@ -541,6 +538,16 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // happens, we will exit_on_context_lost to ensure there are no leaks.
     gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
         EXIT_ON_CONTEXT_LOST);
+
+    // Disable RGB format because ExternalVkImageBacking doesn't handle it
+    // correctly (see https://crbug.com/1269826). This workaround is not
+    // necessary on Android because it uses SharedImageBackingFactoryAHB.
+    // TODO(https://crbug.com/1269826): Remove once RGBX support is fixed in
+    // ExternalVkImageBacking.
+#if !defined(OS_ANDROID)
+    gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
+        DISABLE_GL_RGB_FORMAT);
+#endif
   }
 
   // Collect GPU process info
@@ -650,11 +657,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   init_successful_ = true;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
-    gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
-        std::move(supported_buffer_formats_for_texturing);
-  }
+  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
+  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+      std::move(supported_buffer_formats_for_texturing);
 #endif
 
   if (!watchdog_thread_)
@@ -707,23 +712,21 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   gpu_preferences_ = gpu_preferences;
   init_successful_ = true;
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
 
-    // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
-    // Therefore, we only allow or disallow sync and real buffer page flip
-    // testing for ash-chrome.
+  // Page flip testing will only happen in ash-chrome, not in lacros-chrome.
+  // Therefore, we only allow or disallow sync and real buffer page flip
+  // testing for ash-chrome.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing =
-        gpu_preferences_.enable_chromeos_direct_video_decoder;
+  params.allow_sync_and_real_buffer_page_flip_testing =
+      gpu_preferences_.enable_chromeos_direct_video_decoder;
 #else   // !BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    params.allow_sync_and_real_buffer_page_flip_testing = true;
+  params.allow_sync_and_real_buffer_page_flip_testing = true;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    ui::OzonePlatform::InitializeForGPU(params);
-  }
+  ui::OzonePlatform::InitializeForGPU(params);
 #endif
   bool needs_more_info = true;
 #if !BUILDFLAG(IS_CHROMECAST)
@@ -838,15 +841,12 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    const std::vector<gfx::BufferFormat>
-        supported_buffer_formats_for_texturing =
-            ui::OzonePlatform::GetInstance()
-                ->GetSurfaceFactoryOzone()
-                ->GetSupportedFormatsForTexturing();
-    gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
-        std::move(supported_buffer_formats_for_texturing);
-  }
+  const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->GetSupportedFormatsForTexturing();
+  gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
+      std::move(supported_buffer_formats_for_texturing);
 #endif
 
   DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);

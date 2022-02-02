@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -132,11 +131,11 @@ void Shell::DisplayedUrlChanged(const GURL& url) {
   PlatformSetAddressBarURL(url);
 }
 
-void Shell::LoadStateChanged(bool is_loading, bool to_different_document) {
+void Shell::LoadStateChanged(bool is_loading, bool should_show_loading_ui) {
   NavigationController* navigation_controller =
       tab()->GetNavigationController();
 
-  PlatformEnableUIControl(STOP_BUTTON, is_loading && to_different_document);
+  PlatformEnableUIControl(STOP_BUTTON, is_loading && should_show_loading_ui);
 
   // TODO(estade): These should be updated in callbacks that correspond to the
   // back/forward list changing, such as NavigationEntriesDeleted.

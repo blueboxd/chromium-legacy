@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_EXO_WAYLAND_SURFACE_DELEGATER_H_
-#define COMPONENTS_EXO_WAYLAND_SURFACE_DELEGATER_H_
+#ifndef COMPONENTS_EXO_WAYLAND_SURFACE_AUGMENTER_H_
+#define COMPONENTS_EXO_WAYLAND_SURFACE_AUGMENTER_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@ struct wl_client;
 namespace exo {
 namespace wayland {
 
-constexpr uint32_t kSurfaceAugmenterVersion = 1;
+constexpr uint32_t kSurfaceAugmenterVersion = 2;
 
 void bind_surface_augmenter(wl_client* client,
                             void* data,
@@ -22,4 +22,4 @@ void bind_surface_augmenter(wl_client* client,
 }  // namespace wayland
 }  // namespace exo
 
-#endif  // COMPONENTS_EXO_WAYLAND_SURFACE_DELEGATER_H_
+#endif  // COMPONENTS_EXO_WAYLAND_SURFACE_AUGMENTER_H_

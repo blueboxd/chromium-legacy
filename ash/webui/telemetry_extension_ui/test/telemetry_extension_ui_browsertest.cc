@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_switches.h"
 #include "ash/webui/telemetry_extension_ui/url_constants.h"
+#include "ash/webui/web_applications/test/sandboxed_web_ui_test_base.h"
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -15,9 +16,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/wilco_dtc_supportd/mojo_utils.h"
-#include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_client.h"
+
+namespace ash {
 
 namespace {
 
@@ -40,8 +42,8 @@ constexpr base::FilePath::CharType kUntrustedTestCases[] = FILE_PATH_LITERAL(
 }  // namespace
 
 TelemetryExtensionUiBrowserTest::TelemetryExtensionUiBrowserTest()
-    : SandboxedWebUiAppTestBase(ash::kChromeUITelemetryExtensionURL,
-                                ash::kChromeUIUntrustedTelemetryExtensionURL,
+    : SandboxedWebUiAppTestBase(kChromeUITelemetryExtensionURL,
+                                kChromeUIUntrustedTelemetryExtensionURL,
                                 {base::FilePath(kUntrustedTestHandlers),
                                  base::FilePath(kUntrustedTestUtils),
                                  base::FilePath(kUntrustedTestCases)}) {}
@@ -528,3 +530,5 @@ void TelemetryExtensionUiBrowserTest::RunCallbackPeriodically(
                      system_events_weak_ptr_factory_.GetWeakPtr(), callback),
       base::Seconds(1));
 }
+
+}  // namespace ash

@@ -39,8 +39,6 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-enum ParseState { OK, TooDeep, NoMoreTokens };
-
 namespace blink {
 
 static CalculationCategory UnitCategory(CSSPrimitiveValue::UnitType type) {
@@ -717,7 +715,7 @@ String CSSMathExpressionBinaryOperation::CustomCSSText() const {
   if (right_side_needs_parentheses)
     result.Append(')');
 
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 bool CSSMathExpressionBinaryOperation::operator==(
@@ -931,7 +929,7 @@ String CSSMathExpressionVariadicOperation::CSSTextAsClamp() const {
   result.Append(", ");
   result.Append(nested.operands_[1]->CustomCSSText());
   result.Append(")");
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 String CSSMathExpressionVariadicOperation::CustomCSSText() const {
@@ -948,7 +946,7 @@ String CSSMathExpressionVariadicOperation::CustomCSSText() const {
   }
   result.Append(')');
 
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 absl::optional<PixelsAndPercent>

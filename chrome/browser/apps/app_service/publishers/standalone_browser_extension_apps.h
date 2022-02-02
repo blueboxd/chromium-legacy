@@ -9,16 +9,22 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
+#include "chrome/browser/apps/app_service/launch_result_type.h"
+#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
+class StandaloneBrowserPublisherTest;
+
 namespace apps {
+struct AppLaunchParams;
 
 // An app publisher (in the App Service sense) for extension-based apps [e.g.
 // packaged v2 apps] published by Lacros.
@@ -36,8 +42,13 @@ namespace apps {
 // is almost always running in the background. This is enforced via
 // ScopedKeepAlive. We would like to eventually remove this assumption. This
 // requires caching a copy of installed apps in this class.
+//
+// TODO(crbug.com/1253250):
+// 1. Remove the parent class apps::PublisherBase.
+// 2. Remove all apps::mojom related code.
 class StandaloneBrowserExtensionApps : public KeyedService,
                                        public apps::PublisherBase,
+                                       public AppPublisher,
                                        public crosapi::mojom::AppPublisher {
  public:
   explicit StandaloneBrowserExtensionApps(AppServiceProxy* proxy);
@@ -58,6 +69,18 @@ class StandaloneBrowserExtensionApps : public KeyedService,
   void RegisterKeepAlive();
 
  private:
+  friend class StandaloneBrowserPublisherTest;
+
+  // apps::AppPublisher overrides.
+  void LoadIcon(const std::string& app_id,
+                const IconKey& icon_key,
+                IconType icon_type,
+                int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
+                apps::LoadIconCallback callback) override;
+  void LaunchAppWithParams(AppLaunchParams&& params,
+                           LaunchCallback callback) override;
+
   // apps::PublisherBase:
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
@@ -100,6 +123,13 @@ class StandaloneBrowserExtensionApps : public KeyedService,
   // to be functional.
   void OnReceiverDisconnected();
   void OnControllerDisconnected();
+
+  // When Lacros returns an icon for an app, ash must then apply icon effects.
+  // This function does that.
+  void OnLoadIcon(uint32_t icon_effects,
+                  int size_hint_in_dip,
+                  apps::LoadIconCallback callback,
+                  IconValuePtr icon_value);
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 

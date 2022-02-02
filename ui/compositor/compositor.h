@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/power_monitor/power_observer.h"
@@ -242,10 +242,6 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   // the |root_layer|.
   void SetBackgroundColor(SkColor color);
 
-  // Evicts the root surface and sets the LocalSurfaceId of the root to
-  // `surface_id`.
-  void EvictRootSurface(const viz::LocalSurfaceId& surface_id);
-
   // Inform the display corresponding to this compositor if it is visible. When
   // false it does not need to produce any frames. Visibility is reset for each
   // call to CreateLayerTreeFrameSink.
@@ -257,8 +253,8 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   // Gets or sets the scroll offset for the given layer in step with the
   // cc::InputHandler. Returns true if the layer is active on the impl side.
   bool GetScrollOffsetForLayer(cc::ElementId element_id,
-                               gfx::Vector2dF* offset) const;
-  bool ScrollLayerTo(cc::ElementId element_id, const gfx::Vector2dF& offset);
+                               gfx::PointF* offset) const;
+  bool ScrollLayerTo(cc::ElementId element_id, const gfx::PointF& offset);
 
   // Mac path for transporting vsync parameters to the display. Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
@@ -326,6 +322,9 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   // Creates a ThroughputTracker for tracking this Compositor.
   ThroughputTracker RequestNewThroughputTracker();
 
+  // Returns a percentage representing average throughput of last X seconds.
+  uint32_t GetAverageThroughput() const;
+
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
   void DidBeginMainFrame() override {}
@@ -344,7 +343,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   void RequestNewLayerTreeFrameSink() override;
   void DidInitializeLayerTreeFrameSink() override {}
   void DidFailToInitializeLayerTreeFrameSink() override;
-  void WillCommit(cc::CommitState*) override {}
+  void WillCommit(const cc::CommitState&) override {}
   void DidCommit(base::TimeTicks, base::TimeTicks) override;
   void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;
@@ -437,7 +436,7 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
 
   gfx::Size size_;
 
-  ui::ContextFactory* context_factory_;
+  raw_ptr<ui::ContextFactory> context_factory_;
 
   // |display_private_| can be null for:
   // 1. Tests that don't set |display_private_|.
@@ -448,14 +447,14 @@ class COMPOSITOR_EXPORT Compositor : public base::PowerSuspendObserver,
   //
   // These pointers are owned by |context_factory_|, and must be reset before
   // calling RemoveCompositor();
-  viz::mojom::DisplayPrivate* display_private_ = nullptr;
-  viz::mojom::ExternalBeginFrameController* external_begin_frame_controller_ =
-      nullptr;
+  raw_ptr<viz::mojom::DisplayPrivate> display_private_ = nullptr;
+  raw_ptr<viz::mojom::ExternalBeginFrameController>
+      external_begin_frame_controller_ = nullptr;
 
   std::unique_ptr<PendingBeginFrameArgs> pending_begin_frame_args_;
 
   // The root of the Layer tree drawn by this compositor.
-  Layer* root_layer_ = nullptr;
+  raw_ptr<Layer> root_layer_ = nullptr;
 
   base::ObserverList<CompositorObserver, true>::Unchecked observer_list_;
   base::ObserverList<CompositorAnimationObserver>::Unchecked

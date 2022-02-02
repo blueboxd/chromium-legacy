@@ -194,6 +194,7 @@ source_set("app_shell_lib") {
       "browser/shell_native_app_window_aura.h",
     ]
     deps += [
+      "//ui/aura/cursor",
       "//ui/base/cursor",
       "//ui/base/cursor/mojom:cursor_type",
       "//ui/platform_window",
@@ -232,12 +233,12 @@ source_set("app_shell_lib") {
     ]
     deps += [
       "//ash/components/audio",
+      "//ash/components/disks",
       "//ash/constants",
       "//chromeos/dbus",
       "//chromeos/dbus/audio",
       "//chromeos/dbus/hermes",
       "//chromeos/dbus/power",
-      "//chromeos/disks",
       "//chromeos/login/login_state",
       "//chromeos/network",
       "//ui/chromeos",
@@ -246,7 +247,7 @@ source_set("app_shell_lib") {
   }
 
   if (is_chromeos_lacros) {
-    deps += [ "//chromeos/lacros" ]
+    deps += [ "//chromeos/lacros/dbus" ]
   }
   if (enable_nacl) {
     sources += [
@@ -265,10 +266,6 @@ source_set("app_shell_lib") {
 
     if (is_linux || is_chromeos) {
       deps += [ "//components/nacl/loader:nacl_helper" ]
-
-      if (enable_nacl_nonsfi) {
-        deps += [ "//components/nacl/loader:helper_nonsfi" ]
-      }
     }
   }
 }

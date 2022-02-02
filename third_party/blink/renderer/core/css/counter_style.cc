@@ -425,7 +425,7 @@ String HebrewAlgorithmUnder1000(unsigned number) {
     if (unsigned ones = number % 10)
       letters.Append(static_cast<UChar>(1487 + ones));
   }
-  return letters.ToString();
+  return letters.ReleaseString();
 }
 
 String HebrewAlgorithm(unsigned number) {
@@ -485,7 +485,7 @@ String ArmenianAlgorithmUnder10000(unsigned number,
       letters.Append(static_cast<UChar>(0x0302));
   }
 
-  return letters.ToString();
+  return letters.ReleaseString();
 }
 
 String ArmenianAlgorithm(unsigned number, bool upper) {
@@ -852,15 +852,10 @@ String CounterStyle::GenerateRepresentation(int value) const {
 
   wtf_size_t initial_length = NumGraphemeClusters(initial_representation);
 
-  // TODO(crbug.com/687225): Spec requires us to further increment
-  // |initial_length| by the length of the negative sign, but no current
-  // implementation is doing that. For backward compatibility, we don't do that
-  // for now. See https://github.com/w3c/csswg-drafts/issues/5906 for details.
-  //
-  // if (NeedsNegativeSign(value)) {
-  //  initial_length += NumGraphemeClusters(negative_prefix_);
-  //  initial_length += NumGraphemeClusters(negative_suffix_);
-  // }
+  if (NeedsNegativeSign(value)) {
+    initial_length += NumGraphemeClusters(negative_prefix_);
+    initial_length += NumGraphemeClusters(negative_suffix_);
+  }
 
   wtf_size_t pad_copies =
       pad_length_ > initial_length ? pad_length_ - initial_length : 0;
@@ -873,7 +868,7 @@ String CounterStyle::GenerateRepresentation(int value) const {
   result.Append(initial_representation);
   if (NeedsNegativeSign(value))
     result.Append(negative_suffix_);
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 String CounterStyle::GenerateInitialRepresentation(int value) const {
@@ -939,7 +934,7 @@ String CounterStyle::IndexesToString(
   StringBuilder result;
   for (wtf_size_t index : symbol_indexes)
     result.Append(symbols_[index]);
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 void CounterStyle::TraverseAndMarkDirtyIfNeeded(

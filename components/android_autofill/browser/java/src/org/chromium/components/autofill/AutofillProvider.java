@@ -26,6 +26,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.autofill_public.ViewType;
 import org.chromium.components.version_info.VersionConstants;
@@ -53,15 +54,13 @@ import java.util.ArrayList;
  * AutofillProviderAndroid is owned by the embedder-specific C++ WebContents
  * wrapper (e.g., native AwContents in //android_webview).
  *
+ * VerifiesOnO since it causes class verification errors, see crbug.com/991851.
  */
+@VerifiesOnO
 @TargetApi(Build.VERSION_CODES.O)
 @JNINamespace("autofill")
 public class AutofillProvider {
     private static final String TAG = "AutofillProvider";
-
-    // This member is initialize at first use. Not access it directly, always through
-    // isQueryServerFieldTypesEnabled().
-    private static Boolean sIsQueryServerFieldTypesEnabled;
 
     private static class FocusField {
         public final short fieldIndex;
@@ -131,16 +130,13 @@ public class AutofillProvider {
                                 .addAttribute("label", field.mLabel)
                                 .addAttribute("ua-autofill-hints", field.mHeuristicType)
                                 .addAttribute("id", field.mId);
-
-                if (isQueryServerFieldTypesEnabled()) {
-                    builder.addAttribute("crowdsourcing-autofill-hints", field.getServerType());
-                    builder.addAttribute("computed-autofill-hints", field.getComputedType());
-                    // Compose multiple predictions to a string separated by ','.
-                    String[] predictions = field.getServerPredictions();
-                    if (predictions != null && predictions.length > 0) {
-                        builder.addAttribute("crowdsourcing-predictions-autofill-hints",
-                                String.join(",", predictions));
-                    }
+                builder.addAttribute("crowdsourcing-autofill-hints", field.getServerType());
+                builder.addAttribute("computed-autofill-hints", field.getComputedType());
+                // Compose multiple predictions to a string separated by ','.
+                String[] predictions = field.getServerPredictions();
+                if (predictions != null && predictions.length > 0) {
+                    builder.addAttribute("crowdsourcing-predictions-autofill-hints",
+                            String.join(",", predictions));
                 }
                 switch (field.getControlType()) {
                     case FormFieldData.ControlType.LIST:
@@ -380,12 +376,9 @@ public class AutofillProvider {
             bundle.putCharSequence("VIRTUAL_STRUCTURE_PROVIDER_NAME", mProviderName);
             bundle.putCharSequence(
                     "VIRTUAL_STRUCTURE_PROVIDER_VERSION", VersionConstants.PRODUCT_VERSION);
-
-            if (isQueryServerFieldTypesEnabled()) {
-                AutofillHintsService autofillHintsService = mRequest.getAutofillHintsService();
-                if (autofillHintsService != null) {
-                    bundle.putBinder("AUTOFILL_HINTS_SERVICE", autofillHintsService.getBinder());
-                }
+            AutofillHintsService autofillHintsService = mRequest.getAutofillHintsService();
+            if (autofillHintsService != null) {
+                bundle.putBinder("AUTOFILL_HINTS_SERVICE", autofillHintsService.getBinder());
             }
         }
         mRequest.fillViewStructure(structure);
@@ -820,14 +813,6 @@ public class AutofillProvider {
         mAutofillManager.onQueryDone(success);
     }
 
-    public static boolean isQueryServerFieldTypesEnabled() {
-        if (sIsQueryServerFieldTypesEnabled == null) {
-            sIsQueryServerFieldTypesEnabled =
-                    AutofillProviderJni.get().isQueryServerFieldTypesEnabled();
-        }
-        return sIsQueryServerFieldTypesEnabled;
-    }
-
     private void forceNotifyFormValues() {
         if (mRequest == null) return;
         for (int i = 0; i < mRequest.getFieldCount(); ++i) {
@@ -919,6 +904,5 @@ public class AutofillProvider {
                 long nativeAutofillProviderAndroid, AutofillProvider caller, String value);
         void setAnchorViewRect(long nativeAutofillProviderAndroid, AutofillProvider caller,
                 View anchorView, float x, float y, float width, float height);
-        boolean isQueryServerFieldTypesEnabled();
     }
 }

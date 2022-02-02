@@ -4,6 +4,13 @@
 
 #include "content/browser/attribution_reporting/attribution_internals_ui.h"
 
+#include <stdint.h>
+
+#include <limits>
+#include <utility>
+#include <vector>
+
+#include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -13,14 +20,14 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
@@ -28,6 +35,11 @@ namespace {
 
 using CreateReportStatus =
     ::content::AttributionStorage::CreateReportResult::Status;
+using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
+
+using ::testing::_;
+using ::testing::IsNull;
+using ::testing::Return;
 
 const char kAttributionInternalsUrl[] = "chrome://conversion-internals/";
 
@@ -38,11 +50,24 @@ const std::u16string kCompleteTitle3 = u"Complete3";
 const std::u16string kMaxInt64String = u"9223372036854775807";
 const std::u16string kMaxUint64String = u"18446744073709551615";
 
+template <typename T>
+auto InvokeCallback(T value) {
+  return [value = std::move(value)](base::OnceCallback<void(T)> callback) {
+    std::move(callback).Run(std::move(value));
+  };
+}
+
 }  // namespace
 
 class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
  public:
-  AttributionInternalsWebUiBrowserTest() = default;
+  AttributionInternalsWebUiBrowserTest() {
+    ON_CALL(manager_, GetActiveSourcesForWebUI)
+        .WillByDefault(InvokeCallback<std::vector<StorableSource>>({}));
+
+    ON_CALL(manager_, GetPendingReportsForWebUI)
+        .WillByDefault(InvokeCallback<std::vector<AttributionReport>>({}));
+  }
 
   void ClickRefreshButton() {
     EXPECT_TRUE(ExecJsInWebUI("document.getElementById('refresh').click();"));
@@ -56,7 +81,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
                   EXECUTE_SCRIPT_DEFAULT_OPTIONS, /*world_id=*/1);
   }
 
-  void OverrideWebUIAttributionManager(AttributionManager* manager) {
+  void OverrideWebUIAttributionManager() {
     content::WebUI* web_ui = shell()->web_contents()->GetWebUI();
 
     // Performs a safe downcast to the concrete AttributionInternalsUI subclass.
@@ -65,7 +90,7 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
                : nullptr;
     EXPECT_TRUE(attribution_internals_ui);
     attribution_internals_ui->SetAttributionManagerProviderForTesting(
-        std::make_unique<TestManagerProvider>(manager));
+        std::make_unique<TestManagerProvider>(&manager_));
   }
 
   // Registers a mutation observer that sets the window title to |title| when
@@ -85,7 +110,10 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   }
 
  protected:
-  AttributionDisallowingContentBrowserClient disallowed_browser_client_;
+  // The manager must outlive the `AttributionInternalsHandler` so that the
+  // latter can remove itself as an observer of the former on the latter's
+  // destruction.
+  MockAttributionManager manager_;
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
@@ -104,11 +132,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithManager_MeasurementConsideredEnabled) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
 
   // Create a mutation observer to wait for the content to render to the dom.
-  // Waiting on calls to TestAttributionManager is not sufficient because the
+  // Waiting on calls to `MockAttributionManager` is not sufficient because the
   // results are returned in promises.
   static constexpr char wait_script[] = R"(
     let status = document.getElementById("feature-status-content");
@@ -127,15 +154,20 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        DisabledByEmbedder_MeasurementConsideredDisabled) {
-  ContentBrowserClient* old_browser_client =
-      SetBrowserClientForTesting(&disallowed_browser_client_);
+  MockAttributionReportingContentBrowserClient browser_client;
+  EXPECT_CALL(browser_client,
+              IsConversionMeasurementOperationAllowed(
+                  _, ContentBrowserClient::ConversionMeasurementOperation::kAny,
+                  IsNull(), IsNull(), IsNull()))
+      .WillRepeatedly(Return(false));
+  ScopedContentBrowserClientSetting setting(&browser_client);
+
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
 
   // Create a mutation observer to wait for the content to render to the dom.
-  // Waiting on calls to TestAttributionManager is not sufficient because the
+  // Waiting on calls to `MockAttributionManager` is not sufficient because the
   // results are returned in promises.
   static constexpr char wait_script[] = R"(
     let status = document.getElementById("feature-status-content");
@@ -150,7 +182,6 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   ClickRefreshButton();
   EXPECT_EQ(kCompleteTitle, title_watcher.WaitAndGetTitle());
-  SetBrowserClientForTesting(old_browser_client);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -158,15 +189,14 @@ IN_PROC_BROWSER_TEST_F(
     WebUIShownWithNoActiveImpression_NoImpressionsDisplayed) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
 
   static constexpr char wait_script[] = R"(
     let table = document.querySelector("#source-table-wrapper tbody");
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
           table.children[0].children[0].innerText ===
-          "No active sources.") {
+          "No sources.") {
         document.title = $1;
       }
     });
@@ -182,27 +212,37 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithActiveImpression_ImpressionsDisplayed) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
+  OverrideWebUIAttributionManager();
+
+  const base::Time now = base::Time::Now();
+
   // We use the max values of `uint64_t` and `int64_t` here to ensure that they
   // are properly handled as `bigint` values in JS and don't run into issues
   // with `Number.MAX_SAFE_INTEGER`.
 
-  TestAttributionManager manager;
-  manager.SetActiveSourcesForWebUI(
-      {SourceBuilder(base::Time::Now())
-           .SetSourceEventId(std::numeric_limits<uint64_t>::max())
-           .SetAttributionLogic(StorableSource::AttributionLogic::kNever)
-           .Build(),
-       SourceBuilder(base::Time::Now())
-           .SetSourceType(StorableSource::SourceType::kEvent)
-           .SetPriority(std::numeric_limits<int64_t>::max())
-           .SetDedupKeys({13, 17})
-           .Build()});
-  OverrideWebUIAttributionManager(&manager);
+  ON_CALL(manager_, GetActiveSourcesForWebUI)
+      .WillByDefault(InvokeCallback<std::vector<StorableSource>>(
+          {SourceBuilder(now)
+               .SetSourceEventId(std::numeric_limits<uint64_t>::max())
+               .SetAttributionLogic(StorableSource::AttributionLogic::kNever)
+               .Build(),
+           SourceBuilder(now + base::Hours(1))
+               .SetSourceType(StorableSource::SourceType::kEvent)
+               .SetPriority(std::numeric_limits<int64_t>::max())
+               .SetDedupKeys({13, 17})
+               .Build()}));
+
+  manager_.NotifySourceDeactivated(
+      DeactivatedSource(SourceBuilder(now + base::Hours(2)).Build(),
+                        DeactivatedSource::Reason::kReplacedByNewerSource));
+  manager_.NotifySourceDeactivated(
+      DeactivatedSource(SourceBuilder(now + base::Hours(3)).Build(),
+                        DeactivatedSource::Reason::kReachedAttributionLimit));
 
   static constexpr char wait_script[] = R"(
     let table = document.querySelector("#source-table-wrapper tbody");
     let obs = new MutationObserver(() => {
-      if (table.children.length === 2 &&
+      if (table.children.length === 4 &&
           table.children[0].children[0].innerText === $1 &&
           table.children[0].children[6].innerText === "Navigation" &&
           table.children[1].children[6].innerText === "Event" &&
@@ -210,8 +250,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[1].children[7].innerText === $2 &&
           table.children[0].children[8].innerText === "" &&
           table.children[1].children[8].innerText === "13, 17" &&
-          table.children[0].children[9].innerText === "unreportable" &&
-          table.children[1].children[9].innerText === "reportable") {
+          table.children[0].children[9].innerText === "Unattributable: noised" &&
+          table.children[1].children[9].innerText === "Attributable" &&
+          table.children[2].children[9].innerText === "Unattributable: replaced by newer source" &&
+          table.children[3].children[9].innerText === "Unattributable: reached attribution limit") {
         document.title = $3;
       }
     });
@@ -228,8 +270,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithNoReports_NoReportsDisplayed) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
 
   TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle);
   SetTitleOnReportsTableEmpty(kCompleteTitle);
@@ -241,11 +282,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUIShownWithManager_DebugModeDisabled) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
 
   // Create a mutation observer to wait for the content to render to the dom.
-  // Waiting on calls to TestAttributionManager is not sufficient because the
+  // Waiting on calls to `MockAttributionManager` is not sufficient because the
   // results are returned in promises.
   static constexpr char wait_script[] = R"(
     let status = document.getElementById("debug-mode-content");
@@ -269,11 +309,10 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
 
   // Create a mutation observer to wait for the content to render to the dom.
-  // Waiting on calls to TestAttributionManager is not sufficient because the
+  // Waiting on calls to `MockAttributionManager` is not sufficient because the
   // results are returned in promises.
   static constexpr char wait_script[] = R"(
     let status = document.getElementById("debug-mode-content");
@@ -296,47 +335,53 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   const base::Time now = base::Time::Now();
 
-  TestAttributionManager manager;
-  manager.GetSessionStorage().AddSentReport(SentReportInfo(
-      AttributionReport(SourceBuilder(now).SetSourceEventId(100).Build(),
-                        /*trigger_data=*/5,
-                        /*conversion_time=*/now,
-                        /*report_time=*/now + base::Hours(3),
-                        /*priority=*/0, AttributionReport::Id(2)),
-      SentReportInfo::Status::kSent,
-      /*http_response_code=*/200));
-  manager.SetReportsForWebUI({AttributionReport(
-      SourceBuilder(now)
-          .SetSourceEventId(200)
-          .SetSourceType(StorableSource::SourceType::kEvent)
-          .SetAttributionLogic(StorableSource::AttributionLogic::kFalsely)
-          .Build(),
-      /*trigger_data=*/7, /*conversion_time=*/now,
-      /*report_time=*/now, /*priority=*/13, AttributionReport::Id(1))});
-  manager.GetSessionStorage().AddDroppedReport(
-      AttributionStorage::CreateReportResult(
-          CreateReportStatus::kPriorityTooLow,
-          AttributionReport(SourceBuilder(now).Build(),
-                            /*trigger_data=*/8,
-                            /*conversion_time=*/now,
-                            /*report_time=*/now + base::Hours(1),
-                            /*priority=*/11, AttributionReport::Id(3))));
-  manager.GetSessionStorage().AddDroppedReport(
-      AttributionStorage::CreateReportResult(
-          CreateReportStatus::kDroppedForNoise,
-          AttributionReport(SourceBuilder(now).Build(),
-                            /*trigger_data=*/9,
-                            /*conversion_time=*/now,
-                            /*report_time=*/now + base::Hours(2),
-                            /*priority=*/12,
-                            /*conversion_id=*/absl::nullopt)));
-  OverrideWebUIAttributionManager(&manager);
+  OverrideWebUIAttributionManager();
+
+  manager_.NotifyReportSent(SentReport(ReportBuilder(SourceBuilder(now).Build())
+                                           .SetReportTime(now + base::Hours(3))
+                                           .Build(),
+                                       SentReport::Status::kSent,
+                                       /*http_response_code=*/200));
+  manager_.NotifyReportSent(SentReport(ReportBuilder(SourceBuilder(now).Build())
+                                           .SetReportTime(now + base::Hours(4))
+                                           .SetPriority(-1)
+                                           .Build(),
+                                       SentReport::Status::kDropped,
+                                       /*http_response_code=*/0));
+  manager_.NotifyReportSent(SentReport(ReportBuilder(SourceBuilder(now).Build())
+                                           .SetReportTime(now + base::Hours(5))
+                                           .SetPriority(-2)
+                                           .Build(),
+                                       SentReport::Status::kFailure,
+                                       /*http_response_code=*/0));
+  ON_CALL(manager_, GetPendingReportsForWebUI)
+      .WillByDefault(InvokeCallback<std::vector<AttributionReport>>(
+          {ReportBuilder(SourceBuilder(now)
+                             .SetSourceType(StorableSource::SourceType::kEvent)
+                             .SetAttributionLogic(
+                                 StorableSource::AttributionLogic::kFalsely)
+                             .Build())
+               .SetReportTime(now)
+               .SetPriority(13)
+               .Build()}));
+  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+      CreateReportStatus::kPriorityTooLow,
+      ReportBuilder(SourceBuilder(now).Build())
+          .SetReportTime(now + base::Hours(1))
+          .SetPriority(11)
+          .Build()));
+  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+      CreateReportStatus::kDroppedForNoise,
+      ReportBuilder(SourceBuilder(now).Build())
+          .SetReportTime(now + base::Hours(2))
+          .SetPriority(12)
+          .Build()));
 
   {
     static constexpr char wait_script[] = R"(
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
-        if (table.children.length === 4 &&
+        if (table.children.length === 6 &&
             table.children[0].children[1].innerText === "https://conversion.test" &&
             table.children[0].children[2].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-attribution" &&
@@ -349,7 +394,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[2].children[7].innerText === "Dropped for noise" &&
             table.children[3].children[5].innerText === "0" &&
             table.children[3].children[6].innerText === "no" &&
-            table.children[3].children[7].innerText === "Sent: HTTP 200") {
+            table.children[3].children[7].innerText === "Sent: HTTP 200" &&
+            table.children[4].children[7].innerText === "Prohibited by browser policy" &&
+            table.children[5].children[7].innerText === "Network error") {
           document.title = $1;
         }
       });
@@ -365,20 +412,22 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     static constexpr char wait_script[] = R"(
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
-        if (table.children.length === 4 &&
-            table.children[3].children[1].innerText === "https://conversion.test" &&
-            table.children[3].children[2].innerText ===
+        if (table.children.length === 6 &&
+            table.children[5].children[1].innerText === "https://conversion.test" &&
+            table.children[5].children[2].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-attribution" &&
-            table.children[3].children[5].innerText === "13" &&
-            table.children[3].children[6].innerText === "yes" &&
-            table.children[3].children[7].innerText === "Pending" &&
-            table.children[2].children[5].innerText === "12" &&
-            table.children[2].children[7].innerText === "Dropped for noise" &&
-            table.children[1].children[5].innerText === "11" &&
-            table.children[1].children[7].innerText === "Dropped due to low priority" &&
-            table.children[0].children[5].innerText === "0" &&
-            table.children[0].children[6].innerText === "no" &&
-            table.children[0].children[7].innerText === "Sent: HTTP 200") {
+            table.children[5].children[5].innerText === "13" &&
+            table.children[5].children[6].innerText === "yes" &&
+            table.children[5].children[7].innerText === "Pending" &&
+            table.children[4].children[5].innerText === "12" &&
+            table.children[4].children[7].innerText === "Dropped for noise" &&
+            table.children[3].children[5].innerText === "11" &&
+            table.children[3].children[7].innerText === "Dropped due to low priority" &&
+            table.children[2].children[5].innerText === "0" &&
+            table.children[2].children[6].innerText === "no" &&
+            table.children[2].children[7].innerText === "Sent: HTTP 200" &&
+            table.children[1].children[7].innerText === "Prohibited by browser policy" &&
+            table.children[0].children[7].innerText === "Network error") {
           document.title = $1;
         }
       });
@@ -396,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     static constexpr char wait_script[] = R"(
       let table = document.querySelector("#report-table-wrapper tbody");
       let obs = new MutationObserver(() => {
-        if (table.children.length === 4 &&
+        if (table.children.length === 6 &&
             table.children[0].children[1].innerText === "https://conversion.test" &&
             table.children[0].children[2].innerText ===
               "https://report.test/.well-known/attribution-reporting/report-attribution" &&
@@ -409,7 +458,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[2].children[7].innerText === "Dropped due to low priority" &&
             table.children[3].children[5].innerText === "0" &&
             table.children[3].children[6].innerText === "no" &&
-            table.children[3].children[7].innerText === "Sent: HTTP 200") {
+            table.children[3].children[7].innerText === "Sent: HTTP 200" &&
+            table.children[4].children[7].innerText === "Prohibited by browser policy" &&
+            table.children[5].children[7].innerText === "Network error") {
           document.title = $1;
         }
       });
@@ -431,17 +482,23 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   const base::Time now = base::Time::Now();
 
-  TestAttributionManager manager;
-  AttributionReport report(SourceBuilder(now).SetSourceEventId(100).Build(),
-                           /*trigger_data=*/0, /*conversion_time=*/now,
-                           /*report_time=*/now, /*priority=*/7,
-                           AttributionReport::Id(1));
-  manager.SetReportsForWebUI({report});
+  OverrideWebUIAttributionManager();
+
+  AttributionReport report = ReportBuilder(SourceBuilder(now).Build())
+                                 .SetReportTime(now)
+                                 .SetPriority(7)
+                                 .Build();
+  EXPECT_CALL(manager_, GetPendingReportsForWebUI)
+      .WillOnce(InvokeCallback<std::vector<AttributionReport>>({report}));
+
   report.report_time += base::Hours(1);
-  manager.GetSessionStorage().AddSentReport(
-      SentReportInfo(report, SentReportInfo::Status::kSent,
-                     /*http_response_code=*/200));
-  OverrideWebUIAttributionManager(&manager);
+  manager_.NotifyReportSent(SentReport(report, SentReport::Status::kSent,
+                                       /*http_response_code=*/200));
+
+  EXPECT_CALL(manager_, ClearData)
+      .WillOnce([](base::Time delete_begin, base::Time delete_end,
+                   base::RepeatingCallback<bool(const url::Origin&)> filter,
+                   base::OnceClosure done) { std::move(done).Run(); });
 
   // Verify both rows get rendered.
   static constexpr char wait_script[] = R"(
@@ -471,20 +528,21 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   EXPECT_EQ(kDeleteTitle, delete_title_watcher.WaitAndGetTitle());
 }
 
-// TODO(johnidel): Use a real AttributionManager here and verify that the
-// reports are actually sent.
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        WebUISendReports_ReportsRemoved) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
-  TestAttributionManager manager;
-  AttributionReport report(
-      SourceBuilder(base::Time::Now()).SetSourceEventId(100).Build(),
-      /*trigger_data=*/0, /*conversion_time=*/base::Time::Now(),
-      /*report_time=*/base::Time::Now(), /*priority=*/7,
-      AttributionReport::Id(1));
-  manager.SetReportsForWebUI({report});
-  OverrideWebUIAttributionManager(&manager);
+  EXPECT_CALL(manager_, GetPendingReportsForWebUI)
+      .WillOnce(InvokeCallback<std::vector<AttributionReport>>(
+          {ReportBuilder(SourceBuilder(base::Time::Now()).Build())
+               .SetPriority(7)
+               .Build()}))
+      .WillOnce(InvokeCallback<std::vector<AttributionReport>>({}));
+
+  EXPECT_CALL(manager_, SendReportsForWebUI)
+      .WillOnce([](base::OnceClosure done) { std::move(done).Run(); });
+
+  OverrideWebUIAttributionManager();
 
   static constexpr char wait_script[] = R"(
     let table = document.querySelector("#report-table-wrapper tbody");
@@ -509,6 +567,11 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   EXPECT_TRUE(
       ExecJsInWebUI("document.getElementById('send-reports').click();"));
+
+  // The real manager would do this itself, but the test manager requires manual
+  // triggering.
+  manager_.NotifyReportsChanged();
+
   EXPECT_EQ(kSentTitle, sent_title_watcher.WaitAndGetTitle());
 }
 

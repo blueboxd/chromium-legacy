@@ -59,7 +59,7 @@ CanvasResourceDispatcher::CanvasResourceDispatcher(
     uint32_t client_id,
     uint32_t sink_id,
     int canvas_id,
-    const IntSize& size)
+    const gfx::Size& size)
     : frame_sink_id_(viz::FrameSinkId(client_id, sink_id)),
       size_(size),
       change_size_for_next_commit_(false),
@@ -231,6 +231,14 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   frame->metadata.frame_token = ++next_frame_token_;
 
+  // Ask viz not to throttle us if we've not voluntarily suspended animation.
+  // Typically, we'll suspend if we're hidden, unless we're hidden-but-painting.
+  // In that case, we can still submit frames that will contribute, possibly
+  // indirectly, to picture-in-picture content even if those frames are not
+  // consumed by a viz frame sink directly.  In those cases, it might choose to
+  // throttle us, incorrectly.
+  frame->metadata.may_throttle_if_undrawn_frames = suspend_animation_;
+
   const gfx::Rect bounds(size_.width(), size_.height());
   constexpr viz::CompositorRenderPassId kRenderPassId{1};
   auto pass =
@@ -259,7 +267,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
   resources_.insert(resource_id, std::move(frame_resource));
 
   // TODO(crbug.com/869913): add unit testing for this.
-  const gfx::Size canvas_resource_size = ToGfxSize(canvas_resource->Size());
+  const gfx::Size canvas_resource_size = canvas_resource->Size();
 
   PostImageToPlaceholderIfNotBlocked(std::move(canvas_resource), resource_id);
 
@@ -415,11 +423,11 @@ void CanvasResourceDispatcher::ReclaimResource(viz::ResourceId resource_id) {
   }
 }
 
-bool CanvasResourceDispatcher::VerifyImageSize(const IntSize image_size) {
+bool CanvasResourceDispatcher::VerifyImageSize(const gfx::Size& image_size) {
   return image_size == size_;
 }
 
-void CanvasResourceDispatcher::Reshape(const IntSize& size) {
+void CanvasResourceDispatcher::Reshape(const gfx::Size& size) {
   if (size_ != size) {
     size_ = size;
     change_size_for_next_commit_ = true;

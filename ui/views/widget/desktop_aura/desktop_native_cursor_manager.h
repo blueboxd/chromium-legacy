@@ -8,10 +8,7 @@
 #include <memory>
 #include <set>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
-#include "ui/base/cursor/cursor_loader.h"
-#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
+#include "ui/aura/cursor/cursor_loader.h"
 #include "ui/views/views_export.h"
 #include "ui/wm/core/native_cursor_manager.h"
 
@@ -62,7 +59,7 @@ class VIEWS_EXPORT DesktopNativeCursorManager : public wm::NativeCursorManager {
   using Hosts = std::set<aura::WindowTreeHost*>;
   Hosts hosts_;
 
-  ui::CursorLoader cursor_loader_;
+  aura::CursorLoader cursor_loader_;
 };
 
 }  // namespace views

@@ -82,12 +82,19 @@ void CullRectUpdater::UpdateInternal(const CullRect& input_cull_rect) {
   UpdateForDescendants(starting_layer_, force_update_children);
 }
 
+// See UpdateForDescendants for how |force_update_self| is propagated.
 void CullRectUpdater::UpdateRecursively(PaintLayer& layer,
                                         const PaintLayer& parent_painting_layer,
                                         bool force_update_self) {
   bool should_proactively_update = ShouldProactivelyUpdate(layer);
   bool force_update_children =
-      should_proactively_update || layer.ForcesChildrenCullRectUpdate();
+      should_proactively_update || layer.ForcesChildrenCullRectUpdate() ||
+      !layer.GetLayoutObject().IsStackingContext() ||
+      // |force_update_self| is true if the contents cull rect of the containing
+      // block of |layer| changed, so we need to propagate the flag to
+      // non-contained absolute-position descendants whose cull rects are also
+      // affected by the containing block.
+      (force_update_self && layer.HasNonContainedAbsolutePositionDescendant());
 
   // This defines the scope of force_proactive_update_ (which may be set by
   // ComputeFragmentCullRect() and ComputeFragmentContentsCullRect()) to the
@@ -107,18 +114,25 @@ void CullRectUpdater::UpdateRecursively(PaintLayer& layer,
     PhysicalRect overflow_rect = box->PhysicalSelfVisualOverflowRect();
     overflow_rect.Move(box->FirstFragment().PaintOffset());
     if (!box->FirstFragment().GetCullRect().Intersects(
-            ToGfxRect(EnclosingIntRect(overflow_rect)))) {
+            ToEnclosingRect(overflow_rect))) {
       reset_subtree_is_out_of_cull_rect.emplace(&subtree_is_out_of_cull_rect_,
                                                 true);
     }
   }
 
-  if (force_update_children || layer.DescendantNeedsCullRectUpdate())
+  if (force_update_children || layer.DescendantNeedsCullRectUpdate() ||
+      // A change of non-stacking-context layer may affect cull rect of
+      // descendants even if the contents cull rect doesn't change.
+      !layer.GetLayoutObject().IsStackingContext()) {
     UpdateForDescendants(layer, force_update_children);
+  }
 
   layer.ClearNeedsCullRectUpdate();
 }
 
+// "Children" in |force_update_children| means children in the containing block
+// tree. The flag is set by the containing block whose contents cull rect
+// changed.
 void CullRectUpdater::UpdateForDescendants(PaintLayer& layer,
                                            bool force_update_children) {
   const auto& object = layer.GetLayoutObject();
@@ -151,9 +165,9 @@ void CullRectUpdater::UpdateForDescendants(PaintLayer& layer,
   //     <div id="stacked-child" style="position: relative"></div>
   //   </div>
   // </div>
-  // If |child|'s contents cull rect changes, we need to update
-  // |stacked-child|'s cull rect because it's clipped by |child|. The is done in
-  // the following order:
+  // If |child| needs cull rect update, we also need to update |stacked-child|'s
+  // cull rect because it's clipped by |child|. The is done in the following
+  // order:
   //   UpdateForDescendants(|layer|)
   //     UpdateRecursively(|child|) (in the following loop)
   //       |stacked-child|->SetNeedsCullRectUpdate()
@@ -168,8 +182,7 @@ void CullRectUpdater::UpdateForDescendants(PaintLayer& layer,
       // In the above example, during UpdateForDescendants(child), this
       // forces cull rect update of |stacked-child| which will be updated in
       // the next loop during UpdateForDescendants(layer).
-      if (force_update_children)
-        child->SetNeedsCullRectUpdate();
+      child->SetNeedsCullRectUpdate();
       continue;
     }
     UpdateRecursively(*child, layer, force_update_children);

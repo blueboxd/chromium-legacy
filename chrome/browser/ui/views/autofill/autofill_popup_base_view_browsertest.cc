@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
@@ -42,19 +42,26 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
   MOCK_CONST_METHOD0(IsRTL, bool());
+
+  base::WeakPtr<AutofillPopupViewDelegate> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<MockAutofillPopupViewDelegate> weak_ptr_factory_{this};
 };
 
 }  // namespace
 
 class AutofillPopupBaseViewTest : public InProcessBrowserTest {
  public:
-  AutofillPopupBaseViewTest() {}
+  AutofillPopupBaseViewTest() = default;
 
   AutofillPopupBaseViewTest(const AutofillPopupBaseViewTest&) = delete;
   AutofillPopupBaseViewTest& operator=(const AutofillPopupBaseViewTest&) =
       delete;
 
-  ~AutofillPopupBaseViewTest() override {}
+  ~AutofillPopupBaseViewTest() override = default;
 
   void SetUpOnMainThread() override {
     content::WebContents* web_contents =
@@ -66,9 +73,10 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
         .WillRepeatedly(Return(web_contents));
     EXPECT_CALL(mock_delegate_, ViewDestroyed());
 
-    view_ = new AutofillPopupBaseView(
-        &mock_delegate_, views::Widget::GetWidgetForNativeWindow(
-                             browser()->window()->GetNativeWindow()));
+    view_ =
+        new AutofillPopupBaseView(mock_delegate_.GetWeakPtr(),
+                                  views::Widget::GetWidgetForNativeWindow(
+                                      browser()->window()->GetNativeWindow()));
   }
 
   void ShowView() { view_->DoShow(); }
@@ -84,7 +92,7 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
 
  protected:
   testing::NiceMock<MockAutofillPopupViewDelegate> mock_delegate_;
-  AutofillPopupBaseView* view_;
+  raw_ptr<AutofillPopupBaseView> view_;
 };
 
 // Regression test for crbug.com/391316

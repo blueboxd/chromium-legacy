@@ -128,7 +128,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -182,7 +182,7 @@ struct SameSizeAsNode : EventTarget {
   Member<void*> willbe_member_[4];
   Member<NodeData> member_;
   // Increasing size of Member increases size of Node.
-  static_assert(kBlinkGCHasDebugChecks ||
+  static_assert(kBlinkMemberGCHasDebugChecks ||
                     ::WTF::internal::SizesEqual<sizeof(Member<NodeData>),
                                                 sizeof(void*)>::value,
                 "Member<NodeData> should stay small");
@@ -539,7 +539,7 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
   if (scroll_state.FullyConsumed())
     return;
 
-  FloatSize delta(scroll_state.deltaX(), scroll_state.deltaY());
+  ScrollOffset delta(scroll_state.deltaX(), scroll_state.deltaY());
 
   if (delta.IsZero())
     return;
@@ -585,7 +585,7 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
 
   // FIXME: Native scrollers should only consume the scroll they
   // apply. See crbug.com/457765.
-  scroll_state.ConsumeDeltaNative(delta.width(), delta.height());
+  scroll_state.ConsumeDeltaNative(delta.x(), delta.y());
 
   // We need to setCurrentNativeScrollingElement in both the
   // distributeScroll and applyScroll default implementations so
@@ -1105,8 +1105,8 @@ PhysicalRect Node::BoundingBox() const {
   return PhysicalRect();
 }
 
-IntRect Node::PixelSnappedBoundingBox() const {
-  return PixelSnappedIntRect(BoundingBox());
+gfx::Rect Node::PixelSnappedBoundingBox() const {
+  return ToPixelSnappedRect(BoundingBox());
 }
 
 PhysicalRect Node::BoundingBoxForScrollIntoView() const {
@@ -1292,16 +1292,42 @@ void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
   DCHECK(isConnected());
   Element* ancestor = GetReattachParent();
   bool parent_dirty = ancestor && ancestor->IsDirtyForRebuildLayoutTree();
+  DCHECK(!ancestor || !ChildNeedsReattachLayoutTree() ||
+         !ancestor->ChildNeedsReattachLayoutTree() || NeedsReattachLayoutTree())
+      << "If both this and the parent are already marked with "
+         "ChildNeedsReattachLayoutTree(), something is broken and "
+         "UpdateLayoutTreeRebuildRoot() will be confused about common "
+         "ancestors.";
   for (; ancestor && !ancestor->ChildNeedsReattachLayoutTree();
        ancestor = ancestor->GetReattachParent()) {
     ancestor->SetChildNeedsReattachLayoutTree();
     if (ancestor->IsDirtyForRebuildLayoutTree())
+      break;
+
+    // If we reach a locked ancestor, we should abort since the ancestor marking
+    // will be done when the context is unlocked.
+    if (ancestor->ChildStyleRecalcBlockedByDisplayLock())
       break;
   }
   // If the parent node is already dirty, we can keep the same rebuild root. The
   // early return here is a performance optimization.
   if (parent_dirty)
     return;
+
+  // If we're in a locked subtree, then we should not update the layout tree
+  // rebuild root. It would be updated when we unlock the context. In other
+  // words, the only way we have a node in the locked subtree is if the ancestor
+  // has a locked display lock context or it is dirty for reattach. In either of
+  // those cases, we have a dirty bit trail up to the display lock context,
+  // which will be propagated when the lock is removed.
+  if (GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() >
+      0) {
+    for (Element* ancestor_copy = ancestor; ancestor_copy;
+         ancestor_copy = ancestor_copy->GetReattachParent()) {
+      if (ancestor_copy->ChildStyleRecalcBlockedByDisplayLock())
+        return;
+    }
+  }
   GetDocument().GetStyleEngine().UpdateLayoutTreeRebuildRoot(ancestor, this);
 }
 
@@ -1363,34 +1389,11 @@ bool Node::ShouldHaveFocusAppearance() const {
   return true;
 }
 
+// TODO(crbug.com/692360): Remove this method.
 bool Node::IsInert() const {
-  DCHECK(!IsShadowRoot());
-  if (!isConnected())
-    return true;
-
-  if (this != GetDocument() && this != GetDocument().documentElement()) {
-    const Element* modal_element = GetDocument().ActiveModalDialog();
-    if (!modal_element)
-      modal_element = Fullscreen::FullscreenElementFrom(GetDocument());
-    if (modal_element && !FlatTreeTraversal::ContainsIncludingPseudoElement(
-                             *modal_element, *this)) {
-      return true;
-    }
-  }
-
-  if (RuntimeEnabledFeatures::InertAttributeEnabled()) {
-    const auto* element = DynamicTo<Element>(this);
-    if (!element)
-      element = FlatTreeTraversal::ParentElement(*this);
-
-    while (element) {
-      if (element->FastHasAttribute(html_names::kInertAttr) &&
-          element->IsHTMLElement())
-        return true;
-      element = FlatTreeTraversal::ParentElement(*element);
-    }
-  }
-  return GetDocument().GetFrame() && GetDocument().GetFrame()->IsInert();
+  if (const ComputedStyle* style = GetComputedStyle())
+    return style->IsInert();
+  return false;
 }
 
 LinkHighlightCandidate Node::IsLinkHighlightCandidate() const {
@@ -2009,7 +2012,7 @@ String Node::textContent(bool convert_brs_to_newlines) const {
       content.Append(text_node->data());
     }
   }
-  return content.ToString();
+  return content.ReleaseString();
 }
 
 V8UnionStringOrTrustedScript* Node::textContentForBinding() const {
@@ -2275,7 +2278,7 @@ String Node::DebugName() const {
       name.Append('\'');
     }
   }
-  return name.ToString();
+  return name.ReleaseString();
 }
 
 String Node::DebugNodeName() const {
@@ -2326,7 +2329,7 @@ String Node::ToString() const {
   if (IsTextNode()) {
     builder.Append(" ");
     builder.Append(nodeValue().EncodeForDebugging());
-    return builder.ToString();
+    return builder.ReleaseString();
   }
   DumpAttributeDesc(*this, html_names::kIdAttr, builder);
   DumpAttributeDesc(*this, html_names::kClassAttr, builder);
@@ -2335,7 +2338,7 @@ String Node::ToString() const {
     builder.Append(" (editable)");
   if (GetDocument().FocusedElement() == this)
     builder.Append(" (focused)");
-  return builder.ToString();
+  return builder.ReleaseString();
 }
 
 #if DCHECK_IS_ON()
@@ -2421,28 +2424,30 @@ static void AppendMarkedTree(const String& base_indent,
     builder.Append("\n");
     indent.Append('\t');
 
+    String indent_string = indent.ReleaseString();
+
     if (const auto* element = DynamicTo<Element>(node)) {
       if (Element* pseudo = element->GetPseudoElement(kPseudoIdMarker)) {
-        AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
+        AppendMarkedTree(indent_string, pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
       }
       if (Element* pseudo = element->GetPseudoElement(kPseudoIdBefore))
-        AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
+        AppendMarkedTree(indent_string, pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
       if (Element* pseudo = element->GetPseudoElement(kPseudoIdAfter))
-        AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
+        AppendMarkedTree(indent_string, pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
       if (Element* pseudo = element->GetPseudoElement(kPseudoIdFirstLetter))
-        AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
+        AppendMarkedTree(indent_string, pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
       if (Element* pseudo = element->GetPseudoElement(kPseudoIdBackdrop))
-        AppendMarkedTree(indent.ToString(), pseudo, marked_node1, marked_label1,
+        AppendMarkedTree(indent_string, pseudo, marked_node1, marked_label1,
                          marked_node2, marked_label2, builder);
     }
 
     if (ShadowRoot* shadow_root = node.GetShadowRoot()) {
-      AppendMarkedTree(indent.ToString(), shadow_root, marked_node1,
-                       marked_label1, marked_node2, marked_label2, builder);
+      AppendMarkedTree(indent_string, shadow_root, marked_node1, marked_label1,
+                       marked_node2, marked_label2, builder);
     }
   }
 }
@@ -2468,7 +2473,7 @@ static void AppendMarkedFlatTree(const String& base_indent,
     indent.Append('\t');
 
     if (Node* child = FlatTreeTraversal::FirstChild(*node))
-      AppendMarkedFlatTree(indent.ToString(), child, marked_node1,
+      AppendMarkedFlatTree(indent.ReleaseString(), child, marked_node1,
                            marked_label1, marked_node2, marked_label2, builder);
   }
 }
@@ -2487,7 +2492,7 @@ String Node::ToMarkedTreeString(const Node* marked_node1,
   String starting_indent;
   AppendMarkedTree(starting_indent, root_node, marked_node1, marked_label1,
                    marked_node2, marked_label2, builder);
-  return builder.ToString();
+  return builder.ReleaseString();
 }
 
 String Node::ToMarkedFlatTreeString(const Node* marked_node1,
@@ -2504,7 +2509,7 @@ String Node::ToMarkedFlatTreeString(const Node* marked_node1,
   String starting_indent;
   AppendMarkedFlatTree(starting_indent, root_node, marked_node1, marked_label1,
                        marked_node2, marked_label2, builder);
-  return builder.ToString();
+  return builder.ReleaseString();
 }
 
 static ContainerNode* ParentOrShadowHostOrFrameOwner(const Node* node) {

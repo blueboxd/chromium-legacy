@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -340,6 +340,10 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::
 
 bool StringKeyframe::CSSPropertySpecificKeyframe::IsRevert() const {
   return value_ && value_->IsRevertValue();
+}
+
+bool StringKeyframe::CSSPropertySpecificKeyframe::IsRevertLayer() const {
+  return value_ && value_->IsRevertLayerValue();
 }
 
 Keyframe::PropertySpecificKeyframe*

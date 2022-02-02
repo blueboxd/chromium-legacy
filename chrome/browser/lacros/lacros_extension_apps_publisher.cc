@@ -8,13 +8,14 @@
 
 #include "base/containers/extend.h"
 #include "base/scoped_observation.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/lacros/lacros_extension_apps_utility.h"
-#include "chrome/browser/lacros/window_utility.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
+#include "chrome/browser/ui/lacros/window_utility.h"
 #include "chromeos/crosapi/mojom/app_window_tracker.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -253,7 +254,7 @@ class LacrosExtensionAppsPublisher::ProfileTracker
     DCHECK(IsChromeApp(extension));
     apps::mojom::AppPtr app = apps::mojom::App::New();
 
-    app->app_type = apps::mojom::AppType::kStandaloneBrowserExtension;
+    app->app_type = apps::mojom::AppType::kStandaloneBrowserChromeApp;
     app->app_id = lacros_extension_apps_utility::MuxId(profile_, extension);
     app->readiness = readiness;
     app->name = extension->name();
@@ -265,6 +266,7 @@ class LacrosExtensionAppsPublisher::ProfileTracker
     // Apps is deprecated, it's unclear if we'll ever get around to implementing
     // this functionality.
     app->icon_key = apps::mojom::IconKey::New();
+    app->icon_key->icon_effects = apps::IconEffects::kCrOsStandardIcon;
 
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
     if (prefs) {
@@ -290,6 +292,7 @@ class LacrosExtensionAppsPublisher::ProfileTracker
     app->show_in_management = extension->ShouldDisplayInAppLauncher()
                                   ? apps::mojom::OptionalBool::kTrue
                                   : apps::mojom::OptionalBool::kFalse;
+    app->handles_intents = show;
 
     const extensions::ManagementPolicy* policy =
         extensions::ExtensionSystem::Get(profile_)->management_policy();

@@ -22,8 +22,7 @@ _MAX_ANDROID_EMULATORS = 16
 class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
 
   def __init__(self, args, output_manager, error_func):
-    super(LocalEmulatorEnvironment, self).__init__(args, output_manager,
-                                                   error_func)
+    super().__init__(args, output_manager, error_func)
     self._avd_config = avd.AvdConfig(args.avd_config)
     if args.emulator_count < 1:
       error_func('--emulator-count must be >= 1')
@@ -67,8 +66,9 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
         return e
 
       def retry_on_timeout(exc):
-        return (isinstance(exc, device_errors.CommandTimeoutError)
-                or isinstance(exc, reraiser_thread.TimeoutError))
+        return isinstance(
+            exc,
+            (device_errors.CommandTimeoutError, reraiser_thread.TimeoutError))
 
       return timeout_retry.Run(
           impl,
@@ -87,16 +87,16 @@ class LocalEmulatorEnvironment(local_device_environment.LocalDeviceEnvironment):
 
     if not self._emulator_instances:
       raise Exception('Failed to start any instances of the emulator.')
-    elif len(self._emulator_instances) < self._emulator_count:
+    if len(self._emulator_instances) < self._emulator_count:
       logging.warning(
           'Running with fewer emulator instances than requested (%d vs %d)',
           len(self._emulator_instances), self._emulator_count)
 
-    super(LocalEmulatorEnvironment, self).SetUp()
+    super().SetUp()
 
   #override
   def TearDown(self):
     try:
-      super(LocalEmulatorEnvironment, self).TearDown()
+      super().TearDown()
     finally:
       parallelizer.SyncParallelizer(self._emulator_instances).Stop()

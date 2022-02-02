@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -230,6 +230,10 @@ CanvasRenderingContextHost*
 OffscreenCanvasRenderingContext2D::GetCanvasRenderingContextHost() {
   return Host();
 }
+ExecutionContext* OffscreenCanvasRenderingContext2D::GetTopExecutionContext()
+    const {
+  return Host()->GetTopExecutionContext();
+}
 
 ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     ScriptState* script_state) {
@@ -259,6 +263,11 @@ scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage() {
       GetCanvasResourceProvider()->Snapshot();
 
   return image;
+}
+
+NoAllocDirectCallHost*
+OffscreenCanvasRenderingContext2D::AsNoAllocDirectCallHost() {
+  return this;
 }
 
 V8RenderingContext* OffscreenCanvasRenderingContext2D::AsV8RenderingContext() {
@@ -436,36 +445,30 @@ String OffscreenCanvasRenderingContext2D::direction() const {
              ? kRtlDirectionString
              : kLtrDirectionString;
 }
+
 void OffscreenCanvasRenderingContext2D::setLetterSpacing(
-    const double letter_spacing) {
+    const String& letter_spacing) {
   UseCounter::Count(Host()->GetTopExecutionContext(),
                     WebFeature::kCanvasRenderingContext2DLetterSpacing);
-  if (UNLIKELY(!std::isfinite(letter_spacing)))
-    return;
-  // TODO(crbug.com/1234113): Instrument new canvas APIs.
-  identifiability_study_helper_.set_encountered_skipped_ops();
 
+  identifiability_study_helper_.set_encountered_skipped_ops();
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  float letter_spacing_float = ClampTo<float>(letter_spacing);
-  GetState().SetLetterSpacing(letter_spacing_float, Host()->GetFontSelector());
+  GetState().SetLetterSpacing(letter_spacing);
 }
 
 void OffscreenCanvasRenderingContext2D::setWordSpacing(
-    const double word_spacing) {
+    const String& word_spacing) {
   UseCounter::Count(Host()->GetTopExecutionContext(),
                     WebFeature::kCanvasRenderingContext2DWordSpacing);
-  if (UNLIKELY(!std::isfinite(word_spacing)))
-    return;
+
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
-
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  float word_spacing_float = ClampTo<float>(word_spacing);
-  GetState().SetWordSpacing(word_spacing_float, Host()->GetFontSelector());
+  GetState().SetWordSpacing(word_spacing);
 }
 
 void OffscreenCanvasRenderingContext2D::setTextRendering(
@@ -677,7 +680,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
                    false);
   text_run.SetNormalizeSpace(true);
   // Draw the item text at the correct point.
-  FloatPoint location(x, y + GetFontBaseline(*font_data));
+  gfx::PointF location(x, y + GetFontBaseline(*font_data));
   double font_width = font.Width(text_run);
 
   bool use_max_width = (max_width && *max_width < font_width);
@@ -700,7 +703,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
       break;
   }
 
-  FloatRect bounds(
+  gfx::RectF bounds(
       location.x() - font_metrics.Height() / 2,
       location.y() - font_metrics.Ascent() - font_metrics.LineGap(),
       width + font_metrics.Height(), font_metrics.LineSpacing());
@@ -714,7 +717,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
     // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
     // still work.
     paint_canvas->scale((font_width > 0 ? (width / font_width) : 0), 1);
-    location = FloatPoint();
+    location = gfx::PointF();
   }
 
   Draw<OverdrawOp::kNone>(
@@ -731,7 +734,8 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },
-      bounds, paint_type, CanvasRenderingContext2DState::kNoImage,
+      gfx::RectFToSkRect(bounds), paint_type,
+      CanvasRenderingContext2DState::kNoImage,
       CanvasPerformanceMonitor::DrawType::kText);
 
   // |paint_canvas| maybe rese during Draw. If that happens,
@@ -808,6 +812,12 @@ void OffscreenCanvasRenderingContext2D::TryRestoreContextEvent(
   try_restore_context_event_timer_.Stop();
   if (GetOrCreatePaintCanvas())
     DispatchContextRestoredEvent(nullptr);
+}
+
+void OffscreenCanvasRenderingContext2D::FlushCanvas() {
+  if (GetCanvasResourceProvider()) {
+    GetCanvasResourceProvider()->FlushCanvas();
+  }
 }
 
 }  // namespace blink

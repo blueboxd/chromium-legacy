@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -291,9 +290,6 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
   network::mojom::SSLVersion version_min;
   if (SSLProtocolVersionFromString(version_min_str, &version_min)) {
     config->version_min = version_min;
-    // If the ssl_version_min policy is set, we override the minimum warning
-    // version to that value, so that the policy also controls the interstitial.
-    config->version_min_warn = version_min;
   }
 
   network::mojom::SSLVersion version_max;

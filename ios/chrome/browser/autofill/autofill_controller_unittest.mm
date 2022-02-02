@@ -15,9 +15,9 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -138,7 +138,7 @@ void CheckField(const FormStructure& form,
                 const char* name) {
   for (const auto& field : form) {
     if (field->heuristic_type() == fieldType) {
-      EXPECT_EQ(base::UTF8ToUTF16(name), field->unique_name());
+      EXPECT_EQ(base::UTF8ToUTF16(name), field->name);
       return;
     }
   }
@@ -357,11 +357,11 @@ TEST_F(AutofillControllerTest, ReadForm) {
           ->autofill_manager();
   const auto& forms = autofill_manager->form_structures();
   const auto& form = *(forms.begin()->second);
-  CheckField(form, NAME_FULL, "name_1");
-  CheckField(form, ADDRESS_HOME_LINE1, "address_1");
-  CheckField(form, ADDRESS_HOME_CITY, "city_1");
-  CheckField(form, ADDRESS_HOME_STATE, "state_1");
-  CheckField(form, ADDRESS_HOME_ZIP, "zip_1");
+  CheckField(form, NAME_FULL, "name");
+  CheckField(form, ADDRESS_HOME_LINE1, "address");
+  CheckField(form, ADDRESS_HOME_CITY, "city");
+  CheckField(form, ADDRESS_HOME_STATE, "state");
+  CheckField(form, ADDRESS_HOME_ZIP, "zip");
   ExpectMetric("Autofill.IsEnabled.PageLoad", 1);
   ExpectHappinessMetric(AutofillMetrics::FORMS_LOADED);
 }
@@ -486,6 +486,7 @@ TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ChromeBrowserState::FromBrowserState(GetBrowserState()));
+  personal_data_manager->OnSyncServiceInitialized(nullptr);
   PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
@@ -655,6 +656,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   PersonalDataManager* personal_data_manager =
       PersonalDataManagerFactory::GetForBrowserState(
           ChromeBrowserState::FromBrowserState(GetBrowserState()));
+  personal_data_manager->OnSyncServiceInitialized(nullptr);
 
   // Check there are no registered profiles already.
   EXPECT_EQ(0U, personal_data_manager->GetCreditCards().size());

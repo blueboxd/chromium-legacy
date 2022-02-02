@@ -157,7 +157,7 @@ ScrollResult ScrollAnimator::UserScroll(
   // animation rather than animating multiple scrollers at the same time.
   if (on_finish_)
     std::move(on_finish_).Run();
-  return ScrollResult(false, false, delta.width(), delta.height());
+  return ScrollResult(false, false, delta.x(), delta.y());
 }
 
 bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
@@ -220,13 +220,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
   return true;
 }
 
-void ScrollAnimator::AdjustAnimationAndSetScrollOffset(
-    const ScrollOffset& offset,
-    mojom::blink::ScrollType scroll_type) {
-  IntSize adjustment = RoundedIntSize(offset) -
-                       RoundedIntSize(scrollable_area_->GetScrollOffset());
-  ScrollOffsetChanged(offset, scroll_type);
-
+void ScrollAnimator::AdjustAnimation(const gfx::Vector2d& adjustment) {
   if (run_state_ == RunState::kIdle) {
     AdjustImplOnlyScrollOffsetAnimation(adjustment);
   } else if (HasRunningAnimation()) {
@@ -245,7 +239,7 @@ void ScrollAnimator::ScrollToOffsetWithoutAnimation(
   current_offset_ = offset;
 
   ResetAnimationState();
-  NotifyOffsetChanged();
+  ScrollOffsetChanged(current_offset_, mojom::blink::ScrollType::kUser);
 }
 
 void ScrollAnimator::TickAnimation(base::TimeTicks monotonic_time) {
@@ -273,7 +267,7 @@ void ScrollAnimator::TickAnimation(base::TimeTicks monotonic_time) {
   }
 
   TRACE_EVENT0("blink", "ScrollAnimator::notifyOffsetChanged");
-  NotifyOffsetChanged();
+  ScrollOffsetChanged(current_offset_, mojom::blink::ScrollType::kUser);
 }
 
 bool ScrollAnimator::SendAnimationToCompositor() {

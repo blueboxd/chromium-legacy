@@ -11,8 +11,11 @@
 #include <set>
 #include <utility>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/disks/disk.h"
 #include "ash/components/drivefs/drivefs_host.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -50,9 +53,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/disks/disk.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "components/arc/arc_prefs.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -69,8 +70,8 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 
-using chromeos::disks::Disk;
-using chromeos::disks::DiskMountManager;
+using ::ash::disks::Disk;
+using ::ash::disks::DiskMountManager;
 using content::BrowserThread;
 using drive::DriveIntegrationService;
 using drive::DriveIntegrationServiceFactory;
@@ -438,6 +439,12 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
         urls.insert(listener->listener_url());
       }
     }
+    // In SWA, there may not be a window open to listen to the event, so always
+    // add the File Manager URL so events can be sent to the
+    // SystemNotificationManager.
+    if (ash::features::IsFileManagerSwaEnabled()) {
+      urls.insert(file_manager::util::GetFileManagerURL());
+    }
     return urls;
   }
 
@@ -552,7 +559,7 @@ void EventRouter::Shutdown() {
   if (intent_helper)
     intent_helper->RemoveObserver(this);
 
-  chromeos::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+  ash::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 
   DLOG_IF(WARNING, !file_watchers_.empty())
       << "Not all file watchers are "
@@ -653,6 +660,7 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
                               callback);
+  pref_change_registrar_->Add(ash::prefs::kFilesAppFolderShortcuts, callback);
 
   auto plugin_vm_callback = base::BindRepeating(&EventRouter::OnPluginVmChanged,
                                                 weak_factory_.GetWeakPtr());
@@ -664,7 +672,7 @@ void EventRouter::ObserveEvents() {
   pref_change_registrar_->Add(plugin_vm::prefs::kPluginVmImageExists,
                               plugin_vm_callback);
 
-  chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
+  ash::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
   auto* intent_helper =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);

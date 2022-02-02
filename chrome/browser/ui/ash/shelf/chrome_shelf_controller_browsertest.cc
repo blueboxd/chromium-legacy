@@ -83,6 +83,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -92,6 +93,7 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -643,15 +645,19 @@ class UnpinnedBrowserShortcutTest : public extensions::ExtensionBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(UnpinnedBrowserShortcutTest, UnpinnedBrowserShortcut) {
+  DCHECK(web_app::IsWebAppsCrosapiEnabled());
+
   EXPECT_EQ(-1, shelf_model()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT));
   EXPECT_EQ(-1, shelf_model()->GetItemIndexForType(
                     ash::TYPE_UNPINNED_BROWSER_SHORTCUT));
+  EXPECT_EQ(-1, shelf_model()->GetItemIndexForType(ash::TYPE_APP));
 
   CreateBrowser(profile());
 
   EXPECT_EQ(-1, shelf_model()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT));
-  EXPECT_NE(-1, shelf_model()->GetItemIndexForType(
+  EXPECT_EQ(-1, shelf_model()->GetItemIndexForType(
                     ash::TYPE_UNPINNED_BROWSER_SHORTCUT));
+  EXPECT_NE(-1, shelf_model()->GetItemIndexForType(ash::TYPE_APP));
 }
 
 // Test that we can launch a platform app with more than one window.
@@ -926,7 +932,7 @@ IN_PROC_BROWSER_TEST_F(ShelfPlatformAppBrowserTest, SetIcon) {
   gfx::ImageSkia image_skia;
   int32_t size_hint_in_dip = 48;
   image_skia = app_service_test().LoadAppIconBlocking(
-      apps::mojom::AppType::kExtension, extension->id(), size_hint_in_dip);
+      apps::mojom::AppType::kChromeApp, extension->id(), size_hint_in_dip);
 
   // Create non-shelf window.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
@@ -1256,13 +1262,13 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, AppIDForPinnedWebApp) {
 
 // Verifies that native browser window properties are properly set when showing
 // a PWA tab.
-// DISABLED due to flakiness (http://crbug.com/1258995).
-IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, DISABLED_AppIDForPWA) {
+IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, AppIDForPWA) {
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), GURL(embedded_test_server()->GetURL(
-                     "/banners/manifest_test_page.html"))));
+  GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+  web_app::ServiceWorkerRegistrationWaiter registration_waiter(profile(), url);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  registration_waiter.AwaitRegistration();
 
   // Install PWA.
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
@@ -1349,12 +1355,20 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, LaunchApp) {
 // The Browsertest verifying FilesManager's features.
 class FilesManagerExtensionTest : public ShelfPlatformAppBrowserTest {
  public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(ash::features::kFilesSWA);
+    ShelfPlatformAppBrowserTest::SetUp();
+  }
+
   void SetUpOnMainThread() override {
     ShelfPlatformAppBrowserTest::SetUpOnMainThread();
     CHECK(profile());
 
     file_manager::test::AddDefaultComponentExtensionsOnMainThread(profile());
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Verifies that FilesManager's first shelf context menu item is "New window"
@@ -2408,15 +2422,14 @@ IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest, WindowedHostedAndWebApps) {
 
 // Windowed progressive web apps should have shelf activity indicator showing
 // after install.
-// DISABLED due to flakiness (http://crbug.com/1263228).
 IN_PROC_BROWSER_TEST_F(ShelfWebAppBrowserTest,
-                       DISABLED_WindowedPwasHaveActivityIndicatorSet) {
+                       WindowedPwasHaveActivityIndicatorSet) {
   // Start server and open test page.
   ASSERT_TRUE(embedded_test_server()->Start());
-  AddTabAtIndex(
-      1,
-      GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
-      ui::PAGE_TRANSITION_LINK);
+  GURL url(embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
+  web_app::ServiceWorkerRegistrationWaiter registration_waiter(profile(), url);
+  AddTabAtIndex(1, url, ui::PAGE_TRANSITION_LINK);
+  registration_waiter.AwaitRegistration();
   // Install PWA.
   chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
   web_app::WebAppTestInstallWithOsHooksObserver install_observer(profile());

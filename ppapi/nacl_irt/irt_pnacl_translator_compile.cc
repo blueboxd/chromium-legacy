@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
@@ -25,6 +24,10 @@ class TranslatorCompileListener : public IPC::Listener {
     channel_ = IPC::Channel::Create(handle, IPC::Channel::MODE_SERVER, this);
     CHECK(channel_->Connect());
   }
+
+  TranslatorCompileListener(const TranslatorCompileListener&) = delete;
+  TranslatorCompileListener& operator=(const TranslatorCompileListener&) =
+      delete;
 
   // Needed for handling sync messages in OnMessageReceived().
   bool Send(IPC::Message* message) {
@@ -96,8 +99,6 @@ class TranslatorCompileListener : public IPC::Listener {
 
   std::unique_ptr<IPC::Channel> channel_;
   const struct nacl_irt_pnacl_compile_funcs* funcs_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslatorCompileListener);
 };
 
 void ServeTranslateRequest(const struct nacl_irt_pnacl_compile_funcs* funcs) {

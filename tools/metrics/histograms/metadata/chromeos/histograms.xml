@@ -171,6 +171,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.Apps.IntentPickerAction"
     enum="ArcIntentHandlerAction" expires_after="2022-05-21">
+  <obsolete>
+    Replaced by ChromeOS.Intents.IntentPickerAction in M98.
+  </obsolete>
   <owner>elijahtaylor@google.com</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>shihuis@google.com</owner>
@@ -186,10 +189,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>dominickn@chromium.org</owner>
   <owner>shihuis@google.com</owner>
   <summary>
-    Records the app platform chosen (or Chrome if the user did not choose an
-    app) when the intent picker is shown to the user on Chrome OS. The
-    destination may be specified due to the user explicit selection or a
-    previously stored preference.
+    Records the app platform shown as the result of link intent handling.
+    Recorded when the user makes a choice in the Intent Picker dialog, and when
+    the result of a previous user preference is applied during a link click.
   </summary>
 </histogram>
 
@@ -278,6 +280,129 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
     Records the camera facing of the camera session in Chrome OS camera service.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.GcamAutoExposure.AverageConvergenceLatency"
+    units="frames" expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the average auto exposure convergence latency in frame count
+    throughout a camera session that runs Gcam auto exposure. Emitted when the
+    camera session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.GcamAutoExposure.AverageHdrRatio"
+    units="ratio" expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the average HDR ratio throughout a camera session that runs Gcam
+    auto exposure. Emitted when the camera session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.GcamAutoExposure.AverageTet" units="TET"
+    expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the average total exposure time (TET) throughout a camera session
+    that runs Gcam auto exposure. Emitted when the camera session is closed.
+  </summary>
+</histogram>
+
+<histogram base="true"
+    name="ChromeOS.Camera.HDRnet.AverageLatency.{ProcessingType}"
+    units="microseconds" expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the average CPU latency in running a given type of processing
+    throughout a HDRnet camera session. Emitted when the camera session is
+    closed.
+
+    This metric is reported on all ChromeOS devices with HDRnet enabled.
+  </summary>
+  <token key="ProcessingType">
+    <variant name="Postprocessing"
+        summary="Post-processing of HDRnet RGB output to final YUV output(s)"/>
+    <variant name="Preprocessing"
+        summary="Pre-processing of input YUV into linear RGB domain"/>
+    <variant name="RgbPipeline"
+        summary="Main HDRnet inferencing and rendering"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Camera.HDRnet.Error" enum="HdrnetError"
+    expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records whether there's an error that can compromise the HDRnet feature,
+    either causing frame drops or stops the pipeline from running completely,
+    throughout a HDRnet camera session. Emitted when the camera session is
+    closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.HDRnet.MaxOutputBuffersRendered"
+    units="buffers" expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the maximum number of output buffers a HDRnet stream produces
+    (greater than 1 means there are multiple streams with the same aspect ratio)
+    throughtout a HDRnet camera session. Emitted when the camera session is
+    closed.
+  </summary>
+</histogram>
+
+<histogram base="true" name="ChromeOS.Camera.HDRnet.MaxStreamSize.{StreamType}"
+    units="pixels" expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the maximum size (in width * height pixels) of the HDRnet stream
+    configured for a given output in a HDRnet camera session. Emitted when the
+    camera session is closed.
+  </summary>
+  <token key="StreamType">
+    <variant name="BLOB" summary="HDRnet stream for BLOB output"/>
+    <variant name="YUV" summary="HDRnet stream for YUV output"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Camera.HDRnet.NumConcurrentStreams" units="streams"
+    expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number of concurrent HDRnet streams in a HDRnet camera session.
+    Emitted when the camera session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.HDRnet.NumStillShotsTaken" units="captures"
+    expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the number of HDRnet-rendered still capture shots taken in a HDRnet
+    camera session. Emitted when the camera session is closed.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.HDRnet.StreamConfiguration"
+    enum="HdrnetStreamConfiguration" expires_after="2022-11-01">
+  <owner>jcliang@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the stream configuration including the number of streams, the type
+    of streams, and if the streams are of the same aspect ratio in a HDRnet
+    camera session. Emitted when the camera session is closed.
   </summary>
 </histogram>
 
@@ -446,6 +571,35 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     A count of successes and various failure modes related to the parsing of PSI
     CPU data on Chrome OS. Recorded after each perf collection.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.CWP.ParsePSIMemory" enum="ChromeOSParsePSIMemStatus"
+    expires_after="2022-06-01">
+  <owner>raging@google.com</owner>
+  <owner>chromeos-memory@google.com</owner>
+  <summary>
+    A count of successes and various failure modes related to the parsing of PSI
+    Memory data on Chrome OS. Recorded after each perf collection.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.CWP.PSIMemPressure.{PType}" units="failures"
+    expires_after="2022-12-01">
+  <owner>raging@google.com</owner>
+  <owner>chromeos-memory@google.com</owner>
+  <summary>
+    Reports periodic memory pressure metrics, as seen ChromeOS-wide. Metrics
+    originally come from /proc/pressure/memory readings, expressed as a
+    percentage with 2 decimal points (99.99%), but expressed as p*100, in an
+    integer in the range (1-9999) meaning (00.01% to 99.99%). Underflow value 0
+    means &quot;no pressure&quot; - 0%.
+  </summary>
+  <token key="PType">
+    <variant name="Full"
+        summary="Percentage of time fully halted waiting on memory operations"/>
+    <variant name="Some"
+        summary="Percentage of time when there was some blocking on memory"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.CWP.RecordPerf" enum="ChromeOSProfileRecordStatus"
@@ -647,7 +801,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}" enum="FeatureUsageEvent"
-    expires_after="2022-01-01">
+    expires_after="2022-11-11">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -659,7 +813,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}.Usetime" units="ms"
-    expires_after="2022-01-01">
+    expires_after="2022-11-11">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -685,7 +839,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Gaia.Message.{GaiaAuthFlow}.{MessageName}"
-    enum="BooleanReceived" expires_after="2022-01-01">
+    enum="BooleanReceived" expires_after="2022-06-01">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -704,7 +858,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Gaia.PasswordFlow" enum="BooleanStartedCompleted"
-    expires_after="2022-01-01">
+    expires_after="2022-06-01">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -802,6 +956,44 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="50"/>
     <variant name="100"/>
   </token>
+</histogram>
+
+<histogram name="ChromeOS.Intents.IntentPickerAction"
+    enum="IntentPickerDialogAction" expires_after="2022-06-01">
+  <owner>tsergeant@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    The intent picker dialog is shown (either automatically, or though a page
+    action button) when the user navigates to a page whose URL can be handled by
+    an installed app. This metric is recorded when the dialog is closed and
+    records the user action which caused it to close.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Intents.IntentPickerAction.From{LaunchSource}"
+    enum="IntentPickerDialogAction" expires_after="2022-06-01">
+  <owner>tsergeant@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    The intent picker dialog is shown when the user navigates to a page whose
+    URL can be handled by an installed app. This metric is recorded when the
+    dialog is closed and records the user action which caused it to close. Only
+    recorded when the Intent Picker dialog is shown from {LaunchSource}.
+  </summary>
+  <token key="LaunchSource">
+    <variant name="AutoPopOut"/>
+    <variant name="OmniboxIcon"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.Intents.IntentPickerIconEvent"
+    enum="IntentPickerIconEvent" expires_after="2022-06-01">
+  <owner>tsergeant@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records events associated with the intent picker icon in the omnibox.
+    Recorded when the icon is shown or interacted with.
+  </summary>
 </histogram>
 
 <histogram name="ChromeOS.IsLacrosBrowser" enum="Boolean" expires_after="never">
@@ -1029,9 +1221,11 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.MessageCenter.ScrollActionReason"
-    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2018-11-30">
+    enum="ChromeOSMessageCenterScrollActionReason" expires_after="2022-11-22">
   <owner>yoshiki@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
+  <owner>leandre@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
   <summary>
     The cause of the scroll event by the user on the message center. Only the
     first event after the message center opens is recorded. For example, the
@@ -1192,6 +1386,24 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
     Writable+executable mount events are checked every thirty seconds, but each
     anomalous event is reported only once per boot.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.SecurityAnomalyUploadSuccess" enum="Boolean"
+    expires_after="2022-04-03">
+  <owner>jorgelo@chromium.org</owner>
+  <owner>chromeos-security-core@google.com</owner>
+  <summary>
+    Records the result (boolean success or failure) of attempting to report a
+    Chrome OS system as anomalous via the crash reporting service.
+
+    Reporting is only attempted if one or more anomalies are detected (see the
+    previous histogram's description for the types of anomalies considered),
+    *and* once per boot, even if reporting fails.
+
+    So this histogram will be recorded at most once per boot, and only if a
+    system is detected as anomalous (i.e. presents any of the tracked
+    anomalies.)
   </summary>
 </histogram>
 
@@ -1481,7 +1693,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Privacy.PeripheralDataAccessProtection"
-    enum="BooleanEnabled" expires_after="2021-11-30">
+    enum="BooleanEnabled" expires_after="2022-11-30">
   <owner>jimmyxgong@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>
@@ -1683,6 +1895,21 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Arc" summary="arc app"/>
     <variant name="Web" summary="web app"/>
   </token>
+</histogram>
+
+<histogram name="ChromeOS.Sharesheet.CopyToClipboard.MimeType" units="mimetype"
+    expires_after="2022-10-08">
+  <owner>melzhang@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records the mime type of the content being copied after the Copy To
+    Clipboard action is invoked from the Sharesheet by the user.
+
+    This histogram could record multiple times in a single share in the event
+    that the user shares data of mime types at once. However, a single share
+    will not record the same mime type twice. E.g. sharing 2 images in one share
+    will record the image mimetype once.
+  </summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FileCount" units="files"
@@ -2031,6 +2258,18 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.WebAPK.UninstallSource"
+    enum="WebApkUninstallSourceChromeOS" expires_after="2022-04-01">
+  <owner>tsergeant@chromium.org</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records the source of a WebAPK uninstall event. A WebAPK is installed when a
+    PWA which supports Web Share Target is installed in the browser, and is
+    uninstalled when the user uninstalls the PWA or uninstalls the WebAPK
+    directly through ARC Android settings.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.WebAPK.UnlinkedWebAPKCount" units="count"
     expires_after="2022-03-14">
   <owner>tsergeant@chromium.org</owner>
@@ -2045,7 +2284,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.WebAPK.{InstallType}.ArcInstallResult"
-    enum="WebApkArcInstallResultChromeOS" expires_after="2022-01-14">
+    enum="WebApkArcInstallResultChromeOS" expires_after="2022-04-14">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -2062,7 +2301,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.WebAPK.{InstallType}.Result"
-    enum="WebApkInstallResultChromeOS" expires_after="2022-01-14">
+    enum="WebApkInstallResultChromeOS" expires_after="2022-04-14">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>

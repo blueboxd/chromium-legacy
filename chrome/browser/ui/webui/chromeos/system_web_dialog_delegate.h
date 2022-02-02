@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -89,6 +88,9 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
   // If |parent| is not null, the dialog will be parented to |parent|.
   // Otherwise it will be attached to either the AlwaysOnTop container or the
   // LockSystemModal container, depending on the session state at creation.
+  // TODO(https://crbug.com/1268547): Passing a non-null |parent| here or to
+  // ShowSystemDialog() seems to prevent the dialog from properly repositioning
+  // on screen size changes (i.e. when the docked screen magnifier is enabled).
   void ShowSystemDialogForBrowserContext(content::BrowserContext* context,
                                          gfx::NativeWindow parent = nullptr);
   // Same as previous but shows a system dialog using the current active

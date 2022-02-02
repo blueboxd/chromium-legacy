@@ -63,10 +63,10 @@ unsigned AdjustLinkMatchType(EInsideLink inside_link,
 }
 
 ContainerQueryEvaluator* FindContainerQueryEvaluator(
-    const AtomicString& name,
+    const ContainerSelector& selector,
     const StyleRecalcContext& style_recalc_context) {
-  if (auto* element =
-          ContainerQueryEvaluator::FindContainer(style_recalc_context, name)) {
+  if (auto* element = ContainerQueryEvaluator::FindContainer(
+          style_recalc_context, selector)) {
     return element->GetContainerQueryEvaluator();
   }
 
@@ -121,6 +121,9 @@ class CascadeLayerSeeker {
 
  private:
   static const CascadeLayerMap* FindLayerMap(const MatchRequest& request) {
+    // VTT embedded style is not in any layer.
+    if (request.vtt_originating_element)
+      return nullptr;
     if (request.scope) {
       return request.scope->ContainingTreeScope()
           .GetScopedStyleResolver()
@@ -299,8 +302,8 @@ void ElementRuleCollector::CollectMatchingRulesForList(
           result.dynamic_pseudo == kPseudoIdNone) {
         result_.SetDependsOnContainerQueries();
 
-        auto* evaluator = FindContainerQueryEvaluator(container_query->Name(),
-                                                      style_recalc_context_);
+        auto* evaluator = FindContainerQueryEvaluator(
+            container_query->Selector(), style_recalc_context_);
 
         if (!evaluator || !evaluator->EvalAndAdd(*container_query, result_)) {
           rejected++;
@@ -477,7 +480,8 @@ void ElementRuleCollector::AppendCSSOMWrapperForRule(
   EnsureRuleList()->emplace_back(css_rule, rule_data->SelectorIndex());
 }
 
-void ElementRuleCollector::SortAndTransferMatchedRules() {
+void ElementRuleCollector::SortAndTransferMatchedRules(
+    bool is_vtt_embedded_style) {
   if (matched_rules_.IsEmpty())
     return;
 
@@ -510,6 +514,7 @@ void ElementRuleCollector::SortAndTransferMatchedRules() {
             .SetValidPropertyFilter(
                 rule_data->GetValidPropertyFilter(matching_ua_rules_))
             .SetLayerOrder(matched_rule.LayerOrder())
+            .SetIsInlineStyle(is_vtt_embedded_style)
             .Build());
   }
 }
@@ -534,8 +539,13 @@ void ElementRuleCollector::DidMatchRule(
          dynamic_pseudo == kPseudoIdAfter) &&
         !rule_data->Rule()->Properties().HasProperty(CSSPropertyID::kContent))
       return;
-    if (!rule_data->Rule()->Properties().IsEmpty())
+    if (!rule_data->Rule()->Properties().IsEmpty()) {
       style_->SetHasPseudoElementStyle(dynamic_pseudo);
+      if (dynamic_pseudo == kPseudoIdHighlight) {
+        DCHECK(result.custom_highlight_name);
+        style_->SetHasCustomHighlightName(result.custom_highlight_name);
+      }
+    }
   } else {
     matched_rules_.push_back(MatchedRule(rule_data, layer_order,
                                          match_request.style_sheet_index,

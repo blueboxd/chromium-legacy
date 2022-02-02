@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
@@ -254,6 +254,10 @@ class NET_EXPORT ReportingCache {
 
   // Flush the contents of the cache to disk, if applicable.
   virtual void Flush() = 0;
+
+  // Returns all V1 endpoints keyed by origin.
+  virtual base::flat_map<url::Origin, std::vector<ReportingEndpoint>>
+  GetV1ReportingEndpointsByOrigin() const = 0;
 
   // Returns the endpoint named |endpoint_name| for the reporting source, if it
   // was configured with the Reporting-Endpoints header, otherwise returns an

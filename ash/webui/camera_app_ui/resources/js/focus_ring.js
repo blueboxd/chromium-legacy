@@ -5,7 +5,7 @@
 import {
   assert,
   assertInstanceof,
-} from './chrome_util.js';
+} from './assert.js';
 import {cssStyle} from './css.js';
 import * as dom from './dom.js';
 import {getStyleValueInPx} from './util.js';
@@ -48,10 +48,10 @@ export function setUIRect(rect) {
 }
 
 /**
- * @param {!FocusEvent} e
+ * Shows focus ring on |el|.
+ * @param {!HTMLElement} el
  */
-function onFocus({target}) {
-  const el = assertInstanceof(target, HTMLElement);
+function showFocus(el) {
   const style = el.computedStyleMap();
   const size = getStyleValueInPx(style, '--focus-ring-size');
   const ringStyleValue = `${style.get('--focus-ring-style')}`;
@@ -77,8 +77,14 @@ export function initialize() {
   ring = dom.get('#focus-ring', HTMLElement);
   ringCSSStyle = cssStyle('#focus-ring');
 
+  /**
+   * @param {!HTMLElement} el
+   */
   const setup = (el) => {
-    el.addEventListener('focus', onFocus);
+    el.addEventListener('focus', () => showFocus(el));
+    if (el === document.activeElement) {
+      showFocus(el);
+    }
   };
 
   dom.getAll('[tabindex]', HTMLElement).forEach(setup);

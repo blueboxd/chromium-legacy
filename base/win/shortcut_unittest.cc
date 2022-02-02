@@ -188,7 +188,14 @@ TEST_F(ShortcutTest, CreateShortcutVerifyProperties) {
   ValidateShortcut(link_file_, link_properties_);
 }
 
-TEST_F(ShortcutTest, UpdateShortcutVerifyProperties) {
+// TODO(crbug.com/1271993): Flaky on Win7 x86.
+#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#define MAYBE_UpdateShortcutVerifyProperties \
+  DISABLED_UpdateShortcutVerifyProperties
+#else
+#define MAYBE_UpdateShortcutVerifyProperties UpdateShortcutVerifyProperties
+#endif
+TEST_F(ShortcutTest, MAYBE_UpdateShortcutVerifyProperties) {
   ASSERT_TRUE(CreateOrUpdateShortcutLink(link_file_, link_properties_,
                                          SHORTCUT_CREATE_ALWAYS));
 
@@ -226,6 +233,11 @@ TEST_F(ShortcutTest, UpdateShortcutUpdateOnlyTargetAndResolve) {
 }
 
 TEST_F(ShortcutTest, UpdateShortcutMakeDualMode) {
+  // This test is extremely flaky on Win7, so disable.
+  // TODO(crbug.com/1264563): Investigate why it's so flaky on Win7 bots.
+  if (base::win::OSInfo::GetInstance()->version() <= base::win::Version::WIN7)
+    GTEST_SKIP() << "Skipping test for win7";
+
   ASSERT_TRUE(CreateOrUpdateShortcutLink(link_file_, link_properties_,
                                          SHORTCUT_CREATE_ALWAYS));
 

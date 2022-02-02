@@ -11,8 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
@@ -255,7 +257,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       url_download_handlers_;
 
   // Delegate to provide information to create a new download. Can be null.
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   // Factory for the creation of download files.
   std::unique_ptr<DownloadFileFactory> file_factory_;
@@ -268,7 +270,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   std::unique_ptr<DownloadItem::Observer> in_progress_download_observer_;
 
   // Observer to notify when a download starts.
-  DownloadStartObserver* download_start_observer_;
+  raw_ptr<DownloadStartObserver> download_start_observer_;
 
   // callback to check if an origin is secure.
   IsOriginSecureCallback is_origin_secure_cb_;

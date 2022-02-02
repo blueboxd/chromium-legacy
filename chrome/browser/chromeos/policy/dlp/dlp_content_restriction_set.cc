@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "build/chromeos_buildflags.h"
@@ -106,21 +105,17 @@ DlpContentRestrictionSet DlpContentRestrictionSet::GetForURL(const GURL& url) {
 
   DlpContentRestrictionSet set;
 
-// TODO(crbug.com/1254329) Enable on LaCros once DlpRulesManager is available.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   DlpRulesManager* dlp_rules_manager =
       DlpRulesManagerFactory::GetForPrimaryProfile();
   if (!dlp_rules_manager)
     return set;
 
-  const size_t kRestrictionsCount = 5;
+  const size_t kRestrictionsCount = 4;
   static constexpr std::array<
       std::pair<DlpRulesManager::Restriction, DlpContentRestriction>,
       kRestrictionsCount>
       kRestrictionsArray = {{{DlpRulesManager::Restriction::kScreenshot,
                               DlpContentRestriction::kScreenshot},
-                             {DlpRulesManager::Restriction::kScreenshot,
-                              DlpContentRestriction::kVideoCapture},
                              {DlpRulesManager::Restriction::kPrivacyScreen,
                               DlpContentRestriction::kPrivacyScreen},
                              {DlpRulesManager::Restriction::kPrinting,
@@ -136,7 +131,6 @@ DlpContentRestrictionSet DlpContentRestrictionSet::GetForURL(const GURL& url) {
       continue;
     set.SetRestriction(restriction.second, level, url);
   }
-#endif
 
   return set;
 }

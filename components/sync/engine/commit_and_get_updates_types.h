@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/engine/entity_data.h"
@@ -61,10 +60,6 @@ struct CommitResponseData {
   ~CommitResponseData();
 
   std::string id;
-  // The sync id that was sent in the request. Non-empty only if different from
-  // |id|. It could be different because the server can change the sync id
-  // (e.g. for newly created bookmarks),
-  std::string id_in_request;
   ClientTagHash client_tag_hash;
   int64_t sequence_number = 0;
   int64_t response_version = 0;

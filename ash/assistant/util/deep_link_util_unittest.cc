@@ -10,7 +10,6 @@
 
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
@@ -156,11 +155,6 @@ TEST_F(DeepLinkUtilTest, CreateAssistantQueryDeepLink) {
 TEST_F(DeepLinkUtilTest, CreateAssistantSettingsDeepLink) {
   ASSERT_EQ(GURL("googleassistant://settings"),
             CreateAssistantSettingsDeepLink());
-}
-
-TEST_F(DeepLinkUtilTest, CreateWhatsOnMyScreenDeepLink) {
-  ASSERT_EQ(GURL("googleassistant://whats-on-my-screen"),
-            CreateWhatsOnMyScreenDeepLink());
 }
 
 TEST_F(DeepLinkUtilTest, GetDeepLinkParams) {
@@ -490,7 +484,6 @@ TEST_F(DeepLinkUtilTest, GetDeepLinkType) {
       {"googleassistant://settings", DeepLinkType::kSettings},
       {"googleassistant://take-screenshot", DeepLinkType::kScreenshot},
       {"googleassistant://task-manager", DeepLinkType::kTaskManager},
-      {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep links.
       {"googleassistant://alarm-timer?param=true", DeepLinkType::kAlarmTimer},
@@ -506,8 +499,6 @@ TEST_F(DeepLinkUtilTest, GetDeepLinkType) {
       {"googleassistant://take-screenshot?param=true",
        DeepLinkType::kScreenshot},
       {"googleassistant://task-manager?param=true", DeepLinkType::kTaskManager},
-      {"googleassistant://whats-on-my-screen?param=true",
-       DeepLinkType::kWhatsOnMyScreen},
 
       // UNSUPPORTED: Deep links are case sensitive.
       {"GOOGLEASSISTANT://ALARM-TIMER", DeepLinkType::kUnsupported},
@@ -522,7 +513,6 @@ TEST_F(DeepLinkUtilTest, GetDeepLinkType) {
       {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://TAKE-SCREENSHOT", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://TASK-MANAGER", DeepLinkType::kUnsupported},
-      {"GOOGLEASSISTANT://WHATS-ON-MY-SCREEN", DeepLinkType::kUnsupported},
 
       // UNSUPPORTED: Unknown deep links.
       {"googleassistant://", DeepLinkType::kUnsupported},
@@ -550,7 +540,6 @@ TEST_F(DeepLinkUtilTest, IsDeepLinkType) {
       {"googleassistant://settings", DeepLinkType::kSettings},
       {"googleassistant://take-screenshot", DeepLinkType::kScreenshot},
       {"googleassistant://task-manager", DeepLinkType::kTaskManager},
-      {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep link types.
       {"googleassistant://alarm-timer?param=true", DeepLinkType::kAlarmTimer},
@@ -566,8 +555,6 @@ TEST_F(DeepLinkUtilTest, IsDeepLinkType) {
       {"googleassistant://take-screenshot?param=true",
        DeepLinkType::kScreenshot},
       {"googleassistant://task-manager?param=true", DeepLinkType::kTaskManager},
-      {"googleassistant://whats-on-my-screen?param=true",
-       DeepLinkType::kWhatsOnMyScreen},
 
       // UNSUPPORTED: Deep links are case sensitive.
       {"GOOGLEASSISTANT://ALARM-TIMER", DeepLinkType::kUnsupported},
@@ -607,7 +594,6 @@ TEST_F(DeepLinkUtilTest, IsDeepLinkUrl) {
       {"googleassistant://settings", true},
       {"googleassistant://take-screenshot", true},
       {"googleassistant://task-manager", true},
-      {"googleassistant://whats-on-my-screen", true},
 
       // OK: Parameterized deep links.
       {"googleassistant://alarm-timer?param=true", true},
@@ -621,7 +607,6 @@ TEST_F(DeepLinkUtilTest, IsDeepLinkUrl) {
       {"googleassistant://settings?param=true", true},
       {"googleassistant://take-screenshot?param=true", true},
       {"googleassistant://task-manager?param=true", true},
-      {"googleassistant://whats-on-my-screen?param=true", true},
 
       // FAIL: Deep links are case sensitive.
       {"GOOGLEASSISTANT://ALARM-TIMER", false},
@@ -635,7 +620,6 @@ TEST_F(DeepLinkUtilTest, IsDeepLinkUrl) {
       {"GOOGLEASSISTANT://SETTINGS", false},
       {"GOOGLEASSISTANT://TAKE-SCREENSHOT", false},
       {"GOOGLEASSISTANT://TASK-MANAGER", false},
-      {"GOOGLEASSISTANT://WHATS-ON-MY-SCREEN", false},
 
       // FAIL: Unknown deep links.
       {"googleassistant://", false},
@@ -767,11 +751,7 @@ TEST_F(DeepLinkUtilTest, GetAssistantUrl) {
       CreateIgnoreCase(DeepLinkType::kTaskManager,
                        /*params=*/
                        {{"eid", "112233"}, {"id", "123456"}}),
-      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen,
-                       /*params=*/{}),
-      CreateIgnoreCase(DeepLinkType::kWhatsOnMyScreen,
-                       /*params=*/
-                       {{"eid", "112233"}, {"id", "123456"}})};
+  };
 
   // For deep links that are not one of type {kLists, kNotes, kReminders}, we
   // will hit NOTREACHED since this API isn't meant to be used in such cases.
@@ -864,7 +844,6 @@ TEST_F(DeepLinkUtilTest, GetWebUrl) {
       {"googleassistant://send-query", absl::nullopt},
       {"googleassistant://take-screenshot", absl::nullopt},
       {"googleassistant://task-manager", absl::nullopt},
-      {"googleassistant://whats-on-my-screen", absl::nullopt},
 
       // FAIL: Non-deep link URLs.
       {std::string(), absl::nullopt},
@@ -947,7 +926,6 @@ TEST_F(DeepLinkUtilTest, GetWebUrlByType) {
       {CreateTestCase(DeepLinkType::kQuery), absl::nullopt},
       {CreateTestCase(DeepLinkType::kScreenshot), absl::nullopt},
       {CreateTestCase(DeepLinkType::kTaskManager), absl::nullopt},
-      {CreateTestCase(DeepLinkType::kWhatsOnMyScreen), absl::nullopt},
 
       // FAIL: Unsupported deep link types.
       {CreateTestCase(DeepLinkType::kUnsupported), absl::nullopt}};
@@ -994,7 +972,6 @@ TEST_F(DeepLinkUtilTest, IsWebDeepLink) {
       {"googleassistant://send-query", false},
       {"googleassistant://take-screenshot", false},
       {"googleassistant://task-manager", false},
-      {"googleassistant://whats-on-my-screen", false},
       {"googleassistant://reminders?action=create", false},
       {"googleassistant://reminders?action=edit", false},
 
@@ -1021,7 +998,6 @@ TEST_F(DeepLinkUtilTest, IsWebDeepLinkType) {
       {DeepLinkType::kQuery, false},
       {DeepLinkType::kScreenshot, false},
       {DeepLinkType::kTaskManager, false},
-      {DeepLinkType::kWhatsOnMyScreen, false},
 
       // FAIL: Unsupported deep link types.
       {DeepLinkType::kUnsupported, false}};

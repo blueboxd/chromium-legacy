@@ -323,6 +323,12 @@ class ServiceConnection {
       mojo::PendingRemote<mojom::CrosHealthdThunderboltObserver>
           pending_observer) = 0;
 
+  // Subscribes to cros_healthd's USB-related events. See
+  // src/chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void AddUsbObserver(
+      mojo::PendingRemote<mojom::CrosHealthdUsbObserver> pending_observer) = 0;
+
   // Gathers pieces of information about the platform. See
   // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
   // details.
@@ -364,8 +370,7 @@ class ServiceConnection {
       BindNetworkDiagnosticsRoutinesCallback callback) = 0;
 
   // Fetch touchpad stack driver library name.
-  virtual void FetchTouchpadLibraryName(
-      base::OnceCallback<void(const std::string&)>) = 0;
+  virtual std::string FetchTouchpadLibraryName() = 0;
 
   // Calls FlushForTesting method on all mojo::Remote objects owned by
   // ServiceConnection. This method can be used for example to gracefully

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -34,10 +33,21 @@ namespace extensions {
 namespace {
 
 struct AllowlistInfo {
-  AllowlistInfo()
-      : hashed_id(HashedIdInHex(
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kAllowlistedExtensionID))) {}
+  AllowlistInfo() {
+    const std::string& allowlisted_extension_id =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kAllowlistedExtensionID);
+
+    if (!allowlisted_extension_id.empty()) {
+      hashed_id = HashedIdInHex(allowlisted_extension_id);
+    } else {
+      // Check the deprecated switch if the main one is not set. If both of them
+      // are empty, `hash_id` will contain the hash of an empty string.
+      hashed_id = HashedIdInHex(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kDEPRECATED_AllowlistedExtensionID));
+    }
+  }
   std::string hashed_id;
 };
 // A singleton copy of the --whitelisted-extension-id so that we don't need to

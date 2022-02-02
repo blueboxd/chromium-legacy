@@ -5,6 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/cros_settings_provider.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
@@ -13,7 +17,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -68,12 +71,8 @@
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state_test_helper.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "components/arc/test/arc_util_test_support.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -522,7 +521,7 @@ class ExistingUserControllerPublicSessionTest
         proto.device_local_accounts().auto_login_id() != user_email) {
       runner1 = new content::MessageLoopRunner;
       subscription1 = CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kAccountsPrefDeviceLocalAccountAutoLoginId,
+          kAccountsPrefDeviceLocalAccountAutoLoginId,
           base::BindLambdaForTesting([&]() { runner1->Quit(); }));
     }
     scoped_refptr<content::MessageLoopRunner> runner2;
@@ -532,7 +531,7 @@ class ExistingUserControllerPublicSessionTest
         proto.device_local_accounts().auto_login_delay() != delay) {
       runner2 = new content::MessageLoopRunner;
       subscription2 = CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kAccountsPrefDeviceLocalAccountAutoLoginDelay,
+          kAccountsPrefDeviceLocalAccountAutoLoginDelay,
           base::BindLambdaForTesting([&]() { runner2->Quit(); }));
     }
 

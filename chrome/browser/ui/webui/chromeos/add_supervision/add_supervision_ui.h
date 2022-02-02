@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom-forward.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
@@ -29,7 +28,7 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
 
   // Shows the dialog; if the dialog is already displayed, this function is a
   // no-op.
-  static void Show(gfx::NativeView parent);
+  static void Show();
 
   static AddSupervisionDialog* GetInstance();
 

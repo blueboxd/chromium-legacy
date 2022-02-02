@@ -15,12 +15,11 @@
 #include "chrome/browser/android/webapk/webapk_ukm_recorder.h"
 #include "chrome/browser/banners/android/jni_headers/AppBannerInProductHelpControllerProvider_jni.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
-#include "chrome/browser/webapps/android/features.h"
-#include "chrome/browser/webapps/android/pwa_bottom_sheet_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/site_engagement/content/site_engagement_service.h"
+#include "components/webapps/browser/android/bottomsheet/pwa_bottom_sheet_controller.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "content/public/browser/manifest_icon_downloader.h"
@@ -48,7 +47,9 @@ constexpr char kIphReplacesToolbar[] = "x_iph_replaces_toolbar";
 
 ChromeAppBannerManagerAndroid::ChromeAppBannerManagerAndroid(
     content::WebContents* web_contents)
-    : AppBannerManagerAndroid(web_contents) {}
+    : AppBannerManagerAndroid(web_contents),
+      content::WebContentsUserData<ChromeAppBannerManagerAndroid>(
+          *web_contents) {}
 
 ChromeAppBannerManagerAndroid::~ChromeAppBannerManagerAndroid() = default;
 
@@ -56,11 +57,7 @@ InstallableParams
 ChromeAppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params =
       AppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck();
-  if (base::FeatureList::IsEnabled(
-          webapps::features::kPwaInstallUseBottomSheet)) {
-    params.fetch_screenshots = true;
-  }
-
+  params.fetch_screenshots = true;
   return params;
 }
 

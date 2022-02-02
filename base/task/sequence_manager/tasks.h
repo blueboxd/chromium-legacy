@@ -5,9 +5,12 @@
 #ifndef BASE_TASK_SEQUENCE_MANAGER_TASKS_H_
 #define BASE_TASK_SEQUENCE_MANAGER_TASKS_H_
 
+#include "base/containers/intrusive_heap.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/delayed_task_handle_delegate.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequenced_task_runner.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace base {
 namespace sequence_manager {
@@ -15,32 +18,50 @@ namespace sequence_manager {
 using TaskType = uint8_t;
 constexpr TaskType kTaskTypeNone = 0;
 
+class TaskOrder;
+
 namespace internal {
 
 // Wrapper around PostTask method arguments and the assigned task type.
 // Eventually it becomes a PendingTask once accepted by a TaskQueueImpl.
 struct BASE_EXPORT PostedTask {
   explicit PostedTask(scoped_refptr<SequencedTaskRunner> task_runner,
-                      OnceClosure callback = OnceClosure(),
-                      Location location = Location(),
-                      TimeDelta delay = TimeDelta(),
+                      OnceClosure callback,
+                      Location location,
+                      TimeDelta delay = base::TimeDelta(),
                       Nestable nestable = Nestable::kNestable,
-                      TaskType task_type = kTaskTypeNone);
+                      TaskType task_type = kTaskTypeNone,
+                      WeakPtr<DelayedTaskHandleDelegate>
+                          delayed_task_handle_delegate = nullptr);
+  explicit PostedTask(scoped_refptr<SequencedTaskRunner> task_runner,
+                      OnceClosure callback,
+                      Location location,
+                      TimeTicks delayed_run_time,
+                      Nestable nestable = Nestable::kNestable,
+                      TaskType task_type = kTaskTypeNone,
+                      WeakPtr<DelayedTaskHandleDelegate>
+                          delayed_task_handle_delegate = nullptr);
   PostedTask(PostedTask&& move_from) noexcept;
   PostedTask(const PostedTask&) = delete;
   PostedTask& operator=(const PostedTask&) = delete;
   ~PostedTask();
 
+  bool is_delayed() const {
+    return absl::holds_alternative<TimeTicks>(delay_or_delayed_run_time) ||
+           !absl::get<TimeDelta>(delay_or_delayed_run_time).is_zero();
+  }
+
   OnceClosure callback;
   Location location;
-  TimeDelta delay;
-  Nestable nestable;
-  TaskType task_type;
+  Nestable nestable = Nestable::kNestable;
+  TaskType task_type = kTaskTypeNone;
+  absl::variant<TimeDelta, TimeTicks> delay_or_delayed_run_time;
   // The task runner this task is running on. Can be used by task runners that
   // support posting back to the "current sequence".
   scoped_refptr<SequencedTaskRunner> task_runner;
-  // The time at which the task was queued.
-  TimeTicks queue_time;
+  // The delegate for the DelayedTaskHandle, if this task was posted through
+  // PostCancelableDelayedTask(), nullptr otherwise.
+  WeakPtr<DelayedTaskHandleDelegate> delayed_task_handle_delegate;
 };
 
 }  // namespace internal
@@ -48,20 +69,18 @@ struct BASE_EXPORT PostedTask {
 enum class WakeUpResolution { kLow, kHigh };
 
 // Represents a time at which a task wants to run.
-struct DelayedWakeUp {
+struct WakeUp {
   TimeTicks time;
   WakeUpResolution resolution;
 
-  bool operator!=(const DelayedWakeUp& other) const {
+  bool operator!=(const WakeUp& other) const {
     return time != other.time || resolution != other.resolution;
   }
 
-  bool operator==(const DelayedWakeUp& other) const {
-    return !(*this != other);
-  }
+  bool operator==(const WakeUp& other) const { return !(*this != other); }
 
   // Used for a min-heap.
-  bool operator>(const DelayedWakeUp& other) const {
+  bool operator>(const WakeUp& other) const {
     return std::tie(time, resolution) > std::tie(other.time, other.resolution);
   }
 };
@@ -69,9 +88,9 @@ struct DelayedWakeUp {
 // PendingTask with extra metadata for SequenceManager.
 struct BASE_EXPORT Task : public PendingTask {
   Task(internal::PostedTask posted_task,
-       TimeTicks delayed_run_time,
        EnqueueOrder sequence_order,
        EnqueueOrder enqueue_order = EnqueueOrder(),
+       TimeTicks queue_time = TimeTicks(),
        WakeUpResolution wake_up_resolution = WakeUpResolution::kLow);
   Task(Task&& move_from);
   ~Task();
@@ -91,6 +110,8 @@ struct BASE_EXPORT Task : public PendingTask {
 
   bool enqueue_order_set() const { return enqueue_order_; }
 
+  TaskOrder task_order() const;
+
   // OK to dispatch from a nested loop.
   Nestable nestable = Nestable::kNonNestable;
 
@@ -107,13 +128,30 @@ struct BASE_EXPORT Task : public PendingTask {
   bool cross_thread_;
 #endif
 
+  // Implement the intrusive heap contract.
+  void SetHeapHandle(HeapHandle heap_handle);
+  void ClearHeapHandle();
+  HeapHandle GetHeapHandle() const;
+
+  // Returns true if this task was canceled, either through weak pointer
+  // invalidation or through |delayed_task_handle_delegate_|.
+  bool IsCanceled() const;
+
+  // Indicates that this task will be executed. Used to invalidate
+  // |delayed_task_handle_delegate_|, if any, just before task execution.
+  void WillRunTask();
+
  private:
-  // Similar to |sequence_num|, but ultimately the |enqueue_order| is what
-  // the scheduler uses for task ordering. For immediate tasks |enqueue_order|
-  // is set when posted, but for delayed tasks it's not defined until they are
-  // enqueued. This is because otherwise delayed tasks could run before
-  // an immediate task posted after the delayed task.
+  // `enqueue_order_` is the primary component used to order tasks (see
+  // `TaskOrder`). For immediate tasks, `enqueue_order` is set when posted, but
+  // for delayed tasks it's not defined until they are enqueued. This is because
+  // otherwise delayed tasks could run before an immediate task posted after the
+  // delayed task.
   EnqueueOrder enqueue_order_;
+
+  // The delegate for the DelayedTaskHandle, if this task was posted through
+  // PostCancelableDelayedTask(), nullptr otherwise.
+  WeakPtr<internal::DelayedTaskHandleDelegate> delayed_task_handle_delegate_;
 };
 
 }  // namespace sequence_manager

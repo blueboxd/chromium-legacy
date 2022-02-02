@@ -6,6 +6,9 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/policy/core/common/policy_loader_ios_constants.h"
+#import "components/policy/policy_constants.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
@@ -38,6 +41,7 @@ using chrome_test_util::SettingsAccountButton;
 using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::GoogleSyncSettingsButton;
 using chrome_test_util::PrimarySignInButton;
+using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 namespace {
 
@@ -133,6 +137,19 @@ void OpenAccountSettingsAndSignOut(BOOL syncEnabled) {
   SignOutFromActionSheets(syncEnabled);
 }
 
+// Sets up the sign-in policy value dynamically at runtime.
+void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
+  NSDictionary* policy = @{
+    base::SysUTF8ToNSString(policy::key::kBrowserSignin) :
+        [NSNumber numberWithInt:(int)signinMode]
+  };
+  [[NSUserDefaults standardUserDefaults]
+      setObject:policy
+         forKey:kPolicyLoaderIOSConfigurationKey];
+  [ChromeEarlGrey setIntegerValue:static_cast<int>(signinMode)
+                forLocalStatePref:prefs::kBrowserSigninPolicy];
+}
+
 }  // namespace
 
 // Test the forced sign-in screens.
@@ -144,10 +161,6 @@ void OpenAccountSettingsAndSignOut(BOOL syncEnabled) {
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
-
-  // Disable the kOldSyncStringFRE feature to avoid having the strings on the
-  // sync screen changing.
-  config.features_disabled = std::vector<base::Feature>{kOldSyncStringFRE};
 
   // Configure the policy to force sign-in.
   config.additional_args.push_back(
@@ -503,9 +516,119 @@ void OpenAccountSettingsAndSignOut(BOOL syncEnabled) {
   footerText = [footerText stringByReplacingOccurrencesOfString:@"END_LINK"
                                                      withString:@""];
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(footerText),
+      selectElementWithMatcher:grey_allOf(grey_text(footerText),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests that the forced sign-in prompt can be shown on dynamic policy update
+// when a browser modal is displayed on top of the browser view.
+- (void)testSignInScreenOnModal {
+  // Restart the app to reset the policies.
+  AppLaunchConfiguration config;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Disable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kEnabled);
+
+  // Dismiss the forced sign-in screen if presented. This may happen sometimes
+  // if the browser has the forced sign-in policy enabled at start time.
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+
+  // Open the settings menu which represents a modal.
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  // Enable the forced sign-in policy to show the forced sign-in prompt.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
+
+  // Wait and verify that the forced sign-in screen is shown when the policy is
+  // enabled and the browser is signed out.
+  [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
+}
+
+// Tests that the forced sign-in prompt can be shown on dynamic policy update
+// when on the tab switcher.
+- (void)testSignInScreenOnTabSwitcher {
+  // Restart the app to reset the policies.
+  AppLaunchConfiguration config;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Disable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kEnabled);
+
+  // Dismiss the forced sign-in screen if presented. This may happen sometimes
+  // if the browser has the forced sign-in policy enabled at start time.
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+
+  // Close all tabs in the current mode to go on the tab switcher.
+  [ChromeEarlGrey closeAllTabsInCurrentMode];
+
+  // Enable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
+
+  // Wait and verify that the forced sign-in screen is shown when the policy is
+  // enabled and the browser is signed out.
+  [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
+}
+
+// Tests that the forced sign-in prompt can be shown on dynamic policy update
+// when on an incognito browser tab.
+- (void)testSignInScreenOnIncognito {
+  // Restart the app to reset the policies.
+  AppLaunchConfiguration config;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  // Disable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kEnabled);
+
+  // Dismiss the forced sign-in screen if presented. This may happen sometimes
+  // if the browser has the forced sign-in policy enabled at start time.
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+
+  // Make the surface to present the prompt on an incognito tab.
+  [ChromeEarlGrey openNewIncognitoTab];
+
+  // Enable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
+
+  // Wait and verify that the forced sign-in screen is shown when the policy is
+  // enabled and the browser is signed out.
+  [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
+}
+
+// Tests that the forced sign-in prompt is shown after the sign-in prompt when
+// sign-in is skipped.
+- (void)testSignInScreenDuringRegularSigninPrompt {
+  // Restart the app to reset the policies.
+  AppLaunchConfiguration config;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  // Disable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kEnabled);
+
+  // Dismiss the forced sign-in screen if presented. This may happen sometimes
+  // if the browser has the forced sign-in policy enabled at start time.
+  [ChromeTestCase removeAnyOpenMenusAndInfoBars];
+
+  // Open the regular sign-in prompt from settings.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
+
+  // Enable the forced sign-in policy.
+  SetSigninEnterprisePolicyValue(BrowserSigninMode::kForced);
+
+  // Dismiss the regular sign-in prompt by skipping it.
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)]
+      performAction:grey_tap()];
+
+  // Wait and verify that the forced sign-in screen is shown when the policy is
+  // enabled and the browser is signed out.
+  [ChromeEarlGrey waitForMatcher:GetForcedSigninScreenMatcher()];
 }
 
 @end

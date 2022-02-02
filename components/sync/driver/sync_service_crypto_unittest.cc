@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -19,7 +20,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
-#include "components/sync/nigori/nigori.h"
+#include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/test/engine/mock_sync_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,6 +33,7 @@ namespace {
 using testing::_;
 using testing::Eq;
 using testing::Ne;
+using testing::NotNull;
 
 sync_pb::EncryptedData MakeEncryptedData(
     const std::string& passphrase,
@@ -253,13 +255,17 @@ class TestTrustedVaultClient : public TrustedVaultClient {
     std::move(cb).Run();
   }
 
+  void ClearDataForAccount(const CoreAccountInfo& account_info) override {
+    // Not relevant in these tests.
+  }
+
  private:
   struct CachedKeysPerUser {
     bool marked_as_stale = false;
     std::vector<std::vector<uint8_t>> keys;
   };
 
-  const TestTrustedVaultServer* const server_;
+  const raw_ptr<const TestTrustedVaultServer> server_;
 
   std::map<std::string, CachedKeysPerUser> gaia_id_to_cached_keys_;
   base::ObserverList<Observer> observer_list_;
@@ -368,13 +374,14 @@ TEST_F(SyncServiceCryptoTest, ShouldExposePassphraseRequired) {
 
   // Entering the wrong passphrase should be rejected.
   EXPECT_CALL(delegate_, ReconfigureDataTypesDueToCrypto()).Times(0);
-  EXPECT_CALL(engine_, SetDecryptionPassphrase).Times(0);
+  EXPECT_CALL(engine_, SetExplicitPassphraseDecryptionKey).Times(0);
   EXPECT_FALSE(crypto_.SetDecryptionPassphrase("wrongpassphrase"));
   EXPECT_TRUE(crypto_.IsPassphraseRequired());
 
   // Entering the correct passphrase should be accepted.
-  EXPECT_CALL(engine_, SetDecryptionPassphrase(kTestPassphrase))
-      .WillOnce([&](const std::string&) { crypto_.OnPassphraseAccepted(); });
+  EXPECT_CALL(engine_, SetExplicitPassphraseDecryptionKey(NotNull()))
+      .WillOnce(
+          [&](std::unique_ptr<Nigori>) { crypto_.OnPassphraseAccepted(); });
   // The current implementation issues two reconfigurations: one immediately
   // after checking the passphrase in the UI thread and a second time later when
   // the engine confirms with OnPassphraseAccepted().

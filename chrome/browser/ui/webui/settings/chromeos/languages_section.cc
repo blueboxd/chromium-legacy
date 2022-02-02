@@ -6,7 +6,6 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/public/cpp/quick_answers/quick_answers_state.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -466,11 +466,9 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddLanguagesPageStringsV2(html_source);
   AddInputPageStringsV2(html_source);
 
-  html_source->AddBoolean(
-      "imeOptionsInSettings",
-      base::FeatureList::IsEnabled(
-          ::chromeos::features::kImeOptionsInSettings) &&
-          base::FeatureList::IsEnabled(::chromeos::features::kImeMojoDecoder));
+  html_source->AddBoolean("imeOptionsInSettings",
+                          base::FeatureList::IsEnabled(
+                              ::chromeos::features::kImeOptionsInSettings));
   html_source->AddBoolean("enableLanguageSettingsV2Update2",
                           IsLanguageSettingsV2Update2Enabled());
   html_source->AddBoolean("onDeviceGrammarCheckEnabled",
@@ -567,10 +565,8 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 }
 
 bool LanguagesSection::IsEmojiSuggestionAllowed() const {
-  return base::FeatureList::IsEnabled(
-             ::chromeos::features::kEmojiSuggestAddition) &&
-         pref_service_->GetBoolean(
-             ::chromeos::prefs::kEmojiSuggestionEnterpriseAllowed);
+  return pref_service_->GetBoolean(
+      ::chromeos::prefs::kEmojiSuggestionEnterpriseAllowed);
 }
 
 bool LanguagesSection::IsSpellCheckEnabled() const {

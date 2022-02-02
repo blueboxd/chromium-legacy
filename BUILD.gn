@@ -331,7 +331,7 @@ group("gn_all") {
     ]
   }
 
-  if (use_x11) {
+  if (ozone_platform_x11) {
     deps += [ "//ui/platform_window/x11:x11_unittests" ]
   }
 
@@ -468,12 +468,12 @@ group("gn_all") {
   if (is_chromeos_ash) {
     deps += [
       "//ash:ash_unittests",
+      "//ash/components/proximity_auth:proximity_auth_unittests",
       "//ash/keyboard/ui:keyboard_unittests",
       "//ash/webui:ash_webui_unittests",
       "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test:usage_time_limit_unittests",
       "//chromeos/components:chromeos_components_unittests",
-      "//chromeos/components/proximity_auth:proximity_auth_unittests",
       "//components/exo/wayland:wayland_client_compatibility_tests",
       "//components/session_manager/core",
       "//third_party/shell-encryption:shell_encryption_unittests",
@@ -531,7 +531,7 @@ group("gn_all") {
   }
 
   # TODO(GYP): Figure out which of these should (and can) build
-  # for chromeos/ios.
+  # for Chrome OS, iOS, and Fuchsia.
   if (!is_chromeos_ash && !is_ios && !is_fuchsia) {
     deps += [
       "//base:build_utf8_validator_tables",
@@ -592,13 +592,6 @@ group("gn_all") {
       if (is_linux || is_chromeos) {
         # TODO(dpranke): Figure out what platforms should actually have this.
         deps += [ "//components/nacl/loader:nacl_helper" ]
-
-        if (enable_nacl_nonsfi) {
-          deps += [
-            "//components/nacl/loader:helper_nonsfi",
-            "//components/nacl/loader:nacl_helper_nonsfi_unittests",
-          ]
-        }
       }
     }
 
@@ -640,10 +633,8 @@ group("gn_all") {
       }
     }
 
-    if (use_x11) {
-      if (target_cpu != "arm") {
-        deps += [ "//gpu/tools/compositor_model_bench" ]
-      }
+    if (ozone_platform_x11 && !is_chromecast && target_cpu != "arm") {
+      deps += [ "//gpu/tools/compositor_model_bench" ]
     }
   }
 
@@ -680,8 +671,6 @@ group("gn_all") {
       "//components/zucchini",
       "//net:quic_client",
       "//net:quic_server",
-      "//sandbox/win:pocdll",
-      "//sandbox/win:sandbox_poc",
       "//sandbox/win:sbox_integration_tests",
       "//sandbox/win:sbox_unittests",
       "//sandbox/win:sbox_validation_tests",
@@ -879,13 +868,12 @@ group("rust_build_tests") {
 }
 
 # TODO(https://crbug.com/1112776): ensure remoting is functional on Linux builds with
-# ozone. We also need to figure out what to do with remoting_host that is set for
-# use_x11 && is_linux. See remoting/remoting_options.gni.  For now, just allow to
-# enable remoting for is_linux && use_x11 && use_ozone.
-if ((is_linux || is_chromeos || is_win) && enable_remoting &&
-    (use_x11 || !use_ozone)) {
-  # This group is used for network annotation check test.
-  group("shipped_binaries") {
+# other than X11 Ozone backends.
+if (enable_remoting && ((is_linux && ozone_platform_x11) ||
+                        ((is_chromeos || is_win) && !use_ozone))) {
+  # On CQ, run the Traffic Annotation Auditor when a change affects one of these
+  # targets.
+  group("traffic_annotation_auditor_dependencies") {
     deps = [
       "//chrome:chrome",
       "//remoting/client",
@@ -896,6 +884,17 @@ if ((is_linux || is_chromeos || is_win) && enable_remoting &&
     if (is_win) {
       deps += [ "//chrome/chrome_cleaner:shipped_binaries" ]
     }
+  }
+}
+
+if (is_android) {
+  # On CQ, run the Traffic Annotation Auditor when a change affects one of these
+  # targets.
+  group("traffic_annotation_auditor_dependencies") {
+    deps = [
+      "//chrome/android:chrome_public_apk",
+      "//tools/traffic_annotation/summary:annotations_xml",
+    ]
   }
 }
 
@@ -925,7 +924,7 @@ if (is_win) {
       "//chrome/credential_provider",
       "//chrome/installer/gcapi",
       "//chrome/installer/mini_installer",
-      "//chrome/updater/win/installer",
+      "//chrome/updater/win:updater_zip",
       "//cloud_print",
       "//cloud_print/virtual_driver/win/port_monitor:copy_gcp_portmon_binaries",
       "//components/policy:pack_policy_templates",
@@ -1229,9 +1228,6 @@ if (!is_ios) {
 
   # https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_tests.md
   script_test("blink_web_tests") {
-    if (is_mac) {
-      run_under_python2 = true
-    }
     script = _common_web_test_script
 
     args = _common_web_test_args
@@ -1316,6 +1312,7 @@ if (!is_ios) {
       "//third_party/blink/web_tests/scrollbars/",
       "//third_party/blink/web_tests/scrollingcoordinator/",
       "//third_party/blink/web_tests/security/",
+      "//third_party/blink/web_tests/handwriting/",
       "//third_party/blink/web_tests/shadow-dom/",
       "//third_party/blink/web_tests/storage/",
       "//third_party/blink/web_tests/svg/",
@@ -1377,8 +1374,6 @@ if (!is_ios) {
   }
 
   script_test("devtools_web_tests") {
-    run_under_python2 = true
-
     # This target differs from :blink_web_tests in that it uses the
     # same test harness but runs an entirely different set of tests
     # and doesn't have a dependency on the web_test directory at all.
@@ -1396,8 +1391,6 @@ if (!is_ios) {
   }
 
   script_test("webgpu_blink_web_tests") {
-    run_under_python2 = true
-
     # This target differs from :blink_web_tests in that it uses the same
     # test harness and a few additional flags but, more importantly, only runs
     # the web_tests/wpt_internal/webgpu tests, so it doesn't have a data

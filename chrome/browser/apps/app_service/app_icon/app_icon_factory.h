@@ -17,8 +17,8 @@
 #include "ui/gfx/image/image_skia.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
@@ -130,7 +130,7 @@ gfx::ImageSkia ConvertIconBitmapsToImageSkia(
 // desaturation to gray.
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
-                      std::unique_ptr<IconValue> iv,
+                      IconValuePtr iv,
                       LoadIconCallback callback);
 
 // Loads an icon from an extension.

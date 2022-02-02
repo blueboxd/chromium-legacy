@@ -158,16 +158,16 @@
     "includes": [1520],
     "structures": [1540],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/access_code_cast/resources.grd": {
+    "META": {"sizes": {"includes": [50]}},
+    "includes": [1560],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/connectors_internals/resources.grd": {
     "META": {"sizes": {"includes": [15]}},
-    "includes": [1560],
+    "includes": [1580],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/downloads/downloads_resources.grd": {
     "META": {"sizes": {"includes": [50],}},
-    "includes": [1580],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/enterprise_casting/resources.grd": {
-    "META": {"sizes": {"includes": [50]}},
     "includes": [1590],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/extensions/extensions_resources.grd": {
@@ -232,6 +232,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/read_later/read_later_resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [1920],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/segmentation_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1930],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
     "META": {"sizes": {"includes": [1000],}},
@@ -505,14 +509,14 @@
     "META": {"sizes": {"includes": [50],}},
     "includes": [3300],
   },
-  # Both eche_bundle_resources.grd and eche_bundle_mock_resources.grd
+  # Both ash_eche_bundle_resources.grd and ash_eche_bundle_mock_resources.grd
   # start with the same id because only one of them is built depending on if
   # src_internal is available.
-  "ash/webui/eche_app_ui/resources/prod/eche_bundle_resources.grd": {
+  "ash/webui/eche_app_ui/resources/prod/ash_eche_bundle_resources.grd": {
     "META": {"sizes": {"includes": [120],}},
     "includes": [3320],
   },
-  "ash/webui/eche_app_ui/resources/mock/eche_bundle_mock_resources.grd": {
+  "ash/webui/eche_app_ui/resources/mock/ash_eche_bundle_mock_resources.grd": {
     "META": {"sizes": {"includes": [120],}},
     "includes": [3320],
   },
@@ -546,7 +550,9 @@
   # END chromeos/ section.
 
   # START components/ section.
-  "components/arc/input_overlay/resources/input_overlay_resources.grd": {
+  # TODO(b/207518736): Input overlay resources will be changed to proto soon,
+  # thus not rushing to update it for now.
+  "ash/components/arc/input_overlay/resources/input_overlay_resources.grd": {
     # Big alignment at start of section.
     "META": {"align": 1000},
     "includes": [3500],
@@ -857,8 +863,11 @@
   "ui/strings/app_locale_settings.grd": {
     "messages": [4780],
   },
-  "ui/strings/ui_strings.grd": {
+  "ui/strings/ax_strings.grd": {
     "messages": [4800],
+  },
+  "ui/strings/ui_strings.grd": {
+    "messages": [4810],
   },
   "ui/views/examples/views_examples_resources.grd": {
     "messages": [4820],

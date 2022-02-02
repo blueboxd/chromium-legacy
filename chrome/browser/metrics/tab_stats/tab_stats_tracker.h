@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/sequence_checker.h"
@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/metrics/daily_event.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class PrefRegistrySimple;
@@ -104,10 +103,10 @@ class TabStatsTracker : public TabStripModelObserver,
 
    private:
     // The delegate used to report the metrics.
-    UmaStatsReportingDelegate* reporting_delegate_;
+    raw_ptr<UmaStatsReportingDelegate> reporting_delegate_;
 
     // The data store that houses the metrics.
-    TabStatsDataStore* data_store_;
+    raw_ptr<TabStatsDataStore> data_store_;
   };
 
   // Accessors, exposed for unittests:

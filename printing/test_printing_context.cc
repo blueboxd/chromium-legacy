@@ -12,10 +12,15 @@
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
 #include "ui/gfx/geometry/size.h"
+
+#if defined(OS_WIN)
+#include "printing/printed_page_win.h"
+#endif
 
 namespace printing {
 
@@ -31,8 +36,14 @@ std::string TestPrintingContextDelegate::GetAppLocale() {
   return std::string();
 }
 
-TestPrintingContext::TestPrintingContext(Delegate* delegate)
-    : PrintingContext(delegate) {}
+TestPrintingContext::TestPrintingContext(Delegate* delegate,
+                                         bool skip_system_calls)
+    : PrintingContext(delegate) {
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  if (skip_system_calls)
+    set_skip_system_calls();
+#endif
+}
 
 TestPrintingContext::~TestPrintingContext() = default;
 
@@ -60,12 +71,12 @@ gfx::Size TestPrintingContext::GetPdfPaperSizeDeviceUnits() {
 }
 
 mojom::ResultCode TestPrintingContext::UpdatePrinterSettings(
-    bool external_preview,
-    bool show_system_dialog,
-    int page_count) {
+    const PrinterSettings& printer_settings) {
   DCHECK(!in_print_job_);
-  DCHECK(!external_preview) << "Not implemented";
-  DCHECK(!show_system_dialog) << "Not implemented";
+#if defined(OS_MAC)
+  DCHECK(!printer_settings.external_preview) << "Not implemented";
+#endif
+  DCHECK(!printer_settings.show_system_dialog) << "Not implemented";
 
   // The printer name is to be embedded in the printing context's existing
   // settings.
@@ -93,32 +104,79 @@ mojom::ResultCode TestPrintingContext::UpdatePrinterSettings(
 
 mojom::ResultCode TestPrintingContext::NewDocument(
     const std::u16string& document_name) {
+  DCHECK(!in_print_job_);
+
+  abort_printing_ = false;
+  in_print_job_ = true;
+
+  if (!skip_system_calls() && new_document_blocked_by_permissions_)
+    return mojom::ResultCode::kAccessDenied;
+
   // No-op.
   return mojom::ResultCode::kSuccess;
 }
 
 mojom::ResultCode TestPrintingContext::NewPage() {
-  NOTIMPLEMENTED();
-  return mojom::ResultCode::kFailed;
+  if (abort_printing_)
+    return mojom::ResultCode::kCanceled;
+  DCHECK(in_print_job_);
+
+  // No-op.
+  return mojom::ResultCode::kSuccess;
 }
 
+#if defined(OS_WIN)
+mojom::ResultCode TestPrintingContext::RenderPage(const PrintedPage& page,
+                                                  const PageSetup& page_setup) {
+  if (abort_printing_)
+    return mojom::ResultCode::kCanceled;
+  DCHECK(in_print_job_);
+  DVLOG(1) << "Render page " << page.page_number();
+
+  // No-op.
+  return mojom::ResultCode::kSuccess;
+}
+#endif  // defined(OS_WIN)
+
 mojom::ResultCode TestPrintingContext::PageDone() {
-  NOTIMPLEMENTED();
-  return mojom::ResultCode::kFailed;
+  if (abort_printing_)
+    return mojom::ResultCode::kCanceled;
+  DCHECK(in_print_job_);
+
+  // No-op.
+  return mojom::ResultCode::kSuccess;
+}
+
+mojom::ResultCode TestPrintingContext::PrintDocument(
+    const MetafilePlayer& metafile,
+    const PrintSettings& settings,
+    uint32_t num_pages) {
+  if (abort_printing_)
+    return mojom::ResultCode::kCanceled;
+  DCHECK(in_print_job_);
+  DVLOG(1) << "Print document";
+
+  // No-op.
+  return mojom::ResultCode::kSuccess;
 }
 
 mojom::ResultCode TestPrintingContext::DocumentDone() {
-  NOTIMPLEMENTED();
-  return mojom::ResultCode::kFailed;
+  DCHECK(in_print_job_);
+  DVLOG(1) << "Document done";
+
+  ResetSettings();
+  return mojom::ResultCode::kSuccess;
 }
 
 void TestPrintingContext::Cancel() {
-  NOTIMPLEMENTED();
+  abort_printing_ = true;
+  in_print_job_ = false;
+  DVLOG(1) << "Canceling print job";
 }
 void TestPrintingContext::ReleaseContext() {}
 
 printing::NativeDrawingContext TestPrintingContext::context() const {
-  NOTIMPLEMENTED();
+  // No native context for test.
   return nullptr;
 }
 

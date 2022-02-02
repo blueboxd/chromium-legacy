@@ -70,6 +70,8 @@ void AppListTestModel::AppListTestItem::SetPosition(
 AppListTestModel::AppListTestModel()
     : AppListModel(/*app_list_model_delegate=*/this) {}
 
+AppListTestModel::~AppListTestModel() = default;
+
 AppListItem* AppListTestModel::AddItem(AppListItem* item) {
   return AppListModel::AddItem(base::WrapUnique(item));
 }
@@ -84,49 +86,38 @@ void AppListTestModel::RequestPositionUpdate(
   SetItemMetadata(id, std::move(metadata));
 }
 
-void AppListTestModel::RequestMoveItemToFolder(std::string id,
-                                               const std::string& folder_id) {
+void AppListTestModel::RequestMoveItemToFolder(
+    std::string id,
+    const std::string& folder_id,
+    RequestMoveToFolderReason reason) {
   // Copy the logic of `ChromeAppListModelUpdater::HandleMoveItemToFolder()`.
 
   AppListFolderItem* dest_folder = FindOrCreateFolderItem(folder_id);
   const syncer::StringOrdinal target_position =
       dest_folder->item_list()->CreatePositionBefore(syncer::StringOrdinal());
 
-  // Do not combine two callings on `SetItemMetaData()` into a single one
-  // because this method should use exactly the same logic of
-  // `ChromeAppListModelUpdater::HandleMoveItemToFolder()` for testing.
-  {
-    auto metadata = FindItem(id)->CloneMetadata();
-    metadata->folder_id = folder_id;
-    SetItemMetadata(id, std::move(metadata));
-  }
-
-  {
-    auto metadata = FindItem(id)->CloneMetadata();
-    metadata->position = target_position;
-    SetItemMetadata(id, std::move(metadata));
-  }
+  auto metadata = FindItem(id)->CloneMetadata();
+  metadata->folder_id = folder_id;
+  metadata->position = target_position;
+  SetItemMetadata(id, std::move(metadata));
 }
 
 void AppListTestModel::RequestMoveItemToRoot(
     std::string id,
     syncer::StringOrdinal target_position) {
   // Copy the logic of `ChromeAppListModelUpdater::HandleMoveItemToRoot()`.
+  auto metadata = FindItem(id)->CloneMetadata();
+  metadata->folder_id = "";
+  metadata->position = target_position;
+  SetItemMetadata(id, std::move(metadata));
+}
 
-  // Do not combine two callings on `SetItemMetadata()` into a single one
-  // because this method should use exactly the same logic of
-  // `ChromeAppListModelUpdater::HandleMoveItemToRoot()` for testing.
-  {
-    auto metadata = FindItem(id)->CloneMetadata();
-    metadata->folder_id = "";
-    SetItemMetadata(id, std::move(metadata));
-  }
+void AppListTestModel::RequestAppListSort(AppListSortOrder order) {
+  requested_sort_order_ = order;
+}
 
-  {
-    auto metadata = FindItem(id)->CloneMetadata();
-    metadata->position = target_position;
-    SetItemMetadata(id, std::move(metadata));
-  }
+void AppListTestModel::RequestAppListSortRevert() {
+  requested_sort_order_.reset();
 }
 
 AppListItem* AppListTestModel::AddItemToFolder(AppListItem* item,

@@ -175,8 +175,7 @@ AggregatableReportRequest CreateExampleRequest(
   return AggregatableReportRequest::Create(
              std::move(processing_origins),
              AggregationServicePayloadContents(
-                 AggregationServicePayloadContents::Operation::
-                     kHierarchicalHistogram,
+                 AggregationServicePayloadContents::Operation::kHistogram,
                  /*bucket=*/123, /*value=*/456, processing_type,
                  url::Origin::Create(GURL("https://reporting.example"))),
              AggregatableReportSharedInfo(
@@ -222,7 +221,7 @@ TestHpkeKey GenerateKey(std::string key_id) {
 
 }  // namespace aggregation_service
 
-TestAggregatableReportManager::TestAggregatableReportManager(
+TestAggregationServiceStorageContext::TestAggregationServiceStorageContext(
     const base::Clock* clock)
     : storage_(base::SequenceBound<AggregationServiceStorageSql>(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}),
@@ -230,15 +229,16 @@ TestAggregatableReportManager::TestAggregatableReportManager(
           /*path_to_database=*/base::FilePath(),
           clock)) {}
 
-TestAggregatableReportManager::~TestAggregatableReportManager() = default;
+TestAggregationServiceStorageContext::~TestAggregationServiceStorageContext() =
+    default;
 
 const base::SequenceBound<content::AggregationServiceKeyStorage>&
-TestAggregatableReportManager::GetKeyStorage() {
+TestAggregationServiceStorageContext::GetKeyStorage() {
   return storage_;
 }
 
 TestAggregationServiceKeyFetcher::TestAggregationServiceKeyFetcher()
-    : AggregationServiceKeyFetcher(/*manager=*/nullptr,
+    : AggregationServiceKeyFetcher(/*storage_context=*/nullptr,
                                    /*network_fetcher=*/nullptr) {}
 
 TestAggregationServiceKeyFetcher::~TestAggregationServiceKeyFetcher() = default;
@@ -300,8 +300,8 @@ std::ostream& operator<<(
     std::ostream& out,
     const AggregationServicePayloadContents::Operation& operation) {
   switch (operation) {
-    case AggregationServicePayloadContents::Operation::kHierarchicalHistogram:
-      return out << "kHierarchicalHistogram";
+    case AggregationServicePayloadContents::Operation::kHistogram:
+      return out << "kHistogram";
   }
 }
 

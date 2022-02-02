@@ -13,6 +13,7 @@ interface AbortSignal : EventTarget
     attribute @@toStringTag
     getter aborted
     getter onabort
+    getter reason
     method constructor
     setter onabort
 interface BackgroundFetchEvent : ExtendableEvent
@@ -2817,6 +2818,7 @@ interface WorkerGlobalScope : EventTarget
     method reportError
     method setInterval
     method setTimeout
+    method structuredClone
     setter onerror
     setter onlanguagechange
     setter onrejectionhandled
@@ -2868,6 +2870,7 @@ interface WritableStream
     method getWriter
 interface WritableStreamDefaultController
     attribute @@toStringTag
+    getter signal
     method constructor
     method error
 interface WritableStreamDefaultWriter

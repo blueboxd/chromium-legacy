@@ -6,7 +6,7 @@ import {
   AppWindow,  // eslint-disable-line no-unused-vars
   getDefaultWindowSize,
 } from './app_window.js';
-import {assert, assertInstanceof} from './chrome_util.js';
+import {assert, assertInstanceof} from './assert.js';
 import {
   PhotoConstraintsPreferrer,
   VideoConstraintsPreferrer,
@@ -40,6 +40,7 @@ import {
 } from './type.js';
 import {addUnloadCallback} from './unload.js';
 import * as util from './util.js';
+import {checkEnumVariant} from './util.js';
 import {Camera} from './views/camera.js';
 import {CameraIntent} from './views/camera_intent.js';
 import {Dialog} from './views/dialog.js';
@@ -239,9 +240,10 @@ export class App {
 
   /**
    * Starts the app by loading the model and opening the camera-view.
+   * @param {!metrics.LaunchType} launchType
    * @return {!Promise}
    */
-  async start() {
+  async start(launchType) {
     document.documentElement.dir = loadTimeData.getTextDirection();
     try {
       await filesystem.initialize();
@@ -337,7 +339,7 @@ export class App {
       }
     })();
 
-    metrics.sendLaunchEvent({ackMigrate: false});
+    metrics.sendLaunchEvent({launchType});
     return Promise.all([showWindow, startCamera, preloadImages]);
   }
 
@@ -395,27 +397,9 @@ function parseSearchParams() {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  // TODO(pihsun): Intent.create has almost same code for checking a string is
-  // an enum variant, extract them to a util function when we change TypeScript
-  // since the util function type is hard to be described in closure compiler
-  // due to lack of generic type bounds.
-  /** @type {?Facing} */
-  const facing = (() => {
-    const facing = params.get('facing');
-    if (facing === null || !Object.values(Facing).includes(facing)) {
-      return null;
-    }
-    return /** @type {!Facing} */ (facing);
-  })();
+  const facing = checkEnumVariant(Facing, params.get('facing'));
 
-  /** @type {?Mode} */
-  const mode = (() => {
-    const mode = params.get('mode');
-    if (mode === null || !Object.values(Mode).includes(mode)) {
-      return null;
-    }
-    return /** @type {!Mode} */ (mode);
-  })();
+  const mode = checkEnumVariant(Mode, params.get('mode'));
 
   /** @type {?Intent} */
   const intent = (() => {
@@ -485,31 +469,38 @@ let instance = null;
       appWindow.reportPerf({event, duration, perfInfo});
     }
   });
-  const states = Object.values(PerfEvent);
-  states.push(state.State.TAKING);
-  states.forEach((s) => {
-    state.addObserver(s, (val, extras) => {
-      let event = s;
-      if (s === state.State.TAKING) {
-        // 'taking' state indicates either taking photo or video. Skips for
-        // video-taking case since we only want to collect the metrics of
-        // photo-taking.
-        if (state.get(Mode.VIDEO)) {
-          return;
-        }
-        event = PerfEvent.PHOTO_TAKING;
-      }
 
+  state.addObserver(state.State.TAKING, (val, extras) => {
+    // 'taking' state indicates either taking photo or video. Skips for
+    // video-taking case since we only want to collect the metrics of
+    // photo-taking.
+    if (state.get(Mode.VIDEO)) {
+      return;
+    }
+    const event = PerfEvent.PHOTO_TAKING;
+
+    if (val) {
+      perfLogger.start(event);
+    } else {
+      perfLogger.stop(event, extras);
+    }
+  });
+
+  const states = Object.values(PerfEvent);
+  for (const event of states) {
+    state.addObserver(event, (val, extras) => {
       if (val) {
         perfLogger.start(event);
       } else {
         perfLogger.stop(event, extras);
       }
     });
-  });
+  }
 
   instance = new App({perfLogger, intent, facing, mode});
-  await instance.start();
+  await instance.start(
+      openFrom === 'assistant' ? metrics.LaunchType.ASSISTANT :
+                                 metrics.LaunchType.DEFAULT);
 
   if (autoTake) {
     const takePromise = instance.beginTake(

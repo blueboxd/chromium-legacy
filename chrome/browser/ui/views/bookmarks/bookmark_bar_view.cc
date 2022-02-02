@@ -16,7 +16,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -409,52 +409,11 @@ class BookmarkTabGroupButton : public BookmarkMenuButtonBase {
     rect_f.Inset(1.0f, 1.0f);
     float border_thickness_ = 2.0f;
 
-    SkColor tab_strip_color =
-        tp->GetColor(GetTabGroupDialogColorId(tab_group_color_id_));
-    const float tab_group_chip_alpha = 0.48f;
-    const SkColor default_dark_toolbar_color = ThemeProperties::GetDefaultColor(
-        ThemeProperties::COLOR_TOOLBAR, false, true);
-
-    // Set UI options based on flag parameter.
-    int ui_option = base::GetFieldTrialParamByFeatureAsInt(
-        features::kTabGroupsSave,
-        features::kTabGroupsSaveUIVariationsParameterName, 0);
-
     // Relies on logic in theme_helper.cc to determine dark/light palette.
     // Sets border color to be same as background color.
-    // Sets for ui_option 0, 1, 3, and 4.
     SkColor background_color =
         tp->GetColor(GetTabGroupBookmarkColorId(tab_group_color_id_));
     SkColor border_color = background_color;
-
-    switch (ui_option) {
-      case 2:
-        // Set 1dp stroke border at full opacity.
-        border_thickness_ = 1.0f;
-        rect_f.Inset(border_thickness_ / 2, border_thickness_ / 2);
-        border_color = tab_strip_color;
-        break;
-      case 5:
-        // Set 1dp stroke border at 48% opacity.
-        border_thickness_ = 1.0;
-        rect_f.Inset(border_thickness_ / 2, border_thickness_ / 2);
-        border_color = color_utils::AlphaBlend(
-            tab_strip_color, default_dark_toolbar_color, tab_group_chip_alpha);
-        break;
-      case 6:
-        // Use tab strip colors for background.
-        background_color = tab_strip_color;
-        border_color = tab_strip_color;
-        break;
-      case 7:
-        // Use tab strip colors for custom theme background, otherwise 24%
-        // opacity colors.
-        if (tp->HasCustomColor(ThemeProperties::COLOR_TOOLBAR)) {
-          background_color = tab_strip_color;
-          border_color = tab_strip_color;
-        }
-        break;
-    }
 
     // Show 2px border on hover.
     if (GetState() == STATE_HOVERED || GetState() == STATE_PRESSED) {
@@ -481,7 +440,7 @@ class BookmarkTabGroupButton : public BookmarkMenuButtonBase {
  private:
   std::unique_ptr<gfx::SlideAnimation> show_animation_;
   tab_groups::TabGroupColorId tab_group_color_id_ =
-      tab_groups::TabGroupColorId::kRed;
+      tab_groups::TabGroupColorId::kGrey;
   float border_radius_ = 4.5f;
   float button_radius_ = 5.0f;
 };
@@ -505,7 +464,7 @@ class OverflowButton : public BookmarkMenuButtonBase {
   }
 
  private:
-  BookmarkBarView* owner_;
+  raw_ptr<BookmarkBarView> owner_;
 };
 
 void RecordAppLaunch(Profile* profile, const GURL& url) {
@@ -1524,7 +1483,10 @@ void BookmarkBarView::OnMenuButtonPressed(const bookmarks::BookmarkNode* node,
       // TODO: Handle click if group has already been opened (crbug.com/1238539)
       // left click on a saved tab group opens all links in new group
       std::vector<const bookmarks::BookmarkNode*> selection = {node};
-      DCHECK(chrome::HasBookmarkURLs(selection));
+      // This happens when trying to open an empty bookmarks folder.
+      // See https://crbug.com/1271130
+      if (!chrome::HasBookmarkURLs(selection))
+        return;
       chrome::OpenAllIfAllowed(browser_, GetPageNavigatorGetter(), selection,
                                WindowOpenDisposition::NEW_BACKGROUND_TAB, true);
     } else {
@@ -1786,39 +1748,29 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   const ui::ThemeProvider* const tp = GetThemeProvider();
   if (tp) {
     text_color = tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
-    button->SetEnabledTextColors(text_color);
     if (node->is_folder()) {
       // If saved tab groups is enabled, set text color or dot if indicated by
       // flag parameter. Chip background and border colors are set in
       // OnPaintBackground.
       if (base::FeatureList::IsEnabled(features::kTabGroupsSave)) {
-        SkColor tab_strip_color = tp->GetColor(
-            GetTabGroupDialogColorId(tab_groups::TabGroupColorId::kRed));
-        int ui_option = base::GetFieldTrialParamByFeatureAsInt(
-            features::kTabGroupsSave,
-            features::kTabGroupsSaveUIVariationsParameterName, 0);
-        switch (ui_option) {
-          case 4:
-            // Set 6dp colored tab group dot icon.
-            button->SetImageModel(views::Button::STATE_NORMAL,
-                                  ui::ImageModel::FromVectorIcon(
-                                      kTabGroupIcon, tab_strip_color, 6));
-            break;
-          case 6:
-            // Invert bookmark text colors for chip with tab strip color
-            // background.
-            button->SetEnabledTextColors(
-                color_utils::GetColorWithMaxContrast(tab_strip_color));
-            break;
-          case 7:
-            // If a custom theme is set, invert bookmark text colors for chip
-            // with tab strip color background.
-            if (tp->HasCustomColor(ThemeProperties::COLOR_TOOLBAR)) {
-              button->SetEnabledTextColors(
-                  color_utils::GetColorWithMaxContrast(tab_strip_color));
-            }
-            break;
-        }
+        // Use this variable to set the tab_group_color for all folders in the
+        // bookmark bar
+        tab_groups::TabGroupColorId tab_group_color_id =
+            tab_groups::TabGroupColorId::kGrey;
+
+        // In most cases our text color will match the hover border color
+        // However, for yellow, orange, and custom colors this may not be true
+        // for contrast and visibility, so a default grey color may be
+        // more appropriate.
+        SkColor background_color =
+            tp->GetColor(GetTabGroupBookmarkColorId(tab_group_color_id));
+        text_color = tp->GetColor(GetTabGroupDialogColorId(tab_group_color_id));
+        bool meets_contrast_req =
+            color_utils::GetContrastRatio(background_color, text_color) >=
+            color_utils::kMinimumVisibleContrastRatio;
+        if (!meets_contrast_req)
+          text_color = gfx::kGoogleGrey800;
+
         // Set empty border using the default horizontal padding (but leaving
         // vertical empty). This provides enough space to render some
         // background to the left and right of the label. There's no need to
@@ -1829,21 +1781,21 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
         insets.set_top(0);
         insets.set_bottom(0);
         button->SetBorder(views::CreateEmptyBorder(insets));
+      } else if (tp->HasCustomColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) {
+        button->SetImageModel(
+            views::Button::STATE_NORMAL,
+            chrome::GetBookmarkFolderIcon(
+                chrome::BookmarkFolderIconType::kNormal,
+                color_utils::DeriveDefaultIconColor(text_color)));
       } else {
-        if (tp->HasCustomColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) {
-          button->SetImageModel(
-              views::Button::STATE_NORMAL,
-              chrome::GetBookmarkFolderIcon(
-                  chrome::BookmarkFolderIconType::kNormal,
-                  color_utils::DeriveDefaultIconColor(text_color)));
-        } else {
-          button->SetImageModel(
-              views::Button::STATE_NORMAL,
-              chrome::GetBookmarkFolderIcon(
-                  chrome::BookmarkFolderIconType::kNormal, ui::kColorIcon));
-        }
+        button->SetImageModel(
+            views::Button::STATE_NORMAL,
+            chrome::GetBookmarkFolderIcon(
+                chrome::BookmarkFolderIconType::kNormal, ui::kColorIcon));
       }
     }
+
+    button->SetEnabledTextColors(text_color);
   }
 
   button->set_context_menu_controller(this);

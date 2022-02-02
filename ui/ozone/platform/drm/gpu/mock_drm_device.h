@@ -16,7 +16,6 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -111,8 +110,6 @@ class MockDrmDevice : public DrmDevice {
     const auto it = crtc_cursor_map_.find(crtc);
     return it != crtc_cursor_map_.end() ? it->second : 0;
   }
-
-  void set_connector_type(uint32_t type) { connector_type_ = type; }
 
   void InitializeState(
       const std::vector<CrtcProperties>& crtc_properties,
@@ -273,8 +270,6 @@ class MockDrmDevice : public DrmDevice {
 
   uint64_t system_watermark_limitations_ = std::numeric_limits<uint64_t>::max();
   base::flat_map<uint64_t /*modifier*/, int /*overhead*/> modifiers_overhead_;
-
-  uint32_t connector_type_;
 };
 
 }  // namespace ui

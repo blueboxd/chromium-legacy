@@ -28,8 +28,15 @@ const base::Feature kChromeTipsInMainMenuNewBadge{
 #endif
 
 // Enables "Chrome What's New" UI.
-const base::Feature kChromeWhatsNewUI{"ChromeWhatsNewUI",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kChromeWhatsNewUI {
+  "ChromeWhatsNewUI",
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(ANDROID) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Whether to show a feedback button in the What's New UI.
 const base::FeatureParam<bool> kChromeWhatsNewUIFeedbackButton{
@@ -42,9 +49,9 @@ const base::Feature kChromeWhatsNewInMainMenuNewBadge{
 #endif
 
 #if !defined(ANDROID)
-// Enables "Enterprise Casting" UI.
-const base::Feature kEnterpriseCastingUI{"EnterpriseCastingUI",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables "Access Code Cast" UI.
+const base::Feature kAccessCodeCastUI{"AccessCodeCastUI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables showing the EV certificate details in the Page Info bubble.
@@ -55,14 +62,6 @@ const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
 // access control permissions.
 const base::Feature kExtensionsMenuAccessControl{
     "ExtensionsMenuAccessControl", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the hosting of an extension in the left aligned side panel of the
-// browser window. Currently used for a hosted extension experiment.
-const base::Feature kExtensionsSidePanel{"ExtensionsSidePanel",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<std::string> kExtensionsSidePanelId{
-    &kExtensionsSidePanel, "ExtensionsSidePanelId", ""};
 
 // Enables the reauth flow for authenticated profiles with invalid credentials
 // when the force sign-in policy is enabled.
@@ -98,9 +97,6 @@ const base::Feature kSideSearchStatePerTab{"SideSearchStatePerTab",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
-const base::Feature kSidePanelBorder{"SidePanelBorder",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kSidePanelDragAndDrop{"SidePanelDragAndDrop",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -113,16 +109,6 @@ const char kMinimumTabWidthFeatureParameterName[] = "minTabWidth";
 // scrollable-tabstrip is enabled. https://crbug.com/1116118
 const base::Feature kScrollableTabStripButtons{
     "ScrollableTabStripButtons", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kForceDisableStackedTabs{"ForceDisableStackedTabs",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if !defined(ANDROID)
-// Changes the layout of the chrome://settings page to only show one section at
-// a time, crbug.com/1204457.
-const base::Feature kSettingsLandingPageRedesign{
-    "SettingsLandingPageRedesign", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Updated managed profile sign-in popup. https://crbug.com/1141224
 const base::Feature kSyncConfirmationUpdatedText{
@@ -148,7 +134,6 @@ const base::Feature kTabGroupsNewBadgePromo{"TabGroupsNewBadgePromo",
 // https://crbug.com/1223929
 const base::Feature kTabGroupsSave{"TabGroupsSave",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-const char kTabGroupsSaveUIVariationsParameterName[] = "UI variation";
 
 // Enables preview images in tab-hover cards.
 // https://crbug.com/928954
@@ -169,12 +154,8 @@ const char kTabHoverCardAlternateFormat[] = "alternate_format";
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables submenus under each tab group or window within the app menu history.
-const base::Feature kTabRestoreSubMenus{"TabRestoreSubMenus",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kTabSearchChevronIcon{"TabSearchChevronIcon",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the tab search submit feedback button.
 const base::Feature kTabSearchFeedback{"TabSearchFeedback",
@@ -188,6 +169,9 @@ const char kTabSearchSearchThresholdName[] = "TabSearchSearchThreshold";
 
 const base::FeatureParam<bool> kTabSearchSearchIgnoreLocation{
     &kTabSearchFuzzySearch, "TabSearchSearchIgnoreLocation", false};
+
+const base::Feature kTabSearchMediaTabs{"TabSearchMediaTabs",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::FeatureParam<int> kTabSearchSearchDistance{
     &kTabSearchFuzzySearch, "TabSearchSearchDistance", 200};
@@ -221,6 +205,9 @@ const base::FeatureParam<int> kTabSearchRecentlyClosedTabCountThreshold{
 const base::Feature kToolbarUseHardwareBitmapDraw{
     "ToolbarUseHardwareBitmapDraw", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUnifiedSidePanel{"UnifiedSidePanel",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // This enables enables persistence of a WebContents in a 1-to-1 association
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
 const base::Feature kWebUIBubblePerProfilePersistence{
@@ -244,7 +231,7 @@ const base::Feature kWebUITabStrip{"WebUITabStrip",
 // The default value of this flag is aligned with platform behavior to handle
 // context menu with touch.
 // TODO(crbug.com/1257626): Enable this flag for all platforms after launch.
-const base::Feature kWebUITabStripContextMenuAfterTap{
+const base::Feature kWebUITabStripContextMenuAfterTap {
   "WebUITabStripContextMenuAfterTap",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -298,7 +285,7 @@ int GetLocationPermissionsExperimentLabelPromptLimit() {
 // Moves the Tab Search button into the browser frame's caption button area on
 // Windows 10 (crbug.com/1223847).
 const base::Feature kWin10TabSearchCaptionButton{
-    "Win10TabSearchCaptionButton", base::FEATURE_DISABLED_BY_DEFAULT};
+    "Win10TabSearchCaptionButton", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif
 

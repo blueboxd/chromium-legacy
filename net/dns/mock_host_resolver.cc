@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -36,12 +37,14 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/dns_alias_utility.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/host_resolver_results.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/mdns_listener_update_type.h"
 #include "net/dns/public/resolve_error_info.h"
@@ -188,6 +191,12 @@ class MockHostResolverBase::RequestImpl
     return address_results_;
   }
 
+  absl::optional<std::vector<HostResolverEndpointResult>> GetEndpointResults()
+      const override {
+    DCHECK(complete_);
+    return endpoint_results_;
+  }
+
   const absl::optional<std::vector<std::string>>& GetTextResults()
       const override {
     DCHECK(complete_);
@@ -240,6 +249,7 @@ class MockHostResolverBase::RequestImpl
     // completed.
     DCHECK(!complete_);
     DCHECK(!address_results_);
+    DCHECK(!endpoint_results_);
     DCHECK(!parameters_.is_speculative);
 
     address_results_ = FixupAddressList(address_results);
@@ -257,6 +267,18 @@ class MockHostResolverBase::RequestImpl
     sanitized_dns_alias_results_ =
         dns_alias_utility::SanitizeDnsAliases(address_results_->dns_aliases());
     staleness_ = std::move(staleness);
+
+    endpoint_results_ = AddressListToEndpointResults(address_results_.value());
+  }
+
+  void SetEndpointResults(
+      std::vector<HostResolverEndpointResult> endpoint_results) {
+    DCHECK(!complete_);
+    DCHECK(!endpoint_results_);
+    DCHECK(!parameters_.is_speculative);
+
+    // TODO(crbug.com/1264933): Perform fixups on `endpoint_results`?
+    endpoint_results_ = std::move(endpoint_results);
   }
 
   void OnAsyncCompleted(size_t id, int error) {
@@ -344,6 +366,7 @@ class MockHostResolverBase::RequestImpl
   int host_resolver_flags_;
 
   absl::optional<AddressList> address_results_;
+  absl::optional<std::vector<HostResolverEndpointResult>> endpoint_results_;
   absl::optional<std::vector<std::string>> sanitized_dns_alias_results_;
   absl::optional<HostCache::EntryStaleness> staleness_;
   ResolveErrorInfo resolve_error_info_;
@@ -441,7 +464,7 @@ class MockHostResolverBase::MdnsListenerImpl
   const HostPortPair host_;
   const DnsQueryType query_type_;
 
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   // Use a WeakPtr as the resolver may be destroyed while there are still
   // outstanding listener objects.
@@ -859,6 +882,7 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
   num_resolve_++;
   AddressList addresses;
   absl::optional<HostCache::EntryStaleness> stale_info;
+  // TODO(crbug.com/1264933): Allow caching `ConnectionEndpoint` results.
   int rv = ResolveFromIPLiteralOrCache(
       request->request_endpoint(), request->network_isolation_key(),
       request->parameters().dns_query_type, request->host_resolver_flags(),
@@ -987,23 +1011,36 @@ int MockHostResolverBase::DoSynchronousResolution(RequestImpl& request) {
       request.request_endpoint(), request.parameters().dns_query_type,
       request.parameters().source);
 
-  const AddressList* address_results = absl::get_if<AddressList>(&result);
-  if (address_results) {
-    request.SetAddressResults(*address_results,
-                              /*staleness=*/absl::nullopt);
-  } else {
-    DCHECK(absl::holds_alternative<RuleResolver::ErrorResult>(result));
-    request.SetError(absl::get<RuleResolver::ErrorResult>(result));
-  }
+  int error = ERR_UNEXPECTED;
+  absl::optional<HostCache::Entry> cache_entry;
 
-  int error = request.resolve_error_info().error;
-  if (cache_.get()) {
-    HostCache::Entry cache_entry =
+  if (absl::holds_alternative<AddressList>(result)) {
+    const AddressList& address_results = absl::get<AddressList>(result);
+    request.SetAddressResults(address_results,
+                              /*staleness=*/absl::nullopt);
+    error = request.resolve_error_info().error;
+    cache_entry =
         request.address_results()
             ? HostCache::Entry(error, *request.address_results(),
                                HostCache::Entry::SOURCE_UNKNOWN)
             : HostCache::Entry(error, HostCache::Entry::SOURCE_UNKNOWN);
+  } else if (absl::holds_alternative<std::vector<HostResolverEndpointResult>>(
+                 result)) {
+    const auto& endpoint_results =
+        absl::get<std::vector<HostResolverEndpointResult>>(result);
+    request.SetEndpointResults(endpoint_results);
+    // TODO(crbug.com/1264933): Change `error` on empty results?
+    error = OK;
+    // TODO(crbug.com/1264933): Save result to cache.
+  } else {
+    DCHECK(absl::holds_alternative<RuleResolver::ErrorResult>(result));
+    error = absl::get<RuleResolver::ErrorResult>(result);
+    request.SetError(error);
+    cache_entry.emplace(error, HostCache::Entry::SOURCE_UNKNOWN);
+  }
 
+  if (cache_.get() && cache_entry.has_value()) {
+    DCHECK(cache_entry.has_value());
     HostCache::Key key(
         GetCacheHost(request.request_endpoint()),
         request.parameters().dns_query_type, request.host_resolver_flags(),
@@ -1015,7 +1052,7 @@ int MockHostResolverBase::DoSynchronousResolution(RequestImpl& request) {
       if (initial_cache_invalidation_num_ > 0)
         cache_invalidation_nums_[key] = initial_cache_invalidation_num_;
     }
-    cache_->Set(key, cache_entry, tick_clock_->NowTicks(), ttl);
+    cache_->Set(key, cache_entry.value(), tick_clock_->NowTicks(), ttl);
   }
 
   return SquashErrorCode(error);
@@ -1367,6 +1404,11 @@ class HangingHostResolver::RequestImpl
   }
 
   const absl::optional<AddressList>& GetAddressResults() const override {
+    IMMEDIATE_CRASH();
+  }
+
+  absl::optional<std::vector<HostResolverEndpointResult>> GetEndpointResults()
+      const override {
     IMMEDIATE_CRASH();
   }
 

@@ -28,7 +28,7 @@ be describing additional metrics about the same event.
     <summary>
       The status of the &quot;About this site&quot; info, including if the data
       is available and whether the proto is valid. See
-      |page_info::about_this_site_validation::ProtoValidation| for enum
+      |page_info::about_this_site_validation::AboutThisSiteStatus| for enum
       elements.
     </summary>
     <aggregation>
@@ -105,7 +105,8 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Accessibility.ImageDescriptions">
-  <owner>dmazzoni@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
+  <owner>nektar@chromium.org</owner>
   <summary>
     Tracks automatic image descriptions provided to blind users.
   </summary>
@@ -149,7 +150,8 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Accessibility.Renderer">
-  <owner>dmazzoni@chromium.org</owner>
+  <owner>aleventhal@chromium.org</owner>
+  <owner>nektar@chromium.org</owner>
   <summary>
     Tracks the amount of time sending accessibility events from web renderers.
   </summary>
@@ -816,6 +818,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="SubFrame.PaintTiming.NavigationToLargestContentfulPaint">
+    <obsolete>
+      Replaced by SubFrame.PaintTiming.NavigationToLargestContentfulPaint2. No
+      longer reported from Nov 2021.
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -2051,6 +2057,135 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AutofillAssistant.CollectContact">
+  <owner>hluca@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    A set of metrics about the collection of the user's contact data.
+  </summary>
+  <metric name="CompleteContactProfilesCount"
+      enum="AutofillAssistantUserDataEntryCount">
+    <summary>
+      The number of the user's contact profiles which are considered complete
+      for the purposes of the current Autofill Assistant flow.
+    </summary>
+  </metric>
+  <metric name="ContactModified" enum="AutofillAssistantUserDataSelectionState">
+    <summary>
+      What kind of operation the user did to the contact data (e.g. kept the
+      default value, edited it, etc.)
+    </summary>
+  </metric>
+  <metric name="IncompleteContactProfilesCount"
+      enum="AutofillAssistantUserDataEntryCount">
+    <summary>
+      The number of the user's contact profiles which are considered incomplete
+      for the purposes of the current Autofill Assistant flow.
+    </summary>
+  </metric>
+  <metric name="InitialContactFieldsStatus">
+    <summary>
+      A bit array of whether a given field is present. Only logged for the
+      preselected contact profile.
+    </summary>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.CollectPayment">
+  <owner>hluca@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    A set of metrics about the collection of the user's payment details.
+  </summary>
+  <metric name="CompleteCreditCardsCount"
+      enum="AutofillAssistantUserDataEntryCount">
+    <summary>
+      The number of the user's credit cards which are considered complete for
+      the purposes of the current Autofill Assistant flow.
+    </summary>
+  </metric>
+  <metric name="CreditCardModified"
+      enum="AutofillAssistantUserDataSelectionState">
+    <summary>
+      What kind of operation the user did to the payment data (e.g. kept the
+      default value, edited it, etc.)
+    </summary>
+  </metric>
+  <metric name="IncompleteCreditCardsCount"
+      enum="AutofillAssistantUserDataEntryCount">
+    <summary>
+      The number of the user's credit cards which are considered incomplete for
+      the purposes of the current Autofill Assistant flow.
+    </summary>
+  </metric>
+  <metric name="InitialBillingAddressFieldsStatus">
+    <summary>
+      A bit array of whether a given field is present. Only logged for the
+      billing address of the preselected credit card.
+    </summary>
+  </metric>
+  <metric name="InitialCreditCardFieldsStatus">
+    <summary>
+      A bit array of whether a given field is present. Only logged for the
+      preselected credit card
+    </summary>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.CollectShippingAddress">
+  <owner>hluca@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    A set of metrics about the collection of the user's shipping address.
+  </summary>
+  <metric name="CompleteShippingProfilesCount"
+      enum="AutofillAssistantUserDataEntryCount">
+    <summary>
+      The number of the user's shipping address profiles which are considered
+      complete for the purposes of the current Autofill Assistant flow.
+    </summary>
+  </metric>
+  <metric name="IncompleteShippingProfilesCount"
+      enum="AutofillAssistantUserDataEntryCount">
+    <summary>
+      The number of the user's shipping address profiles which are considered
+      incomplete for the purposes of the current Autofill Assistant flow.
+    </summary>
+  </metric>
+  <metric name="InitialShippingFieldsStatus">
+    <summary>
+      A bit array of whether a given field is present. Only logged for the
+      preselected shipping address.
+    </summary>
+  </metric>
+  <metric name="ShippingModified"
+      enum="AutofillAssistantUserDataSelectionState">
+    <summary>
+      What kind of operation the user did to the shipping data (e.g. kept the
+      default value, edited it, etc.)
+    </summary>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.CollectUserDataResult">
+  <owner>hluca@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    The result of the CollectUserData action.
+  </summary>
+  <metric name="Result" enum="AutofillAssistantCollectUserDataResult">
+    <summary>
+      The result of the CollectUserData action.
+    </summary>
+  </metric>
+  <metric name="TimeTakenMs">
+    <summary>
+      The time it took the user to complete the action, from when it was
+      prompted to them to when the action finished, either succesfully or not.
+    </summary>
+  </metric>
+</event>
+
 <event name="AutofillAssistant.InChromeTriggering">
   <owner>arbesser@google.com</owner>
   <owner>mcarlen@google.com</owner>
@@ -2213,6 +2348,90 @@ be describing additional metrics about the same event.
   <metric name="TriggerUIType" enum="AutofillAssistantTriggerUIType">
     <summary>
       A enum that captures the type of trigger and its intent.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.RegularScriptOnboarding">
+  <owner>arbesser@google.com</owner>
+  <owner>hluca@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    Various metrics related to the onboarding during regular scripts. This is
+    recorded at the start of a regular script.
+  </summary>
+  <metric name="Onboarding" enum="AutofillAssistantOnBoarding">
+    <summary>
+      The various ways in which the onboarding may complete or fail.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.StartRequest">
+  <owner>arbesser@google.com</owner>
+  <owner>hluca@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    Metrics collected at the very beginning of an autofill-assistant flow.
+  </summary>
+  <metric name="Caller" enum="AutofillAssistantCaller">
+    <summary>
+      The caller that requested the start of a flow.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Experiments">
+    <summary>
+      Bitmask of the running experiments.
+    </summary>
+  </metric>
+  <metric name="Intent" enum="AutofillAssistantIntent">
+    <summary>
+      The autofill-assistant intent of a flow.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Source" enum="AutofillAssistantSource">
+    <summary>
+      The source that requested the start of a flow.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Started" enum="AutofillAssistantStarted">
+    <summary>
+      The various ways that a start request may succeed or fail.
     </summary>
     <aggregation>
       <history>
@@ -7114,11 +7333,194 @@ be describing additional metrics about the same event.
       </history>
     </aggregation>
   </metric>
+  <metric name="CompositorFocusedMedian">
+    <summary>
+      CompositorFocused metrics report the throughput of frames that include
+      compositor thread updates. The median dropped frames within a
+      fixed-duration sliding window (as a percentage). So out of all
+      PerecentDroppedFrames of sliding windows the median will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CompositorFocusedPercentile95">
+    <summary>
+      CompositorFocused metrics report the throughput of frames that include
+      compositor thread updates. The 95-th percentile dropped frames within a
+      fixed-duration sliding window (as a percentage). So out of all
+      PerecentDroppedFrames of sliding windows the 95th percentile will be
+      reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CompositorFocusedVariance">
+    <summary>
+      CompositorFocused metrics report the throughput of frames that include
+      compositor thread updates. The variance of percent dropped frames within a
+      fixed-duration sliding window. So out of all PerecentDroppedFrames of
+      sliding windows the variance will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MainFocusedMedian">
+    <summary>
+      MainFocused metrics report the throughput of frames that include main
+      thread updates. The median dropped frames within a fixed-duration sliding
+      window (as a percentage). So out of all PerecentDroppedFrames of sliding
+      windows the median will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MainFocusedPercentile95">
+    <summary>
+      MainFocused metrics report the throughput of frames that include main
+      thread updates. The 95-th percentile dropped frames within a
+      fixed-duration sliding window (as a percentage). So out of all
+      PerecentDroppedFrames of sliding windows the 95th percentile will be
+      reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MainFocusedVariance">
+    <summary>
+      MainFocused metrics report the throughput of frames that include main
+      thread updates. The variance of percent dropped frames within a
+      fixed-duration sliding window. So out of all PerecentDroppedFrames of
+      sliding windows the variance will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Median">
+    <summary>
+      The median dropped frames within a fixed-duration sliding window (as a
+      percentage). So out of all PerecentDroppedFrames of sliding windows the
+      median will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="Percentile95">
     <summary>
       The 95-th percentile dropped frames within a fixed-duration sliding window
       (as a percentage). So out of all PerecentDroppedFrames of sliding windows
       the 95th percentile will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ScrollFocusedMedian">
+    <summary>
+      ScrollFocused metrics reports the throughput with highest priority on
+      scroll interactions. The median dropped frames within a fixed-duration
+      sliding window (as a percentage) with highest priority given to scroll
+      throughput. So out of all PerecentDroppedFrames of sliding windows the
+      median will be reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ScrollFocusedPercentile95">
+    <summary>
+      ScrollFocused metrics reports the throughput with highest priority on
+      scroll interactions. The 95-th percentile dropped frames within a
+      fixed-duration sliding window (as a percentage). So out of all
+      PerecentDroppedFrames of sliding windows the 95th percentile will be
+      reported here.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ScrollFocusedVariance">
+    <summary>
+      ScrollFocused metrics reports the throughput with highest priority on
+      scroll interactions. The variance of percent dropped frames within a
+      fixed-duration sliding window. So out of all PerecentDroppedFrames of
+      sliding windows the variance will be reported here.
     </summary>
     <aggregation>
       <history>
@@ -7246,6 +7648,23 @@ be describing additional metrics about the same event.
   <metric name="TimingSinceFCPWorstCase">
     <summary>
       The Time From FCP when the worst case happened
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Variance">
+    <summary>
+      The variance of percent dropped frames within a fixed-duration sliding
+      window. So out of all PerecentDroppedFrames of sliding windows the
+      variance will be reported here.
     </summary>
     <aggregation>
       <history>
@@ -8768,6 +9187,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="LiteVideo">
+  <obsolete>
+    Obsoleted December 2021.
+  </obsolete>
   <owner>mcrouse@chromium.org</owner>
   <owner>rajendrant@chromium.org</owner>
   <summary>
@@ -11978,6 +12400,53 @@ be describing additional metrics about the same event.
       crbug.com/897837 crbug.com/897840
     </summary>
   </metric>
+  <metric
+      name="Experimental.LayoutInstability.CumulativeShiftScoreAtFirstOnHidden">
+    <summary>
+      Measures the cumulative layout shift (bit.ly/lsm-explainer) that has
+      occurred on the page (including all subframes) until the first time the
+      page moves from the foreground to the background. This metric's integral
+      value is 100x the fractional cumulative layout shift score described in
+      the explainer. Stable since M79; previous versions are expermental and
+      subject to fluctuation between releases. Log of major changes:
+      http://bit.ly/chrome-speed-metrics-changelog. This metric is trying to
+      record the layout shift values which are not able to be recorded in
+      LayoutInstability.CumulativeShiftScore for some reasons.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="Experimental.LayoutInstability.MaxCumulativeShiftScoreAtFirstOnHidden.SessionWindow.Gap1000ms.Max5000ms">
+    <summary>
+      Measures the maximum cumulative layout shift (bit.ly/cls-explainer) that
+      has occurred in a session window until the first time the page moves from
+      the foreground to the background. The gap between two consecutive shifts
+      in a window is not bigger than 1000ms and the maximum window size is
+      5000ms. This metric's integral value is 100x the fractional cumulative
+      layout shift score described in the explainer. This metric is trying to
+      record the layout shift values which are not able to be recorded in
+      LayoutInstability.MaxCumulativeShiftScore.SessionWindow.Gap1000ms.Max5000ms
+      for some reasons.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
   <metric name="Experimental.Navigation.UserInitiated">
     <summary>
       True if this navigation was initiated by user input. For renderer
@@ -12122,6 +12591,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Experimental.TotalForegroundDuration">
+    <obsolete>
+      Deprecated on November 2021, replaced by
+      PageTiming.TotalForegroundDuration.
+    </obsolete>
     <summary>
       The total amount of time the page spent in the foreground, in
       milliseconds. Note that this metric adds all foreground durations
@@ -13154,6 +13627,20 @@ be describing additional metrics about the same event.
       loads that failed in the foreground.
     </summary>
   </metric>
+  <metric name="PageTiming.TotalForegroundDuration">
+    <summary>
+      The total amount of time the page spent in the foreground, in
+      milliseconds. Note that this metric adds all foreground durations
+      occurring for the page. For example: if the page starts foregrounded
+      during 1 second, then goes to the background for a while, then is
+      foregrounded again for 2 seconds, and then is unloaded, this metric
+      reports 3 seconds. To see metrics about consecutive foreground sessions,
+      see the PageForegroundSession event instead. This metric is recorded at
+      the end of each page load. As usual with PageLoad metrics, we consider app
+      backgrounding on Android to be the end of page load as well as the app
+      could be evicted by Android anytime after that happens.
+    </summary>
+  </metric>
   <metric name="PageTiming.UserTimingMarkFullyLoaded">
     <summary>
       When the page UserTiming mark API is called with the standard
@@ -13204,6 +13691,13 @@ be describing additional metrics about the same event.
       usual with PageLoad metrics, we consider app backgrounding on Android to
       be the end of page load as well as the app could be evicted by Android
       anytime after that happens.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintType">
+    <summary>
+      Indicates that type of the LargestContentfulPaint candidate. This value is
+      a packed set of flags, defined in
+      third_party/blink/public/common/performance/largest_contentful_paint_type.h
     </summary>
   </metric>
   <metric name="PaintTiming.NavigationToExperimentalLargestContentfulPaint">
@@ -13281,6 +13775,10 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="PaintTiming.NavigationToLargestContentfulPaint">
+    <obsolete>
+      Replaced by PaintTiming.NavigationToLargestContentfulPaint2. No longer
+      reported from Nov 2021.
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -13304,6 +13802,10 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="PaintTiming.NavigationToLargestContentfulPaint.MainFrame">
+    <obsolete>
+      Replaced by PaintTiming.NavigationToLargestContentfulPaint2.MainFrame. No
+      longer reported from Nov 2021.
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -13415,6 +13917,13 @@ be describing additional metrics about the same event.
   <summary>
     Recorded for page loads that were navigated to via Google Search.
   </summary>
+  <metric name="GoogleSearchMode" enum="GoogleSearchMode">
+    <summary>
+      Google Search mode used by the user. This corresponds to the tab (e.g. web
+      result, image results, video results, etc.) the user is on. This
+      information is extracted from the tbm query parameter on the Search URL.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageLoad.Internal" singular="True">
@@ -13426,6 +13935,10 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="PaintTiming.ExperimentalLargestContentfulPaint.ContentType"
       enum="LargestContentType">
+    <obsolete>
+      Replaced by PaintTiming.LargestContentfulPaint.ContentType. No longer
+      reported from Nov 2021.
+    </obsolete>
     <summary>
       Records whether the page's experimental version of largest contentful
       paint, whose timestamp is measured by
@@ -13438,6 +13951,10 @@ be describing additional metrics about the same event.
   <metric
       name="PaintTiming.ExperimentalLargestContentfulPaint.TerminationState"
       enum="LargestContentfulPaint.TerminationState">
+    <obsolete>
+      Replaced by PaintTiming.LargestContentfulPaint.TerminationState. No longer
+      reported from Nov 2021.
+    </obsolete>
     <summary>
       Records the state of the experimental largest contentful paint algorithm
       at the time in which the browser attempts to record
@@ -14624,13 +15141,20 @@ be describing additional metrics about the same event.
   <summary>
     Page level pop-up statistics.
   </summary>
-  <metric name="Allowed">
+  <metric name="Allowed" enum="Boolean">
     <summary>
       Whether a user has, explicitly, allowed all popups on the last committed
       url of a page. The user's site level popup content setting is queried when
       a page that opened a popup is destroyed. Only emitted when at least one
       popup has been opened and the last committed page url is valid.
     </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -15556,7 +16080,7 @@ be describing additional metrics about the same event.
 <event name="ReaderModeActivated" singular="True">
   <owner>gilmanmh@google.com</owner>
   <owner>kjbooker@google.com</owner>
-  <owner>dmazzoni@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
   <summary>
     Recorded after a user activates Reader Mode for a given page.
   </summary>
@@ -15578,7 +16102,7 @@ be describing additional metrics about the same event.
 <event name="ReaderModeReceivedDistillability">
   <owner>gilmanmh@google.com</owner>
   <owner>kjbooker@google.com</owner>
-  <owner>dmazzoni@chromium.org</owner>
+  <owner>dtseng@chromium.org</owner>
   <summary>
     Recorded when the Reader Mode badge receives a result from the
     distillability service.
@@ -18091,6 +18615,39 @@ be describing additional metrics about the same event.
     <summary>
       Site engagement score in the range [0, 100], rounded down to a multiple of
       10 to limit granularity.
+    </summary>
+  </metric>
+</event>
+
+<event name="UserPerceivedPageVisit" singular="True">
+  <owner>djw@chromium.org</owner>
+  <owner>altimin@chromium.org</owner>
+  <summary>
+    Metrics related to a page visit as a user perceives it, regardless of how
+    the page was visited. More metrics may be associated with a particular page
+    visit, these can be found in specific UKM events with the same UKM source
+    ID. Currently the methods of visiting a page that will populate this event
+    are: 'normal' page load (more metrics in the PageLoad event), Back-Forward
+    Cache Restore (more metrics in the HistoryNavigation event), and AMP
+    documents (more metrics in the AmpPageLoad event)
+  </summary>
+  <metric name="NotCountedForCoreWebVitals" enum="Boolean">
+    <summary>
+      Determines if this page visit event should be counted towards calculations
+      involving Core Web Vitals. If true, this page visit event should not be
+      counted. If false or NULL, the page visit event should be considered.
+      Currently this is determined by checking the mime-type of the page visit
+      event.
+    </summary>
+  </metric>
+  <metric name="PageVisitFinalStatus" enum="PageVisitFinalStatus">
+    <summary>
+      Determines the final status for this page visit. That is, records whether
+      the page was never foregrounded, was foregrounded but did not reach FCP,
+      or did reach FCP. The metric is recorded at the end of each page visit.
+      App backgrounding on Android to is considered to be the end of page visit
+      as well, as the app could be evicted by Android anytime after that
+      happens.
     </summary>
   </metric>
 </event>

@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/cros_settings_provider.h"
 #include "ash/constants/ash_paths.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -29,8 +31,6 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -266,7 +266,7 @@ DeviceLocalAccountPolicyService::DeviceLocalAccountPolicyService(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       url_loader_factory_(url_loader_factory),
       local_accounts_subscription_(cros_settings_->AddSettingsObserver(
-          chromeos::kAccountsPrefDeviceLocalAccounts,
+          ash::kAccountsPrefDeviceLocalAccounts,
           base::BindRepeating(
               &DeviceLocalAccountPolicyService::UpdateAccountListIfNonePending,
               base::Unretained(this)))),
@@ -409,21 +409,21 @@ void DeviceLocalAccountPolicyService::UpdateAccountListIfNonePending() {
 }
 
 void DeviceLocalAccountPolicyService::UpdateAccountList() {
-  chromeos::CrosSettingsProvider::TrustedStatus status =
+  ash::CrosSettingsProvider::TrustedStatus status =
       cros_settings_->PrepareTrustedValues(
           base::BindOnce(&DeviceLocalAccountPolicyService::UpdateAccountList,
                          weak_factory_.GetWeakPtr()));
   switch (status) {
-    case chromeos::CrosSettingsProvider::TRUSTED:
+    case ash::CrosSettingsProvider::TRUSTED:
       waiting_for_cros_settings_ = false;
       break;
-    case chromeos::CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
+    case ash::CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
       waiting_for_cros_settings_ = true;
       // Purposely break to allow initialization with temporarily untrusted
       // settings so that a crash-n-restart public session have its loader
       // properly registered as ExtensionService's external provider.
       break;
-    case chromeos::CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
+    case ash::CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
       waiting_for_cros_settings_ = false;
       return;
   }

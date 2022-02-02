@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
@@ -34,6 +35,7 @@
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
 #include "chromecast/base/version.h"
+#include "chromecast/browser/accessibility/accessibility_service_impl.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
@@ -41,14 +43,21 @@
 #include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/browser/cast_system_memory_pressure_evaluator.h"
 #include "chromecast/browser/cast_system_memory_pressure_evaluator_adjuster.h"
+#include "chromecast/browser/cast_web_service.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
 #include "chromecast/browser/metrics/metrics_helper_impl.h"
+#include "chromecast/browser/mojom/cast_web_service.mojom.h"
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/browser/service_manager_connection.h"
 #include "chromecast/browser/service_manager_context.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "chromecast/common/mojom/constants.mojom.h"
+#include "chromecast/common/mojom/identification_settings.mojom.h"
+#include "chromecast/external_mojo/broker_service/broker_service.h"
+#include "chromecast/external_mojo/external_service_support/external_connector.h"
+#include "chromecast/external_mojo/external_service_support/external_service.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/video_plane_controller.h"
@@ -58,6 +67,9 @@
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/service/cast_service.h"
+#include "chromecast/ui/display_settings_manager_impl.h"
+#include "components/heap_profiling/multi_process/client_connection_manager.h"
+#include "components/heap_profiling/multi_process/supervisor.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -105,7 +117,7 @@
 // header, but is exported to allow injecting the overlay-composited
 // callback.
 #include "chromecast/browser/accessibility/accessibility_manager_impl.h"
-#include "chromecast/browser/cast_display_configurator.h"
+#include "chromecast/browser/cast_display_configurator.h"  // nogncheck
 #include "chromecast/browser/devtools/cast_ui_devtools.h"
 #include "chromecast/graphics/cast_screen.h"
 #include "chromecast/graphics/cast_window_manager_aura.h"
@@ -142,11 +154,8 @@
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if !defined(OS_FUCHSIA)
-#include "base/callback_helpers.h"
 #include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/public/cast_sys_info.h"
-#include "components/heap_profiling/multi_process/client_connection_manager.h"  // nogncheck
-#include "components/heap_profiling/multi_process/supervisor.h"  // nogncheck
 #endif  // !defined(OS_FUCHSIA)
 
 namespace {
@@ -248,8 +257,6 @@ void DeregisterKillOnAlarm() {
 
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
-#if !defined(OS_FUCHSIA)
-
 std::unique_ptr<heap_profiling::ClientConnectionManager>
 CreateClientConnectionManager(
     base::WeakPtr<heap_profiling::Controller> controller_weak_ptr,
@@ -257,8 +264,6 @@ CreateClientConnectionManager(
   return std::make_unique<heap_profiling::ClientConnectionManager>(
       std::move(controller_weak_ptr), mode);
 }
-
-#endif
 
 #if defined(USE_AURA)
 
@@ -283,13 +288,13 @@ base::FilePath GetApplicationFontsDir() {
   std::string fontconfig_sysroot;
   if (env->GetVar("FONTCONFIG_SYSROOT", &fontconfig_sysroot)) {
     // Running with hermetic fontconfig; using the full path will not work.
-    // Assume the root is base::DIR_MODULE as set by
+    // Assume the root is base::DIR_ASSETS as set by
     // test_fonts::SetUpFontconfig().
     return base::FilePath("/fonts");
   } else {
-    base::FilePath dir_module;
-    base::PathService::Get(base::DIR_MODULE, &dir_module);
-    return dir_module.Append("fonts");
+    base::FilePath dir_assets;
+    base::PathService::Get(base::DIR_ASSETS, &dir_assets);
+    return dir_assets.Append("fonts");
   }
 }
 
@@ -398,13 +403,12 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 }  // namespace
 
 CastBrowserMainParts::CastBrowserMainParts(
-    const content::MainFunctionParams& parameters,
+    content::MainFunctionParams parameters,
     CastContentBrowserClient* cast_content_browser_client)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
-      parameters_(parameters),
+      parameters_(std::move(parameters)),
       cast_content_browser_client_(cast_content_browser_client),
-
       media_caps_(std::make_unique<media::MediaCapsImpl>()),
       metrics_helper_(std::make_unique<metrics::MetricsHelperImpl>()),
       cast_system_memory_pressure_evaluator_adjuster_(nullptr) {
@@ -457,6 +461,31 @@ metrics::MetricsHelperImpl* CastBrowserMainParts::metrics_helper() {
 
 content::BrowserContext* CastBrowserMainParts::browser_context() {
   return cast_browser_process_->browser_context();
+}
+
+external_mojo::BrokerService* CastBrowserMainParts::broker_service() {
+  CHECK(broker_service_);
+  return broker_service_.get();
+}
+
+external_service_support::ExternalConnector* CastBrowserMainParts::connector() {
+  CHECK(connector_);
+  return connector_.get();
+}
+
+external_service_support::ExternalConnector*
+CastBrowserMainParts::media_connector() {
+  CHECK(media_connector_);
+  return media_connector_.get();
+}
+
+AccessibilityServiceImpl* CastBrowserMainParts::accessibility_service() {
+  CHECK(accessibility_service_);
+  return accessibility_service_.get();
+}
+
+CastWebService* CastBrowserMainParts::web_service() {
+  return web_service_.get();
 }
 
 void CastBrowserMainParts::PreCreateMainMessageLoop() {
@@ -525,6 +554,23 @@ int CastBrowserMainParts::PreCreateThreads() {
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       kChromeResourceScheme);
   return 0;
+}
+
+void CastBrowserMainParts::PostCreateThreads() {
+  auto* service_manager_connector =
+      ServiceManagerConnection::GetForProcess()->GetConnector();
+  broker_service_ =
+      std::make_unique<external_mojo::BrokerService>(service_manager_connector);
+  connector_ = external_service_support::ExternalConnector::Create(
+      broker_service_->CreateConnector());
+  media_connector_ = connector_->Clone();
+  browser_service_ =
+      std::make_unique<external_service_support::ExternalService>();
+  heap_profiling::Supervisor* supervisor =
+      heap_profiling::Supervisor::GetInstance();
+  supervisor->SetClientConnectionManagerConstructor(
+      &CreateClientConnectionManager);
+  supervisor->Start(base::NullCallback());
 }
 
 int CastBrowserMainParts::PreMainMessageLoopRun() {
@@ -638,12 +684,37 @@ int CastBrowserMainParts::PreMainMessageLoopRun() {
   ::media::InitializeMediaLibrary();
   media_caps_->Initialize();
 
+  display_settings_manager_ = std::make_unique<DisplaySettingsManagerImpl>(
+      window_manager_.get(),
+#if defined(USE_AURA)
+      cast_browser_process_->display_configurator()
+#else
+      nullptr
+#endif  // defined(USE_AURA)
+  );
+  cast_browser_process_->SetAccessibilityService(
+      std::make_unique<AccessibilityServiceImpl>(
+          cast_browser_process_->browser_context(),
+          display_settings_manager_.get()));
+
+  web_service_ = std::make_unique<CastWebService>(
+      cast_browser_process_->browser_context(), window_manager_.get());
+  browser_service_->AddInterface<::chromecast::mojom::CastWebService>(
+      web_service_.get());
+  browser_service_
+      ->AddInterface<::chromecast::mojom::BrowserIdentificationSettingsManager>(
+          web_service_.get());
+  connector()->RegisterService(::chromecast::mojom::kCastBrowserServiceName,
+                               browser_service_.get());
+
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(
           cast_browser_process_->browser_context(),
           cast_system_memory_pressure_evaluator_adjuster_,
-          cast_browser_process_->pref_service(),
-          video_plane_controller_.get(), window_manager_.get()));
+          cast_browser_process_->pref_service(), video_plane_controller_.get(),
+          window_manager_.get(), web_service_.get(),
+          display_settings_manager_.get(),
+          cast_browser_process_->accessibility_service()));
   cast_browser_process_->cast_service()->Initialize();
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
@@ -698,12 +769,6 @@ int CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->cast_service()->Start();
 
-  if (parameters_.ui_task) {
-    std::move(*parameters_.ui_task).Run();
-    delete parameters_.ui_task;
-    run_message_loop_ = false;
-  }
-
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
@@ -732,16 +797,10 @@ void CastBrowserMainParts::WillRunMainMessageLoop(
 #if defined(OS_ANDROID)
   // Android does not use native main MessageLoop.
   NOTREACHED();
-#else
-  if (run_message_loop_) {
-#if !defined(OS_FUCHSIA)
-    // Fuchsia doesn't have signals.
-    RegisterClosureOnSignal(run_loop->QuitClosure());
+#elif !defined(OS_FUCHSIA)
+  // Fuchsia doesn't have signals.
+  RegisterClosureOnSignal(run_loop->QuitClosure());
 #endif  // !defined(OS_FUCHSIA)
-  } else {
-    run_loop.reset();
-  }
-#endif
 }
 
 void CastBrowserMainParts::PostMainMessageLoopRun() {
@@ -802,17 +861,6 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 #endif
 
   service_manager_context_.reset();
-}
-
-void CastBrowserMainParts::PostCreateThreads() {
-  cast_content_browser_client_->InitializeExternalConnector();
-#if !defined(OS_FUCHSIA)
-  heap_profiling::Supervisor* supervisor =
-      heap_profiling::Supervisor::GetInstance();
-  supervisor->SetClientConnectionManagerConstructor(
-      &CreateClientConnectionManager);
-  supervisor->Start(base::NullCallback());
-#endif  // !defined(OS_FUCHSIA)
 }
 
 void CastBrowserMainParts::PostDestroyThreads() {

@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 
-assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+import("//build/config/chromeos/ui_mode.gni")
+
+assert(is_chromeos_ash, "Non-ChromeOS builds cannot depend on //ash")
 
 static_library("backend") {
   sources = [
@@ -18,6 +20,10 @@ static_library("backend") {
     "histogram_util.h",
     "input_data_provider.cc",
     "input_data_provider.h",
+    "input_data_provider_keyboard.cc",
+    "input_data_provider_keyboard.h",
+    "input_data_provider_touch.cc",
+    "input_data_provider_touch.h",
     "log_test_helpers.cc",
     "log_test_helpers.h",
     "network_health_provider.cc",

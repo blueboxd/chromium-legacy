@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//tools/typescript/ts_library.gni")
 
 preprocessed_folder = "$root_gen_dir/ui/webui/resources/preprocessed/mojo"
@@ -14,8 +15,10 @@ ts_library("library") {
 
   in_files = [
     "mojo/public/mojom/base/big_buffer.mojom-webui.js",
+    "mojo/public/mojom/base/file_path.mojom-webui.js",
     "mojo/public/mojom/base/string16.mojom-webui.js",
     "mojo/public/mojom/base/time.mojom-webui.js",
+    "mojo/public/mojom/base/token.mojom-webui.js",
     "skia/public/mojom/skcolor.mojom-webui.js",
     "ui/base/mojom/window_open_disposition.mojom-webui.js",
     "url/mojom/url.mojom-webui.js",
@@ -30,6 +33,11 @@ ts_library("library") {
     "//ui/base/mojom:mojom_js__generator",
     "//url/mojom:url_mojom_gurl_js__generator",
   ]
+
+  if (is_chromeos_ash) {
+    in_files += [ "ui/gfx/geometry/mojom/geometry.mojom-webui.js" ]
+    extra_deps += [ "//ui/gfx/geometry/mojom:mojom_js__generator" ]
+  }
 }
 
 # Copy bindings.d.ts file under the same location where other shared Mojo JS

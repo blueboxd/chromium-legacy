@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_
 #define CHROME_BROWSER_ASH_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"

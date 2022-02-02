@@ -39,7 +39,8 @@ constexpr char kInvalidSetAccessibilityTreeCall[] =
 }  // namespace
 
 PdfPrintManager::PdfPrintManager(content::WebContents* web_contents)
-    : printing::PrintManager(web_contents) {}
+    : printing::PrintManager(web_contents),
+      content::WebContentsUserData<PdfPrintManager>(*web_contents) {}
 
 PdfPrintManager::~PdfPrintManager() = default;
 
@@ -101,12 +102,6 @@ void PdfPrintManager::PrintToPdf(
     return;
   }
 
-  if (!rfh->IsRenderFrameLive()) {
-    std::move(callback).Run(PRINTING_FAILED,
-                            base::MakeRefCounted<base::RefCountedString>());
-    return;
-  }
-
   printing_rfh_ = rfh;
   page_ranges_ = page_ranges;
   ignore_invalid_page_ranges_ = ignore_invalid_page_ranges;
@@ -139,7 +134,13 @@ void PdfPrintManager::ScriptedPrint(
     std::move(callback).Run(std::move(default_param));
     return;
   }
-
+  if (params->is_scripted &&
+      GetCurrentTargetFrame()->IsNestedWithinFencedFrame()) {
+    DLOG(ERROR) << "Unexpected message received. Script Print is not allowed"
+                   " in a fenced frame.";
+    std::move(callback).Run(std::move(default_param));
+    return;
+  }
   absl::variant<printing::PageRanges, PageRangeError> page_ranges =
       TextPageRangesToPageRanges(page_ranges_, ignore_invalid_page_ranges_,
                                  params->expected_pages_count);
@@ -226,22 +227,6 @@ void PdfPrintManager::SetAccessibilityTree(
 void PdfPrintManager::PdfWritingDone(int page_count) {}
 #endif
 
-void PdfPrintManager::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  PrintManager::RenderFrameDeleted(render_frame_host);
-
-  if (printing_rfh_ != render_frame_host) {
-    return;
-  }
-
-  if (callback_) {
-    std::move(callback_).Run(PRINTING_FAILED,
-                             base::MakeRefCounted<base::RefCountedString>());
-  }
-
-  Reset();
-}
-
 void PdfPrintManager::DidPrintDocument(
     printing::mojom::DidPrintDocumentParamsPtr params,
     DidPrintDocumentCallback callback) {
@@ -278,15 +263,7 @@ void PdfPrintManager::ReleaseJob(PrintResult result) {
 
   DCHECK(result == PRINT_SUCCESS || data_.empty());
   std::move(callback_).Run(result, base::RefCountedString::TakeString(&data_));
-  // TODO(https://crbug.com/1286556): In theory, this should not be needed. In
-  // practice, nothing seems to restrict receiving incoming Mojo method calls
-  // for reporting the printing state to `printing_rfh_`.
-  //
-  // This should probably be changed so that the browser pushes endpoints to the
-  // renderer rather than the renderer connecting on-demand to the browser...
-  if (printing_rfh_ && printing_rfh_->IsRenderFrameLive()) {
-    GetPrintRenderFrame(printing_rfh_)->PrintingDone(result == PRINT_SUCCESS);
-  }
+  GetPrintRenderFrame(printing_rfh_)->PrintingDone(result == PRINT_SUCCESS);
   Reset();
 }
 

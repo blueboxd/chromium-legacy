@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/updater/app/app_install.h"
 
 #include <memory>
@@ -164,7 +165,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   THREAD_CHECKER(thread_checker_);
 
   // This member is not owned by this class.
-  ui::ProgressWnd* progress_wnd_ = nullptr;
+  raw_ptr<ui::ProgressWnd> progress_wnd_ = nullptr;
 
   // The thread id of the thread which owns the |ProgressWnd|.
   int window_thread_id_ = 0;
@@ -410,7 +411,7 @@ class AppInstallControllerImpl : public AppInstallController,
   DWORD GetUIThreadID() const;
 
   // Receives the state changes during handling of the Install function call.
-  void StateChange(UpdateService::UpdateState update_state);
+  void StateChange(const UpdateService::UpdateState& update_state);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -485,6 +486,7 @@ void AppInstallControllerImpl::DoInstallApp() {
 
   update_service_->Update(
       app_id_, UpdateService::Priority::kForeground,
+      UpdateService::PolicySameVersionUpdate::kNotAllowed,
       base::BindRepeating(&AppInstallControllerImpl::StateChange, this),
       base::BindOnce(&AppInstallControllerImpl::InstallComplete, this));
 }
@@ -505,7 +507,7 @@ void AppInstallControllerImpl::InstallComplete(UpdateService::Result result) {
 }
 
 void AppInstallControllerImpl::StateChange(
-    UpdateService::UpdateState update_state) {
+    const UpdateService::UpdateState& update_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(install_progress_observer_ipc_);
 

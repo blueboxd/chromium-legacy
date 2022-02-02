@@ -15,9 +15,8 @@
 
 namespace optimization_guide {
 
-HintCache::HintCache(
-    base::WeakPtr<OptimizationGuideStore> optimization_guide_store,
-    int max_memory_cache_host_keyed_hints)
+HintCache::HintCache(OptimizationGuideStore* optimization_guide_store,
+                     int max_memory_cache_host_keyed_hints)
     : optimization_guide_store_(optimization_guide_store),
       host_keyed_cache_(max_memory_cache_host_keyed_hints),
       url_keyed_hint_cache_(features::MaxURLKeyedHintCacheSize()),

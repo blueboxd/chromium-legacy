@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2021 The Chromium Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -77,7 +77,7 @@ def generate_internal_cts_html(check):
         finally:
             sys.path = old_sys_path
 
-        logging.info('WebGPU CTS: Generating cts.html...')
+        logging.info('WebGPU CTS: Generating cts.https.html...')
         cmd = [
             os.path.join(js_out_dir,
                          'common/tools/gen_wpt_cts_html.js'), cts_html_fname,
@@ -85,7 +85,7 @@ def generate_internal_cts_html(check):
                          'ctshtml-template.txt'),
             os.path.join(third_party_dir, 'blink', 'web_tests', 'webgpu',
                          'argsprefixes.txt'), split_list_fname,
-            'wpt_internal/webgpu/cts.html', 'webgpu'
+            'wpt_internal/webgpu/cts.https.html', 'webgpu'
         ]
         logging.info(RunNode(cmd))
 
@@ -98,7 +98,7 @@ def generate_internal_cts_html(check):
         shutil.rmtree(js_out_dir)
 
     out_cts_html = os.path.join(third_party_dir, 'blink', 'web_tests',
-                                'wpt_internal', 'webgpu', 'cts.html')
+                                'wpt_internal', 'webgpu', 'cts.https.html')
 
     if not contents:
         raise RuntimeError('Failed to generate %s' % out_cts_html)
@@ -143,17 +143,18 @@ def generate_reftest_html(check):
                         src_content = src.read()
 
                     # Find the starting html tag
-                    i = src_content.find('<html')
+                    i = src_content.find(b'<html')
                     assert i != -1
 
                     # Then find the end of the starting html tag
-                    i = src_content.find('>', i)
+                    i = src_content.find(b'>', i)
                     assert i != -1
 
                     # Bump the index just past the starting <html> tag
                     i = i + 1
 
-                    base_tag = b'\n  <base href="%s" />' % gen_base_dir
+                    base_tag = b'\n  <base href="%s" />' % gen_base_dir.encode(
+                    )
                     dst_content = src_content[:i] + base_tag + src_content[i:]
 
                     check_or_write_file(os.path.join(dst_dir, filename),

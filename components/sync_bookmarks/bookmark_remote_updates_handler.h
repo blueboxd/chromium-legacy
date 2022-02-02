@@ -8,6 +8,8 @@
 #include <map>
 #include <vector>
 
+#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 
@@ -45,8 +47,8 @@ class BookmarkRemoteUpdatesHandler {
                bool got_new_encryption_requirements);
 
   // Public for testing.
-  static std::vector<const syncer::UpdateResponseData*> ReorderUpdatesForTest(
-      const syncer::UpdateResponseDataList* updates);
+  static std::vector<const syncer::UpdateResponseData*>
+  ReorderValidUpdatesForTest(const syncer::UpdateResponseDataList* updates);
 
   static size_t ComputeChildNodeIndexForTest(
       const bookmarks::BookmarkNode* parent,
@@ -57,8 +59,8 @@ class BookmarkRemoteUpdatesHandler {
   // Reorders incoming updates such that parent creation is before child
   // creation and child deletion is before parent deletion, and deletions should
   // come last. The returned pointers point to the elements in the original
-  // |updates|.
-  static std::vector<const syncer::UpdateResponseData*> ReorderUpdates(
+  // |updates|. In this process, invalid updates are filtered out.
+  static std::vector<const syncer::UpdateResponseData*> ReorderValidUpdates(
       const syncer::UpdateResponseDataList* updates);
 
   // Returns the tracked entity that should be affected by a remote change, or
@@ -108,9 +110,13 @@ class BookmarkRemoteUpdatesHandler {
   // of remote deletions in which local wins. |tracked_entity| is the tracked
   // entity for that server_id. It is passed as a dependency instead of
   // performing a lookup inside ProcessDelete() to avoid wasting CPU cycles for
-  // doing another lookup (this code runs on the UI thread).
-  void ProcessConflict(const syncer::UpdateResponseData& update,
-                       const SyncedBookmarkTracker::Entity* tracked_entity);
+  // doing another lookup (this code runs on the UI thread). Returns the tracked
+  // entity (if any) as a result of resolving the conflict, which is often the
+  // same as the input |tracked_entity|, but may also be different, including
+  // null (if the conflict led to untracking).
+  const SyncedBookmarkTracker::Entity* ProcessConflict(
+      const syncer::UpdateResponseData& update,
+      const SyncedBookmarkTracker::Entity* tracked_entity) WARN_UNUSED_RESULT;
 
   // Recursively removes the entities corresponding to |node| and its children
   // from |bookmark_tracker_|.
@@ -122,9 +128,9 @@ class BookmarkRemoteUpdatesHandler {
       const syncer::EntityData& entity_data,
       const SyncedBookmarkTracker::Entity* tracked_entity);
 
-  bookmarks::BookmarkModel* const bookmark_model_;
-  favicon::FaviconService* const favicon_service_;
-  SyncedBookmarkTracker* const bookmark_tracker_;
+  const raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
+  const raw_ptr<favicon::FaviconService> favicon_service_;
+  const raw_ptr<SyncedBookmarkTracker> bookmark_tracker_;
 };
 
 }  // namespace sync_bookmarks

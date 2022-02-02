@@ -41,8 +41,10 @@ FirmwareUpdateAppBrowserTest.prototype = {
 // You must register all suites in unified test here as well for consistency,
 // although technically is not necessary.
 const debug_suites_list = [
+  'FakeUpdateControllerTest',
   'FakeUpdateProviderTest',
   'FirmwareUpdateApp',
+  'FirmwareUpdateDialog',
   'PeripheralUpdatesListTest',
   'UpdateCardTest',
 ];

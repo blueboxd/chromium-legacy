@@ -37,8 +37,8 @@
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
@@ -398,7 +398,7 @@ v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
 }
 
 gfx::Rect WebRemoteFrameImpl::GetCompositingRect() {
-  return ToGfxRect(GetFrame()->View()->GetCompositingRect());
+  return GetFrame()->View()->GetCompositingRect();
 }
 
 WebString WebRemoteFrameImpl::UniqueName() const {
@@ -424,8 +424,7 @@ WebRemoteFrameImpl::WebRemoteFrameImpl(
       client_(client),
       frame_client_(MakeGarbageCollected<RemoteFrameClientImpl>(this)),
       interface_registry_(interface_registry),
-      associated_interface_provider_(associated_interface_provider),
-      self_keep_alive_(PERSISTENT_FROM_HERE, this) {
+      associated_interface_provider_(associated_interface_provider) {
   DCHECK(client);
 }
 

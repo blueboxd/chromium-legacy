@@ -168,6 +168,12 @@ void PermissionRequestManager::AddRequest(
     return;
   }
 
+  if (source_frame->IsNestedWithinFencedFrame()) {
+    request->Cancelled();
+    request->RequestFinished();
+    return;
+  }
+
   if (is_notification_prompt_cooldown_active_ &&
       request->GetContentSettingsType() == ContentSettingsType::NOTIFICATIONS) {
     // Short-circuit by canceling rather than denying to avoid creating a large
@@ -553,6 +559,7 @@ void PermissionRequestManager::SetDecisionTime() {
 PermissionRequestManager::PermissionRequestManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PermissionRequestManager>(*web_contents),
       view_factory_(base::BindRepeating(&PermissionPrompt::Create)),
       view_(nullptr),
       tab_is_hidden_(web_contents->GetVisibility() ==

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -59,6 +58,11 @@ class FileSystemOperationImplWriteTest : public testing::Test {
         complete_(false) {
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
+
+  FileSystemOperationImplWriteTest(const FileSystemOperationImplWriteTest&) =
+      delete;
+  FileSystemOperationImplWriteTest& operator=(
+      const FileSystemOperationImplWriteTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());
@@ -163,8 +167,6 @@ class FileSystemOperationImplWriteTest : public testing::Test {
   ChangeObserverList change_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplWriteTest);
 };
 
 TEST_F(FileSystemOperationImplWriteTest, TestWriteSuccess) {

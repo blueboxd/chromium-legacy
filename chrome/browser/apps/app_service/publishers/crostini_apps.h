@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/icon_key_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
+#include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -29,6 +30,8 @@ class Profile;
 namespace apps {
 
 class PublisherHost;
+
+struct AppLaunchParams;
 
 // An app publisher (in the App Service sense) of Crostini apps,
 //
@@ -50,7 +53,7 @@ class CrostiniApps : public KeyedService,
  private:
   friend class PublisherHost;
 
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+  void Initialize();
 
   // apps::AppPublisher overrides.
   void LoadIcon(const std::string& app_id,
@@ -59,6 +62,8 @@ class CrostiniApps : public KeyedService,
                 int32_t size_hint_in_dip,
                 bool allow_placeholder_icon,
                 apps::LoadIconCallback callback) override;
+  void LaunchAppWithParams(AppLaunchParams&& params,
+                           LaunchCallback callback) override;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -104,8 +109,6 @@ class CrostiniApps : public KeyedService,
   // TODO(crbug.com/1028898): Move this code into System Apps
   // once it can support hiding apps.
   void OnCrostiniEnabledChanged();
-
-  void AddTerminalShortcuts(apps::mojom::MenuItemsPtr* menu_items);
 
   std::unique_ptr<App> CreateApp(
       const guest_os::GuestOsRegistryService::Registration& registration,

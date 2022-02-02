@@ -4,9 +4,10 @@
 
 #include <set>
 
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/arc/arc_util.h"
@@ -19,8 +20,6 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "components/arc/test/arc_util_test_support.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,7 +80,7 @@ class UnaffiliatedArcAllowedTest
     base::RunLoop run_loop;
     base::CallbackListSubscription subscription =
         ash::CrosSettings::Get()->AddSettingsObserver(
-            chromeos::kUnaffiliatedArcAllowed, run_loop.QuitClosure());
+            ash::kUnaffiliatedArcAllowed, run_loop.QuitClosure());
     RefreshDevicePolicy();
     run_loop.Run();
   }

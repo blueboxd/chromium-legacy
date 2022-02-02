@@ -37,12 +37,12 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/mojom/app.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
 #include "net/base/url_util.h"
 #endif
 
@@ -167,6 +167,7 @@ void WebAppInstallTask::InstallWebAppFromManifest(
   CheckInstallPreconditions();
 
   Observe(contents);
+  installing_web_contents_ = contents;
   dialog_callback_ = std::move(dialog_callback);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
@@ -193,6 +194,7 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
   CheckInstallPreconditions();
 
   Observe(contents);
+  installing_web_contents_ = contents;
   dialog_callback_ = std::move(dialog_callback);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
@@ -213,6 +215,7 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
   CheckInstallPreconditions();
 
   Observe(contents);
+  installing_web_contents_ = contents;
   if (ShouldStopInstall())
     return;
 
@@ -225,6 +228,30 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
                      GetWeakPtr(), launch_url));
+}
+
+void WebAppInstallTask::LoadAndInstallSubAppFromURL(
+    const GURL& install_url,
+    content::WebContents* contents,
+    WebAppUrlLoader* url_loader,
+    OnceInstallCallback install_callback) {
+  DCHECK(AreWebAppsUserInstallable(profile_));
+  CheckInstallPreconditions();
+
+  Observe(contents);
+  installing_web_contents_ = contents;
+  if (ShouldStopInstall())
+    return;
+
+  background_installation_ = true;
+  install_callback_ = std::move(install_callback);
+  install_source_ = webapps::WebappInstallSource::SUB_APP;
+
+  url_loader->LoadUrl(
+      install_url, contents,
+      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
+      base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
+                     GetWeakPtr(), install_url));
 }
 
 void UpdateFinalizerClientData(
@@ -288,6 +315,7 @@ void WebAppInstallTask::InstallWebAppWithParams(
   CheckInstallPreconditions();
 
   Observe(contents);
+  installing_web_contents_ = contents;
   SetInstallParams(install_params);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
@@ -329,6 +357,10 @@ std::unique_ptr<content::WebContents> WebAppInstallTask::CreateWebContents(
   CreateWebAppInstallTabHelpers(web_contents.get());
 
   return web_contents;
+}
+
+content::WebContents* WebAppInstallTask::GetInstallingWebContents() {
+  return installing_web_contents_;
 }
 
 base::WeakPtr<WebAppInstallTask> WebAppInstallTask::GetWeakPtr() {
@@ -571,6 +603,20 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
     return;
   }
 
+  // Duplicate installation check for SUB_APP installs (done here since the
+  // AppId isn't available beforehand). It's possible that the app was already
+  // installed, but from a different source (eg. by the user manually). In that
+  // case we proceed with the installation which adds the SUB_APP install source
+  // as well.
+  if (install_source_ == webapps::WebappInstallSource::SUB_APP) {
+    DCHECK(install_params_ && install_params_->parent_app_id.has_value());
+    if (registrar_->WasInstalledBySubApp(app_id)) {
+      CallInstallCallback(std::move(app_id),
+                          InstallResultCode::kSuccessAlreadyInstalled);
+      return;
+    }
+  }
+
   std::vector<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info);
 
   // A system app should always have a manifest icon.
@@ -685,6 +731,7 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   CheckInstallPreconditions();
 
   Observe(web_contents);
+  installing_web_contents_ = web_contents;
   if (ShouldStopInstall())
     return;
 
@@ -796,6 +843,7 @@ void WebAppInstallTask::OnDialogCompleted(
     finalize_options.locally_installed = install_params_->locally_installed;
     finalize_options.overwrite_existing_manifest_fields =
         install_params_->force_reinstall;
+    finalize_options.parent_app_id = install_params_->parent_app_id;
 
     UpdateFinalizerClientData(install_params_, &finalize_options);
 
@@ -861,7 +909,16 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   // configured from somewhere else rather than always true.
   options.os_hooks[OsHookType::kFileHandlers] = true;
   options.os_hooks[OsHookType::kProtocolHandlers] = true;
-  options.os_hooks[OsHookType::kUninstallationViaOsSettings] = true;
+
+  // Apps that can't be uninstalled from users shouldn't register to
+  // OS Settings.
+  const WebApp* web_app = registrar_->GetAppById(app_id);
+  if (web_app) {
+    // Certain unit tests could have nullptr web_app.
+    options.os_hooks[OsHookType::kUninstallationViaOsSettings] =
+        web_app->CanUserUninstallWebApp();
+  }
+
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
   options.os_hooks[OsHookType::kUrlHandlers] = true;

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -19,7 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -30,7 +31,6 @@
 #include "base/test/bind.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -55,6 +55,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/slow_download_http_response.h"
 #include "content/public/test/test_download_http_response.h"
@@ -95,13 +96,14 @@
 #include "base/android/build_info.h"
 #endif
 
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::InSequence;
 using ::testing::Property;
 using ::testing::Return;
 using ::testing::StrictMock;
-using ::testing::_;
+using ::testing::Values;
 
 namespace net {
 class NetLogWithSource;
@@ -251,7 +253,7 @@ class MockDownloadManagerObserver : public DownloadManager::Observer {
   MOCK_METHOD1(MockManagerGoingDown, void(DownloadManager*));
 
  private:
-  DownloadManager* manager_;
+  raw_ptr<DownloadManager> manager_;
 };
 
 class DownloadFileWithDelayFactory;
@@ -598,7 +600,7 @@ class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
     download_file_ = nullptr;
   }
 
-  ErrorInjectionDownloadFile* download_file_;
+  raw_ptr<ErrorInjectionDownloadFile> download_file_;
   int64_t injected_error_offset_ = -1;
   int64_t injected_error_length_ = 0;
   base::WeakPtrFactory<ErrorInjectionDownloadFileFactory> weak_ptr_factory_{
@@ -674,8 +676,8 @@ class DownloadCreateObserver : DownloadManager::Observer {
   }
 
  private:
-  DownloadManager* manager_;
-  download::DownloadItem* item_;
+  raw_ptr<DownloadManager> manager_;
+  raw_ptr<download::DownloadItem> item_;
   base::OnceClosure completion_closure_;
 };
 
@@ -705,7 +707,7 @@ class DownloadInProgressObserver : public DownloadTestObserverInProgress {
   }
 
  private:
-  DownloadManager* manager_;
+  raw_ptr<DownloadManager> manager_;
 };
 
 class DownloadCountingObserver : public download::DownloadItem::Observer {
@@ -743,7 +745,7 @@ class DownloadCountingObserver : public download::DownloadItem::Observer {
   virtual bool IsCountReached(download::DownloadItem* download, int count) = 0;
 
  private:
-  download::DownloadItem* item_;
+  raw_ptr<download::DownloadItem> item_;
   int count_;
   base::OnceClosure completion_closure_;
 };
@@ -1481,6 +1483,57 @@ class DownloadPrerenderTest : public DownloadContentTest {
   test::PrerenderTestHelper prerender_helper_;
 };
 
+class DownloadFencedFrameTest
+    : public ::testing::WithParamInterface<
+          blink::features::FencedFramesImplementationType>,
+      public DownloadContentTest {
+ public:
+  DownloadFencedFrameTest() {
+    if (GetParam() ==
+        blink::features::FencedFramesImplementationType::kMPArch) {
+      fenced_frame_helper_ = std::make_unique<test::FencedFrameTestHelper>();
+    } else {
+      feature_list_.InitAndEnableFeatureWithParameters(
+          blink::features::kFencedFrames,
+          {{"implementation_type", "shadow_dom"}});
+    }
+  }
+
+  ~DownloadFencedFrameTest() override = default;
+
+  void SetUpOnMainThread() override {
+    DownloadContentTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->Started());
+  }
+
+ protected:
+  RenderFrameHost* CreateFencedFrame(RenderFrameHost* fenced_frame_parent,
+                                     const GURL& url) {
+    if (fenced_frame_helper_)
+      return fenced_frame_helper_->CreateFencedFrame(fenced_frame_parent, url);
+
+    // FencedFrameTestHelper only supports the MPArch version of fenced frames.
+    // So need to maually create a fenced frame for the ShadowDOM version.
+    TestNavigationManager navigation(shell()->web_contents(), url);
+    constexpr char kAddFencedFrameScript[] = R"({
+        const fenced_frame = document.createElement('fencedframe');
+        fenced_frame.src = $1;
+        document.body.appendChild(fenced_frame);
+    })";
+    EXPECT_TRUE(
+        ExecJs(fenced_frame_parent, JsReplace(kAddFencedFrameScript, url)));
+    navigation.WaitForNavigationFinished();
+
+    RenderFrameHost* new_frame = ChildFrameAt(fenced_frame_parent, 0);
+
+    return new_frame;
+  }
+
+ private:
+  std::unique_ptr<test::FencedFrameTestHelper> fenced_frame_helper_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
 }  // namespace
 
 // Flaky. See https://crbug.com/754679.
@@ -1972,19 +2025,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
         .WillOnce(Return());
   }
 
-  // See http://crbug.com/324525.  If we have a refcount release/post task
-  // race, the second post will stall the IO thread long enough so that we'll
-  // lose the race and crash.  The first stall is just to give the UI thread
-  // a chance to get the second stall onto the IO thread queue after the cancel
-  // message created by Shutdown and before the notification callback
-  // created by the IO thread in canceling the request.
-  GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&base::PlatformThread::Sleep, base::Milliseconds(25)));
   DownloadManagerForShell(shell())->Shutdown();
-  GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&base::PlatformThread::Sleep, base::Milliseconds(25)));
 }
 
 // Try to shutdown just after we release the download file, by delaying
@@ -4869,7 +4910,7 @@ class MhtmlDownloadTest : public DownloadContentTest {
 
  private:
   DownloadTestContentBrowserClient new_client_;
-  ContentBrowserClient* old_client_;
+  raw_ptr<ContentBrowserClient> old_client_;
 };
 
 // Test allow list for non http schemes which should not trigger
@@ -5079,6 +5120,47 @@ IN_PROC_BROWSER_TEST_F(DownloadPrerenderTest, DiscardNonNavigationDownload) {
   EXPECT_TRUE(downloads.empty());
 }
 
+// Verify that downloads not triggered by navigation are discarded when
+// initiated from a fenced frame.
+IN_PROC_BROWSER_TEST_P(DownloadFencedFrameTest, DiscardNonNavigationDownload) {
+  const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
+  const GURL kFencedFrameUrl =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  const GURL kDownloadUrl =
+      embedded_test_server()->GetURL("/download/download-test.lib");
+
+  // Create fenced frame
+  EXPECT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  RenderFrameHost* fenced_frame_host = CreateFencedFrame(
+      shell()->web_contents()->GetMainFrame(), kFencedFrameUrl);
+
+  // Do a download without navigation from the fenced frame render frame host.
+  // The download will be dropped.
+  auto* download_manager =
+      fenced_frame_host->GetBrowserContext()->GetDownloadManager();
+  MockDownloadManagerObserver dm_observer(download_manager);
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_, _)).Times(0);
+  EXPECT_CALL(dm_observer, OnDownloadDropped(_)).Times(1);
+
+  auto params = blink::mojom::DownloadURLParams::New();
+  params->url = kDownloadUrl;
+  static_cast<RenderFrameHostImpl*>(fenced_frame_host)
+      ->DownloadURL(std::move(params));
+
+  // Verify there were no downloads.
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+  std::vector<download::DownloadItem*> downloads;
+  download_manager->GetAllDownloads(&downloads);
+  EXPECT_TRUE(downloads.empty());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    DownloadFencedFrameTest,
+    DownloadFencedFrameTest,
+    ::testing::Values(
+        blink::features::FencedFramesImplementationType::kShadowDOM,
+        blink::features::FencedFramesImplementationType::kMPArch));
+
 // A download triggered by clicking on a link with a |download| attribute should
 // have the user-gesture flag set.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
@@ -5123,6 +5205,75 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   EXPECT_TRUE(downloads[0]->HasUserGesture());
 
   ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
+}
+
+using DownloadRangeTestParams =
+    std::tuple<int64_t /*starting byte in range request*/,
+               int64_t /*ending byte in range request*/,
+               int64_t /*starting byte in download file*/,
+               int64_t /*expected length*/>;
+
+// Browser test for arbitrary range download. This is for download system
+// caller to explicitly ask for range request, not for parallel download and
+// resumption that internally use range requests.
+class DownloadRangeTest
+    : public DownloadContentTest,
+      public ::testing::WithParamInterface<DownloadRangeTestParams> {
+ public:
+  DownloadRangeTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        download::features::kDownloadRange);
+  }
+
+  ~DownloadRangeTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DownloadRangeTest,
+    testing::Values(/*bytes=10-19, fetch 10 bytes*/
+                    std::make_tuple(10, 19, 10, 10),
+                    /*bytes=10-, fetch starting from 10th byte to the end*/
+                    std::make_tuple(10, download::kInvalidRange, 10, 136),
+                    /*bytes=-5*, fetch the last 5 bytes*/
+                    std::make_tuple(download::kInvalidRange, 5, 141, 5)));
+
+// Test to download with range request with
+// |DownloadUrlParameters::set_range_request_offset|.
+IN_PROC_BROWSER_TEST_P(DownloadRangeTest, ArbitraryDownloadRangeTest) {
+  GURL download_url =
+      embedded_test_server()->GetURL("/download/download-test.lib");
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  auto download_parameters = std::make_unique<download::DownloadUrlParameters>(
+      download_url, TRAFFIC_ANNOTATION_FOR_TESTS);
+  // Perform a range download.
+  download_parameters->set_use_if_range(false);
+  download_parameters->set_range_request_offset(std::get<0>(GetParam()),
+                                                std::get<1>(GetParam()));
+  DownloadManagerForShell(shell())->DownloadUrl(std::move(download_parameters));
+  observer->WaitForFinished();
+
+  // Verify download completed.
+  std::vector<download::DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  EXPECT_EQ(1u, downloads.size());
+  EXPECT_EQ(download::DownloadItem::COMPLETE, downloads[0]->GetState());
+
+  // Verify the partial file is downloaded correctly.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string whole_file, partial_file;
+    ASSERT_TRUE(base::ReadFileToString(
+        GetTestFilePath("download", "download-test.lib"), &whole_file));
+    ASSERT_TRUE(base::ReadFileToString(downloads[0]->GetTargetFilePath(),
+                                       &partial_file));
+    EXPECT_EQ(
+        whole_file.substr(std::get<2>(GetParam()), std::get<3>(GetParam())),
+        partial_file);
+  }
 }
 
 }  // namespace content

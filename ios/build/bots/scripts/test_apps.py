@@ -49,7 +49,7 @@ def get_bundle_id(app_path):
       '-c',
       'Print:CFBundleIdentifier',
       os.path.join(app_path, 'Info.plist'),
-  ]).rstrip().decode("utf-8")
+  ]).decode("utf-8").rstrip()
 
 
 def is_running_rosetta():
@@ -375,6 +375,8 @@ class EgtestsApp(GTestsApp):
       module_data['IsUITestBundle'] = True
       module_data['IsXCTRunnerHostedTestBundle'] = True
       module_data['UITargetAppPath'] = '%s' % self.host_app_path
+      module_data['UITargetAppBundleIdentifier'] = get_bundle_id(
+          self.host_app_path)
       # Special handling for Xcode10.2
       dependent_products = [
           module_data['UITargetAppPath'],

@@ -11,13 +11,13 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/trace_event/typed_macros.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/isolated_origin_util.h"
 #include "content/browser/isolation_context.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/site_instance_group.h"
@@ -161,7 +161,8 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
   scoped_refptr<SiteInstanceImpl> site_instance;
 
   if (is_guest) {
-    site_instance = CreateForGuest(browser_context, url_info.url);
+    site_instance = CreateForGuest(browser_context,
+                                   url_info.storage_partition_config.value());
   } else {
     // This will create a new SiteInstance and BrowsingInstance.
     scoped_refptr<BrowsingInstance> instance(new BrowsingInstance(
@@ -192,12 +193,12 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForServiceWorker(
 // static
 scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForGuest(
     BrowserContext* browser_context,
-    const GURL& guest_site_url) {
+    const StoragePartitionConfig& partition_config) {
   DCHECK(browser_context);
-  DCHECK_NE(guest_site_url, GetDefaultSiteURL());
+  DCHECK(!partition_config.is_default());
 
   auto guest_site_info =
-      SiteInfo::CreateForGuest(browser_context, guest_site_url);
+      SiteInfo::CreateForGuest(browser_context, partition_config);
   scoped_refptr<SiteInstanceImpl> site_instance =
       base::WrapRefCounted(new SiteInstanceImpl(new BrowsingInstance(
           browser_context, guest_site_info.web_exposed_isolation_info())));
@@ -377,7 +378,7 @@ void SiteInstanceImpl::SetProcessInternal(RenderProcessHost* process) {
   process_->AddObserver(this);
   CHECK(!agent_scheduling_group_);
   agent_scheduling_group_ =
-      AgentSchedulingGroupHost::GetOrCreate(*this, *process_);
+      AgentSchedulingGroupHost::GetOrCreate(*group(), *process_);
 
   LockProcessIfNeeded();
 
@@ -466,7 +467,7 @@ void SiteInstanceImpl::SetSiteInfoInternal(const SiteInfo& site_info) {
   // BrowsingInstance can script each other.
   browsing_instance_->RegisterSiteInstance(this);
 
-  if (site_info_.is_origin_keyed()) {
+  if (site_info_.requires_origin_keyed_process()) {
     // Track this origin's isolation in the current BrowsingInstance.  This is
     // needed to consistently isolate future navigations to this origin in this
     // BrowsingInstance, even if its opt-in status changes later.
@@ -481,7 +482,8 @@ void SiteInstanceImpl::SetSiteInfoInternal(const SiteInfo& site_info) {
     // being the only call site.
     policy->AddIsolatedOriginForBrowsingInstance(
         browsing_instance_->isolation_context(), origin,
-        true /* is_origin_keyed */,
+        true /* is_origin_agent_cluster */,
+        true /* requires_origin_keyed_process */,
         ChildProcessSecurityPolicy::IsolatedOriginSource::WEB_TRIGGERED);
   }
 
@@ -493,14 +495,16 @@ void SiteInstanceImpl::SetSiteInfoInternal(const SiteInfo& site_info) {
     // lock URL would already correspond to a site (since we isolate sites, not
     // origins, by default), but this isn't always the case.  For example, this
     // SiteInstance could be isolated with the origin granularity due to
-    // Origin-Agent-Cluster (see site_info_.is_origin_keyed() above).
+    // Origin-Agent-Cluster (see site_info_.requires_origin_keyed_process()
+    // above).
     url::Origin origin(url::Origin::Create(site_info_.process_lock_url()));
     GURL site(SiteInfo::GetSiteForOrigin(origin));
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
     policy->AddIsolatedOriginForBrowsingInstance(
         browsing_instance_->isolation_context(), url::Origin::Create(site),
-        false /* is_origin_keyed */,
+        false /* is_origin_agent_cluster */,
+        false /* requires_origin_keyed_process */,
         ChildProcessSecurityPolicy::IsolatedOriginSource::WEB_TRIGGERED);
   }
 
@@ -592,10 +596,6 @@ SiteInfo SiteInstanceImpl::DeriveSiteInfo(const UrlInfo& url_info,
   overridden_url_info.web_exposed_isolation_info = GetWebExposedIsolationInfo();
 
   return SiteInfo::Create(GetIsolationContext(), overridden_url_info);
-}
-
-const ProcessLock SiteInstanceImpl::GetProcessLock() const {
-  return ProcessLock(site_info_);
 }
 
 bool SiteInstanceImpl::HasSite() const {
@@ -762,9 +762,9 @@ scoped_refptr<SiteInstance> SiteInstance::CreateForURL(
 // static
 scoped_refptr<SiteInstance> SiteInstance::CreateForGuest(
     BrowserContext* browser_context,
-    const GURL& guest_site_url) {
+    const StoragePartitionConfig& partition_config) {
   DCHECK(browser_context);
-  return SiteInstanceImpl::CreateForGuest(browser_context, guest_site_url);
+  return SiteInstanceImpl::CreateForGuest(browser_context, partition_config);
 }
 
 // static
@@ -820,9 +820,20 @@ bool SiteInstanceImpl::IsPdf() {
   return site_info_.is_pdf();
 }
 
+const StoragePartitionConfig& SiteInstanceImpl::GetStoragePartitionConfig() {
+  if (!has_site_) {
+    // Note: `site_info_` has not been set yet. This is ok as long as the
+    // StoragePartition of this SiteInstance does not change when `site_info_`
+    // is actually set. Enable the verification code in SetSiteInfoInternal()
+    // to verify that the storage partition info does not change.
+    verify_storage_partition_info_ = true;
+  }
+  return site_info_.storage_partition_config();
+}
+
 std::string SiteInstanceImpl::GetPartitionDomain(
     StoragePartitionImpl* storage_partition) {
-  auto storage_partition_config = site_info_.storage_partition_config();
+  auto storage_partition_config = GetStoragePartitionConfig();
 
   // The DCHECK here is to allow the trybots to detect any attempt to introduce
   // new code that violates this assumption.
@@ -1030,11 +1041,10 @@ bool SiteInstanceImpl::IsSameSite(const IsolationContext& isolation_context,
   url::Origin dest_isolated_origin;
   bool src_origin_is_isolated = policy->GetMatchingProcessIsolatedOrigin(
       isolation_context, src_origin,
-      real_src_url_info.requests_origin_agent_cluster_isolation(),
-      &src_isolated_origin);
+      real_src_url_info.requests_origin_keyed_process(), &src_isolated_origin);
   bool dest_origin_is_isolated = policy->GetMatchingProcessIsolatedOrigin(
       isolation_context, dest_origin,
-      real_dest_url_info.requests_origin_agent_cluster_isolation(),
+      real_dest_url_info.requests_origin_keyed_process(),
       &dest_isolated_origin);
   if (src_origin_is_isolated || dest_origin_is_isolated) {
     // Compare most specific matching origins to ensure that a subdomain of an
@@ -1150,7 +1160,7 @@ void SiteInstanceImpl::RenderProcessExited(
 void SiteInstanceImpl::LockProcessIfNeeded() {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  ProcessLock process_lock = policy->GetProcessLock(process_->GetID());
+  ProcessLock process_lock = process_->GetProcessLock();
   StoragePartitionImpl* storage_partition =
       static_cast<StoragePartitionImpl*>(process_->GetStoragePartition());
   if (!has_site_) {
@@ -1197,7 +1207,7 @@ void SiteInstanceImpl::LockProcessIfNeeded() {
     // process, which can't be locked.
     CHECK(!process_->IsForGuestsOnly());
 
-    ProcessLock lock_to_set = GetProcessLock();
+    ProcessLock lock_to_set = ProcessLock::FromSiteInfo(GetSiteInfo());
     if (!process_lock.is_locked_to_site()) {
       // TODO(nick): When all sites are isolated, this operation provides
       // strong protection. If only some sites are isolated, we need
@@ -1308,6 +1318,10 @@ void SiteInstanceImpl::WriteIntoTrace(
   proto->set_has_process(HasProcess());
   proto->set_related_active_contents_count(GetRelatedActiveContentsCount());
   proto->set_active_rfh_count(active_frame_count_);
+}
+
+int SiteInstanceImpl::EstimateOriginAgentClusterOverheadForMetrics() {
+  return browsing_instance_->EstimateOriginAgentClusterOverhead();
 }
 
 }  // namespace content

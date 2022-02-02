@@ -5,6 +5,7 @@
 #include "content/web_test/renderer/gc_controller.h"
 
 #include "base/bind.h"
+#include "base/ignore_result.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -88,7 +89,8 @@ void GCController::AsyncCollectAllWithEmptyStack(
   v8::Isolate* const isolate = blink::MainThreadIsolate();
 
   for (int i = 0; i < kNumberOfGCsForFullCollection; i++) {
-    isolate->GetEmbedderHeapTracer()->GarbageCollectionForTesting(
+    isolate->RequestGarbageCollectionForTesting(
+        v8::Isolate::kFullGarbageCollection,
         v8::EmbedderHeapTracer::EmbedderStackState::kNoHeapPointers);
   }
 

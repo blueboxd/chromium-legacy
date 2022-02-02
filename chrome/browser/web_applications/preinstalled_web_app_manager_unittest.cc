@@ -40,6 +40,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -68,7 +69,12 @@ constexpr char kAppChildUrl[] = "https://www.google.com/child";
 
 class PreinstalledWebAppManagerTest : public testing::Test {
  public:
-  PreinstalledWebAppManagerTest() = default;
+  PreinstalledWebAppManagerTest() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    scoped_feature_list_.InitWithFeatures(
+        {}, {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary});
+#endif
+  }
   PreinstalledWebAppManagerTest(const PreinstalledWebAppManagerTest&) = delete;
   PreinstalledWebAppManagerTest& operator=(
       const PreinstalledWebAppManagerTest&) = delete;
@@ -118,10 +124,11 @@ class PreinstalledWebAppManagerTest : public testing::Test {
     auto preinstalled_web_app_manager =
         std::make_unique<PreinstalledWebAppManager>(profile);
 
-    auto* provider = WebAppProvider::GetForTest(profile);
+    auto* provider = WebAppProvider::GetForWebApps(profile);
     DCHECK(provider);
     preinstalled_web_app_manager->SetSubsystems(
-        &provider->registrar(), &provider->externally_managed_app_manager());
+        &provider->registrar(), &provider->ui_manager(),
+        &provider->externally_managed_app_manager());
 
     std::vector<ExternalInstallOptions> result;
     base::RunLoop run_loop;
@@ -138,17 +145,22 @@ class PreinstalledWebAppManagerTest : public testing::Test {
   }
 
   // Helper that creates simple test profile.
-  std::unique_ptr<TestingProfile> CreateProfile() {
+  std::unique_ptr<TestingProfile> CreateProfile(bool is_guest = false) {
     TestingProfile::Builder profile_builder;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    profile_builder.SetIsMainProfile(true);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (is_guest) {
+      profile_builder.SetGuestSession();
+    }
+
     return profile_builder.Build();
   }
 
 #if defined(OS_CHROMEOS)
   // Helper that creates simple test guest profile.
   std::unique_ptr<TestingProfile> CreateGuestProfile() {
-    TestingProfile::Builder profile_builder;
-    profile_builder.SetGuestSession();
-    return profile_builder.Build();
+    return CreateProfile(/*is_guest=*/true);
   }
 
   // Helper that creates simple test profile and logs it into user manager.
@@ -203,6 +215,8 @@ class PreinstalledWebAppManagerTest : public testing::Test {
         user_manager::UserManager::Get());
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   // To support primary/non-primary users.
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
 #endif
@@ -214,7 +228,7 @@ class PreinstalledWebAppManagerTest : public testing::Test {
 TEST_F(PreinstalledWebAppManagerTest, ReplacementExtensionBlockedByPolicy) {
   using PolicyUpdater = extensions::ExtensionManagementPrefUpdater<
       sync_preferences::TestingPrefServiceSyncable>;
-  auto test_profile = std::make_unique<TestingProfile>();
+  auto test_profile = CreateProfile();
   sync_preferences::TestingPrefServiceSyncable* prefs =
       test_profile->GetTestingPrefService();
 

@@ -17,25 +17,37 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
 
-// Defines a warning-level restriction type for video captures.
-const policy::DlpContentRestrictionSet kVideoCaptureWarned{
-    policy::DlpContentRestriction::kVideoCapture,
+// Defines a warning-level restriction type for screen captures.
+const policy::DlpContentRestrictionSet kScreenCaptureWarned{
+    policy::DlpContentRestriction::kScreenshot,
     policy::DlpRulesManager::Level::kWarn};
 
 // Returns the native window of the given `browser`.
 aura::Window* GetBrowserWindow(Browser* browser) {
   return browser->window()->GetNativeWindow();
+}
+
+void SetupLoopToWaitForCaptureFileToBeSaved(base::RunLoop* loop) {
+  ash::CaptureModeTestApi().SetOnCaptureFileSavedCallback(
+      base::BindLambdaForTesting([loop](const base::FilePath& path) {
+        base::ScopedAllowBlockingForTesting allow_blocking;
+        EXPECT_TRUE(base::PathExists(path));
+        loop->Quit();
+      }));
 }
 
 // Defines a waiter that waits for the DLP warning dialog to be added as a child
@@ -72,6 +84,7 @@ class DlpWarningDialogWaiter : public aura::WindowObserver {
 void StartVideoRecording() {
   ash::CaptureModeTestApi test_api;
   test_api.StartForFullscreen(/*for_video=*/true);
+  ASSERT_TRUE(test_api.IsSessionActive());
   test_api.PerformCapture();
   test_api.FlushRecordingServiceForTesting();
   EXPECT_TRUE(test_api.IsVideoRecordingInProgress());
@@ -79,7 +92,7 @@ void StartVideoRecording() {
 
 // Marks the active web contents of the given `browser` as DLP restricted with a
 // warning level.
-void MarkActiveTabAsDlpWarnedForVideoCapture(Browser* browser) {
+void MarkActiveTabAsDlpWarnedForScreenCapture(Browser* browser) {
   auto* dlp_content_observer = policy::DlpContentObserver::Get();
   ASSERT_TRUE(dlp_content_observer);
 
@@ -87,7 +100,7 @@ void MarkActiveTabAsDlpWarnedForVideoCapture(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   dlp_content_observer->OnConfidentialityChanged(web_contents,
-                                                 kVideoCaptureWarned);
+                                                 kScreenCaptureWarned);
 }
 
 // Stops the video recording and waits for the DLP warning dialog to be added.
@@ -101,11 +114,13 @@ void StopRecordingAndWaitForDlpWarningDialog(Browser* browser) {
   EXPECT_FALSE(test_api.IsVideoRecordingInProgress());
 }
 
-void SendKeyEvent(Browser* browser, ui::KeyboardCode key_code) {
+void SendKeyEvent(Browser* browser,
+                  ui::KeyboardCode key_code,
+                  int flags = ui::EF_NONE) {
   auto* browser_window = GetBrowserWindow(browser);
   ui::test::EventGenerator event_generator{browser_window->GetRootWindow(),
                                            browser_window};
-  event_generator.PressAndReleaseKey(key_code);
+  event_generator.PressAndReleaseKey(key_code, flags);
 }
 
 }  // namespace
@@ -136,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
   ASSERT_TRUE(browser());
   StartVideoRecording();
 
-  MarkActiveTabAsDlpWarnedForVideoCapture(browser());
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
   ash::CaptureModeTestApi test_api;
   // Video recording should not end as a result of adding a restriction of a
   // warning level type.
@@ -164,11 +179,223 @@ IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
   ASSERT_TRUE(browser());
   StartVideoRecording();
 
-  MarkActiveTabAsDlpWarnedForVideoCapture(browser());
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
   ash::CaptureModeTestApi test_api;
   // Video recording should not end as a result of adding a restriction of a
   // warning level type.
   EXPECT_TRUE(test_api.IsVideoRecordingInProgress());
+
+  // Set up a waiter to wait for the file to be saved.
+  base::RunLoop loop;
+  SetupLoopToWaitForCaptureFileToBeSaved(&loop);
+  StopRecordingAndWaitForDlpWarningDialog(browser());
+
+  // Accept the dialog by hitting the ENTER key and wait for the file to be
+  // saved.
+  SendKeyEvent(browser(), ui::VKEY_RETURN);
+  loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       DlpWarningDialogOnSessionInitDismissed) {
+  ASSERT_TRUE(browser());
+
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+  ash::CaptureModeTestApi test_api;
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+
+  test_api.StartForFullscreen(/*for_video=*/false);
+  // A capture mode session doesn't start immediately. The controller should be
+  // in a pending state waiting for a reply from the DLP manager.
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+
+  // Dismiss the dialog by hitting the ESCAPE key. The session should be aborted
+  // and the pending state should end.
+  SendKeyEvent(browser(), ui::VKEY_ESCAPE);
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       DlpWarningDialogOnSessionInitAccepted) {
+  ASSERT_TRUE(browser());
+
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+  ash::CaptureModeTestApi test_api;
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+
+  test_api.StartForFullscreen(/*for_video=*/true);
+  // A capture mode session doesn't start immediately. The controller should be
+  // in a pending state waiting for a reply from the DLP manager.
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+
+  // Accept the dialog by hitting the ENTER key. The session should start and
+  // the pending state should end.
+  SendKeyEvent(browser(), ui::VKEY_RETURN);
+  EXPECT_TRUE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       DlpWarningDialogOnPerformingCaptureDismissed) {
+  ASSERT_TRUE(browser());
+
+  // Start the session before a window becomes restricted.
+  ash::CaptureModeTestApi test_api;
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+  test_api.StartForFullscreen(/*for_video=*/false);
+  ASSERT_TRUE(test_api.IsSessionActive());
+
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+
+  // Attempt performing the capture now, it won't be performed immediately,
+  // rather the dialog will show instead.
+  test_api.PerformCapture();
+
+  // The session should remain active but in a pending state.
+  EXPECT_TRUE(test_api.IsSessionActive());
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+  EXPECT_TRUE(test_api.IsSessionWaitingForDlpConfirmation());
+
+  // Dismiss the dialog by hitting the ESCAPE key. The session should be aborted
+  // and the pending state should end.
+  SendKeyEvent(browser(), ui::VKEY_ESCAPE);
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       DlpWarningDialogOnPerformingCaptureAccepted) {
+  ASSERT_TRUE(browser());
+
+  // Start the session before a window becomes restricted.
+  ash::CaptureModeTestApi test_api;
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+  test_api.StartForFullscreen(/*for_video=*/false);
+  ASSERT_TRUE(test_api.IsSessionActive());
+
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+
+  // Attempt performing the capture now, it won't be performed immediately,
+  // rather the dialog will show instead.
+  test_api.PerformCapture();
+
+  // The session should remain active but in a pending state.
+  EXPECT_TRUE(test_api.IsSessionActive());
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+  EXPECT_TRUE(test_api.IsSessionWaitingForDlpConfirmation());
+
+  // Accept the dialog by hitting the ENTER key. The session should end, and the
+  // screenshot should be taken.
+  base::RunLoop loop;
+  SetupLoopToWaitForCaptureFileToBeSaved(&loop);
+  SendKeyEvent(browser(), ui::VKEY_RETURN);
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+  loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       DlpWarningDialogOnCountdownEndDismissed) {
+  ASSERT_TRUE(browser());
+  ash::CaptureModeTestApi test_api;
+  test_api.StartForFullscreen(/*for_video=*/true);
+  ASSERT_TRUE(test_api.IsSessionActive());
+  test_api.PerformCapture(/*skip_count_down=*/false);
+  EXPECT_TRUE(test_api.IsInCountDownAnimation());
+
+  // While countdown is in progress, mark the window as restricted, and wait for
+  // the dialog to show when the countdown ends.
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+  auto* root = GetBrowserWindow(browser())->GetRootWindow();
+  DlpWarningDialogWaiter(root).Wait();
+  EXPECT_FALSE(test_api.IsInCountDownAnimation());
+  EXPECT_FALSE(test_api.IsVideoRecordingInProgress());
+  EXPECT_TRUE(test_api.IsSessionActive());
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+  EXPECT_TRUE(test_api.IsSessionWaitingForDlpConfirmation());
+
+  // Dismiss the dialog by hitting the ESCAPE key and expect that recording
+  // doesn't start.
+  SendKeyEvent(browser(), ui::VKEY_ESCAPE);
+  EXPECT_FALSE(test_api.IsInCountDownAnimation());
+  EXPECT_FALSE(test_api.IsVideoRecordingInProgress());
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+}
+
+IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
+                       DlpWarningDialogOnCountdownEndAccepted) {
+  ASSERT_TRUE(browser());
+  ash::CaptureModeTestApi test_api;
+  test_api.StartForFullscreen(/*for_video=*/true);
+  ASSERT_TRUE(test_api.IsSessionActive());
+  test_api.PerformCapture(/*skip_count_down=*/false);
+  EXPECT_TRUE(test_api.IsInCountDownAnimation());
+
+  // While countdown is in progress, mark the window as restricted, and wait for
+  // the dialog to show when the countdown ends.
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+  auto* root = GetBrowserWindow(browser())->GetRootWindow();
+  DlpWarningDialogWaiter(root).Wait();
+  EXPECT_FALSE(test_api.IsInCountDownAnimation());
+  EXPECT_FALSE(test_api.IsVideoRecordingInProgress());
+  EXPECT_TRUE(test_api.IsSessionActive());
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+  EXPECT_TRUE(test_api.IsSessionWaitingForDlpConfirmation());
+
+  // Accept the dialog by hitting the ENTER key, and expect recording to start.
+  SendKeyEvent(browser(), ui::VKEY_RETURN);
+  test_api.FlushRecordingServiceForTesting();
+  EXPECT_FALSE(test_api.IsInCountDownAnimation());
+  EXPECT_TRUE(test_api.IsVideoRecordingInProgress());
+  EXPECT_FALSE(test_api.IsSessionActive());
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+
+  // Stop recording and wait for file to be saved successfully.
+  base::RunLoop loop;
+  SetupLoopToWaitForCaptureFileToBeSaved(&loop);
+  test_api.StopVideoRecording();
+  loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    CaptureModeBrowserTest,
+    DlpWarningDialogOnCaptureScreenshotsOfAllDisplaysDismissed) {
+  ASSERT_TRUE(browser());
+
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+  ash::CaptureModeTestApi test_api;
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+
+  // The screenshots should not be taken immediately through the keyboard
+  // shortcut. The controller should be in a pending state waiting for a reply
+  // from the DLP manager.
+  SendKeyEvent(browser(), ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
+
+  // Dismiss the dialog by hitting the ESCAPE key. The screenshot should be
+  // aborted and the pending state should end.
+  SendKeyEvent(browser(), ui::VKEY_ESCAPE);
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    CaptureModeBrowserTest,
+    DlpWarningDialogOnFullscreenScreenCaptureShortcutAccepted) {
+  ASSERT_TRUE(browser());
+
+  MarkActiveTabAsDlpWarnedForScreenCapture(browser());
+  ash::CaptureModeTestApi test_api;
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+
+  // The screenshots should not be taken immediately through the keyboard
+  // shortcut. The controller should be in a pending state waiting for a reply
+  // from the DLP manager.
+  SendKeyEvent(browser(), ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(test_api.IsPendingDlpCheck());
 
   // Set up a waiter to wait for the file to be saved.
   base::RunLoop loop;
@@ -178,11 +405,13 @@ IN_PROC_BROWSER_TEST_F(CaptureModeBrowserTest,
         EXPECT_TRUE(base::PathExists(path));
         loop.Quit();
       }));
-  StopRecordingAndWaitForDlpWarningDialog(browser());
 
-  // Accept the dialog by hitting the ENTER key and wait for the file to be
-  // saved.
+  // Accept the dialog by hitting the ENTER key. The screenshot should be taken
+  // and the pending state should end.
   SendKeyEvent(browser(), ui::VKEY_RETURN);
+  EXPECT_FALSE(test_api.IsPendingDlpCheck());
+
+  // Wait for the file to be saved.
   loop.Run();
 }
 

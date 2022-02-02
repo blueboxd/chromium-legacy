@@ -148,8 +148,6 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        autofill::features::kAutofillEnableSupportForMoreStructureInNames,
        // TODO(crbug.com/1125978): Remove once launched.
        autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
-       // TODO(crbug.com/896689): Remove once launched.
-       autofill::features::kAutofillNameSectionsWithRendererIds,
        // TODO(crbug.com/1076175) Remove once launched.
        autofill::features::kAutofillUseNewSectioningMethod,
        // TODO(crbug.com/1150890) Remove once launched
@@ -160,6 +158,8 @@ FormStructureBrowserTest::FormStructureBrowserTest()
        autofill::features::kAutofillEnableSupportForParsingWithSharedLabels,
        // TODO(crbug.com/1150895) Remove once launched.
        autofill::features::kAutofillParsingPatternsLanguageDetection,
+       // TODO(crbug.com/1277480): Remove once launched.
+       autofill::features::kAutofillEnableNameSurenameParsing,
        // TODO(crbug.com/1190334): Remove once launched.
        autofill::features::kAutofillParseMerchantPromoCodeFields},
       // Disabled

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -18,7 +19,6 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "ui/base/page_transition_types.h"
-
 
 // Helpers --------------------------------------------------------------------
 

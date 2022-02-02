@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
@@ -101,7 +102,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     kMaxValue = kVia,
   };
 
-  using DeleteCallback = base::OnceCallback<void(mojom::URLLoader* loader)>;
+  using DeleteCallback = base::OnceCallback<void(URLLoader* loader)>;
 
   // Holds a sync and async implementation of URLLoaderClient. The sync
   // implementation can be used if present to avoid posting a task to call back
@@ -231,7 +232,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void ContinueWithoutCertificate() override;
   void CancelRequest() override;
 
-  net::LoadState GetLoadStateForTesting() const;
+  net::LoadState GetLoadState() const;
+  net::UploadProgress GetUploadProgress() const;
 
   int32_t GetProcessId() const;
   uint32_t GetResourceType() const;
@@ -292,7 +294,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     URLLoader* get() const { return pointer_; }
 
    private:
-    URLLoader* const pointer_;
+    const raw_ptr<URLLoader> pointer_;
   };
 
   class FileOpenerForUpload;
@@ -417,14 +419,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // net::URLRequest.
   bool ShouldForceIgnoreTopFramePartyForCookies() const;
 
+  // Returns the client security state that applies to the current request.
+  // May return nullptr.
+  const mojom::ClientSecurityState* GetClientSecurityState() const;
+
   // Applies Private Network Access checks to the current request.
-  //
-  // `resource_address_space` specifies the IP address space of the remote
-  // endpoint.
   //
   // Helper for `OnConnected()`.
   PrivateNetworkAccessCheckResult PrivateNetworkAccessCheck(
-      mojom::IPAddressSpace resource_address_space) const;
+      const net::TransportInfo& info);
 
   mojom::DevToolsObserver* GetDevToolsObserver() const;
   mojom::CookieAccessObserver* GetCookieAccessObserver() const;
@@ -440,13 +443,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // send or store credentials for no-cors cross-origin request.
   bool CoepAllowCredentials(const GURL& url);
 
-  net::URLRequestContext* url_request_context_;
+  raw_ptr<net::URLRequestContext> url_request_context_;
 
   // |url_loader_factory_| is guaranteed to outlive URLLoader, so it is safe to
   // store a raw pointer here. It can also be null in tests.
-  URLLoaderFactory* const url_loader_factory_;
+  const raw_ptr<URLLoaderFactory> url_loader_factory_;
 
-  mojom::NetworkContextClient* network_context_client_;
+  raw_ptr<mojom::NetworkContextClient> network_context_client_;
   DeleteCallback delete_callback_;
 
   int32_t options_;
@@ -457,9 +460,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to
   // store a raw pointer to mojom::URLLoaderFactoryParams.
-  const mojom::URLLoaderFactoryParams* const factory_params_;
+  const raw_ptr<const mojom::URLLoaderFactoryParams> factory_params_;
   // This also belongs to URLLoaderFactory and outlives this loader.
-  mojom::CrossOriginEmbedderPolicyReporter* const coep_reporter_;
+  const raw_ptr<mojom::CrossOriginEmbedderPolicyReporter> coep_reporter_;
 
   const uint32_t request_id_;
   const int keepalive_request_size_;
@@ -564,12 +567,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   mojom::IPAddressSpace target_ip_address_space_ =
       mojom::IPAddressSpace::kUnknown;
 
+  // The resource's address space, as computed using the |net::TransportInfo|
+  // argument to the |OnConnected()| callback. This info is only available then,
+  // so the computation result is stored for later use in this member.
+  mojom::IPAddressSpace resource_ip_address_space_ =
+      mojom::IPAddressSpace::kUnknown;
+
   mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
   std::unique_ptr<FileOpenerForUpload> file_opener_for_upload_;
 
   // Will only be set for requests that have |obey_origin_policy| set.
-  mojom::OriginPolicyManager* origin_policy_manager_ = nullptr;
+  raw_ptr<mojom::OriginPolicyManager> origin_policy_manager_ = nullptr;
 
   // If the request is configured for Trust Tokens
   // (https://github.com/WICG/trust-token-api) protocol operations, annotates
@@ -622,9 +631,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool emitted_devtools_raw_response_ = false;
 
   mojo::Remote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer_;
-
-  // Globally-unique id identifying this URLLoader for tracing.
-  const uint64_t trace_id_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 };

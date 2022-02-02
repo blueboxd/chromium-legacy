@@ -104,7 +104,6 @@
 <translation id="1832848789136765277">იმაში დასარწმუნებლად, რომ ყოველთვის შეძლებთ თქვენს სინქრონიზებულ მონაცემებზე წვდომას, დაადასტურეთ, რომ ეს თქვენ ხართ</translation>
 <translation id="1870148520156231997">პაროლის გამოჩენა</translation>
 <translation id="1872096359983322073">ჩირაღდანი</translation>
-<translation id="1894205589103145703">შესვლისას წარმოიქმნა შეფერხება.</translation>
 <translation id="1911619930368729126">ატვირთვა Google Drive-ზე</translation>
 <translation id="1923342640370224680">ბოლო საათი</translation>
 <translation id="1930989359703290198">თქვენი ორგანიზაცია სისტემაში მხოლოდ კონკრეტული ანგარიშებით შესვლის უფლებას გაძლებთ. ანგარიშები, რომელთა გამოყენებაც ნებადართული არ არის, დამალულია. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
@@ -138,6 +137,7 @@
 <translation id="225943865679747347">შეცდომის კოდი: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">ანგარიშის დამატება</translation>
 <translation id="2268044343513325586">დახვეწა</translation>
+<translation id="2271351792809375263">გამოიყენეთ თქვენ მიერ Chrome-ში შენახული პაროლები თქვენს მოწყობილობაზე არსებულ სხვა აპებში</translation>
 <translation id="2273327106802955778">ვარიანტების მენიუ</translation>
 <translation id="2302742851632557585">პაროლის შეცვლა ვებსაიტზე</translation>
 <translation id="2316709634732130529">შემოთავაზებული პაროლის გამოყენება</translation>
@@ -168,6 +168,7 @@
 <translation id="2584132361465095047">ანგარიშის დამატება…</translation>
 <translation id="2600682495497606169">საიტის ქუქი-ჩანაწერების გასუფთავება</translation>
 <translation id="2625189173221582860">პაროლი დაკოპირდა</translation>
+<translation id="2626236249646841566">შეამოწმეთ კავშირი და ხელახლა ცადეთ სისტემაში შესვლა.</translation>
 <translation id="2647269890314209800">გამოყენებული ქუქი-ჩანაწერები</translation>
 <translation id="2648803196158606475">წაკითხულის წაშლა</translation>
 <translation id="2653659639078652383">გაგზავნა</translation>
@@ -258,6 +259,7 @@
 <translation id="3393920035788932672">კონტექსტური ფანჯრები ნებადართულია</translation>
 <translation id="3399930248910934354">Chrome-ის პარამეტრების გახსნა</translation>
 <translation id="3404744938087714423">სისტემიდან გამოსვლით გამოირთვება სინქრონიზაცია.</translation>
+<translation id="3414451675185661089">2. შეხებით აირჩიეთ „პაროლები“</translation>
 <translation id="3425644765244388016">ბარათის მეტსახელი</translation>
 <translation id="3433057996795775706">ამ პაროლის წაშლის შემთხვევაში თქვენი ანგარიში <ph name="WEBSITE" />-ზე არ წაიშლება. თქვენი პაროლი სხვის ხელში რომ არ აღმოჩნდეს, შეცვალეთ ის <ph name="WEBSITE" />-ზე.</translation>
 <translation id="3443810440409579745">ჩანართი მიღებულია.</translation>
@@ -362,6 +364,7 @@
 <translation id="4508750114462689118">შესვლის პრომო-ერთეულის დახურვა</translation>
 <translation id="4526249700380860531">შენახული პაროლების ნახვა და მართვა შეგიძლიათ აქ: <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">ცადეთ სისტემაში ხელახლა შესვლა.</translation>
+<translation id="4540780316273593836">წარმოიქმნა შეფერხება</translation>
 <translation id="457386861538956877">მეტი…</translation>
 <translation id="4592368184551360546">კლავიატურა</translation>
 <translation id="461440297010471931">ძიებისთვის გამოიყენება Google</translation>
@@ -379,6 +382,7 @@
 <translation id="4666531726415300315">შესული ხართ, როგორც <ph name="EMAIL" />.
 
 თქვენი მონაცემები დაშიფრულია საიდუმლო ფრაზის მეშვეობით. სინქრონიზაციის დასაწყებად, შეიყვანეთ საიდუმლო ფრაზა.</translation>
+<translation id="4682686630151240767">1. გახსენით iPhone-ის პარამეტრები</translation>
 <translation id="4689564913179979534">გადახდის მეთოდების მართვა…</translation>
 <translation id="470966556546083668">არ ჩაირთოს სინქრონიზაცია</translation>
 <translation id="473775607612524610">განახლება</translation>
@@ -459,8 +463,8 @@
 <translation id="5489208564673669003">ყველა საიტისთვის ქუქი-ჩანაწერების სამართავად გადადით <ph name="BEGIN_LINK" />ქუქი-ჩანაწერების პარამეტრებზე<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">ყველა ქუქი-ჩანაწერის დაბლოკვა (არარეკომენდებული)</translation>
 <translation id="5513681519188741830"><ph name="TIME" /> საათის წინ</translation>
+<translation id="5523579157975978438">გამოსართავად გახსენით <ph name="BEGIN_LINK" />პარამეტრები<ph name="END_LINK" /> და გადადით „პაროლებზე“.</translation>
 <translation id="5525269841082836315">საიდუმლო ფრაზის შექმნა</translation>
-<translation id="5532698011560297095">სისტემაში შესვლა ვერ მოხერხდა</translation>
 <translation id="5548760955356983418">Handoff საშუალებით შეგიძლიათ დაიწყოთ ვებსაიტის დათვალიერება ამ მოწყობილობაში და ადვილად გააგრძელოთ Mac მოწყობილობაში. მიმდინარე გახსნილი ვებსაიტი გამოჩნდება Mac მოწყობილობის Dock-ში.
 
 Handoff ასევე უნდა იყოს ჩართული პარამეტრების სექციაში „ძირითადი“ და მოწყობილობებში უნდა გამოიყენებოდეს ერთი და იგივე iCloud ანგარიში.</translation>
@@ -476,6 +480,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">ვერსია <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{ახლა ნაჩვენებია Chrome-ის 1 ფანჯარა}other{ახლა ნაჩვენებია Chrome-ის {count} ფანჯარა}}</translation>
+<translation id="5704908597376970822">სისტემაში შესვლა ვერ მოხერხდა.</translation>
 <translation id="5706552126692816153">აქტიური იყო 1 დღის წინ</translation>
 <translation id="5711039611392265845">კონფიდენციალურობასთან, უსაფრთხოებასთან და მონაცემთა შეგროვებასთან დაკავშირებული სხვა პარამეტრებისთვის იხილეთ <ph name="BEGIN_LINK" />სინქრონიზაცია და Google-ის სერვისები<ph name="END_LINK" />.</translation>
 <translation id="5724941645893276623">ვების კონფიდენციალურად დასათვალიერებლად დაამატეთ ახალი ჩანართი</translation>
@@ -637,6 +642,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="6873263987691478642">გაყოფილი ხედი</translation>
 <translation id="6888009575607455378">ნამდვილად გსურთ ცვლილებების გაუქმება?</translation>
 <translation id="6896758677409633944">კოპირება</translation>
+<translation id="6897187120838603299">თქვენი პაროლი თქვენს მოწყობილობაზე შეინახება.</translation>
 <translation id="6914583639806229067">თქვენ მიერ კოპირებული სურათის ძიება</translation>
 <translation id="6914783257214138813">თქვენს პაროლებს დაინახავს ნებისმიერი, ვისაც ექნება წვდომა ექსპორტირებულ ფაილზე.</translation>
 <translation id="6930799952781667037">შეეხეთ ამ ენის შესაცვლელად.</translation>
@@ -740,12 +746,14 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 საიტებს შეუძლია ქუქი-ჩანაწერების გამოყენება სხვადასხვა საიტის თქვენ მიერ დათვალიერების აქტივობის სანახავად, მაგალითად, რეკლამის თქვენზე მოსარგებად.</translation>
 <translation id="7971521879845308059">კონტექსტური ფანჯრების დაბლოკვა</translation>
 <translation id="797413074872316787">თქვენი ყველა მოწყობილობის სინქრონიზაციისთვისა და პერსონალიზებისთვის ჩართეთ სინქრონიზაცია.</translation>
+<translation id="7978018860671536736">3. შეხებით აირჩიეთ „პაროლების ავტომატური შევსება“</translation>
 <translation id="7982789257301363584">ქსელი</translation>
 <translation id="7993619969781047893">ზოგიერთი საიტის ფუნქციებმა შეიძლება არასათანადოდ იმუშაოს</translation>
 <translation id="800361585186029508">მითითებულ URL-ებს Google Chrome-ში გახსნის.</translation>
 <translation id="802154636333426148">ჩამოტვირთვა ვერ მოხერხდა</translation>
 <translation id="8023878949384262191">გაშლის სექციას.</translation>
 <translation id="8027581147000338959">ახალ ფანჯარაში გახსნა</translation>
+<translation id="8032569120109842252">თვალს ადევნებთ</translation>
 <translation id="804225253087497565">თქვენს Google ანგარიშში შეიძლება ინახებოდეს <ph name="BEGIN_LINK" />ძიების ისტორია<ph name="END_LINK" /> და <ph name="BEGIN_LINK" />სხვა ტიპის აქტივობა<ph name="END_LINK" />, როცა შესული ხართ სისტემაში. აღნიშნულის წაშლა ნებისმიერ დროს შეგიძლიათ.</translation>
 <translation id="804427445359061970">აქ იპოვით ჩანართებს თქვენი სხვა მოწყობილობებიდან</translation>
 <translation id="8059533439631660104">კეცავს სექციას.</translation>
@@ -765,6 +773,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8205564605687841303">გაუქმება</translation>
 <translation id="8206354486702514201">ეს პარამეტრი იძულებითაა დაყენებული თქვენი ადმინისტრატორის მიერ.</translation>
 <translation id="8225985093977202398">ქეშირებული სურათები და ფაილები</translation>
+<translation id="8237382152611443140">გახსენით პაროლების ავტომატური შევსების პარამეტრები</translation>
 <translation id="8261506727792406068">წაშლა</translation>
 <translation id="8271720166617117963">მიღება და შესვლა</translation>
 <translation id="8281781826761538115">ნაგულისხმევი — <ph name="DEFAULT_LOCALE" /></translation>
@@ -833,6 +842,7 @@ Handoff ასევე უნდა იყოს ჩართული პა�
 <translation id="8917490105272468696">დიახ, თანახმა ვარ</translation>
 <translation id="8952559610785099500">პაროლის დამატება</translation>
 <translation id="895541991026785598">მოხსენება პრობლემის შესახებ</translation>
+<translation id="8974714402877957201">1. გახსენით iPad-ის პარამეტრები</translation>
 <translation id="8976382372951310360">დახმარება</translation>
 <translation id="8976414606286374109">ბარათები შეინახება თქვენს Google ანგარიშში.</translation>
 <translation id="8981454092730389528">Google აქტივობის მართვის საშუალებები</translation>

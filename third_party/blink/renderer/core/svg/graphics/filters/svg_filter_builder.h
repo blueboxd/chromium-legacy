@@ -24,17 +24,22 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
+namespace gfx {
+class RectF;
+}
+
 namespace blink {
 
 class Filter;
 class FilterEffect;
-class FloatRect;
 class SVGFilterElement;
 class SVGFilterPrimitiveStandardAttributes;
 
@@ -87,7 +92,7 @@ class SVGFilterBuilder {
                    const PaintFlags* fill_flags = nullptr,
                    const PaintFlags* stroke_flags = nullptr);
 
-  void BuildGraph(Filter*, SVGFilterElement&, const FloatRect&);
+  void BuildGraph(Filter*, SVGFilterElement&, const gfx::RectF&);
 
   FilterEffect* GetEffectById(const AtomicString& id) const;
   FilterEffect* LastEffect() const { return last_effect_; }

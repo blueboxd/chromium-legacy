@@ -15,7 +15,6 @@
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -682,9 +681,19 @@ void SiteSettingsHandler::HandleClearUsage(const base::ListValue* args) {
   for (const auto& node : cookies_tree_model_->GetRoot()->children()) {
     if (origin == node->GetDetailedInfo().origin.GetURL().spec()) {
       cookies_tree_model_->DeleteCookieNode(node.get());
-      return;
+      break;
     }
   }
+
+  // TODO(crbug.com/1271155, crbug.com/1268626): This is a temporary hack while
+  // the CookiesTreeModel is deprecated. Currently cookies will fail to be
+  // deleted if only cookies exist and the origin's scheme is 'https'. The
+  // origin's scheme in the cookie node is `http` whereas the expected scheme
+  // for the origin is `https`, so we cannot use the cookie node origin to
+  // remove site client hints data before the issue is resolved.
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->SetWebsiteSettingDefaultScope(
+          url, GURL(), ContentSettingsType::CLIENT_HINTS, nullptr);
 }
 
 void SiteSettingsHandler::HandleSetDefaultValueForContentType(
@@ -815,11 +824,9 @@ void SiteSettingsHandler::HandleGetCategoryList(const base::ListValue* args) {
   std::string callback_id = args->GetList()[0].GetString();
   GURL origin(args->GetList()[1].GetString());
 
-  std::vector<ContentSettingsType> content_types =
-      site_settings::GetVisiblePermissionCategoriesForOrigin(profile_, origin);
-
   base::Value result(base::Value::Type::LIST);
-  for (ContentSettingsType content_type : content_types) {
+  for (ContentSettingsType content_type :
+       site_settings::GetVisiblePermissionCategories()) {
     result.Append(site_settings::ContentSettingsTypeToGroupName(content_type));
   }
 
@@ -1032,9 +1039,6 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     raw_site_exception.SetStringKey(site_settings::kDisplayName, display_name);
     raw_site_exception.SetStringKey(site_settings::kSetting,
                                     content_setting_string);
-    raw_site_exception.SetStringKey(site_settings::kSettingDetail,
-                                    content_settings::GetPermissionDetailString(
-                                        profile_, content_type, origin_url));
     raw_site_exception.SetStringKey(site_settings::kSource, source_string);
 
     exceptions.Append(std::move(raw_site_exception));
@@ -1059,8 +1063,7 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     types.push_back(
         site_settings::ContentSettingsTypeFromGroupName(*type_string));
   } else {
-    types = site_settings::GetVisiblePermissionCategoriesForOrigin(profile_,
-                                                                   origin);
+    types = site_settings::GetVisiblePermissionCategories();
   }
 
   ContentSetting setting;
@@ -1258,8 +1261,8 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
 
   permissions::ObjectPermissionContextBase* chooser_context =
       chooser_type->get_context(profile_);
-  chooser_context->RevokeObjectPermission(
-      url::Origin::Create(embedding_origin), args->GetList()[3]);
+  chooser_context->RevokeObjectPermission(url::Origin::Create(embedding_origin),
+                                          args->GetList()[3]);
 }
 
 void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {
@@ -1354,8 +1357,6 @@ void SiteSettingsHandler::SendZoomLevels() {
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
         // These are not stored in preferences and get cleared on next browser
         // start. Therefore, we don't care for them.
-        continue;
-      case content::HostZoomMap::PAGE_SCALE_IS_ONE_CHANGED:
         continue;
       case content::HostZoomMap::ZOOM_CHANGED_TEMPORARY_ZOOM:
         NOTREACHED();

@@ -6,8 +6,10 @@
 #define CC_TREES_PROXY_IMPL_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/delayed_unique_notifier.h"
@@ -36,6 +38,9 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
  public:
   ProxyImpl(base::WeakPtr<ProxyMain> proxy_main_weak_ptr,
             LayerTreeHost* layer_tree_host,
+            int id,
+            const LayerTreeSettings* settings,
+            RenderingStatsInstrumentation* rendering_stats_instrumentation,
             TaskRunnerProvider* task_runner_provider);
   ProxyImpl(const ProxyImpl&) = delete;
   ~ProxyImpl() override;
@@ -65,13 +70,14 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void ReleaseLayerTreeFrameSinkOnImpl(CompletionEvent* completion);
   void FinishGLOnImpl(CompletionEvent* completion);
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion_event,
-                                 LayerTreeHost* layer_tree_host,
+                                 std::unique_ptr<CommitState> commit_state,
+                                 ThreadUnsafeCommitState* unsafe_state,
                                  base::TimeTicks main_thread_start_time,
-                                 const viz::BeginFrameArgs& commit_args);
+                                 const viz::BeginFrameArgs& commit_args,
+                                 CommitTimestamps* commit_timestamps);
   void SetSourceURL(ukm::SourceId source_id, const GURL& url);
   void SetUkmSmoothnessDestination(
       base::WritableSharedMemoryMapping ukm_smoothness_data);
-  void ClearHistory();
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer);
   void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling);
@@ -80,16 +86,10 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
                                            bool* main_frame_will_happen);
 
   void RequestBeginMainFrameNotExpected(bool new_state) override;
+  void ClearHistory() override;
+  size_t CommitDurationSampleCountForTesting() const override;
 
  private:
-  // The members of this struct should be accessed on the impl thread only when
-  // the main thread is blocked for a commit.
-  struct BlockedMainCommitOnly {
-    BlockedMainCommitOnly();
-    ~BlockedMainCommitOnly();
-    LayerTreeHost* layer_tree_host;
-  };
-
   // LayerTreeHostImplClient implementation
   void DidLoseLayerTreeFrameSinkOnImplThread() override;
   void SetBeginFrameSource(viz::BeginFrameSource* source) override;
@@ -167,8 +167,27 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   std::unique_ptr<Scheduler> scheduler_;
 
-  // Set when the main thread is waiting on a commit to complete.
-  std::unique_ptr<ScopedCompletionEvent> commit_completion_event_;
+  struct DataForCommit {
+    DataForCommit(
+        std::unique_ptr<ScopedCompletionEvent> commit_completion_event,
+        std::unique_ptr<CommitState> commit_state,
+        ThreadUnsafeCommitState* unsafe_state,
+        CommitTimestamps* commit_timestamps);
+
+    ~DataForCommit();
+
+    bool IsValid() const;
+
+    // Set when the main thread is waiting on a commit to complete.
+    std::unique_ptr<ScopedCompletionEvent> commit_completion_event;
+    std::unique_ptr<CommitState> commit_state;
+    ThreadUnsafeCommitState* unsafe_state;
+    // This is passed from the main thread so the impl thread can record
+    // timestamps at the beginning and end of commit.
+    CommitTimestamps* commit_timestamps = nullptr;
+  };
+
+  std::unique_ptr<DataForCommit> data_for_commit_;
 
   // Set when the main thread is waiting for activation to complete.
   std::unique_ptr<ScopedCompletionEvent> activation_completion_event_;
@@ -185,15 +204,11 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   TreePriority last_raster_priority_;
 
-  TaskRunnerProvider* task_runner_provider_;
+  raw_ptr<TaskRunnerProvider> task_runner_provider_;
 
   DelayedUniqueNotifier smoothness_priority_expiration_notifier_;
 
   std::unique_ptr<LayerTreeHostImpl> host_impl_;
-
-  // Use accessors instead of this variable directly.
-  BlockedMainCommitOnly main_thread_blocked_commit_vars_unsafe_;
-  BlockedMainCommitOnly& blocked_main_commit();
 
   bool is_jank_injection_enabled_ = false;
 

@@ -50,8 +50,8 @@ GetOrCreateCurrentContentModelAnnotations(
 void PretendToExecuteJob(base::OnceClosure callback,
                          std::unique_ptr<PageContentAnnotationJob> job) {
   while (absl::optional<std::string> input = job->GetNextInput()) {
-    job->PostNewResult(BatchAnnotationResult::CreatePageTopicsResult(
-        *input, ExecutionStatus::kErrorInternalError, absl::nullopt));
+    job->PostNewResult(
+        BatchAnnotationResult::CreatePageTopicsResult(*input, absl::nullopt));
   }
   // Note to future self: The ordering of these callbacks being run will be
   // important once actually being run on an executor.
@@ -220,12 +220,37 @@ void PageContentAnnotationsModelManager::SetUpPageTopicsModel(
       proto::PAGE_TOPICS_SUPPORTED_OUTPUT_CATEGORIES);
   page_topics_model_metadata.SerializeToString(model_metadata.mutable_value());
 
-  page_topics_model_executor_handle_ =
-      std::make_unique<BertModelExecutorHandle>(
+  page_topics_model_handler_ = std::make_unique<BertModelHandler>(
+      optimization_guide_model_provider,
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+      proto::OPTIMIZATION_TARGET_PAGE_TOPICS, model_metadata);
+}
+
+void PageContentAnnotationsModelManager::SetUpPageTopicsV2Model(
+    OptimizationGuideModelProvider* optimization_guide_model_provider) {
+  if (!features::PageTopicsBatchAnnotationsEnabled())
+    return;
+
+  on_demand_page_topics_model_executor_ =
+      std::make_unique<PageTopicsModelExecutor>(
           optimization_guide_model_provider,
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-          proto::OPTIMIZATION_TARGET_PAGE_TOPICS, model_metadata);
+          absl::nullopt);
+}
+
+void PageContentAnnotationsModelManager::SetUpPageVisibilityModel(
+    OptimizationGuideModelProvider* optimization_guide_model_provider) {
+  if (!features::PageVisibilityBatchAnnotationsEnabled())
+    return;
+
+  page_visibility_model_executor_ =
+      std::make_unique<PageVisibilityModelExecutor>(
+          optimization_guide_model_provider,
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+          absl::nullopt);
 }
 
 void PageContentAnnotationsModelManager::ExecutePageTopicsModel(
@@ -238,7 +263,7 @@ void PageContentAnnotationsModelManager::ExecutePageTopicsModel(
       "PageTopicsModelExecutionRequested",
       true);
 
-  bool model_available = page_topics_model_executor_handle_->ModelAvailable();
+  bool model_available = page_topics_model_handler_->ModelAvailable();
 
   base::UmaHistogramBoolean(
       "OptimizationGuide.PageContentAnnotationsService.ModelAvailable",
@@ -254,7 +279,7 @@ void PageContentAnnotationsModelManager::ExecutePageTopicsModel(
   }
 
   absl::optional<proto::PageTopicsModelMetadata> model_metadata =
-      page_topics_model_executor_handle_->ParsedSupportedFeaturesForLoadedModel<
+      page_topics_model_handler_->ParsedSupportedFeaturesForLoadedModel<
           proto::PageTopicsModelMetadata>();
   if (!model_metadata) {
     NOTREACHED();
@@ -279,7 +304,7 @@ void PageContentAnnotationsModelManager::ExecutePageTopicsModel(
     return;
   }
 
-  page_topics_model_executor_handle_->ExecuteModelWithInput(
+  page_topics_model_handler_->ExecuteModelWithInput(
       base::BindOnce(&PageContentAnnotationsModelManager::
                          OnPageTopicsModelExecutionCompleted,
                      weak_ptr_factory_.GetWeakPtr(), text,
@@ -309,7 +334,7 @@ void PageContentAnnotationsModelManager::OnPageTopicsModelExecutionCompleted(
 absl::optional<int64_t>
 PageContentAnnotationsModelManager::GetPageTopicsModelVersion() const {
   absl::optional<proto::PageTopicsModelMetadata> model_metadata =
-      page_topics_model_executor_handle_->ParsedSupportedFeaturesForLoadedModel<
+      page_topics_model_handler_->ParsedSupportedFeaturesForLoadedModel<
           proto::PageTopicsModelMetadata>();
   if (model_metadata)
     return model_metadata->version();
@@ -450,6 +475,38 @@ void PageContentAnnotationsModelManager::
   out_content_annotations->categories = final_categories;
 }
 
+void PageContentAnnotationsModelManager::NotifyWhenModelAvailable(
+    AnnotationType type,
+    base::OnceCallback<void(bool)> callback) {
+  if (type == AnnotationType::kPageTopics &&
+      on_demand_page_topics_model_executor_) {
+    on_demand_page_topics_model_executor_->AddOnModelUpdatedCallback(
+        base::BindOnce(std::move(callback), true));
+    return;
+  }
+
+  if (type == AnnotationType::kContentVisibility &&
+      page_visibility_model_executor_) {
+    page_visibility_model_executor_->AddOnModelUpdatedCallback(
+        base::BindOnce(std::move(callback), true));
+    return;
+  }
+
+  // TODO(crbug/1249632): Add support for page entities.
+
+  std::move(callback).Run(false);
+}
+
+absl::optional<ModelInfo>
+PageContentAnnotationsModelManager::GetModelInfoForType(
+    AnnotationType type) const {
+  if (type == AnnotationType::kPageTopics &&
+      on_demand_page_topics_model_executor_) {
+    return on_demand_page_topics_model_executor_->GetModelInfo();
+  }
+  return absl::nullopt;
+}
+
 void PageContentAnnotationsModelManager::Annotate(
     BatchAnnotationCallback callback,
     const std::vector<std::string>& inputs,
@@ -476,6 +533,13 @@ void PageContentAnnotationsModelManager::MaybeStartNextAnnotationJob() {
 
   JobQueue::Pointer job_ptr = job_queue_.FirstMax();
   if (job_ptr.is_null()) {
+    // There are no more jobs to run, so unload all models.
+    if (on_demand_page_topics_model_executor_) {
+      on_demand_page_topics_model_executor_->UnloadModel();
+    }
+    if (page_visibility_model_executor_) {
+      page_visibility_model_executor_->UnloadModel();
+    }
     return;
   }
 
@@ -485,14 +549,51 @@ void PageContentAnnotationsModelManager::MaybeStartNextAnnotationJob() {
 
   std::unique_ptr<PageContentAnnotationJob> job = job_queue_.Erase(job_ptr);
 
-  base::OnceClosure on_complete_callback = base::BindOnce(
+  base::OnceClosure on_job_complete_callback = base::BindOnce(
       &PageContentAnnotationsModelManager::OnJobExecutionComplete,
       weak_ptr_factory_.GetWeakPtr());
+
+  // Reset every other model from memory so that there aren't a bunch of models
+  // all loaded at the same time.
+  if (job->type() != AnnotationType::kPageTopics &&
+      on_demand_page_topics_model_executor_) {
+    on_demand_page_topics_model_executor_->UnloadModel();
+  }
+  if (job->type() != AnnotationType::kContentVisibility &&
+      page_visibility_model_executor_) {
+    page_visibility_model_executor_->UnloadModel();
+  }
+
+  if (job->type() == AnnotationType::kPageTopics) {
+    if (!on_demand_page_topics_model_executor_) {
+      job->FillWithNullOutputs();
+      job->OnComplete();
+      job.reset();
+      std::move(on_job_complete_callback).Run();
+      return;
+    }
+    on_demand_page_topics_model_executor_->ExecuteJob(
+        std::move(on_job_complete_callback), std::move(job));
+    return;
+  }
+
+  if (job->type() == AnnotationType::kContentVisibility) {
+    if (!page_visibility_model_executor_) {
+      job->FillWithNullOutputs();
+      job->OnComplete();
+      job.reset();
+      std::move(on_job_complete_callback).Run();
+      return;
+    }
+    page_visibility_model_executor_->ExecuteJob(
+        std::move(on_job_complete_callback), std::move(job));
+    return;
+  }
 
   // TODO(crbug/1249632): Actually run the model instead.
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&PretendToExecuteJob, std::move(on_complete_callback),
+      base::BindOnce(&PretendToExecuteJob, std::move(on_job_complete_callback),
                      std::move(job)));
 }
 

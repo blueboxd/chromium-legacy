@@ -25,6 +25,7 @@
 #include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service_log.h"
+#include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/app_restore/full_restore_read_handler.h"
 #include "components/app_restore/full_restore_save_handler.h"
@@ -124,7 +125,7 @@ void FullRestoreAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
 
 void FullRestoreAppLaunchHandler::OnAppTypeInitialized(
     apps::mojom::AppType app_type) {
-  if (app_type == apps::mojom::AppType::kExtension) {
+  if (app_type == apps::mojom::AppType::kChromeApp) {
     are_chrome_apps_initialized_ = true;
     return;
   }
@@ -257,8 +258,8 @@ void FullRestoreAppLaunchHandler::LaunchBrowser() {
   if (!::full_restore::HasBrowser(profile()->GetPath())) {
     // If there is no normal browsers before reboot, call session restore to
     // restore app type browsers only.
-    SessionRestore::RestoreSession(
-        profile(), nullptr, SessionRestore::RESTORE_APPS, std::vector<GURL>());
+    SessionRestore::RestoreSession(profile(), nullptr,
+                                   SessionRestore::RESTORE_APPS, StartupTabs());
     SessionRestore::RemoveObserver(this);
     return;
   }
@@ -298,10 +299,10 @@ void FullRestoreAppLaunchHandler::LaunchBrowserForFirstRunFullRestore() {
   if (ExitTypeService::GetLastSessionExitType(profile()) !=
           ExitType::kCrashed &&
       !::full_restore::HasAppTypeBrowser(profile()->GetPath()) &&
-      session_startup_pref.type == SessionStartupPref::LAST) {
+      session_startup_pref.ShouldRestoreLastSession()) {
     // Restore the app type browsers only when the web apps are ready.
-    SessionRestore::RestoreSession(
-        profile(), nullptr, SessionRestore::RESTORE_APPS, std::vector<GURL>());
+    SessionRestore::RestoreSession(profile(), nullptr,
+                                   SessionRestore::RESTORE_APPS, StartupTabs());
   }
 
   UserSessionManager::GetInstance()->MaybeLaunchSettings(profile());

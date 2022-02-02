@@ -75,6 +75,7 @@ void ScreenDetails::UpdateScreenInfos(LocalDOMWindow* window,
                        &display::ScreenInfo::display_id)) {
       ++i;
     } else {
+      WillRemoveScreen(*screens_[i]);
       screens_.EraseAt(i);
       added_or_removed = true;
       // Recheck this index.
@@ -86,11 +87,19 @@ void ScreenDetails::UpdateScreenInfos(LocalDOMWindow* window,
   for (const auto& info : new_infos.screen_infos) {
     if (!base::Contains(screens_, info.display_id,
                         &ScreenDetailed::DisplayId)) {
-      screens_.push_back(
-          MakeGarbageCollected<ScreenDetailed>(window, info.display_id));
+      screens_.push_back(MakeGarbageCollected<ScreenDetailed>(
+          window, info.display_id, info.is_internal,
+          GetNewLabelIdx(info.is_internal)));
       added_or_removed = true;
     }
   }
+
+  // screens is sorted by dimensions, x first and then y.
+  base::ranges::stable_sort(screens_, [](ScreenDetailed* a, ScreenDetailed* b) {
+    if (a->left() != b->left())
+      return a->left() < b->left();
+    return a->top() < b->top();
+  });
 
   // Update current_display_id_ so that currentScreen() is up to date
   // before we send out any events.
@@ -103,7 +112,10 @@ void ScreenDetails::UpdateScreenInfos(LocalDOMWindow* window,
 
   // (3) Send a change event if the current screen has changed.
   if (prev_screen_infos_.screen_infos.empty() ||
-      prev_screen_infos_.current() != new_infos.current()) {
+      prev_screen_infos_.current().display_id !=
+          new_infos.current().display_id ||
+      !ScreenDetailed::AreWebExposedScreenDetailedPropertiesEqual(
+          prev_screen_infos_.current(), new_infos.current())) {
     DispatchEvent(*Event::Create(event_type_names::kCurrentscreenchange));
   }
 
@@ -131,9 +143,9 @@ void ScreenDetails::UpdateScreenInfos(LocalDOMWindow* window,
     DCHECK(new_it != new_infos.screen_infos.end());
     auto old_it = base::ranges::find(prev_screen_infos_.screen_infos, id,
                                      &display::ScreenInfo::display_id);
-    if (old_it != prev_screen_infos_.screen_infos.end() && *old_it != *new_it) {
-      // TODO(enne): http://crbug.com/1202981 only send this event when
-      // properties on ScreenDetailed (vs anything in ScreenInfo) change.
+    if (old_it != prev_screen_infos_.screen_infos.end() &&
+        !ScreenDetailed::AreWebExposedScreenDetailedPropertiesEqual(*old_it,
+                                                                    *new_it)) {
       screen->DispatchEvent(*Event::Create(event_type_names::kChange));
 
       // Note: screen may no longer be valid and screens_ may have been
@@ -151,6 +163,27 @@ void ScreenDetails::UpdateScreenInfos(LocalDOMWindow* window,
   // of data have changed, as at a higher level the old data has already been
   // rewritten with the new.
   prev_screen_infos_ = new_infos;
+}
+
+uint32_t ScreenDetails::GetNewLabelIdx(bool is_internal) {
+  auto& set = is_internal ? internal_label_ids_ : external_label_ids_;
+
+  uint32_t label_idx = 1;
+
+  // This is O(n^2) but number of displays is very small.
+  while (true) {
+    if (!set.Contains(label_idx)) {
+      set.insert(label_idx);
+      return label_idx;
+    }
+    label_idx++;
+  }
+}
+
+void ScreenDetails::WillRemoveScreen(const ScreenDetailed& screen) {
+  auto& set =
+      screen.label_is_internal() ? internal_label_ids_ : external_label_ids_;
+  set.erase(screen.label_idx());
 }
 
 }  // namespace blink

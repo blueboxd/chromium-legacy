@@ -13,8 +13,8 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -175,11 +175,13 @@ class RenderFrameHostFactoryForHistoryBackInterceptor
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
       bool renderer_initiated_creation,
-      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state) override {
+      RenderFrameHostImpl::LifecycleStateImpl lifecycle_state,
+      scoped_refptr<BrowsingContextState> browsing_context_state) override {
     return base::WrapUnique(new RenderFrameHostImplForHistoryBackInterceptor(
         site_instance, std::move(render_view_host), delegate, frame_tree,
         frame_tree_node, routing_id, std::move(frame_remote), frame_token,
-        renderer_initiated_creation, lifecycle_state));
+        renderer_initiated_creation, lifecycle_state,
+        std::move(browsing_context_state)));
   }
 };
 
@@ -1977,7 +1979,7 @@ class CorsInjectingUrlLoader : public blink::URLLoaderThrottle {
 
  private:
   // See |NavigationCorsExemptBrowserTest::last_cors_header_value_| for details.
-  std::string* last_cors_header_value_;
+  raw_ptr<std::string> last_cors_header_value_;
 };
 
 // ContentBrowserClient responsible for creating CorsInjectingUrlLoader.
@@ -2002,7 +2004,7 @@ class CorsContentBrowserClient : public TestContentBrowserClient {
 
  private:
   // See |NavigationCorsExemptBrowserTest::last_cors_header_value_| for details.
-  std::string* last_cors_header_value_;
+  raw_ptr<std::string> last_cors_header_value_;
 };
 
 class NavigationCorsExemptBrowserTest : public NavigationBaseBrowserTest {
@@ -2036,7 +2038,7 @@ class NavigationCorsExemptBrowserTest : public NavigationBaseBrowserTest {
   std::string last_cors_header_value_;
   CorsContentBrowserClient cors_content_browser_client_{
       &last_cors_header_value_};
-  ContentBrowserClient* original_client_ = nullptr;
+  raw_ptr<ContentBrowserClient> original_client_ = nullptr;
 };
 
 // Verifies a header added by way of SetRequestHeader() makes it into
@@ -2116,7 +2118,7 @@ class CreateWebContentsOnCrashObserver : public NotificationObserver {
   bool observed_ = false;
 
   GURL url_;
-  WebContents* first_web_contents_;
+  raw_ptr<WebContents> first_web_contents_;
 
   ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
 };
@@ -3267,7 +3269,7 @@ class NavigationUrlRewriteBrowserTest : public NavigationBaseBrowserTest {
 
  private:
   std::unique_ptr<BrowserClient> browser_client_;
-  ContentBrowserClient* old_browser_client_;
+  raw_ptr<ContentBrowserClient> old_browser_client_;
   url::ScopedSchemeRegistryForTests scoped_registry_;
 };
 
@@ -4357,7 +4359,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     }
 
    private:
-    WebContents* web_contents_;
+    raw_ptr<WebContents> web_contents_;
   };
 
   auto inserter = std::make_unique<TestNavigationThrottleInserter>(
@@ -5232,27 +5234,28 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SameOriginOfSandboxedIframe) {
 }
 
 // The test below verifies that an initial empty document has a functional
-// URLLoaderFactory.  Note that the same behavior is expected in the
-// ...NewPopupToEmptyUrl and in the ...NewPopupToAboutBlank testcases - the
-// differences in test expectations (around `GetController().GetEntryCount()`)
-// are unexpected and would need to be fixed as part of https://crbug.com/524208
-// (or maybe more broadly https://crbug.com/778318 and/or
-// https://github.com/whatwg/html/issues/3267).
+// URLLoaderFactory.
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
                        URLLoaderFactoryInInitialEmptyDoc_NewPopupToEmptyUrl) {
   GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), opener_url));
 
-  content::WebContents* popup = nullptr;
+  WebContentsImpl* popup = nullptr;
   {
     WebContentsAddedObserver popup_observer;
     ASSERT_TRUE(ExecJs(shell(), "window.open('', '_blank')"));
-    popup = popup_observer.GetWebContents();
+    popup = static_cast<WebContentsImpl*>(popup_observer.GetWebContents());
   }
   WaitForLoadStop(popup);
 
   // Verify that we are at the initial empty document.
-  EXPECT_EQ(0, popup->GetController().GetEntryCount());
+  EXPECT_EQ(1, popup->GetController().GetEntryCount());
+  // Note that we're not on the initial NavigationEntry because of the
+  // synchronous about:blank commit.
+  EXPECT_FALSE(
+      popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
+  EXPECT_TRUE(
+      popup->GetPrimaryFrameTree().root()->is_on_initial_empty_document());
 
   // Verify that the `popup` is at "about:blank", with expected origin, with
   // working `document.cookie`, and with working subresource loads.
@@ -5267,16 +5270,20 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingTest,
   GURL opener_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), opener_url));
 
-  content::WebContents* popup = nullptr;
+  WebContentsImpl* popup = nullptr;
   {
     WebContentsAddedObserver popup_observer;
     ASSERT_TRUE(ExecJs(shell(), "window.open('about:blank', '_blank')"));
-    popup = popup_observer.GetWebContents();
+    popup = static_cast<WebContentsImpl*>(popup_observer.GetWebContents());
   }
   WaitForLoadStop(popup);
 
-  // Verify that we are not at the initial empty document anymore.
+  // Verify that we are at the synchronously committed about:blank document.
   EXPECT_EQ(1, popup->GetController().GetEntryCount());
+  EXPECT_FALSE(
+      popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
+  EXPECT_TRUE(
+      popup->GetPrimaryFrameTree().root()->is_on_initial_empty_document());
 
   // Verify other about:blank things.
   VerifyResultsOfAboutBlankNavigation(popup->GetMainFrame(),
@@ -5504,7 +5511,11 @@ IN_PROC_BROWSER_TEST_F(
 
   // Double-check that the new shell didn't commit any navigation and that it
   // has an opaque origin.
-  ASSERT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
+  ASSERT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
+  EXPECT_TRUE(new_shell->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
   EXPECT_EQ(GURL(), main_frame->GetLastCommittedURL());
   EXPECT_EQ("null", EvalJs(main_frame, "window.origin"));
 
@@ -5542,14 +5553,14 @@ class BeginNavigationInCommitCallbackInterceptor
     // At this point, the renderer has already committed the RenderFrame, but
     // on the browser side, the RenderFrameHost is still speculative. Begin
     // another navigation, which should cause `this` to be discarded.
-    EXPECT_TRUE(BeginNavigateToURLFromRenderer(frame_tree_node_, url_));
+    EXPECT_TRUE(BeginNavigateToURLFromRenderer(frame_tree_node_.get(), url_));
 
     // Ignore the commit message.
     return false;
   }
 
  private:
-  FrameTreeNode* const frame_tree_node_;
+  const raw_ptr<FrameTreeNode> frame_tree_node_;
   const GURL url_;
 };
 
@@ -5725,7 +5736,7 @@ class DetachChildFrameInCommitCallbackInterceptor
     // IPCs from b.com out of order (since process DidCommitNavigation has been
     // interrupted by this hook).
     ExecuteScriptAsync(
-        frame_tree_node_,
+        frame_tree_node_.get(),
         JsReplace("document.querySelectorAll('iframe')[$1].remove()",
                   child_to_detach_));
 
@@ -5742,7 +5753,7 @@ class DetachChildFrameInCommitCallbackInterceptor
   }
 
  private:
-  FrameTreeNode* const frame_tree_node_;
+  const raw_ptr<FrameTreeNode> frame_tree_node_;
   const int child_to_detach_;
 };
 

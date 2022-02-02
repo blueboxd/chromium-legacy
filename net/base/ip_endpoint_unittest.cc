@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/base/sockaddr_storage.h"
+#include "net/base/sys_addrinfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

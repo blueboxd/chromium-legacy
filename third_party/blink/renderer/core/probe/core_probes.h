@@ -61,6 +61,7 @@ class InspectorIssue;
 
 namespace probe {
 
+class AsyncTaskContext;
 class AsyncTaskId;
 
 class CORE_EXPORT ProbeBase {
@@ -101,6 +102,11 @@ class CORE_EXPORT AsyncTask {
   //   ad_tracking_type: Whether this is reported to the AdTracker.
   AsyncTask(ExecutionContext* context,
             AsyncTaskId* task,
+            const char* step = nullptr,
+            bool enabled = true,
+            AdTrackingType ad_tracking_type = AdTrackingType::kReport);
+  AsyncTask(ExecutionContext* execution_context,
+            AsyncTaskContext* async_context,
             const char* step = nullptr,
             bool enabled = true,
             AdTrackingType ad_tracking_type = AdTrackingType::kReport);
@@ -146,13 +152,19 @@ inline CoreProbeSink* ToCoreProbeSink(EventTarget* event_target) {
                       : nullptr;
 }
 
+// DEPRECATED: Use `AsyncTaskContext::Schedule` instead.
 CORE_EXPORT void AsyncTaskScheduled(ExecutionContext*,
                                     const StringView& name,
                                     AsyncTaskId*);
+// DEPRECATED: Use `AsyncTaskContext::Schedule` instead and manually call
+// `probe::BreakableLocation`.
 CORE_EXPORT void AsyncTaskScheduledBreakable(ExecutionContext*,
                                              const char* name,
                                              AsyncTaskId*);
+// DEPRECATED: Use `AsyncTaskContext::Cancel` instead.
 CORE_EXPORT void AsyncTaskCanceled(ExecutionContext*, AsyncTaskId*);
+// DEPRECATED: Use `AsyncTaskContext::Cancel` instead and manually call
+// `probe::BreakableLocation`.
 CORE_EXPORT void AsyncTaskCanceledBreakable(ExecutionContext*,
                                             const char* name,
                                             AsyncTaskId*);

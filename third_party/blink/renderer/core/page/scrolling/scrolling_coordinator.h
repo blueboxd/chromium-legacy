@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace cc {
@@ -115,7 +116,7 @@ class CORE_EXPORT ScrollingCoordinator final
   // ScrollCallbacks implementation
   void DidCompositorScroll(
       CompositorElementId,
-      const gfx::Vector2dF&,
+      const gfx::PointF&,
       const absl::optional<cc::TargetSnapAreaElementIds>&) override;
   void DidChangeScrollbarsHidden(CompositorElementId, bool hidden) override;
 

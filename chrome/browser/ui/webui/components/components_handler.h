@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/update_client/update_client.h"
@@ -41,6 +42,11 @@ class ComponentsHandler : public content::WebUIMessageHandler,
   // ServiceObserver implementation.
   void OnEvent(Events event, const std::string& id) override;
 
+#if defined(OS_CHROMEOS)
+  // Callback for the "crosUrlComponentsRedirect" message.
+  void HandleCrosUrlComponentsRedirect(const base::ListValue* args);
+#endif
+
  private:
   static std::u16string ComponentEventToString(Events event);
   static std::u16string ServiceStatusToString(
@@ -50,7 +56,7 @@ class ComponentsHandler : public content::WebUIMessageHandler,
   void OnDemandUpdate(const std::string& component_id);
 
   // Weak pointer; injected for testing.
-  component_updater::ComponentUpdateService* const component_updater_;
+  const raw_ptr<component_updater::ComponentUpdateService> component_updater_;
 
   base::ScopedObservation<component_updater::ComponentUpdateService,
                           component_updater::ComponentUpdateService::Observer>

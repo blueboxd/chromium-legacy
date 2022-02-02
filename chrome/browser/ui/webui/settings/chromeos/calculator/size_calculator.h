@@ -10,6 +10,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/arc/mojom/storage_manager.mojom.h"
+#include "ash/components/arc/session/connection_observer.h"
+#include "ash/components/arc/storage_manager/arc_storage_manager.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
@@ -17,9 +20,6 @@
 #include "chrome/browser/browsing_data/site_data_size_collector.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
-#include "components/arc/mojom/storage_manager.mojom.h"
-#include "components/arc/session/connection_observer.h"
-#include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
 
 class Profile;
@@ -103,7 +103,7 @@ class TotalDiskSpaceCalculator : public SizeCalculator {
 
   void GetRootDeviceSize();
 
-  void OnGetRootDeviceSize(absl::optional<uint64_t> reply);
+  void OnGetRootDeviceSize(absl::optional<int64_t> reply);
 
   void GetTotalDiskSpace();
 

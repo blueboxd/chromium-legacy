@@ -10,4 +10,10 @@
 // Represents the NTP collection view.
 extern NSString* const kNTPCollectionViewIdentifier;
 
+// Represents the incognito NTP view.
+extern NSString* const kNTPIncognitoViewIdentifier;
+
+// Represents the menu button of the feed header.
+extern NSString* const kNTPFeedHeaderButtonIdentifier;
+
 #endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_CONSTANTS_H_

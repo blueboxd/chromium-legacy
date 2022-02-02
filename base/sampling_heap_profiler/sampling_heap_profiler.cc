@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/sampling_heap_profiler/lock_free_address_hash_set.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"  // no-presubmit-check
 #include "build/build_config.h"
@@ -80,6 +81,18 @@ const char* UpdateAndGetThreadName(const char* name) {
   return thread_name;
 }
 
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+// Checks whether unwinding from this function works.
+bool HasDefaultUnwindTables() {
+  void* stack[kMaxStackEntries];
+  size_t frame_count = base::debug::CollectStackTrace(const_cast<void**>(stack),
+                                                      kMaxStackEntries);
+  // First frame is the current function and can be found without unwind tables.
+  return frame_count > 1;
+}
+#endif
+
 }  // namespace
 
 SamplingHeapProfiler::Sample::Sample(size_t size,
@@ -101,8 +114,13 @@ uint32_t SamplingHeapProfiler::Start() {
     defined(OFFICIAL_BUILD)
   if (!trace_event::CFIBacktraceAndroid::GetInitializedInstance()
            ->can_unwind_stack_frames()) {
-    LOG(WARNING) << "Sampling heap profiler: Stack unwinding is not available.";
-    return 0;
+    if (HasDefaultUnwindTables()) {
+      use_default_unwinder_ = true;
+    } else {
+      LOG(WARNING)
+          << "Sampling heap profiler: Stack unwinding is not available.";
+      return 0;
+    }
   }
 #endif
 
@@ -139,7 +157,6 @@ const char* SamplingHeapProfiler::CachedThreadName() {
   return UpdateAndGetThreadName(nullptr);
 }
 
-// static
 void** SamplingHeapProfiler::CaptureStackTrace(void** frames,
                                                size_t max_entries,
                                                size_t* count) {
@@ -147,9 +164,15 @@ void** SamplingHeapProfiler::CaptureStackTrace(void** frames,
   size_t skip_frames = 3;
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
     defined(OFFICIAL_BUILD)
-  size_t frame_count =
-      base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
-          const_cast<const void**>(frames), max_entries);
+  size_t frame_count = 0;
+  if (use_default_unwinder_) {
+    frame_count =
+        base::debug::CollectStackTrace(const_cast<void**>(frames), max_entries);
+  } else {
+    frame_count =
+        base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
+            ->Unwind(const_cast<const void**>(frames), max_entries);
+  }
 #elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
   size_t frame_count = base::debug::TraceStackFramePointers(
       const_cast<const void**>(frames), max_entries, skip_frames);
@@ -181,6 +204,14 @@ void SamplingHeapProfiler::SampleAdded(
   sample.allocator = type;
   CaptureNativeStack(context, &sample);
   AutoLock lock(mutex_);
+  if (UNLIKELY(PoissonAllocationSampler::AreHookedSamplesMuted() &&
+               type != PoissonAllocationSampler::kManualForTesting)) {
+    // Throw away any non-test samples that were being collected before
+    // ScopedMuteHookedSamplesForTesting was enabled. This is done inside the
+    // lock to catch any samples that were being collected while
+    // ClearSamplesForTesting is running.
+    return;
+  }
   RecordString(sample.context);
   samples_.emplace(address, std::move(sample));
 }
@@ -253,6 +284,16 @@ SamplingHeapProfiler* SamplingHeapProfiler::Get() {
 
 void SamplingHeapProfiler::OnThreadNameChanged(const char* name) {
   UpdateAndGetThreadName(name);
+}
+
+void SamplingHeapProfiler::ClearSamplesForTesting() {
+  DCHECK(PoissonAllocationSampler::AreHookedSamplesMuted());
+  base::AutoLock lock(mutex_);
+  samples_.clear();
+  // Since hooked samples are muted, any samples that are waiting to take the
+  // lock in SampleAdded will be discarded. Tests can now call
+  // PoissonAllocationSampler::RecordAlloc with allocator type kManualForTesting
+  // to add samples cleanly.
 }
 
 }  // namespace base

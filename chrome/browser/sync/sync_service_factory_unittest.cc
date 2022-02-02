@@ -46,6 +46,10 @@ class SyncServiceFactoryTest : public testing::Test {
     app_list::AppListSyncableServiceFactory::SetUseInTesting(true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     TestingProfile::Builder builder;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Only the main profile enables syncer::WEB_APPS.
+    builder.SetIsMainProfile(true);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
     builder.AddTestingFactory(FaviconServiceFactory::GetInstance(),
                               FaviconServiceFactory::GetDefaultFactory());
     builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),

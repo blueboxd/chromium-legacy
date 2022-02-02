@@ -21,6 +21,7 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_math.h"
@@ -41,6 +42,7 @@
 #include "gpu/command_buffer/client/raster_cmd_helper.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -222,7 +224,7 @@ class RasterImplementation::TransferCacheSerializeHelperImpl final
     return bytes_to_write;
   }
 
-  RasterImplementation* const ri_;
+  const raw_ptr<RasterImplementation> ri_;
   uint32_t end_offset_of_last_inlined_entry_ = 0u;
 };
 
@@ -340,16 +342,16 @@ class RasterImplementation::PaintOpSerializer {
   bool valid() const { return !!buffer_; }
 
  private:
-  RasterImplementation* const ri_;
-  char* buffer_;
-  cc::DecodeStashingImageProvider* const stashing_image_provider_;
-  TransferCacheSerializeHelperImpl* const transfer_cache_helper_;
-  ClientFontManager* font_manager_;
+  const raw_ptr<RasterImplementation> ri_;
+  raw_ptr<char> buffer_;
+  const raw_ptr<cc::DecodeStashingImageProvider> stashing_image_provider_;
+  const raw_ptr<TransferCacheSerializeHelperImpl> transfer_cache_helper_;
+  raw_ptr<ClientFontManager> font_manager_;
 
   uint32_t written_bytes_ = 0;
   uint32_t free_bytes_ = 0;
 
-  size_t* max_op_size_hint_;
+  raw_ptr<size_t> max_op_size_hint_;
 };
 
 RasterImplementation::SingleThreadChecker::SingleThreadChecker(
@@ -386,7 +388,7 @@ struct RasterImplementation::AsyncARGBReadbackRequest {
     std::move(callback).Run(kTopLeft_GrSurfaceOrigin, readback_successful);
   }
 
-  void* dst_pixels;
+  raw_ptr<void> dst_pixels;
   GLuint dst_size;
   GLuint pixels_offset;
   std::unique_ptr<ScopedMappedMemoryPtr> shared_memory;
@@ -455,15 +457,15 @@ struct RasterImplementation::AsyncYUVReadbackRequest {
 
   int y_plane_stride;
   GLuint y_plane_offset;
-  uint8_t* y_plane_data;
+  raw_ptr<uint8_t> y_plane_data;
 
   int u_plane_stride;
   GLuint u_plane_offset;
-  uint8_t* u_plane_data;
+  raw_ptr<uint8_t> u_plane_data;
 
   int v_plane_stride;
   GLuint v_plane_offset;
-  uint8_t* v_plane_data;
+  raw_ptr<uint8_t> v_plane_data;
 
   std::unique_ptr<ScopedMappedMemoryPtr> shared_memory;
   base::OnceCallback<void()> release_mailbox;
@@ -503,7 +505,8 @@ RasterImplementation::RasterImplementation(
       lost_(false),
       max_inlined_entry_size_(kMaxTransferCacheEntrySizeForTransferBuffer),
       transfer_cache_(this),
-      image_decode_accelerator_(image_decode_accelerator) {
+      image_decode_accelerator_(image_decode_accelerator),
+      raw_draw_(features::IsUsingRawDraw()) {
   DCHECK(helper);
   DCHECK(transfer_buffer);
   DCHECK(gpu_control);
@@ -1403,7 +1406,7 @@ void RasterImplementation::RasterCHROMIUM(const cc::DisplayItemList* list,
           GetOrCreatePaintCache(), font_manager_.strike_server(),
           raster_properties_->color_space, raster_properties_->can_use_lcd_text,
           capabilities().context_supports_distance_field_text,
-          capabilities().max_texture_size));
+          capabilities().max_texture_size, raw_draw_));
   if (preserve_recording) {
     serializer.Serialize(&list->paint_op_buffer_, &temp_raster_offsets_,
                          preamble);

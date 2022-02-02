@@ -43,13 +43,14 @@ namespace {
 // Video decoder tests usage message. Make sure to also update the documentation
 // under docs/media/gpu/video_decoder_test_usage.md when making changes here.
 constexpr const char* usage_msg =
-    "usage: video_decode_accelerator_tests\n"
-    "           [-v=<level>] [--vmodule=<config>]\n"
-    "           [--validator_type=(none|md5|ssim)]\n"
-    "           [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]\n"
-    "           [--output_limit=<number>] [--output_folder=<folder>]\n"
-    "           ([--use-legacy]|[--use_vd]|[--use_vd_vda]) [--gtest_help]\n"
-    "           [--help] [<video path>] [<video metadata path>]\n";
+    R"(usage: video_decode_accelerator_tests
+           [-v=<level>] [--vmodule=<config>]
+           [--validator_type=(none|md5|ssim)]
+           [--output_frames=(all|corrupt)] [--output_format=(png|yuv)]
+           [--output_limit=<number>] [--output_folder=<folder>]
+           [--linear_output] ([--use-legacy]|[--use_vd]|[--use_vd_vda])
+           [--gtest_help] [--help] [<video path>] [<video metadata path>]
+)";
 
 // Video decoder tests help message.
 constexpr const char* help_msg =
@@ -74,6 +75,11 @@ constexpr const char* help_msg =
     "  --use_vd_vda         use the new VD-based video decoders with a\n"
     "                       wrapper that translates to the VDA interface,\n"
     "                       used to test interaction with older components\n"
+    "  --linear_output      use linear buffers as the final output of the\n"
+    "                       decoder which may require the use of an image\n"
+    "                       processor internally. This flag only works in\n"
+    "                       conjunction with --use_vd_vda.\n"
+    "                       Disabled by default.\n"
     "  --output_frames      write the selected video frames to disk, possible\n"
     "                       values are \"all|corrupt\".\n"
     "  --output_format      set the format of frames saved to disk, supported\n"
@@ -155,6 +161,7 @@ class VideoDecoderTest : public ::testing::Test {
         base::NumberToString(g_env->Video()->FrameRate()));
 
     config.implementation = g_env->GetDecoderImplementation();
+    config.linear_output = g_env->ShouldOutputLinearBuffers();
 
     auto video_player = VideoPlayer::Create(
         config, g_env->GetGpuMemoryBufferFactory(), std::move(frame_renderer),
@@ -206,7 +213,7 @@ class VideoDecoderTest : public ::testing::Test {
     if (!init_success)
       return false;
     auto encoded_data_helper =
-        std::make_unique<EncodedDataHelper>(video->Data(), video->Profile());
+        std::make_unique<EncodedDataHelper>(video->Data(), video->Codec());
     DCHECK(encoded_data_helper);
     while (!encoded_data_helper->ReachEndOfStream()) {
       bool decode_success = false;
@@ -380,6 +387,30 @@ TEST_F(VideoDecoderTest, ResetAfterFirstConfigInfo) {
   EXPECT_TRUE(tvp->WaitForFrameProcessors());
 }
 
+TEST_F(VideoDecoderTest, ResolutionChangeAbortedByReset) {
+  if (g_env->GetDecoderImplementation() != DecoderImplementation::kVDVDA)
+    GTEST_SKIP();
+
+  auto tvp = CreateVideoPlayer(g_env->Video());
+
+  tvp->PlayUntil(VideoPlayerEvent::kNewBuffersRequested);
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kNewBuffersRequested));
+
+  // TODO(b/192523692): Add a new test case that continues passing input buffers
+  // between the resolution change has been aborted and resetting the decoder.
+
+  tvp->Reset();
+  EXPECT_TRUE(tvp->WaitForResetDone());
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForFlushDone());
+
+  EXPECT_EQ(tvp->GetResetDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(tvp->GetFrameDecodedCount(), g_env->Video()->NumFrames());
+  EXPECT_TRUE(tvp->WaitForFrameProcessors());
+}
+
 // Play video from start to end. Multiple buffer decodes will be queued in the
 // decoder, without waiting for the result of the previous decode requests.
 TEST_F(VideoDecoderTest, FlushAtEndOfStream_MultipleOutstandingDecodes) {
@@ -496,6 +527,7 @@ int main(int argc, char** argv) {
   bool use_legacy = false;
   bool use_vd = false;
   bool use_vd_vda = false;
+  bool linear_output = false;
   media::test::DecoderImplementation implementation =
       media::test::DecoderImplementation::kVD;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
@@ -561,6 +593,8 @@ int main(int argc, char** argv) {
     } else if (it->first == "use_vd_vda") {
       use_vd_vda = true;
       implementation = media::test::DecoderImplementation::kVDVDA;
+    } else if (it->first == "linear_output") {
+      linear_output = true;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -583,6 +617,12 @@ int main(int argc, char** argv) {
               << media::test::usage_msg;
     return EXIT_FAILURE;
   }
+  if (linear_output && !use_vd_vda) {
+    std::cout << "--linear_output must be used with the VDVDA (--use_vd_vda)\n"
+                 "implementation.\n"
+              << media::test::usage_msg;
+    return EXIT_FAILURE;
+  }
 
   testing::InitGoogleTest(&argc, argv);
 
@@ -601,7 +641,7 @@ int main(int argc, char** argv) {
   media::test::VideoPlayerTestEnvironment* test_environment =
       media::test::VideoPlayerTestEnvironment::Create(
           video_path, video_metadata_path, validator_type, implementation,
-          base::FilePath(output_folder), frame_output_config);
+          linear_output, base::FilePath(output_folder), frame_output_config);
   if (!test_environment)
     return EXIT_FAILURE;
 

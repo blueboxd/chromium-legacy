@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -1062,7 +1063,7 @@ class CheckExtensionInstalledObserver
 
  private:
   bool seen_;
-  extensions::ExtensionRegistry* registry_;
+  raw_ptr<extensions::ExtensionRegistry> registry_;
 };
 
 }  // namespace
@@ -1293,7 +1294,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest,
                        MAYBE_IncognitoComponentApp) {
   // Get the file manager app.
   const Extension* file_manager = extension_registry()->GetExtensionById(
-      "hhaomjibdihmijegdhdafkllkbggdgoj", ExtensionRegistry::ENABLED);
+      extension_misc::kFilesManagerAppId, ExtensionRegistry::ENABLED);
   ASSERT_TRUE(file_manager != NULL);
   Profile* incognito_profile =
       profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true);

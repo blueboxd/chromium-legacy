@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD:infra/config/generated/builders/ci/linux-ozone-rel/properties.textpb
   "$build/chromium_tests": {
     "project_trigger_overrides": {
       "chromium": "chromium-m96"
@@ -10,6 +11,12 @@
     "rpc_extra_params": "?prod",
     "server_host": "goma.chromium.org",
     "use_luci_auth": true
+=======
+  "$build/reclient": {
+    "instance": "rbe-chromium-trusted",
+    "jobs": 250,
+    "metrics_project": "chromium-reclient-metrics"
+>>>>>>> a2b2a8d987fdc9b77b737dbea6daa8985296a3b3:infra/config/generated/builders/ci/Linux Builder (dbg)(32)/properties.textpb
   },
   "$kitchen": {
     "devshell": true,
@@ -25,6 +32,10 @@
   "builder_group": "chromium.linux",
   "recipe": "chromium",
   "sheriff_rotations": [
+<<<<<<< HEAD:infra/config/generated/builders/ci/linux-ozone-rel/properties.textpb
     "chrome_browser_release"
+=======
+    "chromium"
+>>>>>>> a2b2a8d987fdc9b77b737dbea6daa8985296a3b3:infra/config/generated/builders/ci/Linux Builder (dbg)(32)/properties.textpb
   ]
 }

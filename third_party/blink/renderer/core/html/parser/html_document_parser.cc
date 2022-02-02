@@ -29,8 +29,10 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -58,8 +60,8 @@
 #include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -664,17 +666,17 @@ void HTMLDocumentParser::RunScriptsForPausedTreeBuilder() {
 
 HTMLDocumentParser::NextTokenStatus HTMLDocumentParser::CanTakeNextToken() {
   if (IsStopped())
-    return NoTokens;
+    return kNoTokens;
 
   // If we're paused waiting for a script, we try to execute scripts before
   // continuing.
-  auto ret = HaveTokens;
+  auto ret = kHaveTokens;
   if (tree_builder_->HasParserBlockingScript()) {
     RunScriptsForPausedTreeBuilder();
-    ret = HaveTokensAfterScript;
+    ret = kHaveTokensAfterScript;
   }
   if (IsStopped() || IsPaused())
-    return NoTokens;
+    return kNoTokens;
   return ret;
 }
 
@@ -1020,10 +1022,10 @@ bool HTMLDocumentParser::PumpTokenizer() {
   unsigned tokens_parsed = 0;
   while (!should_yield) {
     const auto next_token_status = CanTakeNextToken();
-    if (next_token_status == NoTokens) {
+    if (next_token_status == kNoTokens) {
       // No tokens left to process in this pump, so break
       break;
-    } else if (next_token_status == HaveTokensAfterScript &&
+    } else if (next_token_status == kHaveTokensAfterScript &&
                task_runner_state_->HaveExitedHeader()) {
       // Just executed a parser-blocking script in the body. We'd probably like
       // to yield at some point soon, especially if we're in "extended budget"
@@ -1052,7 +1054,7 @@ bool HTMLDocumentParser::PumpTokenizer() {
   }
 
 
-  if (IsStopped()) {
+  if (IsStopped() || IsParsingFragment()) {
     if (metrics_reporter_ && tokens_parsed) {
       metrics_reporter_->AddChunk(chunk_parsing_timer_.Elapsed(),
                                   tokens_parsed);
@@ -1500,6 +1502,14 @@ TextPosition HTMLDocumentParser::GetTextPosition() const {
 }
 
 bool HTMLDocumentParser::IsWaitingForScripts() const {
+  if (IsParsingFragment()) {
+    // HTMLTreeBuilder may have a parser blocking script element, but we
+    // ignore it during fragment parsing.
+    DCHECK(!(tree_builder_->HasParserBlockingScript() || (script_runner_ &&
+    script_runner_->HasParserBlockingScript()) || reentry_permit_->ParserPauseFlag()));
+    return false;
+  }
+
   // When the TreeBuilder encounters a </script> tag, it returns to the
   // HTMLDocumentParser where the script is transfered from the treebuilder to
   // the script runner. The script runner will hold the script until its loaded
@@ -1762,6 +1772,7 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::CreatePreloadScanner(
 void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
   TRACE_EVENT0("blink", "HTMLDocumentParser::ScanAndPreload");
   DCHECK(preloader_);
+  base::ElapsedTimer timer;
   bool seen_csp_meta_tag = false;
   absl::optional<ViewportDescription> viewport_description;
   PreloadRequestStream requests =
@@ -1800,6 +1811,9 @@ void HTMLDocumentParser::ScanAndPreload(HTMLPreloadScanner* scanner) {
     queued_preloads_.push_back(std::move(request));
   }
   FetchQueuedPreloads();
+  base::UmaHistogramTimes(
+      base::StrCat({"Blink.ScanAndPreloadTime", GetPreloadHistogramSuffix()}),
+      timer.Elapsed());
 }
 
 void HTMLDocumentParser::FetchQueuedPreloads() {
@@ -1811,12 +1825,25 @@ void HTMLDocumentParser::FetchQueuedPreloads() {
       return;
   }
 
-  if (!queued_preloads_.IsEmpty())
+  if (!queued_preloads_.IsEmpty()) {
+    base::ElapsedTimer timer;
     preloader_->TakeAndPreload(queued_preloads_);
+    base::UmaHistogramTimes(base::StrCat({"Blink.FetchQueuedPreloadsTime",
+                                          GetPreloadHistogramSuffix()}),
+                            timer.Elapsed());
+  }
   if (auto* subresource_redirect_origins_preloader =
           SubresourceRedirectOriginsPreloader::From(*GetDocument())) {
     subresource_redirect_origins_preloader->PreloadOriginsNow();
   }
+}
+
+std::string HTMLDocumentParser::GetPreloadHistogramSuffix() {
+  bool is_main_frame = GetDocument() && GetDocument()->GetFrame() &&
+                       GetDocument()->GetFrame()->IsMainFrame();
+  bool have_seen_first_byte = task_runner_state_->HaveSeenFirstByte();
+  return base::StrCat({is_main_frame ? ".MainFrame" : ".Subframe",
+                       have_seen_first_byte ? ".NonInitial" : ".Initial"});
 }
 
 }  // namespace blink

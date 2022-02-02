@@ -8,21 +8,28 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/app_list/test_app_list_client.h"
+#include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/app_list_test_api.h"
+#include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_widget_builder.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
@@ -68,7 +75,8 @@ size_t NumberOfWidgetsInAppListContainer() {
 
 class AppListBubblePresenterTest : public AshTestBase {
  public:
-  AppListBubblePresenterTest() {
+  AppListBubblePresenterTest()
+      : assistant_test_api_(AssistantTestApi::Create()) {
     scoped_features_.InitAndEnableFeature(features::kProductivityLauncher);
   }
   ~AppListBubblePresenterTest() override = default;
@@ -92,6 +100,7 @@ class AppListBubblePresenterTest : public AshTestBase {
   }
 
   base::test::ScopedFeatureList scoped_features_;
+  std::unique_ptr<AssistantTestApi> assistant_test_api_;
 };
 
 TEST_F(AppListBubblePresenterTest, ShowOpensOneWidgetInAppListContainer) {
@@ -99,6 +108,16 @@ TEST_F(AppListBubblePresenterTest, ShowOpensOneWidgetInAppListContainer) {
   presenter->Show(GetPrimaryDisplay().id());
 
   EXPECT_EQ(1u, NumberOfWidgetsInAppListContainer());
+}
+
+TEST_F(AppListBubblePresenterTest, ShowStartsZeroStateSearch) {
+  AppListBubblePresenter* presenter = GetBubblePresenter();
+  presenter->Show(GetPrimaryDisplay().id());
+  EXPECT_EQ(1, GetTestAppListClient()->start_zero_state_search_count());
+
+  presenter->Dismiss();
+  presenter->Show(GetPrimaryDisplay().id());
+  EXPECT_EQ(2, GetTestAppListClient()->start_zero_state_search_count());
 }
 
 TEST_F(AppListBubblePresenterTest, ShowRecordsCreationTimeHistogram) {
@@ -154,6 +173,7 @@ TEST_F(AppListBubblePresenterTest, BubbleIsNotShowingByDefault) {
   AppListBubblePresenter* presenter = GetBubblePresenter();
 
   EXPECT_FALSE(presenter->IsShowing());
+  EXPECT_FALSE(presenter->GetWindow());
 }
 
 TEST_F(AppListBubblePresenterTest, BubbleIsShowingAfterShow) {
@@ -161,6 +181,7 @@ TEST_F(AppListBubblePresenterTest, BubbleIsShowingAfterShow) {
   presenter->Show(GetPrimaryDisplay().id());
 
   EXPECT_TRUE(presenter->IsShowing());
+  EXPECT_TRUE(presenter->GetWindow());
 }
 
 TEST_F(AppListBubblePresenterTest, BubbleIsNotShowingAfterDismiss) {
@@ -169,6 +190,71 @@ TEST_F(AppListBubblePresenterTest, BubbleIsNotShowingAfterDismiss) {
   presenter->Dismiss();
 
   EXPECT_FALSE(presenter->IsShowing());
+  EXPECT_FALSE(presenter->GetWindow());
+}
+
+TEST_F(AppListBubblePresenterTest, CannotShowWhileAnimatingClosed) {
+  AppListBubblePresenter* presenter = GetBubblePresenter();
+  presenter->Show(GetPrimaryDisplay().id());
+
+  // Enable animations.
+  base::test::ScopedFeatureList features(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  WidgetDestroyedWaiter waiter(presenter->bubble_widget_for_test());
+  presenter->Dismiss();
+  // Widget is still showing because it is animating closed.
+  EXPECT_TRUE(presenter->IsShowing());
+
+  // Attempt to abort the dismiss by showing again.
+  presenter->Show(GetPrimaryDisplay().id());
+
+  // Widget closes anyway.
+  waiter.Wait();
+  EXPECT_EQ(0u, NumberOfWidgetsInAppListContainer());
+}
+
+// Regression test for https://crbug.com/1275755
+TEST_F(AppListBubblePresenterTest, AssistantKeyOpensToAssistantPage) {
+  // Simulate production behavior for animations, assistant, and zero-state
+  // search results.
+  base::test::ScopedFeatureList features(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  assistant_test_api_->EnableAssistantAndWait();
+  GetTestAppListClient()->set_run_zero_state_callback_immediately(false);
+
+  PressAndReleaseKey(ui::VKEY_ASSISTANT);
+  AppListTestApi().WaitForBubbleWindow(/*wait_for_opening_animation=*/false);
+
+  AppListBubblePresenter* presenter = GetBubblePresenter();
+  EXPECT_TRUE(presenter->IsShowing());
+  EXPECT_FALSE(
+      presenter->bubble_view_for_test()->apps_page_for_test()->GetVisible());
+  EXPECT_TRUE(presenter->IsShowingEmbeddedAssistantUI());
+}
+
+TEST_F(AppListBubblePresenterTest, SearchKeyOpensToAppsPage) {
+  // Simulate production behavior for animations, assistant, and zero-state
+  // search results.
+  base::test::ScopedFeatureList features(
+      features::kProductivityLauncherAnimation);
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  assistant_test_api_->EnableAssistantAndWait();
+  GetTestAppListClient()->set_run_zero_state_callback_immediately(false);
+
+  PressAndReleaseKey(ui::VKEY_LWIN);  // Search key.
+  AppListTestApi().WaitForBubbleWindow(/*wait_for_opening_animation=*/false);
+
+  AppListBubblePresenter* presenter = GetBubblePresenter();
+  EXPECT_TRUE(presenter->IsShowing());
+  EXPECT_TRUE(
+      presenter->bubble_view_for_test()->apps_page_for_test()->GetVisible());
+  EXPECT_FALSE(presenter->IsShowingEmbeddedAssistantUI());
 }
 
 TEST_F(AppListBubblePresenterTest, DoesNotCrashWhenNativeWidgetDestroyed) {
@@ -231,6 +317,44 @@ TEST_F(AppListBubblePresenterTest, ClickInCornerOfScreenClosesBubble) {
 
   // Bubble is closed (and did not reopen).
   EXPECT_EQ(0u, NumberOfWidgetsInAppListContainer());
+}
+
+// Regression test for https://crbug.com/1268220.
+TEST_F(AppListBubblePresenterTest, CreatingActiveWidgetClosesBubble) {
+  AppListBubblePresenter* presenter = GetBubblePresenter();
+  presenter->Show(GetPrimaryDisplay().id());
+
+  // Create a new widget, which will activate itself and deactivate the bubble.
+  std::unique_ptr<views::Widget> widget =
+      TestWidgetBuilder().SetShow(true).BuildOwnsNativeWidget();
+  EXPECT_TRUE(widget->IsActive());
+
+  // Bubble is closed.
+  EXPECT_FALSE(presenter->IsShowing());
+}
+
+// Regression test for https://crbug.com/1268220.
+TEST_F(AppListBubblePresenterTest, CreatingChildWidgetDoesNotCloseBubble) {
+  AppListBubblePresenter* presenter = GetBubblePresenter();
+  presenter->Show(GetPrimaryDisplay().id());
+
+  // Create a new widget parented to the bubble, similar to an app uninstall
+  // confirmation dialog.
+  aura::Window* bubble_window =
+      presenter->bubble_widget_for_test()->GetNativeWindow();
+  std::unique_ptr<views::Widget> widget = TestWidgetBuilder()
+                                              .SetShow(true)
+                                              .SetParent(bubble_window)
+                                              .BuildOwnsNativeWidget();
+
+  // Bubble stays open.
+  EXPECT_TRUE(presenter->IsShowing());
+
+  // Close the widget.
+  widget.reset();
+
+  // Bubble stays open.
+  EXPECT_TRUE(presenter->IsShowing());
 }
 
 TEST_F(AppListBubblePresenterTest, BubbleOpensInBottomLeftForBottomShelf) {

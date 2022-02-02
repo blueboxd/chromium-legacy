@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -21,7 +22,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -192,7 +192,7 @@ TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
   const base::TimeDelta new_delay = kDefaultStatusUploadDelay * 2;
 
   scoped_testing_cros_settings_.device_settings()->SetInteger(
-      chromeos::kReportUploadFrequency, new_delay.InMilliseconds());
+      ash::kReportUploadFrequency, new_delay.InMilliseconds());
   EXPECT_FALSE(task_runner_->HasPendingTask());
   auto uploader = CreateStatusUploader();
   ASSERT_EQ(1U, task_runner_->NumPendingTasks());
@@ -287,7 +287,7 @@ TEST_F(StatusUploaderTest, ChangeFrequency) {
   // used for the next callback.
   const base::TimeDelta new_delay = kDefaultStatusUploadDelay * 2;
   scoped_testing_cros_settings_.device_settings()->SetInteger(
-      chromeos::kReportUploadFrequency, new_delay.InMilliseconds());
+      ash::kReportUploadFrequency, new_delay.InMilliseconds());
   RunPendingUploadTaskAndCheckNext(*uploader, new_delay,
                                    true /* upload_success */);
 }

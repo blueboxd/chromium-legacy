@@ -548,9 +548,6 @@ WGPUStoreOp AsDawnEnum<WGPUStoreOp>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "discard") {
     return WGPUStoreOp_Discard;
   }
-  if (webgpu_enum == "clear") {
-    return WGPUStoreOp_Discard;
-  }
   NOTREACHED();
   return WGPUStoreOp_Force32;
 }
@@ -858,9 +855,6 @@ WGPUTextureAspect AsDawnEnum<WGPUTextureAspect>(
 
 template <>
 WGPUErrorFilter AsDawnEnum<WGPUErrorFilter>(const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "none") {
-    return WGPUErrorFilter_None;
-  }
   if (webgpu_enum == "out-of-memory") {
     return WGPUErrorFilter_OutOfMemory;
   }

@@ -22,13 +22,10 @@ import '../privacy_page/collapse_radio_button.js';
 import '../settings_shared_css.js';
 import '../site_favicon.js';
 
-import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.js';
-
-import {SiteSettingsMixin, SiteSettingsMixinInterface} from './site_settings_mixin.js';
+import {SiteSettingsMixin} from './site_settings_mixin.js';
 
 /**
  * All possible actions in the menu.
@@ -79,10 +76,16 @@ interface AppRepeaterEvent extends Event {
   }
 }
 
+export interface ProtocolHandlersElement {
+  $: {
+    defaultButton: HTMLButtonElement,
+  };
+}
+
 const ProtocolHandlersElementBase =
     WebUIListenerMixin(SiteSettingsMixin(PolymerElement));
 
-class ProtocolHandlersElement extends ProtocolHandlersElementBase {
+export class ProtocolHandlersElement extends ProtocolHandlersElementBase {
   static get is() {
     return 'protocol-handlers';
   }
@@ -101,12 +104,22 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
       /**
        * Array of allowed app protocols and their handlers.
        */
-      appAllowedProtocols: Array,
+      appAllowedProtocols: {
+        type: Array,
+        value() {
+          return [];
+        },
+      },
 
       /**
        * Array of disallowed app protocols and their handlers.
        */
-      appDisallowedProtocols: Array,
+      appDisallowedProtocols: {
+        type: Array,
+        value() {
+          return [];
+        },
+      },
 
       /**
        * Used to determine if the apps title should be shown.
@@ -309,6 +322,12 @@ class ProtocolHandlersElement extends ProtocolHandlersElementBase {
     this.actionMenuModel_ = event.model.item;
     this.shadowRoot!.querySelector('cr-action-menu')!.showAt(
         event.target as HTMLElement);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'protocol-handlers': ProtocolHandlersElement;
   }
 }
 

@@ -5,7 +5,6 @@
 #ifndef PPAPI_HOST_RESOURCE_MESSAGE_FILTER_H_
 #define PPAPI_HOST_RESOURCE_MESSAGE_FILTER_H_
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/host/host_message_context.h"
@@ -93,6 +92,9 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
   ResourceMessageFilter(
       scoped_refptr<base::SingleThreadTaskRunner> reply_thread_task_runner);
 
+  ResourceMessageFilter(const ResourceMessageFilter&) = delete;
+  ResourceMessageFilter& operator=(const ResourceMessageFilter&) = delete;
+
   // Called when a filter is added to a ResourceHost.
   void OnFilterAdded(ResourceHost* resource_host);
   // Called when a filter is removed from a ResourceHost.
@@ -143,8 +145,6 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
   // ResourceHost when |OnFilterAdded| is called. When the owning ResourceHost
   // is destroyed, |OnFilterDestroyed| is called and this will be set to NULL.
   ResourceHost* resource_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };
 
 }  // namespace host

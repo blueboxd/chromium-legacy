@@ -242,7 +242,10 @@
                      focusOmnibox:NO
                      closeTabGrid:NO];
       } else {
-        [self showTabViewController:nil shouldCloseTabGrid:NO completion:nil];
+        [self showTabViewController:nil
+                          incognito:NO
+                 shouldCloseTabGrid:NO
+                         completion:nil];
       }
     }
   }
@@ -261,6 +264,7 @@
   // A modal may be presented on top of the Recent Tabs or tab grid.
   [self.baseViewController dismissModals];
   self.baseViewController.tabGridMode = TabGridModeNormal;
+  [self showFullscreen:NO];
 
   [self dismissPopovers];
 
@@ -292,8 +296,10 @@
 
 - (BOOL)isTabGridActive {
   if (self.isThumbStripEnabled) {
-    return self.thumbStripCoordinator.panHandler.currentState ==
-           ViewRevealState::Revealed;
+    ViewRevealState currentState =
+        self.thumbStripCoordinator.panHandler.currentState;
+    return currentState == ViewRevealState::Revealed ||
+           currentState == ViewRevealState::Fullscreen;
   }
   return self.bvcContainer == nil && !self.firstPresentation;
 }
@@ -373,6 +379,7 @@
 }
 
 - (void)showTabViewController:(UIViewController*)viewController
+                    incognito:(BOOL)incognito
            shouldCloseTabGrid:(BOOL)shouldCloseTabGrid
                    completion:(ProceduralBlock)completion {
   bool thumbStripEnabled = self.isThumbStripEnabled;
@@ -388,6 +395,7 @@
 
   if (thumbStripEnabled) {
     self.bvcContainer.currentBVC = viewController;
+    self.bvcContainer.incognito = incognito;
     self.baseViewController.childViewControllerForStatusBarStyle =
         viewController;
     [self.baseViewController setNeedsStatusBarAppearanceUpdate];
@@ -410,6 +418,7 @@
   // container.
   if (self.bvcContainer) {
     self.bvcContainer.currentBVC = viewController;
+    self.bvcContainer.incognito = incognito;
     self.baseViewController.childViewControllerForStatusBarStyle =
         viewController;
     [self.baseViewController setNeedsStatusBarAppearanceUpdate];
@@ -421,6 +430,7 @@
 
   self.bvcContainer = [[BVCContainerViewController alloc] init];
   self.bvcContainer.currentBVC = viewController;
+  self.bvcContainer.incognito = incognito;
 
   BOOL animated = !self.animationsDisabledForTesting;
   // Never animate the first time.
@@ -774,6 +784,7 @@
       if (self.incognitoBrowser->GetWebStateList()->count() == 0) {
         DCHECK([self isThumbStripEnabled]);
         [self showTabViewController:nil
+                          incognito:NO
                  shouldCloseTabGrid:closeTabGrid
                          completion:nil];
         return;
@@ -784,6 +795,7 @@
       if (self.regularBrowser->GetWebStateList()->count() == 0) {
         DCHECK([self isThumbStripEnabled]);
         [self showTabViewController:nil
+                          incognito:NO
                  shouldCloseTabGrid:closeTabGrid
                          completion:nil];
         return;
@@ -793,6 +805,7 @@
     case TabGridPageRemoteTabs:
       if ([self isThumbStripEnabled]) {
         [self showTabViewController:nil
+                          incognito:NO
                  shouldCloseTabGrid:closeTabGrid
                          completion:nil];
         return;
@@ -894,6 +907,20 @@
   id<ApplicationCommands> handler =
       HandlerForProtocol(self.dispatcher, ApplicationCommands);
   [handler openURLInNewTab:[OpenNewTabCommand commandWithURLFromChrome:URL]];
+}
+
+- (void)showFullscreen:(BOOL)fullscreen {
+  if (![self isThumbStripEnabled]) {
+    return;
+  }
+  ViewRevealingVerticalPanHandler* panHandler =
+      self.thumbStripCoordinator.panHandler;
+  if (fullscreen && panHandler.currentState == ViewRevealState::Revealed) {
+    [panHandler setNextState:ViewRevealState::Fullscreen animated:YES];
+  } else if (!fullscreen &&
+             panHandler.currentState == ViewRevealState::Fullscreen) {
+    [panHandler setNextState:ViewRevealState::Revealed animated:YES];
+  }
 }
 
 #pragma mark - RecentTabsPresentationDelegate
@@ -1012,6 +1039,7 @@
   base::RecordAction(
       base::UserMetricsAction("MobileTabGridTabContextMenuSelectTabs"));
   self.baseViewController.tabGridMode = TabGridModeSelection;
+  [self showFullscreen:YES];
 }
 
 - (void)removeSessionAtTableSectionWithIdentifier:(NSInteger)sectionIdentifier {
@@ -1040,6 +1068,7 @@
   if ([self isThumbStripEnabled] && isInPeekState &&
       level <= SceneActivationLevelBackground) {
     [panHandler setNextState:ViewRevealState::Hidden animated:NO];
+    [self dismissPopovers];
   }
 }
 

@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/services/ime/public/mojom/input_method.mojom.h"
 #include "base/feature_list.h"
 #include "base/i18n/i18n_constants.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
+#include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/grammar_service_client.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
@@ -28,7 +30,6 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/ash/input_method_manager.h"
@@ -98,8 +99,7 @@ bool ShouldRouteToNativeMojoEngine(const std::string& engine_id) {
           IsJapaneseEngine(engine_id)) ||
          (features::IsSystemKoreanPhysicalTypingEnabled() &&
           IsKoreanEngine(engine_id)) ||
-         (features::IsSystemLatinPhysicalTypingEnabled() &&
-          IsFstEngine(engine_id));
+         IsFstEngine(engine_id);
 }
 
 bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
@@ -112,9 +112,13 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
   return autocorrect_setting && autocorrect_setting->GetIfInt().value_or(0) > 0;
 }
 
+bool IsLacrosEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
+}
+
 bool IsPredictiveWritingEnabled(PrefService* pref_service,
                                 const std::string& engine_id) {
-  return (features::IsAssistiveMultiWordEnabled() &&
+  return (!IsLacrosEnabled() && features::IsAssistiveMultiWordEnabled() &&
           pref_service->GetBoolean(prefs::kAssistPredictiveWritingEnabled) &&
           IsUsEnglishEngine(engine_id));
 }
@@ -444,11 +448,27 @@ void OnError(base::Time start) {
   }
 }
 
+InputFieldContext CreateInputFieldContext(AssistiveSuggester* suggester) {
+  return InputFieldContext{
+      .lacros_enabled = IsLacrosEnabled(),
+      .multiword_enabled = features::IsAssistiveMultiWordEnabled(),
+      .multiword_allowed =
+          suggester
+              ? suggester->IsAssistiveFeatureAllowed(
+                    AssistiveSuggester::AssistiveFeature::kMultiWordSuggestion)
+              : false,
+  };
+}
+
 }  // namespace
 
 NativeInputMethodEngine::NativeInputMethodEngine() = default;
 
 NativeInputMethodEngine::~NativeInputMethodEngine() = default;
+
+NativeInputMethodEngine::NativeInputMethodEngine(
+    std::unique_ptr<AssistiveSuggesterSwitch> suggester_switch)
+    : suggester_switch_(std::move(suggester_switch)) {}
 
 void NativeInputMethodEngine::Initialize(
     std::unique_ptr<InputMethodEngineBase::Observer> observer,
@@ -457,7 +477,10 @@ void NativeInputMethodEngine::Initialize(
   // TODO(crbug/1141231): refactor the mix of unique and raw ptr here.
   std::unique_ptr<AssistiveSuggester> assistive_suggester =
       std::make_unique<AssistiveSuggester>(
-          this, profile, std::make_unique<AssistiveSuggesterClientFilter>());
+          this, profile,
+          suggester_switch_
+              ? std::move(suggester_switch_)
+              : std::make_unique<AssistiveSuggesterClientFilter>());
   assistive_suggester_ = assistive_suggester.get();
   std::unique_ptr<AutocorrectManager> autocorrect_manager =
       std::make_unique<AutocorrectManager>(this);
@@ -555,7 +578,8 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
   // TODO(b/181077907): Always launch the IME service and let IME service decide
   // whether it should shutdown or not.
   if (IsFstEngine(engine_id) && ShouldRouteToNativeMojoEngine(engine_id) &&
-      !IsPhysicalKeyboardAutocorrectEnabled(prefs_, engine_id)) {
+      !IsPhysicalKeyboardAutocorrectEnabled(prefs_, engine_id) &&
+      !IsPredictiveWritingEnabled(prefs_, engine_id)) {
     remote_manager_.reset();
     input_method_.reset();
     host_receiver_.reset();
@@ -625,6 +649,7 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
     const IMEEngineHandlerInterface::InputContext& context) {
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     assistive_suggester_->OnFocus(context_id);
+    assistive_suggester_->RecordTextInputStateMetrics(engine_id);
   }
   autocorrect_manager_->OnFocus(context_id);
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
@@ -632,6 +657,11 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
   }
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
     if (input_method_.is_bound()) {
+      InputFieldContext input_field_context =
+          features::IsAssistiveMultiWordEnabled()
+              ? CreateInputFieldContext(assistive_suggester_.get())
+              : InputFieldContext{};
+
       input_method_->OnFocus(
           mojom::InputFieldInfo::New(
               TextInputTypeToMojoType(context.type),
@@ -639,7 +669,9 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
               context.should_do_learning
                   ? mojom::PersonalizationMode::kEnabled
                   : mojom::PersonalizationMode::kDisabled),
-          prefs_ ? CreateSettingsFromPrefs(*prefs_, engine_id) : nullptr);
+          prefs_
+              ? CreateSettingsFromPrefs(*prefs_, engine_id, input_field_context)
+              : nullptr);
 
       // TODO(b/202224495): Send the surrounding text as part of InputFieldInfo.
       SendSurroundingTextToNativeMojoEngine(last_surrounding_text_);
@@ -647,6 +679,11 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
   } else {
     ime_base_observer_->OnFocus(engine_id, context_id, context);
   }
+}
+
+void NativeInputMethodEngine::ImeObserver::OnTouch(
+    ui::EventPointerType pointerType) {
+  ime_base_observer_->OnTouch(pointerType);
 }
 
 void NativeInputMethodEngine::ImeObserver::OnBlur(const std::string& engine_id,
@@ -703,6 +740,13 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
         std::move(callback).Run(false);
         return;
       }
+
+      // Hot switches to turn on/off certain IME features.
+      if (IsFstEngine(engine_id) && autocorrect_manager_->DisabledByRule()) {
+        std::move(callback).Run(false);
+        return;
+      }
+
       if (filtered) {
         // TODO(b/174612548): Transform the corresponding KEY_RELEASED event to
         // use the composed character as well.
@@ -974,6 +1018,9 @@ void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
   property.cursor_position = window->highlighted_candidate;
   property.page_size = window->candidates.size();
   property.is_vertical = true;
+  property.is_auxiliary_text_visible =
+      window->auxiliary_text.value_or("") != "";
+  property.auxiliary_text = window->auxiliary_text.value_or("");
   candidate_window.SetProperty(property);
 
   GetCandidateWindowHandler()->UpdateLookupTable(candidate_window,

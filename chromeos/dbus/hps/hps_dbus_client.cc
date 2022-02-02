@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/hps/fake_hps_dbus_client.h"
@@ -54,7 +53,12 @@ class HpsDBusClientImpl : public HpsDBusClient {
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&HpsDBusClientImpl::HpsNotifyChangedConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor daemon restarts.
+    hps_proxy_->SetNameOwnerChangedCallback(base::BindRepeating(
+        &HpsDBusClientImpl::NameOwnerChanged, weak_ptr_factory_.GetWeakPtr()));
   }
+
   ~HpsDBusClientImpl() override = default;
 
   HpsDBusClientImpl(const HpsDBusClientImpl&) = delete;
@@ -75,6 +79,17 @@ class HpsDBusClientImpl : public HpsDBusClient {
     }
   }
 
+  // Called with a non-empty |new_owner| when the service is restarted, or an
+  // empty |new_owner| when the service is shutdown.
+  void NameOwnerChanged(const std::string& /* old_owner */,
+                        const std::string& new_owner) {
+    const auto method =
+        new_owner.empty() ? &Observer::OnShutdown : &Observer::OnRestart;
+    for (auto& observer : observers_) {
+      (observer.*method)();
+    }
+  }
+
   // Called when the HpsNotifyChanged signal is initially connected.
   void HpsNotifyChangedConnected(const std::string& /* interface_name */,
                                  const std::string& /* signal_name */,
@@ -83,7 +98,6 @@ class HpsDBusClientImpl : public HpsDBusClient {
   }
 
   // HpsDBusClient:
-
   void GetResultHpsNotify(GetResultHpsNotifyCallback cb) override {
     dbus::MethodCall method_call(hps::kHpsServiceInterface,
                                  hps::kGetResultHpsNotify);
@@ -101,7 +115,49 @@ class HpsDBusClientImpl : public HpsDBusClient {
     observers_.RemoveObserver(observer);
   }
 
+  void EnableHpsSense(const hps::FeatureConfig& config) override {
+    EnableHpsFeature(hps::kEnableHpsSense, config);
+  }
+
+  void DisableHpsSense() override { DisableHpsFeature(hps::kDisableHpsSense); }
+
+  void EnableHpsNotify(const hps::FeatureConfig& config) override {
+    EnableHpsFeature(hps::kEnableHpsNotify, config);
+  }
+
+  void DisableHpsNotify() override {
+    DisableHpsFeature(hps::kDisableHpsNotify);
+  }
+
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
+      override {
+    hps_proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
+
  private:
+  // Send a method call to HpsDBus with given method name and config.
+  void EnableHpsFeature(const std::string& method_name,
+                        const hps::FeatureConfig& config) {
+    dbus::MethodCall method_call(hps::kHpsServiceInterface, method_name);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(config)) {
+      LOG(ERROR) << "Failed to encode protobuf for " << method_name;
+    } else {
+      hps_proxy_->CallMethod(&method_call,
+                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                             base::DoNothing());
+    }
+  }
+
+  // Send a method call to HpsDBus with given method name.
+  void DisableHpsFeature(const std::string& method_name) {
+    dbus::MethodCall method_call(hps::kHpsServiceInterface, method_name);
+    hps_proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                           base::DoNothing());
+  }
+
   dbus::ObjectProxy* const hps_proxy_;
 
   base::ObserverList<Observer> observers_;
@@ -112,7 +168,6 @@ class HpsDBusClientImpl : public HpsDBusClient {
 
 }  // namespace
 
-HpsDBusClient::Observer::Observer() = default;
 HpsDBusClient::Observer::~Observer() = default;
 
 HpsDBusClient::HpsDBusClient() {

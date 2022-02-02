@@ -23,6 +23,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
+#include "ui/strings/grit/ax_strings.h"
 
 namespace {
 
@@ -231,7 +232,7 @@ bool BrowserAccessibilityAndroid::IsContentInvalid() const {
       GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse) {
     // We will not report content as invalid until a certain number of
     // characters have been typed to prevent verbose announcements to the user.
-    return (GetInnerText().length() > kMinimumCharacterCountForInvalid);
+    return (GetTextContentUTF16().length() > kMinimumCharacterCountForInvalid);
   }
 
   return false;
@@ -366,7 +367,7 @@ bool BrowserAccessibilityAndroid::IsVisibleToUser() const {
 bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   // The root is not interesting if it doesn't have a title, even
   // though it's focusable.
-  if (ui::IsPlatformDocument(GetRole()) && GetInnerText().empty())
+  if (ui::IsPlatformDocument(GetRole()) && GetTextContentUTF16().empty())
     return false;
 
   // The root inside a portal is not interesting.
@@ -418,8 +419,8 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   }
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
-  return IsLeaf() &&
-         !base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
+  return IsLeaf() && !base::ContainsOnlyChars(GetTextContentUTF16(),
+                                              base::kWhitespaceUTF16);
 }
 
 bool BrowserAccessibilityAndroid::IsHeadingLink() const {
@@ -565,7 +566,7 @@ bool BrowserAccessibilityAndroid::IsLeaf() const {
     // and allow the child nodes to be set as a leaf.
 
     // Headings with text can drop their children (with exceptions).
-    std::u16string name = GetInnerText();
+    std::u16string name = GetTextContentUTF16();
     if (GetRole() == ax::mojom::Role::kHeading && !name.empty()) {
       return IsLeafConsideringChildren();
     }
@@ -629,7 +630,7 @@ bool BrowserAccessibilityAndroid::IsLeafConsideringChildren() const {
 // the name field in Android dump tree tests.
 // TODO(accessibility) Should it be called GetName() so that engineers not
 // familiar with Android can find it more easily?
-std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
+std::u16string BrowserAccessibilityAndroid::GetTextContentUTF16() const {
   if (ui::IsIframe(GetRole()))
     return std::u16string();
 
@@ -717,8 +718,8 @@ std::u16string BrowserAccessibilityAndroid::GetInnerText() const {
   if (text.empty() && ((HasOnlyTextChildren() && !HasListMarkerChild()) ||
                        (IsFocusable() && HasOnlyTextAndImageChildren()))) {
     for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
-      text +=
-          static_cast<BrowserAccessibilityAndroid*>(it.get())->GetInnerText();
+      text += static_cast<BrowserAccessibilityAndroid*>(it.get())
+                  ->GetTextContentUTF16();
     }
   }
 
@@ -746,7 +747,7 @@ std::u16string BrowserAccessibilityAndroid::GetValueForControl() const {
       // true we should try to expose whatever's actually visually displayed,
       // whether that's the actual password or dots or whatever. To do this
       // we rely on the password field's shadow dom.
-      value = BrowserAccessibility::GetInnerText();
+      value = BrowserAccessibility::GetTextContentUTF16();
     } else if (!manager->ShouldExposePasswordText()) {
       value = std::u16string(value.size(), ui::kSecurePasswordBullet);
     }
@@ -2193,9 +2194,9 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
     std::vector<int32_t>* line_ends,
     int offset) {
   // If this node has no children, treat it as all one line.
-  if (GetInnerText().size() > 0 && !InternalChildCount()) {
+  if (GetTextContentUTF16().size() > 0 && !InternalChildCount()) {
     line_starts->push_back(offset);
-    line_ends->push_back(offset + GetInnerText().size());
+    line_ends->push_back(offset + GetTextContentUTF16().size());
   }
 
   // If this is a static text node, get the line boundaries from the
@@ -2217,7 +2218,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
         line_ends->push_back(offset);
         line_starts->push_back(offset);
       }
-      offset += child->GetInnerText().size();
+      offset += child->GetTextContentUTF16().size();
       last_y = y;
     }
     line_ends->push_back(offset);
@@ -2229,7 +2230,7 @@ void BrowserAccessibilityAndroid::GetLineBoundaries(
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(it.get());
     child->GetLineBoundaries(line_starts, line_ends, offset);
-    offset += child->GetInnerText().size();
+    offset += child->GetTextContentUTF16().size();
   }
 }
 
@@ -2253,11 +2254,11 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibilityAndroid* child =
         static_cast<BrowserAccessibilityAndroid*>(it.get());
-    std::u16string child_text = child->GetInnerText();
-    concatenated_text += child->GetInnerText();
+    std::u16string child_text = child->GetTextContentUTF16();
+    concatenated_text += child->GetTextContentUTF16();
   }
 
-  std::u16string text = GetInnerText();
+  std::u16string text = GetTextContentUTF16();
   if (text.empty() || concatenated_text == text) {
     // Great - this node is just the concatenation of its children, so
     // we can get the word boundaries recursively.
@@ -2265,7 +2266,7 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
       BrowserAccessibilityAndroid* child =
           static_cast<BrowserAccessibilityAndroid*>(it.get());
       child->GetWordBoundaries(word_starts, word_ends, offset);
-      offset += child->GetInnerText().size();
+      offset += child->GetTextContentUTF16().size();
     }
   } else {
     // This node has its own accessible text that doesn't match its
@@ -2330,7 +2331,7 @@ void BrowserAccessibilityAndroid::GetSuggestions(
           suggestion_ends->push_back(suggestion_end);
         }
       }
-      start_offset += node->GetInnerText().length();
+      start_offset += node->GetTextContentUTF16().length();
     }
 
     // Implementation of NextInTreeOrder, but walking the internal tree.
@@ -2561,6 +2562,13 @@ std::u16string BrowserAccessibilityAndroid::GetContentInvalidErrorMessage()
     return content_client->GetLocalizedString(message_id);
 
   return std::u16string();
+}
+
+std::u16string
+BrowserAccessibilityAndroid::GenerateAccessibilityNodeInfoString() const {
+  auto* manager =
+      static_cast<BrowserAccessibilityManagerAndroid*>(this->manager());
+  return manager->GenerateAccessibilityNodeInfoString(unique_id());
 }
 
 }  // namespace content

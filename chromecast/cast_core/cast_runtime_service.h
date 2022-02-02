@@ -17,10 +17,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace network {
 namespace mojom {
 class NetworkContext;
@@ -29,9 +25,9 @@ class NetworkContext;
 
 namespace chromecast {
 
-class CastWindowManager;
-class WebCryptoServer;
 class CastWebService;
+class WebCryptoServer;
+class RuntimeApplication;
 
 namespace media {
 class MediaPipelineBackendManager;
@@ -54,8 +50,7 @@ class CastRuntimeService
 
   static std::unique_ptr<CastRuntimeService> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      content::BrowserContext* browser_context,
-      CastWindowManager* window_manager,
+      CastWebService* web_service,
       media::MediaPipelineBackendManager* media_pipeline_backend_manager,
       NetworkContextGetter network_context_getter,
       PrefService* pref_service,
@@ -72,6 +67,8 @@ class CastRuntimeService
   // Returns a pointer to CastWebService object with lifespan
   // equal to CastRuntimeService main object.
   virtual CastWebService* GetCastWebService();
+  // Returns a pointer to RuntimeApplication.
+  virtual RuntimeApplication* GetRuntimeApplication();
 
   // CastService overrides.
   void InitializeInternal() override;

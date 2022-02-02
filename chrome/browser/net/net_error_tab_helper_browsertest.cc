@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -73,7 +75,7 @@ class NetErrorTabHelperTest : public InProcessBrowserTest {
   }
 
  private:
-  chrome_browser_net::NetErrorTabHelper* tab_helper_ = nullptr;
+  raw_ptr<chrome_browser_net::NetErrorTabHelper> tab_helper_ = nullptr;
 };
 
 class NetErrorTabHelperWithPrerenderingTest : public NetErrorTabHelperTest {
@@ -241,16 +243,12 @@ IN_PROC_BROWSER_TEST_F(NetErrorTabHelperWithFencedFrameTest,
 
 IN_PROC_BROWSER_TEST_F(NetErrorTabHelperWithFencedFrameTest,
                        CanRunDiagnosticsDialogOnFencedFrame) {
-  GURL initial_url =
+  GURL fenced_frame_url =
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
   RenderFrameHost* inner_fenced_frame_rfh =
       fenced_frame_test_helper().CreateFencedFrame(
-          GetWebContents()->GetMainFrame(), initial_url);
-  const GURL fenced_frame_url =
-      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
-  inner_fenced_frame_rfh =
-      fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
-          inner_fenced_frame_rfh, fenced_frame_url);
+          GetWebContents()->GetMainFrame(), fenced_frame_url,
+          net::ERR_NAME_NOT_RESOLVED);
   EvalJsResult result =
       EvalJs(inner_fenced_frame_rfh, kSearchingForDiagnosisScript);
   ASSERT_TRUE(result.error.empty());

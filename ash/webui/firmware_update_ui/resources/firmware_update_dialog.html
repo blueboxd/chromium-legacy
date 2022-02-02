@@ -1,0 +1,88 @@
+<style include="firmware-fonts firmware-shared">
+  :host {
+    --cr-dialog-width: 416px;
+  }
+
+  #cancelButton {
+    margin-inline-end: 12px;
+  }
+
+  [slot='button-container'] {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  [slot='footer'] {
+    border: none;
+  }
+
+  #progress {
+    display: inline-block;
+    margin: 8px 0;
+  }
+
+  paper-progress {
+    --paper-progress-active-color: var(--cros-slider-color-active);
+    --paper-progress-container-color: var(--cros-slider-track-color-active);
+    --paper-progress-height: 4px;
+    border-radius: 5px;
+    display: inline-block;
+    margin-bottom: 8px;
+    width: 95%;
+  }
+</style>
+<template is="dom-if"
+    if="[[shouldShowDevicePrepDialog_(dialogState)]]"
+    restamp>
+  <cr-dialog id="devicePrepDialog" show-on-attach
+    on-close="closeDialog_">
+  <div slot="title" class="firmware-dialog-title-font">
+    [[i18n('prepareDevice')]]
+  </div>
+  <div slot="body" class="firmware-dialog-body-font">
+    <div id="updateInstructions" hidden$="[[!update.updateModeInstructions]]">
+      [[update.updateModeInstructions]]
+    </div>
+  </div>
+  <div slot="button-container">
+    <cr-button id="cancelButton" on-click="closeDialog_">
+      [[i18n('cancelButton')]]
+    </cr-button>
+    <cr-button class="action-button"
+        id="nextButton"
+        on-click="startUpdate_">
+      [[i18n('nextButton')]]
+    </cr-button>
+  </div>
+  </cr-dialog>
+</template>
+<template is="dom-if" if="[[shouldShowUpdateDialog_(dialogState)]]" restamp>
+  <cr-dialog id="updateDialog" show-on-attach
+      on-close="closeDialog_">
+    <div slot="title" id="updateDialogTitle" class="firmware-dialog-title-font">
+      [[computeUpdateDialogTitle_(dialogState)]]
+    </div>
+    <div slot="body" class="firmware-dialog-body-font">
+      <div>
+        [[computeUpdateDialogBodyText_(dialogState)]]
+      </div>
+    </div>
+    <div slot="footer" hidden$="[[!isUpdateInProgress_(dialogState)]]">
+      <label id="progress" class="firmware-dialog-installing-font">
+        [[computeProgressText_(installationProgress.percentage)]]
+      </label>
+      <paper-progress id="updateProgressBar"
+          value="[[computePercentageValue_(installationProgress.percentage)]]"
+          max="100">
+      </paper-progress>
+    </div>
+    <div slot="button-container"
+        hidden$="[[isUpdateInProgress_(dialogState)]]">
+      <cr-button class="action-button"
+          on-click="closeDialog_"
+          id="updateDoneButton">
+        [[i18n('doneButton')]]
+      </cr-button>
+    </div>
+  </cr-dialog>
+</template>

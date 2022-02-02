@@ -8,6 +8,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
@@ -75,7 +76,7 @@ class IdentityManagerObserver : public signin::IdentityManager::Observer {
   const scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
   const scoped_refptr<StandaloneTrustedVaultBackend> backend_;
   const base::RepeatingClosure notify_keys_changed_callback_;
-  signin::IdentityManager* const identity_manager_;
+  const raw_ptr<signin::IdentityManager> identity_manager_;
   CoreAccountInfo primary_account_;
 };
 
@@ -316,6 +317,16 @@ void StandaloneTrustedVaultClient::AddTrustedRecoveryMethod(
       base::BindOnce(&StandaloneTrustedVaultBackend::AddTrustedRecoveryMethod,
                      backend_, gaia_id, public_key, method_type_hint,
                      BindToCurrentSequence(std::move(cb))));
+}
+
+void StandaloneTrustedVaultClient::ClearDataForAccount(
+    const CoreAccountInfo& account_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(backend_);
+  backend_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&StandaloneTrustedVaultBackend::ClearDataForAccount,
+                     backend_, account_info));
 }
 
 void StandaloneTrustedVaultClient::WaitForFlushForTesting(

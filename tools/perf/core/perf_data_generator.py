@@ -245,13 +245,9 @@ FYI_BUILDERS = {
         'tests': [{
             'isolate':
             'performance_web_engine_test_suite',
-            'extra_args': [
-                '--output-format=histograms',
-                '--experimental-tbmv3-metrics',
-                '-d',
-                '--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested',
-                '--os-check=update',
-            ],
+            'extra_args':
+            ['--output-format=histograms', '--experimental-tbmv3-metrics'] +
+            bot_platforms.ASTRO_EXEC_FLAGS,
             'type':
             TEST_TYPES.TELEMETRY,
         }],
@@ -260,6 +256,25 @@ FYI_BUILDERS = {
         'dimension': {
             'cpu': None,
             'device_type': 'Astro',
+            'os': 'Fuchsia',
+            'pool': 'chrome.tests',
+        },
+    },
+    'fuchsia-perf-sherlock-fyi': {
+        'tests': [{
+            'isolate':
+            'performance_web_engine_test_suite',
+            'extra_args':
+            ['--output-format=histograms', '--experimental-tbmv3-metrics'] +
+            bot_platforms.SHERLOCK_EXEC_FLAGS,
+            'type':
+            TEST_TYPES.TELEMETRY,
+        }],
+        'platform':
+        'fuchsia',
+        'dimension': {
+            'cpu': None,
+            'device_type': 'Sherlock',
             'os': 'Fuchsia',
             'pool': 'chrome.tests',
         },
@@ -318,7 +333,7 @@ FYI_BUILDERS = {
     'fuchsia-builder-perf-fyi': {
         'additional_compile_targets': [
             'web_engine_shell_pkg', 'cast_runner_pkg', 'web_runner_pkg',
-            'chromedriver', 'chromium_builder_perf'
+            'chromium_builder_perf', 'base_perftests'
         ],
     },
 }
@@ -859,7 +874,7 @@ BUILDERS = {
             # version ever changes or becomes inconsistent. It is important
             # that bots are homogeneous. See crbug.com/988045 for history.
             'os': 'Windows-10-19043.1052',
-            'gpu': '1002:1638-10.0.19041.868',
+            'gpu': '1002:1638-30.0.13033.1000',
             'synthetic_product_name': 'OMEN by HP Laptop 16-c0xxx [ ] (HP)',
         },
     },
@@ -993,7 +1008,7 @@ BUILDERS = {
             'gpu':
             '1002:6821-4.0.20-3.2.8',
             'os':
-            'Mac-10.13.3',
+            'Mac-11.6.1',
             'pool':
             'chrome.tests.perf',
             'synthetic_product_name':

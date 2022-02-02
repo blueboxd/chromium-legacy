@@ -140,6 +140,7 @@ class TabSharingUIViewsBrowserTest
     tab_sharing_ui_ = TabSharingUI::Create(
         GetGlobalId(browser, capturing_tab),
         GetDesktopMediaID(browser, captured_tab), u"example-sharing.com",
+        /*region_capture_capable=*/false,
         favicons_used_for_switch_to_tab_button_);
 
     if (favicons_used_for_switch_to_tab_button_) {
@@ -325,9 +326,9 @@ IN_PROC_BROWSER_TEST_P(TabSharingUIViewsBrowserTest, SwitchSharedTab) {
   CreateUiAndStartSharing(browser(), /*capturing_tab=*/0, /*captured_tab=*/1);
 
   // Share a different tab.
+  // When switching tabs, a new UI is created, and the old one destroyed.
   ActivateTab(browser(), 2);
-  tab_sharing_ui_views()->StartSharing(
-      GetInfoBarManager(browser(), 2)->infobar_at(0));
+  CreateUiAndStartSharing(browser(), /*capturing_tab=*/0, /*captured_tab=*/2);
 
   // Test that the UI has been updated.
   VerifyUi(browser(), /*capturing_tab=*/0, /*captured_tab=*/2);
@@ -541,7 +542,9 @@ class MultipleTabSharingUIViewsBrowserTest : public InProcessBrowserTest {
       ActivateTab(browser, captured_tab);
       tab_sharing_ui_views_.push_back(TabSharingUI::Create(
           GetGlobalId(browser, capturing_tab),
-          GetDesktopMediaID(browser, captured_tab), u"example-sharing.com"));
+          GetDesktopMediaID(browser, captured_tab), u"example-sharing.com",
+          /*region_capture_capable=*/false,
+          /*favicons_used_for_switch_to_tab_button=*/false));
       tab_sharing_ui_views_[tab_sharing_ui_views_.size() - 1]->OnStarted(
           base::OnceClosure(), content::MediaStreamUI::SourceCallback(),
           std::vector<content::DesktopMediaID>{});
@@ -579,16 +582,20 @@ IN_PROC_BROWSER_TEST_F(MultipleTabSharingUIViewsBrowserTest, VerifyUi) {
     ASSERT_TRUE(
         capture_indicator->IsBeingMirrored(GetWebContents(browser(), i)));
 
-  // Check that the border is only displayed on the last shared tab (known
-  // limitation https://crbug.com/996631).
   views::Widget* contents_border = GetContentsBorder(browser());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(https://crbug.com/1030925) fix contents border on ChromeOS.
   EXPECT_EQ(nullptr, contents_border);
 #else
-  for (int i = 0; i < tab_count; ++i) {
+  // The capturing tab, which is not itself being captured, does not have
+  // the contents-border.
+  ActivateTab(browser(), 0);
+  EXPECT_FALSE(contents_border->IsVisible());
+  // All other tabs are being captured, and therefore have a visible
+  // contents-borders whenever they themselves (the tabs) are visible.
+  for (int i = 1; i < tab_count; ++i) {
     ActivateTab(browser(), i);
-    ASSERT_EQ(i == 3, contents_border->IsVisible());
+    ASSERT_TRUE(contents_border->IsVisible());
   }
 #endif
 }

@@ -5,16 +5,19 @@
 #ifndef ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_GRID_VIEW_H_
 #define ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_GRID_VIEW_H_
 
+#include <vector>
+
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
-class GridLayout;
+class TableLayout;
 class UniqueWidgetPtr;
 }  // namespace views
 
 namespace ash {
 
+class DesksTemplatesEventHandler;
 class DesksTemplatesItemView;
 class DeskTemplate;
 
@@ -36,31 +39,41 @@ class DesksTemplatesGridView : public views::View {
   static views::UniqueWidgetPtr CreateDesksTemplatesGridWidget(
       aura::Window* root);
 
+  const std::vector<DesksTemplatesItemView*>& grid_items() const {
+    return grid_items_;
+  }
+
   // Updates the UI by creating a grid layout and populating the grid with the
   // provided list of desk templates.
   void UpdateGridUI(const std::vector<DeskTemplate*>& desk_templates,
                     const gfx::Rect& grid_bounds);
 
   // views::View:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
 
  private:
+  friend class DesksTemplatesEventHandler;
   friend class DesksTemplatesGridViewTestApi;
 
-  // Helper to unify mouse/touch events.
+  // Updates the visibility state of the hover buttons on all the `grid_items_`
+  // as a result of mouse and gesture events.
   void OnLocatedEvent(ui::LocatedEvent* event, bool is_touch);
 
   // Owned by the views hierarchy.
-  views::GridLayout* layout_ = nullptr;
+  // TODO(richui): This is temporary until we decide what is the best way to
+  // layout the grid which may be 2x3 or 3x2 depending on the display size and
+  // needs to support animations when items are added or removed.
+  views::TableLayout* layout_ = nullptr;
 
   // The views representing templates. They're owned by views hierarchy.
   std::vector<DesksTemplatesItemView*> grid_items_;
 
   // The underlying window of the templates grid widget.
   aura::Window* widget_window_ = nullptr;
+
+  // Handles mouse/touch events on the desk templates grid widget.
+  std::unique_ptr<DesksTemplatesEventHandler> event_handler_;
 };
 
 }  // namespace ash

@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/json/values_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -100,7 +101,7 @@ class BaseSiteIsolationTest : public testing::Test {
   };
 
   SiteIsolationContentBrowserClient browser_client_;
-  content::ContentBrowserClient* original_client_ = nullptr;
+  raw_ptr<content::ContentBrowserClient> original_client_ = nullptr;
 };
 
 class SiteIsolationPolicyTest : public BaseSiteIsolationTest {
@@ -1246,8 +1247,8 @@ TEST_F(OptInOriginIsolationPolicyTest, BelowThreshold) {
   // isolation in Blink, and should still be tracked by
   // ChildProcessSecurityPolicy to ensure consistent OAC behavior for this
   // origin within this BrowsingInstance.
-  EXPECT_TRUE(
-      ShouldOriginGetOptInIsolation(site_instance, url::Origin::Create(kUrl)));
+  EXPECT_TRUE(IsOriginAgentClusterEnabledForOrigin(site_instance,
+                                                   url::Origin::Create(kUrl)));
 }
 
 // Counterpart to the test above, but verifies that opt-in origin isolation is

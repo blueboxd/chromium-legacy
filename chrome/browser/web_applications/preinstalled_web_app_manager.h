@@ -10,7 +10,10 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
@@ -49,12 +52,27 @@ class PreinstalledWebAppManager {
       base::OnceCallback<void(std::vector<ExternalInstallOptions>)>;
   using SynchronizeCallback = ExternallyManagedAppManager::SynchronizeCallback;
 
+  // Observes whether default chrome app migration has completed and
+  // triggers MostVisitedHandler to refresh the NTP tiles.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Triggered when preinstalled web app synchronization completes and the
+    // pref kWebAppsMigratedPreinstalledApps is filled.
+    virtual void OnMigrationRun() = 0;
+    // Used to destroy the scoped observation instance if
+    // PreinstalledWebAppManager instance is destroyed before the scoped
+    // observation, preventing UAF.
+    virtual void OnDestroyed() = 0;
+  };
+
   static const char* kHistogramEnabledCount;
   static const char* kHistogramDisabledCount;
   static const char* kHistogramConfigErrorCount;
   static const char* kHistogramInstallResult;
   static const char* kHistogramUninstallAndReplaceCount;
   static const char* kHistogramAppToReplaceStillInstalledCount;
+  static const char* kHistogramAppToReplaceStillSyncInstalledCount;
+  static const char* kHistogramAppToReplaceStillInstalledInShelfCount;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -72,6 +90,7 @@ class PreinstalledWebAppManager {
 
   void SetSubsystems(
       WebAppRegistrar* registrar,
+      const WebAppUiManager* ui_manager,
       ExternallyManagedAppManager* externally_managed_app_manager);
 
   // Loads the preinstalled app configs and synchronizes them with the device's
@@ -81,6 +100,10 @@ class PreinstalledWebAppManager {
   void LoadAndSynchronizeForTesting(SynchronizeCallback callback);
 
   void LoadForTesting(ConsumeInstallOptions callback);
+
+  void AddObserver(PreinstalledWebAppManager::Observer* observer);
+
+  void RemoveObserver(PreinstalledWebAppManager::Observer* observer);
 
   // Debugging info used by: chrome://web-app-internals
   struct DebugInfo {
@@ -134,11 +157,15 @@ class PreinstalledWebAppManager {
   bool IsReinstallPastMilestoneNeededSinceLastSync(
       int force_reinstall_for_milestone);
 
-  WebAppRegistrar* registrar_ = nullptr;
-  ExternallyManagedAppManager* externally_managed_app_manager_ = nullptr;
-  Profile* const profile_;
+  raw_ptr<WebAppRegistrar> registrar_ = nullptr;
+  raw_ptr<const WebAppUiManager> ui_manager_ = nullptr;
+  raw_ptr<ExternallyManagedAppManager> externally_managed_app_manager_ =
+      nullptr;
+  const raw_ptr<Profile> profile_;
 
   std::unique_ptr<DebugInfo> debug_info_;
+
+  base::ObserverList<PreinstalledWebAppManager::Observer> observers_;
 
   base::WeakPtrFactory<PreinstalledWebAppManager> weak_ptr_factory_{this};
 };

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "content/browser/media/capture/aura_window_video_capture_device.h"
+#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -82,17 +82,19 @@ class AuraWindowVideoCaptureDevice::WindowTracker final
     DCHECK(!target_window_);
 
     target_window_ = DesktopMediaID::GetNativeWindowById(source_id);
-    FrameSinkVideoCaptureDevice::VideoCaptureTarget target;
-    if (target_window_) {
-      target.frame_sink_id = target_window_->GetRootWindow()->GetFrameSinkId();
+    if (target_window_ &&
+        target_window_->GetRootWindow()->GetFrameSinkId().is_valid()) {
+      target_ = viz::VideoCaptureTarget(
+          target_window_->GetRootWindow()->GetFrameSinkId());
       if (!target_window_->IsRootWindow()) {
         capture_request_ = target_window_->MakeWindowCapturable();
-        target.subtree_capture_id = capture_request_.GetCaptureId();
+        target_->sub_target = capture_request_.GetCaptureId();
       }
+    } else {
+      target_ = absl::nullopt;
     }
 
-    if (target.frame_sink_id.is_valid()) {
-      target_ = target;
+    if (target_) {
       video_capture_lock_ = target_window_->GetHost()->CreateVideoCaptureLock();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       force_visible_.emplace(target_window_);
@@ -101,7 +103,7 @@ class AuraWindowVideoCaptureDevice::WindowTracker final
       device_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&FrameSinkVideoCaptureDevice::OnTargetChanged, device_,
-                         std::move(target)));
+                         target_));
       // Note: The MouseCursorOverlayController runs on the UI thread. It's also
       // important that SetTargetView() be called in the current stack while
       // |target_window_| is known to be a valid pointer.
@@ -145,12 +147,13 @@ class AuraWindowVideoCaptureDevice::WindowTracker final
 
     // Since the window is not destroyed, only re-parented, we can keep the
     // same subtree ID and only update the FrameSinkId of the target.
-    if (new_frame_sink_id != target_.frame_sink_id) {
-      target_.frame_sink_id = new_frame_sink_id;
+    DCHECK(target_);
+    if (new_frame_sink_id != target_->frame_sink_id) {
+      target_->frame_sink_id = new_frame_sink_id;
       device_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&FrameSinkVideoCaptureDevice::OnTargetChanged, device_,
-                         target_));
+                         target_.value()));
     }
   }
 #endif
@@ -163,18 +166,18 @@ class AuraWindowVideoCaptureDevice::WindowTracker final
   // Owned by FrameSinkVideoCaptureDevice. This will be valid for the life of
   // WindowTracker because the WindowTracker deleter task will be posted to the
   // UI thread before the MouseCursorOverlayController deleter task.
-  MouseCursorOverlayController* const cursor_controller_;
+  const raw_ptr<MouseCursorOverlayController> cursor_controller_;
 
   const DesktopMediaID::Type target_type_;
 
-  aura::Window* target_window_ = nullptr;
+  raw_ptr<aura::Window> target_window_ = nullptr;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   absl::optional<aura::WindowOcclusionTracker::ScopedForceVisible>
       force_visible_;
 #endif
 
   aura::ScopedWindowCaptureRequest capture_request_;
-  FrameSinkVideoCaptureDevice::VideoCaptureTarget target_;
+  absl::optional<viz::VideoCaptureTarget> target_;
 
   std::unique_ptr<aura::WindowTreeHost::VideoCaptureLock> video_capture_lock_;
 };

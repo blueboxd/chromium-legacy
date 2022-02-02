@@ -48,12 +48,12 @@ class CC_EXPORT UkmManager {
   void AddCheckerboardedImages(int num_of_checkerboarded_images);
 
   void RecordThroughputUKM(FrameSequenceTrackerType tracker_type,
-                           FrameSequenceMetrics::ThreadType thread_type,
+                           FrameInfo::SmoothEffectDrivingThread thread_type,
                            int64_t throughput) const;
   void RecordAggregateThroughput(AggregationType aggregation_type,
                                  int64_t throughput_percent) const;
   void RecordCompositorLatencyUKM(
-      CompositorFrameReporter::FrameReportType report_type,
+      const CompositorFrameReporter::FrameReportTypes& report_types,
       const std::vector<CompositorFrameReporter::StageData>& stage_history,
       const ActiveTrackers& active_trackers,
       const CompositorFrameReporter::ProcessedBlinkBreakdown&

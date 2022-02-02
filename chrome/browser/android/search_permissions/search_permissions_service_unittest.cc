@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -84,8 +85,12 @@ class SearchPermissionsServiceTest : public testing::Test {
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
 
-    // Because notification channel settings aren't tied to the profile, they
-    // will persist across tests. We need to make sure they're clean here.
+    features_.InitAndDisableFeature(
+        permissions::features::kRevertDSEAutomaticPermissions);
+
+    // Because notification channel settings aren't tied to the profile,
+    // they will persist across tests. We need to make sure they're clean
+    // here.
     ClearContentSettings(ContentSettingsType::NOTIFICATIONS);
 
     auto test_delegate = std::make_unique<TestSearchEngineDelegate>();
@@ -169,9 +174,11 @@ class SearchPermissionsServiceTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   content::BrowserTaskEnvironment task_environment_;
 
+  base::test::ScopedFeatureList features_;
+
   // This is owned by the SearchPermissionsService which is owned by the
   // profile.
-  TestSearchEngineDelegate* test_delegate_;
+  raw_ptr<TestSearchEngineDelegate> test_delegate_;
 };
 
 TEST_F(SearchPermissionsServiceTest, Initialization) {

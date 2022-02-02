@@ -10,8 +10,8 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -113,20 +113,14 @@ class ExtensionFunctionDispatcher::ResponseCallbackWrapper
   void OnExtensionFunctionCompleted(
       mojom::LocalFrameHost::RequestCallback callback,
       ExtensionFunction::ResponseType type,
-      const base::Value& results,
+      base::Value results,
       const std::string& error) {
-    if (type == ExtensionFunction::BAD_MESSAGE) {
-      // The renderer will be shut down from ExtensionFunction::SetBadMessage().
-      std::move(callback).Run(false, results.Clone(), error);
-      return;
-    }
-
     std::move(callback).Run(type == ExtensionFunction::SUCCEEDED,
-                            results.Clone(), error);
+                            std::move(results), error);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
-  content::RenderFrameHost* render_frame_host_;
+  raw_ptr<content::RenderFrameHost> render_frame_host_;
   base::WeakPtrFactory<ResponseCallbackWrapper> weak_ptr_factory_{this};
 };
 
@@ -139,7 +133,7 @@ class ExtensionFunctionDispatcher::WorkerResponseCallbackWrapper
       int worker_thread_id)
       : dispatcher_(dispatcher),
         render_process_host_(render_process_host) {
-    observation_.Observe(render_process_host_);
+    observation_.Observe(render_process_host_.get());
   }
 
   WorkerResponseCallbackWrapper(const WorkerResponseCallbackWrapper&) = delete;
@@ -179,7 +173,7 @@ class ExtensionFunctionDispatcher::WorkerResponseCallbackWrapper
   void OnExtensionFunctionCompleted(int request_id,
                                     int worker_thread_id,
                                     ExtensionFunction::ResponseType type,
-                                    const base::Value& results,
+                                    base::Value results,
                                     const std::string& error) {
     if (type == ExtensionFunction::BAD_MESSAGE) {
       // The renderer will be shut down from ExtensionFunction::SetBadMessage().
@@ -194,7 +188,7 @@ class ExtensionFunctionDispatcher::WorkerResponseCallbackWrapper
   base::ScopedObservation<content::RenderProcessHost,
                           content::RenderProcessHostObserver>
       observation_{this};
-  content::RenderProcessHost* const render_process_host_;
+  const raw_ptr<content::RenderProcessHost> render_process_host_;
   base::WeakPtrFactory<WorkerResponseCallbackWrapper> weak_ptr_factory_{this};
 };
 

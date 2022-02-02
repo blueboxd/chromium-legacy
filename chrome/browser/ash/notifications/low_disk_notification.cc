@@ -6,9 +6,9 @@
 
 #include <stdint.h>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -21,7 +21,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,9 +57,8 @@ void LowDiskNotification::LowDiskSpace(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool show_low_disk_space_notification = true;
-  if (!CrosSettings::Get()->GetBoolean(
-          chromeos::kDeviceShowLowDiskSpaceNotification,
-          &show_low_disk_space_notification)) {
+  if (!CrosSettings::Get()->GetBoolean(kDeviceShowLowDiskSpaceNotification,
+                                       &show_low_disk_space_notification)) {
     DVLOG(1) << "DeviceShowLowDiskSpaceNotification not set, "
                 "defaulting to showing the notification.";
   }

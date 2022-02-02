@@ -8,6 +8,8 @@ import("//third_party/blink/renderer/config.gni")
 # for production.
 static_idl_files_in_modules = get_path_info(
         [
+          "//third_party/blink/renderer/modules/ad_auction/ad_request_config.idl",
+          "//third_party/blink/renderer/modules/ad_auction/ads.idl",
           "//third_party/blink/renderer/modules/ad_auction/auction_ad.idl",
           "//third_party/blink/renderer/modules/ad_auction/auction_ad_config.idl",
           "//third_party/blink/renderer/modules/ad_auction/auction_ad_interest_group.idl",
@@ -301,8 +303,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/geolocation/position_options.idl",
           "//third_party/blink/renderer/modules/handwriting/handwriting_drawing.idl",
           "//third_party/blink/renderer/modules/handwriting/handwriting_drawing_segment.idl",
-          "//third_party/blink/renderer/modules/handwriting/handwriting_feature_query.idl",
-          "//third_party/blink/renderer/modules/handwriting/handwriting_feature_query_result.idl",
           "//third_party/blink/renderer/modules/handwriting/handwriting_recognizer_query_result.idl",
           "//third_party/blink/renderer/modules/handwriting/handwriting_hints.idl",
           "//third_party/blink/renderer/modules/handwriting/handwriting_model_constraint.idl",
@@ -827,6 +827,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webcodecs/image_track_list.idl",
           "//third_party/blink/renderer/modules/webcodecs/latency_mode.idl",
           "//third_party/blink/renderer/modules/webcodecs/plane_layout.idl",
+          "//third_party/blink/renderer/modules/webcodecs/svc_output_metadata.idl",
           "//third_party/blink/renderer/modules/webcodecs/video_color_primaries.idl",
           "//third_party/blink/renderer/modules/webcodecs/video_color_space.idl",
           "//third_party/blink/renderer/modules/webcodecs/video_color_space_init.idl",
@@ -1029,7 +1030,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webid/navigator_web_id.idl",
           "//third_party/blink/renderer/modules/webid/web_id.idl",
           "//third_party/blink/renderer/modules/webid/web_id_logout_request.idl",
-          "//third_party/blink/renderer/modules/webid/web_id_request_options.idl",
           "//third_party/blink/renderer/modules/webmidi/midi_access.idl",
           "//third_party/blink/renderer/modules/webmidi/midi_connection_event.idl",
           "//third_party/blink/renderer/modules/webmidi/midi_connection_event_init.idl",

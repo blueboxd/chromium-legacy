@@ -22,6 +22,8 @@ class RmadClientImpl : public RmadClient {
  public:
   void Init(dbus::Bus* bus);
 
+  void CheckInRma(DBusMethodCallback<bool> callback) override;
+
   void GetCurrentState(
       DBusMethodCallback<rmad::GetStateReply> callback) override;
   void TransitionNextState(
@@ -44,6 +46,9 @@ class RmadClientImpl : public RmadClient {
   ~RmadClientImpl() override = default;
 
  private:
+  void OnCheckInRma(DBusMethodCallback<bool> callback,
+                    dbus::Response* response);
+
   template <class T>
   void OnProtoReply(DBusMethodCallback<T> callback, dbus::Response* response);
 
@@ -58,6 +63,7 @@ class RmadClientImpl : public RmadClient {
   void ProvisioningProgressReceived(dbus::Signal* signal);
   void HardwareVerificationResultReceived(dbus::Signal* signal);
   void FinalizationProgressReceived(dbus::Signal* signal);
+  void RoFirmwareUpdateProgressReceived(dbus::Signal* signal);
 
   void SignalConnected(const std::string& interface_name,
                        const std::string& signal_name,
@@ -92,6 +98,8 @@ void RmadClientImpl::Init(dbus::Bus* bus) {
        &RmadClientImpl::HardwareVerificationResultReceived},
       {rmad::kFinalizeProgressSignal,
        &RmadClientImpl::FinalizationProgressReceived},
+      {rmad::kUpdateRoFirmwareStatusSignal,
+       &RmadClientImpl::RoFirmwareUpdateProgressReceived},
   };
   auto on_connected_callback = base::BindRepeating(
       &RmadClientImpl::SignalConnected, weak_ptr_factory_.GetWeakPtr());
@@ -101,6 +109,35 @@ void RmadClientImpl::Init(dbus::Bus* bus) {
         base::BindRepeating(p.second, weak_ptr_factory_.GetWeakPtr()),
         on_connected_callback);
   }
+}
+
+void RmadClientImpl::CheckInRma(DBusMethodCallback<bool> callback) {
+  dbus::MethodCall method_call(rmad::kRmadInterfaceName,
+                               rmad::kIsRmaRequiredMethod);
+  dbus::MessageWriter writer(&method_call);
+  rmad_proxy_->CallMethod(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&RmadClientImpl::OnCheckInRma,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void RmadClientImpl::OnCheckInRma(DBusMethodCallback<bool> callback,
+                                  dbus::Response* response) {
+  if (!response) {
+    LOG(ERROR) << "Error calling rmad function for OnCheckInRma";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  dbus::MessageReader reader(response);
+  bool is_rma_required = false;
+  if (!reader.PopBool(&is_rma_required)) {
+    LOG(ERROR) << "Unable to decode response for " << response->GetMember();
+    std::move(callback).Run(false);
+    return;
+  }
+  DCHECK(!reader.HasMoreData());
+  std::move(callback).Run(is_rma_required);
 }
 
 // Called when a dbus signal is initially connected.
@@ -272,6 +309,22 @@ void RmadClientImpl::FinalizationProgressReceived(dbus::Signal* signal) {
   signal_proto.set_progress(progress);
   for (auto& observer : observers_) {
     observer.FinalizationProgress(signal_proto);
+  }
+}
+
+void RmadClientImpl::RoFirmwareUpdateProgressReceived(dbus::Signal* signal) {
+  DCHECK_EQ(signal->GetMember(), rmad::kUpdateRoFirmwareStatusSignal);
+  dbus::MessageReader reader(signal);
+  // Read message
+  int32_t status;
+  if (!reader.PopInt32(&status)) {
+    LOG(ERROR) << "Unable to decode signal for " << signal->GetMember();
+    return;
+  }
+  DCHECK(!reader.HasMoreData());
+  for (auto& observer : observers_) {
+    observer.RoFirmwareUpdateProgress(
+        static_cast<rmad::UpdateRoFirmwareStatus>(status));
   }
 }
 

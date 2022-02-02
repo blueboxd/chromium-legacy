@@ -12,12 +12,12 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/trace_event/typed_macros.h"
-#include "components/optimization_guide/core/model_executor.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/signal_database.h"
@@ -73,7 +73,7 @@ struct ModelExecutionManagerImpl::ExecutionState {
   std::unique_ptr<ModelExecutionTraceEvent> trace_event;
 
   OptimizationTarget segment_id;
-  SegmentationModelHandler* model_handler = nullptr;
+  raw_ptr<SegmentationModelHandler> model_handler = nullptr;
   ModelExecutionCallback callback;
   base::TimeDelta bucket_duration;
   std::deque<proto::Feature> features;

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/ignore_result.h"
 #include "net/cert/internal/crl.h"
 #include "net/der/input.h"
 

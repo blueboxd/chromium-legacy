@@ -12,7 +12,6 @@
 #include "ash/public/cpp/session/session_controller_client.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/browser_manager_observer.h"
 #include "chrome/browser/ash/policy/off_hours/device_off_hours_controller.h"
@@ -59,9 +58,6 @@ class SessionControllerClientImpl
 
   static SessionControllerClientImpl* Get();
 
-  // Calls SessionController to prepare locking ash.
-  void PrepareForLock(base::OnceClosure callback);
-
   // Calls SessionController to start locking ash. |callback| will be invoked
   // to indicate whether the lock is successful. If |locked| is true, the post
   // lock animation is finished and ash is fully locked. Otherwise, the lock
@@ -90,6 +86,7 @@ class SessionControllerClientImpl
   void EmitAshInitialized() override;
   PrefService* GetSigninScreenPrefService() override;
   PrefService* GetUserPrefService(const AccountId& account_id) override;
+  bool IsEnterpriseManaged() const override;
 
   // Returns true if a multi-profile user can be added to the session or if
   // multiple users are already signed in.

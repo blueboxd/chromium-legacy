@@ -171,7 +171,8 @@
 #include "content/browser/net/reporting_service_proxy.h"
 #endif
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
+    (BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "content/public/browser/service_process_host.h"
 #else
 #include "content/browser/gpu/gpu_process_host.h"
@@ -196,7 +197,8 @@ shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
       mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
       remote;
   if (!*remote) {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && \
+    (BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS))
     ServiceProcessHost::Launch<shape_detection::mojom::ShapeDetectionService>(
         remote->BindNewPipeAndPassReceiver(),
         ServiceProcessHost::Options()
@@ -263,9 +265,10 @@ void BindAttributionInternalsHandler(
       web_ui ? web_ui->GetController()->GetAs<AttributionInternalsUI>()
              : nullptr;
 
-  // This is expected to be called only for main frames and for the right WebUI
-  // pages matching the same WebUI associated to the RenderFrameHost.
-  if (host->GetParent() || !attribution_internals_ui) {
+  // This is expected to be called only for outermost main frames and for the
+  // right WebUI pages matching the same WebUI associated to the
+  // RenderFrameHost.
+  if (host->GetParentOrOuterDocument() || !attribution_internals_ui) {
     ReceivedBadMessage(
         host->GetProcess(),
         bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
@@ -287,9 +290,10 @@ void BindPrerenderInternalsHandler(
   PrerenderInternalsUI* prerender_internals_ui =
       web_ui ? web_ui->GetController()->GetAs<PrerenderInternalsUI>() : nullptr;
 
-  // This is expected to be called only for main frames and for the right WebUI
-  // pages matching the same WebUI associated to the RenderFrameHost.
-  if (host->GetParent() || !prerender_internals_ui) {
+  // This is expected to be called only for outermost main frames and for the
+  // right WebUI pages matching the same WebUI associated to the
+  // RenderFrameHost.
+  if (host->GetParentOrOuterDocument() || !prerender_internals_ui) {
     ReceivedBadMessage(
         host->GetProcess(),
         bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
@@ -312,9 +316,10 @@ void BindProcessInternalsHandler(
   ProcessInternalsUI* process_internals_ui =
       web_ui ? web_ui->GetController()->GetAs<ProcessInternalsUI>() : nullptr;
 
-  // This is expected to be called only for main frames and for the right WebUI
-  // pages matching the same WebUI associated to the RenderFrameHost.
-  if (host->GetParent() || !process_internals_ui) {
+  // This is expected to be called only for outermost main frames and for the
+  // right WebUI pages matching the same WebUI associated to the
+  // RenderFrameHost.
+  if (host->GetParentOrOuterDocument() || !process_internals_ui) {
     ReceivedBadMessage(
         host->GetProcess(),
         bad_message::BadMessageReason::RFH_INVALID_WEB_UI_CONTROLLER);
@@ -765,7 +770,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
                             base::Unretained(host)));
   }
 
-  if (IsWebIDEnabled()) {
+  if (IsFedCmEnabled()) {
     map->Add<blink::mojom::FederatedAuthRequest>(base::BindRepeating(
         &RenderFrameHostImpl::BindFederatedAuthRequestReceiver,
         base::Unretained(host)));

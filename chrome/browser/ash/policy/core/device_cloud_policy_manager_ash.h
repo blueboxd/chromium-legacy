@@ -10,8 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/cert_provisioning/cert_provisioning_scheduler.h"
@@ -20,6 +18,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 
 namespace reporting {
+class MetricReportingManager;
 class UserAddedRemovedReporter;
 }  // namespace reporting
 
@@ -49,6 +48,7 @@ class PrefService;
 namespace policy {
 
 class DeviceCloudPolicyStoreAsh;
+class EuiccStatusUploader;
 class ForwardingSchemaRegistry;
 class HeartbeatScheduler;
 class ManagedSessionService;
@@ -194,6 +194,9 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   std::unique_ptr<reporting::UserAddedRemovedReporter>
       user_added_removed_reporter_;
 
+  // Object that initiates device metrics collection and reporting.
+  std::unique_ptr<reporting::MetricReportingManager> metric_reporting_manager_;
+
   // The TaskRunner used to do device status and log uploads.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -210,6 +213,7 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
       machine_certificate_uploader_;
   std::unique_ptr<ash::attestation::AttestationPolicyObserver>
       attestation_policy_observer_;
+  std::unique_ptr<EuiccStatusUploader> euicc_status_uploader_;
 
   // Uploader for remote server unlock related lookup keys.
   std::unique_ptr<LookupKeyUploader> lookup_key_uploader_;

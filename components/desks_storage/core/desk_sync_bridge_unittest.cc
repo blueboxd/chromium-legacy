@@ -87,7 +87,8 @@ const std::string kPolicyWithTwoTemplates =
     "[{\"version\":1,\"uuid\":\"" + base::StringPrintf(kUuidFormat, 8) +
     "\",\"name\":\""
     "Example Template"
-    "\",\"created_time_usec\":\"1633535632\",\"desk\":{\"apps\":[{\"window_"
+    "\",\"created_time_usec\":\"1633535632\",\"updated_time_usec\": "
+    "\"1633535632\",\"desk\":{\"apps\":[{\"window_"
     "bound\":{\"left\":0,\"top\":1,\"height\":121,\"width\":120},\"window_"
     "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"BROWSER\",\"tabs\":[{"
     "\"url\":\"https://example.com\",\"title\":\"Example\"},{\"url\":\"https://"
@@ -98,7 +99,8 @@ const std::string kPolicyWithTwoTemplates =
     base::StringPrintf(kUuidFormat, 9) +
     "\",\"name\":\""
     "Example Template 2"
-    "\",\"created_time_usec\":\"1633535632\",\"desk\":{\"apps\":[{\"window_"
+    "\",\"created_time_usec\":\"1633535632\",\"updated_time_usec\": "
+    "\"1633535632\",\"desk\":{\"apps\":[{\"window_"
     "bound\":{\"left\":0,\"top\":1,\"height\":121,\"width\":120},\"window_"
     "state\":\"NORMAL\",\"z_index\":1,\"app_type\":\"BROWSER\",\"tabs\":[{"
     "\"url\":\"https://google.com\",\"title\":\"Example "
@@ -328,9 +330,9 @@ class DeskSyncBridgeTest : public testing::Test {
         MakeApp(kTestPwaAppId, "Test PWA App", apps::mojom::AppType::kWeb));
     // chromeAppId returns kExtension in the real Apps cache.
     deltas.push_back(MakeApp(extension_misc::kChromeAppId, "Chrome Browser",
-                             apps::mojom::AppType::kExtension));
+                             apps::mojom::AppType::kChromeApp));
     deltas.push_back(MakeApp(kTestChromeAppId, "Test Chrome App",
-                             apps::mojom::AppType::kExtension));
+                             apps::mojom::AppType::kChromeApp));
 
     cache_->OnApps(std::move(deltas), apps::mojom::AppType::kUnknown,
                    false /* should_notify_initialized */);
@@ -550,9 +552,9 @@ TEST_F(DeskSyncBridgeTest, GetAllEntriesIncludesPolicyEntries) {
   EXPECT_EQ(4ul, bridge()->GetAllEntryUuids().size());
 
   base::RunLoop loop;
-  bridge()->GetAllEntries(
-      base::BindLambdaForTesting([&](DeskModel::GetAllEntriesStatus status,
-                                     std::vector<ash::DeskTemplate*> entries) {
+  bridge()->GetAllEntries(base::BindLambdaForTesting(
+      [&](DeskModel::GetAllEntriesStatus status,
+          const std::vector<ash::DeskTemplate*>& entries) {
         EXPECT_EQ(status, DeskModel::GetAllEntriesStatus::kOk);
         EXPECT_EQ(entries.size(), 4ul);
 

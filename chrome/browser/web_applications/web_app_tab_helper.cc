@@ -31,7 +31,8 @@ void WebAppTabHelper::CreateForWebContents(content::WebContents* contents) {
 }
 
 WebAppTabHelper::WebAppTabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
+    : content::WebContentsUserData<WebAppTabHelper>(*web_contents),
+      content::WebContentsObserver(web_contents),
       provider_(WebAppProvider::GetForLocalAppsUnchecked(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
   DCHECK(provider_);
@@ -106,26 +107,6 @@ void WebAppTabHelper::DidFinishNavigation(
   ReinstallPlaceholderAppIfNecessary(navigation_handle->GetURL());
 }
 
-void WebAppTabHelper::DOMContentLoaded(
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host != web_contents()->GetMainFrame())
-    return;
-
-  // Don't try and update the expiry time if this is an error page.
-  if (is_error_page_)
-    return;
-
-  // Don't try and manage file handlers unless this page is for an installed
-  // app.
-  if (app_id_.empty())
-    return;
-
-  // There is no way to reliably know if |app_id_| is for a System Web App
-  // during startup, so we always call MaybeUpdateFileHandlingOriginTrialExpiry.
-  provider_->os_integration_manager().MaybeUpdateFileHandlingOriginTrialExpiry(
-      web_contents(), app_id_);
-}
-
 void WebAppTabHelper::DidCloneToNewWebContents(
     content::WebContents* old_web_contents,
     content::WebContents* new_web_contents) {
@@ -149,10 +130,6 @@ void WebAppTabHelper::OnWebAppInstalled(const AppId& installed_app_id) {
     return;
 
   SetAppId(app_id);
-
-  // TODO(crbug.com/1053371): Clean up where we install file handlers.
-  provider_->os_integration_manager().MaybeUpdateFileHandlingOriginTrialExpiry(
-      web_contents(), installed_app_id);
 }
 
 void WebAppTabHelper::OnWebAppWillBeUninstalled(

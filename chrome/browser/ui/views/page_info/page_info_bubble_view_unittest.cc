@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
 #include "base/json/json_reader.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -85,7 +85,7 @@ namespace test {
 
 class PageInfoBubbleViewTestApi {
  public:
-  PageInfoBubbleViewTestApi(gfx::NativeView parent,
+  PageInfoBubbleViewTestApi(gfx::NativeWindow parent,
                             content::WebContents* web_contents)
       : bubble_delegate_(nullptr),
         parent_(parent),
@@ -103,12 +103,13 @@ class PageInfoBubbleViewTestApi {
     }
 
     views::View* anchor_view = nullptr;
-    auto* bubble = new PageInfoBubbleView(
-        anchor_view, gfx::Rect(), parent_, web_contents_, GURL(kUrl),
-        base::DoNothing(),
-        base::BindOnce(&PageInfoBubbleViewTestApi::OnPageInfoBubbleClosed,
-                       base::Unretained(this), run_loop_.QuitClosure()));
-    presenter_ = bubble->presenter_.get();
+    auto* bubble = static_cast<PageInfoBubbleView*>(
+        PageInfoBubbleView::CreatePageInfoBubble(
+            anchor_view, gfx::Rect(), parent_, web_contents_, GURL(kUrl),
+            base::DoNothing(),
+            base::BindOnce(&PageInfoBubbleViewTestApi::OnPageInfoBubbleClosed,
+                           base::Unretained(this), run_loop_.QuitClosure())));
+    presenter_ = bubble->presenter_for_testing();
     navigation_handler_ = bubble;
     bubble_delegate_ = bubble;
     toggle_rows_ =
@@ -266,15 +267,15 @@ class PageInfoBubbleViewTestApi {
     quit_closure.Run();
   }
 
-  views::BubbleDialogDelegateView* bubble_delegate_;
-  PageInfo* presenter_ = nullptr;
-  std::vector<PermissionToggleRowView*>* toggle_rows_ = nullptr;
+  raw_ptr<views::BubbleDialogDelegateView> bubble_delegate_;
+  raw_ptr<PageInfo> presenter_ = nullptr;
+  raw_ptr<std::vector<PermissionToggleRowView*>> toggle_rows_ = nullptr;
 
-  PageInfoNavigationHandler* navigation_handler_ = nullptr;
+  raw_ptr<PageInfoNavigationHandler> navigation_handler_ = nullptr;
 
   // For recreating the view.
-  gfx::NativeView parent_;
-  content::WebContents* web_contents_;
+  gfx::NativeWindow parent_;
+  raw_ptr<content::WebContents> web_contents_;
   base::RunLoop run_loop_;
   absl::optional<bool> reload_prompt_;
   absl::optional<views::Widget::ClosedReason> closed_reason_;
@@ -336,9 +337,9 @@ class ScopedWebContentsTestHelper {
 #endif
 
   TestingProfileManager testing_profile_manager_;
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
   content::TestWebContentsFactory factory_;
-  content::WebContents* web_contents_;  // Weak. Owned by factory_.
+  raw_ptr<content::WebContents> web_contents_;  // Weak. Owned by factory_.
 };
 
 class PageInfoBubbleViewTest : public testing::Test {
@@ -373,7 +374,7 @@ class PageInfoBubbleViewTest : public testing::Test {
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents));
     api_ = std::make_unique<test::PageInfoBubbleViewTestApi>(
-        parent_window_->GetNativeView(), web_contents);
+        parent_window_->GetNativeWindow(), web_contents);
   }
 
   void TearDown() override {
@@ -383,9 +384,10 @@ class PageInfoBubbleViewTest : public testing::Test {
  protected:
   std::unique_ptr<ScopedWebContentsTestHelper> web_contents_helper_;
   std::unique_ptr<views::ScopedViewsTestHelper> views_helper_;
-  MockTrustSafetySentimentService* mock_sentiment_service_;
+  raw_ptr<MockTrustSafetySentimentService> mock_sentiment_service_;
 
-  views::Widget* parent_window_ = nullptr;  // Weak. Owned by the NativeWidget.
+  raw_ptr<views::Widget> parent_window_ =
+      nullptr;  // Weak. Owned by the NativeWidget.
   std::unique_ptr<test::PageInfoBubbleViewTestApi> api_;
 };
 

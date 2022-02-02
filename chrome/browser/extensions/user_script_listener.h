@@ -8,9 +8,7 @@
 #include <list>
 #include <map>
 
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "content/public/browser/notification_observer.h"

@@ -59,6 +59,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/containers/contains.h"
+#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -3574,7 +3575,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
       display::Screen::GetScreen()->GetDisplayNearestWindow(window1.get());
   const gfx::Rect work_area_bounds = display.work_area();
   EXPECT_EQ(window2->GetBoundsInScreen(), work_area_bounds);
-  EXPECT_TRUE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_TRUE(window1->GetProperty(chromeos::kCanAttachToAnotherWindowKey));
 
   // 2.a. Drag the window a small amount of distance and release will maximize
   // the window.
@@ -3588,13 +3589,13 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
             GetWindowDraggingState(resizer.get()));
   // The source window should also have been scaled.
   EXPECT_NE(window2->GetBoundsInScreen(), work_area_bounds);
-  EXPECT_FALSE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_FALSE(window1->GetProperty(chromeos::kCanAttachToAnotherWindowKey));
   CompleteDrag(std::move(resizer));
   EXPECT_TRUE(WindowState::Get(window1.get())->IsMaximized());
   EXPECT_TRUE(WindowState::Get(window2.get())->IsMaximized());
   // The source window should have restored its bounds.
   EXPECT_EQ(window2->GetBoundsInScreen(), work_area_bounds);
-  EXPECT_TRUE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_TRUE(window1->GetProperty(chromeos::kCanAttachToAnotherWindowKey));
 
   // 2.b. Drag the window long enough to snap the window. The source window will
   // snap to the other side of the splitscreen.
@@ -3608,7 +3609,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 SplitViewController::LEFT, window2.get()));
-  EXPECT_FALSE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_FALSE(window1->GetProperty(chromeos::kCanAttachToAnotherWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(0, 300));
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kToSnapLeft,
             GetWindowDraggingState(resizer.get()));
@@ -3617,7 +3618,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(window2->GetBoundsInScreen(),
             split_view_controller()->GetSnappedWindowBoundsInScreen(
                 SplitViewController::RIGHT, window2.get()));
-  EXPECT_FALSE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_FALSE(window1->GetProperty(chromeos::kCanAttachToAnotherWindowKey));
 
   CompleteDrag(std::move(resizer));
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
@@ -3626,7 +3627,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_TRUE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_TRUE(window1->GetProperty(chromeos::kCanAttachToAnotherWindowKey));
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 
   EndSplitView();
@@ -4642,34 +4643,34 @@ TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(dragged_window.get(), source_window.get());
   ASSERT_TRUE(resizer.get());
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(300, 200));
   CompleteDrag(std::move(resizer));
-  EXPECT_TRUE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
-  source_window->ClearProperty(kIsDeferredTabDraggingTargetWindowKey);
+  EXPECT_TRUE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
+  source_window->ClearProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey);
 
   // b. Drag the window to more than half of the display height and not in the
   // snap preview area.
   resizer = StartDrag(dragged_window.get(), source_window.get());
   ASSERT_TRUE(resizer.get());
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(300, 500));
   CompleteDrag(std::move(resizer));
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
 
   // c. Drag the window to the snap preview area.
   resizer = StartDrag(dragged_window.get(), source_window.get());
   ASSERT_TRUE(resizer.get());
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(0, 200));
   CompleteDrag(std::move(resizer));
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   EndSplitView();
 
   // 2. If splitview is active and the dragged window is not the source window.
@@ -4678,26 +4679,26 @@ TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
   split_view_controller()->SnapWindow(source_window.get(),
                                       SplitViewController::LEFT);
   resizer = StartDrag(dragged_window.get(), source_window.get());
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(0, 200));
   CompleteDrag(std::move(resizer));
-  EXPECT_TRUE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   EndSplitView();
-  source_window->ClearProperty(kIsDeferredTabDraggingTargetWindowKey);
+  source_window->ClearProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey);
 
   // b. Drag the window to less than half of the display height, in the
   // different split of the source window, and not in the snap preview area.
   split_view_controller()->SnapWindow(source_window.get(),
                                       SplitViewController::LEFT);
   resizer = StartDrag(dragged_window.get(), source_window.get());
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(500, 200));
   CompleteDrag(std::move(resizer));
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   EndSplitView();
 
   // c. Drag the window to move a small distance, but is still in the different
@@ -4705,12 +4706,12 @@ TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
   split_view_controller()->SnapWindow(source_window.get(),
                                       SplitViewController::LEFT);
   resizer = StartDrag(dragged_window.get(), source_window.get());
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   DragWindowTo(resizer.get(), gfx::Point(500, 20));
   CompleteDrag(std::move(resizer));
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
   EndSplitView();
 }
 
@@ -4727,14 +4728,14 @@ TEST_F(SplitViewTabDraggingTest, FlingTest) {
       StartDrag(dragged_window.get(), source_window.get());
   ASSERT_TRUE(resizer.get());
   Fling(std::move(resizer), /*velocity_y=*/3000.f);
-  EXPECT_FALSE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
 
   resizer = StartDrag(dragged_window.get(), source_window.get());
   ASSERT_TRUE(resizer.get());
   Fling(std::move(resizer), /*velocity_y=*/1000.f);
-  EXPECT_TRUE(
-      source_window->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(source_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
 }
 
 // Tests that in various cases, after the tab drag ends, the dragged window and
@@ -4779,9 +4780,10 @@ TEST_F(SplitViewTabDraggingTest, BoundsTest) {
   // As in this case the dragged window should merge back to source window,
   // which we can't test here. We only test the source window's bounds restore
   // to its maximized window size.
-  EXPECT_TRUE(window2->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(
+      window2->GetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey));
   EXPECT_EQ(window2->bounds(), bounds2);
-  window2->ClearProperty(kIsDeferredTabDraggingTargetWindowKey);
+  window2->ClearProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey);
 
   // b) Drag the window far enough so that the dragged window doesn't merge back
   // into the source window.
@@ -4790,7 +4792,8 @@ TEST_F(SplitViewTabDraggingTest, BoundsTest) {
   EXPECT_NE(window1->bounds(), bounds1);
   EXPECT_NE(window2->bounds(), bounds2);
   CompleteDrag(std::move(resizer));
-  EXPECT_FALSE(window2->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(
+      window2->GetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey));
   EXPECT_EQ(window1->bounds(), bounds1);
   EXPECT_EQ(window2->bounds(), bounds2);
 
@@ -4830,8 +4833,9 @@ TEST_F(SplitViewTabDraggingTest, BoundsTest) {
   // |window1|, so we only test the source window's bounds here.
   EXPECT_EQ(window1->bounds(), snapped_bounds1);
   EXPECT_EQ(window2->bounds(), snapped_bounds2);
-  EXPECT_TRUE(window1->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
-  window1->ClearProperty(kIsDeferredTabDraggingTargetWindowKey);
+  EXPECT_TRUE(
+      window1->GetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey));
+  window1->ClearProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::State::kBothSnapped);
 
@@ -4842,7 +4846,8 @@ TEST_F(SplitViewTabDraggingTest, BoundsTest) {
   EXPECT_EQ(window1->bounds(), snapped_bounds1);
   EXPECT_EQ(window2->bounds(), snapped_bounds2);
   CompleteDrag(std::move(resizer));
-  EXPECT_FALSE(window1->GetProperty(kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_FALSE(
+      window1->GetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey));
   // |window3| replaced |window1| as the left snapped window.
   EXPECT_EQ(window3->bounds(), snapped_bounds1);
   EXPECT_EQ(window2->bounds(), snapped_bounds2);

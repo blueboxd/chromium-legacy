@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/token.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
+#include "chrome/browser/ui/user_education/feature_promo_specification.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_owner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/view_tracker.h"
@@ -20,8 +22,6 @@
 
 class BrowserView;
 class FeaturePromoSnoozeService;
-
-struct FeaturePromoBubbleParams;
 
 namespace base {
 struct Feature;
@@ -53,16 +53,18 @@ class FeaturePromoControllerViews : public FeaturePromoController {
 
   // For IPH not registered with |FeaturePromoRegistry|. Only use this
   // if it is infeasible to pre-register your IPH.
-  bool MaybeShowPromoWithParams(
-      const base::Feature& iph_feature,
-      const FeaturePromoBubbleParams& params,
+  bool MaybeShowPromoFromSpecification(
+      const FeaturePromoSpecification& spec,
       views::View* anchor_view,
+      FeaturePromoSpecification::StringReplacements body_text_replacements = {},
       BubbleCloseCallback close_callback = BubbleCloseCallback());
 
   // Builds the CreateParams from the BubbleParams.
   FeaturePromoBubbleView::CreateParams GetBaseCreateParams(
-      const FeaturePromoBubbleParams& params,
-      views::View* anchor_view);
+      const FeaturePromoSpecification& spec,
+      views::View* anchor_view,
+      FeaturePromoSpecification::StringReplacements body_text_replacements,
+      bool is_critical_promo);
 
   // Only for security or privacy critical promos. Immedialy shows a
   // promo with |params|, cancelling any normal promo and blocking any
@@ -71,8 +73,10 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   // Returns an ID that can be passed to CloseBubbleForCriticalPromo()
   // if successful. This can fail if another critical promo is showing.
   absl::optional<base::Token> ShowCriticalPromo(
-      const FeaturePromoBubbleParams& params,
-      views::View* anchor_view);
+      const FeaturePromoSpecification& spec,
+      views::View* anchor_view,
+      FeaturePromoSpecification::StringReplacements body_text_replacements =
+          {});
 
   // Ends a promo started by ShowCriticalPromo() if it's still showing.
   void CloseBubbleForCriticalPromo(const base::Token& critical_promo_id);
@@ -89,15 +93,13 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   // FeaturePromoController:
   bool MaybeShowPromo(
       const base::Feature& iph_feature,
-      BubbleCloseCallback close_callback = BubbleCloseCallback()) override;
-  bool MaybeShowPromoWithTextReplacements(
-      const base::Feature& iph_feature,
-      FeaturePromoTextReplacements text_replacements,
+      FeaturePromoSpecification::StringReplacements body_text_replacements = {},
       BubbleCloseCallback close_callback = BubbleCloseCallback()) override;
   bool BubbleIsShowing(const base::Feature& iph_feature) const override;
   bool CloseBubble(const base::Feature& iph_feature) override;
   PromoHandle CloseBubbleAndContinuePromo(
       const base::Feature& iph_feature) override;
+  base::WeakPtr<FeaturePromoController> GetAsWeakPtr() override;
 
   // Gets the IPH backend. Provided for convenience.
   feature_engagement::Tracker* feature_engagement_tracker() { return tracker_; }
@@ -120,17 +122,21 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   }
 
  private:
-  bool MaybeShowPromoImpl(const base::Feature& iph_feature,
-                          const FeaturePromoBubbleParams& params,
-                          views::View* anchor_view,
-                          BubbleCloseCallback close_callback);
+  bool MaybeShowPromoImpl(
+      const FeaturePromoSpecification& spec,
+      views::View* anchor_view,
+      FeaturePromoSpecification::StringReplacements text_replacements,
+      BubbleCloseCallback close_callback);
 
   // Called when PromoHandle is destroyed to finish the promo.
   void FinishContinuedPromo() override;
 
-  bool ShowPromoBubbleImpl(const FeaturePromoBubbleParams& params,
-                           views::View* anchor_view,
-                           bool screen_reader_promo);
+  bool ShowPromoBubbleImpl(
+      const FeaturePromoSpecification& spec,
+      views::View* anchor_view,
+      FeaturePromoSpecification::StringReplacements text_replacements,
+      bool screen_reader_promo,
+      bool is_critical_promo);
 
   void HandleBubbleClosed();
 
@@ -147,11 +153,15 @@ class FeaturePromoControllerViews : public FeaturePromoController {
   // all of this logic can be rewritten.
   bool CheckScreenReaderPromptAvailable() const;
 
+  // Create appropriate buttons for a snooze promo for the current platform.
+  std::vector<FeaturePromoBubbleView::ButtonParams> CreateSnoozeButtons(
+      const base::Feature& feature);
+
   // The browser window this instance is responsible for.
-  BrowserView* const browser_view_;
+  const raw_ptr<BrowserView> browser_view_;
 
   // The delegate responsible for creating and owning a bubble.
-  FeaturePromoBubbleOwner* const bubble_owner_;
+  const raw_ptr<FeaturePromoBubbleOwner> bubble_owner_;
 
   // Snooze service that is notified when a user snoozes or dismisses the promo.
   // Ask this service for display permission before |tracker_|.
@@ -159,11 +169,11 @@ class FeaturePromoControllerViews : public FeaturePromoController {
 
   // IPH backend that is notified of user events and decides whether to
   // trigger IPH.
-  feature_engagement::Tracker* const tracker_;
+  const raw_ptr<feature_engagement::Tracker> tracker_;
 
   // Non-null as long as a promo is showing. Corresponds to an IPH
   // feature registered with |tracker_|.
-  const base::Feature* current_iph_feature_ = nullptr;
+  raw_ptr<const base::Feature> current_iph_feature_ = nullptr;
 
   // Bubble ID from `bubble_owner_`, if a bubble is showing.
   absl::optional<base::Token> bubble_id_;

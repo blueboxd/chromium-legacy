@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//components/vector_icons/vector_icons.gni")
+
+assert(is_chromeos_ash)
 
 aggregate_vector_icons("ash_vector_icons") {
   icon_directory = "."
@@ -58,7 +61,6 @@ aggregate_vector_icons("ash_vector_icons") {
     "clipboard_launcher_no_assistant.icon",
     "clipboard_launcher_outer.icon",
     "clipboard_search.icon",
-    "close_button.icon",
     "copy.icon",
     "dark_theme_color_mode.icon",
     "delete.icon",
@@ -111,6 +113,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "login_screen_button_dropdown.icon",
     "login_screen_menu_dropdown.icon",
     "marker.icon",
+    "medium_or_large_close_button.icon",
     "mic.icon",
     "more_than_nine_files.icon",
     "music_note.icon",
@@ -121,6 +124,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "network_badge_technology_1x.icon",
     "network_badge_technology_3g.icon",
     "network_badge_technology_4g.icon",
+    "network_badge_technology_5g.icon",
     "network_badge_technology_edge.icon",
     "network_badge_technology_evdo.icon",
     "network_badge_technology_gprs.icon",
@@ -156,6 +160,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_screen.icon",
     "notification_screenshare.icon",
     "notification_sms_sync.icon",
+    "notification_snooze_button.icon",
     "notification_stylus_battery_warning.icon",
     "notification_timer.icon",
     "overflow_shelf_left.icon",
@@ -180,15 +185,12 @@ aggregate_vector_icons("ash_vector_icons") {
     "phone_hub_camera_roll_item_video.icon",
     "phone_hub_camera_roll_menu_download.icon",
     "phone_hub_default_favicon.icon",
-    "phone_hub_enable_hotspot_off.icon",
-    "phone_hub_enable_hotspot_on.icon",
-    "phone_hub_locate_phone_off.icon",
-    "phone_hub_locate_phone_on.icon",
+    "phone_hub_enable_hotspot.icon",
+    "phone_hub_locate_phone.icon",
     "phone_hub_mobile_no_connection.icon",
     "phone_hub_mobile_no_sim.icon",
     "phone_hub_phone.icon",
-    "phone_hub_silence_phone_off.icon",
-    "phone_hub_silence_phone_on.icon",
+    "phone_hub_silence_phone.icon",
     "pin_request_lock.icon",
     "pinned.icon",
     "privacy_screen.icon",
@@ -198,6 +200,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "projector_selfie_cam_off.icon",
     "projector_selfie_cam_on.icon",
     "remove_outline.icon",
+    "reorder.icon",
     "resume.icon",
     "save_desk_as_template.icon",
     "select_to_speak_next_paragraph.icon",
@@ -229,12 +232,15 @@ aggregate_vector_icons("ash_vector_icons") {
     "shelf_overflow.icon",
     "shelf_overflow_horizontal_dots.icon",
     "shelf_overview.icon",
+    "shelf_party.icon",
     "shelf_position.icon",
     "shelf_shutdown_button.icon",
     "shelf_sign_out_button.icon",
     "shelf_unlock_button.icon",
     "show_closed_caption.icon",
     "six_files.icon",
+    "small_close_button.icon",
+    "sort_alphabetical.icon",
     "stylus_battery_status_unknown.icon",
     "switch_access.icon",
     "switch_access_back.icon",

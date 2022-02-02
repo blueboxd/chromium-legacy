@@ -12,11 +12,11 @@
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_ui_data.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/onc/onc_merger.h"
 #include "chromeos/network/onc/onc_normalizer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -110,6 +110,21 @@ bool IsPolicyMatching(const base::Value& policy,
     std::string policy_ssid = GetString(*policy_wifi, ::onc::wifi::kHexSSID);
     std::string actual_ssid = GetString(*actual_wifi, ::onc::wifi::kHexSSID);
     return (policy_ssid == actual_ssid);
+  }
+
+  if (actual_network_type == ::onc::network_type::kCellular) {
+    const base::Value* policy_cellular =
+        policy.FindDictKey(::onc::network_config::kCellular);
+    const base::Value* actual_cellular =
+        actual_network.FindDictKey(::onc::network_config::kCellular);
+    if (!policy_cellular || !actual_cellular)
+      return false;
+
+    std::string policy_iccid =
+        GetString(*policy_cellular, ::onc::cellular::kICCID);
+    std::string actual_iccid =
+        GetString(*actual_cellular, ::onc::cellular::kICCID);
+    return (policy_iccid == actual_iccid && !policy_iccid.empty());
   }
 
   return false;
@@ -374,6 +389,8 @@ base::Value CreateShillConfiguration(const NetworkProfile& profile,
   }
 
   shill_property_util::SetUIDataAndSource(*ui_data, shill_dictionary.get());
+  shill_property_util::SetRandomMACPolicy(ui_data->onc_source(),
+                                          shill_dictionary.get());
 
   VLOG(2) << "Created Shill properties: " << *shill_dictionary;
 

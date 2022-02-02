@@ -67,7 +67,8 @@ struct HashtablezInfo : public profiling_internal::Sample<HashtablezInfo> {
 
   // Puts the object into a clean state, fills in the logically `const` members,
   // blocking for any readers that are currently sampling the object.
-  void PrepareForSampling() ABSL_EXCLUSIVE_LOCKS_REQUIRED(init_mu);
+  void PrepareForSampling(size_t inline_element_size_value)
+      ABSL_EXCLUSIVE_LOCKS_REQUIRED(init_mu);
 
   // These fields are mutated by the various Record* APIs and need to be
   // thread-safe.
@@ -84,14 +85,14 @@ struct HashtablezInfo : public profiling_internal::Sample<HashtablezInfo> {
 
   // All of the fields below are set by `PrepareForSampling`, they must not be
   // mutated in `Record*` functions.  They are logically `const` in that sense.
-  // These are guarded by init_mu, but that is not externalized to clients, who
-  // can only read them during `HashtablezSampler::Iterate` which will hold the
-  // lock.
+  // These are guarded by init_mu, but that is not externalized to clients,
+  // which can read them only during `SampleRecorder::Iterate` which will hold
+  // the lock.
   static constexpr int kMaxStackDepth = 64;
   absl::Time create_time;
   int32_t depth;
   void* stack[kMaxStackDepth];
-  size_t inline_element_size;
+  size_t inline_element_size;  // How big is the slot?
 };
 
 inline void RecordRehashSlow(HashtablezInfo* info, size_t total_probe_length) {
@@ -258,14 +259,23 @@ using HashtablezSampler =
 // Returns a global Sampler.
 HashtablezSampler& GlobalHashtablezSampler();
 
+using HashtablezConfigListener = void (*)();
+void SetHashtablezConfigListener(HashtablezConfigListener l);
+
 // Enables or disables sampling for Swiss tables.
+bool IsHashtablezEnabled();
 void SetHashtablezEnabled(bool enabled);
+void SetHashtablezEnabledInternal(bool enabled);
 
 // Sets the rate at which Swiss tables will be sampled.
+int32_t GetHashtablezSampleParameter();
 void SetHashtablezSampleParameter(int32_t rate);
+void SetHashtablezSampleParameterInternal(int32_t rate);
 
 // Sets a soft max for the number of samples that will be kept.
+int32_t GetHashtablezMaxSamples();
 void SetHashtablezMaxSamples(int32_t max);
+void SetHashtablezMaxSamplesInternal(int32_t max);
 
 // Configuration override.
 // This allows process-wide sampling without depending on order of

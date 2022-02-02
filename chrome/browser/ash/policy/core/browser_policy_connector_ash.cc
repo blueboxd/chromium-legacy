@@ -8,6 +8,10 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/attestation/attestation_flow_adaptive.h"
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/cros_settings_provider.h"
+#include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_paths.h"
 #include "base/bind.h"
 #include "base/check.h"
@@ -66,7 +70,6 @@
 #include "chrome/browser/policy/device_management_service_configuration.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/attestation/attestation_flow_adaptive.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -74,9 +77,6 @@
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
@@ -116,9 +116,8 @@ bool IsForcedReEnrollmentEnabled() {
   return ash::AutoEnrollmentController::IsFREEnabled();
 }
 
-std::unique_ptr<chromeos::attestation::AttestationFlow>
-CreateAttestationFlow() {
-  return std::make_unique<chromeos::attestation::AttestationFlowAdaptive>(
+std::unique_ptr<ash::attestation::AttestationFlow> CreateAttestationFlow() {
+  return std::make_unique<ash::attestation::AttestationFlowAdaptive>(
       std::make_unique<ash::attestation::AttestationCAClient>());
 }
 
@@ -224,7 +223,8 @@ void BrowserPolicyConnectorAsh::Init(
         std::make_unique<ActiveDirectoryDeviceStateUploader>(
             /*client_id=*/GetInstallAttributes()->GetDeviceId(),
             device_management_service(), state_keys_broker_.get(),
-            url_loader_factory, std::make_unique<DMTokenStorage>(local_state));
+            url_loader_factory, std::make_unique<DMTokenStorage>(local_state),
+            local_state);
     active_directory_device_state_uploader_->Init();
   }
 
@@ -311,7 +311,7 @@ void BrowserPolicyConnectorAsh::Init(
             GetPolicyService()));
   }
   system_proxy_handler_ =
-      std::make_unique<SystemProxyHandler>(chromeos::CrosSettings::Get());
+      std::make_unique<SystemProxyHandler>(ash::CrosSettings::Get());
 
   adb_sideloading_allowance_mode_policy_handler_ =
       std::make_unique<AdbSideloadingAllowanceModePolicyHandler>(
@@ -491,7 +491,7 @@ BrowserPolicyConnectorAsh::GetGlobalUserCloudPolicyProvider() {
 }
 
 void BrowserPolicyConnectorAsh::SetAttestationFlowForTesting(
-    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow) {
+    std::unique_ptr<ash::attestation::AttestationFlow> attestation_flow) {
   attestation_flow_ = std::move(attestation_flow);
 }
 
@@ -546,7 +546,7 @@ BrowserPolicyConnectorAsh::CreatePolicyProviders() {
 }
 
 void BrowserPolicyConnectorAsh::SetTimezoneIfPolicyAvailable() {
-  typedef chromeos::CrosSettingsProvider Provider;
+  typedef ash::CrosSettingsProvider Provider;
   Provider::TrustedStatus result =
       ash::CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
           &BrowserPolicyConnectorAsh::SetTimezoneIfPolicyAvailable,
@@ -556,10 +556,10 @@ void BrowserPolicyConnectorAsh::SetTimezoneIfPolicyAvailable() {
     return;
 
   std::string timezone;
-  if (ash::CrosSettings::Get()->GetString(chromeos::kSystemTimezonePolicy,
+  if (ash::CrosSettings::Get()->GetString(ash::kSystemTimezonePolicy,
                                           &timezone) &&
       !timezone.empty()) {
-    chromeos::system::SetSystemAndSigninScreenTimezone(timezone);
+    ash::system::SetSystemAndSigninScreenTimezone(timezone);
   }
 }
 

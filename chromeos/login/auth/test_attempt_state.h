@@ -5,9 +5,10 @@
 #ifndef CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
 #define CHROMEOS_LOGIN_AUTH_TEST_ATTEMPT_STATE_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/login/auth/auth_attempt_state.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -19,7 +20,7 @@ class UserContext;
 class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) TestAttemptState
     : public AuthAttemptState {
  public:
-  explicit TestAttemptState(const UserContext& credentials);
+  explicit TestAttemptState(std::unique_ptr<UserContext> credentials);
 
   TestAttemptState(const TestAttemptState&) = delete;
   TestAttemptState& operator=(const TestAttemptState&) = delete;

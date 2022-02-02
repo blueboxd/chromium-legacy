@@ -30,6 +30,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
@@ -66,7 +67,6 @@
 #include "ash/wm/workspace/workspace_window_resizer.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -1757,7 +1757,9 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
 
   // Verify that originally the label is in the center of the workspace.
   // Midpoint of height minus shelf.
-  int expected_y = (300 - ShelfConfig::Get()->shelf_size()) / 2;
+  int expected_y = (300 - ShelfConfig::Get()->shelf_size() +
+                    DesksBarView::kZeroStateBarHeight) /
+                   2;
   EXPECT_EQ(gfx::Point(200, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 
@@ -1768,8 +1770,10 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
-  expected_y = (400 - ShelfConfig::Get()->shelf_size()) / 2;
-  EXPECT_EQ(gfx::Point(150, (400 - ShelfConfig::Get()->shelf_size()) / 2),
+  expected_y = (400 - ShelfConfig::Get()->shelf_size() +
+                DesksBarView::kZeroStateBarHeight) /
+               2;
+  EXPECT_EQ(gfx::Point(150, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
@@ -6086,6 +6090,30 @@ TEST_F(SplitViewOverviewSessionTest,
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   display_manager()->SetMirrorMode(display::MirrorMode::kNormal, absl::nullopt);
+}
+
+// Tests that there is no crash when dragging the divider in portrait mode.
+// Regression test for https://crbug.com/1267486.
+TEST_F(SplitViewOverviewSessionTest, NoCrashWhenDraggingDividerInPortrait) {
+  // The crash only occured in portrait mode.
+  UpdateDisplay("600x800");
+  std::unique_ptr<aura::Window> window1 = CreateTestWindow();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindow();
+
+  ToggleOverview();
+  // Note that this snaps `window1` to the top.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+
+  // Drag the divider all the way to the bottom. There should be no crash.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->set_current_screen_location(
+      split_view_controller()
+          ->split_view_divider()
+          ->GetDividerBoundsInScreen(/*is_dragging=*/false)
+          .CenterPoint());
+  generator->PressTouch();
+  generator->MoveTouchBy(0, 600);
+  generator->ReleaseTouch();
 }
 
 // Test the split view and overview functionalities in clamshell mode. Split

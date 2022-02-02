@@ -8,6 +8,7 @@
 
 #include "base/base_switches.h"
 #include "base/bind.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/debug/dump_without_crashing.h"
@@ -15,8 +16,6 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -67,6 +66,10 @@
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/public/common/font_cache_dispatcher_win.h"
 #include "content/public/common/font_cache_win.mojom.h"
+#endif
+
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+#include "content/public/common/profiling_utils.h"
 #endif
 
 namespace content {
@@ -218,16 +221,6 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 }
 
 // static
-void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
-    base::CommandLine* cmd_line) {
-  // If we run base::FieldTrials, we want to pass to their state to the
-  // child process so that it can act in accordance with each state.
-  base::FieldTrialList::CopyFieldTrialStateToFlags(
-      switches::kFieldTrialHandle, switches::kEnableFeatures,
-      switches::kDisableFeatures, cmd_line);
-}
-
-// static
 void BrowserChildProcessHostImpl::CopyTraceStartupFlags(
     base::CommandLine* cmd_line) {
   tracing::PropagateTracingFlagsToChildProcessCmdLine(cmd_line);
@@ -335,6 +328,15 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   // connection status notifications until we observe OnChannelConnected().
   if (!has_legacy_ipc_channel_)
     notify_child_connection_status_ = true;
+#if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
+  bool is_elevated = false;
+#if defined(OS_WIN)
+  is_elevated = (delegate->GetSandboxType() ==
+                 sandbox::mojom::Sandbox::kNoSandboxAndElevatedPrivileges);
+#endif
+  if (!is_elevated)
+    child_process_host_->SetProfilingFile(OpenProfilingFile());
+#endif
 
   child_process_ = std::make_unique<ChildProcessLauncher>(
       std::move(delegate), std::move(cmd_line), data_.id, this,
@@ -480,7 +482,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
                                   PROCESS_TYPE_MAX);
         break;
       }
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
 #endif
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
@@ -507,7 +509,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
     UMA_HISTOGRAM_ENUMERATION("ChildProcess.Disconnected2",
                               static_cast<ProcessType>(data_.process_type),
                               PROCESS_TYPE_MAX);
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     if (info.status == base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM) {
       UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2.OOM",
                                 static_cast<ProcessType>(data_.process_type),

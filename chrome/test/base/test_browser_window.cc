@@ -12,6 +12,10 @@
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "ui/gfx/geometry/rect.h"
 
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "base/values.h"
+#endif
+
 // Helpers --------------------------------------------------------------------
 
 std::unique_ptr<Browser> CreateBrowserWithTestWindowForParams(
@@ -105,6 +109,10 @@ bool TestBrowserWindow::DoBrowserControlsShrinkRendererSize(
 }
 
 ui::NativeTheme* TestBrowserWindow::GetNativeTheme() {
+  return nullptr;
+}
+
+const ui::ColorProvider* TestBrowserWindow::GetColorProvider() const {
   return nullptr;
 }
 
@@ -306,6 +314,15 @@ void TestBrowserWindow::SetNativeWindow(gfx::NativeWindow window) {
 void TestBrowserWindow::SetCloseCallback(base::OnceClosure close_callback) {
   close_callback_ = std::move(close_callback);
 }
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+bool TestBrowserWindow::IsSideSearchPanelVisible() const {
+  return false;
+}
+
+void TestBrowserWindow::MaybeRestoreSideSearchStatePerWindow(
+    const std::map<std::string, std::string>& extra_data) {}
+#endif
 
 FeaturePromoController* TestBrowserWindow::GetFeaturePromoController() {
   return feature_promo_controller_.get();

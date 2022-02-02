@@ -21,7 +21,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
@@ -370,24 +369,21 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                                      uintptr_t* buffers,
                                                      size_t buffer_size);
 
-  // Syncs and exports |va_surface| as a gfx::NativePixmapDmaBuf. Currently, the
-  // only VAAPI surface pixel formats supported are VA_FOURCC_IMC3 and
-  // VA_FOURCC_NV12.
-  //
-  // Notes:
-  //
-  // - For VA_FOURCC_IMC3, the format of the returned NativePixmapDmaBuf is
-  //   gfx::BufferFormat::YVU_420 because we don't have a YUV_420 format. The
-  //   planes are flipped accordingly, i.e.,
-  //   gfx::NativePixmapDmaBuf::GetDmaBufOffset(1) refers to the V plane.
-  //   TODO(andrescj): revisit once crrev.com/c/1573718 lands.
-  //
-  // - For VA_FOURCC_NV12, the format of the returned NativePixmapDmaBuf is
-  //   gfx::BufferFormat::YUV_420_BIPLANAR.
-  //
-  // Returns nullptr on failure.
+  // Creates a self-releasing VASurface with specified usage hints. The
+  // ownership of the surface is transferred to the caller. |size| should be
+  // the desired surface dimensions.
+  scoped_refptr<VASurface> CreateVASurfaceWithUsageHints(
+      unsigned int va_rt_format,
+      const gfx::Size& size,
+      const std::vector<SurfaceUsageHint>& usage_hints);
+
+  // Implementations of the pixmap exporter for both types of VASurface.
+  // See ExportVASurfaceAsNativePixmapDmaBufUnwrapped() for further
+  // documentation.
   std::unique_ptr<NativePixmapAndSizeInfo> ExportVASurfaceAsNativePixmapDmaBuf(
-      const ScopedVASurface& va_surface);
+      const VASurface& va_surface);
+  std::unique_ptr<NativePixmapAndSizeInfo> ExportVASurfaceAsNativePixmapDmaBuf(
+      const ScopedVASurface& scoped_va_surface);
 
   // Synchronize the VASurface explicitly. This is useful when sharing a surface
   // between contexts.
@@ -479,10 +475,12 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // downloaded will be returned in |coded_data_size|. |sync_surface_id| will
   // be used as a sync point, i.e. it will have to become idle before starting
   // the download. |sync_surface_id| should be the source surface passed
-  // to the encode job. Returns false if it fails for any reason. For example,
-  // the linear size of the resulted encoded frame is larger than |target_size|.
+  // to the encode job. |sync_surface_id| will be nullopt when it has already
+  // been synced in GetEncodedChunkSize(). In the case vaSyncSurface()
+  // is not executed. Returns false if it fails for any reason. For example, the
+  // linear size of the resulted encoded frame is larger than |target_size|.
   virtual bool DownloadFromVABuffer(VABufferID buffer_id,
-                                    VASurfaceID sync_surface_id,
+                                    absl::optional<VASurfaceID> sync_surface_id,
                                     uint8_t* target_ptr,
                                     size_t target_size,
                                     size_t* coded_data_size) WARN_UNUSED_RESULT;
@@ -562,6 +560,28 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                       const std::vector<SurfaceUsageHint>& usage_hints,
                       size_t num_surfaces,
                       std::vector<VASurfaceID>* va_surfaces) WARN_UNUSED_RESULT;
+
+  // Syncs and exports |va_surface_id| as a gfx::NativePixmapDmaBuf. Currently,
+  // the only VAAPI surface pixel formats supported are VA_FOURCC_IMC3 and
+  // VA_FOURCC_NV12.
+  //
+  // Notes:
+  //
+  // - For VA_FOURCC_IMC3, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::YVU_420 because we don't have a YUV_420 format. The
+  //   planes are flipped accordingly, i.e.,
+  //   gfx::NativePixmapDmaBuf::GetDmaBufOffset(1) refers to the V plane.
+  //   TODO(andrescj): revisit once crrev.com/c/1573718 lands.
+  //
+  // - For VA_FOURCC_NV12, the format of the returned NativePixmapDmaBuf is
+  //   gfx::BufferFormat::YUV_420_BIPLANAR.
+  //
+  // Returns nullptr on failure, or if the exported surface can't contain
+  // |va_surface_size|.
+  std::unique_ptr<NativePixmapAndSizeInfo>
+  ExportVASurfaceAsNativePixmapDmaBufUnwrapped(
+      VASurfaceID va_surface_id,
+      const gfx::Size& va_surface_size);
 
   // Carries out the vaBeginPicture()-vaRenderPicture()-vaEndPicture() on target
   // |va_surface_id|. Returns false if any of these calls fails.

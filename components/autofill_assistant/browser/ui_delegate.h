@@ -84,23 +84,9 @@ class UiDelegate {
 
   // Performs an action, from the set of actions returned by GetUserAction().
   //
-  // If non-empty, |context| is added to the global trigger context when
-  // executing scripts. Ignored if no scripts are executed by the action.
-  //
   // Returns true if the action was triggered, false if the index did not
-  // correspond to any enabled actions.
-  virtual bool PerformUserActionWithContext(
-      int index,
-      std::unique_ptr<TriggerContext> context) = 0;
-
-  // Performs an action with no additional trigger context set.
-  //
-  // Returns true if the action was triggered, false if the index did not
-  // correspond to any enabled actions.
-  bool PerformUserAction(int index) {
-    return PerformUserActionWithContext(index,
-                                        std::make_unique<TriggerContext>());
-  }
+  // correspond to any enabled action.
+  virtual bool PerformUserAction(int index) = 0;
 
   // If the controller is waiting for user data, this field contains a non-null
   // options describing the request.
@@ -113,17 +99,24 @@ class UiDelegate {
   // Sets shipping address, in response to the current collect user data
   // options.
   virtual void SetShippingAddress(
-      std::unique_ptr<autofill::AutofillProfile> address) = 0;
+      std::unique_ptr<autofill::AutofillProfile> address,
+      UserDataEventType event_type) = 0;
 
   // Sets contact info, in response to the current collect user data options.
   virtual void SetContactInfo(
-      std::unique_ptr<autofill::AutofillProfile> profile) = 0;
+      std::unique_ptr<autofill::AutofillProfile> profile,
+      UserDataEventType event_type) = 0;
 
   // Sets credit card and billing profile, in response to the current collect
   // user data options.
   virtual void SetCreditCard(
       std::unique_ptr<autofill::CreditCard> card,
-      std::unique_ptr<autofill::AutofillProfile> billing_profile) = 0;
+      std::unique_ptr<autofill::AutofillProfile> billing_profile,
+      UserDataEventType event_type) = 0;
+
+  // Reload the user data for the collect user data action.
+  virtual void ReloadUserData(UserDataEventField event_field,
+                              UserDataEventType event_type) = 0;
 
   // Sets the state of the third party terms & conditions, pertaining to the
   // current collect user data options.

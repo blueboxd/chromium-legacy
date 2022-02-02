@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -53,8 +54,8 @@ ComponentResult IDNToUnicodeOneComponent(
 
 class AppendComponentTransform {
  public:
-  AppendComponentTransform() {}
-  virtual ~AppendComponentTransform() {}
+  AppendComponentTransform() = default;
+  virtual ~AppendComponentTransform() = default;
 
   virtual std::u16string Execute(
       const std::string& component_text,
@@ -142,9 +143,11 @@ void AppendFormattedComponent(const std::string& spec,
 
     // Shift all the adjustments made for this component so the offsets are
     // valid for the original string and add them to |adjustments|.
-    for (auto comp_iter = component_transform_adjustments.begin();
-         comp_iter != component_transform_adjustments.end(); ++comp_iter)
-      comp_iter->original_offset += original_component_begin;
+    for (auto& component_transform_adjustment :
+         component_transform_adjustments) {
+      component_transform_adjustment.original_offset +=
+          original_component_begin;
+    }
     if (adjustments) {
       adjustments->insert(adjustments->end(),
                           component_transform_adjustments.begin(),
@@ -386,7 +389,7 @@ struct UIDNAWrapper {
                           << "https://crbug.com/778929.";
   }
 
-  UIDNA* value;
+  raw_ptr<UIDNA> value;
 };
 
 base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;

@@ -86,6 +86,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/sync/test/integration/printers_helper.h"
@@ -93,7 +94,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
-#include "components/arc/test/arc_util_test_support.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -454,15 +454,14 @@ bool SyncTest::CreateProfile(int index) {
 #if defined(OS_ANDROID)
     DCHECK(index == 0);
     Profile* profile = ProfileManager::GetLastUsedProfile();
-    InitializeProfile(index, profile);
 #else
     // Without need of real GAIA authentication, we create new test profiles.
     Profile* profile =
         g_browser_process->profile_manager()->GetProfile(profile_path);
-    InitializeProfile(index, profile);
 #endif
 
     SetupMockGaiaResponsesForProfile(profile);
+    InitializeProfile(index, profile);
   }
 
   // Once profile initialization has kicked off, wait for it to finish.
@@ -632,11 +631,12 @@ bool SyncTest::SetupClients() {
   // Uses a fake app list model updater to avoid interacting with Ash.
   model_updater_factory_ = std::make_unique<
       app_list::AppListSyncableService::ScopedModelUpdaterFactoryForTest>(
-      base::BindRepeating([](app_list::AppListReorderDelegate* reorder_delegate)
-                              -> std::unique_ptr<AppListModelUpdater> {
-        return std::make_unique<FakeAppListModelUpdater>(
-            /*profile=*/nullptr, reorder_delegate);
-      }));
+      base::BindRepeating(
+          [](app_list::reorder::AppListReorderDelegate* reorder_delegate)
+              -> std::unique_ptr<AppListModelUpdater> {
+            return std::make_unique<FakeAppListModelUpdater>(
+                /*profile=*/nullptr, reorder_delegate);
+          }));
 #endif
 
   for (int i = 0; i < num_clients_; ++i) {

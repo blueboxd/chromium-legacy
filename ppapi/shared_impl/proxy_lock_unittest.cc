@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/test/task_environment.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -35,12 +34,16 @@ class CheckLockStateInDestructor
     : public base::RefCounted<CheckLockStateInDestructor> {
  public:
   CheckLockStateInDestructor() {}
+
+  CheckLockStateInDestructor(const CheckLockStateInDestructor&) = delete;
+  CheckLockStateInDestructor& operator=(const CheckLockStateInDestructor&) =
+      delete;
+
   void Method() { ++called_num; }
 
  private:
   friend class base::RefCounted<CheckLockStateInDestructor>;
   ~CheckLockStateInDestructor() { CheckLockState(); }
-  DISALLOW_COPY_AND_ASSIGN(CheckLockStateInDestructor);
 };
 
 void TestCallback_0() {

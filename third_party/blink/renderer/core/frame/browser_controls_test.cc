@@ -533,9 +533,9 @@ TEST_F(BrowserControlsTest, MAYBE(FloatingPointSlippage)) {
   // This will result in a 20px scroll to the browser controls so the show ratio
   // will be 30/50 == 0.6 which is not representible in a float. Make sure
   // that scroll still consumes the whole delta.
-  FloatSize remaining_delta =
-      web_view->GetBrowserControls().ScrollBy(FloatSize(0, 10));
-  EXPECT_EQ(0, remaining_delta.height());
+  ScrollOffset remaining_delta =
+      web_view->GetBrowserControls().ScrollBy(ScrollOffset(0, 10));
+  EXPECT_EQ(0, remaining_delta.y());
 }
 
 // Scrollable subregions should scroll before browser controls
@@ -726,8 +726,8 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
   web_view->SetPageScaleFactor(2.0);
 
   // Fully scroll frameview but visualviewport remains scrollable
-  web_view->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 10000));
-  GetVisualViewport().SetLocation(FloatPoint(0, 0));
+  web_view->MainFrameImpl()->SetScrollOffset(gfx::PointF(0, 10000));
+  GetVisualViewport().SetLocation(gfx::PointF(0, 0));
   GetWebView()->MainFrameViewWidget()->HandleInputEvent(
       GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, -10.f));
   GetWebView()->MainFrameViewWidget()->HandleInputEvent(
@@ -740,8 +740,8 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
 
   web_view->GetBrowserControls().SetShownRatio(1, 1);
   // Fully scroll visual veiwport but frameview remains scrollable
-  web_view->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 0));
-  GetVisualViewport().SetLocation(FloatPoint(0, 10000));
+  web_view->MainFrameImpl()->SetScrollOffset(gfx::PointF(0, 0));
+  GetVisualViewport().SetLocation(gfx::PointF(0, 10000));
   GetWebView()->MainFrameViewWidget()->HandleInputEvent(
       GenerateEvent(WebInputEvent::Type::kGestureScrollBegin, 0, -20.f));
   GetWebView()->MainFrameViewWidget()->HandleInputEvent(
@@ -754,8 +754,8 @@ TEST_F(BrowserControlsTest, MAYBE(ScrollUpPastLimitDoesNotHide)) {
 
   web_view->GetBrowserControls().SetShownRatio(1, 1);
   // Fully scroll both frameview and visual viewport
-  web_view->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 10000));
-  GetVisualViewport().SetLocation(FloatPoint(0, 10000));
+  web_view->MainFrameImpl()->SetScrollOffset(gfx::PointF(0, 10000));
+  GetVisualViewport().SetLocation(gfx::PointF(0, 10000));
   VerticalScroll(-30.f);
   // Browser controls should not move because neither frameview nor visual
   // viewport
@@ -1318,10 +1318,10 @@ TEST_F(BrowserControlsTest,
     ASSERT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 
     EXPECT_EQ(expected_visual_offset,
-              GetVisualViewport().GetScrollOffset().height());
+              GetVisualViewport().GetScrollOffset().y());
     EXPECT_EQ(expected_layout_offset,
-              view->LayoutViewport()->GetScrollOffset().height());
-    EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().height());
+              view->LayoutViewport()->GetScrollOffset().y());
+    EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().y());
 
     web_view->MainFrameViewWidget()->HandleInputEvent(
         GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));
@@ -1333,11 +1333,10 @@ TEST_F(BrowserControlsTest,
       gfx::Size(800, layout_viewport_height + browser_controls_height),
       browser_controls_height, 0, false);
   UpdateAllLifecyclePhases();
-  ASSERT_EQ(expected_visual_offset,
-            GetVisualViewport().GetScrollOffset().height());
+  ASSERT_EQ(expected_visual_offset, GetVisualViewport().GetScrollOffset().y());
   ASSERT_EQ(expected_layout_offset,
-            view->LayoutViewport()->GetScrollOffset().height());
-  ASSERT_EQ(expected_root_offset, root_viewport->GetScrollOffset().height());
+            view->LayoutViewport()->GetScrollOffset().y());
+  ASSERT_EQ(expected_root_offset, root_viewport->GetScrollOffset().y());
 
   // Now scroll back up just enough to show the browser controls. The browser
   // controls should shrink both viewports but the layout viewport by a greater
@@ -1357,7 +1356,7 @@ TEST_F(BrowserControlsTest,
         mojom::blink::ScrollType::kProgrammatic);
 
     ASSERT_EQ(80.f, web_view->GetBrowserControls().ContentOffset());
-    EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().height());
+    EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().y());
 
     web_view->MainFrameViewWidget()->HandleInputEvent(
         GenerateEvent(WebInputEvent::Type::kGestureScrollEnd));

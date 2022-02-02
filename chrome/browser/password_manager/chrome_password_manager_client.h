@@ -10,8 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -181,12 +180,10 @@ class ChromePasswordManagerClient
       const override;
   password_manager::PasswordReuseManager* GetPasswordReuseManager()
       const override;
+  password_manager::PasswordScriptsFetcher* GetPasswordScriptsFetcher()
+      override;
   password_manager::SyncState GetPasswordSyncState() const override;
   bool WasLastNavigationHTTPError() const override;
-
-#if defined(OS_ANDROID)
-  bool WasCredentialLeakDialogShown() const override;
-#endif  // defined(OS_ANDROID)
 
   net::CertStatus GetMainFrameCertStatus() const override;
   void PromptUserToEnableAutosignin() override;
@@ -253,6 +250,7 @@ class ChromePasswordManagerClient
   password_manager::FieldInfoManager* GetFieldInfoManager() const override;
   password_manager::WebAuthnCredentialsDelegate*
   GetWebAuthnCredentialsDelegate() override;
+  version_info::Channel GetChannel() const override;
 
   // autofill::mojom::PasswordGenerationDriver overrides.
   void AutomaticGenerationAvailable(
@@ -301,10 +299,6 @@ class ChromePasswordManagerClient
 
   password_manager::CredentialCache* GetCredentialCacheForTesting() {
     return &credential_cache_;
-  }
-
-  void SetCredentialLeakDialogWasShownForTesting(bool value) {
-    was_leak_dialog_shown_ = value;
   }
 #endif
 
@@ -367,7 +361,7 @@ class ChromePasswordManagerClient
       content::RenderFrameHost* frame_host,
       const gfx::RectF& bounds_in_frame_coordinates);
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
   password_manager::PasswordManager password_manager_;
   password_manager::PasswordFeatureManagerImpl password_feature_manager_;
@@ -388,16 +382,13 @@ class ChromePasswordManagerClient
   // reset when ime finish composing text event is triggered.
   std::u16string last_composing_text_;
 
-  // Whether a leak warning was shown. Used only for tests or when
-  // kPasswordChange feature is enabled.
-  bool was_leak_dialog_shown_ = false;
-
   SaveUpdatePasswordMessageDelegate save_update_password_message_delegate_;
   GeneratedPasswordSavedMessageDelegate
       generated_password_saved_message_delegate_;
 #endif  // defined(OS_ANDROID)
 
-  password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
+  raw_ptr<password_manager::ContentPasswordManagerDriverFactory>
+      driver_factory_;
 
   ChromeWebAuthnCredentialsDelegate webauthn_credentials_delegate_;
 
@@ -410,7 +401,7 @@ class ChromePasswordManagerClient
       password_generation_driver_receivers_;
 
   // Observer for password generation popup.
-  PasswordGenerationPopupObserver* observer_;
+  raw_ptr<PasswordGenerationPopupObserver> observer_;
 
   // Controls the popup
   base::WeakPtr<PasswordGenerationPopupControllerImpl> popup_controller_;

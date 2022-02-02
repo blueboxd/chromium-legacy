@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "ash/components/drivefs/drivefs_bootstrap.h"
 #include "base/bind.h"
@@ -16,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -479,7 +479,7 @@ class DriveIntegrationService::DriveFsHolder
                       this,
                       content::GetNetworkConnectionTracker(),
                       base::DefaultClock::GetInstance(),
-                      chromeos::disks::DiskMountManager::GetInstance(),
+                      ash::disks::DiskMountManager::GetInstance(),
                       std::make_unique<base::OneShotTimer>()) {}
 
   DriveFsHolder(const DriveFsHolder&) = delete;
@@ -1168,6 +1168,18 @@ void DriveIntegrationService::LocateFilesByItemIds(
   GetDriveFsInterface()->LocateFilesByItemIds(item_ids, std::move(callback));
 }
 
+void DriveIntegrationService::GetQuotaUsage(
+    drivefs::mojom::DriveFs::GetQuotaUsageCallback callback) {
+  if (!IsMounted() || !GetDriveFsInterface()) {
+    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
+    return;
+  }
+
+  GetDriveFsInterface()->GetQuotaUsage(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+}
+
 void DriveIntegrationService::RestartDrive() {
   MaybeRemountFileSystem(base::TimeDelta(), false);
 }
@@ -1221,6 +1233,15 @@ void DriveIntegrationService::LoadAccountSettings() {
   }
 }
 
+void DriveIntegrationService::GetThumbnail(const base::FilePath& path,
+                                           bool crop_to_square,
+                                           GetThumbnailCallback callback) {
+  if (GetDriveFsInterface()) {
+    GetDriveFsInterface()->GetThumbnail(path, crop_to_square,
+                                        std::move(callback));
+  }
+}
+
 //===================== DriveIntegrationServiceFactory =======================
 
 DriveIntegrationServiceFactory::FactoryCallback*
@@ -1245,6 +1266,8 @@ DriveIntegrationService* DriveIntegrationServiceFactory::GetForProfile(
 // static
 DriveIntegrationService* DriveIntegrationServiceFactory::FindForProfile(
     Profile* profile) {
+  if (!profile)  // crbug.com/1254581
+    return nullptr;
   return static_cast<DriveIntegrationService*>(
       GetInstance()->GetServiceForBrowserContext(profile, false));
 }

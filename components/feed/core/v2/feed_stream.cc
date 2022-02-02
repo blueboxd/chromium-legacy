@@ -258,6 +258,15 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
   Stream& stream = GetStream(result.stream_type);
   if (result.load_type == LoadType::kManualRefresh)
     UnloadModel(result.stream_type);
+
+  // TODO(crbug.com/1268575): SetLastFetchHadNoticeCard is duplicated here to
+  // ensure that the pref is updated before LoadModel(), which needs this
+  // information. This is fragile, we should instead store this information
+  // along with the stream.
+  if (result.fetched_content_has_notice_card.has_value())
+    feed::prefs::SetLastFetchHadNoticeCard(
+        *profile_prefs_, *result.fetched_content_has_notice_card);
+
   if (result.update_request) {
     auto model = std::make_unique<StreamModel>(&stream_model_context_);
     model->Update(std::move(result.update_request));
@@ -320,6 +329,19 @@ void FeedStream::StreamLoadComplete(LoadStreamTask::Result result) {
   }
 }
 
+LoggingParameters FeedStream::GetLoggingParameters(
+    const StreamType& stream_type) {
+  LoggingParameters logging_params;
+  logging_params.client_instance_id = GetClientInstanceId();
+  logging_params.logging_enabled = IsActivityLoggingEnabled(stream_type);
+  logging_params.view_actions_enabled = CanLogViews();
+  // We provide account name even if logging is disabled, so that account name
+  // can be verified for action uploads.
+  logging_params.email = delegate_->GetSyncSignedInEmail();
+
+  return logging_params;
+}
+
 void FeedStream::OnEnterBackground() {
   metrics_reporter_->OnEnterBackground();
   if (GetFeedConfig().upload_actions_on_enter_background) {
@@ -338,6 +360,7 @@ bool FeedStream::IsActivityLoggingEnabled(const StreamType& stream_type) const {
 
 void FeedStream::UpdateIsActivityLoggingEnabled(const StreamType& stream_type) {
   Stream& stream = GetStream(stream_type);
+
   stream.is_activity_logging_enabled =
       stream.model &&
       ((stream.model->signed_in() && stream.model->logging_enabled()) ||
@@ -634,6 +657,14 @@ void FeedStream::ProcessThereAndBackAgain(base::StringPiece data) {
   }
 }
 
+void FeedStream::ProcessThereAndBackAgain(
+    base::StringPiece data,
+    const feedui::LoggingParameters& logging_parameters) {
+  // TODO(crbug.com/1268575): Thread logging parameters to UploadActionTask when
+  // it's always available.
+  ProcessThereAndBackAgain(data);
+}
+
 void FeedStream::ProcessViewAction(base::StringPiece data) {
   if (!CanLogViews()) {
     return;
@@ -644,6 +675,14 @@ void FeedStream::ProcessViewAction(base::StringPiece data) {
   UploadAction(std::move(msg), /*upload_now=*/false,
                base::BindOnce(&FeedStream::UploadActionsComplete,
                               base::Unretained(this)));
+}
+
+void FeedStream::ProcessViewAction(
+    base::StringPiece data,
+    const feedui::LoggingParameters& logging_parameters) {
+  // TODO(crbug.com/1268575): Thread logging parameters to UploadActionTask when
+  // it's always available.
+  ProcessViewAction(data);
 }
 
 void FeedStream::UploadActionsComplete(UploadActionsTask::Result result) {
@@ -1125,8 +1164,16 @@ void FeedStream::LoadModel(const StreamType& stream_type,
   stream.model = std::move(model);
   stream.model->SetStreamType(stream_type);
   stream.model->SetStoreObserver(this);
+
+  // TODO(crbug.com/1268575): Once the internal changes to support per-item
+  // logging parameters is submitted, we should remove
+  // UpdateIsActivityLoggingEnabled() and instead store the logging parameters
+  // on the model.
+  UpdateIsActivityLoggingEnabled(stream_type);
+
   stream.content_ids = stream.model->GetContentIds();
-  stream.surface_updater->SetModel(stream.model.get());
+  stream.surface_updater->SetModel(stream.model.get(),
+                                   GetLoggingParameters(stream_type));
   ScheduleModelUnloadIfNoSurfacesAttached(stream_type);
   MaybeNotifyHasUnreadContent(stream_type);
 }
@@ -1159,7 +1206,7 @@ void FeedStream::UnloadModel(const StreamType& stream_type) {
   Stream* stream = FindStream(stream_type);
   if (!stream || !stream->model)
     return;
-  stream->surface_updater->SetModel(nullptr);
+  stream->surface_updater->SetModel(nullptr, LoggingParameters());
   stream->model.reset();
 }
 

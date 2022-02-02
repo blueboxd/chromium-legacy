@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -26,8 +27,8 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
-#if defined(OS_MAC)
-#include "base/mac/mac_util.h"
+#if defined(OS_APPLE)
+#include "base/mac/backup_util.h"
 #endif
 
 namespace history {
@@ -107,9 +108,9 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!committer.Begin())
     return LogInitFailure(InitStep::TRANSACTION_BEGIN);
 
-#if defined(OS_MAC)
+#if defined(OS_APPLE)
   // Exclude the history file from backups.
-  base::mac::SetFileBackupExclusion(history_name);
+  base::mac::SetBackupExclusion(history_name);
 #endif
 
   // Prime the cache.

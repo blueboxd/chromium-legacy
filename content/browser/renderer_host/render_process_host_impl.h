@@ -17,6 +17,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
@@ -271,6 +272,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool HostHasNotBeenUsed() override;
   void SetProcessLock(const IsolationContext& isolation_context,
                       const ProcessLock& process_lock) override;
+  ProcessLock GetProcessLock() override;
   bool IsProcessLockedToSiteForTesting() override;
   void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
@@ -291,6 +293,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void WriteIntoTrace(
       perfetto::TracedProto<perfetto::protos::pbzero::RenderProcessHost> proto)
       override;
+  void EnableBlinkRuntimeFeatures(
+      const std::vector<std::string>& features) override;
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   void DumpProfilingData(base::OnceClosure callback) override;
 #endif
@@ -828,6 +832,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // change.
   void UpdateProcessPriority();
 
+  // When the |kChangeServiceWorkerPriorityForClientForegroundStateChange| is
+  // enabled, if this render process's foreground state has changed, notify its
+  // controller service worker to update its process priority if needed.
+  void UpdateControllerServiceWorkerProcessPriority();
+
   // Called if the backgrounded or visibility state of the process changes.
   void SendProcessStateToRenderer();
 
@@ -844,6 +853,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Destroy all objects that can cause methods to be invoked on this object or
   // any other that hang off it.
   void ResetIPC();
+
+  // Returns whether this RenderProcessHost contains at least one
+  // RenderFrameHost, but all of its RenderFrameHosts are non-live. In this case
+  // the RenderProcessHost is needed but the renderer process is not.
+  bool HasOnlyNonLiveRenderFrameHosts();
 
   // Get an existing RenderProcessHost associated with the given browser
   // context, if possible.  The renderer process is chosen randomly from
@@ -1011,7 +1025,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   BrowserContext* browser_context_ = nullptr;
 
   // Owned by |browser_context_|.
-  StoragePartitionImpl* const storage_partition_impl_;
+  const raw_ptr<StoragePartitionImpl> storage_partition_impl_;
 
   // Owns the singular DomStorageProvider binding established by this renderer.
   mojo::Receiver<blink::mojom::DomStorageProvider>

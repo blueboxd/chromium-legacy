@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
 #include "build/build_config.h"
@@ -29,6 +28,9 @@ class TranslatorLinkListener : public IPC::Listener {
     channel_ = IPC::Channel::Create(handle, IPC::Channel::MODE_SERVER, this);
     CHECK(channel_->Connect());
   }
+
+  TranslatorLinkListener(const TranslatorLinkListener&) = delete;
+  TranslatorLinkListener& operator=(const TranslatorLinkListener&) = delete;
 
   // Needed for handling sync messages in OnMessageReceived().
   bool Send(IPC::Message* message) {
@@ -67,8 +69,6 @@ class TranslatorLinkListener : public IPC::Listener {
 
   std::unique_ptr<IPC::Channel> channel_;
   CallbackFunc func_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslatorLinkListener);
 };
 
 void ServeLinkRequest(CallbackFunc func) {

@@ -4,6 +4,7 @@
 
 #include "ipc/ipc_perftest_util.h"
 
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_channel_proxy.h"

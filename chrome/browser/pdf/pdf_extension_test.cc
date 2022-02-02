@@ -18,8 +18,9 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -166,7 +167,6 @@ using ::guest_view::TestGuestViewManagerFactory;
 using ::pdf_extension_test_util::ConvertPageCoordToScreenCoord;
 using ::testing::Contains;
 using ::testing::IsEmpty;
-using ::testing::MatchesRegex;
 using ::testing::Not;
 using ::testing::StartsWith;
 using ::ui::AXTreeFormatter;
@@ -1091,6 +1091,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, PageChange) {
   RunTestsInJsModule("page_change_test.js", "test-bookmarks.pdf");
 }
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, ScrollWithFormFieldFocusedTest) {
+  RunTestsInJsModule("scroll_with_form_field_focused_test.js",
+                     "test-bookmarks.pdf");
+}
+
 IN_PROC_BROWSER_TEST_P(PDFExtensionJSTest, Metrics) {
   RunTestsInJsModule("metrics_test.js", "test.pdf");
 }
@@ -1674,8 +1679,12 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, SelectAllShortcut) {
                             /*alt=*/false, command);
   run_loop.Run();
 
-  EXPECT_THAT(base::UTF16ToUTF8(view->GetSelectedText()),
-              MatchesRegex("this is some text\r?\nsome more text"));
+#if defined(OS_WIN)
+  constexpr char kExpectedText[] = "this is some text\r\nsome more text";
+#else
+  constexpr char kExpectedText[] = "this is some text\nsome more text";
+#endif
+  EXPECT_EQ(base::UTF16ToUTF8(view->GetSelectedText()), kExpectedText);
 }
 
 // TODO(crbug.com/1253714): Add tests for using space and shift+space shortcuts
@@ -1737,8 +1746,8 @@ class PrintObserver : public printing::PrintViewManagerBase::Observer {
 #else
   using PrintViewManagerImpl = printing::PrintViewManagerBasic;
 #endif
-  PrintViewManagerImpl* const print_view_manager_;
-  const content::RenderFrameHost* const rfh_;
+  const raw_ptr<PrintViewManagerImpl> print_view_manager_;
+  const raw_ptr<const content::RenderFrameHost> rfh_;
   base::RunLoop run_loop_;
 };
 
@@ -1768,11 +1777,16 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintCommand) {
   print_observer.WaitForPrintPreview();
 }
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommand) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest,
+                       ContextMenuPrintCommandExtensionMainFrame) {
   content::WebContents* guest_contents =
       LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
   ASSERT_TRUE(plugin_frame);
+
+  // Makes sure that the correct frame invoked the context menu.
+  content::ContextMenuInterceptor menu_interceptor(
+      guest_contents->GetMainFrame());
 
   // Executes the print command as soon as the context menu is shown.
   ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
@@ -1781,6 +1795,27 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommand) {
   guest_contents->GetMainFrame()->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
   print_observer.WaitForPrintPreview();
+  menu_interceptor.Wait();
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, ContextMenuPrintCommandPluginFrame) {
+  content::WebContents* guest_contents =
+      LoadPdfGetGuestContents(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
+  ASSERT_TRUE(plugin_frame);
+
+  // Makes sure that the correct frame invoked the context menu.
+  content::ContextMenuInterceptor menu_interceptor(plugin_frame);
+
+  // Executes the print command as soon as the context menu is shown.
+  ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
+
+  PrintObserver print_observer(guest_contents, plugin_frame);
+  SetInputFocusOnPlugin(guest_contents);
+  plugin_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
+      {1, 1}, ui::MENU_SOURCE_MOUSE);
+  print_observer.WaitForPrintPreview();
+  menu_interceptor.Wait();
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PrintButton) {
@@ -2120,9 +2155,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
       content::FindAccessibilityNode(guest_contents, find_criteria);
   ASSERT_TRUE(pdf_root);
 
-  auto context_menu_interceptor =
-      std::make_unique<content::ContextMenuInterceptor>(
-          GetPluginFrame(guest_contents));
+  content::ContextMenuInterceptor context_menu_interceptor(
+      GetPluginFrame(guest_contents));
 
   ContextMenuWaiter menu_waiter;
   // Invoke kShowContextMenu accessibility action on the node with the kPdfRoot
@@ -2132,9 +2166,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
   pdf_root->AccessibilityPerformAction(data);
   menu_waiter.WaitForMenuOpenAndClose();
 
-  context_menu_interceptor->Wait();
+  context_menu_interceptor.Wait();
   blink::UntrustworthyContextMenuParams params =
-      context_menu_interceptor->get_params();
+      context_menu_interceptor.get_params();
 
   // Validate the context menu params for selection.
   EXPECT_EQ(blink::mojom::ContextMenuDataMediaType::kPlugin, params.media_type);
@@ -2219,6 +2253,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, PdfAndHtml) {
   EXPECT_EQ(pdf_frames[0]->GetLastCommittedOrigin(),
             iframe->GetLastCommittedOrigin());
   EXPECT_NE(pdf_frames[0]->GetProcess(), iframe->GetProcess());
+  EXPECT_FALSE(content::HasOriginKeyedProcess(pdf_frames[0]));
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionIsolatedContentTest, DataNavigation) {
@@ -2303,7 +2338,7 @@ class PDFExtensionLinkClickTest : public PDFExtensionTest {
   WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
-  WebContents* guest_contents_;
+  raw_ptr<WebContents> guest_contents_;
 };
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionLinkClickTest, CtrlLeft) {
@@ -2533,7 +2568,7 @@ class PDFExtensionInternalLinkClickTest : public PDFExtensionTest {
   WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
-  WebContents* guest_contents_;
+  raw_ptr<WebContents> guest_contents_;
 };
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionInternalLinkClickTest, CtrlLeft) {
@@ -2646,22 +2681,31 @@ class PDFExtensionComboBoxTest : public PDFExtensionTest {
   }
 
   void TypeHello() {
-    auto* web_contents = GetWebContentsForInputRouting();
-    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('H'),
-                              ui::DomCode::US_H, ui::VKEY_H, false, false,
-                              false, false);
-    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('E'),
-                              ui::DomCode::US_E, ui::VKEY_E, false, false,
-                              false, false);
-    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('L'),
-                              ui::DomCode::US_L, ui::VKEY_L, false, false,
-                              false, false);
-    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('L'),
-                              ui::DomCode::US_L, ui::VKEY_L, false, false,
-                              false, false);
-    content::SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('O'),
-                              ui::DomCode::US_O, ui::VKEY_O, false, false,
-                              false, false);
+    struct KeyData {
+      char ch;
+      ui::DomCode code;
+      ui::KeyboardCode key_code;
+    };
+
+    constexpr KeyData kData[] = {
+        {'H', ui::DomCode::US_H, ui::VKEY_H},
+        {'E', ui::DomCode::US_E, ui::VKEY_E},
+        {'L', ui::DomCode::US_L, ui::VKEY_L},
+        {'L', ui::DomCode::US_L, ui::VKEY_L},
+        {'O', ui::DomCode::US_O, ui::VKEY_O},
+    };
+
+    auto* contents = GetWebContentsForInputRouting();
+    auto* rwh = GetPluginFrame(contents)->GetRenderWidgetHost();
+    for (const auto& data : kData) {
+      content::SimulateKeyPress(contents, ui::DomKey::FromCharacter(data.ch),
+                                data.code, data.key_code, /*control=*/false,
+                                /*shift=*/false, /*alt=*/false,
+                                /*command=*/false);
+      content::InputEventAckWaiter key_waiter(
+          rwh, blink::WebInputEvent::Type::kKeyUp);
+      key_waiter.Wait();
+    }
   }
 
   // Presses the left arrow key.
@@ -2697,7 +2741,7 @@ class PDFExtensionComboBoxTest : public PDFExtensionTest {
   WebContents* GetWebContentsForInputRouting() { return guest_contents_; }
 
  private:
-  WebContents* guest_contents_ = nullptr;
+  raw_ptr<WebContents> guest_contents_ = nullptr;
 };
 
 class PDFExtensionSaveTest : public PDFExtensionComboBoxTest {
@@ -2729,7 +2773,13 @@ class PDFExtensionSaveTest : public PDFExtensionComboBoxTest {
   base::ScopedTempDir temp_dir_;
 };
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionSaveTest, Save) {
+// Flaky, http://crbug.com/1269103
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_Save DISABLED_Save
+#else
+#define MAYBE_Save Save
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionSaveTest, MAYBE_Save) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::FilePath save_path = GetDownloadDir().AppendASCII("edited.pdf");
@@ -2792,7 +2842,13 @@ class PDFExtensionSaveWithPolicyTest : public PDFExtensionSaveTest {
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest, SaveWithPolicy) {
+// Flaky, http://crbug.com/1269103
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_SaveWithPolicy DISABLED_SaveWithPolicy
+#else
+#define MAYBE_SaveWithPolicy SaveWithPolicy
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest, MAYBE_SaveWithPolicy) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   base::FilePath save_path = GetDownloadDir().AppendASCII("combobox_form.pdf");
@@ -2809,8 +2865,15 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest, SaveWithPolicy) {
   WaitForSavedPdf(save_path);
 }
 
+// Flaky, http://crbug.com/1269103
+#if defined(OS_LINUX)
+#define MAYBE_SaveWithPolicyUniqueNumberSuffix \
+  DISABLED_SaveWithPolicyUniqueNumberSuffix
+#else
+#define MAYBE_SaveWithPolicyUniqueNumberSuffix SaveWithPolicyUniqueNumberSuffix
+#endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest,
-                       SaveWithPolicyUniqueNumberSuffix) {
+                       MAYBE_SaveWithPolicyUniqueNumberSuffix) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   CreateConflictingFilenames(GetDownloadDir().AppendASCII("combobox_form.pdf"),
@@ -2832,8 +2895,15 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest,
   WaitForSavedPdf(save_path);
 }
 
+// Flaky, http://crbug.com/1269103
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_SaveWithPolicyUniqueTimeSuffix \
+  DISABLED_SaveWithPolicyUniqueTimeSuffix
+#else
+#define MAYBE_SaveWithPolicyUniqueTimeSuffix SaveWithPolicyUniqueTimeSuffix
+#endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionSaveWithPolicyTest,
-                       SaveWithPolicyUniqueTimeSuffix) {
+                       MAYBE_SaveWithPolicyUniqueTimeSuffix) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   CreateConflictingFilenames(GetDownloadDir().AppendASCII("combobox_form.pdf"),
@@ -2928,8 +2998,15 @@ class PDFExtensionClipboardTest : public PDFExtensionComboBoxTest,
   bool clipboard_changed_ = false;
 };
 
+// TODO(crbug.com/1268983): Fix flakiness on Linux and reenable.
+#if defined(OS_LINUX)
+#define MAYBE_IndividualShiftRightArrowPresses \
+  DISABLED_IndividualShiftRightArrowPresses
+#else
+#define MAYBE_IndividualShiftRightArrowPresses IndividualShiftRightArrowPresses
+#endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
-                       IndividualShiftRightArrowPresses) {
+                       MAYBE_IndividualShiftRightArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
   // Give the editable combo box focus.
@@ -2976,8 +3053,15 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
   SendCopyCommandAndCheckCopyPasteClipboard("HEL");
 }
 
+// Flaky, http://crbug.com/1269104
+#if defined(OS_LINUX)
+#define MAYBE_CombinedShiftRightArrowPresses \
+  DISABLED_CombinedShiftRightArrowPresses
+#else
+#define MAYBE_CombinedShiftRightArrowPresses CombinedShiftRightArrowPresses
+#endif
 IN_PROC_BROWSER_TEST_P(PDFExtensionClipboardTest,
-                       CombinedShiftRightArrowPresses) {
+                       MAYBE_CombinedShiftRightArrowPresses) {
   LoadTestComboBoxPdfGetGuestContents();
 
   // Give the editable combo box focus.
@@ -3243,8 +3327,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 
   // Observe context menu IPC.
   content::RenderFrameHost* plugin_frame = GetPluginFrame(guest_contents);
-  auto context_menu_interceptor =
-      std::make_unique<content::ContextMenuInterceptor>(plugin_frame);
+  content::ContextMenuInterceptor context_menu_interceptor(plugin_frame);
 
   ContextMenuWaiter menu_observer;
 
@@ -3261,9 +3344,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   ASSERT_EQ(context_menu_position.y(), menu_observer.params().y);
 
   // We expect the IPC, received from the renderer, to be using local coords.
-  context_menu_interceptor->Wait();
+  context_menu_interceptor.Wait();
   blink::UntrustworthyContextMenuParams params =
-      context_menu_interceptor->get_params();
+      context_menu_interceptor.get_params();
   gfx::Point received_context_menu_position =
       plugin_frame->GetRenderWidgetHost()
           ->GetView()

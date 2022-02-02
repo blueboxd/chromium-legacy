@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/lacros/lacros_service.h"
+#include "components/policy/core/common/cloud/affiliation.h"
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_proto_decoders.h"
@@ -41,7 +42,6 @@ PolicyLoaderLacros::PolicyLoaderLacros(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     PolicyPerProfileFilter per_profile)
     : AsyncPolicyLoader(task_runner, /*periodic_updates=*/false),
-      task_runner_(task_runner),
       per_profile_(per_profile) {
   auto* lacros_service = chromeos::LacrosService::Get();
   const crosapi::mojom::BrowserInitParams* init_params =
@@ -66,7 +66,7 @@ PolicyLoaderLacros::~PolicyLoaderLacros() {
 }
 
 void PolicyLoaderLacros::InitOnBackgroundThread() {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner()->RunsTasksInCurrentSequence());
   DETACH_FROM_SEQUENCE(sequence_checker_);
   // We add this as observer on background thread to avoid a situation when
   // notification comes after the object is destroyed, but not removed from the
@@ -118,7 +118,8 @@ std::unique_ptr<PolicyBundle> PolicyLoaderLacros::Load() {
   // Remember if the policy is managed or not.
   g_is_main_user_managed_ = validator.policy_data()->state() ==
                             enterprise_management::PolicyData::ACTIVE;
-  if (g_is_main_user_managed_) {
+  if (g_is_main_user_managed_ &&
+      per_profile_ == PolicyPerProfileFilter::kFalse) {
     *MainUserPolicyDataStorage() = *validator.policy_data();
   }
 
@@ -132,8 +133,27 @@ void PolicyLoaderLacros::OnPolicyUpdated(
   Reload(true);
 }
 
+// static
 bool PolicyLoaderLacros::IsMainUserManaged() {
   return g_is_main_user_managed_;
+}
+
+// static
+bool PolicyLoaderLacros::IsMainUserAffiliated() {
+  const enterprise_management::PolicyData* policy =
+      policy::PolicyLoaderLacros::main_user_policy_data();
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosService::Get()->init_params();
+  if (policy && !policy->user_affiliation_ids().empty() && init_params &&
+      init_params->device_properties &&
+      init_params->device_properties->device_affiliation_ids.has_value()) {
+    const auto& user_ids = policy->user_affiliation_ids();
+    const auto& device_ids =
+        init_params->device_properties->device_affiliation_ids.value();
+    return policy::IsAffiliated({user_ids.begin(), user_ids.end()},
+                                {device_ids.begin(), device_ids.end()});
+  }
+  return false;
 }
 
 // static

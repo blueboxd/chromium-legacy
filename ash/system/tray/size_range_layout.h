@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
 
@@ -46,7 +45,7 @@ class ASH_EXPORT SizeRangeLayout : public views::LayoutManager {
   SizeRangeLayout();
 
   // Create a layout using the given size set as the minimum and maximum sizes.
-  SizeRangeLayout(const gfx::Size& size);
+  explicit SizeRangeLayout(const gfx::Size& size);
 
   // Create a layout with the given minimum and maximum preferred sizes. If
   // |max_size| is smaller than |min_size| then |min_size| will be set to the

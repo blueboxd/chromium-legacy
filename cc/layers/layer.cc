@@ -13,6 +13,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -53,15 +54,15 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     SkColor background_color;
     Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
-    RegionCaptureBounds capture_bounds;
+    viz::RegionCaptureBounds capture_bounds;
     Region wheel_event_region;
     ElementId element_id;
   } inputs;
-  void* layer_tree_inputs;
+  raw_ptr<void> layer_tree_inputs;
   int int_fields[6];
   gfx::Vector2dF offset;
   unsigned bitfields;
-  void* debug_info;
+  raw_ptr<void> debug_info;
 };
 
 static_assert(sizeof(Layer) == sizeof(SameSizeAsLayer),
@@ -540,9 +541,8 @@ SkColor Layer::SafeOpaqueBackgroundColor(SkColor host_background_color) const {
 
 SkColor Layer::SafeOpaqueBackgroundColor() const {
   SkColor host_background_color =
-      layer_tree_host_
-          ? layer_tree_host_->pending_commit_state()->background_color
-          : layer_tree_inputs()->safe_opaque_background_color;
+      layer_tree_host_ ? layer_tree_host_->background_color()
+                       : layer_tree_inputs()->safe_opaque_background_color;
   return SafeOpaqueBackgroundColor(host_background_color);
 }
 
@@ -613,7 +613,7 @@ gfx::RectF Layer::EffectiveClipRect() {
 void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
   auto& inputs = EnsureLayerTreeInputs();
-  if (inputs.mask_layer == mask_layer)
+  if (inputs.mask_layer.get() == mask_layer)
     return;
   if (inputs.mask_layer) {
     DCHECK_EQ(this, inputs.mask_layer->parent());
@@ -957,7 +957,7 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollOffset(const gfx::Vector2dF& scroll_offset) {
+void Layer::SetScrollOffset(const gfx::PointF& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
 
   auto& inputs = EnsureLayerTreeInputs();
@@ -973,7 +973,7 @@ void Layer::SetScrollOffset(const gfx::Vector2dF& scroll_offset) {
   SetNeedsCommit();
 }
 
-void Layer::SetScrollOffsetFromImplSide(const gfx::Vector2dF& scroll_offset) {
+void Layer::SetScrollOffsetFromImplSide(const gfx::PointF& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
   // This function only gets called during a BeginMainFrame, so there
   // is no need to call SetNeedsUpdate here.
@@ -1018,7 +1018,7 @@ void Layer::UpdatePropertyTreeScrollOffset() {
 }
 
 void Layer::SetDidScrollCallback(
-    base::RepeatingCallback<void(const gfx::Vector2dF&, const ElementId&)>
+    base::RepeatingCallback<void(const gfx::PointF&, const ElementId&)>
         callback) {
   EnsureLayerTreeInputs().did_scroll_callback = std::move(callback);
 }
@@ -1119,7 +1119,7 @@ void Layer::SetTouchActionRegion(TouchActionRegion touch_action_region) {
   SetNeedsCommit();
 }
 
-void Layer::SetCaptureBounds(RegionCaptureBounds bounds) {
+void Layer::SetCaptureBounds(viz::RegionCaptureBounds bounds) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.capture_bounds == bounds) {
     return;
@@ -1184,13 +1184,23 @@ void Layer::SetTransformTreeIndex(int index) {
   SetNeedsPushProperties();
 }
 
-int Layer::transform_tree_index() const {
-  if (!layer_tree_host_ ||
-      layer_tree_host_->property_trees()->sequence_number !=
-          property_tree_sequence_number_) {
+int Layer::transform_tree_index(const PropertyTrees& property_trees) const {
+  if (property_trees.sequence_number != property_tree_sequence_number_) {
     return TransformTree::kInvalidNodeId;
   }
   return transform_tree_index_;
+}
+
+bool Layer::transform_tree_index_is_valid(
+    const PropertyTrees& property_trees) const {
+  return transform_tree_index_ != TransformTree::kInvalidNodeId &&
+         property_trees.sequence_number == property_tree_sequence_number_;
+}
+
+int Layer::transform_tree_index() const {
+  if (!IsAttached())
+    return TransformTree::kInvalidNodeId;
+  return transform_tree_index(*layer_tree_host()->property_trees());
 }
 
 void Layer::SetClipTreeIndex(int index) {
@@ -1201,13 +1211,23 @@ void Layer::SetClipTreeIndex(int index) {
   SetNeedsPushProperties();
 }
 
-int Layer::clip_tree_index() const {
-  if (!layer_tree_host_ ||
-      layer_tree_host_->property_trees()->sequence_number !=
-          property_tree_sequence_number_) {
+int Layer::clip_tree_index(const PropertyTrees& property_trees) const {
+  if (property_trees.sequence_number != property_tree_sequence_number_) {
     return ClipTree::kInvalidNodeId;
   }
   return clip_tree_index_;
+}
+
+bool Layer::clip_tree_index_is_valid(
+    const PropertyTrees& property_trees) const {
+  return clip_tree_index_ != ClipTree::kInvalidNodeId &&
+         property_trees.sequence_number == property_tree_sequence_number_;
+}
+
+int Layer::clip_tree_index() const {
+  if (!IsAttached())
+    return ClipTree::kInvalidNodeId;
+  return clip_tree_index(*layer_tree_host()->property_trees());
 }
 
 void Layer::SetEffectTreeIndex(int index) {
@@ -1218,13 +1238,23 @@ void Layer::SetEffectTreeIndex(int index) {
   SetNeedsPushProperties();
 }
 
-int Layer::effect_tree_index() const {
-  if (!layer_tree_host_ ||
-      layer_tree_host_->property_trees()->sequence_number !=
-          property_tree_sequence_number_) {
+int Layer::effect_tree_index(const PropertyTrees& property_trees) const {
+  if (property_trees.sequence_number != property_tree_sequence_number_) {
     return EffectTree::kInvalidNodeId;
   }
   return effect_tree_index_;
+}
+
+bool Layer::effect_tree_index_is_valid(
+    const PropertyTrees& property_trees) const {
+  return effect_tree_index_ != EffectTree::kInvalidNodeId &&
+         property_trees.sequence_number == property_tree_sequence_number_;
+}
+
+int Layer::effect_tree_index() const {
+  if (!IsAttached())
+    return EffectTree::kInvalidNodeId;
+  return effect_tree_index(*layer_tree_host()->property_trees());
 }
 
 void Layer::SetScrollTreeIndex(int index) {
@@ -1235,13 +1265,23 @@ void Layer::SetScrollTreeIndex(int index) {
   SetNeedsPushProperties();
 }
 
-int Layer::scroll_tree_index() const {
-  if (!layer_tree_host_ ||
-      layer_tree_host_->property_trees()->sequence_number !=
-          property_tree_sequence_number_) {
+int Layer::scroll_tree_index(const PropertyTrees& property_trees) const {
+  if (property_trees.sequence_number != property_tree_sequence_number_) {
     return ScrollTree::kInvalidNodeId;
   }
   return scroll_tree_index_;
+}
+
+bool Layer::scroll_tree_index_is_valid(
+    const PropertyTrees& property_trees) const {
+  return scroll_tree_index_ != ScrollTree::kInvalidNodeId &&
+         property_trees.sequence_number == property_tree_sequence_number_;
+}
+
+int Layer::scroll_tree_index() const {
+  if (!IsAttached())
+    return ScrollTree::kInvalidNodeId;
+  return scroll_tree_index(*layer_tree_host()->property_trees());
 }
 
 void Layer::SetOffsetToTransformParent(gfx::Vector2dF offset) {
@@ -1350,10 +1390,13 @@ bool Layer::IsSnappedToPixelGridInTarget() {
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer,
-                             const CommitState& commit_state) {
+                             const CommitState& commit_state,
+                             const ThreadUnsafeCommitState& unsafe_state) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
+
+  const PropertyTrees& property_trees = unsafe_state.property_trees;
 
   // The element id should be set first because other setters may
   // depend on it. Referencing element id on a layer is
@@ -1364,10 +1407,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer,
   layer->SetSafeOpaqueBackgroundColor(
       SafeOpaqueBackgroundColor(commit_state.background_color));
   layer->SetBounds(inputs_.bounds);
-  layer->SetTransformTreeIndex(transform_tree_index());
-  layer->SetEffectTreeIndex(effect_tree_index());
-  layer->SetClipTreeIndex(clip_tree_index());
-  layer->SetScrollTreeIndex(scroll_tree_index());
+  layer->SetTransformTreeIndex(transform_tree_index(property_trees));
+  layer->SetEffectTreeIndex(effect_tree_index(property_trees));
+  layer->SetClipTreeIndex(clip_tree_index(property_trees));
+  layer->SetScrollTreeIndex(scroll_tree_index(property_trees));
   layer->SetOffsetToTransformParent(offset_to_transform_parent_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHitTestable(HitTestable());
@@ -1394,7 +1437,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer,
   // the pending tree will clobber any impl-side scrolling occuring on the
   // active tree. To do so, avoid scrolling the pending tree along with it
   // instead of trying to undo that scrolling later.
-  if (layer_tree_host_->mutator_host()->ScrollOffsetAnimationWasInterrupted(
+  if (unsafe_state.mutator_host->ScrollOffsetAnimationWasInterrupted(
           element_id())) {
     PropertyTrees* trees = layer->layer_tree_impl()->property_trees();
     trees->scroll_tree.SetScrollOffsetClobberActiveValue(layer->element_id());

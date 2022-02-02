@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
@@ -32,6 +33,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -192,7 +194,7 @@ class RenderFrameHostDestructionObserver : public WebContentsObserver {
  private:
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
   bool deleted_;
-  RenderFrameHost* render_frame_host_;
+  raw_ptr<RenderFrameHost> render_frame_host_;
 };
 
 // A NavigationThrottle implementation that blocks all outgoing navigation
@@ -262,9 +264,7 @@ bool HasErrorPageSiteInfo(SiteInstance* site_instance) {
 }
 
 bool HasErrorPageProcessLock(SiteInstance* site_instance) {
-  return ChildProcessSecurityPolicyImpl::GetInstance()
-      ->GetProcessLock(site_instance->GetProcess()->GetID())
-      .is_error_page();
+  return site_instance->GetProcess()->GetProcessLock().is_error_page();
 }
 
 }  // anonymous namespace
@@ -1455,8 +1455,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
       shell()->web_contents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
   EXPECT_EQ("/nocontent", shell()->web_contents()->GetVisibleURL().path());
-  EXPECT_FALSE(
-      shell()->web_contents()->GetController().GetLastCommittedEntry());
+  EXPECT_TRUE(shell()
+                  ->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
 
   // Renderer-initiated navigations should work.
   std::u16string expected_title = u"Title Of Awesomeness";
@@ -1509,15 +1512,18 @@ class RenderFrameHostManagerSpoofingTest : public RenderFrameHostManagerTest {
   }
 };
 
-// Helper to wait until a WebContent's NavigationController has a visible entry.
+// Helper to wait until a WebContent's NavigationController has a visible entry
+// that is not the initial NavigationEntry.
 class VisibleEntryWaiter : public WebContentsObserver {
  public:
   explicit VisibleEntryWaiter(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
   void Wait() {
-    if (web_contents()->GetController().GetVisibleEntry())
-      return;
+    if (auto* entry = web_contents()->GetController().GetVisibleEntry()) {
+      if (!entry->IsInitialEntry())
+        return;
+    }
     run_loop_.Run();
   }
 
@@ -1630,9 +1636,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerSpoofingTest,
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
-  // The visible entry should be null, resulting in about:blank in the address
-  // bar.
-  EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+  // The visible entry should be the initial entry, resulting in about:blank in
+  // the address bar.
+  EXPECT_TRUE(contents->GetController().GetVisibleEntry()->IsInitialEntry());
 }
 
 // Same as ShowLoadingURLUntilSpoof, but reloads the new popup before modifying
@@ -1688,9 +1694,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerSpoofingTest,
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
-  // The visible entry should be null, resulting in about:blank in the address
-  // bar.
-  EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+  // The visible entry should be the initial entry, resulting in about:blank in
+  // the address bar.
+  EXPECT_TRUE(contents->GetController().GetVisibleEntry()->IsInitialEntry());
 }
 
 // Similar but using document.open(): once a Document is opened, subsequent
@@ -1739,9 +1745,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerSpoofingTest,
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
-  // The visible entry should be null, resulting in about:blank in the address
-  // bar.
-  EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+  // The visible entry should be the initial entry, resulting in about:blank in
+  // the address bar.
+  EXPECT_TRUE(contents->GetController().GetVisibleEntry()->IsInitialEntry());
 }
 
 IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
@@ -2175,7 +2181,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // navigation.
   WebContents* contents = new_shell->web_contents();
   EXPECT_FALSE(contents->GetController().IsInitialNavigation());
-  EXPECT_FALSE(contents->GetController().GetVisibleEntry());
+  // The visible entry should be the entry for the synchronously committed
+  // about:blank, resulting in about:blank in the address bar.
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            contents->GetController().GetVisibleEntry()->GetURL());
 }
 
 // Crashes under ThreadSanitizer, http://crbug.com/356758.
@@ -2189,7 +2198,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 // renderer.
 IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, MAYBE_BackForwardNotStale) {
   StartEmbeddedServer();
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html")));
 
   // Visit a page on first site.
   EXPECT_TRUE(
@@ -2312,7 +2322,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       shell()->web_contents()->GetMainFrame()->GetRenderViewHost();
   SiteInstance* blank_site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
-  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), GURL::EmptyGURL());
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), GURL());
   EXPECT_EQ(blank_site_instance->GetSiteURL(), GURL::EmptyGURL());
   rvh_observers.EnsureRVHGetsDestructed(blank_rvh);
 
@@ -3335,6 +3345,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   Shell* new_shell = OpenPopup(shell(), GURL(url::kAboutBlankURL), "foo");
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             new_shell->web_contents()->GetSiteInstance());
+
+  // Do a document.open() so that the initial empty document's history entry
+  // won't get replaced.
+  EXPECT_TRUE(ExecJs(new_shell, "document.open();"));
 
   // Navigate the popup to a different site.
   EXPECT_TRUE(NavigateToURL(
@@ -4816,7 +4830,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
     // TODO(nasko): Investigate making a failing reload of a successful
     // navigation be classified as NEW_ENTRY instead, since with error page
     // isolation it involves a SiteInstance swap.
-    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_EXISTING_ENTRY,
+    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
               reload_observer.last_navigation_type());
   }
   EXPECT_EQ(3, nav_controller.GetEntryCount());
@@ -4833,7 +4847,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
     shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
     reload_observer.Wait();
     EXPECT_FALSE(reload_observer.last_navigation_succeeded());
-    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_EXISTING_ENTRY,
+    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
               reload_observer.last_navigation_type());
   }
   EXPECT_EQ(process_id,
@@ -4852,7 +4866,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
     // The successful reload should be classified as a NEW_ENTRY navigation
     // with replacement, since it needs to stay at the same entry in session
     // history, but needs a new entry because of the change in SiteInstance.
-    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_NEW_ENTRY,
+    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
               reload_observer.last_navigation_type());
   }
   EXPECT_EQ(3, nav_controller.GetEntryCount());
@@ -4875,7 +4889,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
     // TODO(nasko): Investigate making a failing reload of a successful
     // navigation be classified as NEW_ENTRY instead, since with error page
     // isolation it involves a SiteInstance swap.
-    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_EXISTING_ENTRY,
+    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
               reload_observer.last_navigation_type());
   }
   EXPECT_EQ(3, nav_controller.GetEntryCount());
@@ -4894,7 +4908,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
     EXPECT_TRUE(reload_observer.last_navigation_succeeded());
     // TODO(nasko): Investigate making renderer initiated reloads that change
     // SiteInstance be classified as NEW_ENTRY as well.
-    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_EXISTING_ENTRY,
+    EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
               reload_observer.last_navigation_type());
   }
   EXPECT_EQ(3, nav_controller.GetEntryCount());
@@ -5198,10 +5212,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
       // with replacement, since it needs to stay at the same entry in session
       // history, but needs a new entry because of the change in SiteInstance.
       // (the same as expectations in the ErrorPageNavigationReload test above).
-      EXPECT_EQ(NavigationType::NAVIGATION_TYPE_NEW_ENTRY,
+      EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY,
                 reload_observer.last_navigation_type());
     } else {
-      EXPECT_EQ(NavigationType::NAVIGATION_TYPE_EXISTING_ENTRY,
+      EXPECT_EQ(NavigationType::NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
                 reload_observer.last_navigation_type());
     }
   }
@@ -7558,8 +7572,10 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                     ActionAfterPagehide::kNavigation, 1);
 }
 
+// TODO(crbug.com/1274974): Make this work with NavigationThreadingOptimizations
+// enabled.
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
-                       PostMessageAfterPagehideHistogram) {
+                       DISABLED_PostMessageAfterPagehideHistogram) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
@@ -7613,8 +7629,10 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
   }
 }
 
+// TODO(crbug.com/1274974): Make this work with NavigationThreadingOptimizations
+// enabled.
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
-                       PostMessageAfterPagehideHistogramSubframe) {
+                       DISABLED_PostMessageAfterPagehideHistogramSubframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -8625,7 +8643,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(siteless_url, web_contents->GetMainFrame()->GetLastCommittedURL());
   RenderProcessHost* process1 = web_contents->GetMainFrame()->GetProcess();
   EXPECT_FALSE(web_contents->GetMainFrame()->GetSiteInstance()->HasSite());
-  auto process1_lock = policy->GetProcessLock(process1->GetID());
+  auto process1_lock = process1->GetProcessLock();
   EXPECT_FALSE(process1_lock.is_invalid());
   EXPECT_TRUE(process1_lock.allows_any_site());
 
@@ -8643,9 +8661,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ(GURL("http://foo.com"),
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
   EXPECT_EQ(
-      ProcessLock(SiteInfo(
+      ProcessLock::FromSiteInfo(SiteInfo(
           GURL("http://foo.com"), GURL("http://foo.com"),
-          false /* is_origin_keyed */,
+          false /* requires_origin_keyed_process */,
           StoragePartitionConfig::CreateDefault(browser_context),
           WebExposedIsolationInfo::CreateNonIsolated(), false /* is_guest */,
           false /* does_site_request_dedicated_process_for_coop */,

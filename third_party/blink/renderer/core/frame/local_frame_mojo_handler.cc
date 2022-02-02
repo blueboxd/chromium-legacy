@@ -885,7 +885,8 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestForTests(
   // `kDoNotSanitize` is used because this is only for tests and some tests
   // need `kDoNotSanitize` for dynamic imports.
   ClassicScript* script = ClassicScript::CreateUnspecifiedScript(
-      javascript, SanitizeScriptErrors::kDoNotSanitize);
+      javascript, ScriptSourceLocationType::kUnknown,
+      SanitizeScriptErrors::kDoNotSanitize);
 
   if (world_id == DOMWrapperWorld::kMainWorldId) {
     result = script->RunScriptAndReturnValue(DomWindow());
@@ -933,11 +934,10 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   scoped_refptr<DOMWrapperWorld> isolated_world =
       DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(frame_), world_id);
-  ScriptSourceCode source_code = ScriptSourceCode(javascript);
-  HeapVector<ScriptSourceCode> sources;
-  sources.Append(&source_code, 1);
   auto* executor = MakeGarbageCollected<PausableScriptExecutor>(
-      DomWindow(), std::move(isolated_world), sources, false /* user_gesture */,
+      DomWindow(), std::move(isolated_world),
+      Vector<WebScriptSource>({WebScriptSource(javascript)}),
+      false /* user_gesture */,
       MakeGarbageCollected<JavaScriptIsolatedWorldRequest>(
           frame_, wants_result, std::move(callback)));
   executor->Run();

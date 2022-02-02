@@ -10,19 +10,19 @@ import("$_inspector_protocol/inspector_protocol.gni")
 _protocol_generated = [
   "base_string_adapter.cc",
   "base_string_adapter.h",
-  "CSS.cpp",
-  "CSS.h",
-  "DOM.cpp",
-  "DOM.h",
-  "Forward.h",
-  "Overlay.cpp",
-  "Overlay.h",
-  "Page.cpp",
-  "Page.h",
-  "Protocol.cpp",
-  "Protocol.h",
-  "Tracing.h",
-  "Tracing.cpp",
+  "css.cc",
+  "css.h",
+  "dom.cc",
+  "dom.h",
+  "forward.h",
+  "overlay.cc",
+  "overlay.h",
+  "page.cc",
+  "page.h",
+  "protocol.cc",
+  "protocol.h",
+  "tracing.h",
+  "tracing.cc",
 ]
 
 action("protocol_compatibility") {
@@ -90,12 +90,14 @@ component("ui_devtools") {
   defines = [ "UI_DEVTOOLS_IMPLEMENTATION" ]
 
   deps = [
+    ":features",
     ":protocol_generated_sources",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//net",
     "//third_party/inspector_protocol:crdtp",
+    "//ui/base:base",
     "//ui/gfx",
   ]
 
@@ -106,6 +108,19 @@ component("ui_devtools") {
     "//services/tracing/public/cpp",
     "//services/tracing/public/mojom",
   ]
+}
+
+component("features") {
+  output_name = "ui_devtools_features"
+
+  defines = [ "IS_UI_DEVTOOLS_FEATURES_IMPL" ]
+
+  sources = [
+    "ui_devtools_features.cc",
+    "ui_devtools_features.h",
+  ]
+
+  deps = [ "//base" ]
 }
 
 static_library("test_support") {

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 
@@ -57,6 +58,10 @@ class PersistedData : public base::RefCountedThreadSafe<PersistedData> {
   std::string GetBrandCode(const std::string& id) const;
   void SetBrandCode(const std::string& id, const std::string& bc);
 
+  // These functions access the brand path for the specified id.
+  base::FilePath GetBrandPath(const std::string& id) const;
+  void SetBrandPath(const std::string& id, const base::FilePath& bp);
+
   // These functions access the AP for the specified id.
   std::string GetAP(const std::string& id) const;
   void SetAP(const std::string& id, const std::string& ap);
@@ -88,7 +93,7 @@ class PersistedData : public base::RefCountedThreadSafe<PersistedData> {
                  const std::string& value);
   SEQUENCE_CHECKER(sequence_checker_);
 
-  PrefService* pref_service_ = nullptr;  // Not owned by this class.
+  raw_ptr<PrefService> pref_service_ = nullptr;  // Not owned by this class.
 };
 
 }  // namespace updater

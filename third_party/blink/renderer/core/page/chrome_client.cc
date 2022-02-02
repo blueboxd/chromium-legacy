@@ -38,10 +38,10 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/display/screen_info.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -53,15 +53,15 @@ void ChromeClient::InstallSupplements(LocalFrame& frame) {
   CoreInitializer::GetInstance().InstallSupplements(frame);
 }
 
-IntRect ChromeClient::CalculateWindowRectWithAdjustment(
-    const IntRect& pending_rect,
+gfx::Rect ChromeClient::CalculateWindowRectWithAdjustment(
+    const gfx::Rect& pending_rect,
     LocalFrame& frame,
     LocalFrame& requesting_frame) {
-  IntRect screen(GetScreenInfo(frame).available_rect);
-  IntRect window = pending_rect;
+  gfx::Rect screen = GetScreenInfo(frame).available_rect;
+  gfx::Rect window = pending_rect;
 
-  IntSize minimum_size = MinimumWindowSize();
-  IntSize size_for_constraining_move = minimum_size;
+  gfx::Size minimum_size = MinimumWindowSize();
+  gfx::Size size_for_constraining_move = minimum_size;
   // Let size 0 pass through, since that indicates default size, not minimum
   // size.
   if (window.width()) {
@@ -117,9 +117,10 @@ IntRect ChromeClient::CalculateWindowRectWithAdjustment(
   return window;
 }
 
-void ChromeClient::SetWindowRectWithAdjustment(const IntRect& pending_rect,
+void ChromeClient::SetWindowRectWithAdjustment(const gfx::Rect& pending_rect,
                                                LocalFrame& frame) {
-  IntRect rect = CalculateWindowRectWithAdjustment(pending_rect, frame, frame);
+  gfx::Rect rect =
+      CalculateWindowRectWithAdjustment(pending_rect, frame, frame);
   SetWindowRect(rect, frame);
 }
 
@@ -296,7 +297,7 @@ void ChromeClient::ElementFocusedFromKeypress(LocalFrame& frame,
   if (layout_object) {
     TextDirection tooltip_direction = layout_object->StyleRef().Direction();
     UpdateTooltipFromKeyboard(frame, tooltip_text, tooltip_direction,
-                              ToGfxRect(element->BoundsInViewport()));
+                              element->BoundsInViewport());
   }
 }
 
@@ -319,8 +320,8 @@ bool ChromeClient::Print(LocalFrame* frame) {
     UseCounter::Count(frame->DomWindow(),
                       WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;
@@ -333,6 +334,14 @@ bool ChromeClient::Print(LocalFrame* frame) {
         mojom::blink::ConsoleMessageSource::kJavaScript,
         mojom::blink::ConsoleMessageLevel::kError,
         "Ignored call to 'print()' during prerendering."));
+    return false;
+  }
+
+  if (frame->IsInFencedFrameTree()) {
+    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kSecurity,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Ignored call to 'print()'. The document is in a fenced frame."));
     return false;
   }
 

@@ -5,12 +5,13 @@
 #include "chrome/browser/ash/crosapi/cert_database_ash.h"
 
 #include "base/bind.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/net/nss_service.h"
+#include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/login/login_state/login_state.h"
-
-#include "chrome/browser/net/nss_context.h"
 #include "chromeos/tpm/tpm_token_info_getter.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user.h"
@@ -110,15 +111,15 @@ void CertDatabaseAsh::GetCertDatabaseInfo(
     return;
   }
 
+  // Guest users should not have access to certs.
+  const bool is_guest =
+      user_manager::UserManager::Get()->IsGuestAccountId(user->GetAccountId());
+
   // Otherwise, if the TPM was already loaded previously, let the
   // caller know.
-  // TODO(crbug.com/1146430) For now Lacros-Chrome loads chaps and has access to
-  // TPM operations only for affiliated users, because it gives access to
-  // system token. Find a way to give unaffiliated users access only to user TPM
-  // token.
   mojom::GetCertDatabaseInfoResultPtr result =
       mojom::GetCertDatabaseInfoResult::New();
-  result->should_load_chaps = user->IsAffiliated();
+  result->should_load_chaps = !is_guest && base::SysInfo::IsRunningOnChromeOS();
   result->private_slot_id = private_slot_id_;
   result->enable_system_slot = system_slot_id_.has_value();
   result->system_slot_id =
@@ -148,7 +149,8 @@ void CertDatabaseAsh::WaitForCertDatabaseReady(
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&GetCertDbOnIOThread, std::move(got_db_callback),
-                     CreateNSSCertDatabaseGetter(profile)));
+                     NssServiceFactory::GetForContext(profile)
+                         ->CreateNSSCertDatabaseGetterForIOThread()));
 }
 
 void CertDatabaseAsh::OnCertDatabaseReady(

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -64,7 +65,7 @@ class ScopedMapDeleter {
   explicit operator bool() const { return it_ != map_->end(); }
 
  private:
-  Map* map_;
+  raw_ptr<Map> map_;
   typename Map::iterator it_;
 };
 
@@ -86,6 +87,7 @@ AttributionHost::AttributionHost(
     WebContents* web_contents,
     std::unique_ptr<AttributionManager::Provider> attribution_manager_provider)
     : WebContentsObserver(web_contents),
+      WebContentsUserData<AttributionHost>(*web_contents),
       attribution_manager_provider_(std::move(attribution_manager_provider)),
       receivers_(web_contents, this) {
   // TODO(csharrison): When https://crbug.com/1051334 is resolved, add a DCHECK

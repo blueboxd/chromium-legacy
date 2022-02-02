@@ -7,13 +7,14 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 
+// An app list item provided by the app service.
 class AppServiceAppItem : public ChromeAppListItem,
                           public app_list::AppContextMenuDelegate {
  public:
@@ -23,10 +24,8 @@ class AppServiceAppItem : public ChromeAppListItem,
                     AppListModelUpdater* model_updater,
                     const app_list::AppListSyncableService::SyncItem* sync_item,
                     const apps::AppUpdate& app_update);
-
   AppServiceAppItem(const AppServiceAppItem&) = delete;
   AppServiceAppItem& operator=(const AppServiceAppItem&) = delete;
-
   ~AppServiceAppItem() override;
 
   void OnAppUpdate(const apps::AppUpdate& app_update);
@@ -38,7 +37,8 @@ class AppServiceAppItem : public ChromeAppListItem,
   void LoadIcon() override;
   void Activate(int event_flags) override;
   const char* GetItemType() const override;
-  void GetContextMenuModel(GetMenuModelCallback callback) override;
+  void GetContextMenuModel(bool add_sort_options,
+                           GetMenuModelCallback callback) override;
   app_list::AppContextMenu* GetAppContextMenu() override;
 
   // app_list::AppContextMenuDelegate overrides:
@@ -47,10 +47,10 @@ class AppServiceAppItem : public ChromeAppListItem,
   void Launch(int event_flags, apps::mojom::LaunchSource launch_source);
 
   void CallLoadIcon(bool allow_placeholder_icon);
-  void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+  void OnLoadIcon(apps::IconValuePtr icon_value);
 
-  apps::mojom::AppType app_type_;
-  bool is_platform_app_;
+  const apps::mojom::AppType app_type_;
+  bool is_platform_app_ = false;
 
   std::unique_ptr<app_list::AppContextMenu> context_menu_;
 

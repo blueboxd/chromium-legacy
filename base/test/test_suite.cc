@@ -22,7 +22,6 @@
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/tagging.h"
 #include "base/no_destructor.h"
@@ -71,10 +70,6 @@
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "third_party/test_fonts/fontconfig/fontconfig_util_linux.h"
-#endif
-
-#if defined(OS_FUCHSIA)
-#include "base/base_paths_fuchsia.h"
 #endif
 
 #if defined(OS_WIN)

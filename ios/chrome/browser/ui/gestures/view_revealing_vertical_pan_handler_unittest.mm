@@ -66,6 +66,11 @@
 @end
 
 @implementation FakeLayoutSwitcher
+
+- (LayoutSwitcherState)currentLayoutSwitcherState {
+  return self.state;
+}
+
 - (instancetype)init {
   self = [super init];
   if (self) {
@@ -121,7 +126,7 @@ const CGFloat kRevealThreshold = 1 / 3.0f;
 // traveled during a pan gesture simulation.
 const CGFloat kSmallOffset = 10.0f;
 // The delay in ms after the gesture ends before starting a new one.
-const int kAnimationDelay = 1;
+const int kAnimationDelay = 5;
 
 // The test class, passed as argument to TEST_F().
 using ViewRevealingVerticalPanHandlerTest = PlatformTest;
@@ -157,7 +162,7 @@ void SimulatePanGesture(ViewRevealingVerticalPanHandler* pan_handler,
 }
 
 // Simulates 4 transitions of state in a ViewRevealingVerticalPanHandler (Hidden
-// -> Peeked -> Revealed -> Peeked -> Hiiden), and observes the resulting change
+// -> Peeked -> Revealed -> Peeked -> Hidden), and observes the resulting change
 // of state in a fake animatee.
 TEST_F(ViewRevealingVerticalPanHandlerTest, DetectPan) {
   double remaining_height = kBaseViewHeight - kBVCHeightTabGrid;
@@ -223,7 +228,7 @@ TEST_F(ViewRevealingVerticalPanHandlerTest, ManualStateChange) {
   pan_handler.layoutSwitcherProvider = fake_layout_switcher_provider;
   EXPECT_EQ(LayoutSwitcherState::Horizontal, fake_layout_switcher.state);
 
-  // Create a fake animatee.
+  // Create a fake animatee. Try direct to tab grid and back.
   FakeAnimatee* fake_animatee = [[FakeAnimatee alloc] init];
   [pan_handler addAnimatee:fake_animatee];
   EXPECT_EQ(ViewRevealState::Hidden, fake_animatee.state);
@@ -234,7 +239,29 @@ TEST_F(ViewRevealingVerticalPanHandlerTest, ManualStateChange) {
 
   [pan_handler setNextState:ViewRevealState::Hidden animated:NO];
   EXPECT_EQ(ViewRevealState::Hidden, fake_animatee.state);
+  EXPECT_EQ(LayoutSwitcherState::Grid, fake_layout_switcher.state);
+
+  // Try from hidden to peek to hidden
+  [pan_handler setNextState:ViewRevealState::Peeked animated:NO];
+  EXPECT_EQ(ViewRevealState::Peeked, fake_animatee.state);
   EXPECT_EQ(LayoutSwitcherState::Horizontal, fake_layout_switcher.state);
+
+  [pan_handler setNextState:ViewRevealState::Hidden animated:NO];
+  EXPECT_EQ(ViewRevealState::Hidden, fake_animatee.state);
+  EXPECT_EQ(LayoutSwitcherState::Horizontal, fake_layout_switcher.state);
+
+  // Now try with going Fullscreen and back to Hidden.
+  [pan_handler setNextState:ViewRevealState::Revealed animated:NO];
+  EXPECT_EQ(ViewRevealState::Revealed, fake_animatee.state);
+  EXPECT_EQ(LayoutSwitcherState::Grid, fake_layout_switcher.state);
+
+  [pan_handler setNextState:ViewRevealState::Fullscreen animated:NO];
+  EXPECT_EQ(ViewRevealState::Fullscreen, fake_animatee.state);
+  EXPECT_EQ(LayoutSwitcherState::Grid, fake_layout_switcher.state);
+
+  [pan_handler setNextState:ViewRevealState::Hidden animated:NO];
+  EXPECT_EQ(ViewRevealState::Hidden, fake_animatee.state);
+  EXPECT_EQ(LayoutSwitcherState::Grid, fake_layout_switcher.state);
 }
 
 // Tests that a second gesture does not interrupt the first gesture.

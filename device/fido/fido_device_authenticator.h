@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -93,6 +92,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   void DeleteCredential(const pin::TokenResponse& pin_token,
                         const PublicKeyCredentialDescriptor& credential_id,
                         DeleteCredentialCallback callback) override;
+  bool SupportsUpdateUserInformation() const override;
   void UpdateUserInformation(const pin::TokenResponse& pin_token,
                              const PublicKeyCredentialDescriptor& credential_id,
                              const PublicKeyCredentialUserEntity& updated_user,

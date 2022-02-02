@@ -8,12 +8,12 @@
 #include <set>
 #include <string>
 
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 
 // A test ProtocolHandlerRegistry::Delegate implementation that keeps track of
 // registered protocols and doesn't change any OS settings.
 class TestProtocolHandlerRegistryDelegate
-    : public ProtocolHandlerRegistry::Delegate {
+    : public custom_handlers::ProtocolHandlerRegistry::Delegate {
  public:
   TestProtocolHandlerRegistryDelegate();
   ~TestProtocolHandlerRegistryDelegate() override;
@@ -27,12 +27,11 @@ class TestProtocolHandlerRegistryDelegate
   void RegisterExternalHandler(const std::string& protocol) override;
   void DeregisterExternalHandler(const std::string& protocol) override;
   bool IsExternalHandlerRegistered(const std::string& protocol) override;
-  void RegisterWithOSAsDefaultClient(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override;
-  void CheckDefaultClientWithOS(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override;
+  void RegisterWithOSAsDefaultClient(const std::string& protocol,
+                                     DefaultClientCallback callback) override;
+  void CheckDefaultClientWithOS(const std::string& protocol,
+                                DefaultClientCallback callback) override;
+  bool ShouldRemoveHandlersNotInOS() override;
 
  private:
   // Holds registered protocols.

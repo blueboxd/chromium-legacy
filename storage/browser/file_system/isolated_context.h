@@ -13,8 +13,6 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "storage/browser/file_system/mount_points.h"
 #include "storage/common/file_system/file_system_types.h"
@@ -88,6 +86,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) IsolatedContext : public MountPoints {
 
   // The instance is lazily created per browser process.
   static IsolatedContext* GetInstance();
+
+  IsolatedContext(const IsolatedContext&) = delete;
+  IsolatedContext& operator=(const IsolatedContext&) = delete;
 
   // Returns true if the given filesystem type is managed by IsolatedContext
   // (i.e. if the given |type| is Isolated or External).
@@ -214,8 +215,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) IsolatedContext : public MountPoints {
 
   // Reverse map from registered path to IDs.
   std::map<base::FilePath, std::set<std::string>> path_to_id_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(IsolatedContext);
 };
 
 }  // namespace storage

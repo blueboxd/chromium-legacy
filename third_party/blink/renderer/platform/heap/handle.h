@@ -31,14 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_
 
-#include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
-#include "third_party/blink/renderer/platform/heap/heap_traits.h"
+// TODO(chromium:1269227): Clean up the following catch-all includes and require
+// IWYU for users of platform/heap.
+
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
-#include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
-#include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_

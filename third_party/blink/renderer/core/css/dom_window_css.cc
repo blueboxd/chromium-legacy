@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -79,7 +79,7 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
 String DOMWindowCSS::escape(const String& ident) {
   StringBuilder builder;
   SerializeIdentifier(ident, builder);
-  return builder.ToString();
+  return builder.ReleaseString();
 }
 
 }  // namespace blink

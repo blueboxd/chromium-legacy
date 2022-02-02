@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/style_util.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
@@ -66,8 +67,6 @@ class ASH_EXPORT InnerExpandedDesksBarButton : public DeskButtonBase {
     SetButtonState(GetEnabled());
   }
 
-  void OnButtonPressed() override { button_callback_.Run(); }
-
   void SetButtonState(bool enabled) override {
     outer_button_->UpdateLabelColor(enabled);
     // Notify the overview highlight if we are about to be disabled.
@@ -84,10 +83,14 @@ class ASH_EXPORT InnerExpandedDesksBarButton : public DeskButtonBase {
         AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
     if (!enabled)
       background_color_ = AshColorProvider::GetDisabledColor(background_color_);
-    views::InkDrop::Get(this)->SetVisibleOpacity(
-        color_provider->GetRippleAttributes(background_color_).inkdrop_opacity);
+    StyleUtil::ConfigureInkDropAttributes(
+        this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
     SchedulePaint();
   }
+
+  void OnButtonPressed() override { button_callback_.Run(); }
+
+  void UpdateBorderState() override { outer_button_->UpdateBorderColor(); }
 
  private:
   ExpandedDesksBarButton* outer_button_;
@@ -145,8 +148,9 @@ bool ExpandedDesksBarButton::IsPointOnButton(
 void ExpandedDesksBarButton::UpdateBorderColor() const {
   DCHECK(inner_button_);
   const bool focused =
-      bar_view_->dragged_item_over_bar() &&
-      IsPointOnButton(bar_view_->last_dragged_item_screen_location());
+      inner_button_->IsViewHighlighted() ||
+      (bar_view_->dragged_item_over_bar() &&
+       IsPointOnButton(bar_view_->last_dragged_item_screen_location()));
   bool should_paint = inner_button_->border_ptr()->SetFocused(focused);
   // Focus takes priority.
   if (!focused) {

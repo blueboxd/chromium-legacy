@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
@@ -33,6 +32,10 @@ class AppDownloadingScreen : public BaseScreen {
     exit_callback_ = exit_callback;
   }
 
+  // This method is called, when view is being destroyed. Note, if model
+  // is destroyed earlier then it has to call SetModel(NULL).
+  void OnViewDestroyed(AppDownloadingScreenView* view);
+
  protected:
   // BaseScreen:
   void ShowImpl() override;
@@ -40,7 +43,7 @@ class AppDownloadingScreen : public BaseScreen {
   void OnUserAction(const std::string& action_id) override;
 
  private:
-  AppDownloadingScreenView* const view_;
+  AppDownloadingScreenView* view_;
   base::RepeatingClosure exit_callback_;
 };
 

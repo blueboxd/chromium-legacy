@@ -22,6 +22,8 @@ class Profile;
 
 namespace apps {
 
+class PublisherHost;
+
 // An app publisher (in the App Service sense) of extension-backed apps for
 // Chrome, including Chrome Apps (platform apps and legacy packaged apps) and
 // hosted apps.
@@ -29,8 +31,7 @@ namespace apps {
 // See components/services/app_service/README.md.
 class ExtensionApps : public apps::ExtensionAppsBase {
  public:
-  ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
-                Profile* profile);
+  explicit ExtensionApps(AppServiceProxy* proxy);
   ~ExtensionApps() override;
 
   ExtensionApps(const ExtensionApps&) = delete;
@@ -42,9 +43,13 @@ class ExtensionApps : public apps::ExtensionAppsBase {
                             gfx::NativeWindow parent_window);
 
  private:
+  friend class PublisherHost;
+
   // ExtensionAppsBase overrides.
   bool Accepts(const extensions::Extension* extension) override;
   bool ShouldShownInLauncher(const extensions::Extension* extension) override;
+  std::unique_ptr<App> CreateApp(const extensions::Extension* extension,
+                                 Readiness readiness) override;
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
                               apps::mojom::Readiness readiness) override;
 };

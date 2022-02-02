@@ -49,6 +49,10 @@ TEST(WebAppTest, SortedSizesPxIsAscending) {
 }
 
 TEST_F(WebAppUtilsTest, AreWebAppsEnabled) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  SkipMainProfileCheckForTesting();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   Profile* regular_profile = profile();
 
   EXPECT_FALSE(AreWebAppsEnabled(nullptr));
@@ -109,6 +113,10 @@ TEST_F(WebAppUtilsTest, AreWebAppsEnabled) {
 }
 
 TEST_F(WebAppUtilsTest, AreWebAppsUserInstallable) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  SkipMainProfileCheckForTesting();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   Profile* regular_profile = profile();
 
   EXPECT_FALSE(AreWebAppsEnabled(nullptr));
@@ -149,6 +157,10 @@ TEST_F(WebAppUtilsTest, AreWebAppsUserInstallable) {
 }
 
 TEST_F(WebAppUtilsTest, GetBrowserContextForWebApps) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  SkipMainProfileCheckForTesting();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   Profile* regular_profile = profile();
 
   EXPECT_EQ(regular_profile, GetBrowserContextForWebApps(regular_profile));
@@ -177,6 +189,10 @@ TEST_F(WebAppUtilsTest, GetBrowserContextForWebApps) {
 }
 
 TEST_F(WebAppUtilsTest, GetBrowserContextForWebAppMetrics) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  SkipMainProfileCheckForTesting();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   Profile* regular_profile = profile();
 
   EXPECT_EQ(regular_profile,

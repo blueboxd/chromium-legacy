@@ -341,18 +341,6 @@ Polymer({
    * @return {string}
    * @private
    */
-  getSyncRowLabel_() {
-    if (this.syncSettingsCategorizationEnabled_) {
-      return this.i18n('osSyncPageTitle');
-    } else {
-      return this.i18n('syncAndNonPersonalizedServices');
-    }
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
   getSyncAndGoogleServicesSubtext_() {
     if (this.syncStatus && this.syncStatus.hasError &&
         this.syncStatus.statusText) {
@@ -446,11 +434,6 @@ Polymer({
 
   /** @private */
   onSyncTap_() {
-    if (this.syncSettingsCategorizationEnabled_) {
-      settings.Router.getInstance().navigateTo(settings.routes.OS_SYNC);
-      return;
-    }
-
     // Users can go to sync subpage regardless of sync status.
     settings.Router.getInstance().navigateTo(settings.routes.SYNC);
   },

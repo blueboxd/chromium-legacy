@@ -26,7 +26,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
-#include "services/network/public/cpp/features.h"
+#include "net/base/features.h"
 #include "services/network/radio_monitor_android.h"
 #endif
 
@@ -128,9 +128,8 @@ void HostResolver::ResolveHost(
     return;
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kRecordRadioWakeupTrigger)) {
-    RadioMonitorAndroid::GetInstance().MaybeRecordResolveHost(
-        optional_parameters);
+  if (base::FeatureList::IsEnabled(net::features::kRecordRadioWakeupTrigger)) {
+    MaybeRecordResolveHostForWakeupTrigger(optional_parameters);
   }
 #endif
 

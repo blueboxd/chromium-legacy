@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "headless/public/headless_browser_context.h"
@@ -42,6 +42,9 @@ namespace headless {
 class HEADLESS_EXPORT HeadlessBrowser {
  public:
   struct Options;
+
+  HeadlessBrowser(const HeadlessBrowser&) = delete;
+  HeadlessBrowser& operator=(const HeadlessBrowser&) = delete;
 
   // Create a new browser context which can be used to create tabs and isolate
   // them from one another.
@@ -94,9 +97,6 @@ class HEADLESS_EXPORT HeadlessBrowser {
  protected:
   HeadlessBrowser() {}
   virtual ~HeadlessBrowser() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowser);
 };
 
 // Embedding API overrides for the headless browser.
@@ -104,20 +104,24 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   class Builder;
 
   Options(Options&& options);
+
+  Options(const Options&) = delete;
+  Options& operator=(const Options&) = delete;
+
   ~Options();
 
   Options& operator=(Options&& options);
 
   // Command line options to be passed to browser. Initialized in constructor.
   int argc;
-  const char** argv;
+  raw_ptr<const char*> argv;
 
 #if defined(OS_WIN)
   // Set hardware instance if available, otherwise it defaults to 0.
   HINSTANCE instance = 0;
 
   // Set with sandbox information. This has to be already initialized.
-  sandbox::SandboxInterfaceInfo* sandbox_info = nullptr;
+  raw_ptr<sandbox::SandboxInterfaceInfo> sandbox_info = nullptr;
 #endif
 
   // Address at which DevTools should listen for connections. Disabled by
@@ -131,7 +135,7 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   bool DevtoolsServerEnabled();
 
   // Optional message pump that overrides the default. Must outlive the browser.
-  base::MessagePump* message_pump = nullptr;
+  raw_ptr<base::MessagePump> message_pump = nullptr;
 
   // Run the browser in single process mode instead of using separate renderer
   // processes as per default. Note that this also disables any sandboxing of
@@ -221,8 +225,6 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // HeadlessBrowserContextOptions (where appropriate).
  private:
   Options(int argc, const char** argv);
-
-  DISALLOW_COPY_AND_ASSIGN(Options);
 };
 
 class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {

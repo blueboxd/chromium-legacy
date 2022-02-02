@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">અભ્યાસ ક્ષેત્ર: ડ્રૉપ-ડાઉન સૂચિ</translation>
 <translation id="1195238899008218998">સમાપન ભાષણ</translation>
 <translation id="1197088940767939838">નારંગી</translation>
+<translation id="1198865190323699001">ટચના સંકેતો</translation>
 <translation id="1201402288615127009">આગલું</translation>
 <translation id="1206619573307042055">માર્કી</translation>
 <translation id="1207086294218137981">કોઈ આગલું 'લેવલ 4' મથાળું નથી</translation>
@@ -374,7 +375,7 @@
 <translation id="338583716107319301">વિભાજક</translation>
 <translation id="3389259863310851658">પાછલી ફોર્મ ફીલ્ડ</translation>
 <translation id="3393605254399152980">તમે જે સ્પર્શ કરી રહ્યાં હો તે લખાણને સાંભળવા માટે કોઈ આંગળીને સ્ક્રીન પર ખેંચો</translation>
-<translation id="3406283310380167331">ફોર્મની સૂચિ બતાવો</translation>
+<translation id="3406283310380167331">ફોર્મ્સની સૂચિ બતાવો</translation>
 <translation id="3414400929511680526">એલિસ બ્લૂ</translation>
 <translation id="3418936350470374046">નીચે કોઈ સેલ નથી</translation>
 <translation id="3419269701801640163">પેસ્ટ કરો</translation>
@@ -389,6 +390,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{જમણો મોટો કૌંસ}one{# જમણા મોટાં કૌંસ}other{# જમણા મોટાં કૌંસ}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{પ્રશ્નાર્થ ચિહ્ન}one{# પ્રશ્નાર્થ ચિહ્ન}other{# પ્રશ્નાર્થ ચિહ્ન}}</translation>
+<translation id="3505359110822747654">ChromeVox મેનૂ નાનું કરો</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{કૅરેટ}one{# કૅરેટ}other{# કૅરેટ}}</translation>
 <translation id="352577523970648069">સંપાદનયોગ્ય ટેક્સ્ટ ફીલ્ડ</translation>
 <translation id="3538907380453898475">વર્ણનની સૂચિ</translation>

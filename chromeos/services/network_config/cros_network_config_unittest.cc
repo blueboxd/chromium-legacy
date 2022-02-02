@@ -15,7 +15,6 @@
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/network/cellular_esim_profile_handler_impl.h"
 #include "chromeos/network/cellular_inhibitor.h"
 #include "chromeos/network/cellular_metrics_logger.h"
 #include "chromeos/network/fake_stub_cellular_networks_provider.h"
@@ -30,11 +29,10 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
-#include "chromeos/network/test_cellular_esim_profile_handler.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-shared.h"
 #include "components/onc/onc_constants.h"
@@ -117,15 +115,11 @@ class CrosNetworkConfigTest : public testing::Test {
     helper_->AddDefaultProfiles();
     helper_->ResetDevicesAndServices();
 
+    helper_->RegisterPrefs(user_prefs_.registry(), local_state_.registry());
     PrefProxyConfigTrackerImpl::RegisterProfilePrefs(user_prefs_.registry());
     PrefProxyConfigTrackerImpl::RegisterPrefs(local_state_.registry());
-    ::onc::RegisterProfilePrefs(user_prefs_.registry());
-    ::onc::RegisterPrefs(local_state_.registry());
-    NetworkMetadataStore::RegisterPrefs(user_prefs_.registry());
-    NetworkMetadataStore::RegisterPrefs(local_state_.registry());
-    CellularESimProfileHandlerImpl::RegisterLocalStatePrefs(
-        local_state_.registry());
-    NetworkHandler::Get()->InitializePrefServices(&user_prefs_, &local_state_);
+
+    helper_->InitializePrefs(&user_prefs_, &local_state_);
 
     NetworkHandler* network_handler = NetworkHandler::Get();
     cros_network_config_ = std::make_unique<CrosNetworkConfig>(
@@ -608,6 +602,20 @@ class CrosNetworkConfigTest : public testing::Test {
   void SetAlwaysOnVpn(mojom::AlwaysOnVpnPropertiesPtr properties) {
     cros_network_config()->SetAlwaysOnVpn(std::move(properties));
     base::RunLoop().RunUntilIdle();
+  }
+
+  std::vector<std::string> GetSupportedVpnTypes() {
+    std::vector<std::string> result;
+    base::RunLoop run_loop;
+    cros_network_config()->GetSupportedVpnTypes(base::BindOnce(
+        [](std::vector<std::string>& result, base::OnceClosure quit_closure,
+           const std::vector<std::string>& return_value) {
+          result = std::move(return_value);
+          std::move(quit_closure).Run();
+        },
+        std::ref(result), run_loop.QuitClosure()));
+    run_loop.Run();
+    return result;
   }
 
   bool ContainsVpnDeviceState(
@@ -1338,9 +1346,7 @@ TEST_F(CrosNetworkConfigTest, AllowRoaming) {
   const char* kGUID = "cellular_guid";
   mojom::ManagedPropertiesPtr properties = GetManagedProperties(kGUID);
 
-  ASSERT_TRUE(properties->type_properties->get_cellular()->allow_roaming);
-  ASSERT_FALSE(
-      properties->type_properties->get_cellular()->allow_roaming->active_value);
+  ASSERT_FALSE(properties->type_properties->get_cellular()->allow_roaming);
 
   auto config = mojom::ConfigProperties::New();
   auto cellular_config = mojom::CellularConfigProperties::New();
@@ -2038,6 +2044,21 @@ TEST_F(CrosNetworkConfigTest, RequestTrafficCountersWithDoubleType) {
 
   RequestTrafficCountersAndCompareTrafficCounters(
       "wifi1_guid", traffic_counters.Clone(), ComparisonType::DOUBLE);
+}
+
+TEST_F(CrosNetworkConfigTest, GetSupportedVpnTypes) {
+  std::vector<std::string> result = GetSupportedVpnTypes();
+  ASSERT_EQ(result.size(), 0u);
+
+  helper()->manager_test()->SetManagerProperty(
+      shill::kSupportedVPNTypesProperty, base::Value("l2tpipsec,openvpn"));
+  result = GetSupportedVpnTypes();
+  ASSERT_EQ(result.size(), 2u);
+
+  helper()->manager_test()->SetShouldReturnNullProperties(true);
+  result = GetSupportedVpnTypes();
+  ASSERT_EQ(result.size(), 0u);
+  helper()->manager_test()->SetShouldReturnNullProperties(false);
 }
 
 }  // namespace network_config

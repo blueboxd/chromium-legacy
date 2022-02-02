@@ -13,6 +13,7 @@ group("mac") {
     ":browser_install_script",
     ":privileged_helper",
     ":updater_bundle",
+    ":updater_bundle_test",
     ":updater_install_script",
     "//chrome/updater/mac/signing",
   ]
@@ -30,7 +31,9 @@ mac_app_bundle("updater_bundle") {
 
   sources = [ "main.cc" ]
   deps = [
-    ":updater_bundle_helpers",
+    ":updater_bundle_keystone_executable",
+    ":updater_bundle_keystone_helpers",
+    ":updater_bundle_keystone_plist",
     "//chrome/updater:base",
     "//chrome/updater:constants_prod",
   ]
@@ -44,7 +47,9 @@ mac_app_bundle("updater_bundle_test") {
 
   sources = [ "main.cc" ]
   deps = [
-    ":updater_bundle_helpers",
+    ":updater_bundle_keystone_executable",
+    ":updater_bundle_keystone_helpers",
+    ":updater_bundle_keystone_plist",
     "//chrome/updater:base",
     "//chrome/updater:constants_test",
   ]
@@ -131,8 +136,6 @@ action("browser_install_script") {
 executable("ksadmin") {
   output_name = "ksadmin"
   sources = [
-    "keystone/ks_tickets.h",
-    "keystone/ks_tickets.mm",
     "keystone/ksadmin.h",
     "keystone/ksadmin.mm",
     "keystone/ksadmin_main.cc",
@@ -198,9 +201,28 @@ mac_app_bundle("keystone_bundle") {
   public_deps = [ ":keystone_helpers" ]
 }
 
-bundle_data("updater_bundle_helpers") {
-  sources = [ "$root_out_dir/$keystone_app_name.bundle" ]
-  outputs = [ "{{bundle_contents_dir}}/Helpers/{{source_file_part}}" ]
+bundle_data("updater_bundle_keystone_executable") {
+  sources = [
+    "$root_out_dir/$keystone_app_name.bundle/Contents/MacOS/$keystone_app_name",
+  ]
+  outputs = [ "{{bundle_contents_dir}}/Helpers/$keystone_app_name.bundle/Contents/MacOS/{{source_file_part}}" ]
+
+  public_deps = [ ":keystone_bundle" ]
+}
+
+bundle_data("updater_bundle_keystone_plist") {
+  sources = [ "$root_out_dir/$keystone_app_name.bundle/Contents/Info.plist" ]
+  outputs = [ "{{bundle_contents_dir}}/Helpers/$keystone_app_name.bundle/Contents/{{source_file_part}}" ]
+
+  public_deps = [ ":keystone_bundle" ]
+}
+
+bundle_data("updater_bundle_keystone_helpers") {
+  sources = [
+    "$root_out_dir/$keystone_app_name.bundle/Contents/Helpers/ksadmin",
+    "$root_out_dir/$keystone_app_name.bundle/Contents/Helpers/ksinstall",
+  ]
+  outputs = [ "{{bundle_contents_dir}}/Helpers/$keystone_app_name.bundle/Contents/Helpers/{{source_file_part}}" ]
 
   public_deps = [ ":keystone_bundle" ]
 }

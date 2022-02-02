@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/attestation/tpm_challenge_key_subtle.h"
 
+#include "ash/components/attestation/mock_attestation_flow.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
@@ -22,7 +23,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/attestation/fake_attestation_client.h"
 #include "chromeos/dbus/attestation/interface.pb.h"
@@ -264,8 +264,7 @@ void TpmChallengeKeySubtleTestBase::SetUp() {
   GetInstallAttributes()->SetCloudManaged("google.com", "device_id");
 
   GetCrosSettingsHelper()->ReplaceDeviceSettingsProviderWithStub();
-  GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                      true);
+  GetCrosSettingsHelper()->SetBoolean(kDeviceAttestationEnabled, true);
 
   system_token_key_permissions_manager_ =
       std::make_unique<platform_keys::MockKeyPermissionsManager>();
@@ -424,8 +423,7 @@ TEST_P(DeviceKeysAccessTpmChallengeKeySubtleTest,
 
 TEST_P(DeviceKeysAccessTpmChallengeKeySubtleTest,
        DeviceKeyDeviceAttestationDisabled) {
-  GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                      false);
+  GetCrosSettingsHelper()->SetBoolean(kDeviceAttestationEnabled, false);
 
   RunOneStepAndExpect(
       KEY_DEVICE, /*will_register_key=*/false, kEmptyKeyName,
@@ -470,8 +468,7 @@ TEST_F(UnaffiliatedUserTpmChallengeKeySubtleTest, UserKeyUserNotAffiliated) {
 
 TEST_F(AffiliatedUserTpmChallengeKeySubtleTest,
        UserKeyDeviceAttestationDisabled) {
-  GetCrosSettingsHelper()->SetBoolean(chromeos::kDeviceAttestationEnabled,
-                                      false);
+  GetCrosSettingsHelper()->SetBoolean(kDeviceAttestationEnabled, false);
 
   RunOneStepAndExpect(
       KEY_USER, /*will_register_key=*/false, kEmptyKeyName,

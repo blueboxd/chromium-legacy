@@ -12,7 +12,6 @@
 
 #include "ash/public/cpp/login_types.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner_helpers.h"
@@ -20,7 +19,7 @@
 #include "base/timer/wall_clock_timer.h"
 #include "chrome/browser/ash/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
-#include "chrome/browser/ash/login/security_token_pin_dialog_host_impl.h"
+#include "chrome/browser/ash/login/security_token_pin_dialog_host_login_impl.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -36,6 +35,8 @@
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/ash/input_method_manager.h"
+
+class PrefChangeRegistrar;
 
 namespace ash {
 class ViewsScreenLocker;
@@ -221,6 +222,8 @@ class ScreenLocker
 
   void OnFingerprintAuthFailure(const user_manager::User& user);
 
+  void MaybeStartFingerprintAuthSession(const user_manager::User* primary_user);
+
   // Called when the screen lock is ready.
   void ScreenLockReady();
 
@@ -258,6 +261,8 @@ class ScreenLocker
                                                 const AccountId& account_id);
 
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
+
+  void UpdateFingerprintStateForUser(const user_manager::User* user);
 
   // Delegate used to talk to the view.
   Delegate* delegate_ = nullptr;
@@ -323,7 +328,10 @@ class ScreenLocker
 
   ChallengeResponseAuthKeysLoader challenge_response_auth_keys_loader_;
 
-  SecurityTokenPinDialogHostImpl security_token_pin_dialog_host_impl_;
+  SecurityTokenPinDialogHostLoginImpl
+      security_token_pin_dialog_host_login_impl_;
+
+  std::unique_ptr<PrefChangeRegistrar> fingerprint_pref_change_registrar_;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_{this};
 };

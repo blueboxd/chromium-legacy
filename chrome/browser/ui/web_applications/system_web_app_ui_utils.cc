@@ -30,7 +30,9 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/webui_url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -113,28 +115,6 @@ absl::optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
   return params;
 }
 
-namespace {
-base::FilePath GetLaunchDirectory(
-    const std::vector<base::FilePath>& launch_files) {
-  // |launch_dir| is the directory that contains all |launch_files|. If
-  // there are no launch files, launch_dir is empty.
-  base::FilePath launch_dir =
-      launch_files.size() ? launch_files[0].DirName() : base::FilePath();
-
-#if DCHECK_IS_ON()
-  // Check |launch_files| all come from the same directory.
-  if (!launch_dir.empty()) {
-    for (auto path : launch_files) {
-      DCHECK_EQ(launch_dir, path.DirName());
-    }
-  }
-#endif
-
-  return launch_dir;
-}
-
-}  // namespace
-
 SystemAppLaunchParams::SystemAppLaunchParams() = default;
 SystemAppLaunchParams::~SystemAppLaunchParams() = default;
 
@@ -214,67 +194,28 @@ Browser* LaunchSystemWebAppImpl(Profile* profile,
   if (!provider)
     return nullptr;
 
+  auto* system_app = provider->system_web_app_manager().GetSystemApp(app_type);
+
+#if defined(OS_CHROMEOS)
   DCHECK(url.DeprecatedGetOriginAsURL() == provider->registrar()
                                                .GetAppLaunchUrl(params.app_id)
-                                               .DeprecatedGetOriginAsURL());
+                                               .DeprecatedGetOriginAsURL() ||
+         system_app && system_app->IsUrlInSystemAppScope(url));
+#endif
 
-  Browser* browser = nullptr;
-  Browser::Type browser_type = Browser::TYPE_APP;
-  if (params.disposition == WindowOpenDisposition::NEW_POPUP)
-    browser_type = Browser::TYPE_APP_POPUP;
-  auto* system_app = provider->system_web_app_manager().GetSystemApp(app_type);
-  browser = FindSystemWebAppBrowser(profile, app_type, browser_type);
+  if (!system_app) {
+    LOG(ERROR) << "Can't find delegate for system app url: " << url
+               << " Not launching.";
+    return nullptr;
+  }
 
-  bool can_resize = system_app && system_app->ShouldAllowResize();
-  bool can_maximize = system_app && system_app->ShouldAllowMaximize();
+  // Place new windows on the specified display.
+  display::ScopedDisplayForNewWindows scoped_display(params.display_id);
 
-  // System Web App windows can't be properly restored without storing the app
-  // type. Until that is implemented, skip them for session restore.
-  // TODO(crbug.com/1003170): Enable session restore for System Web Apps by
-  // passing through the underlying value of params.omit_from_session_restore.
-  const bool omit_from_session_restore = true;
-
-  // Always reuse an existing browser for popups, otherwise check app type
-  // whether we should use a single window.
-  // TODO(crbug.com/1060423): Allow apps to control whether popups are single.
-  const bool reuse_existing_window =
-      browser_type == Browser::TYPE_APP_POPUP ||
-      (system_app && system_app->ShouldBeSingleWindow());
-
+  Browser* browser =
+      system_app->LaunchAndNavigateSystemWebApp(profile, provider, url, params);
   if (!browser) {
-    browser = CreateWebApplicationWindow(
-        profile, params.app_id, params.disposition, params.restore_id,
-        omit_from_session_restore, can_resize, can_maximize);
-  } else if (!reuse_existing_window) {
-    gfx::Rect initial_bounds = browser->window()->GetRestoredBounds();
-    initial_bounds.Offset(20, 20);
-    browser = CreateWebApplicationWindow(
-        profile, params.app_id, params.disposition, params.restore_id,
-        omit_from_session_restore, can_resize, can_maximize, initial_bounds);
-  }
-
-  // Navigate application window to application's |url| if necessary.
-  // Help app always navigates because its url might not match the url inside
-  // the iframe, and the iframe's url is the one that matters.
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetWebContentsAt(0);
-  if (!web_contents || web_contents->GetURL() != url ||
-      app_type == SystemAppType::HELP) {
-    web_contents = NavigateWebApplicationWindow(
-        browser, params.app_id, url, WindowOpenDisposition::CURRENT_TAB);
-  }
-
-  // Send launch files.
-  if (provider->os_integration_manager().IsFileHandlingAPIAvailable(
-          params.app_id)) {
-    if (system_app && system_app->ShouldIncludeLaunchDirectory()) {
-      web_launch::WebLaunchFilesHelper::SetLaunchDirectoryAndLaunchPaths(
-          web_contents, web_contents->GetURL(),
-          GetLaunchDirectory(params.launch_files), params.launch_files);
-    } else {
-      web_launch::WebLaunchFilesHelper::SetLaunchPaths(
-          web_contents, web_contents->GetURL(), params.launch_files);
-    }
+    return nullptr;
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -304,7 +245,8 @@ void FlushSystemWebAppLaunchesForTesting(Profile* profile) {
 
 Browser* FindSystemWebAppBrowser(Profile* profile,
                                  SystemAppType app_type,
-                                 Browser::Type browser_type) {
+                                 Browser::Type browser_type,
+                                 const GURL& url) {
   // TODO(calamity): Determine whether, during startup, we need to wait for
   // app install and then provide a valid answer here.
   absl::optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
@@ -326,6 +268,15 @@ Browser* FindSystemWebAppBrowser(Profile* profile,
 
     if (GetAppIdFromApplicationName(browser->app_name()) != app_id.value())
       continue;
+
+    if (!url.is_empty()) {
+      // In case a URL is provided, only allow a browser which shows it.
+      TabStripModel* tab_strip = browser->tab_strip_model();
+      content::WebContents* content =
+          tab_strip->GetWebContentsAt(tab_strip->active_index());
+      if (!content->GetVisibleURL().EqualsIgnoringRef(url))
+        continue;
+    }
 
     if (browser->window()->IsActive()) {
       return browser;

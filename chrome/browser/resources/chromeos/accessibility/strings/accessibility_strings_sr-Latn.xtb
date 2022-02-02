@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">Oblast za vežbanje: padajuće liste</translation>
 <translation id="1195238899008218998">Pogovor</translation>
 <translation id="1197088940767939838">Narandžasta</translation>
+<translation id="1198865190323699001">Pokreti sa dodirom</translation>
 <translation id="1201402288615127009">Dalje</translation>
 <translation id="1206619573307042055">pokretni tekst</translation>
 <translation id="1207086294218137981">Nema sledećeg zaglavlja 4. nivoa</translation>
@@ -389,6 +390,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{desna uglasta zagrada}one{# desna uglasta zagrada}few{# desne uglaste zagrade}other{# desnih uglastih zagrada}}</translation>
 <translation id="3494946239022273294">stavka menija</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{znak pitanja}one{# znak pitanja}few{# znaka pitanja}other{# znakova pitanja}}</translation>
+<translation id="3505359110822747654">Skupi ChromeVox menije</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{karet}one{# karet}few{# kareta}other{# kareta}}</translation>
 <translation id="352577523970648069">Izmenljivo polje za tekst</translation>
 <translation id="3538907380453898475">dscrplst</translation>
@@ -624,7 +626,7 @@
 <translation id="5302089807023311274">Referenca bibliografije</translation>
 <translation id="530391007967514163">Isprobajte prelazak sa jednog naslova na drugi da biste se kretali kroz tekst u nastavku.</translation>
 <translation id="5304943142864553931">kartica <ph name="TITLE" /></translation>
-<translation id="5308380583665731573">Poveži</translation>
+<translation id="5308380583665731573">Povezivanje</translation>
 <translation id="5310788376443009632">uklonjeno:</translation>
 <translation id="5316825363044614340">premesti u sledeći red</translation>
 <translation id="5320727453979144100">Lepljivi režim je omogućen</translation>

@@ -7,6 +7,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
@@ -53,6 +54,7 @@ OsSettingsManagerFactory::OsSettingsManagerFactory()
   DependsOn(android_sms::AndroidSmsServiceFactory::GetInstance());
   DependsOn(CupsPrintersManagerFactory::GetInstance());
   DependsOn(apps::AppServiceProxyFactory::GetInstance());
+  DependsOn(eche_app::EcheAppManagerFactory::GetInstance());
 }
 
 OsSettingsManagerFactory::~OsSettingsManagerFactory() = default;
@@ -83,7 +85,8 @@ KeyedService* OsSettingsManagerFactory::BuildServiceInstanceFor(
       IdentityManagerFactory::GetForProfile(profile),
       android_sms::AndroidSmsServiceFactory::GetForBrowserContext(profile),
       CupsPrintersManagerFactory::GetForBrowserContext(profile),
-      apps::AppServiceProxyFactory::GetForProfile(profile));
+      apps::AppServiceProxyFactory::GetForProfile(profile),
+      eche_app::EcheAppManagerFactory::GetForProfile(profile));
 }
 
 bool OsSettingsManagerFactory::ServiceIsNULLWhileTesting() const {

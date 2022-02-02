@@ -89,13 +89,14 @@ class QuotaDatabaseTest : public testing::TestWithParam<bool> {
     }
   };
 
-  bool DumpQuotaTable(QuotaDatabase* quota_database,
-                      const QuotaDatabase::QuotaTableCallback& callback) {
+  QuotaError DumpQuotaTable(QuotaDatabase* quota_database,
+                            const QuotaDatabase::QuotaTableCallback& callback) {
     return quota_database->DumpQuotaTable(callback);
   }
 
-  bool DumpBucketTable(QuotaDatabase* quota_database,
-                       const QuotaDatabase::BucketTableCallback& callback) {
+  QuotaError DumpBucketTable(
+      QuotaDatabase* quota_database,
+      const QuotaDatabase::BucketTableCallback& callback) {
     return quota_database->DumpBucketTable(callback);
   }
 
@@ -184,30 +185,41 @@ TEST_P(QuotaDatabaseTest, HostQuota) {
   const int kQuota1 = 13579;
   const int kQuota2 = kQuota1 + 1024;
 
-  int64_t quota = -1;
-  EXPECT_FALSE(db.GetHostQuota(kHost, kTemp, &quota));
-  EXPECT_FALSE(db.GetHostQuota(kHost, kPerm, &quota));
+  QuotaErrorOr<int64_t> result = db.GetHostQuota(kHost, kTemp);
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
+  result = db.GetHostQuota(kHost, kPerm);
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 
   // Insert quota for temporary.
-  EXPECT_TRUE(db.SetHostQuota(kHost, kTemp, kQuota1));
-  EXPECT_TRUE(db.GetHostQuota(kHost, kTemp, &quota));
-  EXPECT_EQ(kQuota1, quota);
+  EXPECT_EQ(db.SetHostQuota(kHost, kTemp, kQuota1), QuotaError::kNone);
+  result = db.GetHostQuota(kHost, kTemp);
+  EXPECT_TRUE(result.ok());
+  EXPECT_EQ(kQuota1, result.value());
 
   // Update quota for temporary.
-  EXPECT_TRUE(db.SetHostQuota(kHost, kTemp, kQuota2));
-  EXPECT_TRUE(db.GetHostQuota(kHost, kTemp, &quota));
-  EXPECT_EQ(kQuota2, quota);
+  EXPECT_EQ(db.SetHostQuota(kHost, kTemp, kQuota2), QuotaError::kNone);
+  result = db.GetHostQuota(kHost, kTemp);
+  EXPECT_TRUE(result.ok());
+  EXPECT_EQ(kQuota2, result.value());
 
   // Quota for persistent must not be updated.
-  EXPECT_FALSE(db.GetHostQuota(kHost, kPerm, &quota));
+  result = db.GetHostQuota(kHost, kPerm);
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 
   // Delete temporary storage quota.
-  EXPECT_TRUE(db.DeleteHostQuota(kHost, kTemp));
-  EXPECT_FALSE(db.GetHostQuota(kHost, kTemp, &quota));
+  EXPECT_EQ(db.DeleteHostQuota(kHost, kTemp), QuotaError::kNone);
+  result = db.GetHostQuota(kHost, kTemp);
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 
   // Delete persistent quota by setting it to zero.
-  EXPECT_TRUE(db.SetHostQuota(kHost, kPerm, 0));
-  EXPECT_FALSE(db.GetHostQuota(kHost, kPerm, &quota));
+  EXPECT_EQ(db.SetHostQuota(kHost, kPerm, 0), QuotaError::kNone);
+  result = db.GetHostQuota(kHost, kPerm);
+  EXPECT_FALSE(result.ok());
+  EXPECT_EQ(result.error(), QuotaError::kNotFound);
 }
 
 TEST_P(QuotaDatabaseTest, GetOrCreateBucket) {
@@ -581,7 +593,7 @@ TEST_P(QuotaDatabaseTest, BucketLastAccessTimeLRU) {
             QuotaError::kNone);
 
   // Delete storage_key/type last access time information.
-  EXPECT_TRUE(db.DeleteBucketInfo(bucket3.bucket_id));
+  EXPECT_EQ(db.DeleteBucketInfo(bucket3.bucket_id), QuotaError::kNone);
 
   // Querying again to see if the deletion has worked.
   bucket_exceptions.clear();
@@ -809,8 +821,10 @@ TEST_P(QuotaDatabaseTest, DumpQuotaTable) {
 
   using Verifier = EntryVerifier<QuotaTableEntry>;
   Verifier verifier(kTableEntries, std::end(kTableEntries));
-  EXPECT_TRUE(DumpQuotaTable(
-      &db, base::BindRepeating(&Verifier::Run, base::Unretained(&verifier))));
+  EXPECT_EQ(
+      DumpQuotaTable(&db, base::BindRepeating(&Verifier::Run,
+                                              base::Unretained(&verifier))),
+      QuotaError::kNone);
   EXPECT_TRUE(verifier.table.empty());
 }
 
@@ -832,8 +846,10 @@ TEST_P(QuotaDatabaseTest, DumpBucketTable) {
 
   using Verifier = EntryVerifier<Entry>;
   Verifier verifier(kTableEntries, std::end(kTableEntries));
-  EXPECT_TRUE(DumpBucketTable(
-      &db, base::BindRepeating(&Verifier::Run, base::Unretained(&verifier))));
+  EXPECT_EQ(
+      DumpBucketTable(&db, base::BindRepeating(&Verifier::Run,
+                                               base::Unretained(&verifier))),
+      QuotaError::kNone);
   EXPECT_TRUE(verifier.table.empty());
 }
 

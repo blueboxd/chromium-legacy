@@ -38,11 +38,17 @@ ABSL_CONST_INIT std::atomic<bool> g_hashtablez_enabled{
     false
 };
 ABSL_CONST_INIT std::atomic<int32_t> g_hashtablez_sample_parameter{1 << 10};
+std::atomic<HashtablezConfigListener> g_hashtablez_config_listener{nullptr};
 
 #if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
 ABSL_PER_THREAD_TLS_KEYWORD absl::profiling_internal::ExponentialBiased
     g_exponential_biased_generator;
 #endif
+
+void TriggerHashtablezConfigListener() {
+  auto* listener = g_hashtablez_config_listener.load(std::memory_order_acquire);
+  if (listener != nullptr) listener();
+}
 
 }  // namespace
 
@@ -55,13 +61,10 @@ HashtablezSampler& GlobalHashtablezSampler() {
   return *sampler;
 }
 
-// TODO(bradleybear): The comments at this constructors declaration say that the
-// fields are not initialized, but this definition does initialize the fields.
-// Something needs to be cleaned up.
-HashtablezInfo::HashtablezInfo() { PrepareForSampling(); }
+HashtablezInfo::HashtablezInfo() = default;
 HashtablezInfo::~HashtablezInfo() = default;
 
-void HashtablezInfo::PrepareForSampling() {
+void HashtablezInfo::PrepareForSampling(size_t inline_element_size_value) {
   capacity.store(0, std::memory_order_relaxed);
   size.store(0, std::memory_order_relaxed);
   num_erases.store(0, std::memory_order_relaxed);
@@ -79,6 +82,7 @@ void HashtablezInfo::PrepareForSampling() {
   // instead.
   depth = absl::GetStackTrace(stack, HashtablezInfo::kMaxStackDepth,
                               /* skip_count= */ 0);
+  inline_element_size = inline_element_size_value;
 }
 
 static bool ShouldForceSampling() {
@@ -104,8 +108,8 @@ static bool ShouldForceSampling() {
 HashtablezInfo* SampleSlow(int64_t* next_sample, size_t inline_element_size) {
   if (ABSL_PREDICT_FALSE(ShouldForceSampling())) {
     *next_sample = 1;
-    HashtablezInfo* result = GlobalHashtablezSampler().Register();
-    result->inline_element_size = inline_element_size;
+    HashtablezInfo* result =
+        GlobalHashtablezSampler().Register(inline_element_size);
     return result;
   }
 
@@ -131,9 +135,7 @@ HashtablezInfo* SampleSlow(int64_t* next_sample, size_t inline_element_size) {
     return SampleSlow(next_sample, inline_element_size);
   }
 
-  HashtablezInfo* result = GlobalHashtablezSampler().Register();
-  result->inline_element_size = inline_element_size;
-  return result;
+  return GlobalHashtablezSampler().Register(inline_element_size);
 #endif
 }
 
@@ -163,11 +165,33 @@ void RecordInsertSlow(HashtablezInfo* info, size_t hash,
   info->size.fetch_add(1, std::memory_order_relaxed);
 }
 
+void SetHashtablezConfigListener(HashtablezConfigListener l) {
+  g_hashtablez_config_listener.store(l, std::memory_order_release);
+}
+
+bool IsHashtablezEnabled() {
+  return g_hashtablez_enabled.load(std::memory_order_acquire);
+}
+
 void SetHashtablezEnabled(bool enabled) {
+  SetHashtablezEnabledInternal(enabled);
+  TriggerHashtablezConfigListener();
+}
+
+void SetHashtablezEnabledInternal(bool enabled) {
   g_hashtablez_enabled.store(enabled, std::memory_order_release);
 }
 
+int32_t GetHashtablezSampleParameter() {
+  return g_hashtablez_sample_parameter.load(std::memory_order_acquire);
+}
+
 void SetHashtablezSampleParameter(int32_t rate) {
+  SetHashtablezSampleParameterInternal(rate);
+  TriggerHashtablezConfigListener();
+}
+
+void SetHashtablezSampleParameterInternal(int32_t rate) {
   if (rate > 0) {
     g_hashtablez_sample_parameter.store(rate, std::memory_order_release);
   } else {
@@ -176,7 +200,16 @@ void SetHashtablezSampleParameter(int32_t rate) {
   }
 }
 
+int32_t GetHashtablezMaxSamples() {
+  return GlobalHashtablezSampler().GetMaxSamples();
+}
+
 void SetHashtablezMaxSamples(int32_t max) {
+  SetHashtablezMaxSamplesInternal(max);
+  TriggerHashtablezConfigListener();
+}
+
+void SetHashtablezMaxSamplesInternal(int32_t max) {
   if (max > 0) {
     GlobalHashtablezSampler().SetMaxSamples(max);
   } else {

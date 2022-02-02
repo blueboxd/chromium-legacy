@@ -8,11 +8,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ash/components/drivefs/drivefs_host.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -102,6 +102,8 @@ class DriveIntegrationService : public KeyedService,
   using SearchDriveByFileNameCallback =
       base::OnceCallback<void(drive::FileError,
                               std::vector<drivefs::mojom::QueryItemPtr>)>;
+  using GetThumbnailCallback =
+      base::OnceCallback<void(const absl::optional<std::vector<uint8_t>>&)>;
 
   // test_mount_point_name, test_cache_root and
   // test_drivefs_mojo_listener_factory are used by tests to inject customized
@@ -187,6 +189,9 @@ class DriveIntegrationService : public KeyedService,
       const std::vector<std::string>& item_ids,
       drivefs::mojom::DriveFs::LocateFilesByItemIdsCallback callback);
 
+  // Returns the total and free space available in the user's Drive.
+  void GetQuotaUsage(drivefs::mojom::DriveFs::GetQuotaUsageCallback callback);
+
   void RestartDrive();
 
   // Sets the arguments to be parsed by DriveFS on startup. Should only be
@@ -218,6 +223,14 @@ class DriveIntegrationService : public KeyedService,
   // Loads account settings (including feature flags) from
   // |data_dir_path/account_settings. Should only be called in developer mode.
   void LoadAccountSettings();
+
+  // Returns a PNG containing a thumbnail for |path|. If |crop_to_square|, a
+  // 360x360 thumbnail, cropped to fit a square is returned; otherwise a
+  // thumbnail up to 500x500, maintaining aspect ration, is returned. If |path|
+  // does not exist or does not have a thumbnail, |thumbnail| will be null.
+  void GetThumbnail(const base::FilePath& path,
+                    bool crop_to_square,
+                    GetThumbnailCallback callback);
 
  private:
   enum State {

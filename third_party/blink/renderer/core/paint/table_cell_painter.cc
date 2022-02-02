@@ -59,7 +59,7 @@ void TableCellPainter::PaintBackground(const PaintInfo& paint_info,
     if (should_clip) {
       PhysicalRect clip_rect(paint_rect.offset, layout_table_cell_.Size());
       clip_rect.Expand(layout_table_cell_.BorderInsets());
-      paint_info.context.Clip(PixelSnappedIntRect(clip_rect));
+      paint_info.context.Clip(ToPixelSnappedRect(clip_rect));
     }
     BackgroundImageGeometry geometry(layout_table_cell_, &background_object);
     BoxModelObjectPainter(layout_table_cell_)
@@ -94,7 +94,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
     paint_rect.Expand(layout_table_cell_.BorderBoxOutsets());
     client = &layout_table_cell_.GetScrollableArea()
                   ->GetScrollingBackgroundDisplayItemClient();
-    visual_rect = ToGfxRect(EnclosingIntRect(paint_rect));
+    visual_rect = ToEnclosingRect(paint_rect);
   } else {
     paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
     visual_rect = BoxPainter(layout_table_cell_).VisualRect(paint_offset);

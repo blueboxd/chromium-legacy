@@ -13,9 +13,9 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_platform_file.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/desktop_environment_options.h"
-#include "remoting/host/screen_resolution.h"
 #include "remoting/proto/action.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/errors.h"
@@ -227,26 +227,6 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CaptureFrame)
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_SelectSource,
                     int /* desktop_display_id */)
 
-// Carries a keyboard event from the client to the desktop session agent.
-// |serialized_event| is a serialized protocol::KeyEvent.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_InjectKeyEvent,
-                    std::string /* serialized_event */)
-
-// Carries a keyboard event from the client to the desktop session agent.
-// |serialized_event| is a serialized protocol::TextEvent.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_InjectTextEvent,
-                    std::string /* serialized_event */)
-
-// Carries a mouse event from the client to the desktop session agent.
-// |serialized_event| is a serialized protocol::MouseEvent.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_InjectMouseEvent,
-                    std::string /* serialized_event */)
-
-// Carries a touch event from the client to the desktop session agent.
-// |serialized_event| is a serialized protocol::TouchEvent.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_InjectTouchEvent,
-                    std::string /* serialized_event */)
-
 // Changes the screen resolution in the desktop session.
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_SetScreenResolution,
                     remoting::ScreenResolution /* resolution */)
@@ -293,27 +273,3 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CloseFile,
 // message.
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_CancelFile,
                     uint64_t /* file_id */)
-
-//---------------------------------------------------------------------
-// Chromoting messages sent from the remote_security_key process to the
-// network process.
-
-// The array of bytes representing a security key request to be sent to the
-// remote client.
-IPC_MESSAGE_CONTROL(ChromotingRemoteSecurityKeyToNetworkMsg_Request,
-                    std::string /* request bytes */)
-
-//---------------------------------------------------------
-// Chromoting messages sent from the network process to the remote_security_key
-// process.
-
-// The array of bytes representing the security key response from the client.
-IPC_MESSAGE_CONTROL(ChromotingNetworkToRemoteSecurityKeyMsg_Response,
-                    std::string /* response bytes */)
-
-// Indicates the channel used for security key message passing is ready for use.
-IPC_MESSAGE_CONTROL(ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionReady)
-
-// Error indicating the request originated from outside the remoted session.
-// The IPC channel will be disconnected after this message has been sent.
-IPC_MESSAGE_CONTROL(ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession)

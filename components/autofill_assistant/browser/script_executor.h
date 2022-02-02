@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
@@ -296,6 +297,13 @@ class ScriptExecutor : public ActionDelegate,
     void SetTimeoutWarningCallback(WarningCallback timeout_warning);
 
    private:
+    struct ExecutorState {
+      // The status message that was displayed when the interrupt started.
+      std::string status_message;
+      // The state the controller was in when the interrupt triggered.
+      AutofillAssistantState controller_state;
+    };
+
     void Start();
     void Pause();
     void Continue();
@@ -326,8 +334,8 @@ class ScriptExecutor : public ActionDelegate,
     // Saves the current state and sets save_pre_interrupt_state_.
     void SavePreInterruptState();
 
-    // Restores the UI states as found by SavePreInterruptState.
-    void RestoreStatusMessage();
+    // Restores the state as found by SavePreInterruptState.
+    void RestorePreInterruptState();
 
     // if save_pre_interrupt_state_ is set, attempt to scroll the page back to
     // the original area.
@@ -335,11 +343,11 @@ class ScriptExecutor : public ActionDelegate,
 
     void TimeoutWarning();
 
-    ScriptExecutor* main_script_;
-    ScriptExecutorDelegate* delegate_;
+    raw_ptr<ScriptExecutor> main_script_;
+    raw_ptr<ScriptExecutorDelegate> delegate_;
     const base::TimeDelta max_wait_time_;
     const bool allow_interrupt_;
-    WaitForDomObserver* observer_;
+    raw_ptr<WaitForDomObserver> observer_;
     base::RepeatingCallback<void(BatchElementChecker*,
                                  base::OnceCallback<void(const ClientStatus&)>)>
         check_elements_;
@@ -367,12 +375,9 @@ class ScriptExecutor : public ActionDelegate,
     // The interrupt that's currently running.
     std::unique_ptr<ScriptExecutor> interrupt_executor_;
 
-    // If true, pre-interrupt state was saved already. This happens just before
-    // the first interrupt.
-    bool saved_pre_interrupt_state_ = false;
-
-    // The status message that was displayed when the interrupt started.
-    std::string pre_interrupt_status_;
+    // The state of the ScriptExecutor, as registered before the first interrupt
+    // is run.
+    absl::optional<ExecutorState> saved_pre_interrupt_state_;
 
     // Paths of the interrupts that were just run. These interrupts are
     // prevented from firing for one round.
@@ -450,14 +455,14 @@ class ScriptExecutor : public ActionDelegate,
   std::string last_global_payload_;
   const std::string initial_script_payload_;
   std::string last_script_payload_;
-  ScriptExecutor::Listener* const listener_;
-  ScriptExecutorDelegate* const delegate_;
+  const raw_ptr<ScriptExecutor::Listener> listener_;
+  const raw_ptr<ScriptExecutorDelegate> delegate_;
   // Set of interrupts that might run during wait for dom or prompt action with
   // allow_interrupt. Sorted by priority; an interrupt that appears on the
   // vector first should run first. Note that the content of this vector can
   // change while the script is running, as a result of OnScriptListChanged
   // being called.
-  const std::vector<std::unique_ptr<Script>>* const ordered_interrupts_;
+  const raw_ptr<const std::vector<std::unique_ptr<Script>>> ordered_interrupts_;
   std::unique_ptr<ElementStore> element_store_;
   RunScriptCallback callback_;
   std::vector<std::unique_ptr<Action>> actions_;
@@ -508,7 +513,7 @@ class ScriptExecutor : public ActionDelegate,
   CurrentActionData current_action_data_;
   absl::optional<size_t> current_action_index_;
 
-  const UserData* user_data_ = nullptr;
+  raw_ptr<const UserData> user_data_ = nullptr;
 
   bool is_paused_ = false;
   std::string last_status_message_;

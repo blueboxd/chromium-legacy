@@ -38,55 +38,73 @@ constexpr char FlossAdapterClient::kErrorUnknownAdapter[] =
 constexpr char FlossAdapterClient::kExportedCallbacksPath[] =
     "/org/chromium/bluetooth/adapterclient";
 
-void FlossAdapterClient::StartDiscovery(ResponseCallback callback) {
-  dbus::ObjectProxy* object_proxy =
-      bus_->GetObjectProxy(service_name_, adapter_path_);
-  if (!object_proxy) {
-    std::move(callback).Run(Error(kErrorUnknownAdapter, std::string()));
-    return;
-  }
-
-  dbus::MethodCall method_call(kAdapterInterface, adapter::kStartDiscovery);
-  object_proxy->CallMethodWithErrorResponse(
-      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::BindOnce(&FlossAdapterClient::DefaultResponseWithCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+void FlossAdapterClient::StartDiscovery(ResponseCallback<Void> callback) {
+  CallAdapterMethod0<Void>(std::move(callback), adapter::kStartDiscovery);
 }
 
-void FlossAdapterClient::CancelDiscovery(ResponseCallback callback) {
-  dbus::ObjectProxy* object_proxy =
-      bus_->GetObjectProxy(service_name_, adapter_path_);
-  if (!object_proxy) {
-    std::move(callback).Run(Error(kErrorUnknownAdapter, std::string()));
-    return;
-  }
-
-  dbus::MethodCall method_call(kAdapterInterface, adapter::kCancelDiscovery);
-  object_proxy->CallMethodWithErrorResponse(
-      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::BindOnce(&FlossAdapterClient::DefaultResponseWithCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+void FlossAdapterClient::CancelDiscovery(ResponseCallback<Void> callback) {
+  CallAdapterMethod0<Void>(std::move(callback), adapter::kCancelDiscovery);
 }
 
-void FlossAdapterClient::CreateBond(ResponseCallback callback,
+void FlossAdapterClient::CreateBond(ResponseCallback<Void> callback,
                                     FlossDeviceId device,
                                     BluetoothTransport transport) {
-  dbus::ObjectProxy* object_proxy =
-      bus_->GetObjectProxy(service_name_, adapter_path_);
-  if (!object_proxy) {
-    std::move(callback).Run(Error(kErrorUnknownAdapter, std::string()));
-    return;
-  }
+  CallAdapterMethod2<Void>(std::move(callback), adapter::kCreateBond, device,
+                           transport);
+}
 
-  dbus::MethodCall method_call(kAdapterInterface, adapter::kCreateBond);
-  dbus::MessageWriter writer(&method_call);
-  SerializeFlossDeviceId(&writer, device);
-  writer.AppendUint32(static_cast<uint32_t>(transport));
+void FlossAdapterClient::CancelBondProcess(ResponseCallback<Void> callback,
+                                           FlossDeviceId device) {
+  CallAdapterMethod1<Void>(std::move(callback), adapter::kCancelBondProcess,
+                           device);
+}
 
-  object_proxy->CallMethodWithErrorResponse(
-      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::BindOnce(&FlossAdapterClient::DefaultResponseWithCallback,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+void FlossAdapterClient::GetConnectionState(ResponseCallback<uint32_t> callback,
+                                            const FlossDeviceId& device) {
+  CallAdapterMethod1<uint32_t>(std::move(callback),
+                               adapter::kGetConnectionState, device);
+}
+
+void FlossAdapterClient::GetBondState(ResponseCallback<uint32_t> callback,
+                                      const FlossDeviceId& device) {
+  CallAdapterMethod1<uint32_t>(std::move(callback), adapter::kGetBondState,
+                               device);
+}
+
+void FlossAdapterClient::ConnectAllEnabledProfiles(
+    ResponseCallback<Void> callback,
+    const FlossDeviceId& device) {
+  CallAdapterMethod1<Void>(std::move(callback),
+                           adapter::kConnectAllEnabledProfiles, device);
+}
+
+void FlossAdapterClient::SetPairingConfirmation(ResponseCallback<Void> callback,
+                                                const FlossDeviceId& device,
+                                                bool accept) {
+  CallAdapterMethod2<Void>(std::move(callback),
+                           adapter::kSetPairingConfirmation, device, accept);
+}
+
+void FlossAdapterClient::SetPin(ResponseCallback<Void> callback,
+                                const FlossDeviceId& device,
+                                bool accept,
+                                const std::vector<uint8_t>& pin) {
+  CallAdapterMethod3<Void>(std::move(callback), adapter::kSetPin, device,
+                           accept, pin);
+}
+
+void FlossAdapterClient::SetPasskey(ResponseCallback<Void> callback,
+                                    const FlossDeviceId& device,
+                                    bool accept,
+                                    const std::vector<uint8_t>& passkey) {
+  CallAdapterMethod3<Void>(std::move(callback), adapter::kSetPasskey, device,
+                           accept, passkey);
+}
+
+void FlossAdapterClient::GetBondedDevices(
+    ResponseCallback<std::vector<FlossDeviceId>> callback) {
+  CallAdapterMethod0<std::vector<FlossDeviceId>>(std::move(callback),
+                                                 adapter::kGetBondedDevices);
 }
 
 void FlossAdapterClient::Init(dbus::Bus* bus,
@@ -105,7 +123,7 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
 
   dbus::MethodCall mc_get_address(kAdapterInterface, adapter::kGetAddress);
   object_proxy->CallMethodWithErrorResponse(
-      &mc_get_address, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      &mc_get_address, kDBusTimeoutMs,
       base::BindOnce(&FlossAdapterClient::HandleGetAddress,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -166,7 +184,7 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
   writer.AppendObjectPath(dbus::ObjectPath(kExportedCallbacksPath));
 
   object_proxy->CallMethodWithErrorResponse(
-      &register_callback, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      &register_callback, kDBusTimeoutMs,
       base::BindOnce(&FlossAdapterClient::DefaultResponse,
                      weak_ptr_factory_.GetWeakPtr(),
                      adapter::kRegisterCallback));
@@ -178,7 +196,7 @@ void FlossAdapterClient::Init(dbus::Bus* bus,
   writer2.AppendObjectPath(dbus::ObjectPath(kExportedCallbacksPath));
 
   object_proxy->CallMethodWithErrorResponse(
-      &register_connection_callback, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      &register_connection_callback, kDBusTimeoutMs,
       base::BindOnce(&FlossAdapterClient::DefaultResponse,
                      weak_ptr_factory_.GetWeakPtr(),
                      adapter::kRegisterCallback));
@@ -434,5 +452,128 @@ void FlossAdapterClient::SerializeFlossDeviceId(
 
   writer->CloseContainer(&array);
 }
+
+template <>
+void FlossAdapterClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                        const FlossDeviceId& data) {
+  SerializeFlossDeviceId(writer, data);
+}
+
+template <>
+void FlossAdapterClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                        const BluetoothTransport& data) {
+  writer->AppendUint32(static_cast<uint32_t>(data));
+}
+
+template <>
+void FlossAdapterClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                        const uint32_t& data) {
+  writer->AppendUint32(data);
+}
+
+template <>
+void FlossAdapterClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                        const std::string& data) {
+  writer->AppendString(data);
+}
+
+template <>
+void FlossAdapterClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                        const bool& data) {
+  writer->AppendBool(data);
+}
+
+template <>
+void FlossAdapterClient::WriteDBusParam(dbus::MessageWriter* writer,
+                                        const std::vector<uint8_t>& data) {
+  writer->AppendArrayOfBytes(data.data(), data.size());
+}
+
+template <typename R, typename F>
+void FlossAdapterClient::CallAdapterMethod(ResponseCallback<R> callback,
+                                           const char* member,
+                                           F write_data) {
+  dbus::ObjectProxy* object_proxy =
+      bus_->GetObjectProxy(service_name_, adapter_path_);
+  if (!object_proxy) {
+    LOG(ERROR) << "Adapter proxy does not exist when trying to call " << member;
+    std::move(callback).Run(absl::nullopt,
+                            Error(kErrorUnknownAdapter, std::string()));
+    return;
+  }
+
+  dbus::MethodCall method_call(kAdapterInterface, member);
+  dbus::MessageWriter writer(&method_call);
+
+  write_data(&writer);
+
+  object_proxy->CallMethodWithErrorResponse(
+      &method_call, kDBusTimeoutMs,
+      base::BindOnce(&FlossAdapterClient::DefaultResponseWithCallback<R>,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+template <typename R>
+void FlossAdapterClient::CallAdapterMethod0(ResponseCallback<R> callback,
+                                            const char* member) {
+  CallAdapterMethod(std::move(callback), member,
+                    [](dbus::MessageWriter* writer) {});
+}
+
+template <typename R, typename T1>
+void FlossAdapterClient::CallAdapterMethod1(ResponseCallback<R> callback,
+                                            const char* member,
+                                            const T1& arg1) {
+  CallAdapterMethod(std::move(callback), member,
+                    [&arg1](dbus::MessageWriter* writer) {
+                      FlossAdapterClient::WriteDBusParam(writer, arg1);
+                    });
+}
+
+template <typename R, typename T1, typename T2>
+void FlossAdapterClient::CallAdapterMethod2(ResponseCallback<R> callback,
+                                            const char* member,
+                                            const T1& arg1,
+                                            const T2& arg2) {
+  CallAdapterMethod(std::move(callback), member,
+                    [&arg1, &arg2](dbus::MessageWriter* writer) {
+                      FlossAdapterClient::WriteDBusParam(writer, arg1);
+                      FlossAdapterClient::WriteDBusParam(writer, arg2);
+                    });
+}
+
+template <typename R, typename T1, typename T2, typename T3>
+void FlossAdapterClient::CallAdapterMethod3(ResponseCallback<R> callback,
+                                            const char* member,
+                                            const T1& arg1,
+                                            const T2& arg2,
+                                            const T3& arg3) {
+  CallAdapterMethod(std::move(callback), member,
+                    [&arg1, &arg2, &arg3](dbus::MessageWriter* writer) {
+                      FlossAdapterClient::WriteDBusParam(writer, arg1);
+                      FlossAdapterClient::WriteDBusParam(writer, arg2);
+                      FlossAdapterClient::WriteDBusParam(writer, arg3);
+                    });
+}
+
+// These methods are explicitly instantiated for FlossAdapterClientTest since
+// now we don't have many methods that cover the various template use cases.
+// TODO(b/202334519): Remove these and replace with real methods that implicitly
+// instantiate the template once we have more coverage.
+template void FlossAdapterClient::CallAdapterMethod0(
+    ResponseCallback<Void> callback,
+    const char* member);
+template void FlossAdapterClient::CallAdapterMethod0(
+    ResponseCallback<uint8_t> callback,
+    const char* member);
+template void FlossAdapterClient::CallAdapterMethod1(
+    ResponseCallback<std::string> callback,
+    const char* member,
+    const uint32_t& arg1);
+template void FlossAdapterClient::CallAdapterMethod2(
+    ResponseCallback<Void> callback,
+    const char* member,
+    const uint32_t& arg1,
+    const std::string& arg2);
 
 }  // namespace floss

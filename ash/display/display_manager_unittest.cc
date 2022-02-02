@@ -60,6 +60,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/overlay_transform.h"
 
 namespace ash {
 
@@ -140,6 +141,7 @@ class DisplayManagerTest : public AshTestBase,
   void OnDidProcessDisplayChanges() override { ++did_process_count_; }
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override {
+    LOG(ERROR) << "Changed:" << changed_metrics;
     changed_.push_back(display);
     changed_metrics_ |= changed_metrics;
   }
@@ -152,7 +154,8 @@ class DisplayManagerTest : public AshTestBase,
 
   // aura::WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override {
-    ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
+    if (check_root_window_on_destruction_)
+      ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
     root_window_destroyed_ = true;
   }
 
@@ -179,6 +182,10 @@ class DisplayManagerTest : public AshTestBase,
     base::RunLoop().RunUntilIdle();
   }
 
+  void disable_check_root_window_on_destruction() {
+    check_root_window_on_destruction_ = false;
+  }
+
  private:
   vector<display::Display> changed_;
   vector<display::Display> added_;
@@ -187,6 +194,7 @@ class DisplayManagerTest : public AshTestBase,
   size_t did_process_count_ = 0u;
   bool root_window_destroyed_ = false;
   uint32_t changed_metrics_ = 0u;
+  bool check_root_window_on_destruction_ = true;
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
 };
@@ -3074,6 +3082,64 @@ TEST_F(DisplayManagerTest, UnifiedDesktopTabletMode) {
       app_list_controller->IsVisible(display_manager()->first_display_id()));
 }
 
+TEST_F(DisplayManagerTest, UnifiedDesktopPrimarySizeWithRotatedDisplays) {
+  MirrorWindowTestApi test_api;
+
+  // RootWidow for primary changes during unified desktop transition.
+  disable_check_root_window_on_destruction();
+
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  display_manager()->SetUnifiedDesktopEnabled(true);
+
+  UpdateDisplay("1000x700/r");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(gfx::Size(700, 1000),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+
+  UpdateDisplay("1000x700/r,1000x700/r");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(gfx::Size(1400, 1000),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+
+  std::vector<aura::WindowTreeHost*> host_list = test_api.GetHosts();
+  EXPECT_EQ(gfx::Size(700, 1000), host_list[0]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90,
+            host_list[0]->compositor()->display_transform_hint());
+  EXPECT_EQ(gfx::Size(700, 1000), host_list[1]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90,
+            host_list[1]->compositor()->display_transform_hint());
+
+  UpdateDisplay("1000x700/r,1000x700");
+  base::RunLoop().RunUntilIdle();
+  // width = 1000 / 700 * 1000 + 700 ~= 2128
+  EXPECT_EQ(gfx::Size(2128, 1000),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  host_list = test_api.GetHosts();
+  EXPECT_EQ(gfx::Size(700, 1000), host_list[0]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90,
+            host_list[0]->compositor()->display_transform_hint());
+  EXPECT_EQ(gfx::Size(1000, 700), host_list[1]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_NONE,
+            host_list[1]->compositor()->display_transform_hint());
+
+  // Three displays
+  UpdateDisplay("1000x700/l,1000x700/r, 1000x700/l");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(gfx::Size(2100, 1000),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  host_list = test_api.GetHosts();
+  EXPECT_EQ(gfx::Size(700, 1000), host_list[0]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270,
+            host_list[0]->compositor()->display_transform_hint());
+  EXPECT_EQ(gfx::Size(700, 1000), host_list[1]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_90,
+            host_list[1]->compositor()->display_transform_hint());
+  EXPECT_EQ(gfx::Size(700, 1000), host_list[2]->window()->bounds().size());
+  EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270,
+            host_list[2]->compositor()->display_transform_hint());
+}
+
 TEST_F(DisplayManagerTest, DisplayPrefsAndForcedMirrorMode) {
   UpdateDisplay("400x300,800x700");
   base::RunLoop().RunUntilIdle();
@@ -3089,14 +3155,14 @@ TEST_F(DisplayManagerTest, DisplayPrefsAndForcedMirrorMode) {
   // restore.
   EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
 
-  // Turn on tablet mode, and expect that it's not possible to persist the
+  // Turn on tablet mode, and expect that it can persist certain
   // display prefs while forced mirror mode is active.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
   EXPECT_TRUE(
       display_manager()->layout_store()->forced_mirror_mode_for_tablet());
-  EXPECT_FALSE(Shell::Get()->ShouldSaveDisplaySettings());
+  EXPECT_TRUE(Shell::Get()->ShouldSaveDisplaySettings());
   // Forced mirror mode does not add external displays as candidates for mirror
   // restore.
   EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
@@ -3126,14 +3192,14 @@ TEST_F(DisplayManagerTest, ForcedMirrorModeExited) {
   // restore.
   EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
 
-  // Turn on tablet mode, and expect that it's not possible to persist the
+  // Turn on tablet mode, and expect that it can persist certain
   // display prefs while forced mirror mode is active.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
   EXPECT_TRUE(
       display_manager()->layout_store()->forced_mirror_mode_for_tablet());
-  EXPECT_FALSE(Shell::Get()->ShouldSaveDisplaySettings());
+  EXPECT_TRUE(Shell::Get()->ShouldSaveDisplaySettings());
   // Forced mirror mode does not add external displays as candidates for mirror
   // restore.
   EXPECT_TRUE(display_manager()->external_display_mirror_info().empty());
@@ -4524,7 +4590,7 @@ TEST_F(DisplayManagerTest, SoftwareMirrorRotationForTablet) {
     Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
         &transformed_rect2);
     host_list[0]->window()->transform().TransformRect(&transformed_rect2);
-    // Use gfx::EncolosingRect because `transfored_rect2` has rounding errors:
+    // Use gfx::EncolosingRect because `transformed_rect2` has rounding errors:
     //   137.000000,0.000000 524.999939x699.999939
     EXPECT_EQ(gfx::Rect(137.0f, 0.0f, 525.0f, 700.0f),
               gfx::ToEnclosingRect(transformed_rect2));
@@ -4550,8 +4616,7 @@ TEST_F(DisplayManagerTest, SoftwareMirrorRotationForTablet) {
   }
 }
 
-// crbug.com/1003339
-TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
+TEST_F(DisplayManagerTest, SoftwareMirrorRotationForNonTablet) {
   MirrorWindowTestApi test_api;
   UpdateDisplay("400x300,800x700");
 
@@ -4571,7 +4636,7 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
   Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
       &transformed_rect1);
   host_list[0]->window()->transform().TransformRect(&transformed_rect1);
-  EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect1);
+  EXPECT_EQ(gfx::RectF(0.0f, 50.0f, 800.0f, 600.0f), transformed_rect1);
 
   // Rotate the source display by 90 degrees.
   UpdateDisplay("400x300/r,800x700");
@@ -4581,7 +4646,7 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
   host_list = test_api.GetHosts();
   ASSERT_EQ(1U, host_list.size());
   EXPECT_EQ(gfx::Size(800, 700), host_list[0]->GetBoundsInPixels().size());
-  EXPECT_EQ(gfx::Size(400, 300), host_list[0]->window()->bounds().size());
+  EXPECT_EQ(gfx::Size(300, 400), host_list[0]->window()->bounds().size());
 
   // Test the target display's bounds after the transforms are applied.
   gfx::RectF transformed_rect2(
@@ -4589,7 +4654,7 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
   Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
       &transformed_rect2);
   host_list[0]->window()->transform().TransformRect(&transformed_rect2);
-  EXPECT_EQ(gfx::RectF(0.0f, 100.0f, 800.0f, 600.0f), transformed_rect2);
+  EXPECT_EQ(gfx::RectF(50.0f, 0.0f, 600.0f, 800.0f), transformed_rect2);
 
   // Change the bounds of the source display and rotate the source display by 90
   // degrees.
@@ -4600,7 +4665,7 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
   host_list = test_api.GetHosts();
   ASSERT_EQ(1U, host_list.size());
   EXPECT_EQ(gfx::Size(800, 700), host_list[0]->GetBoundsInPixels().size());
-  EXPECT_EQ(gfx::Size(300, 400), host_list[0]->window()->bounds().size());
+  EXPECT_EQ(gfx::Size(400, 300), host_list[0]->window()->bounds().size());
 
   // Test the target display's bounds after the transforms are applied.
   gfx::RectF transformed_rect3(
@@ -4608,7 +4673,9 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
   Shell::Get()->GetPrimaryRootWindow()->transform().TransformRect(
       &transformed_rect3);
   host_list[0]->window()->transform().TransformRect(&transformed_rect3);
-  EXPECT_EQ(gfx::RectF(100.0f, 0.0f, 600.0f, 800.0f), transformed_rect3);
+  // Use gfx::EncolosingRect because `transformed_rect3` has rounding errors.
+  EXPECT_EQ(gfx::Rect(0.0f, 137.0f, 700.0f, 525.0f),
+            gfx::ToEnclosingRect(transformed_rect3));
 }
 
 TEST_F(DisplayManagerTest, DPSizeTest) {

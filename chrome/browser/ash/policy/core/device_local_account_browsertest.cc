@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
@@ -114,7 +115,6 @@
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/policy_certificate_provider.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -1735,8 +1735,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ManagedSessionTimezoneChange) {
   std::string timezone_id2("Europe/Berlin");
   std::u16string timezone_id2_utf16(u"Europe/Berlin");
 
-  chromeos::system::TimezoneSettings* timezone_settings =
-      chromeos::system::TimezoneSettings::GetInstance();
+  ash::system::TimezoneSettings* timezone_settings =
+      ash::system::TimezoneSettings::GetInstance();
 
   timezone_settings->SetTimezoneFromID(timezone_id1);
   SetSystemTimezoneAutomaticDetectionPolicy(em::SystemTimezoneProto::DISABLED);

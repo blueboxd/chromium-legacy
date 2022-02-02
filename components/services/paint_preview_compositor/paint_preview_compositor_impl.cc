@@ -142,6 +142,7 @@ absl::optional<SkBitmap> CreateBitmap(
           SkImageInfo::MakeN32Premul(clip_rect.width(), clip_rect.height()))) {
     return absl::nullopt;
   }
+
   SkCanvas canvas(bitmap, skia::LegacyDisplayGlobals::GetSkSurfaceProps());
   SkMatrix matrix;
   matrix.setScaleTranslate(scale_factor, scale_factor, -clip_rect.x(),

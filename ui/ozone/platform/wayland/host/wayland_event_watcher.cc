@@ -11,8 +11,8 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
 #include "base/threading/thread.h"
@@ -20,6 +20,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/common/wayland.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace ui {
 
@@ -85,7 +86,8 @@ void WaylandEventWatcher::SetShutdownCb(
 }
 
 void WaylandEventWatcher::StartProcessingEvents() {
-  ui_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+  if (!ui_thread_task_runner_)
+    ui_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   if (use_dedicated_polling_thread_ && !thread_) {
     // FD watching will happen on a different thread.
     DETACH_FROM_THREAD(thread_checker_);
@@ -95,7 +97,13 @@ void WaylandEventWatcher::StartProcessingEvents() {
                        weak_factory_.GetWeakPtr()));
     base::Thread::Options thread_options;
     thread_options.message_pump_type = base::MessagePumpType::UI;
-    thread_options.priority = base::ThreadPriority::DISPLAY;
+
+    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    if (cmd_line->HasSwitch(switches::kUseWaylandNormalThreadPriority))
+      thread_options.priority = base::ThreadPriority::NORMAL;
+    else
+      thread_options.priority = base::ThreadPriority::DISPLAY;
+
     if (!thread_->StartWithOptions(std::move(thread_options)))
       LOG(FATAL) << "Failed to create input thread";
 

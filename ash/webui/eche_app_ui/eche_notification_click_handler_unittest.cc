@@ -6,12 +6,12 @@
 
 #include <string>
 
+#include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/fake_feature_status_provider.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/components/phonehub/fake_phone_hub_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -33,9 +33,11 @@ class TestableLaunchAppHelper : public LaunchAppHelper {
   ~TestableLaunchAppHelper() override = default;
   TestableLaunchAppHelper(const TestableLaunchAppHelper&) = delete;
   TestableLaunchAppHelper& operator=(const TestableLaunchAppHelper&) = delete;
-
   // LaunchAppHelper:
-  bool IsAppLaunchAllowed() const override { return true; }
+  LaunchAppHelper::AppLaunchProhibitedReason checkAppLaunchProhibitedReason(
+      FeatureStatus status) const override {
+    return LaunchAppHelper::AppLaunchProhibitedReason::kNotProhibited;
+  }
   void ShowNotification(const absl::optional<std::u16string>& title,
                         const absl::optional<std::u16string>& message,
                         std::unique_ptr<NotificationInfo> info) const override {
@@ -141,6 +143,8 @@ TEST_F(EcheNotificationClickHandlerTest, StatusChangeTransitions) {
   EXPECT_EQ(1u, GetNumberOfClickHandlers());
   SetStatus(FeatureStatus::kDependentFeaturePending);
   EXPECT_EQ(0u, GetNumberOfClickHandlers());
+  SetStatus(FeatureStatus::kNotEnabledByPhone);
+  EXPECT_EQ(1u, GetNumberOfClickHandlers());
 }
 
 TEST_F(EcheNotificationClickHandlerTest,
@@ -157,6 +161,11 @@ TEST_F(EcheNotificationClickHandlerTest,
   resetCloseEcheAppFlag();
   SetStatus(FeatureStatus::kDisconnected);
   SetStatus(FeatureStatus::kDependentFeature);
+  EXPECT_EQ(true, getCloseEcheAppFlag());
+
+  resetCloseEcheAppFlag();
+  SetStatus(FeatureStatus::kDisconnected);
+  SetStatus(FeatureStatus::kNotEnabledByPhone);
   EXPECT_EQ(true, getCloseEcheAppFlag());
 
   resetCloseEcheAppFlag();

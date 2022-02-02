@@ -14,7 +14,7 @@
 #include "base/atomicops.h"
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
@@ -100,6 +100,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   perfetto::SharedMemory* shared_memory() const override;
   void NotifyFlushComplete(perfetto::FlushRequestID) override;
   void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
+  void UpdateDataSource(const perfetto::DataSourceDescriptor&) override;
   void UnregisterDataSource(const std::string& name) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
   void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
@@ -133,7 +134,8 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   uint32_t data_sources_tracing_ = 0;
   std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;
   mojo::Remote<mojom::ProducerHost> producer_host_;
-  base::tracing::PerfettoTaskRunner* in_process_arbiter_task_runner_ = nullptr;
+  raw_ptr<base::tracing::PerfettoTaskRunner> in_process_arbiter_task_runner_ =
+      nullptr;
   // First value is the flush ID, the second is the number of
   // replies we're still waiting for.
   std::pair<uint64_t, size_t> pending_replies_for_latest_flush_;

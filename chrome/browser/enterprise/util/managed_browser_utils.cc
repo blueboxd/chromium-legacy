@@ -8,11 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -116,9 +119,13 @@ bool CertMatchesSelectionFilters(
 
 }  // namespace
 
-bool HasBrowserPoliciesApplied(Profile* profile) {
+bool IsBrowserManaged(Profile* profile) {
   DCHECK(profile);
-  DCHECK(profile->GetProfilePolicyConnector());
+
+  if (base::FeatureList::IsEnabled(features::kUseManagementService)) {
+    return policy::ManagementServiceFactory::GetForProfile(profile)
+        ->IsManaged();
+  }
 
   // This profile may have policies configured.
   auto* profile_connector = profile->GetProfilePolicyConnector();
@@ -237,10 +244,10 @@ std::string GetAccountManagerName(Profile* profile) {
 }
 
 // static
-jboolean JNI_ManagedBrowserUtils_HasBrowserPoliciesApplied(
+jboolean JNI_ManagedBrowserUtils_IsBrowserManaged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& profile) {
-  return HasBrowserPoliciesApplied(ProfileAndroid::FromProfileAndroid(profile));
+  return IsBrowserManaged(ProfileAndroid::FromProfileAndroid(profile));
 }
 
 // static

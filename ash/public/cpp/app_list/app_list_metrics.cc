@@ -22,6 +22,10 @@ const char kAppListSuggestionChipOpenTypeHistogramInClamshell[] =
     "Apps.AppListSuggestedChipOpenType.ClamshellMode";
 const char kAppListSuggestionChipOpenTypeHistogramInTablet[] =
     "Apps.AppListSuggestedChipOpenType.TabletMode";
+const char kAppListContinueTaskOpenTypeHistogramInClamshell[] =
+    "Apps.AppListContinueTaskOpenType.ClamshellMode";
+const char kAppListContinueTaskOpenTypeHistogramInTablet[] =
+    "Apps.AppListContinueTaskOpenType.TabletMode";
 const char kAppListZeroStateSuggestionOpenTypeHistogram[] =
     "Apps.AppList.ZeroStateSuggestionOpenType";
 const char kAppListDefaultSearchResultOpenTypeHistogram[] =
@@ -80,9 +84,20 @@ void RecordSearchResultOpenTypeHistogram(AppListLaunchedFrom launch_location,
             SEARCH_RESULT_TYPE_BOUNDARY);
       }
       break;
+    case AppListLaunchedFrom::kLaunchedFromContinueTask:
+      if (is_tablet_mode) {
+        UMA_HISTOGRAM_ENUMERATION(kAppListContinueTaskOpenTypeHistogramInTablet,
+                                  type, SEARCH_RESULT_TYPE_BOUNDARY);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            kAppListContinueTaskOpenTypeHistogramInClamshell, type,
+            SEARCH_RESULT_TYPE_BOUNDARY);
+      }
+      break;
     case AppListLaunchedFrom::kLaunchedFromShelf:
     case AppListLaunchedFrom::kLaunchedFromGrid:
-      // Search results don't live in the shelf or the app grid.
+    case AppListLaunchedFrom::kLaunchedFromRecentApps:
+      // Search results don't live in the shelf, the app grid or recent apps.
       NOTREACHED();
       break;
   }

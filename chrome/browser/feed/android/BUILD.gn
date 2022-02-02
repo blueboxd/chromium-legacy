@@ -6,7 +6,6 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/android/features/android_library_factory_tmpl.gni")
 import("//chrome/browser/buildflags.gni")
-import("//chrome/browser/feed/buildflags.gni")
 
 android_library("java") {
   sources = [
@@ -19,6 +18,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/feed/FeedFeatures.java",
     "java/src/org/chromium/chrome/browser/feed/FeedImageFetchClient.java",
     "java/src/org/chromium/chrome/browser/feed/FeedLaunchReliabilityLoggingState.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedLoggingParameters.java",
     "java/src/org/chromium/chrome/browser/feed/FeedPersistentKeyValueCache.java",
     "java/src/org/chromium/chrome/browser/feed/FeedPlaceholderLayout.java",
     "java/src/org/chromium/chrome/browser/feed/FeedProcessScopeDependencyProvider.java",
@@ -274,6 +274,7 @@ android_library("junit") {
   sources = [
     "java/src/org/chromium/chrome/browser/feed/FakeLinearLayoutManager.java",
     "java/src/org/chromium/chrome/browser/feed/FeedFeaturesTest.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedLoggingParametersTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedPlaceholderLayoutTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedProcessScopeDependencyProviderTest.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSliceViewTrackerTest.java",

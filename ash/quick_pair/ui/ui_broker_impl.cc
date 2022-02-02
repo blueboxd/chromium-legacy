@@ -33,8 +33,9 @@ void UIBrokerImpl::ShowDiscovery(scoped_refptr<Device> device) {
     case Protocol::kFastPairInitial:
     case Protocol::kFastPairSubsequent:
       fast_pair_presenter_->ShowDiscovery(
-          device, base::BindOnce(&UIBrokerImpl::NotifyDiscoveryAction,
-                                 weak_pointer_factory_.GetWeakPtr(), device));
+          device,
+          base::BindRepeating(&UIBrokerImpl::NotifyDiscoveryAction,
+                              weak_pointer_factory_.GetWeakPtr(), device));
       break;
     case Protocol::kFastPairRetroactive:
       NOTREACHED();
@@ -55,11 +56,16 @@ void UIBrokerImpl::ShowPairing(scoped_refptr<Device> device) {
 void UIBrokerImpl::ShowPairingFailed(scoped_refptr<Device> device) {
   switch (device->protocol) {
     case Protocol::kFastPairInitial:
-    case Protocol::kFastPairRetroactive:
     case Protocol::kFastPairSubsequent:
       fast_pair_presenter_->ShowPairingFailed(
-          device, base::BindOnce(&UIBrokerImpl::NotifyPairingFailedAction,
-                                 weak_pointer_factory_.GetWeakPtr(), device));
+          device,
+          base::BindRepeating(&UIBrokerImpl::NotifyPairingFailedAction,
+                              weak_pointer_factory_.GetWeakPtr(), device));
+      break;
+    case Protocol::kFastPairRetroactive:
+      // In this scenario, we don't show the error UI because it would be
+      // misleading, since a pair failure is a retroactive pair failure, and
+      // guiding the user back to settings doesn't make sense.
       break;
   }
 }
@@ -69,8 +75,9 @@ void UIBrokerImpl::ShowAssociateAccount(scoped_refptr<Device> device) {
     case Protocol::kFastPairInitial:
     case Protocol::kFastPairRetroactive:
       fast_pair_presenter_->ShowAssociateAccount(
-          device, base::BindOnce(&UIBrokerImpl::NotifyAssociateAccountAction,
-                                 weak_pointer_factory_.GetWeakPtr(), device));
+          device,
+          base::BindRepeating(&UIBrokerImpl::NotifyAssociateAccountAction,
+                              weak_pointer_factory_.GetWeakPtr(), device));
       break;
     case Protocol::kFastPairSubsequent:
       NOTREACHED();
@@ -84,8 +91,9 @@ void UIBrokerImpl::ShowCompanionApp(scoped_refptr<Device> device) {
     case Protocol::kFastPairRetroactive:
     case Protocol::kFastPairSubsequent:
       fast_pair_presenter_->ShowCompanionApp(
-          device, base::BindOnce(&UIBrokerImpl::NotifyCompanionAppAction,
-                                 weak_pointer_factory_.GetWeakPtr(), device));
+          device,
+          base::BindRepeating(&UIBrokerImpl::NotifyCompanionAppAction,
+                              weak_pointer_factory_.GetWeakPtr(), device));
       break;
   }
 }

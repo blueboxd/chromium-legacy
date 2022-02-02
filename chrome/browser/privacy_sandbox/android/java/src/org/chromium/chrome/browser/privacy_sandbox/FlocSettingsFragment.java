@@ -58,10 +58,7 @@ public class FlocSettingsFragment extends PreferenceFragmentCompat
         // Configure the toggle.
         ChromeSwitchPreference flocToggle = (ChromeSwitchPreference) findPreference(FLOC_TOGGLE);
         flocToggle.setOnPreferenceChangeListener(this);
-        // Disable FLoC while OT not active.
-        // TODO(crbug.com/1287951): Perform cleanup / adjustment as required.
-        flocToggle.setChecked(false);
-        flocToggle.setEnabled(false);
+        flocToggle.setChecked(PrivacySandboxBridge.isFlocEnabled());
         // Configure the reset button.
         Preference resetButton = findPreference(RESET_FLOC_BUTTON);
         resetButton.setOnPreferenceClickListener(this);

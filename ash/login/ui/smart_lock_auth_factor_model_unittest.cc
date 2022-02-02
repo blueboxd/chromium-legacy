@@ -6,6 +6,7 @@
 
 #include "ash/login/ui/auth_factor_model.h"
 #include "ash/login/ui/auth_icon_view.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,6 +16,67 @@ namespace ash {
 namespace {
 
 using AuthFactorState = AuthFactorModel::AuthFactorState;
+
+struct LabelTestcase {
+  SmartLockState state;
+  absl::optional<bool> can_use_pin;
+  int label_id;
+  int accessible_name_id;
+};
+
+constexpr LabelTestcase kLabelTestcases[] = {
+    {SmartLockState::kDisabled, /*can_use_pin=*/true,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
+    {SmartLockState::kDisabled, /*can_use_pin=*/false,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
+    {SmartLockState::kInactive, /*can_use_pin=*/true,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
+    {SmartLockState::kInactive, /*can_use_pin=*/false,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
+    {SmartLockState::kPasswordReentryRequired, /*can_use_pin=*/true,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
+    {SmartLockState::kPasswordReentryRequired, /*can_use_pin=*/false,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
+    {SmartLockState::kPrimaryUserAbsent, /*can_use_pin=*/true,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
+    {SmartLockState::kPrimaryUserAbsent, /*can_use_pin=*/false,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
+    {SmartLockState::kPhoneNotAuthenticated, /*can_use_pin=*/true,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
+    {SmartLockState::kPhoneNotAuthenticated, /*can_use_pin=*/false,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
+     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
+    {SmartLockState::kBluetoothDisabled, /*can_use_pin=*/absl::nullopt,
+     IDS_SMART_LOCK_LABEL_NO_BLUETOOTH, IDS_SMART_LOCK_LABEL_NO_BLUETOOTH},
+    {SmartLockState::kPhoneNotLockable, /*can_use_pin=*/absl::nullopt,
+     IDS_SMART_LOCK_LABEL_NO_PHONE_LOCK_SCREEN,
+     IDS_SMART_LOCK_LABEL_NO_PHONE_LOCK_SCREEN},
+    {SmartLockState::kConnectingToPhone, /*can_use_pin=*/absl::nullopt,
+     IDS_SMART_LOCK_LABEL_LOOKING_FOR_PHONE,
+     IDS_SMART_LOCK_LABEL_LOOKING_FOR_PHONE},
+    {SmartLockState::kPhoneFoundLockedAndDistant, /*can_use_pin=*/absl::nullopt,
+     IDS_SMART_LOCK_LABEL_PHONE_TOO_FAR, IDS_SMART_LOCK_LABEL_PHONE_TOO_FAR},
+    {SmartLockState::kPhoneFoundUnlockedAndDistant,
+     /*can_use_pin=*/absl::nullopt, IDS_SMART_LOCK_LABEL_PHONE_TOO_FAR,
+     IDS_SMART_LOCK_LABEL_PHONE_TOO_FAR},
+    {SmartLockState::kPhoneNotFound, /*can_use_pin=*/absl::nullopt,
+     IDS_SMART_LOCK_LABEL_NO_PHONE, IDS_SMART_LOCK_LABEL_NO_PHONE},
+    {SmartLockState::kPhoneFoundLockedAndProximate,
+     /*can_use_pin=*/absl::nullopt, IDS_SMART_LOCK_LABEL_PHONE_LOCKED,
+     IDS_SMART_LOCK_LABEL_PHONE_LOCKED},
+    {SmartLockState::kPhoneAuthenticated, /*can_use_pin=*/absl::nullopt,
+     IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER,
+     IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER},
+};
 
 }  // namespace
 
@@ -38,11 +100,24 @@ class SmartLockAuthFactorModelUnittest : public AshTestBase {
   }
 
   void OnStateChanged() { on_state_changed_called_ = true; }
+  void ArrowButtonTapCallback() { arrow_button_tap_callback_called_ = true; }
 
-  SmartLockAuthFactorModel smart_lock_model_;
-  AuthFactorModel* model_ = &smart_lock_model_;
+  void TestArrowButtonAndCheckCallbackCalled(SmartLockState state,
+                                             bool should_callback_be_called) {
+    arrow_button_tap_callback_called_ = false;
+    smart_lock_model_->SetSmartLockState(state);
+    smart_lock_model_->OnArrowButtonTapOrClickEvent();
+    EXPECT_EQ(arrow_button_tap_callback_called_, should_callback_be_called);
+  }
+
+  std::unique_ptr<SmartLockAuthFactorModel> smart_lock_model_ =
+      std::make_unique<SmartLockAuthFactorModel>(base::BindRepeating(
+          &SmartLockAuthFactorModelUnittest::ArrowButtonTapCallback,
+          base::Unretained(this)));
+  AuthFactorModel* model_ = smart_lock_model_.get();
   AuthIconView icon_;
   bool on_state_changed_called_ = false;
+  bool arrow_button_tap_callback_called_ = false;
 };
 
 TEST_F(SmartLockAuthFactorModelUnittest, GetType) {
@@ -50,43 +125,47 @@ TEST_F(SmartLockAuthFactorModelUnittest, GetType) {
 }
 
 TEST_F(SmartLockAuthFactorModelUnittest, Disabled) {
-  smart_lock_model_.SetSmartLockState(SmartLockState::kDisabled);
+  smart_lock_model_->SetSmartLockState(SmartLockState::kDisabled);
   EXPECT_TRUE(on_state_changed_called_);
   EXPECT_EQ(AuthFactorState::kUnavailable, model_->GetAuthFactorState());
 }
 
 TEST_F(SmartLockAuthFactorModelUnittest, ClickRequired) {
-  smart_lock_model_.SetSmartLockState(SmartLockState::kPhoneAuthenticated);
+  smart_lock_model_->SetSmartLockState(SmartLockState::kPhoneAuthenticated);
   EXPECT_TRUE(on_state_changed_called_);
   EXPECT_EQ(AuthFactorState::kClickRequired, model_->GetAuthFactorState());
 }
 
 TEST_F(SmartLockAuthFactorModelUnittest, AvailableStates) {
-  smart_lock_model_.SetSmartLockState(SmartLockState::kPhoneNotFound);
-  EXPECT_TRUE(on_state_changed_called_);
-  on_state_changed_called_ = false;
-  EXPECT_EQ(AuthFactorState::kAvailable, model_->GetAuthFactorState());
+  for (SmartLockState state :
+       {SmartLockState::kPhoneNotFound, SmartLockState::kConnectingToPhone,
+        SmartLockState::kPhoneFoundLockedAndDistant,
+        SmartLockState::kPhoneFoundUnlockedAndDistant}) {
+    smart_lock_model_->SetSmartLockState(state);
+    EXPECT_TRUE(on_state_changed_called_);
+    on_state_changed_called_ = false;
+    EXPECT_EQ(AuthFactorState::kAvailable, model_->GetAuthFactorState());
+  }
+}
 
-  smart_lock_model_.SetSmartLockState(SmartLockState::kConnectingToPhone);
-  EXPECT_TRUE(on_state_changed_called_);
-  on_state_changed_called_ = false;
-  EXPECT_EQ(AuthFactorState::kAvailable, model_->GetAuthFactorState());
-
-  smart_lock_model_.SetSmartLockState(
-      SmartLockState::kPhoneFoundLockedAndDistant);
-  EXPECT_TRUE(on_state_changed_called_);
-  on_state_changed_called_ = false;
-  EXPECT_EQ(AuthFactorState::kAvailable, model_->GetAuthFactorState());
-
-  smart_lock_model_.SetSmartLockState(
-      SmartLockState::kPhoneFoundUnlockedAndDistant);
-  EXPECT_TRUE(on_state_changed_called_);
-  on_state_changed_called_ = false;
-  EXPECT_EQ(AuthFactorState::kAvailable, model_->GetAuthFactorState());
+TEST_F(SmartLockAuthFactorModelUnittest, ErrorStates) {
+  for (SmartLockState state : {SmartLockState::kPasswordReentryRequired,
+                               SmartLockState::kPrimaryUserAbsent,
+                               SmartLockState::kPhoneNotAuthenticated,
+                               SmartLockState::kBluetoothDisabled,
+                               SmartLockState::kPhoneNotLockable}) {
+    smart_lock_model_->SetSmartLockState(state);
+    EXPECT_TRUE(on_state_changed_called_);
+    EXPECT_EQ(AuthFactorState::kErrorPermanent, model_->GetAuthFactorState());
+    EXPECT_FALSE(model_->has_permanent_error_display_timed_out());
+    model_->HandleErrorTimeout();
+    EXPECT_TRUE(model_->has_permanent_error_display_timed_out());
+    on_state_changed_called_ = false;
+  }
 }
 
 TEST_F(SmartLockAuthFactorModelUnittest, ReadyStates) {
-  smart_lock_model_.SetSmartLockState(
+  smart_lock_model_->SetSmartLockState(
       SmartLockState::kPhoneFoundLockedAndProximate);
   EXPECT_TRUE(on_state_changed_called_);
   on_state_changed_called_ = false;
@@ -94,11 +173,61 @@ TEST_F(SmartLockAuthFactorModelUnittest, ReadyStates) {
 }
 
 TEST_F(SmartLockAuthFactorModelUnittest, OnStateChangedDebounced) {
-  smart_lock_model_.SetSmartLockState(SmartLockState::kConnectingToPhone);
+  smart_lock_model_->SetSmartLockState(SmartLockState::kConnectingToPhone);
   EXPECT_TRUE(on_state_changed_called_);
   on_state_changed_called_ = false;
-  smart_lock_model_.SetSmartLockState(SmartLockState::kConnectingToPhone);
+  smart_lock_model_->SetSmartLockState(SmartLockState::kConnectingToPhone);
   EXPECT_FALSE(on_state_changed_called_);
+}
+
+TEST_F(SmartLockAuthFactorModelUnittest, ArrowButtonTapCallback) {
+  // Callback should only be called when state is
+  // SmartLockState::kPhoneAuthenticated
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kDisabled, false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kInactive, false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kBluetoothDisabled,
+                                        false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPhoneNotLockable,
+                                        false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPhoneNotFound, false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kConnectingToPhone,
+                                        false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPhoneNotAuthenticated,
+                                        false);
+  TestArrowButtonAndCheckCallbackCalled(
+      SmartLockState::kPhoneFoundLockedAndDistant, false);
+  TestArrowButtonAndCheckCallbackCalled(
+      SmartLockState::kPhoneFoundLockedAndProximate, false);
+  TestArrowButtonAndCheckCallbackCalled(
+      SmartLockState::kPhoneFoundUnlockedAndDistant, false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPhoneAuthenticated,
+                                        true);
+  TestArrowButtonAndCheckCallbackCalled(
+      SmartLockState::kPasswordReentryRequired, false);
+  TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPrimaryUserAbsent,
+                                        false);
+}
+
+TEST_F(SmartLockAuthFactorModelUnittest, NotifySmartLockAuthResult) {
+  smart_lock_model_->NotifySmartLockAuthResult(/*result=*/true);
+  EXPECT_TRUE(on_state_changed_called_);
+  EXPECT_EQ(AuthFactorState::kAuthenticated, model_->GetAuthFactorState());
+
+  on_state_changed_called_ = false;
+  smart_lock_model_->NotifySmartLockAuthResult(/*result=*/false);
+  EXPECT_TRUE(on_state_changed_called_);
+  EXPECT_EQ(AuthFactorState::kErrorPermanent, model_->GetAuthFactorState());
+}
+
+TEST_F(SmartLockAuthFactorModelUnittest, GetLabelAndAccessibleName) {
+  for (const LabelTestcase& testcase : kLabelTestcases) {
+    smart_lock_model_->SetSmartLockState(testcase.state);
+    if (testcase.can_use_pin.has_value()) {
+      model_->set_can_use_pin(testcase.can_use_pin.value());
+    }
+    EXPECT_EQ(testcase.label_id, model_->GetLabelId());
+    EXPECT_EQ(testcase.accessible_name_id, model_->GetAccessibleNameId());
+  }
 }
 
 }  // namespace ash

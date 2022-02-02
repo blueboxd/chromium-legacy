@@ -35,6 +35,8 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE, PRIVACY_SCREEN_TOGGLE},
     {true, ui::VKEY_MICROPHONE_MUTE_TOGGLE, ui::EF_NONE,
      MICROPHONE_MUTE_TOGGLE},
+    {true, ui::VKEY_KBD_BACKLIGHT_TOGGLE, ui::EF_NONE,
+     KEYBOARD_BACKLIGHT_TOGGLE},
     {true, ui::VKEY_KBD_BRIGHTNESS_DOWN, ui::EF_NONE, KEYBOARD_BRIGHTNESS_DOWN},
     {true, ui::VKEY_KBD_BRIGHTNESS_UP, ui::EF_NONE, KEYBOARD_BRIGHTNESS_UP},
     // Maximize button.
@@ -151,7 +153,7 @@ const AcceleratorData kAcceleratorData[] = {
     // key opens quick settings.
     {true, ui::VKEY_SETTINGS, ui::EF_NONE, TOGGLE_SYSTEM_TRAY_BUBBLE},
     {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
-     SHOW_IME_MENU_BUBBLE},
+     TOGGLE_IME_MENU_BUBBLE},
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
     {true, ui::VKEY_2, ui::EF_ALT_DOWN, LAUNCH_APP_1},
     {true, ui::VKEY_3, ui::EF_ALT_DOWN, LAUNCH_APP_2},
@@ -218,11 +220,9 @@ const AcceleratorData kAcceleratorData[] = {
      DESKS_MOVE_ACTIVE_ITEM_LEFT},
     {true, ui::VKEY_OEM_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DESKS_MOVE_ACTIVE_ITEM_RIGHT},
-    // TODO(afakhry): Implement activating and moving windows to a desk by
-    // its index directly.
+    // TODO(afakhry): Implement moving windows to a desk by its index directly.
 
-    // TODO(yusukes): Handle VKEY_MEDIA_STOP, and
-    // VKEY_MEDIA_LAUNCH_MAIL.
+    // TODO(yusukes): Handle VKEY_MEDIA_STOP, and VKEY_MEDIA_LAUNCH_MAIL.
 
     // ARC-specific shortcut.
     {true, ui::VKEY_C, ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN,
@@ -309,6 +309,33 @@ const AcceleratorData kEnableWithPositionalAcceleratorsData[] = {
 
 const size_t kEnableWithPositionalAcceleratorsDataLength =
     base::size(kEnableWithPositionalAcceleratorsData);
+
+const AcceleratorData
+    kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData[] = {
+        // Indexed-desk activation:
+        {true, ui::VKEY_1, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_0},
+        {true, ui::VKEY_2, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_1},
+        {true, ui::VKEY_3, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_2},
+        {true, ui::VKEY_4, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_3},
+        {true, ui::VKEY_5, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_4},
+        {true, ui::VKEY_6, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_5},
+        {true, ui::VKEY_7, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_6},
+        {true, ui::VKEY_8, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_ACTIVATE_7},
+        // Toggle assign to all desks:
+        {true, ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
+         DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS},
+};
+
+const size_t kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength =
+    base::size(kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData);
 
 // static
 AcceleratorController* AcceleratorController::Get() {

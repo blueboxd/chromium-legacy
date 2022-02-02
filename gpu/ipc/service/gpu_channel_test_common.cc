@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "gpu/ipc/service/gpu_channel_test_common.h"
+#include "base/memory/raw_ptr.h"
 
 #include <memory>
 
+#include "base/ignore_result.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -68,7 +70,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
 
  private:
   bool is_exiting_ = false;
-  Scheduler* const scheduler_;
+  const raw_ptr<Scheduler> scheduler_;
 };
 
 GpuChannelTestCommon::GpuChannelTestCommon(bool use_stub_bindings)

@@ -21,7 +21,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
-import {Route, Router} from '../router.js';
+import {Router} from '../router.js';
 import {ContentSettingsTypes} from '../site_settings/constants.js';
 
 import {CategoryListItem} from './site_settings_list.js';
@@ -181,14 +181,6 @@ function getCategoryItemMap(): Map<ContentSettingsTypes, CategoryListItem> {
       label: 'siteSettingsInsecureContent',
       icon: 'settings:insecure-content',
       disabledLabel: 'siteSettingsInsecureContentBlock',
-    },
-    {
-      route: routes.SITE_SETTINGS_FILE_HANDLING,
-      id: Id.FILE_HANDLING,
-      label: 'siteSettingsFileHandling',
-      icon: 'settings:file-handling',
-      enabledLabel: 'siteSettingsFileHandlingAsk',
-      disabledLabel: 'siteSettingsFileHandlingBlock',
     },
     {
       route: routes.SITE_SETTINGS_FILE_SYSTEM_WRITE,
@@ -378,7 +370,6 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
               Id.IDLE_DETECTION,
               Id.WINDOW_PLACEMENT,
               Id.FONT_ACCESS,
-              Id.FILE_HANDLING,
             ]),
             contentBasic: buildItemListFromIds([
               Id.COOKIES,
@@ -409,6 +400,7 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
     };
   }
 
+  prefs: Object;
   focusConfig: FocusConfig;
   private permissionsExpanded_: boolean;
   private contentExpanded_: boolean;
@@ -438,6 +430,12 @@ export class SettingsSiteSettingsPageElement extends PolymerElement {
   /** @return Class for the all site settings link */
   private getClassForSiteSettingsAllLink_(): string {
     return this.noRecentSitePermissions_ ? '' : 'hr';
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-site-settings-page': SettingsSiteSettingsPageElement;
   }
 }
 

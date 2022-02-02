@@ -12,26 +12,22 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "storage/browser/file_system/file_system_backend.h"
+#include "storage/browser/file_system/file_system_request_info.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
+}  // namespace base
 
 namespace storage {
 class FileSystemURL;
-}
-
-namespace storage {
-struct FileSystemRequestInfo;
-}
+}  // namespace storage
 
 class DeviceMediaAsyncFileUtil;
 class MediaPathFilter;
@@ -53,8 +49,8 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
 
   static scoped_refptr<base::SequencedTaskRunner> MediaTaskRunner();
 
-  // Construct the mount point for the gallery specified by |pref_id| in
-  // the profile located in |profile_path|.
+  // Construct the mount point for the gallery specified by `pref_id` in
+  // the profile located in `profile_path`.
   static std::string ConstructMountName(const base::FilePath& profile_path,
                                         const std::string& extension_id,
                                         MediaGalleryPrefId pref_id);

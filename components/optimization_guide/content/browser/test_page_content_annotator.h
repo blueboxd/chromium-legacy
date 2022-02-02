@@ -20,10 +20,6 @@ class TestPageContentAnnotator : public PageContentAnnotator {
   TestPageContentAnnotator();
   ~TestPageContentAnnotator() override;
 
-  // The given |status| is used in every BatchAnnotationResult. Only the success
-  // status will also populate any corresponding model output given below.
-  void UseExecutionStatus(ExecutionStatus status);
-
   // The given page topics are used for the matching BatchAnnotationResults by
   // input string. If the input is not found, the output is left as nullopt.
   void UsePageTopics(
@@ -33,7 +29,7 @@ class TestPageContentAnnotator : public PageContentAnnotator {
   // The given page entities are used for the matching BatchAnnotationResults by
   // input string. If the input is not found, the output is left as nullopt.
   void UsePageEntities(
-      const base::flat_map<std::string, std::vector<WeightedString>>&
+      const base::flat_map<std::string, std::vector<ScoredEntityMetadata>>&
           entities_by_input);
 
   // The given visibility score is used for the matching BatchAnnotationResults
@@ -47,9 +43,9 @@ class TestPageContentAnnotator : public PageContentAnnotator {
                 AnnotationType annotation_type) override;
 
  private:
-  ExecutionStatus status_ = ExecutionStatus::kUnknown;
   base::flat_map<std::string, std::vector<WeightedString>> topics_by_input_;
-  base::flat_map<std::string, std::vector<WeightedString>> entities_by_input_;
+  base::flat_map<std::string, std::vector<ScoredEntityMetadata>>
+      entities_by_input_;
   base::flat_map<std::string, double> visibility_scores_for_input_;
 };
 

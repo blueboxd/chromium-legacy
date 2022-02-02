@@ -130,18 +130,18 @@ namespace cors {
 
 namespace header_names {
 
-constexpr char kAccessControlAllowCredentials[] =
+const char kAccessControlAllowCredentials[] =
     "Access-Control-Allow-Credentials";
-constexpr char kAccessControlAllowExternal[] = "Access-Control-Allow-External";
-constexpr char kAccessControlAllowHeaders[] = "Access-Control-Allow-Headers";
-constexpr char kAccessControlAllowMethods[] = "Access-Control-Allow-Methods";
-constexpr char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
-constexpr char kAccessControlMaxAge[] = "Access-Control-Max-Age";
-constexpr char kAccessControlRequestExternal[] =
-    "Access-Control-Request-External";
-constexpr char kAccessControlRequestHeaders[] =
-    "Access-Control-Request-Headers";
-constexpr char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
+const char kAccessControlAllowHeaders[] = "Access-Control-Allow-Headers";
+const char kAccessControlAllowMethods[] = "Access-Control-Allow-Methods";
+const char kAccessControlAllowOrigin[] = "Access-Control-Allow-Origin";
+const char kAccessControlAllowPrivateNetwork[] =
+    "Access-Control-Allow-Private-Network";
+const char kAccessControlMaxAge[] = "Access-Control-Max-Age";
+const char kAccessControlRequestHeaders[] = "Access-Control-Request-Headers";
+const char kAccessControlRequestMethod[] = "Access-Control-Request-Method";
+const char kAccessControlRequestPrivateNetwork[] =
+    "Access-Control-Request-Private-Network";
 
 }  // namespace header_names
 
@@ -369,6 +369,11 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       // Simple range values are safelisted.
       // https://fetch.spec.whatwg.org/#simple-range-header-value
       "range",
+
+      // The `Sec-CH-UA-Full-Version-List` provide server information about the
+      // full version for each brand in its brands list.
+      // https://wicg.github.io/ua-client-hints/#sec-ch-ua-full-version-list
+      "sec-ch-ua-full-version-list",
   });
 
   if (!base::Contains(safe_names, lower_name))

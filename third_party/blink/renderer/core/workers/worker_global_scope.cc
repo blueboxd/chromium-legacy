@@ -35,7 +35,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
@@ -72,7 +71,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -326,9 +325,6 @@ void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls) {
             ? SanitizeScriptErrors::kDoNotSanitize
             : SanitizeScriptErrors::kSanitize;
 
-    const KURL script_url =
-        ScriptSourceCode::UsePostRedirectURL() ? response_url : complete_url;
-
     // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-classic-worker-imported-script
     // Step 7: Let script be the result of creating a classic script given
     // source text, settings object, response's url, the default classic script
@@ -337,11 +333,10 @@ void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls) {
     SingleCachedMetadataHandler* handler(
         CreateWorkerScriptCachedMetadataHandler(complete_url,
                                                 std::move(cached_meta_data)));
-    ClassicScript* script = MakeGarbageCollected<ClassicScript>(
-        ScriptSourceCode(source_code, ScriptSourceLocationType::kUnknown,
-                         handler, script_url),
+    ClassicScript* script = ClassicScript::Create(
+        source_code, ClassicScript::StripFragmentIdentifier(complete_url),
         response_url /* base_url */, ScriptFetchOptions(),
-        sanitize_script_errors);
+        ScriptSourceLocationType::kUnknown, sanitize_script_errors, handler);
 
     // Step 5.2: "Run the classic script script, with the rethrow errors
     // argument set to true."
@@ -441,9 +436,11 @@ void WorkerGlobalScope::EvaluateClassicScript(
                                               std::move(cached_meta_data));
   // Cross-origin workers are disallowed, so use
   // SanitizeScriptErrors::kDoNotSanitize.
-  Script* worker_script = MakeGarbageCollected<ClassicScript>(
-      ScriptSourceCode(source_code, handler, script_url), script_url,
-      ScriptFetchOptions(), SanitizeScriptErrors::kDoNotSanitize);
+  Script* worker_script = ClassicScript::Create(
+      source_code, script_url, script_url /* base_url */, ScriptFetchOptions(),
+      ScriptSourceLocationType::kUnknown, SanitizeScriptErrors::kDoNotSanitize,
+      handler, TextPosition::MinimumPosition(),
+      ScriptStreamer::NotStreamingReason::kWorkerTopLevelScript);
   WorkerScriptFetchFinished(*worker_script, stack_id);
 }
 

@@ -81,6 +81,9 @@ bool IsGMBAllowed(const SkImageInfo& info, const gpu::Capabilities& caps) {
 
 }  // namespace
 
+size_t CanvasResourceProvider::max_pinned_image_bytes_ =
+    kDefaultMaxPinnedImageBytes;
+
 class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
  public:
   CanvasImageProvider(cc::ImageDecodeCache* cache_n32,
@@ -1188,8 +1191,12 @@ CanvasResourceProvider::CanvasResourceProvider(
       is_origin_top_left_(is_origin_top_left),
       snapshot_paint_image_id_(cc::PaintImage::GetNextId()) {
   info_ = info;
-  if (context_provider_wrapper_)
+  if (context_provider_wrapper_) {
     context_provider_wrapper_->AddObserver(this);
+    const auto& caps =
+        context_provider_wrapper_->ContextProvider()->GetCapabilities();
+    oopr_uses_dmsaa_ = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
+  }
   CanvasMemoryDumpProvider::Instance()->RegisterClient(this);
 }
 
@@ -1342,17 +1349,17 @@ GrDirectContext* CanvasResourceProvider::GetGrContext() const {
   return context_provider_wrapper_->ContextProvider()->GetGrContext();
 }
 
-sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvas() {
-  return FlushCanvasInternal(false);
+void CanvasResourceProvider::FlushCanvas() {
+  FlushCanvasInternal(false);
 }
 
 sk_sp<cc::PaintRecord>
-CanvasResourceProvider::FlushCanvasAndPreserveRecording() {
-  return FlushCanvasInternal(true);
+CanvasResourceProvider::FlushCanvasAndMaybePreserveRecording() {
+  return FlushCanvasInternal(IsPrinting() && clear_frame_);
 }
 
-IntSize CanvasResourceProvider::Size() const {
-  return IntSize(info_.width(), info_.height());
+gfx::Size CanvasResourceProvider::Size() const {
+  return gfx::Size(info_.width(), info_.height());
 }
 
 SkSurfaceProps CanvasResourceProvider::GetSkSurfaceProps() const {
@@ -1371,6 +1378,7 @@ sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvasInternal(
     bool preserve_recording) {
   if (!HasRecordedDrawOps())
     return nullptr;
+  clear_frame_ = false;
   sk_sp<cc::PaintRecord> last_recording = recorder_->finishRecordingAsPicture();
   RasterRecord(last_recording, preserve_recording);
   total_pinned_image_bytes_ = 0;
@@ -1420,9 +1428,10 @@ void CanvasResourceProvider::RasterRecordOOP(
   const bool can_use_lcd_text =
       GetSkImageInfo().alphaType() == kOpaque_SkAlphaType;
   ri->BeginRasterCHROMIUM(background_color, needs_clear,
-                          /*msaa_sample_count=*/1,
-                          gpu::raster::MsaaMode::kDMSAA, can_use_lcd_text,
-                          GetColorSpace(), mailbox.name);
+                          /*msaa_sample_count=*/oopr_uses_dmsaa_ ? 1 : 0,
+                          oopr_uses_dmsaa_ ? gpu::raster::MsaaMode::kDMSAA
+                                           : gpu::raster::MsaaMode::kNoMSAA,
+                          can_use_lcd_text, GetColorSpace(), mailbox.name);
 
   ri->RasterCHROMIUM(list.get(), GetOrCreateCanvasImageProvider(), size,
                      full_raster_rect, playback_rect, post_translate,
@@ -1471,6 +1480,7 @@ void CanvasResourceProvider::Clear() {
     Canvas()->clear(SK_ColorTRANSPARENT);
 
   FlushCanvas();
+  ClearFrame();
 }
 
 uint32_t CanvasResourceProvider::ContentUniqueID() const {
@@ -1577,7 +1587,7 @@ void CanvasResourceProvider::SkipQueuedDrawCommands() {
   // Note that this function only gets called when canvas needs a full repaint,
   // so always update the |mode_| to discard the old copy of canvas content.
   mode_ = SkSurface::kDiscard_ContentChangeMode;
-
+  ClearFrame();
   if (!HasRecordedDrawOps())
     return;
   recorder_->finishRecordingAsPicture();

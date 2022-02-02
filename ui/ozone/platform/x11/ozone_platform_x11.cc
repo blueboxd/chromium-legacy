@@ -34,6 +34,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/gl_egl_utility_x11.h"
+#include "ui/ozone/platform/x11/linux_ui_delegate_x11.h"
 #include "ui/ozone/platform/x11/x11_clipboard_ozone.h"
 #include "ui/ozone/platform/x11/x11_global_shortcut_listener_ozone.h"
 #include "ui/ozone/platform/x11/x11_keyboard_hook_ozone.h"
@@ -54,21 +55,13 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
 #include "ui/base/ime/ash/input_method_ash.h"
 #else
-#include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
+#include "ui/platform_window/x11/os_exchange_data_provider_x11.h"
 #endif
 
 namespace ui {
 
 namespace {
-
-class LinuxUiDelegateX11 : public LinuxUiDelegate {
- public:
-  ~LinuxUiDelegateX11() override = default;
-
-  // LinuxUiDelegate:
-  LinuxUiBackend GetBackend() const override { return LinuxUiBackend::kX11; }
-};
 
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform,

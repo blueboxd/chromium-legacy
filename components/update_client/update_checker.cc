@@ -17,7 +17,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
@@ -67,7 +67,6 @@ class UpdateCheckerImpl : public UpdateChecker {
       const std::vector<std::string>& ids_checked,
       const IdToComponentPtrMap& components,
       const base::flat_map<std::string, std::string>& additional_attributes,
-      bool enabled_component_updates,
       UpdateCheckCallback update_check_callback) override;
 
  private:
@@ -76,7 +75,6 @@ class UpdateCheckerImpl : public UpdateChecker {
       const std::string& session_id,
       const IdToComponentPtrMap& components,
       const base::flat_map<std::string, std::string>& additional_attributes,
-      bool enabled_component_updates,
       const std::set<std::string>& active_ids);
   void OnRequestSenderComplete(int error,
                                const std::string& response,
@@ -90,7 +88,7 @@ class UpdateCheckerImpl : public UpdateChecker {
   base::ThreadChecker thread_checker_;
 
   const scoped_refptr<Configurator> config_;
-  PersistedData* metadata_ = nullptr;
+  raw_ptr<PersistedData> metadata_ = nullptr;
   std::vector<std::string> ids_checked_;
   UpdateCheckCallback update_check_callback_;
   std::unique_ptr<UpdaterState::Attributes> updater_state_attributes_;
@@ -110,7 +108,6 @@ void UpdateCheckerImpl::CheckForUpdates(
     const std::vector<std::string>& ids_checked,
     const IdToComponentPtrMap& components,
     const base::flat_map<std::string, std::string>& additional_attributes,
-    bool enabled_component_updates,
     UpdateCheckCallback update_check_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -129,8 +126,7 @@ void UpdateCheckerImpl::CheckForUpdates(
           },
           base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
                          base::Unretained(this), session_id,
-                         std::cref(components), additional_attributes,
-                         enabled_component_updates),
+                         std::cref(components), additional_attributes),
           base::Unretained(metadata_), ids_checked));
 }
 
@@ -152,7 +148,6 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
     const std::string& session_id,
     const IdToComponentPtrMap& components,
     const base::flat_map<std::string, std::string>& additional_attributes,
-    bool enabled_component_updates,
     const std::set<std::string>& active_ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -185,19 +180,14 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
     else if (component->is_foreground())
       install_source = "ondemand";
 
-    const bool is_update_disabled =
-        crx_component->supports_group_policy_enable_component_updates &&
-        !enabled_component_updates;
-
-    // TODO(crbug.com/1259972): Brand is per-item for some users.
     apps.push_back(MakeProtocolApp(
-        app_id, crx_component->version, crx_component->ap, config_->GetBrand(),
+        app_id, crx_component->version, crx_component->ap, crx_component->brand,
         install_source, crx_component->install_location,
         crx_component->fingerprint, crx_component->installer_attributes,
         metadata_->GetCohort(app_id), metadata_->GetCohortName(app_id),
         metadata_->GetCohortHint(app_id), crx_component->channel,
         crx_component->disabled_reasons,
-        MakeProtocolUpdateCheck(is_update_disabled,
+        MakeProtocolUpdateCheck(!crx_component->updates_enabled,
                                 crx_component->target_version_prefix,
                                 crx_component->rollback_allowed),
         MakeProtocolPing(app_id, metadata_,

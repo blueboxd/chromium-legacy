@@ -178,8 +178,9 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
             cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity);
 }
 
+// Crashes on ChromeOS: crbug.com/1274591
 IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunBatteryChargeRoutineSuccess) {
+                       DISABLED_RunBatteryChargeRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function runBatteryChargeRoutine() {
@@ -276,8 +277,9 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
             cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress);
 }
 
+// Crashes on ChromeOS: crbug.com/1274591
 IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunMemoryRoutineSuccess) {
+                       DISABLED_RunMemoryRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function runMemoryRoutine() {
@@ -295,7 +297,9 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionDiagnosticsApiBrowserTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     TelemetryExtensionDiagnosticsApiBrowserTest,
-    testing::ValuesIn(
-        BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams));
+    testing::Combine(
+        testing::Bool(),
+        testing::ValuesIn(
+            BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams)));
 
 }  // namespace chromeos

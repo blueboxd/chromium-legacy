@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
 class Profile;
@@ -47,7 +47,7 @@ class ShowPermissionsDialogHelper {
 
   std::unique_ptr<ExtensionInstallPrompt> prompt_;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   base::OnceClosure on_complete_;
 

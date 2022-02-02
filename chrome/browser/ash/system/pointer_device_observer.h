@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_SYSTEM_POINTER_DEVICE_OBSERVER_H_
 #define CHROME_BROWSER_ASH_SYSTEM_POINTER_DEVICE_OBSERVER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/events/devices/input_device_event_observer.h"
@@ -31,6 +30,7 @@ class PointerDeviceObserver : public ui::InputDeviceEventObserver {
   class Observer {
    public:
     virtual void TouchpadExists(bool exists) = 0;
+    virtual void HapticTouchpadExists(bool exists) = 0;
     virtual void MouseExists(bool exists) = 0;
     virtual void PointingStickExists(bool exists) = 0;
 
@@ -47,11 +47,13 @@ class PointerDeviceObserver : public ui::InputDeviceEventObserver {
 
   // Check for pointer devices.
   void CheckTouchpadExists();
+  void CheckHapticTouchpadExists();
   void CheckMouseExists();
   void CheckPointingStickExists();
 
   // Callback for pointer device checks.
   void OnTouchpadExists(bool exists);
+  void OnHapticTouchpadExists(bool exists);
   void OnMouseExists(bool exists);
   void OnPointingStickExists(bool exists);
 

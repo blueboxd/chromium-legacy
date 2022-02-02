@@ -6,6 +6,14 @@
 
 #include <string>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/mojom/backup_settings.mojom.h"
+#include "ash/components/arc/mojom/pip.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/settings/timezone_settings.h"
 #include "ash/constants/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -31,17 +39,9 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/proxy/proxy_config_service_impl.h"
-#include "chromeos/settings/timezone_settings.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/mojom/backup_settings.mojom.h"
-#include "components/arc/mojom/pip.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -55,9 +55,9 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 
-using ::chromeos::system::TimezoneSettings;
-
 namespace {
+
+using ::ash::system::TimezoneSettings;
 
 constexpr char kSetFontScaleAction[] =
     "org.chromium.arc.intent_helper.SET_FONT_SCALE";
@@ -130,10 +130,9 @@ class ArcSettingsServiceFactory
 
 // Listens to changes for select Chrome settings (prefs) that Android cares
 // about and sends the new values to Android to keep the state in sync.
-class ArcSettingsServiceImpl
-    : public chromeos::system::TimezoneSettings::Observer,
-      public ConnectionObserver<mojom::AppInstance>,
-      public chromeos::NetworkStateHandlerObserver {
+class ArcSettingsServiceImpl : public TimezoneSettings::Observer,
+                               public ConnectionObserver<mojom::AppInstance>,
+                               public chromeos::NetworkStateHandlerObserver {
  public:
   ArcSettingsServiceImpl(Profile* profile,
                          ArcBridgeService* arc_bridge_service);

@@ -28,7 +28,7 @@ constexpr int kMessageCenterBottomPadding = 8;
 constexpr int kMessageListNotificationSpacing = 2;
 
 constexpr int kNotificationBarVerticalPadding = 8;
-constexpr int kNotificationBarHorizontalPadding = 16;
+constexpr int kNotificationBarHorizontalPadding = 10;
 
 // Constants for `ash_notification_view`.
 
@@ -44,8 +44,8 @@ constexpr gfx::Size kNotificationExpandButtonLabelSize(8, 16);
 constexpr gfx::Size kNotificationExpandButtonSize(24, 24);
 constexpr gfx::Size kNotificationExpandButtonWithLabelSize(40, 24);
 
-constexpr gfx::Insets kAppIconViewExpandedPadding(2, 0, 0, 0);
-constexpr gfx::Insets kAppIconViewCollapsedPadding(6, 0, 0, 0);
+constexpr gfx::Insets kAppIconExpandButtonExpandedPadding(2, 0, 0, 0);
+constexpr gfx::Insets kAppIconExpandButtonCollapsedPadding(12, 0, 0, 0);
 
 constexpr gfx::Insets kControlButtonsContainerExpandedPadding(6, 0, 2, 0);
 constexpr gfx::Insets kControlButtonsContainerCollapsedPadding(2, 0, 0, 0);
@@ -53,6 +53,38 @@ constexpr gfx::Insets kControlButtonsContainerCollapsedPadding(2, 0, 0, 0);
 constexpr char kGoogleSansFont[] = "Google Sans";
 constexpr int kHeaderViewLabelSize = 12;
 constexpr char kNotificationBodyFontWeight = 13;
+
+// Animation durations for children which are animated via LayerAnimations.
+constexpr int kTitleRowTimestampFadeInAnimationDelayMs = 100;
+constexpr int kTitleRowTimestampFadeInAnimationDurationMs = 100;
+constexpr int kHeaderRowFadeInAnimationDelayMs = 50;
+constexpr int kHeaderRowFadeInAnimationDurationMs = 150;
+constexpr int kMessageViewFadeInAnimationDelayMs = 100;
+constexpr int kMessageViewFadeInAnimationDurationMs = 100;
+constexpr int kMessageViewInExpandedStateFadeInAnimationDelayMs = 100;
+constexpr int kMessageViewInExpandedStateFadeInAnimationDurationMs = 183;
+constexpr int kActionsRowFadeInAnimationDelayMs = 50;
+constexpr int kActionsRowFadeInAnimationDurationMs = 100;
+constexpr int kActionButtonsFadeOutAnimationDurationMs = 100;
+constexpr int kInlineReplyFadeInAnimationDurationMs = 100;
+constexpr int kInlineReplyFadeOutAnimationDurationMs = 50;
+
+constexpr int kCollapsedSummaryViewAnimationDurationMs = 50;
+constexpr int kChildMainViewFadeInAnimationDurationMs = 100;
+constexpr int kChildMainViewFadeOutAnimationDurationMs = 50;
+constexpr int kExpandButtonFadeInLabelDelayMs = 50;
+constexpr int kExpandButtonFadeInLabelDurationMs = 50;
+constexpr int kExpandButtonFadeOutLabelDurationMs = 50;
+constexpr int kExpandButtonShowLabelBoundsChangeDurationMs = 200;
+constexpr int kExpandButtonHideLabelBoundsChangeDurationMs = 250;
+
+// Animation durations for expand/collapse of MessageCenterView.
+constexpr int kLargeImageExpandAndCollapseAnimationDuration = 300;
+constexpr int kInlineReplyAndGroupedParentExpandAnimationDuration = 250;
+constexpr int kInlineReplyAndGroupedParentCollapseAnimationDuration = 200;
+constexpr int kInlineSettingsExpandAndCollapseAnimationDuration = 200;
+constexpr int kGeneralExpandAnimationDuration = 300;
+constexpr int kGeneralCollapseAnimationDuration = 200;
 
 }  // namespace ash
 

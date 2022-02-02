@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -178,9 +178,6 @@ class VariationsFieldTrialCreator {
   // Returns the locale that was used for evaluating trials.
   const std::string& application_locale() const { return application_locale_; }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // TODO(crbug/1248239, crbug/1255305): Remove ifdef once the Extended
-  // Variations Safe Mode experiment is enabled on Clank and re-enabled on iOS.
  protected:
   // If the client is in an Extended Variations Safe Mode experiment group,
   // applies group-specific behavior. Does nothing if the client is not in the
@@ -188,7 +185,6 @@ class VariationsFieldTrialCreator {
   // Protected and virtual for testing.
   virtual void MaybeExtendVariationsSafeMode(
       metrics::MetricsStateManager* metrics_state_manager);
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
  private:
   // Returns true if the loaded VariationsSeed has expired. An expired seed is
@@ -232,7 +228,7 @@ class VariationsFieldTrialCreator {
   PrefService* local_state() { return seed_store_->local_state(); }
   const PrefService* local_state() const { return seed_store_->local_state(); }
 
-  VariationsServiceClient* client_;
+  raw_ptr<VariationsServiceClient> client_;
 
   UIStringOverrider ui_string_overrider_;
 

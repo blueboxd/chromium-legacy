@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "ash/components/attestation/attestation_flow_utils.h"
+#include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
@@ -45,8 +47,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/attestation/attestation_flow_utils.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -86,7 +86,7 @@ void AllowlistSimpleChallengeSigningKey() {
       ->GetTestInterface()
       ->AllowlistSignSimpleChallengeKey(
           /*username=*/"",
-          chromeos::attestation::GetKeyNameForProfile(
+          attestation::GetKeyNameForProfile(
               chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
               ""));
 }
@@ -266,7 +266,9 @@ class AutoEnrollmentNoStateKeys : public AutoEnrollmentWithStatistics {
   void SetUpInProcessBrowserTestFixture() override {
     AutoEnrollmentWithStatistics::SetUpInProcessBrowserTestFixture();
     // Session manager client is initialized by DeviceStateMixin.
-    FakeSessionManagerClient::Get()->set_force_state_keys_missing(true);
+    FakeSessionManagerClient::Get()->set_state_keys_handling(
+        FakeSessionManagerClient::ServerBackedStateKeysHandling::
+            kForceNotAvailable);
   }
 };
 
@@ -348,8 +350,64 @@ class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 };
 
+// Requesting state keys hangs forever, but that should not matter because we're
+// running on reven.
+class EnrollmentOnRevenWithNoStateKeysResponse
+    : public EnrollmentLocalPolicyServerBase {
+ public:
+  EnrollmentOnRevenWithNoStateKeysResponse() = default;
+
+  EnrollmentOnRevenWithNoStateKeysResponse(
+      const EnrollmentOnRevenWithNoStateKeysResponse&) = delete;
+  EnrollmentOnRevenWithNoStateKeysResponse& operator=(
+      const EnrollmentOnRevenWithNoStateKeysResponse&) = delete;
+
+  ~EnrollmentOnRevenWithNoStateKeysResponse() override = default;
+
+  // EnrollmentLocalPolicyServerBase:
+  void SetUpInProcessBrowserTestFixture() override {
+    EnrollmentLocalPolicyServerBase::SetUpInProcessBrowserTestFixture();
+    // Session manager client is initialized by DeviceStateMixin.
+    FakeSessionManagerClient::Get()->set_state_keys_handling(
+        FakeSessionManagerClient::ServerBackedStateKeysHandling::kNoResponse);
+    // reven devices are also marked 'nochrome' which is important because it
+    // disables Forced Re-Enrollment (FRE). If FRE is enabled, state keys are
+    // required.
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kFirmwareTypeKey,
+        chromeos::system::kFirmwareTypeValueNonchrome);
+    // When using a fresh ScopedFakeStatisticsProvider we also need to configure
+    // a few entries (serial number, machine model).
+    // ConfigureFakeStatisticsForZeroTouch does that for us.
+    policy_server_.ConfigureFakeStatisticsForZeroTouch(
+        &fake_statistics_provider_);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitch(switches::kRevenBranding);
+  }
+
+ private:
+  system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+};
+
 // Simple manual enrollment.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  test::OobeJS().ExpectTrue("Oobe.isEnrollmentSuccessfulForTest()");
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
+}
+
+// The test case is the same as EnrollmentLocalPolicyServerBase.ManualEnrollment
+// but the environment is different (simulate reven board, simulate state keys
+// not being available).
+IN_PROC_BROWSER_TEST_F(EnrollmentOnRevenWithNoStateKeysResponse,
+                       ManualEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_METRICS_STABILITY_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_STABILITY_METRICS_PROVIDER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_provider.h"
@@ -27,9 +28,6 @@ class StabilityMetricsProvider : public MetricsProvider {
   ~StabilityMetricsProvider() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  void CheckLastSessionEndCompleted();
-  void MarkSessionEndCompleted(bool end_completed);
 
   void LogCrash(base::Time last_live_timestamp);
   void LogLaunch();
@@ -55,7 +53,7 @@ class StabilityMetricsProvider : public MetricsProvider {
   void ProvideStabilityMetrics(
       SystemProfileProto* system_profile_proto) override;
 
-  PrefService* local_state_;
+  raw_ptr<PrefService> local_state_;
 };
 
 }  // namespace metrics

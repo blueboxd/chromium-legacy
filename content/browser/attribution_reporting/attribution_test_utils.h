@@ -10,18 +10,23 @@
 #include <iosfwd>
 #include <vector>
 
+#include "base/compiler_specific.h"
+#include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_policy.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_session_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/rate_limit_table.h"
-#include "content/browser/attribution_reporting/sent_report_info.h"
+#include "content/browser/attribution_reporting/sent_report.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/storable_trigger.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,50 +37,41 @@ namespace content {
 
 class StorableTrigger;
 
-class AttributionDisallowingContentBrowserClient
+class MockAttributionReportingContentBrowserClient
     : public TestContentBrowserClient {
  public:
-  AttributionDisallowingContentBrowserClient() = default;
-  ~AttributionDisallowingContentBrowserClient() override = default;
+  MockAttributionReportingContentBrowserClient();
+  ~MockAttributionReportingContentBrowserClient() override;
 
   // ContentBrowserClient:
-  bool IsConversionMeasurementOperationAllowed(
-      content::BrowserContext* browser_context,
-      ConversionMeasurementOperation operation,
-      const url::Origin* impression_origin,
-      const url::Origin* conversion_origin,
-      const url::Origin* reporting_origin) override;
+  MOCK_METHOD(bool,
+              IsConversionMeasurementOperationAllowed,
+              (content::BrowserContext * browser_context,
+               ConversionMeasurementOperation operation,
+               const url::Origin* impression_origin,
+               const url::Origin* conversion_origin,
+               const url::Origin* reporting_origin),
+              (override));
 };
 
-// Configurable browser client capable of blocking conversion operations in a
-// single embedded context.
-class ConfigurableAttributionTestBrowserClient
-    : public TestContentBrowserClient {
+class MockAttributionHost : public AttributionHost {
  public:
-  ConfigurableAttributionTestBrowserClient();
-  ~ConfigurableAttributionTestBrowserClient() override;
+  explicit MockAttributionHost(WebContents* contents);
 
-  // ContentBrowserClient:
-  bool IsConversionMeasurementOperationAllowed(
-      content::BrowserContext* browser_context,
-      ConversionMeasurementOperation operation,
-      const url::Origin* impression_origin,
-      const url::Origin* conversion_origin,
-      const url::Origin* reporting_origin) override;
+  ~MockAttributionHost() override;
 
-  // Sets the origins where conversion measurement is blocked. This only blocks
-  // an operation if all origins match in
-  // `AllowConversionMeasurementOperation()`.
-  void BlockConversionMeasurementInContext(
-      absl::optional<url::Origin> impression_origin,
-      absl::optional<url::Origin> conversion_origin,
-      absl::optional<url::Origin> reporting_origin);
+  MOCK_METHOD(void,
+              RegisterImpression,
+              (const blink::Impression& impression),
+              (override));
 
- private:
-  absl::optional<url::Origin> blocked_impression_origin_;
-  absl::optional<url::Origin> blocked_conversion_origin_;
-  absl::optional<url::Origin> blocked_reporting_origin_;
+  MOCK_METHOD(void,
+              RegisterConversion,
+              (blink::mojom::ConversionPtr conversion),
+              (override));
 };
+
+base::GUID DefaultExternalReportID();
 
 class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
  public:
@@ -95,6 +91,7 @@ class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
   uint64_t GetFakeEventSourceTriggerData() const override;
   base::TimeDelta GetDeleteExpiredSourcesFrequency() const override;
   base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const override;
+  base::GUID NewReportID() const override;
 
   void set_max_attributions_per_source(int max) {
     max_attributions_per_source_ = max;
@@ -157,74 +154,55 @@ class TestManagerProvider : public AttributionManager::Provider {
   AttributionManager* GetManager(WebContents* web_contents) const override;
 
  private:
-  AttributionManager* manager_ = nullptr;
+  raw_ptr<AttributionManager> manager_ = nullptr;
 };
 
-// Test AttributionManager which can be injected into tests to monitor calls to
-// a AttributionManager instance.
-class TestAttributionManager : public AttributionManager {
+class MockAttributionManager : public AttributionManager {
  public:
-  TestAttributionManager();
-  ~TestAttributionManager() override;
+  MockAttributionManager();
+  ~MockAttributionManager() override;
 
   // AttributionManager:
-  void HandleSource(StorableSource source) override;
-  void HandleTrigger(StorableTrigger trigger) override;
-  void GetActiveSourcesForWebUI(
-      base::OnceCallback<void(std::vector<StorableSource>)> callback) override;
-  void GetPendingReportsForWebUI(
-      base::OnceCallback<void(std::vector<AttributionReport>)> callback,
-      base::Time max_report_time) override;
-  const AttributionSessionStorage& GetSessionStorage() const override;
-  void SendReportsForWebUI(base::OnceClosure done) override;
+  MOCK_METHOD(void, HandleSource, (StorableSource source), (override));
+
+  MOCK_METHOD(void, HandleTrigger, (StorableTrigger trigger), (override));
+
+  MOCK_METHOD(void,
+              GetActiveSourcesForWebUI,
+              (base::OnceCallback<void(std::vector<StorableSource>)> callback),
+              (override));
+
+  MOCK_METHOD(
+      void,
+      GetPendingReportsForWebUI,
+      (base::OnceCallback<void(std::vector<AttributionReport>)> callback),
+      (override));
+
+  MOCK_METHOD(void, SendReportsForWebUI, (base::OnceClosure done), (override));
+
+  MOCK_METHOD(void,
+              ClearData,
+              (base::Time delete_begin,
+               base::Time delete_end,
+               base::RepeatingCallback<bool(const url::Origin&)> filter,
+               base::OnceClosure done),
+              (override));
+
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   const AttributionPolicy& GetAttributionPolicy() const override;
-  void ClearData(base::Time delete_begin,
-                 base::Time delete_end,
-                 base::RepeatingCallback<bool(const url::Origin&)> filter,
-                 base::OnceClosure done) override;
 
-  void SetActiveSourcesForWebUI(std::vector<StorableSource> sources);
-  void SetReportsForWebUI(std::vector<AttributionReport> reports);
-  AttributionSessionStorage& GetSessionStorage();
-
-  // Resets all counters on this.
-  void Reset();
-
-  size_t num_sources() const { return num_sources_; }
-  size_t num_triggers() const { return num_triggers_; }
-
-  const net::SchemefulSite& last_conversion_destination() {
-    return last_conversion_destination_;
-  }
-
-  const absl::optional<StorableSource::SourceType>&
-  last_impression_source_type() {
-    return last_impression_source_type_;
-  }
-
-  const absl::optional<url::Origin>& last_impression_origin() {
-    return last_impression_origin_;
-  }
-
-  const base::Time last_impression_time() { return last_impression_time_; }
-
-  const absl::optional<int64_t>& last_attribution_source_priority() {
-    return last_attribution_source_priority_;
-  }
+  void NotifySourcesChanged();
+  void NotifyReportsChanged();
+  void NotifySourceDeactivated(
+      const AttributionStorage::DeactivatedSource& source);
+  void NotifyReportSent(const SentReport& info);
+  void NotifyReportDropped(
+      const AttributionStorage::CreateReportResult& result);
 
  private:
   AttributionPolicy policy_;
-  AttributionSessionStorage session_storage_{INT_MAX};
-  net::SchemefulSite last_conversion_destination_;
-  absl::optional<StorableSource::SourceType> last_impression_source_type_;
-  absl::optional<url::Origin> last_impression_origin_;
-  absl::optional<int64_t> last_attribution_source_priority_;
-  base::Time last_impression_time_;
-  size_t num_sources_ = 0;
-  size_t num_triggers_ = 0;
-
-  std::vector<StorableSource> sources_;
-  std::vector<AttributionReport> reports_;
+  base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };
 
 // Helper class to construct a StorableSource for tests using default data.
@@ -262,15 +240,17 @@ class SourceBuilder {
   StorableSource Build() const WARN_UNUSED_RESULT;
 
  private:
-  uint64_t source_event_id_;
+  uint64_t source_event_id_ = 123;
   base::Time impression_time_;
   base::TimeDelta expiry_;
   url::Origin impression_origin_;
   url::Origin conversion_origin_;
   url::Origin reporting_origin_;
-  StorableSource::SourceType source_type_;
-  int64_t priority_;
-  StorableSource::AttributionLogic attribution_logic_;
+  StorableSource::SourceType source_type_ =
+      StorableSource::SourceType::kNavigation;
+  int64_t priority_ = 0;
+  StorableSource::AttributionLogic attribution_logic_ =
+      StorableSource::AttributionLogic::kTruthfully;
   absl::optional<StorableSource::Id> impression_id_;
   std::vector<int64_t> dedup_keys_;
 };
@@ -314,14 +294,53 @@ class TriggerBuilder {
   absl::optional<int64_t> dedup_key_ = absl::nullopt;
 };
 
+// Helper class to construct an `AttributionReport` for tests using default
+// data.
+class ReportBuilder {
+ public:
+  explicit ReportBuilder(StorableSource source);
+  ~ReportBuilder();
+
+  ReportBuilder& SetTriggerData(uint64_t trigger_data) WARN_UNUSED_RESULT;
+
+  ReportBuilder& SetConversionTime(base::Time time) WARN_UNUSED_RESULT;
+
+  ReportBuilder& SetReportTime(base::Time time) WARN_UNUSED_RESULT;
+
+  ReportBuilder& SetPriority(int64_t priority) WARN_UNUSED_RESULT;
+
+  ReportBuilder& SetExternalReportId(base::GUID external_report_id)
+      WARN_UNUSED_RESULT;
+
+  ReportBuilder& SetReportId(absl::optional<AttributionReport::Id> id)
+      WARN_UNUSED_RESULT;
+
+  AttributionReport Build() const WARN_UNUSED_RESULT;
+
+ private:
+  StorableSource source_;
+  uint64_t trigger_data_ = 0;
+  base::Time conversion_time_;
+  base::Time report_time_;
+  int64_t priority_ = 0;
+  base::GUID external_report_id_;
+  absl::optional<AttributionReport::Id> report_id_;
+};
+
 bool operator==(const StorableSource& a, const StorableSource& b);
 
 bool operator==(const AttributionReport& a, const AttributionReport& b);
 
-bool operator==(const SentReportInfo& a, const SentReportInfo& b);
+bool operator==(const SentReport& a, const SentReport& b);
+
+bool operator==(const AttributionStorage::DeactivatedSource& a,
+                const AttributionStorage::DeactivatedSource& b);
 
 std::ostream& operator<<(std::ostream& out,
                          AttributionStorage::CreateReportResult::Status status);
+
+std::ostream& operator<<(std::ostream& out,
+                         AttributionStorage::DeactivatedSource::Reason reason);
 
 std::ostream& operator<<(std::ostream& out,
                          RateLimitTable::AttributionAllowedStatus status);
@@ -335,12 +354,16 @@ std::ostream& operator<<(std::ostream& out, const StorableSource& impression);
 
 std::ostream& operator<<(std::ostream& out, const AttributionReport& report);
 
-std::ostream& operator<<(std::ostream& out, SentReportInfo::Status status);
+std::ostream& operator<<(std::ostream& out, SentReport::Status status);
 
-std::ostream& operator<<(std::ostream& out, const SentReportInfo& info);
+std::ostream& operator<<(std::ostream& out, const SentReport& info);
 
 std::ostream& operator<<(std::ostream& out,
                          StorableSource::AttributionLogic attribution_logic);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AttributionStorage::DeactivatedSource& deactivated_source);
 
 std::vector<AttributionReport> GetAttributionsToReportForTesting(
     AttributionManagerImpl* manager,

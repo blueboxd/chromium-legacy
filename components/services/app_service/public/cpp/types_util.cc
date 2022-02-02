@@ -22,6 +22,22 @@ bool IsInstalled(apps::mojom::Readiness readiness) {
   }
 }
 
+bool IsInstalled(apps::Readiness readiness) {
+  switch (readiness) {
+    case apps::Readiness::kReady:
+    case apps::Readiness::kDisabledByBlocklist:
+    case apps::Readiness::kDisabledByPolicy:
+    case apps::Readiness::kDisabledByUser:
+    case apps::Readiness::kTerminated:
+      return true;
+    case apps::Readiness::kUninstalledByUser:
+    case apps::Readiness::kUninstalledByMigration:
+    case apps::Readiness::kRemoved:
+    case apps::Readiness::kUnknown:
+      return false;
+  }
+}
+
 bool IsHumanLaunch(apps::mojom::LaunchSource launch_source) {
   switch (launch_source) {
     case apps::mojom::LaunchSource::kFromAppListGrid:
@@ -66,7 +82,7 @@ bool AppTypeUsesWebContents(apps::mojom::AppType app_type) {
   switch (app_type) {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb:
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
       return true;
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kArc:
@@ -77,7 +93,7 @@ bool AppTypeUsesWebContents(apps::mojom::AppType app_type) {
     case apps::mojom::AppType::kStandaloneBrowser:
     case apps::mojom::AppType::kRemote:
     case apps::mojom::AppType::kBorealis:
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
       return false;
   }
   NOTREACHED();

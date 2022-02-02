@@ -11,13 +11,14 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_renderer_host.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
@@ -71,7 +72,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
   bool HasFocus() override;
-  void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
@@ -107,6 +107,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override;
   void RenderProcessGone() override;
+  void ShowWithVisibility(PageVisibilityState page_visibility) override;
   void Destroy() override;
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override {}
   void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
@@ -141,12 +142,18 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
   absl::optional<DisplayFeature> GetDisplayFeature() override;
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
+  void NotifyHostAndDelegateOnWasShown(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr) override;
+  void RequestPresentationTimeFromHostOrDelegate(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr) override;
+  void CancelPresentationTimeRequestForHostAndDelegate() override;
 
   viz::FrameSinkId frame_sink_id_;
 
  private:
   bool is_showing_;
   bool is_occluded_;
+  PageVisibilityState page_visibility_ = PageVisibilityState::kHidden;
   ui::DummyTextInputClient text_input_client_;
   WebCursor last_cursor_;
 
@@ -161,7 +168,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 
   absl::optional<DisplayFeature> display_feature_;
 
-  ui::Compositor* compositor_ = nullptr;
+  raw_ptr<ui::Compositor> compositor_ = nullptr;
 };
 
 // TestRenderViewHost ----------------------------------------------------------
@@ -262,7 +269,7 @@ class TestRenderViewHost
       const base::FilePath* file_path_for_history_item);
 
   // See set_delete_counter() above. May be NULL.
-  int* delete_counter_;
+  raw_ptr<int> delete_counter_;
 
   // See opener_frame_token() above.
   absl::optional<blink::FrameToken> opener_frame_token_;

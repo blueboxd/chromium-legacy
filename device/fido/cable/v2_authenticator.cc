@@ -4,6 +4,7 @@
 
 #include "device/fido/cable/v2_authenticator.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
@@ -70,6 +71,9 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         })");
 
 struct MakeCredRequest {
+  // All fields below are not a raw_ptr<int64_t>, because ELEMENT() treats the
+  // raw_ptr<T> as a void*, skipping AddRef() call and causing a ref-counting
+  // mismatch.
   const std::vector<uint8_t>* client_data_hash;
   const std::string* rp_id;
   const std::vector<uint8_t>* user_id;
@@ -104,6 +108,9 @@ static constexpr StepOrByte<MakeCredRequest> kMakeCredParseSteps[] = {
 };
 
 struct AttestationObject {
+  // All the fields below are not a raw_ptr<,,,>, because ELEMENT() treats the
+  // raw_ptr<T> as a void*, skipping AddRef() call and causing a ref-counting
+  // mismatch.
   const std::string* fmt;
   const std::vector<uint8_t>* auth_data;
   const cbor::Value* statement;
@@ -125,6 +132,9 @@ static constexpr StepOrByte<AttestationObject> kAttObjParseSteps[] = {
 };
 
 struct GetAssertionRequest {
+  // All the fields below are not a raw_ptr<,,,>, because ELEMENT() treats the
+  // raw_ptr<T> as a void*, skipping AddRef() call and causing a ref-counting
+  // mismatch.
   const std::string* rp_id;
   const std::vector<uint8_t>* client_data_hash;
   const cbor::Value::ArrayValue* allowed_credentials;
@@ -429,13 +439,13 @@ class TunnelTransport : public Transport {
     }
   }
 
-  Platform* const platform_;
+  const raw_ptr<Platform> platform_;
   State state_ = State::kNone;
   const std::array<uint8_t, kTunnelIdSize> tunnel_id_;
   const std::array<uint8_t, kEIDKeySize> eid_key_;
   std::unique_ptr<WebSocketAdapter> websocket_client_;
   std::unique_ptr<Crypter> crypter_;
-  network::mojom::NetworkContext* const network_context_;
+  const raw_ptr<network::mojom::NetworkContext> network_context_;
   const absl::optional<std::array<uint8_t, kP256X962Length>> peer_identity_;
   std::array<uint8_t, kPSKSize> psk_;
   GeneratePairingDataCallback generate_pairing_data_;

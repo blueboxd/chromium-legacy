@@ -12,10 +12,11 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/win/sid.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/acl.h"
+#include "sandbox/win/src/crosscall_server.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/job.h"
@@ -26,14 +27,12 @@
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/process_mitigations_win32k_policy.h"
 #include "sandbox/win/src/process_thread_policy.h"
-#include "sandbox/win/src/registry_policy.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_policy_diagnostic.h"
 #include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/security_capabilities.h"
 #include "sandbox/win/src/signed_policy.h"
-#include "sandbox/win/src/sync_policy.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/top_level_dispatcher.h"
 #include "sandbox/win/src/window.h"
@@ -112,15 +111,12 @@ PolicyBase::PolicyBase()
       add_restricting_random_sid_(false),
       effective_token_(nullptr),
       allow_no_sandbox_job_(false) {
-  ::InitializeCriticalSection(&lock_);
   dispatcher_ = std::make_unique<TopLevelDispatcher>(this);
 }
 
 PolicyBase::~PolicyBase() {
   delete policy_maker_;
   delete policy_;
-
-  ::DeleteCriticalSection(&lock_);
 }
 
 void PolicyBase::AddRef() {
@@ -424,16 +420,17 @@ ResultCode PolicyBase::DropActiveProcessLimit(base::win::ScopedHandle* job) {
 ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
                                   base::win::ScopedHandle* lockdown,
                                   base::win::ScopedHandle* lowbox) {
-  Sid random_sid = Sid::GenerateRandomSid();
-  PSID random_sid_ptr = nullptr;
-  if (add_restricting_random_sid_)
-    random_sid_ptr = random_sid.GetPSID();
+  absl::optional<base::win::Sid> random_sid =
+      add_restricting_random_sid_ ? base::win::Sid::GenerateRandomSid()
+                                  : absl::nullopt;
+  if (add_restricting_random_sid_ && !random_sid)
+    return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN;
 
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
   DWORD result = CreateRestrictedToken(
       effective_token_, lockdown_level_, integrity_level_, PRIMARY,
-      lockdown_default_dacl_, random_sid_ptr, lockdown);
+      lockdown_default_dacl_, random_sid, lockdown);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN;
 
@@ -457,9 +454,8 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
     }
     // If the desktop_handle hasn't been created for any reason, skip this.
     if (desktop_handle && desktop_integrity_level_label < integrity_level_) {
-      result =
-          SetObjectIntegrityLabel(desktop_handle, SE_WINDOW_OBJECT, L"",
-                                  GetIntegrityLevelString(integrity_level_));
+      result = SetObjectIntegrityLabel(
+          desktop_handle, SecurityObjectType::kWindow, 0, integrity_level_);
       if (ERROR_SUCCESS != result)
         return SBOX_ERROR_CANNOT_SET_DESKTOP_INTEGRITY;
 
@@ -483,9 +479,9 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // Create the 'better' token. We use this token as the one that the main
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
-  result = CreateRestrictedToken(
-      effective_token_, initial_level_, integrity_level_, IMPERSONATION,
-      lockdown_default_dacl_, random_sid_ptr, initial);
+  result = CreateRestrictedToken(effective_token_, initial_level_,
+                                 integrity_level_, IMPERSONATION,
+                                 lockdown_default_dacl_, random_sid, initial);
   if (ERROR_SUCCESS != result)
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_IMP_TOKEN;
 
@@ -541,13 +537,13 @@ ResultCode PolicyBase::AddTarget(std::unique_ptr<TargetProcess> target) {
   if (SBOX_ALL_OK != ret)
     return ret;
 
-  AutoLock lock(&lock_);
+  base::AutoLock lock(lock_);
   targets_.push_back(std::move(target));
   return SBOX_ALL_OK;
 }
 
 bool PolicyBase::OnJobEmpty(HANDLE job) {
-  AutoLock lock(&lock_);
+  base::AutoLock lock(lock_);
   targets_.erase(
       std::remove_if(targets_.begin(), targets_.end(),
                      [&](auto&& p) -> bool { return p->Job() == job; }),
@@ -556,7 +552,7 @@ bool PolicyBase::OnJobEmpty(HANDLE job) {
 }
 
 bool PolicyBase::OnProcessFinished(DWORD process_id) {
-  AutoLock lock(&lock_);
+  base::AutoLock lock(lock_);
   targets_.erase(std::remove_if(targets_.begin(), targets_.end(),
                                 [&](auto&& p) -> bool {
                                   return p->ProcessId() == process_id;
@@ -715,35 +711,8 @@ ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
       }
       break;
     }
-    case SUBSYS_SYNC: {
-      if (!SyncPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
-        NOTREACHED();
-        return SBOX_ERROR_BAD_PARAMS;
-      }
-      break;
-    }
-    case SUBSYS_PROCESS: {
-      if (lockdown_level_ < USER_INTERACTIVE &&
-          TargetPolicy::PROCESS_ALL_EXEC == semantics) {
-        // This is unsupported. This is a huge security risk to give full access
-        // to a process handle.
-        return SBOX_ERROR_UNSUPPORTED;
-      }
-      if (!ProcessPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
-        NOTREACHED();
-        return SBOX_ERROR_BAD_PARAMS;
-      }
-      break;
-    }
     case SUBSYS_NAMED_PIPES: {
       if (!NamedPipePolicy::GenerateRules(pattern, semantics, policy_maker_)) {
-        NOTREACHED();
-        return SBOX_ERROR_BAD_PARAMS;
-      }
-      break;
-    }
-    case SUBSYS_REGISTRY: {
-      if (!RegistryPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
         NOTREACHED();
         return SBOX_ERROR_BAD_PARAMS;
       }

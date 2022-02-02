@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -28,6 +27,8 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/action_executor.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/base/screen_controls.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/crash_process.h"
 #include "remoting/host/desktop_environment.h"
@@ -36,8 +37,6 @@
 #include "remoting/host/mojom/desktop_session.mojom-shared.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/remote_open_url/url_forwarder_configurator.h"
-#include "remoting/host/screen_controls.h"
-#include "remoting/host/screen_resolution.h"
 #include "remoting/proto/action.pb.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
@@ -244,14 +243,6 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
                           OnCaptureFrame)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SelectSource,
                           OnSelectSource)
-      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectKeyEvent,
-                          OnInjectKeyEvent)
-      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectTextEvent,
-                          OnInjectTextEvent)
-      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectMouseEvent,
-                          OnInjectMouseEvent)
-      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectTouchEvent,
-                          OnInjectTouchEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_ExecuteActionRequest,
                           OnExecuteActionRequestEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SetScreenResolution,
@@ -401,7 +392,8 @@ void DesktopSessionAgent::OnStartSessionAgent(
 
   // Create a desktop environment for the new session.
   desktop_environment_ = delegate_->desktop_environment_factory().Create(
-      weak_factory_.GetWeakPtr(), options);
+      weak_factory_.GetWeakPtr(), /* client_session_events= */ nullptr,
+      options);
 
   // Create the session controller and set the initial screen resolution.
   screen_controls_ = desktop_environment_->CreateScreenControls();
@@ -648,15 +640,8 @@ void DesktopSessionAgent::InjectClipboardEvent(
   input_injector_->InjectClipboardEvent(event);
 }
 
-void DesktopSessionAgent::OnInjectKeyEvent(
-    const std::string& serialized_event) {
+void DesktopSessionAgent::InjectKeyEvent(const protocol::KeyEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  protocol::KeyEvent event;
-  if (!event.ParseFromString(serialized_event)) {
-    LOG(ERROR) << "Failed to parse protocol::KeyEvent.";
-    return;
-  }
 
   // InputStub implementations must verify events themselves, so we need only
   // basic verification here. This matches HostEventDispatcher.
@@ -668,15 +653,8 @@ void DesktopSessionAgent::OnInjectKeyEvent(
   remote_input_filter_->InjectKeyEvent(event);
 }
 
-void DesktopSessionAgent::OnInjectTextEvent(
-    const std::string& serialized_event) {
+void DesktopSessionAgent::InjectTextEvent(const protocol::TextEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  protocol::TextEvent event;
-  if (!event.ParseFromString(serialized_event)) {
-    LOG(ERROR) << "Failed to parse protocol::TextEvent.";
-    return;
-  }
 
   // InputStub implementations must verify events themselves, so we need only
   // basic verification here. This matches HostEventDispatcher.
@@ -688,15 +666,8 @@ void DesktopSessionAgent::OnInjectTextEvent(
   remote_input_filter_->InjectTextEvent(event);
 }
 
-void DesktopSessionAgent::OnInjectMouseEvent(
-    const std::string& serialized_event) {
+void DesktopSessionAgent::InjectMouseEvent(const protocol::MouseEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  protocol::MouseEvent event;
-  if (!event.ParseFromString(serialized_event)) {
-    LOG(ERROR) << "Failed to parse protocol::MouseEvent.";
-    return;
-  }
 
   if (video_capturer_)
     video_capturer_->SetComposeEnabled(event.has_delta_x() ||
@@ -707,15 +678,8 @@ void DesktopSessionAgent::OnInjectMouseEvent(
   remote_input_filter_->InjectMouseEvent(event);
 }
 
-void DesktopSessionAgent::OnInjectTouchEvent(
-    const std::string& serialized_event) {
+void DesktopSessionAgent::InjectTouchEvent(const protocol::TouchEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-
-  protocol::TouchEvent event;
-  if (!event.ParseFromString(serialized_event)) {
-    LOG(ERROR) << "Failed to parse protocol::TouchEvent.";
-    return;
-  }
 
   remote_input_filter_->InjectTouchEvent(event);
 }

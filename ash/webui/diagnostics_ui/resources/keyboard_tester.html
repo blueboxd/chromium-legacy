@@ -1,3 +1,8 @@
+<style>
+  #dialog {
+    --cr-dialog-width: min(calc(100% - 80px), 1400px);
+  }
+</style>
 <cr-dialog id="dialog" show-close-button>
   <div slot="title">Keyboard tester</div>
   <div slot="body">
@@ -10,6 +15,8 @@
     <template is="dom-if" if="[[layoutIsKnown_]]">
       <keyboard-diagram
           mechanical-layout="[[diagramMechanicalLayout_]]"
+          physical-layout="[[diagramPhysicalLayout_]]"
+          show-assistant-key="[[keyboard.hasAssistantKey]]"
           show-number-pad="[[showNumberPad_]]">
       </keyboard-diagram>
     </template>

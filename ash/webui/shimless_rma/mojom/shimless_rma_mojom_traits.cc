@@ -12,7 +12,7 @@
 namespace mojo {
 namespace {
 
-using MojomRmaState = ash::shimless_rma::mojom::RmaState;
+using MojomRmaState = ash::shimless_rma::mojom::State;
 using ProtoRmadState = rmad::RmadState::StateCase;
 
 using MojomRmadErrorCode = ash::shimless_rma::mojom::RmadErrorCode;
@@ -28,6 +28,10 @@ using MojomComponentRepairState =
     ash::shimless_rma::mojom::ComponentRepairStatus;
 using ProtoComponentRepairState =
     rmad::ComponentsRepairState_ComponentRepairStatus_RepairStatus;
+
+using MojomWpDisableAction =
+    ash::shimless_rma::mojom::WriteProtectDisableCompleteAction;
+using ProtoWpDisableAction = rmad::WriteProtectDisableCompleteState::Action;
 
 using MojomProvisioningStatus = ash::shimless_rma::mojom::ProvisioningStatus;
 using ProtoProvisioningStatus = rmad::ProvisionStatus::Status;
@@ -46,6 +50,10 @@ using ProtoCalibrationStatus =
 
 using MojomFinalizationStatus = ash::shimless_rma::mojom::FinalizationStatus;
 using ProtoFinalizationStatus = rmad::FinalizeStatus_Status;
+
+using MojomUpdateRoFirmwareStatus =
+    ash::shimless_rma::mojom::UpdateRoFirmwareStatus;
+using ProtoUpdateRoFirmwaretatus = rmad::UpdateRoFirmwareStatus;
 }  // namespace
 
 // The rmad state does not map 1:1 with UI app state, the UI handles more states
@@ -72,7 +80,7 @@ MojomRmaState EnumTraits<MojomRmaState, ProtoRmadState>::ToMojom(
     case ProtoRmadState::kWpDisableComplete:
       return MojomRmaState::kWPDisableComplete;
     case ProtoRmadState::kUpdateRoFirmware:
-      return MojomRmaState::kChooseFirmwareReimageMethod;
+      return MojomRmaState::kUpdateRoFirmware;
     case ProtoRmadState::kRestock:
       return MojomRmaState::kRestock;
     case ProtoRmadState::kUpdateDeviceInfo:
@@ -181,6 +189,10 @@ MojomRmadErrorCode EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::ToMojom(
       return MojomRmadErrorCode::kCannotCancelRma;
     case ProtoRmadErrorCode::RMAD_ERROR_CANNOT_GET_LOG:
       return MojomRmadErrorCode::kCannotGetLog;
+    case ProtoRmadErrorCode::RMAD_ERROR_DAEMON_INITIALIZATION_FAILED:
+      return MojomRmadErrorCode::kDaemonInitializationFailed;
+    case ProtoRmadErrorCode::RMAD_ERROR_UPDATE_RO_FIRMWARE_FAILED:
+      return MojomRmadErrorCode::kUpdateRoFirmwareFailed;
 
     case ProtoRmadErrorCode::RMAD_ERROR_NOT_SET:
     default:
@@ -316,6 +328,12 @@ bool EnumTraits<MojomRmadErrorCode, ProtoRmadErrorCode>::FromMojom(
       return true;
     case MojomRmadErrorCode::kCannotGetLog:
       *out = ProtoRmadErrorCode::RMAD_ERROR_CANNOT_GET_LOG;
+      return true;
+    case MojomRmadErrorCode::kDaemonInitializationFailed:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_DAEMON_INITIALIZATION_FAILED;
+      return true;
+    case MojomRmadErrorCode::kUpdateRoFirmwareFailed:
+      *out = ProtoRmadErrorCode::RMAD_ERROR_UPDATE_RO_FIRMWARE_FAILED;
       return true;
 
     case MojomRmadErrorCode::kNotSet:
@@ -600,6 +618,57 @@ bool EnumTraits<MojomComponentRepairState, ProtoComponentRepairState>::
 }
 
 // static
+MojomWpDisableAction
+EnumTraits<MojomWpDisableAction, ProtoWpDisableAction>::ToMojom(
+    ProtoWpDisableAction action) {
+  switch (action) {
+    case rmad::WriteProtectDisableCompleteState::
+        RMAD_WP_DISABLE_SKIPPED_ASSEMBLE_DEVICE:
+      return MojomWpDisableAction::kSkippedAssembleDevice;
+    case rmad::WriteProtectDisableCompleteState::
+        RMAD_WP_DISABLE_COMPLETE_ASSEMBLE_DEVICE:
+      return MojomWpDisableAction::kCompleteAssembleDevice;
+    case rmad::WriteProtectDisableCompleteState::
+        RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN:
+      return MojomWpDisableAction::kCompleteKeepDeviceOpen;
+    case rmad::WriteProtectDisableCompleteState::RMAD_WP_DISABLE_UNKNOWN:
+      return MojomWpDisableAction::kUnknown;
+
+    default:
+      NOTREACHED();
+      return MojomWpDisableAction::kUnknown;
+  }
+  NOTREACHED();
+  return MojomWpDisableAction::kUnknown;
+}
+
+// static
+bool EnumTraits<MojomWpDisableAction, ProtoWpDisableAction>::FromMojom(
+    MojomWpDisableAction input,
+    ProtoWpDisableAction* out) {
+  switch (input) {
+    case MojomWpDisableAction::kSkippedAssembleDevice:
+      *out = rmad::WriteProtectDisableCompleteState::
+          RMAD_WP_DISABLE_SKIPPED_ASSEMBLE_DEVICE;
+      return true;
+    case MojomWpDisableAction::kCompleteAssembleDevice:
+      *out = rmad::WriteProtectDisableCompleteState::
+          RMAD_WP_DISABLE_COMPLETE_ASSEMBLE_DEVICE;
+      return true;
+    case MojomWpDisableAction::kCompleteKeepDeviceOpen:
+      *out = rmad::WriteProtectDisableCompleteState::
+          RMAD_WP_DISABLE_COMPLETE_KEEP_DEVICE_OPEN;
+      return true;
+
+    case MojomWpDisableAction::kUnknown:
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 MojomProvisioningStatus
 EnumTraits<MojomProvisioningStatus, ProtoProvisioningStatus>::ToMojom(
     ProtoProvisioningStatus status) {
@@ -868,6 +937,63 @@ bool StructTraits<ash::shimless_rma::mojom::CalibrationComponentStatusDataView,
     out->set_progress(data.progress());
     return true;
   }
+  return false;
+}
+
+// static// static
+MojomUpdateRoFirmwareStatus
+EnumTraits<MojomUpdateRoFirmwareStatus, ProtoUpdateRoFirmwaretatus>::ToMojom(
+    ProtoUpdateRoFirmwaretatus step) {
+  switch (step) {
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_WAIT_USB:
+      return MojomUpdateRoFirmwareStatus::kWaitUsb;
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_FILE_NOT_FOUND:
+      return MojomUpdateRoFirmwareStatus::kFileNotFound;
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_DOWNLOADING:
+      return MojomUpdateRoFirmwareStatus::kDownloading;
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_UPDATING:
+      return MojomUpdateRoFirmwareStatus::kUpdating;
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_REBOOTING:
+      return MojomUpdateRoFirmwareStatus::kRebooting;
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_COMPLETE:
+      return MojomUpdateRoFirmwareStatus::kComplete;
+
+    case ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_UNKNOWN:
+    default:
+      NOTREACHED();
+      return MojomUpdateRoFirmwareStatus::kUnknown;
+  }
+  NOTREACHED();
+  return MojomUpdateRoFirmwareStatus::kUnknown;
+}
+
+bool EnumTraits<MojomUpdateRoFirmwareStatus, ProtoUpdateRoFirmwaretatus>::
+    FromMojom(MojomUpdateRoFirmwareStatus step,
+              ProtoUpdateRoFirmwaretatus* out) {
+  switch (step) {
+    case MojomUpdateRoFirmwareStatus::kWaitUsb:
+      *out = ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_WAIT_USB;
+      return true;
+    case MojomUpdateRoFirmwareStatus::kFileNotFound:
+      *out = ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_FILE_NOT_FOUND;
+      return true;
+    case MojomUpdateRoFirmwareStatus::kDownloading:
+      *out = ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_DOWNLOADING;
+      return true;
+    case MojomUpdateRoFirmwareStatus::kUpdating:
+      *out = ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_UPDATING;
+      return true;
+    case MojomUpdateRoFirmwareStatus::kRebooting:
+      *out = ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_REBOOTING;
+      return true;
+    case MojomUpdateRoFirmwareStatus::kComplete:
+      *out = ProtoUpdateRoFirmwaretatus::RMAD_UPDATE_RO_FIRMWARE_COMPLETE;
+      return true;
+    case MojomUpdateRoFirmwareStatus::kUnknown:
+      NOTREACHED();
+      return false;
+  }
+  NOTREACHED();
   return false;
 }
 }  // namespace mojo

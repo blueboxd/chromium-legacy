@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -35,7 +34,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   ~BrowserMainRunnerImpl() override;
 
   // BrowserMainRunner:
-  int Initialize(const MainFunctionParams& parameters) override;
+  int Initialize(MainFunctionParams parameters) override;
 #if defined(OS_ANDROID)
   void SynchronouslyFlushStartupTasks() override;
 #endif

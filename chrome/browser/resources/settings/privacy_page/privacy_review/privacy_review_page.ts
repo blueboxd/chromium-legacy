@@ -37,7 +37,6 @@ import {PrivacyReviewStep} from './constants.js';
 import {StepIndicatorModel} from './step_indicator.js';
 
 interface PrivacyReviewStepComponents {
-  headerString?: string;
   onForwardNavigation(): void;
   onBackNavigation?(): void;
   isAvailable(): boolean;
@@ -90,7 +89,7 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       stepIndicatorModel_: {
         type: Object,
         computed:
-            'computeStepIndicatorModel_(privacyReviewStep_, prefs.generated.cookie_primary_setting, prefs.generated.safe_browsing)',
+            'computeStepIndicatorModel(privacyReviewStep_, prefs.generated.cookie_primary_setting, prefs.generated.safe_browsing)',
       },
     };
   }
@@ -129,6 +128,9 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
   /** RouteObserverBehavior */
   currentRouteChanged(newRoute: Route) {
     if (newRoute === routes.PRIVACY_REVIEW) {
+      // Set the pref that the user has viewed the Privacy guide.
+      this.setPrefValue('privacy_guide.viewed', true);
+
       this.updateStateFromQueryParameters_();
     }
   }
@@ -154,13 +156,15 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
           onForwardNavigation: () => {
             Router.getInstance().navigateToPreviousRoute();
           },
+          onBackNavigation: () => {
+            this.navigateToCard_(PrivacyReviewStep.COOKIES, true);
+          },
           isAvailable: () => true,
         },
       ],
       [
         PrivacyReviewStep.MSBB,
         {
-          headerString: this.i18n('privacyReviewMsbbCardHeader'),
           onForwardNavigation: () => {
             this.navigateToCard_(PrivacyReviewStep.CLEAR_ON_EXIT);
           },
@@ -170,7 +174,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       [
         PrivacyReviewStep.CLEAR_ON_EXIT,
         {
-          headerString: this.i18n('privacyReviewClearOnExitCardHeader'),
           onForwardNavigation: () => {
             this.navigateToCard_(PrivacyReviewStep.HISTORY_SYNC);
           },
@@ -184,7 +187,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       [
         PrivacyReviewStep.HISTORY_SYNC,
         {
-          headerString: this.i18n('privacyReviewHistorySyncCardHeader'),
           onForwardNavigation: () => {
             this.navigateToCard_(PrivacyReviewStep.SAFE_BROWSING);
           },
@@ -197,7 +199,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       [
         PrivacyReviewStep.SAFE_BROWSING,
         {
-          headerString: this.i18n('privacyReviewSafeBrowsingCardHeader'),
           onForwardNavigation: () => {
             this.navigateToCard_(PrivacyReviewStep.COOKIES);
           },
@@ -210,7 +211,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       [
         PrivacyReviewStep.COOKIES,
         {
-          headerString: this.i18n('privacyReviewCookiesCardHeader'),
           onForwardNavigation: () => {
             this.navigateToCard_(PrivacyReviewStep.COMPLETION);
             HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
@@ -290,11 +290,11 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
   }
 
   private computeBackButtonClass_(): string {
-    return 'cr-button' +
-        (this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)!
-                     .onBackNavigation === undefined ?
-             ' visibility-hidden' :
-             '');
+    return (
+        this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)!
+                    .onBackNavigation === undefined ?
+            'visibility-hidden' :
+            '');
   }
 
   private onBackButtonClick_() {
@@ -302,11 +302,14 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         .onBackNavigation!();
   }
 
-  private computeStepIndicatorModel_(): StepIndicatorModel {
+  // TODO(rainhard): This is made public only because it is accessed by tests.
+  // Should change tests so that this method can be made private again.
+  computeStepIndicatorModel(): StepIndicatorModel {
     let stepCount = 0;
     let activeIndex = 0;
     for (const step of Object.values(PrivacyReviewStep)) {
-      if (step === PrivacyReviewStep.WELCOME) {
+      if (step === PrivacyReviewStep.WELCOME ||
+          step === PrivacyReviewStep.COMPLETION) {
         // This card has no step in the step indicator.
         continue;
       }
@@ -321,11 +324,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
       active: activeIndex,
       total: stepCount,
     };
-  }
-
-  private computeHeaderString_(): string|undefined {
-    return this.privacyReviewStepToComponentsMap_.get(this.privacyReviewStep_)!
-        .headerString;
   }
 
   private isSyncOn_(): boolean {
@@ -352,10 +350,6 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
         currentSafeBrowsingSetting === SafeBrowsingSetting.STANDARD;
   }
 
-  private showHeader_(): boolean {
-    return !!this.computeHeaderString_();
-  }
-
   private showFragment_(step: PrivacyReviewStep): boolean {
     return this.privacyReviewStep_ === step;
   }
@@ -363,6 +357,12 @@ export class SettingsPrivacyReviewPageElement extends PrivacyReviewBase {
   private showAnySettingFragment_(): boolean {
     return this.privacyReviewStep_ !== PrivacyReviewStep.WELCOME &&
         this.privacyReviewStep_ !== PrivacyReviewStep.COMPLETION;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-privacy-review-page': SettingsPrivacyReviewPageElement;
   }
 }
 

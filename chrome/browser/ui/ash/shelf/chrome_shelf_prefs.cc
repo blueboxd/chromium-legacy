@@ -13,12 +13,15 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/prefs_migration_uma.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
@@ -63,14 +66,6 @@ const char kDefaultPinnedAppsKey[] = "default";
 const char kLacrosChromeAppPrefix[] = "Default###";
 
 bool skip_pinned_apps_from_sync_for_test = false;
-
-bool IsLegacyCameraAppId(const std::string& app_id) {
-  return app_id ==
-             "ngmkobaiicipbagcngcmilfkhejlnfci" ||  // Migration Camera App.
-         app_id == "goamfaniemdfcajgcmmflhchgkmbngka" ||  // Google Camera App.
-         app_id == "obfofkigjfamlldmipdegnjlcpincibc" ||  // Legacy Camera App.
-         app_id == "iniodglblcgmngkgdipeiclkdjjpnlbn";  // Internal Camera App.
-}
 
 bool IsAppIdArcPackage(const std::string& app_id) {
   return app_id.find('.') != app_id.npos;
@@ -192,7 +187,7 @@ void ChromeShelfPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kPolicyPinnedLauncherApps);
   registry->RegisterListPref(
       prefs::kShelfDefaultPinLayoutRolls,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PRIORITY_PREF);
   registry->RegisterListPref(
       prefs::kShelfDefaultPinLayoutRollsForTabletFormFactor,
       PrefRegistry::NO_REGISTRATION_FLAGS);
@@ -390,7 +385,7 @@ std::vector<ash::ShelfID> ChromeShelfPrefs::GetPinnedAppsFromSync(
 
   if (ShouldPerformConsistencyMigrations()) {
     needs_consistency_migrations_ = false;
-    MigrateLegacyCameraApp(syncable_service);
+    MigrateFilesChromeAppToSWA(syncable_service);
     EnsureChromePinned(syncable_service);
   }
 
@@ -534,33 +529,36 @@ void ChromeShelfPrefs::SkipPinnedAppsFromSyncForTest() {
   skip_pinned_apps_from_sync_for_test = true;
 }
 
-void ChromeShelfPrefs::MigrateLegacyCameraApp(
+void ChromeShelfPrefs::MigrateFilesChromeAppToSWA(
     app_list::AppListSyncableService* syncable_service) {
-  syncer::StringOrdinal legacy_camera_pinned_position;
+  bool is_swa_enabled = chromeos::features::IsFileManagerSwaEnabled();
 
-  for (const auto& sync_peer : syncable_service->sync_items()) {
-    if (IsLegacyCameraAppId(sync_peer.first) &&
-        !legacy_camera_pinned_position.IsValid()) {
-      legacy_camera_pinned_position = sync_peer.second->item_pin_ordinal;
-
-      // Wipe the position for legacy camera app.
-      syncable_service->SetPinPosition(sync_peer.first,
-                                       syncer::StringOrdinal());
-    }
+  if (!is_swa_enabled ||
+      (is_swa_enabled &&
+       GetPrefs()->GetBoolean(ash::prefs::kFilesAppUIPrefsMigrated))) {
+    return;
   }
 
-  bool has_camera_app =
-      syncable_service->GetSyncItem(extension_misc::kCameraAppId) != nullptr;
-  syncer::StringOrdinal camera_app_position =
-      syncable_service->GetPinPosition(extension_misc::kCameraAppId);
-  // If the camera app is in the sync list with no valid position and there is a
-  // legacy camera app which has valid position, use this position for the
-  // camera app.
-  if (has_camera_app && !camera_app_position.IsValid() &&
-      legacy_camera_pinned_position.IsValid()) {
-    syncable_service->SetPinPosition(extension_misc::kCameraAppId,
-                                     legacy_camera_pinned_position);
+  // Avoid migrating the user prefs (even if the migration fails) to avoid
+  // overriding preferences that a user may set on the SWA explicitly.
+  GetPrefs()->SetBoolean(ash::prefs::kFilesAppUIPrefsMigrated, true);
+
+  using MigrationStatus = file_manager::FileManagerPrefsMigrationStatus;
+  if (!syncable_service->GetSyncItem(extension_misc::kFilesManagerAppId)) {
+    base::UmaHistogramEnumeration(file_manager::kPrefsMigrationStatusUMA,
+                                  MigrationStatus::kFailNoExistingPreferences);
+    return;
   }
+  if (!syncable_service->TransferItemAttributes(
+          /*from_app=*/extension_misc::kFilesManagerAppId,
+          /*to_app=*/file_manager::kFileManagerSwaAppId)) {
+    base::UmaHistogramEnumeration(file_manager::kPrefsMigrationStatusUMA,
+                                  MigrationStatus::kFailMigratingPreferences);
+    return;
+  }
+
+  base::UmaHistogramEnumeration(file_manager::kPrefsMigrationStatusUMA,
+                                MigrationStatus::kSuccess);
 }
 
 void ChromeShelfPrefs::EnsureChromePinned(
@@ -687,7 +685,7 @@ std::string ChromeShelfPrefs::GetShelfId(const std::string& sync_id) {
 
   // Now we have to check if the sync id corresponds to a lacros extension app.
   if (GetAppType(transformed_app_id) ==
-      apps::mojom::AppType::kStandaloneBrowserExtension) {
+      apps::mojom::AppType::kStandaloneBrowserChromeApp) {
     return transformed_app_id;
   }
 
@@ -705,14 +703,14 @@ std::string ChromeShelfPrefs::GetSyncId(const std::string& shelf_id) {
   base::ReplaceFirstSubstringAfterOffset(&prefix_removed, /*start_offset=*/0,
                                          kLacrosChromeAppPrefix, "");
   apps::mojom::AppType type = GetAppType(shelf_id);
-  if (type == apps::mojom::AppType::kStandaloneBrowserExtension) {
+  if (type == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
     return prefix_removed;
   }
 
   // If removing the prefix turns this into an ash chrome app, then we must
   // remove the prefix.
   type = GetAppType(prefix_removed);
-  if (type == apps::mojom::AppType::kExtension) {
+  if (type == apps::mojom::AppType::kChromeApp) {
     return prefix_removed;
   }
 

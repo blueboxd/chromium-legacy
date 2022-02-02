@@ -101,8 +101,6 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/cursors.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -114,9 +112,12 @@
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace blink {
 
@@ -142,7 +143,7 @@ gfx::Point GetMiddleSelectionCaretOfPosition(
   const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
   if (local_caret_rect.IsEmpty())
     return gfx::Point();
-  const IntRect rect = AbsoluteCaretBoundsOf(position);
+  const gfx::Rect rect = AbsoluteCaretBoundsOf(position);
   // In a multiline edit, rect.bottom() would end up on the next line, so
   // take the midpoint in order to use this corner point directly.
   if (local_caret_rect.layout_object->IsHorizontalWritingMode())
@@ -153,7 +154,7 @@ gfx::Point GetMiddleSelectionCaretOfPosition(
   return {(rect.x() + rect.right()) / 2, rect.y()};
 }
 
-bool ContainsEvenAtEdge(const IntRect& rect, const gfx::Point& point) {
+bool ContainsEvenAtEdge(const gfx::Rect& rect, const gfx::Point& point) {
   return point.x() >= rect.x() && point.x() <= rect.right() &&
          point.y() >= rect.y() && point.y() <= rect.bottom();
 }
@@ -164,7 +165,7 @@ gfx::Point DetermineHotSpot(const Image& image,
   if (image.IsNull())
     return gfx::Point();
 
-  IntRect image_rect = image.Rect();
+  gfx::Rect image_rect = image.Rect();
 
   // Hot spot must be inside cursor rectangle.
   if (hot_spot_specified) {
@@ -410,12 +411,12 @@ bool EventHandler::BubblingScroll(mojom::blink::ScrollDirection direction,
       mouse_event_manager_->MousePressNode());
 }
 
-FloatPoint EventHandler::LastKnownMousePositionInRootFrame() const {
+gfx::PointF EventHandler::LastKnownMousePositionInRootFrame() const {
   return frame_->GetPage()->GetVisualViewport().ViewportToRootFrame(
       mouse_event_manager_->LastKnownMousePositionInViewport());
 }
 
-FloatPoint EventHandler::LastKnownMouseScreenPosition() const {
+gfx::PointF EventHandler::LastKnownMouseScreenPosition() const {
   return mouse_event_manager_->LastKnownMouseScreenPosition();
 }
 
@@ -584,12 +585,12 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
       float scale = style_image->ImageScaleFactor();
       bool hot_spot_specified = (*cursors)[i].HotSpotSpecified();
       gfx::Point hot_spot = (*cursors)[i].HotSpot();
-      IntSize size = cached_image->GetImage()->Size();
+      gfx::Size size = cached_image->GetImage()->Size();
       if (cached_image->ErrorOccurred())
         continue;
       // Limit the size of cursors (in UI pixels) so that they cannot be
       // used to cover UI elements in chrome.
-      size.Scale(1 / scale);
+      size = gfx::ScaleToFlooredSize(size, 1 / scale);
       if (size.width() > kMaximumCursorSize ||
           size.height() > kMaximumCursorSize)
         continue;
@@ -646,11 +647,11 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
       // resolution for high DPI displays.
       scoped_refptr<Image> svg_image_holder;
       if (auto* svg_image = DynamicTo<SVGImage>(image)) {
-        IntSize scaled_size(svg_image->Size());
-        scaled_size.Scale(device_scale_factor);
+        gfx::Size scaled_size =
+            gfx::ScaleToFlooredSize(svg_image->Size(), device_scale_factor);
         // TODO(fs): Should pass proper URL. Use StyleImage::GetImage.
         svg_image_holder = SVGImageForContainer::Create(
-            svg_image, FloatSize(scaled_size), device_scale_factor, NullURL());
+            svg_image, gfx::SizeF(scaled_size), device_scale_factor, NullURL());
         image = svg_image_holder.get();
       }
 
@@ -785,12 +786,11 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (!frame_->View())
     return WebInputEventResult::kNotHandled;
 
-  HitTestRequest request(HitTestRequest::kActive |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kActive);
   // Save the document point we generate in case the window coordinate is
   // invalidated by what happens when we dispatch the event.
   PhysicalOffset document_point = frame_->View()->ConvertFromRootFrame(
-      PhysicalOffset(FlooredIntPoint(mouse_event.PositionInRootFrame())));
+      PhysicalOffset(gfx::ToFlooredPoint(mouse_event.PositionInRootFrame())));
   MouseEventWithHitTestResults mev = GetMouseEventTarget(request, mouse_event);
   if (!mev.InnerNode()) {
     // An anonymous box can be scrollable.
@@ -870,7 +870,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
             ? mev.InnerNode()->GetLayoutObject()->EnclosingLayer()
             : nullptr;
     gfx::Point p = view->ConvertFromRootFrame(
-        FlooredIntPoint(mouse_event.PositionInRootFrame()));
+        gfx::ToFlooredPoint(mouse_event.PositionInRootFrame()));
     if (layer && layer->GetScrollableArea() &&
         layer->GetScrollableArea()->IsPointInResizeControl(
             p, kResizerForPointer)) {
@@ -887,8 +887,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   GetSelectionController().InitializeSelectionState();
 
   HitTestResult hit_test_result = event_handling_util::HitTestResultInFrame(
-      frame_, HitTestLocation(document_point),
-      HitTestRequest::kReadOnly | HitTestRequest::kRetargetForInert);
+      frame_, HitTestLocation(document_point), HitTestRequest::kReadOnly);
   InputDeviceCapabilities* source_capabilities =
       frame_->DomWindow()->GetInputDeviceCapabilities()->FiresTouchEvents(
           mouse_event.FromTouch());
@@ -916,8 +915,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   if (event_result == WebInputEventResult::kNotHandled) {
     if (ShouldRefetchEventTarget(mev)) {
       HitTestRequest read_only_request(HitTestRequest::kReadOnly |
-                                       HitTestRequest::kActive |
-                                       HitTestRequest::kRetargetForInert);
+                                       HitTestRequest::kActive);
       mev = frame_->GetDocument()->PerformMouseEventHitTest(
           read_only_request, document_point, mouse_event);
     }
@@ -1032,8 +1030,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
-  HitTestRequest::HitTestRequestType hit_type =
-      HitTestRequest::kMove | HitTestRequest::kRetargetForInert;
+  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kMove;
   if (mouse_event_manager_->MousePressed()) {
     hit_type |= HitTestRequest::kActive;
   }
@@ -1203,8 +1200,7 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
 
   // Mouse events simulated from touch should not hit-test again.
   DCHECK(!mouse_event.FromTouch());
-  HitTestRequest::HitTestRequestType hit_type =
-      HitTestRequest::kRelease | HitTestRequest::kRetargetForInert;
+  HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kRelease;
   HitTestRequest request(hit_type);
   MouseEventWithHitTestResults mev = GetMouseEventTarget(request, mouse_event);
   LocalFrame* subframe = event_handling_util::GetTargetSubframe(
@@ -1258,8 +1254,7 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
   if (!frame_->View())
     return event_result;
 
-  HitTestRequest request(HitTestRequest::kReadOnly |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kReadOnly);
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
@@ -1271,8 +1266,8 @@ WebInputEventResult EventHandler::UpdateDragAndDrop(
 
   if (AutoscrollController* controller =
           scroll_manager_->GetAutoscrollController()) {
-    controller->UpdateDragAndDrop(
-        new_target, FloatPoint(event.PositionInRootFrame()), event.TimeStamp());
+    controller->UpdateDragAndDrop(new_target, event.PositionInRootFrame(),
+                                  event.TimeStamp());
   }
 
   if (drag_target_ != new_target) {
@@ -1647,7 +1642,7 @@ bool EventHandler::ShouldApplyTouchAdjustment(
 }
 
 void EventHandler::CacheTouchAdjustmentResult(uint32_t id,
-                                              FloatPoint adjusted_point) {
+                                              gfx::PointF adjusted_point) {
   touch_adjustment_result_.unique_event_id = id;
   touch_adjustment_result_.adjusted_point = adjusted_point;
 }
@@ -1667,9 +1662,11 @@ bool EventHandler::GestureCorrespondsToAdjustedTouch(
   // Check if the adjusted point is in the gesture event tap rect.
   // If not, should not use this touch point in following events.
   if (should_use_touch_event_adjusted_point_) {
-    FloatRect tap_rect(FloatPoint(event.PositionInRootFrame()) -
-                           FloatSize(event.TapAreaInRootFrame()) * 0.5,
-                       FloatSize(event.TapAreaInRootFrame()));
+    FloatSize size(event.TapAreaInRootFrame());
+    FloatRect tap_rect(
+        event.PositionInRootFrame() -
+            gfx::Vector2dF(size.width() * 0.5, size.height() * 0.5),
+        size);
     should_use_touch_event_adjusted_point_ =
         tap_rect.InclusiveContains(touch_adjustment_result_.adjusted_point);
   }
@@ -1698,8 +1695,8 @@ bool EventHandler::BestClickableNodeForHitTestResult(
 
   gfx::Point touch_center =
       frame_->View()->ConvertToRootFrame(ToRoundedPoint(location.Point()));
-  IntRect touch_rect =
-      frame_->View()->ConvertToRootFrame(location.EnclosingIntRect());
+  gfx::Rect touch_rect =
+      frame_->View()->ConvertToRootFrame(location.ToEnclosingRect());
 
   HeapVector<Member<Node>, 11> nodes;
   CopyToVector(result.ListBasedTestResult(), nodes);
@@ -1719,8 +1716,8 @@ bool EventHandler::BestContextMenuNodeForHitTestResult(
   DCHECK(location.IsRectBasedTest());
   gfx::Point touch_center =
       frame_->View()->ConvertToRootFrame(ToRoundedPoint(location.Point()));
-  IntRect touch_rect =
-      frame_->View()->ConvertToRootFrame(location.EnclosingIntRect());
+  gfx::Rect touch_rect =
+      frame_->View()->ConvertToRootFrame(location.ToEnclosingRect());
   HeapVector<Member<Node>, 11> nodes;
   CopyToVector(result.ListBasedTestResult(), nodes);
 
@@ -1945,7 +1942,6 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   // disabled). Note that we don't yet apply hover/active state here because
   // we need to resolve touch adjustment first so that we apply hover/active
   // it to the final adjusted node.
-  hit_type |= HitTestRequest::kRetargetForInert;
   hit_type |= HitTestRequest::kReadOnly;
   WebGestureEvent adjusted_event = gesture_event;
   LayoutSize hit_rect_size;
@@ -1954,7 +1950,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     // point-base hit test. Otherwise add padding and do rect-based hit test.
     if (GestureCorrespondsToAdjustedTouch(gesture_event)) {
       adjusted_event.ApplyTouchAdjustment(
-          ToGfxPointF(touch_adjustment_result_.adjusted_point));
+          touch_adjustment_result_.adjusted_point);
     } else {
       hit_rect_size = GetHitTestRectForAdjustment(
           *frame_, LayoutSize(adjusted_event.TapAreaInRootFrame()));
@@ -1967,13 +1963,12 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   LocalFrame& root_frame = frame_->LocalFrameRoot();
   HitTestResult hit_test_result;
   if (hit_rect_size.IsEmpty()) {
-    location =
-        HitTestLocation(FloatPoint(adjusted_event.PositionInRootFrame()));
+    location = HitTestLocation(adjusted_event.PositionInRootFrame());
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location, hit_type);
   } else {
-    PhysicalOffset top_left = PhysicalOffset::FromFloatPointRound(
-        FloatPoint(adjusted_event.PositionInRootFrame()));
+    PhysicalOffset top_left =
+        PhysicalOffset::FromPointFRound(adjusted_event.PositionInRootFrame());
     top_left -= PhysicalOffset(hit_rect_size * 0.5f);
     location = HitTestLocation(PhysicalRect(top_left, hit_rect_size));
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
@@ -1993,8 +1988,7 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
     LocalFrame* hit_frame = hit_test_result.InnerNodeFrame();
     if (!hit_frame)
       hit_frame = frame_;
-    location =
-        HitTestLocation(FloatPoint(adjusted_event.PositionInRootFrame()));
+    location = HitTestLocation(adjusted_event.PositionInRootFrame());
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtLocation(
         location,
         (hit_type | HitTestRequest::kReadOnly) & ~HitTestRequest::kListBased);
@@ -2013,7 +2007,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
                                         HitTestResult* hit_test_result) {
   Node* adjusted_node = nullptr;
   gfx::Point adjusted_point =
-      FlooredIntPoint(gesture_event->PositionInRootFrame());
+      gfx::ToFlooredPoint(gesture_event->PositionInRootFrame());
   bool adjusted = false;
   switch (gesture_event->GetType()) {
     case WebInputEvent::Type::kGestureTap:
@@ -2039,7 +2033,7 @@ void EventHandler::ApplyTouchAdjustment(WebGestureEvent* gesture_event,
   // crbug.com/398914
   if (adjusted) {
     PhysicalOffset point(frame_->View()->ConvertFromRootFrame(adjusted_point));
-    DCHECK(location.ContainsPoint(FloatPoint(point)));
+    DCHECK(location.ContainsPoint(gfx::PointF(point)));
     DCHECK(location.IsRectBasedTest());
     location = hit_test_result->ResolveRectBasedTest(adjusted_node, point);
     gesture_event->ApplyTouchAdjustment(
@@ -2060,10 +2054,9 @@ WebInputEventResult EventHandler::SendContextMenuEvent(
   if (last_scrollbar_under_mouse_)
     last_scrollbar_under_mouse_->MouseUp(event);
 
-  PhysicalOffset position_in_contents(
-      v->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame())));
-  HitTestRequest request(HitTestRequest::kActive |
-                         HitTestRequest::kRetargetForInert);
+  PhysicalOffset position_in_contents(v->ConvertFromRootFrame(
+      gfx::ToFlooredPoint(event.PositionInRootFrame())));
+  HitTestRequest request(HitTestRequest::kActive);
   MouseEventWithHitTestResults mev =
       frame_->GetDocument()->PerformMouseEventHitTest(
           request, position_in_contents, event);
@@ -2147,14 +2140,14 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     }
     // Intersect the selection rect and the visible bounds of focused_element.
     if (focused_element) {
-      IntRect clipped_rect = view->ViewportToFrame(
+      gfx::Rect clipped_rect = view->ViewportToFrame(
           GetFocusedElementRectForNonLocatedContextMenu(focused_element));
       left = std::max(clipped_rect.x(), left);
       top = std::max(clipped_rect.y(), top);
       right = std::min(clipped_rect.right(), right);
       bottom = std::min(clipped_rect.bottom(), bottom);
     }
-    IntRect selection_rect = IntRect(left, top, right - left, bottom - top);
+    gfx::Rect selection_rect = gfx::Rect(left, top, right - left, bottom - top);
 
     if (ContainsEvenAtEdge(selection_rect, start_point)) {
       location_in_root_frame = view->ConvertToRootFrame(start_point);
@@ -2165,14 +2158,15 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
           view->ConvertToRootFrame(selection_rect.CenterPoint());
     }
   } else if (focused_element) {
-    IntRect clipped_rect =
+    gfx::Rect clipped_rect =
         GetFocusedElementRectForNonLocatedContextMenu(focused_element);
     location_in_root_frame =
         visual_viewport.ViewportToRootFrame(clipped_rect.CenterPoint());
   } else {
-    location_in_root_frame = gfx::Point(
-        visual_viewport.GetScrollOffset().width() + kContextMenuMargin,
-        visual_viewport.GetScrollOffset().height() + kContextMenuMargin);
+    // TODO(crbug.com/1274078): Should this use ScrollPosition()?
+    location_in_root_frame =
+        gfx::Point(visual_viewport.GetScrollOffset().x() + kContextMenuMargin,
+                   visual_viewport.GetScrollOffset().y() + kContextMenuMargin);
   }
 
   frame_->View()->SetCursor(PointerCursor());
@@ -2180,13 +2174,12 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
       visual_viewport.RootFrameToViewport(location_in_root_frame);
   gfx::Point global_position =
       view->GetChromeClient()
-          ->ViewportToScreen(IntRect(location_in_viewport, IntSize()),
+          ->ViewportToScreen(gfx::Rect(location_in_viewport, gfx::Size()),
                              frame_->View())
           .origin();
 
   // Use the focused node as the target for hover and active.
-  HitTestRequest request(HitTestRequest::kActive |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kActive);
   HitTestLocation location(location_in_root_frame);
   HitTestResult result(request, location);
   result.SetInnerNode(focused_element ? static_cast<Node*>(focused_element)
@@ -2216,14 +2209,14 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   return SendContextMenuEvent(mouse_event, focused_element);
 }
 
-IntRect EventHandler::GetFocusedElementRectForNonLocatedContextMenu(
+gfx::Rect EventHandler::GetFocusedElementRectForNonLocatedContextMenu(
     Element* focused_element) {
-  IntRect clipped_rect = focused_element->VisibleBoundsInVisualViewport();
+  gfx::Rect clipped_rect = focused_element->VisibleBoundsInVisualViewport();
   // The bounding rect of multiline elements may include points that are
   // not within the element. Intersect the clipped rect with the first
   // outline rect to ensure that the selection rect only includes visible
   // points within the focused element.
-  Vector<IntRect> outline_rects =
+  Vector<gfx::Rect> outline_rects =
       focused_element->OutlineRectsInVisualViewport();
   if (outline_rects.size() > 1)
     clipped_rect.Intersect(outline_rects[0]);
@@ -2272,8 +2265,7 @@ void EventHandler::HoverTimerFired(TimerBase*) {
 
   if (auto* layout_object = frame_->ContentLayoutObject()) {
     if (LocalFrameView* view = frame_->View()) {
-      HitTestRequest request(HitTestRequest::kMove |
-                             HitTestRequest::kRetargetForInert);
+      HitTestRequest request(HitTestRequest::kMove);
       HitTestLocation location(view->ViewportToFrame(
           mouse_event_manager_->LastKnownMousePositionInViewport()));
       HitTestResult result(request, location);
@@ -2291,8 +2283,7 @@ void EventHandler::ActiveIntervalTimerFired(TimerBase*) {
     // FIXME: Enable condition when http://crbug.com/226842 lands
     // m_lastDeferredTapElement.get() == m_frame->document()->activeElement()
     HitTestRequest request(HitTestRequest::kTouchEvent |
-                           HitTestRequest::kRelease |
-                           HitTestRequest::kRetargetForInert);
+                           HitTestRequest::kRelease);
     frame_->GetDocument()->UpdateHoverActiveState(
         request.Active(), !request.Move(), last_deferred_tap_element_.Get());
   }
@@ -2325,8 +2316,7 @@ void EventHandler::DragSourceEndedAt(
     ui::mojom::blink::DragOperation operation) {
   // Asides from routing the event to the correct frame, the hit test is also an
   // opportunity for Layer to update the :hover and :active pseudoclasses.
-  HitTestRequest request(HitTestRequest::kRelease |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kRelease);
   MouseEventWithHitTestResults mev =
       event_handling_util::PerformMouseEventHitTest(frame_, request, event);
 
@@ -2483,7 +2473,7 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
     const WebMouseEvent& event) {
   PhysicalOffset document_point =
       event_handling_util::ContentPointFromRootFrame(
-          frame_, FloatPoint(event.PositionInRootFrame()));
+          frame_, event.PositionInRootFrame());
 
   // TODO(eirage): This does not handle chorded buttons yet.
   if (event.GetType() != WebInputEvent::Type::kMouseDown) {

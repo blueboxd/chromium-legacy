@@ -44,6 +44,12 @@ D3D11Status VideoProcessorProxy::Init(uint32_t width, uint32_t height) {
         .AddCause(D3D11HresultToStatus(hr, device));
   }
 
+  D3D11_VIDEO_PROCESSOR_CAPS caps = {0};
+  if (SUCCEEDED(processor_enumerator_->GetVideoProcessorCaps(&caps))) {
+    supports_tone_mapping_ =
+        caps.FeatureCaps & D3D11_VIDEO_PROCESSOR_FEATURE_CAPS_METADATA_HDR10;
+  }
+
   hr = video_device_->CreateVideoProcessor(processor_enumerator_.Get(), 0,
                                            &video_processor_);
   if (!SUCCEEDED(hr)) {
@@ -120,8 +126,8 @@ void VideoProcessorProxy::SetStreamHDRMetadata(
     return;
 
   // TODO: we shouldn't do this unless we also set the display metadata.
-  video_context2->VideoProcessorSetOutputHDRMetaData(
-      video_processor_.Get(), DXGI_HDR_METADATA_TYPE_HDR10,
+  video_context2->VideoProcessorSetStreamHDRMetaData(
+      video_processor_.Get(), 0, DXGI_HDR_METADATA_TYPE_HDR10,
       sizeof(stream_metadata), &stream_metadata);
 }
 

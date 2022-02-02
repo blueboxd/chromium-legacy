@@ -41,36 +41,30 @@ const char kCategoriesKey[] = "categories";
 const char kDataKey[] = "data";
 const char kUiBypassedKey[] = "ui_bypassed";
 const char kExtrasKey[] = "extras";
+const char kMimeTypeInodeDirectory[] = "inode/directory";
 
-// Get the field/s from the |intent| that need to be checked/matched based on
-// |condition_type|. Most types return a single string but we return a vector
-// for compatibility with types that have multiple fields to be checked.
-std::vector<std::string> GetIntentConditionValuesByType(
+// Get the field from the |intent| that need to be checked/matched based on
+// |condition_type|.
+absl::optional<std::string> GetIntentConditionValueByType(
     apps::mojom::ConditionType condition_type,
     const apps::mojom::IntentPtr& intent) {
   switch (condition_type) {
-    case apps::mojom::ConditionType::kAction: {
-      return {intent->action};
-    }
-    case apps::mojom::ConditionType::kScheme: {
-      if (intent->url.has_value())
-        return {intent->url->scheme()};
-      return {};
-    }
-    case apps::mojom::ConditionType::kHost: {
-      if (intent->url.has_value())
-        return {intent->url->host()};
-      return {};
-    }
-    case apps::mojom::ConditionType::kPattern: {
-      if (intent->url.has_value())
-        return {intent->url->path()};
-      return {};
-    }
+    case apps::mojom::ConditionType::kAction:
+      return intent->action;
+    case apps::mojom::ConditionType::kScheme:
+      return intent->url.has_value()
+                 ? absl::optional<std::string>(intent->url->scheme())
+                 : absl::nullopt;
+    case apps::mojom::ConditionType::kHost:
+      return intent->url.has_value()
+                 ? absl::optional<std::string>(intent->url->host())
+                 : absl::nullopt;
+    case apps::mojom::ConditionType::kPattern:
+      return intent->url.has_value()
+                 ? absl::optional<std::string>(intent->url->path())
+                 : absl::nullopt;
     case apps::mojom::ConditionType::kMimeType: {
-      if (intent->mime_type.has_value())
-        return {intent->mime_type.value()};
-      return {};
+      return intent->mime_type;
     }
     case apps::mojom::ConditionType::kFile: {
       // Handled in IntentMatchesFileCondition.
@@ -291,9 +285,10 @@ bool FileMatchesConditionValue(
     case apps::mojom::PatternMatchType::kNone:
     case apps::mojom::PatternMatchType::kLiteral:
     case apps::mojom::PatternMatchType::kPrefix:
-    case apps::mojom::PatternMatchType::kGlob:
       NOTREACHED();
       return false;
+    case apps::mojom::PatternMatchType::kGlob:
+      return MatchGlob(file->url.spec(), condition_value->value);
     case apps::mojom::PatternMatchType::kMimeType:
       return file->mime_type.has_value() &&
              MimeTypeMatched(file->mime_type.value(), condition_value->value);
@@ -337,24 +332,18 @@ bool IntentMatchesCondition(const apps::mojom::IntentPtr& intent,
     return IntentMatchesFileCondition(intent, condition);
   }
 
-  std::vector<std::string> values_to_match =
-      GetIntentConditionValuesByType(condition->condition_type, intent);
-  if (values_to_match.empty()) {
+  absl::optional<std::string> value_to_match =
+      GetIntentConditionValueByType(condition->condition_type, intent);
+  if (!value_to_match.has_value()) {
     return false;
   }
 
-  // If the intent has multiple values to match e.g. a MIME type for each file
-  // in the intent, then each value must match at least one condition_value.
-  for (const auto& value_to_match : values_to_match) {
-    bool matched_any = std::any_of(
-        condition->condition_values.begin(), condition->condition_values.end(),
-        [&value_to_match](const auto& condition_value) {
-          return ConditionValueMatches(value_to_match, condition_value);
-        });
-    if (!matched_any)
-      return false;
-  }
-  return true;
+  bool matched_any = std::any_of(
+      condition->condition_values.begin(), condition->condition_values.end(),
+      [&value_to_match](const auto& condition_value) {
+        return ConditionValueMatches(value_to_match.value(), condition_value);
+      });
+  return matched_any;
 }
 
 bool IntentMatchesFilter(const apps::mojom::IntentPtr& intent,
@@ -435,12 +424,18 @@ bool IsGenericFileHandler(const apps::mojom::IntentPtr& intent,
     }
   }
 
-  // We consider it a generic match if a directory is selected.
+  // If directory is selected, it is generic unless mime_types included
+  // 'inode/directory'.
   for (const auto& file : intent->files.value()) {
     if (file->is_directory == apps::mojom::OptionalBool::kTrue)
-      return true;
+      return mime_types.count(kMimeTypeInodeDirectory) == 0;
   }
   return false;
+}
+
+bool IsShareIntent(const apps::mojom::IntentPtr& intent) {
+  return intent->action == kIntentActionSend ||
+         intent->action == kIntentActionSendMultiple;
 }
 
 // TODO(crbug.com/853604): For glob match, it is currently only for Android
@@ -529,25 +524,17 @@ bool MatchGlob(const std::string& value, const std::string& pattern) {
 }
 
 bool OnlyShareToDrive(const apps::mojom::IntentPtr& intent) {
-  if (intent->action == kIntentActionSend ||
-      intent->action == kIntentActionSendMultiple) {
-    if (intent->drive_share_url.has_value() &&
-        !intent->share_text.has_value() && !intent->files.has_value()) {
-      return true;
-    }
-  }
-  return false;
+  return IsShareIntent(intent) && intent->drive_share_url &&
+         !intent->share_text && !intent->files;
 }
 
 bool IsIntentValid(const apps::mojom::IntentPtr& intent) {
   // TODO(crbug.com/853604):Add more checks here to make this a general intent
-  // validity check. Check if this is a share intent with no file or text.
-  if (intent->action == kIntentActionSend ||
-      intent->action == kIntentActionSendMultiple) {
-    if (!intent->share_text.has_value() && !intent->files.has_value()) {
-      return false;
-    }
-  }
+  // validity check. Return false if this is a share intent with no file or
+  // text.
+  if (IsShareIntent(intent))
+    return intent->share_text || intent->files;
+
   return true;
 }
 

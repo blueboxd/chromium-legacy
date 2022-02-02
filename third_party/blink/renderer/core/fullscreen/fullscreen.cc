@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -101,11 +101,17 @@ void FullscreenElementChanged(Document& document,
         true);
   }
 
-  if (document.GetFrame()) {
-    // SetIsInert recurses through subframes to propagate the inert bit as
-    // needed.
-    document.GetFrame()->SetIsInert(document.LocalOwner() &&
-                                    document.LocalOwner()->IsInert());
+  // Update IsInert() flags.
+  auto SetNeedsStyleRecalc = [](Element& element) {
+    element.SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kFullscreen));
+  };
+  if (old_element && new_element) {
+    SetNeedsStyleRecalc(*old_element);
+    SetNeedsStyleRecalc(*new_element);
+  } else if (Element* root = document.documentElement()) {
+    SetNeedsStyleRecalc(*root);
   }
 
   // Any element not contained by the fullscreen element is inert (see

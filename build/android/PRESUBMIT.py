@@ -37,9 +37,10 @@ def CommonChecks(input_api, output_api):
           files_to_skip=[
               r'.*_pb2\.py',
               # The following are all temporary due to: crbug.com/1100664
-              r'.*list_java_targets\.py',
               r'.*fast_local_dev_server\.py',
               r'.*incremental_javac_test_android_library.py',
+              r'.*list_class_verification_failures.py',
+              r'.*list_java_targets\.py',
           ] + build_pys,
           extra_paths_list=[
               J(),
@@ -54,7 +55,8 @@ def CommonChecks(input_api, output_api):
               J('..', '..', 'third_party', 'depot_tools'),
               J('..', '..', 'third_party', 'colorama', 'src'),
               J('..', '..', 'build'),
-          ]))
+          ],
+          version='2.6'))
   tests.extend(
       input_api.canned_checks.GetPylint(
           input_api,
@@ -66,7 +68,8 @@ def CommonChecks(input_api, output_api):
               r'.*create_unwind_table\.py',
               r'.*create_unwind_table_tests\.py',
           ],
-          extra_paths_list=[J('gyp'), J('gn')]))
+          extra_paths_list=[J('gyp'), J('gn')],
+          version='2.6'))
 
   tests.extend(
       input_api.canned_checks.GetPylint(

@@ -294,7 +294,7 @@ lib_list="\
 "
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
-lib32_list="linux-libc-dev:i386 libpci3:i386 libglib2.0-0:i386"
+lib32_list="linux-libc-dev:i386 libpci3:i386"
 
 # 32-bit libraries needed for a 32-bit build
 lib32_list="$lib32_list libx11-xcb1:i386"
@@ -492,6 +492,8 @@ elif package_exists php7.1-cgi; then
   dev_list="${dev_list} php7.1-cgi libapache2-mod-php7.1"
 elif package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
+elif package_exists php8.0-cgi; then
+  dev_list="${dev_list} php8.0-cgi libapache2-mod-php8.0"
 else
   dev_list="${dev_list} php5-cgi libapache2-mod-php5"
 fi

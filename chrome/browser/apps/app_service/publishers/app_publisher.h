@@ -9,11 +9,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
+#include "chrome/browser/apps/app_service/launch_result_type.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 
 namespace apps {
+
+struct AppLaunchParams;
 
 // AppPublisher parent class (in the App Service sense) for all app publishers.
 // See components/services/app_service/README.md.
@@ -31,6 +35,14 @@ class AppPublisher {
                                       const std::string& app_id,
                                       Readiness readiness,
                                       const std::string& name);
+
+  // Registers this AppPublisher to AppServiceProxy, allowing it to receive App
+  // Service API calls. This function must be called after the object's
+  // creation, and can't be called in the constructor function to avoid
+  // receiving API calls before being fully constructed and ready. This should
+  // be called immediately before the first call to AppPublisher::Publish that
+  // sends the initial list of apps to the App Service.
+  void RegisterPublisher(AppType app_type);
 
   // Requests an icon for an app identified by |app_id|. The icon is identified
   // by |icon_key| and parameterised by |icon_type| and |size_hint_in_dp|. If
@@ -54,19 +66,32 @@ class AppPublisher {
                         bool allow_placeholder_icon,
                         LoadIconCallback callback) = 0;
 
+  // Launches an app with |params|.
+  //
+  // Publishers implementing this method should:
+  // - Launch the app represent by the |params.app_id|.
+  // - Launch the app with all the params that is applicable to the platform.
+  // - Return launch_result if applicable.
+  virtual void LaunchAppWithParams(AppLaunchParams&& params,
+                                   LaunchCallback callback) = 0;
+
  protected:
   // Publish one `app` to AppServiceProxy. Should be called whenever the app
   // represented by `app` undergoes some state change to inform AppServiceProxy
-  // of the change.
+  // of the change. Ensure that RegisterPublisher() has been called before the
+  // first call to this method.
   void Publish(std::unique_ptr<App> app);
 
   // Publish multiple `apps` to AppServiceProxy. Should be called whenever the
   // app represented by `app` undergoes some state change to inform
-  // AppServiceProxy of the change.
+  // AppServiceProxy of the change. Ensure that RegisterPublisher() has been
+  // called before the first call to this method.
   void Publish(std::vector<std::unique_ptr<App>> apps);
 
+  AppServiceProxy* proxy() { return proxy_; }
+
  private:
-  AppServiceProxy* proxy_ = nullptr;
+  raw_ptr<AppServiceProxy> proxy_ = nullptr;
 };
 
 }  // namespace apps

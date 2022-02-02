@@ -8,8 +8,6 @@
 #include <windows.h>
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ui/base/resource/resource_handle.h"
 
 namespace ui {

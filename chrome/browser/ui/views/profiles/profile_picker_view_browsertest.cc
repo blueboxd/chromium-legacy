@@ -6,12 +6,15 @@
 
 #include "base/callback_helpers.h"
 #include "base/json/values_util.h"
+#include "base/memory/raw_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/interstitials/chrome_settings_page_helper.h"
@@ -75,14 +78,23 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
-namespace {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/account_manager_core/chromeos/account_manager.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
+#include "components/account_manager_core/chromeos/fake_account_manager_ui.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
+namespace {
+const SkColor kProfileColor = SK_ColorRED;
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // State of the the ForceEphemeralProfiles policy.
 enum class ForceEphemeralProfilesPolicy { kUnset, kEnabled, kDisabled };
 
-const SkColor kProfileColor = SK_ColorRED;
-const char16_t kWork[] = u"Work";
 const char16_t kOriginalProfileName[] = u"OriginalProfile";
+const char16_t kWork[] = u"Work";
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 AccountInfo FillAccountInfo(
     const CoreAccountInfo& core_info,
@@ -101,6 +113,49 @@ AccountInfo FillAccountInfo(
   account_info.picture_url = "https://get-avatar.com/foo";
   return account_info;
 }
+
+void ExpectSyncAborted(Profile* profile) {
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath());
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(https://crbug.com/1217645): Add support for signed out / non-syncing
+  // profiles. For the time being, it enables sync but disables all datatypes.
+  EXPECT_TRUE(entry->IsAuthenticated());
+  EXPECT_TRUE(sync_service->HasSyncConsent());
+  EXPECT_FALSE(sync_service->GetUserSettings()->IsSyncEverythingEnabled());
+#else
+  EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_FALSE(sync_service->HasSyncConsent());
+#endif
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+
+class FakeAccountManagerUIAddAccountDialogWaiter
+    : public FakeAccountManagerUI::Observer {
+ public:
+  explicit FakeAccountManagerUIAddAccountDialogWaiter(
+      FakeAccountManagerUI* account_manager_ui) {
+    scoped_observation_.Observe(account_manager_ui);
+  }
+  ~FakeAccountManagerUIAddAccountDialogWaiter() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // FakeAccountManagerUI::Observer:
+  void OnAddAccountDialogShown() override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+  base::ScopedObservation<FakeAccountManagerUI, FakeAccountManagerUI::Observer>
+      scoped_observation_{this};
+};
+
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 class BrowserAddedWaiter : public BrowserListObserver {
  public:
@@ -131,7 +186,7 @@ class BrowserAddedWaiter : public BrowserListObserver {
   }
 
   const size_t total_count_;
-  Browser* browser_ = nullptr;
+  raw_ptr<Browser> browser_ = nullptr;
   base::RunLoop run_loop_;
 };
 
@@ -229,8 +284,8 @@ class TestTabDialogs : public TabDialogs {
   void HideManagePasswordsBubble() override {}
 
  private:
-  content::WebContents* contents_;
-  base::RunLoop* run_loop_;
+  raw_ptr<content::WebContents> contents_;
+  raw_ptr<base::RunLoop> run_loop_;
 };
 
 std::unique_ptr<KeyedService> CreateTestTracker(content::BrowserContext*) {
@@ -278,9 +333,78 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
                                      test_url_loader_factory()));
   }
 
+  Profile* SignInForNewProfile(
+      const GURL& target_url,
+      const std::string& email,
+      const std::string& given_name,
+      const std::string& hosted_domain = kNoHostedDomainFound) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    return LacrosSignIn(target_url, email, given_name, hosted_domain);
+#else
+    Profile* profile_being_created = StartDiceSignIn();
+    FinishDiceSignIn(profile_being_created, email, given_name, hosted_domain);
+    WaitForLoadStop(target_url);
+    return profile_being_created;
+#endif
+  }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  Profile* LacrosSignIn(
+      const GURL& target_url,
+      const std::string& email,
+      const std::string& given_name,
+      const std::string& hosted_domain = kNoHostedDomainFound) {
+    ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuAddNewProfile);
+    // Wait until webUI is fully initialized.
+    const GURL kNewProfileUrl("chrome://profile-picker/new-profile");
+    WaitForLoadStop(kNewProfileUrl);
+
+    // Fake clicking the "Next"/"Sign in" button.
+    base::ListValue args;
+    args.Append(/*color=*/static_cast<int>(kProfileColor));
+    args.Append(/*gaiaId=*/base::Value(base::Value::Type::STRING));
+    web_contents()->GetWebUI()->ProcessWebUIMessage(
+        kNewProfileUrl, "loadSignInProfileCreationFlow", args);
+
+    // Wait for the Ash UI to show up.
+    FakeAccountManagerUI* fake_ui = GetFakeAccountManagerUI();
+    FakeAccountManagerUIAddAccountDialogWaiter(fake_ui).Wait();
+
+    // Fake the OS account addition.
+    account_manager::AccountKey kAccountKey{
+        "some_gaia_id", account_manager::AccountType::kGaia};
+    auto* account_manager = MaybeGetAshAccountManagerForTests();
+    DCHECK(account_manager);
+    account_manager->UpsertAccount(kAccountKey, email, "access_token");
+
+    // Fake that this account was successfully added via the UI.
+    crosapi::AccountManagerMojoService* mojo_service =
+        MaybeGetAshAccountManagerMojoServiceForTests();
+    DCHECK(mojo_service);
+    mojo_service->OnAccountAdditionFinishedForTesting(
+        account_manager::AccountAdditionResult::FromAccount(
+            {kAccountKey, email}));
+    fake_ui->CloseDialog();
+
+    WaitForLoadStop(target_url);
+    Profile* profile_being_created =
+        static_cast<Profile*>(web_contents()->GetBrowserContext());
+
+    // Add full account info.
+    signin::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile_being_created);
+    CoreAccountInfo core_account_info =
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
+    AccountInfo account_info =
+        FillAccountInfo(core_account_info, given_name, hosted_domain);
+    signin::UpdateAccountInfoForAccount(identity_manager, account_info);
+
+    return profile_being_created;
+  }
+#else
   // Opens the Gaia signin page in the profile creation flow. Returns the new
   // profile that was created.
-  Profile* StartSigninFlow() {
+  Profile* StartDiceSignIn() {
     ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuAddNewProfile);
     // Wait until webUI is fully initialized.
     WaitForLoadStop(GURL("chrome://profile-picker/new-profile"));
@@ -297,10 +421,11 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     return static_cast<Profile*>(web_contents()->GetBrowserContext());
   }
 
-  AccountInfo SignIn(Profile* profile_being_created,
-                     const std::string& email,
-                     const std::string& given_name,
-                     const std::string& hosted_domain = kNoHostedDomainFound) {
+  AccountInfo FinishDiceSignIn(
+      Profile* profile_being_created,
+      const std::string& email,
+      const std::string& given_name,
+      const std::string& hosted_domain = kNoHostedDomainFound) {
     // Add an account - simulate a successful Gaia sign-in.
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_being_created);
@@ -316,6 +441,7 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     signin::UpdateAccountInfoForAccount(identity_manager, account_info);
     return account_info;
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Returns true if the profile switch IPH has been shown.
   bool ProfileSwitchPromoHasBeenShown(Browser* browser) {
@@ -422,14 +548,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, ShowChoice) {
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfile) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
-  // Simulate a successful Gaia sign-in.
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
-
-  // Wait for the sign-in to propagate to the flow, resulting in sync
-  // confirmation screen getting displayed.
-  WaitForLoadStop(GURL("chrome://sync-confirmation/"));
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in sync confirmation screen getting displayed.
+  Profile* profile_being_created = SignInForNewProfile(
+      GURL("chrome://sync-confirmation/"), "joe.consumer@gmail.com", "Joe");
 
   // Simulate closing the UI with "No, thanks".
   LoginUIServiceFactory::GetForProfile(profile_being_created)
@@ -447,68 +569,20 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
           .GetProfileAttributesWithPath(profile_being_created->GetPath());
   ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_EQ(entry->GetLocalProfileName(), u"Joe");
 
+  ExpectSyncAborted(profile_being_created);
   EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
                 ->GetAutogeneratedThemeColor(),
             kProfileColor);
 }
 
-// Regression test for crbug.com/1196290.
-IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
-                       CreateSignedInProfileAfterCancellingFirstAttempt) {
-  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_to_cancel = StartSigninFlow();
-
-  // Simulate a successful Gaia sign-in.
-  SignIn(profile_to_cancel, "joe.consumer@gmail.com", "Joe");
-
-  // Wait for the sign-in to propagate to the flow, resulting in sync
-  // confirmation screen getting displayed.
-  WaitForLoadStop(GURL("chrome://sync-confirmation/"));
-
-  // Close the flow with the [X] button.
-  widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
-  WaitForPickerClosed();
-
-  // Restart the flow again.
-  Profile* profile_being_created = StartSigninFlow();
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
-
-  // As the flow for `profile_to_cancel` got aborted, it's disregarded. Instead
-  // of the profile switch screen, the normal sync confirmation should appear.
-  WaitForLoadStop(GURL("chrome://sync-confirmation/"));
-
-  // Simulate closing the UI with "No, thanks".
-  LoginUIServiceFactory::GetForProfile(profile_being_created)
-      ->SyncConfirmationUIClosed(LoginUIService::ABORT_SYNC);
-  Browser* new_browser = BrowserAddedWaiter(2u).Wait();
-  WaitForLoadStop(GURL("chrome://newtab/"),
-                  new_browser->tab_strip_model()->GetActiveWebContents());
-
-  // Check expectations when the profile creation flow is done.
-  WaitForPickerClosed();
-
-  ProfileAttributesEntry* entry =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_being_created->GetPath());
-  ASSERT_NE(entry, nullptr);
-  EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_FALSE(entry->IsAuthenticated());
-  EXPECT_EQ(entry->GetLocalProfileName(), u"Joe");
-
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
-}
-
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Regression test for crbug.com/1266415.
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfileWithSyncEncryptionKeys) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  StartSigninFlow();
+  StartDiceSignIn();
 
   // It would be nicer to verify that IsEncryptionKeysApiBoundForTesting()
   // returns true but this isn't possible because the sigin page returns an
@@ -517,10 +591,104 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
             nullptr);
 }
 
+// Regression test for crbug.com/1196290. Makes no sense for lacros because you
+// cannot sign-in twice in the same way on lacros.
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
-                       CreateSignedInProfileReenter) {
+                       CreateSignedInProfileAfterCancellingFirstAttempt) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in sync confirmation screen getting displayed.
+  Profile* profile_to_cancel = SignInForNewProfile(
+      GURL("chrome://sync-confirmation/"), "joe.consumer@gmail.com", "Joe");
+
+  // Close the flow with the [X] button.
+  base::FilePath canceled_path = profile_to_cancel->GetPath();
+  widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  WaitForPickerClosed();
+
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  // The canceled profile got marked for deletion.
+  ASSERT_EQ(storage.GetProfileAttributesWithPath(canceled_path), nullptr);
+
+  // Restart the flow again. As the flow for `profile_to_cancel` got aborted,
+  // it's disregarded. Instead of the profile switch screen, the normal sync
+  // confirmation should appear.
+  Profile* profile_being_created = SignInForNewProfile(
+      GURL("chrome://sync-confirmation/"), "joe.consumer@gmail.com", "Joe");
+  EXPECT_NE(profile_to_cancel, profile_being_created);
+
+  // Simulate closing the UI with "No, thanks".
+  LoginUIServiceFactory::GetForProfile(profile_being_created)
+      ->SyncConfirmationUIClosed(LoginUIService::ABORT_SYNC);
+  Browser* new_browser = BrowserAddedWaiter(2u).Wait();
+  WaitForLoadStop(GURL("chrome://newtab/"),
+                  new_browser->tab_strip_model()->GetActiveWebContents());
+
+  // Check expectations when the profile creation flow is done.
+  WaitForPickerClosed();
+
+  ProfileAttributesEntry* entry =
+      storage.GetProfileAttributesWithPath(profile_being_created->GetPath());
+  ASSERT_NE(entry, nullptr);
+  EXPECT_FALSE(entry->IsEphemeral());
+  EXPECT_EQ(entry->GetLocalProfileName(), u"Joe");
+
+  ExpectSyncAborted(profile_being_created);
+  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                ->GetAutogeneratedThemeColor(),
+            kProfileColor);
+}
+
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       CancelWhileSigningIn) {
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  Profile* profile_to_cancel = StartDiceSignIn();
+  base::FilePath profile_to_cancel_path = profile_to_cancel->GetPath();
+
+  // Close the flow with the [X] button.
+  widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  WaitForPickerClosed();
+
+  // The profile entry is deleted.
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_to_cancel_path);
+  EXPECT_EQ(entry, nullptr);
+}
+
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       CancelWhileSigningInWithNoOtherWindow) {
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  Profile* profile_to_cancel = StartDiceSignIn();
+  base::FilePath profile_to_cancel_path = profile_to_cancel->GetPath();
+
+  // First close all browser windows to make sure Chrome quits when closing the
+  // flow.
+  CloseBrowserSynchronously(browser());
+  ASSERT_EQ(0u, BrowserList::GetInstance()->size());
+
+  // Close the flow with the [X] button.
+  widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  WaitForPickerClosed();
+
+  // The profile entry is deleted.
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_to_cancel_path);
+  EXPECT_EQ(entry, nullptr);
+
+  // Still no browser window is open.
+  EXPECT_EQ(0u, BrowserList::GetInstance()->size());
+}
+
+// Tests dice-specific logic for keeping track of the new profile color.
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       CreateSignedInProfileDiceReenter) {
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  Profile* profile_being_created = StartDiceSignIn();
 
   // Simulate the sign-in screen get re-entered with a different color
   // (configured on the local profile screen).
@@ -531,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                                     switch_finished_callback.Get());
 
   // Simulate a successful Gaia sign-in.
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
+  FinishDiceSignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
 
   // Wait for the sign-in to propagate to the flow, resulting in sync
   // confirmation screen getting displayed.
@@ -553,25 +721,22 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
           .GetProfileAttributesWithPath(profile_being_created->GetPath());
   ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_EQ(entry->GetLocalProfileName(), u"Joe");
 
+  ExpectSyncAborted(profile_being_created);
   EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
                 ->GetAutogeneratedThemeColor(),
             kDifferentProfileColor);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfileSettings) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
-  // Simulate a successful Gaia sign-in.
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
-
-  // Wait for the sign-in to propagate to the flow, resulting in sync
-  // confirmation screen getting displayed.
-  WaitForLoadStop(GURL("chrome://sync-confirmation/"));
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in sync confirmation screen getting displayed.
+  Profile* profile_being_created = SignInForNewProfile(
+      GURL("chrome://sync-confirmation/"), "joe.consumer@gmail.com", "Joe");
 
   // Simulate closing the UI with "Yes, I'm in".
   LoginUIServiceFactory::GetForProfile(profile_being_created)
@@ -589,20 +754,27 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
           .GetProfileAttributesWithPath(profile_being_created->GetPath());
   ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->IsEphemeral());
-  // Sync is technically enabled for the profile. Without SyncService, the
-  // difference between SYNC_WITH_DEFAULT_SETTINGS and CONFIGURE_SYNC_FIRST
-  // cannot be told.
-  EXPECT_TRUE(entry->IsAuthenticated());
   EXPECT_EQ(entry->GetLocalProfileName(), u"Joe");
+
+  // Sync is getting configured.
+  EXPECT_TRUE(entry->IsAuthenticated());
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile_being_created);
+  EXPECT_TRUE(sync_service->HasSyncConsent());
+  EXPECT_FALSE(sync_service->GetUserSettings()->IsFirstSetupComplete());
+
   // The color is not applied if the user enters settings.
   EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
                    ->UsingAutogeneratedTheme());
 }
 
+// The following tests rely on dice specific logic. Some of them could be
+// extended to cover lacros as well.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfileOpenLink) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  StartSigninFlow();
+  StartDiceSignIn();
 
   // Simulate clicking on a link that opens in a new window.
   const GURL kURL("https://foo.google.com");
@@ -625,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfileSecurityInterstitials) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  StartSigninFlow();
+  StartDiceSignIn();
 
   // Simulate clicking on the settings link in a security interstitial (that
   // appears in the sign-in flow e.g. due to broken internet connection).
@@ -636,10 +808,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   base::RunLoop().RunUntilIdle();
 }
 
+// TODO(crbug.com/1248040): Extend this test to support lacros.
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfileExtendedInfoTimeout) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
+  Profile* profile_being_created = StartDiceSignIn();
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_being_created);
@@ -677,10 +850,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
           .GetProfileAttributesWithPath(profile_being_created->GetPath());
   ASSERT_NE(entry, nullptr);
   EXPECT_FALSE(entry->IsEphemeral());
-  EXPECT_FALSE(entry->IsAuthenticated());
   // Since the given name is not provided, the email address is used instead as
   // a profile name.
   EXPECT_EQ(entry->GetLocalProfileName(), u"joe.consumer@gmail.com");
+
+  ExpectSyncAborted(profile_being_created);
   EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
                 ->GetAutogeneratedThemeColor(),
             kProfileColor);
@@ -691,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   const GURL kNonGaiaURL("https://signin.saml-provider.com/");
 
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
+  Profile* profile_being_created = StartDiceSignIn();
 
   // Redirect the web contents to a non gaia url (simulating a SAML page).
   content::WebContents* wc = web_contents();
@@ -718,6 +892,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                    ->UsingAutogeneratedTheme());
 }
 
+// TODO(crbug.com/1248040): Extend this test to support lacros.
 // Regression test for crash https://crbug.com/1195784.
 // Crash requires specific conditions to be reproduced. Browser should have 2
 // profiles with the same GAIA account name and the first profile should use
@@ -728,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        PRE_ProfileNameChangesOnProfileAdded) {
   Profile* default_profile = browser()->profile();
   AccountInfo default_account_info =
-      SignIn(default_profile, "joe@gmail.com", "Joe");
+      FinishDiceSignIn(default_profile, "joe@gmail.com", "Joe");
   IdentityManagerFactory::GetForProfile(default_profile)
       ->GetPrimaryAccountMutator()
       ->SetPrimaryAccount(default_account_info.account_id,
@@ -748,7 +923,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
           }));
   run_loop.Run();
   AccountInfo second_profile_info =
-      SignIn(second_profile, "joe.secondary@gmail.com", "Joe");
+      FinishDiceSignIn(second_profile, "joe.secondary@gmail.com", "Joe");
   IdentityManagerFactory::GetForProfile(second_profile)
       ->GetPrimaryAccountMutator()
       ->SetPrimaryAccount(second_profile_info.account_id,
@@ -778,8 +953,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   EXPECT_EQ(g_browser_process->profile_manager()->GetNumberOfProfiles(), 2u);
 
   // This should not crash.
-  StartSigninFlow();
+  StartDiceSignIn();
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        OpenPickerAndClose) {
@@ -914,6 +1090,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   EXPECT_FALSE(ProfileSwitchPromoHasBeenShown(new_browser));
 }
 
+// Local profiles are not supported on lacros.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Closes the default browser window before creating a new profile in the
 // profile picker.
 // Regression test for https://crbug.com/1144092.
@@ -944,6 +1122,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   EXPECT_EQ(1u, BrowserList::GetInstance()->size());
   WaitForPickerClosed();
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 class ProfilePickerEnterpriseCreationFlowBrowserTest
     : public ProfilePickerCreationFlowBrowserTest {
@@ -976,17 +1155,14 @@ class ProfilePickerEnterpriseCreationFlowBrowserTest
 IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfile) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in enterprise welcome screen getting displayed.
   // Consumer-looking gmail address avoids code that forces the sync service to
   // actually start which would add overhead in mocking further stuff.
   // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
-
-  // Wait for the sign-in to propagate to the flow, resulting in enterprise
-  // welcome screen getting displayed.
-  WaitForLoadStop(GURL("chrome://enterprise-profile-welcome/"));
+  Profile* profile_being_created =
+      SignInForNewProfile(GURL("chrome://enterprise-profile-welcome/"),
+                          "joe.enterprise@gmail.com", "Joe", "enterprise.com");
 
   ExpectEnterpriseScreenTypeAndProceed(
       /*expected_type=*/EnterpriseProfileWelcomeUI::ScreenType::
@@ -1010,19 +1186,21 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
           .GetProfileAttributesWithPath(profile_being_created->GetPath());
   ASSERT_NE(entry, nullptr);
   EXPECT_NE(entry->GetGAIAId(), std::string());
-  EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(entry->IsEphemeral());
   EXPECT_EQ(entry->GetLocalProfileName(), u"enterprise.com");
 
+  ExpectSyncAborted(profile_being_created);
   EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
                 ->GetAutogeneratedThemeColor(),
             kProfileColor);
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/1248047): Extend this test to support mirror.
 IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileWithSyncDisabled) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
+  Profile* profile_being_created = StartDiceSignIn();
 
   // Set the device as managed in prefs.
   syncer::SyncPrefs prefs(profile_being_created->GetPrefs());
@@ -1033,8 +1211,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   // Consumer-looking gmail address avoids code that forces the sync service to
   // actually start which would add overhead in mocking further stuff.
   // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
+  FinishDiceSignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
+                   "enterprise.com");
 
   // Wait for the sign-in to propagate to the flow, resulting in enterprise
   // welcome screen getting displayed.
@@ -1061,24 +1239,24 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
   // Sync is disabled.
   EXPECT_NE(entry->GetGAIAId(), std::string());
-  EXPECT_TRUE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->GetUserSettings()->IsSyncRequested());
-
   EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
                 ->GetAutogeneratedThemeColor(),
             kProfileColor);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileSettings) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in enterprise welcome screen getting displayed.
   // Consumer-looking gmail address avoids code that forces the sync service to
   // actually start which would add overhead in mocking further stuff.
   // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
+  Profile* profile_being_created =
+      SignInForNewProfile(GURL("chrome://enterprise-profile-welcome/"),
+                          "joe.enterprise@gmail.com", "Joe", "enterprise.com");
 
   // Wait for the sign-in to propagate to the flow, resulting in enterprise
   // welcome screen getting displayed.
@@ -1105,13 +1283,16 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
           ->GetProfileAttributesStorage()
           .GetProfileAttributesWithPath(profile_being_created->GetPath());
   ASSERT_NE(entry, nullptr);
-  // Sync is technically enabled for the profile. Without SyncService, the
-  // difference between SYNC_WITH_DEFAULT_SETTINGS and CONFIGURE_SYNC_FIRST
-  // cannot be told.
   EXPECT_NE(entry->GetGAIAId(), std::string());
-  EXPECT_TRUE(entry->IsAuthenticated());
   EXPECT_FALSE(entry->IsEphemeral());
   EXPECT_EQ(entry->GetLocalProfileName(), u"enterprise.com");
+
+  // Sync is getting configured.
+  EXPECT_TRUE(entry->IsAuthenticated());
+  syncer::SyncService* sync_service =
+      SyncServiceFactory::GetForProfile(profile_being_created);
+  EXPECT_TRUE(sync_service->HasSyncConsent());
+  EXPECT_FALSE(sync_service->GetUserSettings()->IsFirstSetupComplete());
 
   // The color is not applied if the user enters settings.
   EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
@@ -1120,14 +1301,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest, Cancel) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
-  Profile* profile_being_created = StartSigninFlow();
-  base::FilePath profile_path = profile_being_created->GetPath();
-
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in enterprise welcome screen getting displayed.
   // Consumer-looking gmail address avoids code that forces the sync service to
   // actually start which would add overhead in mocking further stuff.
   // Enterprise domain needed for this profile being detected as Work.
-  SignIn(profile_being_created, "joe.enterprise@gmail.com", "Joe",
-         "enterprise.com");
+  Profile* profile_being_created =
+      SignInForNewProfile(GURL("chrome://enterprise-profile-welcome/"),
+                          "joe.enterprise@gmail.com", "Joe", "enterprise.com");
+  base::FilePath profile_being_created_path = profile_being_created->GetPath();
 
   // Wait for the sign-in to propagate to the flow, resulting in enterprise
   // welcome screen getting displayed.
@@ -1147,12 +1329,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest, Cancel) {
   ProfileAttributesEntry* entry =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile_path);
+          .GetProfileAttributesWithPath(profile_being_created_path);
   EXPECT_EQ(entry, nullptr);
 }
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // The switch screen tests are not related to enterprise but the functionality
-// is bundled in the same feature flag.
+// is bundled in the same feature flag. This flow cannot happen on lacros
+// because the OS dialog does not allow to sign-in with an account that already
+// exists in the system.
 IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
                        CreateSignedInProfileSigninAlreadyExists_ConfirmSwitch) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
@@ -1169,16 +1354,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   other_entry->SetAuthInfo(std::string(), u"joe.consumer@gmail.com",
                            /*is_consented_primary_account=*/true);
 
-  Profile* profile_being_created = StartSigninFlow();
-  base::FilePath profile_path = profile_being_created->GetPath();
-
-  // Simulate a successful Gaia sign-in.
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
-
-  // The profile switch screen should be displayed (in between,
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in profile switch screen getting displayed (in between,
   // chrome://sync-confirmation/loading gets displayed but that page may not
   // finish loading and anyway is not so relevant).
-  WaitForLoadStop(GURL("chrome://profile-picker/profile-switch"));
+  Profile* profile_being_created =
+      SignInForNewProfile(GURL("chrome://profile-picker/profile-switch"),
+                          "joe.consumer@gmail.com", "Joe");
+  base::FilePath profile_being_created_path = profile_being_created->GetPath();
+
   EXPECT_EQ(ProfilePicker::GetSwitchProfilePath(), other_path);
 
   // Simulate clicking on the confirm switch button.
@@ -1198,7 +1382,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
   // Profile should be already deleted.
   ProfileAttributesEntry* entry =
-      storage.GetProfileAttributesWithPath(profile_path);
+      storage.GetProfileAttributesWithPath(profile_being_created_path);
   EXPECT_EQ(entry, nullptr);
 }
 
@@ -1218,16 +1402,16 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   other_entry->SetAuthInfo(std::string(), u"joe.consumer@gmail.com",
                            /*is_consented_primary_account=*/true);
 
-  Profile* profile_being_created = StartSigninFlow();
-  base::FilePath profile_being_created_path = profile_being_created->GetPath();
-
-  // Simulate a successful Gaia sign-in.
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
-
-  // The profile switch screen should be displayed (in between,
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in profile switch screen getting displayed (in between,
   // chrome://sync-confirmation/loading gets displayed but that page may not
   // finish loading and anyway is not so relevant).
-  WaitForLoadStop(GURL("chrome://profile-picker/profile-switch"));
+  Profile* profile_being_created =
+      SignInForNewProfile(GURL("chrome://profile-picker/profile-switch"),
+                          "joe.consumer@gmail.com", "Joe");
+  base::FilePath profile_being_created_path = profile_being_created->GetPath();
+
+  // The profile switch screen should be displayed
   EXPECT_EQ(ProfilePicker::GetSwitchProfilePath(), other_path);
 
   // Simulate clicking on the cancel button.
@@ -1245,7 +1429,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   ProfileManager::IsProfileDirectoryMarkedForDeletion(
       profile_being_created_path);
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
+// ForceEphemeralProfiles is not supported on CrOS (and thus not on lacros).
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 class ProfilePickerCreationFlowEphemeralProfileBrowserTest
     : public ProfilePickerCreationFlowBrowserTest,
       public testing::WithParamInterface<ForceEphemeralProfilesPolicy> {
@@ -1343,7 +1530,11 @@ IN_PROC_BROWSER_TEST_P(ProfilePickerCreationFlowEphemeralProfileBrowserTest,
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   ASSERT_EQ(1u, profile_manager()->GetNumberOfProfiles());
   ASSERT_TRUE(OriginalProfileExists());
-  Profile* profile_being_created = StartSigninFlow();
+
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in sync confirmation screen getting displayed.
+  Profile* profile_being_created = SignInForNewProfile(
+      GURL("chrome://sync-confirmation/"), "joe.consumer@gmail.com", "Joe");
 
   // Check that the profile is ephemeral, regardless of the policy.
   ProfileAttributesEntry* entry =
@@ -1353,13 +1544,6 @@ IN_PROC_BROWSER_TEST_P(ProfilePickerCreationFlowEphemeralProfileBrowserTest,
   ASSERT_NE(entry, nullptr);
   EXPECT_TRUE(entry->IsEphemeral());
   EXPECT_TRUE(entry->IsOmitted());
-
-  // Simulate a successful Gaia sign-in.
-  SignIn(profile_being_created, "joe.consumer@gmail.com", "Joe");
-
-  // Wait for the sign-in to propagate to the flow, resulting in sync
-  // confirmation screen getting displayed.
-  WaitForLoadStop(GURL("chrome://sync-confirmation/"));
 
   // Simulate closing the UI with "No, thanks".
   LoginUIServiceFactory::GetForProfile(profile_being_created)
@@ -1410,7 +1594,7 @@ IN_PROC_BROWSER_TEST_P(ProfilePickerCreationFlowEphemeralProfileBrowserTest,
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   ASSERT_EQ(1u, profile_manager()->GetNumberOfProfiles());
   ASSERT_TRUE(OriginalProfileExists());
-  Profile* profile_being_created = StartSigninFlow();
+  Profile* profile_being_created = StartDiceSignIn();
 
   // Check that the profile is ephemeral, regardless of the policy.
   ProfileAttributesEntry* entry =
@@ -1437,3 +1621,4 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Values(ForceEphemeralProfilesPolicy::kUnset,
                     ForceEphemeralProfilesPolicy::kDisabled,
                     ForceEphemeralProfilesPolicy::kEnabled));
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)

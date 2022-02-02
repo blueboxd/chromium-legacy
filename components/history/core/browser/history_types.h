@@ -16,7 +16,6 @@
 
 #include "base/callback.h"
 #include "base/containers/stack_container.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_context.h"
@@ -821,6 +820,13 @@ struct ClusterVisit {
   // The normalized URL for the visit (i.e. a SRP URL normalized based on the
   // user's default search provider).
   GURL normalized_url;
+
+  // Whether this visit contained a user-input search or query.
+  bool is_search_visit = false;
+
+  // The site engagement score of the URL associated with this visit. This
+  // should not be used by the UI.
+  float engagement_score = 0.0;
 };
 
 // A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and

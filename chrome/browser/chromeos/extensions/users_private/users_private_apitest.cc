@@ -5,9 +5,9 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/users_private.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/stub_install_attributes.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ownership/mock_owner_key_util.h"
@@ -130,7 +129,7 @@ class UsersPrivateApiTest : public ExtensionApiTest {
         ->SetOwnerKeyUtilForTesting(owner_key_util);
 
     scoped_testing_cros_settings_.device_settings()->Set(
-        chromeos::kDeviceOwner, base::Value("testuser@gmail.com"));
+        ash::kDeviceOwner, base::Value("testuser@gmail.com"));
   }
 
   UsersPrivateApiTest(const UsersPrivateApiTest&) = delete;

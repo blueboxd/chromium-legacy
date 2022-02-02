@@ -14,7 +14,9 @@
 
 #include "base/base_export.h"
 #include "base/containers/flat_map.h"
+#include "base/feature_list_buildflags.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -39,7 +41,17 @@ enum FeatureState {
 // for a given feature name - generally defined as a constant global variable or
 // file static. It should never be used as a constexpr as it breaks
 // pointer-based identity lookup.
+// Note: New code should use CONSTINIT on the base::Feature declaration.
 struct BASE_EXPORT Feature {
+  constexpr Feature(const char* name, FeatureState default_state)
+      : name(name), default_state(default_state) {
+#if BUILDFLAG(ENABLE_BANNED_BASE_FEATURE_PREFIX)
+    if (StringPiece(name).find(BUILDFLAG(BANNED_BASE_FEATURE_PREFIX)) == 0) {
+      LOG(FATAL) << "Invalid feature name " << name << " starts with "
+                 << BUILDFLAG(BANNED_BASE_FEATURE_PREFIX);
+    }
+#endif  // BUILDFLAG(ENABLE_BANNED_BASE_FEATURE_PREFIX)
+  }
   // The name of the feature. This should be unique to each feature and is used
   // for enabling/disabling features via command line flags and experiments.
   // It is strongly recommended to use CamelCase style for feature names, e.g.
@@ -125,6 +137,32 @@ class BASE_EXPORT FeatureList {
     OVERRIDE_USE_DEFAULT,
     OVERRIDE_DISABLE_FEATURE,
     OVERRIDE_ENABLE_FEATURE,
+  };
+
+  // Accessor class, used to look up features by _name_ rather than by Feature
+  // object.
+  // Should only be used in limited cases. See ConstructAccessor() for details.
+  class BASE_EXPORT Accessor {
+   public:
+    Accessor(const Accessor&) = delete;
+    Accessor& operator=(const Accessor&) = delete;
+
+    // Looks up the feature, returning only its override state, rather than
+    // falling back on a default value (since there is no default value given).
+    // Callers of this MUST ensure that there is a consistent, compile-time
+    // default value associated.
+    FeatureList::OverrideState GetOverrideStateByFeatureName(
+        StringPiece feature_name);
+
+   private:
+    // Allow FeatureList to construct this class.
+    friend class FeatureList;
+
+    explicit Accessor(FeatureList* feature_list);
+
+    // Unowned pointer to the FeatureList object we use to look up feature
+    // enablement.
+    raw_ptr<FeatureList> feature_list_;
   };
 
   // Describes a feature override. The first member is a Feature that will be
@@ -234,6 +272,13 @@ class BASE_EXPORT FeatureList {
   // enables it.
   FieldTrial* GetEnabledFieldTrialByFeatureName(StringPiece name);
 
+  // Construct an accessor allowing access to GetOverrideStateByFeatureName().
+  // This can only be called before the FeatureList is initialized, and is
+  // intended for very narrow use.
+  // If you're tempted to use it, do so only in consultation with feature_list
+  // OWNERS.
+  std::unique_ptr<Accessor> ConstructAccessor();
+
   // Returns whether the given |feature| is enabled. Must only be called after
   // the singleton instance has been registered via SetInstance(). Additionally,
   // a feature with a given name must only have a single corresponding Feature
@@ -305,6 +350,8 @@ class BASE_EXPORT FeatureList {
                            StoreAndRetrieveFeaturesFromSharedMemory);
   FRIEND_TEST_ALL_PREFIXES(FeatureListTest,
                            StoreAndRetrieveAssociatedFeaturesFromSharedMemory);
+  // Allow Accessor to access GetOverrideStateByFeatureName().
+  friend class Accessor;
 
   struct OverrideEntry {
     // The overridden enable (on/off) state of the feature.
@@ -353,6 +400,9 @@ class BASE_EXPORT FeatureList {
   // overridden, returns OVERRIDE_USE_DEFAULT. Performs any necessary callbacks
   // for when the feature state has been observed, e.g. actvating field trials.
   OverrideState GetOverrideState(const Feature& feature);
+
+  // Same as GetOverrideState(), but without a default value.
+  OverrideState GetOverrideStateByFeatureName(StringPiece feature_name);
 
   // Returns the field trial associated with the given |feature|. This is
   // invoked by the public FeatureList::GetFieldTrial() static function on the
@@ -407,7 +457,7 @@ class BASE_EXPORT FeatureList {
   // the scenario where multiple FieldTrialList are used with the same
   // FeatureList - which can lead to overrides pointing to invalid FieldTrial
   // objects.
-  base::FieldTrialList* field_trial_list_ = nullptr;
+  raw_ptr<base::FieldTrialList> field_trial_list_ = nullptr;
 
   // Whether this object has been fully initialized. This gets set to true as a
   // result of FinalizeInitialization().

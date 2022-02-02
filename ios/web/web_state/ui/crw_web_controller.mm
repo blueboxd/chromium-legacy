@@ -50,9 +50,7 @@
 #import "ios/web/security/crw_ssl_status_updater.h"
 #import "ios/web/text_fragments/text_fragments_manager_impl.h"
 #import "ios/web/web_state/page_viewport_state.h"
-#import "ios/web/web_state/ui/cookie_blocking_error_logger.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
-#import "ios/web/web_state/ui/crw_legacy_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #import "ios/web/web_state/ui/crw_web_request_controller.h"
@@ -140,9 +138,6 @@ using web::wk_navigation_util::IsWKInternalUrl;
 
   // State of user interaction with web content.
   web::UserInteractionState _userInteractionState;
-
-  // Logger for cookie;.error message.
-  std::unique_ptr<web::CookieBlockingErrorLogger> _cookieBlockingErrorLogger;
 }
 
 // The WKNavigationDelegate handler class.
@@ -301,8 +296,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         initWithBrowserState:browserState];
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     web::TextFragmentsManagerImpl::CreateForWebState(_webStateImpl);
-    _cookieBlockingErrorLogger =
-        std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
 
     _navigationHandler = [[CRWWKNavigationHandler alloc] initWithDelegate:self];
 
@@ -859,22 +852,34 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (BOOL)setSessionStateData:(NSData*)data {
   if (@available(iOS 15, *)) {
-    NSError* error = nil;
-    NSKeyedUnarchiver* unarchiver =
-        [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
-    if (!unarchiver || error) {
-      DLOG(WARNING) << "Error creating unarchiver for session state data: "
-                    << base::SysNSStringToUTF8([error description]);
-      return NO;
-    }
-    unarchiver.requiresSecureCoding = NO;
-    id interactionState =
-        [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
-    if (!interactionState) {
-      DLOG(WARNING) << "Error decoding interactionState.";
-      return NO;
+    NSData* interactionState = data;
+
+    // Old versions of chrome wrapped interactionState in a keyed unarchiver.
+    // This step was unnecessary. Rather than migrate all blobs over, simply
+    // check for an unarchiver here. NSKeyed data will start with 'bplist00',
+    // which differs from the header of a WebKit session coding (0x00000002).
+    // This logic can be removed after this change has gone live for a while.
+    constexpr char kArchiveHeader[] = "bplist00";
+    if (data.length > strlen(kArchiveHeader) &&
+        memcmp(data.bytes, kArchiveHeader, strlen(kArchiveHeader)) == 0) {
+      NSError* error = nil;
+      NSKeyedUnarchiver* unarchiver =
+          [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:&error];
+      if (!unarchiver || error) {
+        DLOG(WARNING) << "Error creating unarchiver for session state data: "
+                      << base::SysNSStringToUTF8([error description]);
+        return NO;
+      }
+      unarchiver.requiresSecureCoding = NO;
+      interactionState =
+          [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey];
+      if (!interactionState) {
+        DLOG(WARNING) << "Error decoding interactionState.";
+        return NO;
+      }
     }
     [self ensureWebViewCreated];
+    DCHECK_EQ(self.webView.backForwardList.currentItem, nil);
     self.navigationHandler.blockUniversalLinksOnNextDecidePolicy = true;
     [self.webView setInteractionState:interactionState];
     return YES;
@@ -884,11 +889,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
 - (NSData*)sessionStateData {
   if (@available(iOS 15, *)) {
-    NSError* error = nil;
-    return [NSKeyedArchiver
-        archivedDataWithRootObject:self.webView.interactionState
-             requiringSecureCoding:NO
-                             error:&error];
+    return self.webView.interactionState;
   }
   return nil;
 }
@@ -1510,16 +1511,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           requireGestureRecognizerToFail:swipeRecognizer];
     }
 
-    if (web::GetWebClient()->EnableLongPressUIContextMenu()) {
-        self.contextMenuController = [[CRWContextMenuController alloc]
-            initWithWebView:self.webView
-                   webState:self.webStateImpl];
-    } else {
-      // Default to legacy implementation.
-      self.UIHandler.contextMenuController =
-          [[CRWLegacyContextMenuController alloc]
-              initWithWebView:self.webView
-                     webState:self.webStateImpl];
+    if (web::GetWebClient()->EnableLongPressUIContextMenu() &&
+        web::GetWebClient()->EnableLongPressAndForceTouchHandling()) {
+      self.contextMenuController =
+          [[CRWContextMenuController alloc] initWithWebView:self.webView
+                                                   webState:self.webStateImpl];
     }
 
     // WKWebViews with invalid or empty frames have exhibited rendering bugs, so
@@ -1541,10 +1537,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (WKWebView*)webViewWithConfiguration:(WKWebViewConfiguration*)config {
   // Do not attach the context menu controller immediately as the JavaScript
   // delegate must be specified.
-  web::UserAgentType defaultUserAgent =
-      web::features::UseWebClientDefaultUserAgent()
-          ? web::UserAgentType::AUTOMATIC
-          : web::UserAgentType::MOBILE;
+  web::UserAgentType defaultUserAgent = web::UserAgentType::AUTOMATIC;
   web::NavigationItem* item = self.currentNavItem;
   web::UserAgentType userAgentType =
       item ? item->GetUserAgentType() : defaultUserAgent;

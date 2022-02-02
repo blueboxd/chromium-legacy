@@ -4,26 +4,22 @@
 
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 
-#include "base/feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
-#include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
-#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
@@ -65,6 +61,7 @@ enum Milestone {
   kM98 = 98,
   kM99 = 99,
   kM100 = 100,
+  kM101 = 101,
 };
 
 // Returns estimated milestone dates as milliseconds since January 1, 1970.
@@ -143,6 +140,8 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
       return {2022, 3, 0, 1, 4};
     case kM100:
       return {2022, 3, 0, 29, 4};
+    case kM101:
+      return {2022, 4, 0, 26, 4};
   }
 
   NOTREACHED();
@@ -338,14 +337,6 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
           "RangeExpand", kUnknown, "'Range.expand()'", "'Selection.modify()'");
 
     // Blocked subresource requests:
-    case WebFeature::kLegacyProtocolEmbeddedAsSubresource:
-      return DeprecationInfo::WithDetailsAndChromeStatusID(
-          "LegacyProtocolEmbeddedAsSubresource", kUnknown,
-          "Subresource requests using legacy protocols (like `ftp:`) are "
-          "blocked. Please deliver web-accessible resources over modern "
-          "protocols like HTTPS.",
-          "5709390967472128");
-
     case WebFeature::kRequestedSubresourceWithEmbeddedCredentials:
       return DeprecationInfo::WithDetailsAndChromeStatusID(
           "RequestedSubresourceWithEmbeddedCredentials", kUnknown,
@@ -400,25 +391,6 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
           "perform explicit remove(newDuration, oldDuration) on all "
           "sourceBuffers, where newDuration < oldDuration.",
           "6107495151960064");
-
-    case WebFeature::kApplicationCacheAPIInsecureOrigin:
-    case WebFeature::kApplicationCacheManifestSelectInsecureOrigin:
-      return DeprecationInfo::WithDetails(
-          "ApplicationCacheAPIInsecureOrigin", kM70,
-          "Application Cache was previously restricted to secure origins only "
-          "from M70 on but now secure origin use is deprecated and will be "
-          "removed in M82.  Please shift your use case over to Service "
-          "Workers.");
-
-    case WebFeature::kApplicationCacheAPISecureOrigin:
-      return DeprecationInfo::WithFeatureAndChromeStatusID(
-          "ApplicationCacheAPISecureOrigin", kM85, "Application Cache API use",
-          "6192449487634432");
-
-    case WebFeature::kApplicationCacheManifestSelectSecureOrigin:
-      return DeprecationInfo::WithFeatureAndChromeStatusID(
-          "ApplicationCacheAPISecureOrigin", kM85,
-          "Application Cache API manifest selection", "6192449487634432");
 
     case WebFeature::kNotificationInsecureOrigin:
     case WebFeature::kNotificationAPIInsecureOriginIframe:
@@ -698,6 +670,12 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
           "PaymentRequestBasicCard", kM100, "The 'basic-card' payment method",
           "5730051011117056");
 
+    case WebFeature::kPaymentRequestShowWithoutGesture:
+      return DeprecationInfo::WithFeatureAndChromeStatusID(
+          "PaymentRequestShowWithoutGesture", kM99,
+          "Calling PaymentRequest.show() without user activation",
+          "5948593429020672");
+
     case WebFeature::kHostCandidateAttributeGetter:
       return DeprecationInfo::WithFeatureAndReplacement(
           "HostCandidateAttributeGetter", kUnknown,
@@ -711,6 +689,20 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
           "A VideoFrame was constructed without a timestamp. Support for this  "
           "may be removed in the future. Please provide an explicit timestamp "
           "via VideoFrameInit.");
+
+    case WebFeature::kDocumentDomainSettingWithoutOriginAgentClusterHeader:
+      return DeprecationInfo::WithDetails(
+          "WebFeature::kDocumentDomainSettingWithoutOriginAgentClusterHeader",
+          kM101,
+          String::Format(
+              "Relaxing the same-origin policy by setting \"document.domain\" "
+              "is deprecated, and will be disabled by default in %s. To "
+              "continue using this feature, please opt-out of origin-keyed "
+              "agent clusters by sending an `Origin-Agent-Cluster: ?0` header "
+              "along with the HTTP response for the document. See "
+              "https://developer.chrome.com/blog/immutable-document-domain for "
+              "more details.",
+              MilestoneString(kM101).Ascii().c_str()));
 
     // Features that aren't deprecated don't have a deprecation message.
     default:
@@ -798,18 +790,9 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
   context->CountUse(feature);
   const DeprecationInfo info = GetDeprecationInfo(feature);
 
-  // Send the deprecation message to the console as a warning.
+  // Send the deprecation message as a DevTools issue.
   DCHECK(!info.message_.IsEmpty());
-  if (base::FeatureList::IsEnabled(features::kDeprecationWillLogToConsole)) {
-    auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kDeprecation,
-        mojom::blink::ConsoleMessageLevel::kWarning, info.message_);
-    context->AddConsoleMessage(console_message);
-  }
-  if (base::FeatureList::IsEnabled(
-          features::kDeprecationWillLogToDevToolsIssue)) {
-    AuditsIssue::ReportDeprecationIssue(context, info.message_);
-  }
+  AuditsIssue::ReportDeprecationIssue(context, info.message_);
 
   Report* report = CreateReportInternal(context->Url(), info);
 

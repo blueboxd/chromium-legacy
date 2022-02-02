@@ -37,7 +37,7 @@ import {StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
-import {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp} from './clear_browsing_data_browser_proxy.js';
+import {ClearBrowsingDataBrowserProxy, ClearBrowsingDataBrowserProxyImpl, InstalledApp, UpdateSyncStateEvent} from './clear_browsing_data_browser_proxy.js';
 
 /**
  * InstalledAppsDialogActions enum.
@@ -77,17 +77,11 @@ function replaceDialog(oldDialog: CrDialogElement, newDialog: CrDialogElement) {
   }
 }
 
-type UpdateSyncStateEvent = {
-  signedIn: boolean,
-  syncConsented: boolean,
-  syncingHistory: boolean,
-  shouldShowCookieException: boolean,
-  isNonGoogleDse: boolean,
-  nonGoogleSearchHistoryString: string,
-};
-
-interface SettingsClearBrowsingDataDialogElement {
+export interface SettingsClearBrowsingDataDialogElement {
   $: {
+    installedAppsConfirm: HTMLElement,
+    clearBrowsingDataConfirm: HTMLElement,
+    cookiesCheckboxBasic: SettingsCheckboxElement,
     clearBrowsingDataDialog: CrDialogElement,
     installedAppsDialog: CrDialogElement,
     tabs: IronPagesElement,
@@ -100,7 +94,7 @@ const SettingsClearBrowsingDataDialogElementBase =
       I18nMixinInterface & RouteObserverMixinInterface
     };
 
-class SettingsClearBrowsingDataDialogElement extends
+export class SettingsClearBrowsingDataDialogElement extends
     SettingsClearBrowsingDataDialogElementBase {
   static get is() {
     return 'settings-clear-browsing-data-dialog';
@@ -621,7 +615,7 @@ class SettingsClearBrowsingDataDialogElement extends
 
   private shouldShowFooter_(): boolean {
     let showFooter = false;
-    // <if expr="not chromeos">
+    // <if expr="not chromeos and not lacros">
     showFooter = !!this.syncStatus && !!this.syncStatus!.signedIn;
     // </if>
     return showFooter;
@@ -660,6 +654,13 @@ class SettingsClearBrowsingDataDialogElement extends
         Object.keys(InstalledAppsDialogActions).length);
     this.recordInstalledAppsInteractions_();
     await this.clearBrowsingData_();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-clear-browsing-data-dialog':
+        SettingsClearBrowsingDataDialogElement;
   }
 }
 

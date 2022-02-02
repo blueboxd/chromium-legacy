@@ -1248,6 +1248,8 @@ void ScriptExecutor::WaitForDomOperation::RunInterrupt(
       /* listener= */ this, &no_interrupts_, delegate_);
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   delegate_->SetUserActions(nullptr);
+  // Note that we don't clear the touchable area in the delegate here.
+  // TODO(b/209732258): check whether this is a bug.
   interrupt_executor_->Run(
       main_script_->user_data_,
       base::BindOnce(&ScriptExecutor::WaitForDomOperation::OnInterruptDone,
@@ -1265,7 +1267,7 @@ void ScriptExecutor::WaitForDomOperation::OnInterruptDone(
   if (observer_)
     observer_->OnInterruptFinished();
 
-  RestoreStatusMessage();
+  RestorePreInterruptState();
   RestorePreInterruptScroll();
 
   // Restart. We use the original wait time since the interruption could have
@@ -1300,15 +1302,21 @@ void ScriptExecutor::WaitForDomOperation::SavePreInterruptState() {
   if (saved_pre_interrupt_state_)
     return;
 
-  pre_interrupt_status_ = delegate_->GetStatusMessage();
-  saved_pre_interrupt_state_ = true;
+  ExecutorState pre_interrupt_state;
+  pre_interrupt_state.status_message = delegate_->GetStatusMessage();
+  pre_interrupt_state.controller_state = delegate_->GetState();
+  saved_pre_interrupt_state_ = pre_interrupt_state;
 }
 
-void ScriptExecutor::WaitForDomOperation::RestoreStatusMessage() {
+void ScriptExecutor::WaitForDomOperation::RestorePreInterruptState() {
   if (!saved_pre_interrupt_state_)
     return;
 
-  delegate_->SetStatusMessage(pre_interrupt_status_);
+  delegate_->SetStatusMessage(saved_pre_interrupt_state_->status_message);
+  delegate_->EnterState(saved_pre_interrupt_state_->controller_state);
+  if (main_script_->touchable_element_area_) {
+    delegate_->SetTouchableElementArea(*main_script_->touchable_element_area_);
+  }
 }
 
 void ScriptExecutor::WaitForDomOperation::RestorePreInterruptScroll() {

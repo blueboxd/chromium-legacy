@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/path_service.h"
@@ -32,7 +32,6 @@
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
-#include "chrome/browser/ssl/tls_deprecation_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1366,48 +1365,6 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
             observer.latest_security_level());
 }
 
-// Tests that legacy TLS pages show the correct security descriptions.
-class BrowserTestNonsecureURLRequestWithLegacyTLSWarnings
-    : public InProcessBrowserTest {
- public:
-  BrowserTestNonsecureURLRequestWithLegacyTLSWarnings() {}
-
-  BrowserTestNonsecureURLRequestWithLegacyTLSWarnings(
-      const BrowserTestNonsecureURLRequestWithLegacyTLSWarnings&) = delete;
-  BrowserTestNonsecureURLRequestWithLegacyTLSWarnings& operator=(
-      const BrowserTestNonsecureURLRequestWithLegacyTLSWarnings&) = delete;
-
-  void SetUpOnMainThread() override {
-    net::SSLServerConfig config;
-    config.version_max = net::SSL_PROTOCOL_VERSION_TLS1_1;
-    config.version_min = net::SSL_PROTOCOL_VERSION_TLS1_1;
-    https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_OK, config);
-    ASSERT_TRUE(https_server()->Start());
-  }
-
- protected:
-  net::EmbeddedTestServer* https_server() { return &https_server_; }
-
- private:
-  net::EmbeddedTestServer https_server_{
-      net::test_server::EmbeddedTestServer::TYPE_HTTPS};
-};
-
-// Tests that a connection with legacy TLS versions (TLS 1.0/1.1) gets
-// downgraded to SecurityLevel WARNING and |connection_used_legacy_tls| is set.
-IN_PROC_BROWSER_TEST_F(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings,
-                       LegacyTLSDowngradesSecurityLevel) {
-  auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  auto* helper = SecurityStateTabHelper::FromWebContents(tab);
-
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), https_server()->GetURL("/ssl/google.html")));
-  WaitForInterstitial(tab);
-  ProceedThroughInterstitial(tab);
-
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-}
-
 // Tests that the Not Secure chip does not show for error pages on http:// URLs.
 // Regression test for https://crbug.com/760647.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
@@ -1432,44 +1389,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   ASSERT_EQ(content::PAGE_TYPE_ERROR, entry->GetPageType());
 
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-}
-
-// Tests that the histogram for security level is recorded correctly for HTTPS
-// pages.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
-                       HTTPSSecurityLevelHistogram) {
-  SetUpMockCertVerifierForHttpsServer(0, net::OK);
-  const char kHistogramName[] = "Security.SecurityLevel.CryptographicScheme";
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  {
-    base::HistogramTester histograms;
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(
-        browser(), https_server_.GetURL("/title1.html")));
-    histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
-  }
-
-  // Load mixed content and check that the histogram is recorded correctly.
-  {
-    base::HistogramTester histograms;
-    SecurityStyleTestObserver observer(contents);
-    EXPECT_TRUE(content::ExecuteScript(contents,
-                                       "var i = document.createElement('img');"
-                                       "i.src = 'http://example.test';"
-                                       "document.body.appendChild(i);"));
-    observer.WaitForDidChangeVisibleSecurityState();
-    histograms.ExpectUniqueSample(kHistogramName, security_state::WARNING, 1);
-  }
-
-  // Navigate away and the histogram should be recorded exactly once again, when
-  // the new navigation commits.
-  {
-    base::HistogramTester histograms;
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(
-        browser(), https_server_.GetURL("/title2.html")));
-    histograms.ExpectUniqueSample(kHistogramName, security_state::SECURE, 1);
-  }
 }
 
 // Tests that the security level form submission histogram is logged correctly.
@@ -1753,7 +1672,7 @@ class SecurityStateTabHelperPrerenderTest : public SecurityStateTabHelperTest {
   content::WebContents* web_contents() { return web_contents_; }
 
  protected:
-  content::WebContents* web_contents_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
   content::test::PrerenderTestHelper prerender_helper_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

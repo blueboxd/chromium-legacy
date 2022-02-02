@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/fragment_directive/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -164,7 +165,6 @@
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
-#include "third_party/blink/renderer/core/page/scrolling/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
@@ -185,7 +185,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
@@ -204,6 +204,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/transform.h"
@@ -231,56 +232,6 @@ static LocalFramesByTokenMap& GetLocalFramesMap() {
 
 // Maximum number of burst download requests allowed.
 const int kBurstDownloadLimit = 10;
-
-// Maximum number of bytes that can be buffered in total (per-process) by all
-// network requests in one renderer process while in back-forward cache.
-constexpr size_t kDefaultMaxBufferedBodyBytesPerProcess = 1024 * 1000;
-
-// Singleton utility class for process-wide back-forward cache buffer limit
-// tracking.
-class BackForwardCacheBufferLimitTracker {
- public:
-  BackForwardCacheBufferLimitTracker()
-      : max_buffered_bytes_per_process_(
-            blink::GetLoadingTasksUnfreezableParamAsInt(
-                "max_buffered_bytes_per_process",
-                kDefaultMaxBufferedBodyBytesPerProcess)) {}
-
-  BackForwardCacheBufferLimitTracker(BackForwardCacheBufferLimitTracker&) =
-      delete;
-
-  void DidBufferBytes(size_t num_bytes) {
-    total_bytes_buffered_ += num_bytes;
-    TRACE_EVENT2(
-        "loading", "BackForwardCacheBufferLimitTracker::DidBufferBytes",
-        "total_bytes_buffered", static_cast<int>(total_bytes_buffered_),
-        "added_bytes", static_cast<int>(num_bytes));
-  }
-
-  void DidRemoveFrameFromBackForwardCache(size_t frame_total_bytes) {
-    total_bytes_buffered_ -= frame_total_bytes;
-    TRACE_EVENT2("loading",
-                 "BackForwardCacheBufferLimitTracker::"
-                 "DidRemoveFrameFromBackForwardCache",
-                 "total_bytes_buffered",
-                 static_cast<int>(total_bytes_buffered_), "substracted_bytes",
-                 static_cast<int>(frame_total_bytes));
-  }
-
-  bool IsUnderPerProcessBufferLimit() {
-    return total_bytes_buffered_ <= max_buffered_bytes_per_process_;
-  }
-
- private:
-  const size_t max_buffered_bytes_per_process_;
-  size_t total_bytes_buffered_ = 0;
-};
-
-BackForwardCacheBufferLimitTracker& GetBackForwardCacheBufferLimitTracker() {
-  static BackForwardCacheBufferLimitTracker
-      back_forward_cache_buffer_limit_tracker;
-  return back_forward_cache_buffer_limit_tracker;
-}
 
 inline float ParentPageZoomFactor(LocalFrame* frame) {
   auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
@@ -369,7 +320,7 @@ void LocalFrame::SetView(LocalFrameView* view) {
   view_ = view;
 }
 
-void LocalFrame::CreateView(const IntSize& viewport_size,
+void LocalFrame::CreateView(const gfx::Size& viewport_size,
                             const Color& background_color) {
   DCHECK(this);
   DCHECK(GetPage());
@@ -512,12 +463,12 @@ bool LocalFrame::NavigationShouldReplaceCurrentHistoryEntry(
 }
 
 bool LocalFrame::ShouldMaintainTrivialSessionHistory() const {
-  // TODO(https://crbug.com/1197384): We may have to add fenced frames. This
-  // should be kept in sync with NavigationControllerImpl version,
+  // This should be kept in sync with
   // NavigationControllerImpl::ShouldMaintainTrivialSessionHistory.
   //
   // TODO(mcnee): Similarly, we need to restrict orphaned contexts.
-  return GetPage()->InsidePortal() || GetDocument()->IsPrerendering();
+  return GetPage()->InsidePortal() || GetDocument()->IsPrerendering() ||
+         IsInFencedFrameTree();
 }
 
 bool LocalFrame::DetachImpl(FrameDetachType type) {
@@ -627,10 +578,6 @@ bool LocalFrame::DetachImpl(FrameDetachType type) {
 
   if (text_fragment_handler_)
     text_fragment_handler_->DidDetachDocumentOrFrame();
-
-  GetBackForwardCacheBufferLimitTracker().DidRemoveFrameFromBackForwardCache(
-      total_bytes_buffered_while_in_back_forward_cache_);
-  total_bytes_buffered_while_in_back_forward_cache_ = 0;
 
   DCHECK(!view_->IsAttached());
   Client()->WillBeDetached();
@@ -753,6 +700,25 @@ void LocalFrame::DidAttachDocument() {
   // even after the frame reattaches.
   GetEventHandler().Clear();
   Selection().DidAttachDocument(document);
+  notified_color_scheme_ = false;
+}
+
+void LocalFrame::OnFirstPaint(bool text_painted, bool image_painted) {
+  if (notified_color_scheme_)
+    return;
+
+  if (text_painted || image_painted) {
+    // Infer the document's color scheme according to the background color, this
+    // approach assumes that the background won't be changed after the first
+    // text or image is painted, otherwise, the document will have a jarring
+    // flash which should be avoid by most pages.
+    double h, s, l;
+    View()->DocumentBackgroundColor().GetHSL(h, s, l);
+    GetLocalFrameHostRemote().DidInferColorScheme(
+        l < 0.5 ? mojom::blink::PreferredColorScheme::kDark
+                : mojom::blink::PreferredColorScheme::kLight);
+    notified_color_scheme_ = true;
+  }
 }
 
 bool LocalFrame::CanAccessEvent(
@@ -937,18 +903,15 @@ void LocalFrame::SetTextDirection(base::i18n::TextDirection direction) {
 }
 
 void LocalFrame::SetIsInert(bool inert) {
+  if (is_inert_ == inert)
+    return;
   is_inert_ = inert;
-  PropagateInertToChildFrames();
-}
-
-void LocalFrame::PropagateInertToChildFrames() {
-  for (Frame* child = Tree().FirstChild(); child;
-       child = child->Tree().NextSibling()) {
-    // is_inert_ means that this Frame is inert because of a modal dialog or
-    // inert element in an ancestor Frame. Otherwise, decide whether a child
-    // Frame element is inert because of an element in this Frame.
-    child->SetIsInert(is_inert_ ||
-                      To<HTMLFrameOwnerElement>(child->Owner())->IsInert());
+  if (Document* document = GetDocument()) {
+    if (Element* root = document->documentElement()) {
+      root->SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kFrame));
+    }
   }
 }
 
@@ -1087,8 +1050,8 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
   return inspector_task_runner_;
 }
 
-void LocalFrame::StartPrinting(const FloatSize& page_size,
-                               const FloatSize& original_page_size,
+void LocalFrame::StartPrinting(const gfx::SizeF& page_size,
+                               const gfx::SizeF& original_page_size,
                                float maximum_shrink_ratio) {
   DCHECK(!saved_scroll_offsets_);
   SetPrinting(true, page_size, original_page_size, maximum_shrink_ratio);
@@ -1096,12 +1059,12 @@ void LocalFrame::StartPrinting(const FloatSize& page_size,
 
 void LocalFrame::EndPrinting() {
   RestoreScrollOffsets();
-  SetPrinting(false, FloatSize(), FloatSize(), 0);
+  SetPrinting(false, gfx::SizeF(), gfx::SizeF(), 0);
 }
 
 void LocalFrame::SetPrinting(bool printing,
-                             const FloatSize& page_size,
-                             const FloatSize& original_page_size,
+                             const gfx::SizeF& page_size,
+                             const gfx::SizeF& original_page_size,
                              float maximum_shrink_ratio) {
   // In setting printing, we should not validate resources already cached for
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
@@ -1226,12 +1189,12 @@ void LocalFrame::RestoreScrollOffsets() {
   saved_scroll_offsets_ = nullptr;
 }
 
-FloatSize LocalFrame::ResizePageRectsKeepingRatio(
-    const FloatSize& original_size,
-    const FloatSize& expected_size) const {
+gfx::SizeF LocalFrame::ResizePageRectsKeepingRatio(
+    const gfx::SizeF& original_size,
+    const gfx::SizeF& expected_size) const {
   auto* layout_object = ContentLayoutObject();
   if (!layout_object)
-    return FloatSize();
+    return gfx::SizeF();
 
   bool is_horizontal = layout_object->StyleRef().IsHorizontalWritingMode();
   float width = original_size.width();
@@ -1246,7 +1209,7 @@ FloatSize LocalFrame::ResizePageRectsKeepingRatio(
   float result_height = floorf(result_width * ratio);
   if (!is_horizontal)
     std::swap(result_width, result_height);
-  return FloatSize(result_width, result_height);
+  return gfx::SizeF(result_width, result_height);
 }
 
 void LocalFrame::SetPageZoomFactor(float factor) {
@@ -2076,7 +2039,7 @@ void LocalFrame::SetViewportIntersectionFromParent(
         gfx::RectF(gfx::Rect(intersection_state.main_frame_intersection));
 
     intersection_state.main_frame_transform.TransformRect(&transform_rect);
-    IntRect rect = EnclosingIntRect(
+    gfx::Rect rect = ToEnclosingRect(
         FloatRect(transform_rect.x(), transform_rect.y(),
                   transform_rect.width(), transform_rect.height()));
 
@@ -2102,21 +2065,22 @@ void LocalFrame::SetViewportIntersectionFromParent(
   }
 }
 
-IntSize LocalFrame::GetMainFrameViewportSize() const {
+gfx::Size LocalFrame::GetMainFrameViewportSize() const {
   LocalFrame& local_root = LocalFrameRoot();
   return local_root.IsMainFrame()
              ? local_root.View()
                    ->GetScrollableArea()
                    ->VisibleContentRect()
                    .size()
-             : IntSize(local_root.intersection_state_.main_frame_viewport_size);
+             : local_root.intersection_state_.main_frame_viewport_size;
 }
 
 gfx::Point LocalFrame::GetMainFrameScrollOffset() const {
   LocalFrame& local_root = LocalFrameRoot();
   return local_root.IsMainFrame()
-             ? FlooredIntPoint(
-                   local_root.View()->GetScrollableArea()->GetScrollOffset())
+             // TODO(crbug.com/1274078): Should this return ScrollPosition()?
+             ? gfx::ToFlooredPoint(gfx::PointAtOffsetFromOrigin(
+                   local_root.View()->GetScrollableArea()->GetScrollOffset()))
              : local_root.intersection_state_.main_frame_scroll_offset;
 }
 
@@ -2387,7 +2351,7 @@ class FrameColorOverlay final : public FrameOverlay::Delegate {
  private:
   void PaintFrameOverlay(const FrameOverlay& frame_overlay,
                          GraphicsContext& graphics_context,
-                         const IntSize&) const override {
+                         const gfx::Size&) const override {
     const auto* view = frame_->View();
     DCHECK(view);
     if (view->Width() == 0 || view->Height() == 0)
@@ -2401,8 +2365,8 @@ class FrameColorOverlay final : public FrameOverlay::Delegate {
       return;
     DrawingRecorder recorder(graphics_context, frame_overlay,
                              DisplayItem::kFrameOverlay,
-                             gfx::Rect(ToGfxSize(view->Size())));
-    FloatRect rect(0, 0, view->Width(), view->Height());
+                             gfx::Rect(view->Size()));
+    gfx::RectF rect(0, 0, view->Width(), view->Height());
     graphics_context.FillRect(
         rect, color_,
         PaintAutoDarkMode(view->GetLayoutView()->StyleRef(),
@@ -2585,9 +2549,6 @@ void LocalFrame::DidResume() {
   Loader().SetDefersLoading(LoaderFreezeMode::kNone);
 
   DomWindow()->SetIsInBackForwardCache(false);
-  GetBackForwardCacheBufferLimitTracker().DidRemoveFrameFromBackForwardCache(
-      total_bytes_buffered_while_in_back_forward_cache_);
-  total_bytes_buffered_while_in_back_forward_cache_ = 0;
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {
@@ -2690,12 +2651,7 @@ void LocalFrame::EvictFromBackForwardCache(
 }
 
 void LocalFrame::DidBufferLoadWhileInBackForwardCache(size_t num_bytes) {
-  total_bytes_buffered_while_in_back_forward_cache_ += num_bytes;
-  GetBackForwardCacheBufferLimitTracker().DidBufferBytes(num_bytes);
-}
-
-bool LocalFrame::CanContinueBufferingWhileInBackForwardCache() {
-  return GetBackForwardCacheBufferLimitTracker().IsUnderPerProcessBufferLimit();
+  DomWindow()->DidBufferLoadWhileInBackForwardCache(num_bytes);
 }
 
 void LocalFrame::SetScaleFactor(float scale_factor) {
@@ -2754,7 +2710,7 @@ void LocalFrame::UpdateWindowControlsOverlay(
   const float zoom_factor = local_frame_root.PageZoomFactor();
   const float scale_factor = zoom_factor / window_to_viewport_factor;
   gfx::Rect window_controls_overlay_rect =
-      gfx::ScaleToEnclosingRectSafe(bounding_rect_in_dips, 1.0f / scale_factor);
+      gfx::ScaleToEnclosingRect(bounding_rect_in_dips, 1.0f / scale_factor);
 
   bool fire_event =
       (window_controls_overlay_rect != window_controls_overlay_rect_);
@@ -3152,10 +3108,9 @@ void LocalFrame::ExtractSmartClipDataInternal(const gfx::Rect& rect_in_viewport,
                                               String& clip_html,
                                               gfx::Rect& clip_rect) {
   // TODO(mahesh.ma): Check clip_data even after use-zoom-for-dsf is enabled.
-  SmartClipData clip_data =
-      SmartClip(this).DataForRect(IntRect(rect_in_viewport));
+  SmartClipData clip_data = SmartClip(this).DataForRect(rect_in_viewport);
   clip_text = clip_data.ClipData();
-  clip_rect = ToGfxRect(clip_data.RectInViewport());
+  clip_rect = clip_data.RectInViewport();
 
   gfx::Point start_point(rect_in_viewport.x(), rect_in_viewport.y());
   gfx::Point end_point(rect_in_viewport.x() + rect_in_viewport.width(),

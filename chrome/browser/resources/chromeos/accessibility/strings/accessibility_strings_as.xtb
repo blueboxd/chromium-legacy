@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">অনুশীলনৰ ক্ষেত্ৰ: ড্ৰপ ডাউনৰ সূচী</translation>
 <translation id="1195238899008218998">উত্তৰভাষ</translation>
 <translation id="1197088940767939838">কমলা</translation>
+<translation id="1198865190323699001">স্পৰ্শেৰে কৰা নিৰ্দেশ</translation>
 <translation id="1201402288615127009">পৰৱৰ্তী</translation>
 <translation id="1206619573307042055">মাৰ্কী</translation>
 <translation id="1207086294218137981">কোনো পৰৱর্তী স্তৰ ৪ৰ শিৰোনাম নাই</translation>
@@ -389,6 +390,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{সোঁ-বন্ধনী}one{#টা সোঁ-বন্ধনী}other{#টা সোঁ-বন্ধনী}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{প্ৰশ্নবোধক চিন}one{#টা প্ৰশ্নবোধক চিন}other{#টা প্ৰশ্নবোধক চিন}}</translation>
+<translation id="3505359110822747654">ChromeVox মেনু সংকোচন কৰক</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{কেৰেট}one{#টা কেৰেট}other{#টা কেৰেট}}</translation>
 <translation id="352577523970648069">সম্পাদনা কৰিব পৰা পাঠৰ ক্ষেত্ৰ</translation>
 <translation id="3538907380453898475">dscrplst</translation>

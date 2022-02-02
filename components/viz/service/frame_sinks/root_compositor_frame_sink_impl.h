@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -26,10 +25,8 @@
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
-
-namespace gfx {
-class RenderingPipeline;
-}
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/ca_layer_params.h"
 
 namespace viz {
 
@@ -37,6 +34,7 @@ class Display;
 class OutputSurfaceProvider;
 class ExternalBeginFrameSource;
 class FrameSinkManagerImpl;
+class HintSessionFactory;
 class SyntheticBeginFrameSource;
 class VSyncParameterListener;
 
@@ -55,7 +53,7 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
       uint32_t restart_id,
       bool run_all_compositor_stages_before_draw,
       const DebugRendererSettings* debug_settings,
-      gfx::RenderingPipeline* gpu_pipeline);
+      HintSessionFactory* hint_session_factory);
 
   RootCompositorFrameSinkImpl(const RootCompositorFrameSinkImpl&) = delete;
   RootCompositorFrameSinkImpl& operator=(const RootCompositorFrameSinkImpl&) =
@@ -115,6 +113,9 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
       SubmitCompositorFrameSyncCallback callback) override;
   void InitializeCompositorFrameSinkType(
       mojom::CompositorFrameSinkType type) override;
+#if defined(OS_ANDROID)
+  void SetThreadIds(const std::vector<int32_t>& thread_ids) override;
+#endif
 
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
@@ -191,6 +192,8 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   gfx::Size last_swap_pixel_size_;
 #endif
+
+  gfx::CALayerParams last_ca_layer_params_;
 
 #if defined(OS_ANDROID)
   // Let client control whether it wants `DidCompleteSwapWithSize`.

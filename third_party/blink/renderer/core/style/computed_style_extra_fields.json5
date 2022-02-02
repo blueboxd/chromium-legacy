@@ -93,9 +93,12 @@
       type_name: "bool",
       inherited: true,
     },
-    // Whether we're inside an NG block fragmentation context.
+    // Whether we're inside (or at) a block fragmentation context that may
+    // switch between legacy and NG layout, depending on the contents.
+    // This can be removed when we have got rid of the legacy engine.
+    // See crbug.com/1229581
     {
-      name: "InsideNGFragmentationContext",
+      name: "InsideFragmentationContextWithNondeterministicEngine",
       field_template: "primitive",
       default_value: "false",
       type_name: "bool",
@@ -137,6 +140,21 @@
       default_value: "false",
       custom_copy: true,
       custom_compare: true,
+    },
+    // Whether this style is related with :has() pseudo-class
+    {
+      name: "AffectedByHas",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      custom_copy: true,
+      custom_compare: true,
+    },
+    {
+      name: "AncestorsAffectedByHas",
+      field_template: "primitive",
+      default_value: "false",
+      type_name: "bool",
+      inherited: true,
     },
     // A non-inherited property references a variable or @apply is used
     {
@@ -248,6 +266,18 @@
       type_name: "AtomicString",
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
+    },
+    {
+      name: "CustomHighlightNames",
+      field_template: "external",
+      field_group: "*",
+      include_paths: ["third_party/blink/renderer/platform/wtf/hash_set.h",
+                      "third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
+      type_name: "HashSet<AtomicString>",
+      wrapper_pointer_name: "std::unique_ptr",
+      default_value: "nullptr",
+      computed_style_custom_functions: ["setter", "getter"],
+      custom_copy: true,
     },
     // True if 'underline solid' is the only text decoration on this element.
     {
@@ -944,6 +974,22 @@
       keywords: ["no-auto-repeat", "auto-fill", "auto-fit"],
       default_value: "no-auto-repeat",
     },
+    {
+      name: "GridColumnsAxisType",
+      field_template: "keyword",
+      type_name: "GridAxisType",
+      field_group: "*->grid",
+      keywords: ["standalone-axis", "subgridded-axis"],
+      default_value: "standalone-axis",
+    },
+    {
+      name: "GridRowsAxisType",
+      field_template: "keyword",
+      type_name: "GridAxisType",
+      field_group: "*->grid",
+      keywords: ["standalone-axis", "subgridded-axis"],
+      default_value: "standalone-axis",
+    },
     // We only create and store ComputedStyle objects for elements in
     // display:none subtrees if we need it for e.g. getComputedStyle. This flag
     // is true for such ComputedStyle objects.
@@ -1151,6 +1197,25 @@
       name: "SkipsContents",
       field_template: "monotonic_flag",
       default_value: "false",
+    },
+    {
+      // https://html.spec.whatwg.org/multipage/interaction.html#inert
+      // The inertness is represented with one of these values:
+      // - 'none' means that the node is not inert (the default).
+      // - 'overridable' means that the node is inert, and descendants will
+      //    inherit by default, but may change their inertness to e.g. 'none'.
+      // - 'forced' means that that the node is inert, and its decendants
+      //   won't be able to change their inertness to something else.
+      // ComputedStyle doesn't directly expose the inertness. Instead, use
+      // IsInert(), SetIsInert(bool), IsForcedInert() or SetIsForcedInert().
+      name: "Inertness",
+      inherited: true,
+      field_template: "keyword",
+      type_name: "Inertness",
+      keywords: ["none", "overridable", "forced"],
+      default_value: "none",
+      field_group: "*",
+      computed_style_custom_functions: ["getter", "setter"],
     },
   ],
 }

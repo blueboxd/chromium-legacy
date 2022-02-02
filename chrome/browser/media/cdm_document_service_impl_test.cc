@@ -8,6 +8,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/json/values_util.h"
 #include "base/logging.h"
 #include "base/run_loop.h"

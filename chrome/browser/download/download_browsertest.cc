@@ -24,7 +24,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -125,6 +125,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/slow_download_http_response.h"
 #include "content/public/test/test_download_http_response.h"
@@ -248,7 +249,7 @@ class CreatedObserver : public content::DownloadManager::Observer {
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
-  content::DownloadManager* manager_;
+  raw_ptr<content::DownloadManager> manager_;
   bool waiting_;
 };
 
@@ -337,7 +338,7 @@ class PercentWaiter : public download::DownloadItem::Observer {
     item_ = nullptr;
   }
 
-  download::DownloadItem* item_;
+  raw_ptr<download::DownloadItem> item_;
   bool waiting_ = false;
   bool error_ = false;
   int prev_percent_ = -1;
@@ -413,7 +414,7 @@ class DownloadsHistoryDataCollector {
   }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
@@ -428,7 +429,7 @@ bool IsDownloadExternallyRemoved(DownloadItem* item) {
   return item->GetFileExternallyRemoved();
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
 // Called when a download starts. Marks the download as hidden.
 void SetHiddenDownloadCallback(DownloadItem* item,
                                download::DownloadInterruptReason reason) {
@@ -493,7 +494,7 @@ class SimpleDownloadManagerCoordinatorWaiter
     coordinator_ = nullptr;
   }
 
-  download::SimpleDownloadManagerCoordinator* coordinator_;
+  raw_ptr<download::SimpleDownloadManagerCoordinator> coordinator_;
   base::OnceClosure completion_closure_;
   base::OnceClosure download_creation_closure_;
   int num_download_created_ = 0;
@@ -582,7 +583,7 @@ class HistoryObserver : public DownloadHistory::Observer {
   }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   bool waiting_ = false;
   bool seen_stored_ = false;
 };
@@ -1293,7 +1294,22 @@ INSTANTIATE_TEST_SUITE_P(
         network::mojom::ReferrerPolicy::kSameOrigin,
         network::mojom::ReferrerPolicy::kStrictOrigin));
 
-class PrerenderDownloadTest : public DownloadTest {
+class MPArchDownloadTest : public DownloadTest {
+ public:
+  MPArchDownloadTest() = default;
+  ~MPArchDownloadTest() override = default;
+
+  void SetUpOnMainThread() override {
+    DownloadTest::SetUpOnMainThread();
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+};
+
+class PrerenderDownloadTest : public MPArchDownloadTest {
  public:
   PrerenderDownloadTest()
       : prerender_helper_(
@@ -1303,17 +1319,7 @@ class PrerenderDownloadTest : public DownloadTest {
 
   void SetUp() override {
     prerender_helper_.SetUp(embedded_test_server());
-    DownloadTest::SetUp();
-  }
-
-  void SetUpOnMainThread() override {
-    DownloadTest::SetUpOnMainThread();
-    ASSERT_TRUE(test_server_handle_ =
-                    embedded_test_server()->StartAndReturnHandle());
-  }
-
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+    MPArchDownloadTest::SetUp();
   }
 
   content::test::PrerenderTestHelper* prerender_helper() {
@@ -1322,7 +1328,22 @@ class PrerenderDownloadTest : public DownloadTest {
 
  private:
   content::test::PrerenderTestHelper prerender_helper_;
-  net::test_server::EmbeddedTestServerHandle test_server_handle_;
+};
+
+class FencedFrameDownloadTest : public MPArchDownloadTest {
+ public:
+  FencedFrameDownloadTest() = default;
+  ~FencedFrameDownloadTest() override = default;
+  FencedFrameDownloadTest(const FencedFrameDownloadTest&) = delete;
+
+  FencedFrameDownloadTest& operator=(const FencedFrameDownloadTest&) = delete;
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
 };
 
 namespace {
@@ -1777,6 +1798,67 @@ IN_PROC_BROWSER_TEST_F(PrerenderDownloadTest,
   // Check that the tab download state wasn't reset by the initial prerender
   // navigation (a primary main frame navigation would have reset it as seen in
   // the test DownloadRequestLimiterTest.ResetOnNavigation).
+  ASSERT_EQ(tab_download_state,
+            g_browser_process->download_request_limiter()->GetDownloadState(
+                web_contents, false));
+  ASSERT_EQ(tab_download_state->download_status(),
+            DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD);
+
+  // Attempt a download.
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+  ASSERT_EQ(true, content::EvalJs(web_contents, "startDownload();"));
+  can_download_observer.WaitForNumberOfDecisions(1);
+  EXPECT_FALSE(can_download_observer.GetDecisions().front());
+
+  // Check that the download didn't succeed.
+  const base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  const base::FilePath file_path(DestinationFile(browser(), file));
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_FALSE(base::PathExists(file_path));
+
+  EXPECT_TRUE(VerifyNoDownloads());
+}
+
+// Verify that fenced frame downloads don't affect the DownloadRequestLimiter
+// state of the WebContents.
+IN_PROC_BROWSER_TEST_F(FencedFrameDownloadTest,
+                       DownloadRequestLimiterIsUnaffectedByFencedFrame) {
+  const GURL kInitialUrl =
+      embedded_test_server()->GetURL("/download_script.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kInitialUrl));
+
+  // Set the initial DownloadRequestLimiter state to prompt for downloads and
+  // deny all requests. This allows to check whether a fenced frame resets the
+  // state, since PROMPT_BEFORE_DOWNLOAD is reset by any navigation, while
+  // DOWNLOADS_NOT_ALLOWED require a cross-site navigation to be reset and
+  // those cannot be done in a fenced frame.
+  auto* web_contents = GetWebContents();
+  DownloadRequestLimiter::TabDownloadState* tab_download_state =
+      g_browser_process->download_request_limiter()->GetDownloadState(
+          web_contents, true);
+  ASSERT_TRUE(tab_download_state);
+  tab_download_state->SetDownloadStatusAndNotify(
+      url::Origin::Create(kInitialUrl),
+      DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD);
+  permissions::PermissionRequestManager::FromWebContents(web_contents)
+      ->set_auto_response_for_test(
+          permissions::PermissionRequestManager::DENY_ALL);
+
+  // Create a fenced frame and load a URL.
+  const GURL kFencedFrameUrl =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  content::RenderFrameHost* fenced_frame_host =
+      fenced_frame_test_helper().CreateFencedFrame(
+          GetWebContents()->GetMainFrame(), kFencedFrameUrl);
+  EXPECT_NE(nullptr, fenced_frame_host);
+
+  // Check that the tab download state wasn't reset by the  navigation on the
+  // fenced frame (a primary main frame navigation would have reset it as seen
+  // in the test DownloadRequestLimiterTest.ResetOnNavigation).
   ASSERT_EQ(tab_download_state,
             g_browser_process->download_request_limiter()->GetDownloadState(
                 web_contents, false));
@@ -3774,7 +3856,8 @@ IN_PROC_BROWSER_TEST_P(DownloadReferrerPolicyTest,
 }
 
 // TODO(https://crbug.com/1244128): Flaky on Win7
-#if defined(OS_WIN)
+// TODO(crbug.com/1269422): Flaky on Lacros
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_SaveLinkAsVsCrossOriginResourcePolicy \
   DISABLED_SaveLinkAsVsCrossOriginResourcePolicy
 #else
@@ -4842,7 +4925,7 @@ class InProgressDownloadTest : public DownloadTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  download::InProgressDownloadManager* in_progress_manager_ = nullptr;
+  raw_ptr<download::InProgressDownloadManager> in_progress_manager_ = nullptr;
 };
 
 // Check that if a download exists in both in-progress and history DB,
@@ -4895,7 +4978,8 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
           false /* transient */,
           std::vector<download::DownloadItem::ReceivedSlice>(),
           download::DownloadItemRerouteInfo(),
-          absl::nullopt /*download_schedule*/, nullptr /* download_entry */));
+          absl::nullopt /*download_schedule*/, download::kInvalidRange,
+          download::kInvalidRange, nullptr /* download_entry */));
 
   download::DownloadItem* download = coordinator->GetDownloadByGuid(guid);
   content::DownloadManager* manager = DownloadManagerForBrowser(browser());
@@ -5052,7 +5136,7 @@ class DisableSafeBrowsingOnInProgressDownload
   }
 
  private:
-  Browser* browser_;
+  raw_ptr<Browser> browser_;
   bool final_state_seen_;
 };
 
@@ -5338,7 +5422,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // The rest of these tests rely on the download shelf, which ChromeOS doesn't
 // use.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
 // Test that the download shelf is shown by starting a download.
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadAndWait) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
@@ -5606,4 +5690,4 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxDenyInstallClosesShelf) {
   // Download shelf should close.
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)

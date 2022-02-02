@@ -16,7 +16,7 @@
 #include "base/containers/queue.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/navigator.h"
@@ -91,8 +91,12 @@ class CONTENT_EXPORT FrameTree {
 
     void AdvanceNode();
 
+    // `current_node_` and `root_of_subtree_to_skip_` are not a raw_ptr<...> for
+    // performance reasons (based on analysis of sampling profiler data and
+    // tab_search:top100:2020).
     FrameTreeNode* current_node_;
     const FrameTreeNode* const root_of_subtree_to_skip_;
+
     const bool should_descend_into_inner_trees_;
     base::circular_deque<FrameTreeNode*> queue_;
   };
@@ -113,7 +117,7 @@ class CONTENT_EXPORT FrameTree {
               bool should_descend_into_inner_trees);
 
     const std::vector<FrameTreeNode*> starting_nodes_;
-    const FrameTreeNode* const root_of_subtree_to_skip_;
+    const raw_ptr<const FrameTreeNode> root_of_subtree_to_skip_;
     const bool should_descend_into_inner_trees_;
   };
 
@@ -122,11 +126,11 @@ class CONTENT_EXPORT FrameTree {
     // A RenderFrameHost in the specified |frame_tree_node| started loading a
     // new document. This corresponds to browser UI starting to show a spinner
     // or other visual indicator for loading. This method is only invoked if the
-    // FrameTree hadn't been previously loading. |to_different_document| will be
-    // true unless the load is a fragment navigation, or triggered by
+    // FrameTree hadn't been previously loading. |should_show_loading_ui| will
+    // be true unless the load is a fragment navigation, or triggered by
     // history.pushState/replaceState.
     virtual void DidStartLoading(FrameTreeNode* frame_tree_node,
-                                 bool to_different_document) = 0;
+                                 bool should_show_loading_ui) = 0;
 
     // This is called when all nodes in the FrameTree stopped loading. This
     // corresponds to the browser UI stop showing a spinner or other visual
@@ -149,6 +153,9 @@ class CONTENT_EXPORT FrameTree {
     // FrameTreeNode, this method returns
     // FrameTreeNode::kFrameTreeNodeInvalidId.
     virtual int GetOuterDelegateFrameTreeNodeId() = 0;
+
+    // Returns if this FrameTree represents a portal.
+    virtual bool IsPortal() = 0;
   };
 
   // Type of FrameTree instance.
@@ -195,14 +202,17 @@ class CONTENT_EXPORT FrameTree {
   ~FrameTree();
 
   // Initializes the main frame for this FrameTree. That is it creates the
-  // initial RenderFrameHost in the root node's RenderFrameHostManager. This
-  // method will call back into the delegates so it should only be called once
-  // they have completed their initialization.
+  // initial RenderFrameHost in the root node's RenderFrameHostManager, and also
+  // creates an initial NavigationEntry that potentially inherits `opener`'s
+  // origin in its NavigationController. This method will call back into the
+  // delegates so it should only be called once they have completed their
+  // initialization.
   // TODO(carlscab): It would be great if initialization could happened in the
   // constructor so we do not leave objects in a half initialized state.
   void Init(SiteInstance* main_frame_site_instance,
             bool renderer_initiated_creation,
-            const std::string& main_frame_name);
+            const std::string& main_frame_name,
+            RenderFrameHostImpl* opener);
 
   Type type() const { return type_; }
 
@@ -384,7 +394,7 @@ class CONTENT_EXPORT FrameTree {
   void FrameRemoved(FrameTreeNode* frame);
 
   void DidStartLoadingNode(FrameTreeNode& node,
-                           bool to_different_document,
+                           bool should_show_loading_ui,
                            bool was_previously_loading);
   void DidStopLoadingNode(FrameTreeNode& node);
   void DidCancelLoading();
@@ -456,15 +466,15 @@ class CONTENT_EXPORT FrameTree {
   // |node|, but including |node| itself.
   NodeRange NodesExceptSubtree(FrameTreeNode* node);
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   // These delegates are installed into all the RenderViewHosts and
   // RenderFrameHosts that we create.
-  RenderFrameHostDelegate* render_frame_delegate_;
-  RenderViewHostDelegate* render_view_delegate_;
-  RenderWidgetHostDelegate* render_widget_delegate_;
-  RenderFrameHostManager::Delegate* manager_delegate_;
-  PageDelegate* page_delegate_;
+  raw_ptr<RenderFrameHostDelegate> render_frame_delegate_;
+  raw_ptr<RenderViewHostDelegate> render_view_delegate_;
+  raw_ptr<RenderWidgetHostDelegate> render_widget_delegate_;
+  raw_ptr<RenderFrameHostManager::Delegate> manager_delegate_;
+  raw_ptr<PageDelegate> page_delegate_;
 
   // The Navigator object responsible for managing navigations on this frame
   // tree. Each FrameTreeNode will default to using it for navigation tasks in
@@ -481,7 +491,7 @@ class CONTENT_EXPORT FrameTree {
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
   // pointer to remain valid even while the FrameTreeNode is being destroyed,
   // since it's common for a node to test whether it's the root node.
-  FrameTreeNode* root_;
+  raw_ptr<FrameTreeNode> root_;
 
   int focused_frame_tree_node_id_;
 

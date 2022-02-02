@@ -6,6 +6,7 @@
 #include "chrome/browser/media/history/media_history_store.h"
 
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -1100,8 +1102,9 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
   EXPECT_TRUE(sessions.empty());
 }
 
-// TODO(crbug.com/1086828): Test is flaky on Linux and Windows.
-#if defined(OS_LINUX) || defined(OS_WIN)
+// TODO(crbug.com/1086828): Test is flaky on Linux, Windows, Mac and Lacros.
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_DoNotRecordWatchtime_Background \
   DISABLED_DoNotRecordWatchtime_Background
 #else
@@ -1189,7 +1192,7 @@ class MediaHistoryForPrerenderBrowserTest : public MediaHistoryBrowserTest {
   content::WebContents* web_contents() { return web_contents_; }
 
  protected:
-  content::WebContents* web_contents_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
   content::test::PrerenderTestHelper prerender_helper_;
   base::test::ScopedFeatureList feature_list_;
 };

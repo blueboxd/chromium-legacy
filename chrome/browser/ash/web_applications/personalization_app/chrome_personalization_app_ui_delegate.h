@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_CHROME_PERSONALIZATION_APP_UI_DELEGATE_H_
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_CHROME_PERSONALIZATION_APP_UI_DELEGATE_H_
 
+#include "ash/webui/personalization_app/mojom/personalization_app.mojom-shared.h"
 #include "ash/webui/personalization_app/personalization_app_ui_delegate.h"
 
 #include <stdint.h>
@@ -39,10 +40,11 @@ class Collection;
 class Image;
 }  // namespace backdrop
 
-namespace backdrop_wallpaper_handlers {
-class CollectionInfoFetcher;
-class ImageInfoFetcher;
-}  // namespace backdrop_wallpaper_handlers
+namespace wallpaper_handlers {
+class BackdropCollectionInfoFetcher;
+class BackdropImageInfoFetcher;
+class GooglePhotosCountFetcher;
+}  // namespace wallpaper_handlers
 
 namespace content {
 class WebUI;
@@ -51,7 +53,7 @@ class WebUI;
 class Profile;
 
 // Implemented in //chrome because this will rely on chrome
-// |backdrop_wallpaper_handlers| code when fully implemented.
+// |wallpaper_handlers| code when fully implemented.
 // TODO(b/182012641) add wallpaper API code here.
 class ChromePersonalizationAppUiDelegate
     : public ash::PersonalizationAppUiDelegate,
@@ -85,6 +87,8 @@ class ChromePersonalizationAppUiDelegate
   void FetchImagesForCollection(
       const std::string& collection_id,
       FetchImagesForCollectionCallback callback) override;
+
+  void FetchGooglePhotosCount(FetchGooglePhotosCountCallback callback) override;
 
   void GetLocalImages(GetLocalImagesCallback callback) override;
 
@@ -135,10 +139,12 @@ class ChromePersonalizationAppUiDelegate
 
   void OnFetchCollectionImages(
       FetchImagesForCollectionCallback callback,
-      std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher> fetcher,
+      std::unique_ptr<wallpaper_handlers::BackdropImageInfoFetcher> fetcher,
       bool success,
       const std::string& collection_id,
       const std::vector<backdrop::Image>& images);
+
+  void OnFetchGooglePhotosCount(int64_t count);
 
   void OnGetLocalImages(GetLocalImagesCallback callback,
                         const std::vector<base::FilePath>& images);
@@ -182,12 +188,17 @@ class ChromePersonalizationAppUiDelegate
   void NotifyWallpaperChanged(
       ash::personalization_app::mojom::CurrentWallpaperPtr current_wallpaper);
 
-  std::unique_ptr<backdrop_wallpaper_handlers::CollectionInfoFetcher>
+  std::unique_ptr<wallpaper_handlers::BackdropCollectionInfoFetcher>
       wallpaper_collection_info_fetcher_;
   std::vector<FetchCollectionsCallback> pending_collections_callbacks_;
 
-  std::unique_ptr<backdrop_wallpaper_handlers::ImageInfoFetcher>
+  std::unique_ptr<wallpaper_handlers::BackdropImageInfoFetcher>
       wallpaper_attribution_info_fetcher_;
+
+  std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher>
+      google_photos_count_fetcher_;
+  std::vector<FetchGooglePhotosCountCallback>
+      pending_google_photos_count_callbacks_;
 
   SelectWallpaperCallback pending_select_wallpaper_callback_;
 
@@ -201,6 +212,20 @@ class ChromePersonalizationAppUiDelegate
   struct ImageInfo {
     GURL image_url;
     std::string collection_id;
+    uint64_t asset_id;
+    uint64_t unit_id;
+    backdrop::Image::ImageType type;
+
+    ImageInfo(const GURL& in_image_url,
+              const std::string& in_collection_id,
+              uint64_t in_asset_id,
+              uint64_t in_unit_id,
+              backdrop::Image::ImageType in_type)
+        : image_url(in_image_url),
+          collection_id(in_collection_id),
+          asset_id(in_asset_id),
+          unit_id(in_unit_id),
+          type(in_type) {}
   };
 
   // Store a mapping of valid image asset_ids to their ImageInfo to validate

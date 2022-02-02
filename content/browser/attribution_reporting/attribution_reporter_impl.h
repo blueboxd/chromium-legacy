@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -26,7 +27,7 @@ namespace content {
 
 class StoragePartitionImpl;
 
-struct SentReportInfo;
+struct SentReport;
 
 // This class is responsible for managing the dispatch of conversion reports to
 // an AttributionReporterImpl::NetworkSender. It maintains a queue of reports
@@ -44,7 +45,7 @@ class CONTENT_EXPORT AttributionReporterImpl
     virtual ~NetworkSender() = default;
 
     // Callback used to notify caller that the requested report has been sent.
-    using ReportSentCallback = base::OnceCallback<void(SentReportInfo)>;
+    using ReportSentCallback = base::OnceCallback<void(SentReport)>;
 
     // Generates and sends a conversion report matching |report|. This should
     // generate a secure POST request with no-credentials.
@@ -52,10 +53,11 @@ class CONTENT_EXPORT AttributionReporterImpl
                             ReportSentCallback sent_callback) = 0;
   };
 
-  AttributionReporterImpl(
-      StoragePartitionImpl* storage_partition,
-      const base::Clock* clock,
-      base::RepeatingCallback<void(SentReportInfo)> callback);
+  using Callback = base::RepeatingCallback<void(SentReport)>;
+
+  AttributionReporterImpl(StoragePartitionImpl* storage_partition,
+                          const base::Clock* clock,
+                          Callback callback);
   AttributionReporterImpl(const AttributionReporterImpl&) = delete;
   AttributionReporterImpl& operator=(const AttributionReporterImpl&) = delete;
   AttributionReporterImpl(AttributionReporterImpl&&) = delete;
@@ -96,13 +98,13 @@ class CONTENT_EXPORT AttributionReporterImpl
                       ReportComparator>
       report_queue_;
 
-  const base::Clock* clock_;
+  raw_ptr<const base::Clock> clock_;
 
-  base::RepeatingCallback<void(SentReportInfo)> callback_;
+  Callback callback_;
 
   // Should never be nullptr, since StoragePartition owns the AttributionManager
   // which owns |this|.
-  StoragePartitionImpl* partition_;
+  raw_ptr<StoragePartitionImpl> partition_;
 
   // Timer which signals the next report in |report_queue_| should be sent.
   base::OneShotTimer send_report_timer_;
@@ -114,7 +116,8 @@ class CONTENT_EXPORT AttributionReporterImpl
   std::unique_ptr<NetworkSender> network_sender_;
 
   // Lazily initialized to track network availability.
-  network::NetworkConnectionTracker* network_connection_tracker_ = nullptr;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_ =
+      nullptr;
 
   // Assume that there is a network connection unless we hear otherwise.
   bool offline_ = false;

@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "storage/browser/file_system/native_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,6 +30,9 @@ using CopyOrMoveOptionSet = FileSystemOperation::CopyOrMoveOptionSet;
 class NativeFileUtilTest : public testing::Test {
  public:
   NativeFileUtilTest() = default;
+
+  NativeFileUtilTest(const NativeFileUtilTest&) = delete;
+  NativeFileUtilTest& operator=(const NativeFileUtilTest&) = delete;
 
   void SetUp() override { ASSERT_TRUE(data_dir_.CreateUniqueTempDir()); }
 
@@ -77,8 +79,6 @@ class NativeFileUtilTest : public testing::Test {
 
  private:
   base::ScopedTempDir data_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeFileUtilTest);
 };
 
 TEST_F(NativeFileUtilTest, CreateCloseAndDeleteFile) {

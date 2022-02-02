@@ -20,6 +20,7 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/ignore_result.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/bundle_locations.h"
@@ -54,7 +55,6 @@
 #include "sandbox/policy/mac/renderer.sb.h"
 #include "sandbox/policy/mac/speech_recognition.sb.h"
 #include "sandbox/policy/mac/utility.sb.h"
-
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
@@ -86,8 +86,8 @@ void SandboxMac::Warmup(sandbox::mojom::Sandbox sandbox_type) {
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
 
       // Load in the color profiles we'll need (as a side effect).
-      ignore_result(base::mac::GetSRGBColorSpace());
-      ignore_result(base::mac::GetSystemColorSpace());
+      base::IgnoreResult(base::mac::GetSRGBColorSpace());
+      base::IgnoreResult(base::mac::GetSystemColorSpace());
 
       // CGColorSpaceCreateSystemDefaultCMYK - 10.6
       base::ScopedCFTypeRef<CGColorSpaceRef> cmyk_colorspace(

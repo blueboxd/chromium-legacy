@@ -128,6 +128,8 @@ component("net") {
     "base/chunked_upload_data_stream.h",
     "base/completion_once_callback.h",
     "base/completion_repeating_callback.h",
+    "base/connection_endpoint_metadata.cc",
+    "base/connection_endpoint_metadata.h",
     "base/data_url.cc",
     "base/data_url.h",
     "base/datagram_buffer.cc",
@@ -676,8 +678,6 @@ component("net") {
     "log/trace_net_log_observer.h",
     "nqe/cached_network_quality.cc",
     "nqe/cached_network_quality.h",
-    "nqe/connectivity_monitor.cc",
-    "nqe/connectivity_monitor.h",
     "nqe/effective_connection_type.cc",
     "nqe/effective_connection_type.h",
     "nqe/effective_connection_type_observer.h",
@@ -799,8 +799,6 @@ component("net") {
     "quic/quic_chromium_packet_reader.h",
     "quic/quic_chromium_packet_writer.cc",
     "quic/quic_chromium_packet_writer.h",
-    "quic/quic_client_session_cache.cc",
-    "quic/quic_client_session_cache.h",
     "quic/quic_clock_skew_detector.cc",
     "quic/quic_clock_skew_detector.h",
     "quic/quic_connection_logger.cc",
@@ -1160,6 +1158,8 @@ component("net") {
       "android/network_change_notifier_factory_android.h",
       "android/network_library.cc",
       "android/network_library.h",
+      "android/radio_activity_tracker.cc",
+      "android/radio_activity_tracker.h",
       "android/traffic_stats.cc",
       "android/traffic_stats.h",
       "cert/cert_verify_proc_android.cc",
@@ -1826,9 +1826,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/900_days_after_2019_07_01.pem",
     "data/ssl/certificates/BUILD.gn",
     "data/ssl/certificates/README",
-    "data/ssl/certificates/aia-cert.pem",
-    "data/ssl/certificates/aia-intermediate.der",
-    "data/ssl/certificates/aia-root.pem",
     "data/ssl/certificates/bad_validity.pem",
     "data/ssl/certificates/can_sign_http_exchanges_draft_extension.pem",
     "data/ssl/certificates/can_sign_http_exchanges_draft_extension_invalid.pem",
@@ -1863,7 +1860,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/client_6_ca.pem",
     "data/ssl/certificates/client_root_ca.pem",
     "data/ssl/certificates/common_name_only.pem",
-    "data/ssl/certificates/comodo-chain.pem",
     "data/ssl/certificates/crit-codeSigning-chain.pem",
     "data/ssl/certificates/crlset_blocked_interception_by_intermediate.raw",
     "data/ssl/certificates/crlset_blocked_interception_by_root.raw",
@@ -1895,7 +1891,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/duplicate_cn_2.p12",
     "data/ssl/certificates/duplicate_cn_2.pem",
     "data/ssl/certificates/eku-test-root.pem",
-    "data/ssl/certificates/empty_subject_cert.der",
     "data/ssl/certificates/ev-multi-oid.pem",
     "data/ssl/certificates/ev_test.pem",
     "data/ssl/certificates/ev_test_state_only.pem",
@@ -1910,7 +1905,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/google.single.der",
     "data/ssl/certificates/google.single.pem",
     "data/ssl/certificates/google_diginotar.pem",
-    "data/ssl/certificates/googlenew.chain.pem",
     "data/ssl/certificates/intermediate_ca_cert.pem",
     "data/ssl/certificates/invalid_key_usage_cert.der",
     "data/ssl/certificates/key_usage_p256.key",
@@ -1989,8 +1983,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/subjectAltName_sanity_check.pem",
     "data/ssl/certificates/subjectAltName_www_example_com.pem",
     "data/ssl/certificates/test_names.pem",
-    "data/ssl/certificates/thawte.single.pem",
-    "data/ssl/certificates/tls_feature_extension.pem",
     "data/ssl/certificates/treadclimber.pem",
     "data/ssl/certificates/treadclimber.sctlist",
     "data/ssl/certificates/unescaped.pem",
@@ -2015,7 +2007,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/websocket_cacert.pem",
     "data/ssl/certificates/websocket_client_cert.p12",
     "data/ssl/certificates/wildcard.pem",
-    "data/ssl/certificates/www.ahrn.com.pem",
     "data/ssl/certificates/x509_verify_results.chain.pem",
   ]
   outputs = [ "{{bundle_resources_dir}}/" +
@@ -2025,6 +2016,8 @@ bundle_data("test_support_bundle_data") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "base/connection_endpoint_metadata_test_util.cc",
+    "base/connection_endpoint_metadata_test_util.h",
     "base/load_timing_info_test_util.cc",
     "base/load_timing_info_test_util.h",
     "base/mock_file_stream.cc",
@@ -4293,7 +4286,6 @@ test("net_unittests") {
     "log/net_log_util_unittest.cc",
     "log/net_log_values_unittest.cc",
     "log/trace_net_log_observer_unittest.cc",
-    "nqe/connectivity_monitor_unittest.cc",
     "nqe/effective_connection_type_unittest.cc",
     "nqe/event_creator_unittest.cc",
     "nqe/network_id_unittest.cc",
@@ -4330,7 +4322,6 @@ test("net_unittests") {
     "quic/quic_chromium_client_session_test.cc",
     "quic/quic_chromium_client_stream_test.cc",
     "quic/quic_chromium_connection_helper_test.cc",
-    "quic/quic_client_session_cache_unittests.cc",
     "quic/quic_clock_skew_detector_test.cc",
     "quic/quic_connectivity_probing_manager_test.cc",
     "quic/quic_end_to_end_unittest.cc",
@@ -4568,18 +4559,11 @@ test("net_unittests") {
   ]
 
   if (is_linux || is_chromeos || is_mac || is_win || is_fuchsia) {
-    deps += [
-      "//third_party/pywebsocket3/",
-      "//third_party/tlslite/",
-    ]
-    data_deps += [
-      "//third_party/pywebsocket3/",
-      "//third_party/tlslite/",
-    ]
+    deps += [ "//third_party/pywebsocket3/" ]
+    data_deps += [ "//third_party/pywebsocket3/" ]
     data += [
       "tools/testserver/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
-      "//third_party/tlslite/",
     ]
   }
 
@@ -5161,6 +5145,7 @@ fuzzer_test("net_canonical_cookie_fuzzer") {
     ":net_fuzzer_test_support",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_cookies_fuzzer.dict"
   seed_corpus = "data/fuzzer_data/cookies/"
 }
 
@@ -5178,6 +5163,7 @@ fuzzer_test("net_parse_cookie_line_fuzzer") {
     ":net_fuzzer_test_support",
     "//net",
   ]
+  dict = "data/fuzzer_dictionaries/net_cookies_fuzzer.dict"
   seed_corpus = "data/fuzzer_data/cookies/"
 }
 

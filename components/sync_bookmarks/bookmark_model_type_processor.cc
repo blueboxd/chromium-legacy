@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -75,12 +76,12 @@ class ScopedRemoteUpdateBookmarks {
   }
 
  private:
-  bookmarks::BookmarkModel* const bookmark_model_;
+  const raw_ptr<bookmarks::BookmarkModel> bookmark_model_;
 
   // Changes made to the bookmark model due to sync should not be undoable.
   ScopedSuspendBookmarkUndo suspend_undo_;
 
-  bookmarks::BookmarkModelObserver* const observer_;
+  const raw_ptr<bookmarks::BookmarkModelObserver> observer_;
 };
 
 std::string ComputeServerDefinedUniqueTagForDebugging(
@@ -151,19 +152,12 @@ void BookmarkModelTypeProcessor::OnCommitCompleted(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // |error_response_list| is ignored, because all errors are treated as
-  // transientand the processor with eventually retry.
-
+  // transient and the processor with eventually retry.
   for (const syncer::CommitResponseData& response : committed_response_list) {
-    // In order to save space, |response.id_in_request| is written when it's
-    // different from |response.id|. If it's empty, then there was no id change
-    // during the commit, and |response.id| carries both the old and new ids.
-    const std::string& old_sync_id =
-        response.id_in_request.empty() ? response.id : response.id_in_request;
     const SyncedBookmarkTracker::Entity* entity =
-        bookmark_tracker_->GetEntityForSyncId(old_sync_id);
+        bookmark_tracker_->GetEntityForClientTagHash(response.client_tag_hash);
     if (!entity) {
-      DLOG(WARNING) << "Received a commit response for an unknown entity: "
-                    << old_sync_id;
+      DLOG(WARNING) << "Received a commit response for an unknown entity.";
       continue;
     }
 

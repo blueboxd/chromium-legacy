@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SYNC_DICE_SIGNIN_BUTTON_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_SYNC_DICE_SIGNIN_BUTTON_VIEW_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 
 // Sign-in button view used for Desktop Identity Consistency that presents the
@@ -42,10 +44,14 @@ class DiceSigninButtonView : public views::View {
   absl::optional<AccountInfo> account() const { return account_; }
 
  private:
-
-  views::LabelButton* signin_button_ = nullptr;
+  raw_ptr<views::LabelButton> signin_button_ = nullptr;
 
   const absl::optional<AccountInfo> account_;
 };
+
+BEGIN_VIEW_BUILDER(, DiceSigninButtonView, views::View)
+END_VIEW_BUILDER
+
+DEFINE_VIEW_BUILDER(, DiceSigninButtonView)
 
 #endif  // CHROME_BROWSER_UI_VIEWS_SYNC_DICE_SIGNIN_BUTTON_VIEW_H_

@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/input_method/assistive_window_controller.h"
+#include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
 #include "chrome/browser/ash/input_method/suggestion_enums.h"
 #include "chrome/browser/ash/input_method/textinput_test_helper.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -53,44 +54,20 @@ namespace {
 
 constexpr char kEmojiData[] = "happy,😀;😃;😄";
 
-// TODO(crbug.com/1148157): Use StubInputMethodEngineObserver.
-class TestObserver : public InputMethodEngineBase::Observer {
+class TestObserver : public StubInputMethodEngineObserver {
  public:
   TestObserver() = default;
   ~TestObserver() override = default;
   TestObserver(const TestObserver&) = delete;
   TestObserver& operator=(const TestObserver&) = delete;
 
-  void OnActivate(const std::string& engine_id) override {}
-  void OnDeactivated(const std::string& engine_id) override {}
-  void OnFocus(
-      const std::string& engine_id,
-      int context_id,
-      const ui::IMEEngineHandlerInterface::InputContext& context) override {}
-  void OnBlur(const std::string& engine_id, int context_id) override {}
+  void OnTouch(ui::EventPointerType pointerType) override {}
   void OnKeyEvent(
       const std::string& engine_id,
       const ui::KeyEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback) override {
     std::move(callback).Run(/*handled=*/false);
   }
-  void OnCandidateClicked(
-      const std::string& engine_id,
-      int candidate_id,
-      InputMethodEngineBase::MouseButtonEvent button) override {}
-  void OnMenuItemActivated(const std::string& engine_id,
-                           const std::string& menu_id) override {}
-  void OnSurroundingTextChanged(const std::string& engine_id,
-                                const std::u16string& text,
-                                int cursor_pos,
-                                int anchor_pos,
-                                int offset) override {}
-  void OnCompositionBoundsChanged(
-      const std::vector<gfx::Rect>& bounds) override {}
-  void OnScreenProjectionChanged(bool is_projected) override {}
-  void OnReset(const std::string& engine_id) override {}
-  void OnSuggestionsChanged(
-      const std::vector<std::string>& suggestions) override {}
   void OnInputMethodOptionsChanged(const std::string& engine_id) override {
     changed_engine_id_ = engine_id;
   }
@@ -154,7 +131,6 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
         /*enabled_features=*/{features::kAssistPersonalInfo,
                               features::kAssistPersonalInfoEmail,
                               features::kAssistPersonalInfoName,
-                              features::kEmojiSuggestAddition,
                               features::kMultilingualTyping,
                               features::kOnDeviceGrammarCheck},
         /*disabled_features=*/{});
@@ -183,6 +159,10 @@ class NativeInputMethodEngineTest : public InProcessBrowserTest,
     engine_->get_assistive_suggester_for_testing()
         ->get_emoji_suggester_for_testing()
         ->LoadEmojiMapForTesting(kEmojiData);
+
+    // Ensure predictive writing is off to stop tests from attempting to
+    // load the shared library.
+    prefs_->SetBoolean(prefs::kAssistPredictiveWritingEnabled, false);
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -1146,8 +1126,7 @@ class NativeInputMethodEngineAssistiveOff : public InProcessBrowserTest {
   NativeInputMethodEngineAssistiveOff() {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAssistPersonalInfoName},
-        /*disabled_features=*/{features::kAssistPersonalInfo,
-                               features::kEmojiSuggestAddition});
+        /*disabled_features=*/{features::kAssistPersonalInfo});
   }
   ~NativeInputMethodEngineAssistiveOff() override = default;
 
@@ -1200,19 +1179,5 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineAssistiveOff,
       DisabledReason::kFeatureFlagOff, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineAssistiveOff,
-                       EmojiSuggestionDisabledReasonkFeatureFlagOff) {
-  base::HistogramTester histogram_tester;
-  engine_->get_assistive_suggester_for_testing()
-      ->get_emoji_suggester_for_testing()
-      ->LoadEmojiMapForTesting(kEmojiData);
-
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
-                                           GURL(chrome::kChromeUINewTabURL)));
-  ui_test_utils::SendToOmniboxAndSubmit(browser(), "happy ");
-
-  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Disabled.Emoji",
-                                      DisabledReason::kFeatureFlagOff, 1);
-}  // namespace
 }  // namespace input_method
 }  // namespace ash

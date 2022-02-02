@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/android/autofill_assistant/assistant_bottom_bar_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_collect_user_data_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_form_delegate.h"
@@ -46,6 +46,7 @@ class UiControllerAndroid : public ControllerObserver {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
       content::WebContents* web_contents,
+      const base::android::JavaRef<jobject>& jdependencies,
       const base::android::JavaRef<jobject>& joverlay_coordinator);
 
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
@@ -56,6 +57,7 @@ class UiControllerAndroid : public ControllerObserver {
   UiControllerAndroid(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jactivity,
+      const base::android::JavaRef<jobject>& jdependencies,
       const base::android::JavaRef<jobject>& joverlay_coordinator);
 
   UiControllerAndroid(const UiControllerAndroid&) = delete;
@@ -88,9 +90,7 @@ class UiControllerAndroid : public ControllerObserver {
   //
   // If action_index != -1, execute that action as close/cancel. Otherwise
   // execute the default close or cancel action.
-  void CloseOrCancel(int action_index,
-                     std::unique_ptr<TriggerContext> trigger_context,
-                     Metrics::DropOutReason dropout_reason);
+  void CloseOrCancel(int action_index, Metrics::DropOutReason dropout_reason);
   // Returns the size of the window.
   absl::optional<std::pair<int, int>> GetWindowSize() const;
   // Returns the screen's orientation.
@@ -151,11 +151,14 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Called by AssistantCollectUserDataDelegate:
   void OnShippingAddressChanged(
-      std::unique_ptr<autofill::AutofillProfile> address);
-  void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile);
+      std::unique_ptr<autofill::AutofillProfile> address,
+      UserDataEventType event_type);
+  void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile,
+                            UserDataEventType event_type);
   void OnCreditCardChanged(
       std::unique_ptr<autofill::CreditCard> card,
-      std::unique_ptr<autofill::AutofillProfile> billing_profile);
+      std::unique_ptr<autofill::AutofillProfile> billing_profile,
+      UserDataEventType event_type);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
   void OnLoginChoiceChanged(const std::string& identifier);
   void OnTextLinkClicked(int link);
@@ -225,10 +228,10 @@ class UiControllerAndroid : public ControllerObserver {
 
  private:
   // A pointer to the client. nullptr until Attach() is called.
-  ClientAndroid* client_ = nullptr;
+  raw_ptr<ClientAndroid> client_ = nullptr;
 
   // A pointer to the ui_delegate. nullptr until Attach() is called.
-  UiDelegate* ui_delegate_ = nullptr;
+  raw_ptr<UiDelegate> ui_delegate_ = nullptr;
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
   AssistantCollectUserDataDelegate collect_user_data_delegate_;
@@ -275,9 +278,7 @@ class UiControllerAndroid : public ControllerObserver {
                     const std::string& undo_string,
                     base::OnceCallback<void()> action);
 
-  void OnCancel(int action_index,
-                std::unique_ptr<TriggerContext> context,
-                Metrics::DropOutReason dropout_reason);
+  void OnCancel(int action_index, Metrics::DropOutReason dropout_reason);
 
   // Updates the state of the UI to reflect the UIDelegate's state.
   void SetupForState();

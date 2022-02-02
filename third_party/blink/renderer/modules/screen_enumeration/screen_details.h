@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "ui/display/screen_infos.h"
 
 namespace blink {
@@ -48,10 +49,19 @@ class MODULES_EXPORT ScreenDetails final
                          const display::ScreenInfos& new_infos);
 
  private:
+  // Returns the first unused index, starting at one.  Internal and external
+  // are numbered separately.  This is used for ScreenDetailed::label strings.
+  uint32_t GetNewLabelIdx(bool is_internal);
+  void WillRemoveScreen(const ScreenDetailed& screen);
+
   // The ScreenInfos sent by the previous UpdateScreenInfos call.
   display::ScreenInfos prev_screen_infos_;
   int64_t current_display_id_ = display::ScreenInfo::kInvalidDisplayId;
   HeapVector<Member<ScreenDetailed>> screens_;
+
+  // Active set of ids used in labels.
+  HashSet<uint32_t> internal_label_ids_;
+  HashSet<uint32_t> external_label_ids_;
 };
 
 }  // namespace blink

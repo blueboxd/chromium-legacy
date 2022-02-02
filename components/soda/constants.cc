@@ -63,11 +63,12 @@ const base::FilePath GetSodaLanguagePacksDirectory() {
 }
 
 const base::FilePath GetSodaTestResourcesDirectory() {
-  base::FilePath source_root;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root);
-  return source_root.empty()
+  base::FilePath test_data_root;
+  base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &test_data_root);
+  DCHECK(!test_data_root.empty());
+  return test_data_root.empty()
              ? base::FilePath()
-             : source_root.Append(kSodaTestResourcesRelativePath);
+             : test_data_root.Append(kSodaTestResourcesRelativePath);
 }
 
 const base::FilePath GetLatestSodaLanguagePackDirectory(
@@ -170,6 +171,15 @@ LanguageCode GetLanguageCode(const std::string& language_name) {
     return language_config.value().language_code;
   }
   return LanguageCode::kNone;
+}
+
+int GetLanguageDisplayName(const std::string& language_name) {
+  absl::optional<SodaLanguagePackComponentConfig> language_config =
+      GetLanguageComponentConfig(language_name);
+  if (language_config.has_value()) {
+    return language_config.value().display_name;
+  }
+  return 0;
 }
 
 }  // namespace speech

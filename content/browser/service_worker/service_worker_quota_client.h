@@ -6,12 +6,11 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_QUOTA_CLIENT_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "components/services/storage/public/cpp/storage_key_quota_client.h"
-#include "content/common/content_export.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
@@ -26,8 +25,7 @@ class ServiceWorkerQuotaClient : public storage::StorageKeyQuotaClient {
  public:
   // `context` must outlive this instance. This is true because `context` owns
   // this instance.
-  CONTENT_EXPORT explicit ServiceWorkerQuotaClient(
-      ServiceWorkerContextCore& context);
+  explicit ServiceWorkerQuotaClient(ServiceWorkerContextCore& context);
 
   ServiceWorkerQuotaClient(const ServiceWorkerQuotaClient&) = delete;
   ServiceWorkerQuotaClient& operator=(const ServiceWorkerQuotaClient&) = delete;
@@ -65,7 +63,8 @@ class ServiceWorkerQuotaClient : public storage::StorageKeyQuotaClient {
   //
   // The pointer is guaranteed to be non-null. It is not a reference because
   // ResetContext() changes the object it points to.
-  ServiceWorkerContextCore* context_ GUARDED_BY_CONTEXT(sequence_checker_);
+  raw_ptr<ServiceWorkerContextCore> context_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 };
 
 }  // namespace content

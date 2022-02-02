@@ -31,6 +31,7 @@ import {routes} from '../os_route.m.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
+import {MetricsConsentBrowserProxy, MetricsConsentBrowserProxyImpl, MetricsConsentState} from './metrics_consent_browser_proxy.js';
 import {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './peripheral_data_access_browser_proxy.js';
 
 Polymer({
@@ -130,6 +131,31 @@ Polymer({
     },
 
     /**
+     * True if snooping protection or screen lock is enabled.
+     * @private
+     */
+    isSmartPrivacyEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isSnoopingProtectionEnabled') ||
+            loadTimeData.getBoolean('isQuickDimEnabled');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * True if OS is running on reven board.
+     * @private
+     */
+    isRevenBranding_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isRevenBranding');
+      },
+      readOnly: true,
+    },
+
+    /**
      * Whether the user is in guest mode.
      * @private {boolean}
      */
@@ -183,10 +209,37 @@ Polymer({
         return loadTimeData.getBoolean('showSecureDnsSetting');
       },
     },
+
+    // <if expr="_google_chrome">
+    /**
+     * The preference controlling the current user's metrics consent. This will
+     * be loaded from |this.prefs| based on the response from
+     * |this.metricsConsentBrowserProxy_.getMetricsConsentState()|.
+     *
+     * @private
+     * @type {!chrome.settingsPrivate.PrefObject}
+     */
+    metricsConsentPref_: {
+      type: Object,
+      value: {
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        value: false,
+      },
+    },
+
+    /** @private */
+    isMetricsConsentConfigurable_: {
+      type: Boolean,
+      value: false,
+    },
+    // </if>
   },
 
   /** @private {?PeripheralDataAccessBrowserProxy} */
   browserProxy_: null,
+
+  /** @private {?MetricsConsentBrowserProxy} */
+  metricsConsentBrowserProxy_: null,
 
   observers: ['onDataAccessFlagsSet_(isThunderboltSupported_.*)'],
 
@@ -201,6 +254,19 @@ Polymer({
             chromeos.settings.mojom.Setting.kPeripheralDataAccessProtection);
       }
     });
+
+    // <if expr="_google_chrome">
+    this.metricsConsentBrowserProxy_ =
+        MetricsConsentBrowserProxyImpl.getInstance();
+    this.metricsConsentBrowserProxy_.getMetricsConsentState().then(state => {
+      const pref = /** @type {?chrome.settingsPrivate.PrefObject} */ (
+          this.get(state.prefName, this.prefs));
+      if (pref) {
+        this.metricsConsentPref_ = pref;
+        this.isMetricsConsentConfigurable_ = state.isConfigurable;
+      }
+    });
+    // </if>
   },
 
   /**
@@ -284,6 +350,11 @@ Polymer({
   /** @private */
   onManageOtherPeople_() {
     Router.getInstance().navigateTo(routes.ACCOUNTS);
+  },
+
+  /** @private */
+  onSmartPrivacy_() {
+    Router.getInstance().navigateTo(routes.SMART_PRIVACY);
   },
 
   /**
@@ -399,6 +470,30 @@ Polymer({
     }
     this.setPrefValue(this.dataAccessProtectionPrefName_, false);
   },
+
+  // <if expr="_google_chrome">
+  /** @private */
+  onMetricsConsentChange_() {
+    this.metricsConsentBrowserProxy_
+        .updateMetricsConsent(this.getMetricsToggle_().checked)
+        .then(consent => {
+          if (consent === this.getMetricsToggle_().checked) {
+            this.getMetricsToggle_().sendPrefChange();
+          } else {
+            this.getMetricsToggle_().resetToPrefValue();
+          }
+        });
+  },
+
+  /**
+   * @private
+   * @return {SettingsToggleButtonElement}
+   */
+  getMetricsToggle_() {
+    return /** @type {SettingsToggleButtonElement} */ (
+        this.$$('#enable-logging'));
+  },
+  // </if>
 
   /**
    * This is used to add a keydown listener event for handling keyboard

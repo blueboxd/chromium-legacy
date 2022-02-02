@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/find_in_page_client.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -230,7 +231,7 @@ class FindRequestManager::FrameObserver : public WebContentsObserver {
 
  private:
   // The FindRequestManager that owns this FrameObserver.
-  FindRequestManager* const manager_;
+  const raw_ptr<FindRequestManager> manager_;
 };
 
 FindRequestManager::FindRequest::FindRequest() = default;
@@ -458,12 +459,12 @@ void FindRequestManager::RemoveFrame(RenderFrameHost* rfh) {
     find_in_page_clients_.erase(it);
   }
 
-  // If this is a main frame, then clear the search queue as well, since we
-  // shouldn't be dispatching any more requests. Note that if any other frame is
-  // removed, we can target any queued requests to the focused frame or main
-  // frame. However, if the main frame is removed we will not have a valid
-  // RenderFrameHost to target for the request queue.
-  if (!rfh->GetParent())
+  // If this is a primary main frame, then clear the search queue as well, since
+  // we shouldn't be dispatching any more requests. Note that if any other frame
+  // is removed, we can target any queued requests to the focused frame or
+  // primary main frame. However, if the primary main frame is removed we will
+  // not have a valid RenderFrameHost to target for the request queue.
+  if (rfh->IsInPrimaryMainFrame())
     find_request_queue_ = base::queue<FindRequest>();
 
   // Update the active match ordinal, since it may have changed.

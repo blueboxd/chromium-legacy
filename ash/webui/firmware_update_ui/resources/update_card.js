@@ -3,24 +3,28 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import './firmware_shared_css.js';
 import './firmware_shared_fonts.js';
+import './strings.m.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {FirmwareUpdate, UpdatePriority} from './firmware_update_types.js';
-
-/** @enum {number} */
-export const DialogState = {
-  CLOSED: 0,
-  DEVICE_PREP: 1,
-};
 
 /**
  * @fileoverview
  * 'update-card' displays information about a peripheral update.
  */
-export class UpdateCardElement extends PolymerElement {
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const UpdateCardElementBase = mixinBehaviors([I18nBehavior], PolymerElement);
+
+/** @polymer */
+export class UpdateCardElement extends UpdateCardElementBase {
   static get is() {
     return 'update-card';
   }
@@ -35,12 +39,6 @@ export class UpdateCardElement extends PolymerElement {
       update: {
         type: Object,
       },
-
-      /** @protected {!DialogState} */
-      dialogState_: {
-        type: Number,
-        value: DialogState.CLOSED,
-      },
     };
   }
 
@@ -54,29 +52,24 @@ export class UpdateCardElement extends PolymerElement {
 
   /** @protected */
   onUpdateButtonClicked_() {
-    if (this.update.updateModeInstructions) {
-      this.dialogState_ = DialogState.DEVICE_PREP;
-    }
-    // TODO(michaelcheco): Show update dialog immediately if no instructions
-    // are provided.
-  }
-
-  /** @protected */
-  closeDialog_() {
-    this.dialogState_ = DialogState.CLOSED;
-  }
-
-  /** @protected */
-  startUpdate_() {
-    // TODO(michaelcheco): Add implementation.
+    const eventName = this.update.updateModeInstructions ?
+        'open-device-prep-dialog' :
+        'open-update-dialog';
+    this.dispatchEvent(new CustomEvent(
+        eventName,
+        {bubbles: true, composed: true, detail: {update: this.update}}));
   }
 
   /**
    * @protected
-   * @return {boolean}
+   * @return {string}
    */
-  shouldShowDevicePrepDialog_() {
-    return this.dialogState_ === DialogState.DEVICE_PREP;
+  computeVersionText_() {
+    if (!this.update.version) {
+      return '';
+    }
+
+    return this.i18n('versionText', this.update.version);
   }
 }
 

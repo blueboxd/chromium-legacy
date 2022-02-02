@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "storage/browser/file_system/mount_points.h"
@@ -44,6 +43,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ExternalMountPoints
  public:
   static ExternalMountPoints* GetSystemInstance();
   static scoped_refptr<ExternalMountPoints> CreateRefCounted();
+
+  ExternalMountPoints(const ExternalMountPoints&) = delete;
+  ExternalMountPoints& operator=(const ExternalMountPoints&) = delete;
 
   // Registers a new named external filesystem.
   // The |path| is registered as the root path of the mount point which
@@ -156,8 +158,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ExternalMountPoints
 
   // Reverse map from registered path to its corresponding mount name.
   std::map<base::FilePath, std::string> path_to_name_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalMountPoints);
 };
 
 }  // namespace storage

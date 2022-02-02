@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include "base/ignore_result.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -495,10 +496,10 @@ class WebAppFrameToolbarBrowserTest_WindowControlsOverlay
   gfx::Rect GetWindowControlOverlayBoundingClientRect() {
     const std::string kRectValueList =
         "var rect = "
-        "[navigator.windowControlsOverlay.getBoundingClientRect().x, "
-        "navigator.windowControlsOverlay.getBoundingClientRect().y, "
-        "navigator.windowControlsOverlay.getBoundingClientRect().width, "
-        "navigator.windowControlsOverlay.getBoundingClientRect().height];";
+        "[navigator.windowControlsOverlay.getTitlebarAreaRect().x, "
+        "navigator.windowControlsOverlay.getTitlebarAreaRect().y, "
+        "navigator.windowControlsOverlay.getTitlebarAreaRect().width, "
+        "navigator.windowControlsOverlay.getTitlebarAreaRect().height];";
     return helper()->GetXYWidthHeightRect(
         helper()->browser_view()->GetActiveWebContents(), kRectValueList,
         "rect");
@@ -775,8 +776,16 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
+// TODO(https://crbug.com/1277860): Flaky on Mac builders.
+#if defined(OS_MAC)
+#define MAYBE_WindowControlsOverlayDraggableRegions \
+  DISABLED_WindowControlsOverlayDraggableRegions
+#else
+#define MAYBE_WindowControlsOverlayDraggableRegions \
+  WindowControlsOverlayDraggableRegions
+#endif
 IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
-                       WindowControlsOverlayDraggableRegions) {
+                       MAYBE_WindowControlsOverlayDraggableRegions) {
   InstallAndLaunchWebApp();
   ToggleWindowControlsOverlayAndWait();
 
@@ -798,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 
   // Validate that a point marked "app-region: no-drag" within a draggable
   // region is not draggable.
-  gfx::Point non_draggable_point(105, 105);
+  gfx::Point non_draggable_point(106, 106);
   views::View::ConvertPointToTarget(
       helper()->browser_view()->contents_web_view(), frame_view,
       &non_draggable_point);
@@ -815,6 +824,15 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   EXPECT_NE(frame_view->NonClientHitTest(kBorderPoint), HTCAPTION);
   EXPECT_TRUE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
       helper()->browser_view()->GetWidget()->GetNativeView(), kBorderPoint));
+
+  // Validate that draggable region does not clear after history.replaceState is
+  // invoked.
+  std::string kHistoryReplaceState =
+      "history.replaceState({ test: 'test' }, null);";
+  EXPECT_TRUE(ExecuteScript(helper()->browser_view()->GetActiveWebContents(),
+                            kHistoryReplaceState));
+  EXPECT_FALSE(helper()->browser_view()->ShouldDescendIntoChildForEventHandling(
+      helper()->browser_view()->GetWidget()->GetNativeView(), draggable_point));
 
   // Validate that the draggable region is reset on navigation and the point is
   // no longer draggable.

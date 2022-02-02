@@ -20,11 +20,6 @@ assert(
 
 tweak_info_plist("tweak_info_plist") {
   info_plist = "Info.plist"
-
-  # TODO(crbug.com/1140474): Remove once iOS 14.2 reaches mass adoption.
-  if (ios_lock_to_version != "") {
-    args = [ "--lock-to-version=$ios_lock_to_version" ]
-  }
 }
 
 compile_entitlements("entitlements") {
@@ -78,6 +73,7 @@ source_set("search_widget") {
     "//ios/chrome/common/crash_report",
     "//ios/chrome/common/ui/elements",
     "//ios/chrome/common/ui/util",
+    "//ios/chrome/common/ui/util:image_util",
   ]
 
   frameworks = [

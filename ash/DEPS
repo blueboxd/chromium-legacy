@@ -9,9 +9,11 @@ include_rules = [
   "+components/desks_storage",
   "+components/discardable_memory/public",
   "+components/discardable_memory/service/discardable_shared_memory_manager.h",
+  "+components/fullscreen_control",
   "+components/language/core/browser/pref_names.h",
   "+components/live_caption",
   "+components/media_message_center",
+  "+components/policy/core/browser",
   "+components/pref_registry",
   "+components/prefs",
   "+components/quirks",
@@ -20,6 +22,7 @@ include_rules = [
   "+components/strings",
   "+components/sync",
   "+components/ui_devtools",
+  "+components/url_matcher",
   "+components/vector_icons",
   "+components/viz/common",
   "+components/viz/host",
@@ -56,8 +59,7 @@ include_rules = [
   # //ash can use chromeos components that sit below it in the dependency tree.
   "+chromeos/components/feature_usage",
   "+chromeos/components/multidevice",
-  "+chromeos/components/phonehub",
-  "+chromeos/components/proximity_auth/public",
+  "+chromeos/components/quick_answers",
   "+chromeos/components/sensors",
   # crosapi is an API to support lacros.
   "+chromeos/crosapi",
@@ -81,7 +83,6 @@ include_rules = [
   "+chromeos/services/nearby/public",
   "+chromeos/services/network_config/public",
   "+chromeos/services/power/public",
-  "+chromeos/settings/timezone_settings.h",
   "+chromeos/strings",
   "+chromeos/system",
   "+chromeos/ui",
@@ -116,12 +117,6 @@ specific_include_rules = {
   ],
   "shell.cc": [
     "+ash/host/ash_window_tree_host_init_params.h"
-  ],
-  "shell_delegate.h": [
-    "+components/favicon_base/favicon_callback.h"
-  ],
-  "test_shell_delegate.h": [
-    "+components/favicon_base/favicon_callback.h"
   ],
   "window_manager.cc": [
     "+ash/host/ash_window_tree_host.h"

@@ -20,6 +20,13 @@ import os
 import re
 import sys
 
+_DISALLOW_NON_BLINK_MOJOM = (
+    # network::mojom::Foo is allowed to use as non-blink mojom type.
+    '(|::)(?!network::)(\w+::)?mojom::(?!blink).+',
+    'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead'
+    'of "::mojom::Foo" unless you have clear reasons not to do so.',
+    'Warning')
+
 _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/'],
@@ -101,6 +108,7 @@ _CONFIG = [
             'absl::make_optional',
             'base::make_span',
             'absl::nullopt',
+            'absl::nullopt_t',
             'base::ranges::.+',
             'base::sequence_manager::TaskTimeObserver',
             'base::size',
@@ -285,6 +293,7 @@ _CONFIG = [
             'cc::PaintImage',
             'cc::PaintImageBuilder',
             'cc::PaintRecord',
+            'cc::RecordPaintCanvas',
             'cc::PaintShader',
             'cc::PaintWorkletInput',
             'cc::NodeId',
@@ -314,28 +323,42 @@ _CONFIG = [
             'gfx::ComputeApproximateMaxScale',
             'gfx::Determinant',
             'gfx::IntersectRects',
+            'gfx::MapRect',
             'gfx::PointAtOffsetFromOrigin',
+            'gfx::PointFToSkPoint',
+            'gfx::PointToSkIPoint',
+            'gfx::MapRect',
             'gfx::MaximumCoveredRect',
             'gfx::RectFToSkRect',
             'gfx::RectToSkIRect',
             'gfx::RectToSkRect',
             'gfx::ScalePoint',
             'gfx::ScaleToCeiledSize',
-            'gfx::ScaleToEnclosingRectSafe',
+            'gfx::ScaleToEnclosingRect',
             'gfx::ScaleToFlooredSize',
+            'gfx::ScaleToRoundedRect',
+            'gfx::ScaleToRoundedSize',
             'gfx::ScaleSize',
             'gfx::ScalePoint',
             'gfx::ScaleToRoundedPoint',
             'gfx::ScaleVector2d',
+            'gfx::SizeFToSkSize',
+            'gfx::SizeToSkISize',
+            'gfx::SkIPointToPoint',
             'gfx::SkIRectToRect',
+            'gfx::SkISizeToSize',
+            'gfx::SkPointToPointF',
             'gfx::SkRectToRectF',
+            'gfx::SkSizeToSizeF',
             'gfx::SubtractRects',
             'gfx::ToCeiledPoint',
             'gfx::ToCeiledSize',
+            'gfx::ToCeiledVector2d',
             'gfx::ToEnclosedRect',
             'gfx::ToEnclosingRect',
             'gfx::ToFlooredPoint',
             'gfx::ToFlooredSize',
+            'gfx::ToFlooredVector2d',
             'gfx::ToRoundedPoint',
             'gfx::ToRoundedRect',
             'gfx::ToRoundedSize',
@@ -611,8 +634,11 @@ _CONFIG = [
             'base::(scoped_nsobject|ScopedCFTypeRef)',
 
             # absl::variant and getters:
-            'absl::variant',
+            'absl::get',
             'absl::get_if',
+            'absl::holds_alternative',
+            'absl::variant',
+            'absl::visit',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
@@ -622,10 +648,7 @@ _CONFIG = [
              'However, it is fine to use std containers at the boundary layer between Blink and Chromium. '
              'If you are in this case, you can use --bypass-hooks option to avoid the presubmit check when uploading your CL.'
              ),
-            # network::mojom::Foo is allowed to use as non-blink mojom type.
-            ('(|::)(?!network::)(\w+::)?mojom::(?!blink).+',
-             'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead of "::mojom::Foo" unless you have clear reasons not to do so',
-             'Warning'),
+            _DISALLOW_NON_BLINK_MOJOM,
         ],
     },
     {
@@ -724,7 +747,6 @@ _CONFIG = [
             'cc::TranslateOp',
             'gfx::DisplayColorSpaces',
             'gfx::FontRenderParams',
-            'gfx::RenderingPipeline',
             'ui::ImeTextSpan',
             'viz::FrameSinkId',
             'viz::LocalSurfaceId',
@@ -850,7 +872,7 @@ _CONFIG = [
         ],
     },
     {
-        'paths': ['third_party/blink/renderer/core/page/scrolling'],
+        'paths': ['third_party/blink/renderer/core/fragment_directive'],
         'allowed': [
             'cc::ScrollbarLayerBase',
             'shared_highlighting::.+',
@@ -1313,6 +1335,11 @@ _CONFIG = [
         # WTF::RefCounted should be used instead. base::RefCountedThreadSafe is
         # still needed for cross_thread_copier.h though.
         'allowed': ['base::RefCountedThreadSafe', '(?!base::RefCounted).+'],
+        'disallowed': [
+            # TODO(https://crbug.com/1267866): this warning is shown twice for
+            # renderer/platform/ violations.
+            _DISALLOW_NON_BLINK_MOJOM,
+        ]
     },
     {
         'paths': [
@@ -1393,6 +1420,16 @@ _CONFIG = [
             'third_party/blink/renderer/core/paint/theme_painter_default.cc',
         ],
         'allowed': ['ui::NativeTheme.*', 'ui::color_utils.*'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/scroll/mac_scrollbar_animator_impl.h',
+            'third_party/blink/renderer/core/scroll/mac_scrollbar_animator_impl.mm',
+        ],
+        'allowed': [
+            'ui::ScrollbarAnimationTimerMac',
+            'ui::OverlayScrollbarAnimatorMac',
+        ],
     },
     {
         'paths': [
@@ -1740,9 +1777,8 @@ def check(path, contents):
         idx = line.find('//')
         if idx >= 0:
             line = line[:idx]
-        match = _IDENTIFIER_WITH_NAMESPACE_RE.search(line)
-        if match:
-            identifier = match.group(0)
+        identifiers = _IDENTIFIER_WITH_NAMESPACE_RE.findall(line)
+        for identifier in identifiers:
             if not _check_entries_for_identifier(entries, identifier):
                 advice, warning = _find_advice_for_identifier(
                     entries, identifier)

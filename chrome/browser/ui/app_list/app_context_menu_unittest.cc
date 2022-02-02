@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -116,8 +116,11 @@ std::unique_ptr<AppServiceAppItem> GetAppListItem(Profile* profile,
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
       .ForOneApp(app_id, [profile, &item](const apps::AppUpdate& update) {
-        item = std::make_unique<AppServiceAppItem>(profile, nullptr, nullptr,
-                                                   update);
+        item = std::make_unique<AppServiceAppItem>(
+            profile, /*model_updater=*/nullptr, /*sync_item=*/nullptr, update);
+
+        // Because model updater is null, set position manually.
+        item->SetChromePosition(item->CalculateDefaultPositionForTest());
       });
   return item;
 }
@@ -126,11 +129,13 @@ std::unique_ptr<ui::SimpleMenuModel> GetContextMenuModel(
     ChromeAppListItem* item) {
   base::RunLoop run_loop;
   std::unique_ptr<ui::SimpleMenuModel> menu;
-  item->GetContextMenuModel(base::BindLambdaForTesting(
-      [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
-        menu = std::move(created_menu);
-        run_loop.Quit();
-      }));
+  item->GetContextMenuModel(
+      /*add_sort_options=*/false,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
+            menu = std::move(created_menu);
+            run_loop.Quit();
+          }));
   run_loop.Run();
   return menu;
 }
@@ -269,8 +274,8 @@ class AppContextMenuTest : public AppListTestBase {
     controller_->SetAppPinnable(app_id, pinnable);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
 
-    AppServiceContextMenu menu(menu_delegate(), profile(), app_id,
-                               controller());
+    AppServiceContextMenu menu(menu_delegate(), profile(), app_id, controller(),
+                               /*add_sort_options=*/false);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -315,7 +320,8 @@ class AppContextMenuTest : public AppListTestBase {
 
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     AppServiceContextMenu menu(menu_delegate(), profile(),
-                               extension_misc::kChromeAppId, controller());
+                               extension_misc::kChromeAppId, controller(),
+                               /*add_sort_options=*/false);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
 
@@ -368,7 +374,8 @@ TEST_F(AppContextMenuTest, ChromeApp) {
 
 TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
   AppServiceContextMenu menu(menu_delegate(), profile(),
-                             "some_non_existing_extension_app", controller());
+                             "some_non_existing_extension_app", controller(),
+                             /*add_sort_options=*/false);
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   EXPECT_EQ(nullptr, menu_model);
 }
@@ -706,7 +713,8 @@ TEST_F(AppContextMenuLacrosTest, LacrosApp) {
 
   // Create the context menu.
   AppServiceContextMenu menu(menu_delegate(), profile(),
-                             extension_misc::kLacrosAppId, controller());
+                             extension_misc::kLacrosAppId, controller(),
+                             /*add_sort_options=*/false);
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   ASSERT_NE(menu_model, nullptr);
 

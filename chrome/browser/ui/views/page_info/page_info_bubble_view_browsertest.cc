@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -32,10 +33,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
-#include "components/page_info/about_this_site_validation.h"
-#include "components/page_info/features.h"
+#include "components/page_info/core/about_this_site_validation.h"
+#include "components/page_info/core/features.h"
+#include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "components/page_info/page_info.h"
-#include "components/page_info/proto/about_this_site_metadata.pb.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -66,7 +67,8 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/test/widget_test.h"
 
-using ProtoValidation = page_info::about_this_site_validation::ProtoValidation;
+using AboutThisSiteStatus =
+    page_info::about_this_site_validation::AboutThisSiteStatus;
 
 namespace {
 
@@ -220,21 +222,9 @@ class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
     PageInfo* presenter = nullptr;
     presenter = static_cast<PageInfoBubbleView*>(
                     PageInfoBubbleView::GetPageInfoBubbleForTesting())
-                    ->presenter_.get();
+                    ->presenter_for_testing();
     DCHECK(presenter);
     return presenter;
-  }
-
-  void TriggerReloadPromptOnClose() const {
-    // Set some dummy non-default permissions. This will trigger a reload prompt
-    // when the bubble is closed.
-    PageInfo::PermissionInfo permission;
-    permission.type = ContentSettingsType::NOTIFICATIONS;
-    permission.setting = ContentSetting::CONTENT_SETTING_BLOCK;
-    permission.default_setting = ContentSetting::CONTENT_SETTING_ASK;
-    permission.source = content_settings::SettingSource::SETTING_SOURCE_USER;
-    GetPresenter()->OnSitePermissionChanged(permission.type, permission.setting,
-                                            permission.is_one_time);
   }
 
   void SetPageInfoBubbleIdentityInfo(
@@ -292,7 +282,7 @@ class PageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
     EXPECT_CALL(*mock_sentiment_service_, PageInfoClosed);
   }
 
-  MockTrustSafetySentimentService* mock_sentiment_service_;
+  raw_ptr<MockTrustSafetySentimentService> mock_sentiment_service_;
 
  private:
   std::vector<PageInfoViewFactory::PageInfoViewID> expected_identifiers_;
@@ -719,163 +709,6 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, MalwareAndEvCert) {
                 u"Thawte Inc", u"US"));
 }
 
-namespace {
-
-// Tracks focus of an arbitrary UI element.
-class FocusTracker {
- public:
-  FocusTracker(const FocusTracker&) = delete;
-  FocusTracker& operator=(const FocusTracker&) = delete;
-
-  bool focused() const { return focused_; }
-
-  // Wait for focused() to be in state |target_state_is_focused|. If focused()
-  // is already in the desired state, returns immediately, otherwise waits until
-  // it is.
-  void WaitForFocus(bool target_state_is_focused) {
-    if (focused_ == target_state_is_focused)
-      return;
-    target_state_is_focused_ = target_state_is_focused;
-    run_loop_.Run();
-  }
-
- protected:
-  explicit FocusTracker(bool initially_focused) : focused_(initially_focused) {}
-  virtual ~FocusTracker() = default;
-
-  void OnFocused() {
-    focused_ = true;
-    if (run_loop_.running() && target_state_is_focused_ == focused_)
-      run_loop_.Quit();
-  }
-
-  void OnBlurred() {
-    focused_ = false;
-    if (run_loop_.running() && target_state_is_focused_ == focused_)
-      run_loop_.Quit();
-  }
-
- private:
-  // Whether the tracked visual element is currently focused.
-  bool focused_ = false;
-
-  // Desired state when waiting for focus to change.
-  bool target_state_is_focused_;
-
-  base::RunLoop run_loop_;
-};
-
-// Watches a WebContents for focus changes.
-class WebContentsFocusTracker : public FocusTracker,
-                                public content::WebContentsObserver {
- public:
-  explicit WebContentsFocusTracker(content::WebContents* web_contents)
-      : FocusTracker(IsWebContentsFocused(web_contents)),
-        WebContentsObserver(web_contents) {}
-
-  void OnWebContentsFocused(
-      content::RenderWidgetHost* render_widget_host) override {
-    OnFocused();
-  }
-
-  void OnWebContentsLostFocus(
-      content::RenderWidgetHost* render_widget_host) override {
-    OnBlurred();
-  }
-
- private:
-  static bool IsWebContentsFocused(content::WebContents* web_contents) {
-    Browser* const browser = chrome::FindBrowserWithWebContents(web_contents);
-    if (!browser)
-      return false;
-    if (browser->tab_strip_model()->GetActiveWebContents() != web_contents)
-      return false;
-    return BrowserView::GetBrowserViewForBrowser(browser)
-        ->contents_web_view()
-        ->HasFocus();
-  }
-};
-
-// Watches a View for focus changes.
-class ViewFocusTracker : public FocusTracker, public views::ViewObserver {
- public:
-  explicit ViewFocusTracker(views::View* view)
-      : FocusTracker(view->HasFocus()) {
-    scoped_observation_.Observe(view);
-  }
-
-  void OnViewFocused(views::View* observed_view) override { OnFocused(); }
-
-  void OnViewBlurred(views::View* observed_view) override { OnBlurred(); }
-
- private:
-  base::ScopedObservation<views::View, views::ViewObserver> scoped_observation_{
-      this};
-};
-
-}  // namespace
-
-#if defined(OS_MAC) || defined(OS_LINUX) || defined(OS_WIN)
-// https://crbug.com/1029882
-#define MAYBE_FocusReturnsToContentOnClose DISABLED_FocusReturnsToContentOnClose
-#else
-#define MAYBE_FocusReturnsToContentOnClose FocusReturnsToContentOnClose
-#endif
-
-// Test that when the PageInfo bubble is closed, focus is returned to the web
-// contents pane.
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       MAYBE_FocusReturnsToContentOnClose) {
-  WebContentsFocusTracker web_contents_focus_tracker(web_contents());
-  web_contents()->Focus();
-  web_contents_focus_tracker.WaitForFocus(true);
-
-  OpenPageInfoBubble(browser());
-  auto* page_info_bubble_view =
-      PageInfoBubbleView::GetPageInfoBubbleForTesting();
-  EXPECT_FALSE(web_contents_focus_tracker.focused());
-
-  page_info_bubble_view->GetWidget()->CloseWithReason(
-      views::Widget::ClosedReason::kEscKeyPressed);
-  web_contents_focus_tracker.WaitForFocus(true);
-  EXPECT_TRUE(web_contents_focus_tracker.focused());
-}
-
-#if defined(OS_MAC) || defined(OS_WIN)
-// https://crbug.com/1029882, https://crbug.com/1266254
-#define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
-  DISABLED_FocusDoesNotReturnToContentsOnReloadPrompt
-#else
-#define MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt \
-  FocusDoesNotReturnToContentsOnReloadPrompt
-#endif
-
-// Test that when the PageInfo bubble is closed and a reload prompt is
-// displayed, focus is NOT returned to the web contents pane, but rather returns
-// to the location bar so accessibility users must tab through the reload prompt
-// before getting back to web contents (see https://crbug.com/910067).
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
-                       MAYBE_FocusDoesNotReturnToContentsOnReloadPrompt) {
-  WebContentsFocusTracker web_contents_focus_tracker(web_contents());
-  ViewFocusTracker location_bar_focus_tracker(
-      BrowserView::GetBrowserViewForBrowser(browser())->GetLocationBarView());
-  web_contents()->Focus();
-  web_contents_focus_tracker.WaitForFocus(true);
-
-  OpenPageInfoBubble(browser());
-  auto* page_info_bubble_view =
-      PageInfoBubbleView::GetPageInfoBubbleForTesting();
-  EXPECT_FALSE(web_contents_focus_tracker.focused());
-
-  TriggerReloadPromptOnClose();
-  page_info_bubble_view->GetWidget()->CloseWithReason(
-      views::Widget::ClosedReason::kEscKeyPressed);
-  location_bar_focus_tracker.WaitForFocus(true);
-  web_contents_focus_tracker.WaitForFocus(false);
-  EXPECT_TRUE(location_bar_focus_tracker.focused());
-  EXPECT_FALSE(web_contents_focus_tracker.focused());
-}
-
 class PageInfoBubbleViewPrerenderBrowserTest
     : public PageInfoBubbleViewBrowserTest {
  public:
@@ -965,7 +798,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteBrowserTest,
   ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
   ukm_recorder.ExpectEntryMetric(
       entries[0], ukm::builders::AboutThisSiteStatus::kStatusName,
-      static_cast<int>(ProtoValidation::kValid));
+      static_cast<int>(AboutThisSiteStatus::kValid));
 
   page_info->GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kEscKeyPressed);
@@ -1005,7 +838,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteBrowserTest,
   ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
   ukm_recorder.ExpectEntryMetric(
       entries[0], ukm::builders::AboutThisSiteStatus::kStatusName,
-      static_cast<int>(ProtoValidation::kMissingDescriptionName));
+      static_cast<int>(AboutThisSiteStatus::kMissingDescriptionName));
 
   page_info->GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kEscKeyPressed);
@@ -1081,5 +914,5 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDisabledBrowserTest,
   ukm_recorder.ExpectEntrySourceHasUrl(entries[0], url);
   ukm_recorder.ExpectEntryMetric(
       entries[0], ukm::builders::AboutThisSiteStatus::kStatusName,
-      static_cast<int>(ProtoValidation::kUnknown));
+      static_cast<int>(AboutThisSiteStatus::kUnknown));
 }

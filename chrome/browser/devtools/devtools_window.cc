@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -148,9 +147,8 @@ class DevToolsToolboxDelegate
     : public content::WebContentsObserver,
       public content::WebContentsDelegate {
  public:
-  DevToolsToolboxDelegate(
-      WebContents* toolbox_contents,
-      DevToolsWindow::ObserverWithAccessor* web_contents_observer);
+  DevToolsToolboxDelegate(WebContents* toolbox_contents,
+                          base::WeakPtr<WebContents> inspected_web_contents);
 
   DevToolsToolboxDelegate(const DevToolsToolboxDelegate&) = delete;
   DevToolsToolboxDelegate& operator=(const DevToolsToolboxDelegate&) = delete;
@@ -170,15 +168,14 @@ class DevToolsToolboxDelegate
 
  private:
   BrowserWindow* GetInspectedBrowserWindow();
-  DevToolsWindow::ObserverWithAccessor* inspected_contents_observer_;
+  base::WeakPtr<content::WebContents> inspected_web_contents_;
 };
 
 DevToolsToolboxDelegate::DevToolsToolboxDelegate(
     WebContents* toolbox_contents,
-    DevToolsWindow::ObserverWithAccessor* web_contents_observer)
+    base::WeakPtr<WebContents> web_contents)
     : WebContentsObserver(toolbox_contents),
-      inspected_contents_observer_(web_contents_observer) {
-}
+      inspected_web_contents_(web_contents) {}
 
 DevToolsToolboxDelegate::~DevToolsToolboxDelegate() {
 }
@@ -220,13 +217,12 @@ void DevToolsToolboxDelegate::WebContentsDestroyed() {
 }
 
 BrowserWindow* DevToolsToolboxDelegate::GetInspectedBrowserWindow() {
-  WebContents* inspected_contents =
-      inspected_contents_observer_->web_contents();
-  if (!inspected_contents)
+  if (!inspected_web_contents_)
     return nullptr;
   Browser* browser = nullptr;
   int tab = 0;
-  if (FindInspectedBrowserAndTabIndex(inspected_contents, &browser, &tab))
+  if (FindInspectedBrowserAndTabIndex(inspected_web_contents_.get(), &browser,
+                                      &tab))
     return browser->window();
   return nullptr;
 }
@@ -352,16 +348,6 @@ bool DevToolsEventForwarder::KeyWhitelistingAllowed(int key_code,
 
 void DevToolsWindow::OpenNodeFrontend() {
   DevToolsWindow::OpenNodeFrontendWindow(profile_);
-}
-
-// DevToolsWindow::ObserverWithAccessor -------------------------------
-
-DevToolsWindow::ObserverWithAccessor::ObserverWithAccessor(
-    WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-}
-
-DevToolsWindow::ObserverWithAccessor::~ObserverWithAccessor() {
 }
 
 // DevToolsWindow::Throttle ------------------------------------------
@@ -845,7 +831,9 @@ DevToolsWindow::MaybeCreateNavigationThrottle(
     content::NavigationHandle* handle) {
   WebContents* web_contents = handle->GetWebContents();
   if (!web_contents || !web_contents->HasOriginalOpener() ||
-      web_contents->GetController().GetLastCommittedEntry()) {
+      !web_contents->GetController()
+           .GetLastCommittedEntry()
+           ->IsInitialEntry()) {
     return nullptr;
   }
 
@@ -870,8 +858,7 @@ void DevToolsWindow::UpdateInspectedWebContents(
   DCHECK(!reattach_complete_callback_);
   reattach_complete_callback_ = std::move(callback);
 
-  inspected_contents_observer_ =
-      std::make_unique<ObserverWithAccessor>(new_web_contents);
+  inspected_web_contents_ = new_web_contents->GetWeakPtr();
   bindings_->AttachTo(
       content::DevToolsAgentHost::GetOrCreateFor(new_web_contents));
   bindings_->CallClientMethod(
@@ -1071,8 +1058,7 @@ DevToolsWindow::DevToolsWindow(FrontendType frontend_type,
 
   // There is no inspected_web_contents in case of various workers.
   if (inspected_web_contents)
-    inspected_contents_observer_ =
-        std::make_unique<ObserverWithAccessor>(inspected_web_contents);
+    inspected_web_contents_ = inspected_web_contents->GetWeakPtr();
 
   // Initialize docked page to be of the right size.
   if (can_dock_ && inspected_web_contents) {
@@ -1289,9 +1275,8 @@ void DevToolsWindow::AddNewContents(WebContents* source,
   if (new_contents.get() == toolbox_web_contents_) {
     owned_toolbox_web_contents_ = std::move(new_contents);
 
-    toolbox_web_contents_->SetDelegate(
-        new DevToolsToolboxDelegate(toolbox_web_contents_,
-                                    inspected_contents_observer_.get()));
+    toolbox_web_contents_->SetDelegate(new DevToolsToolboxDelegate(
+        toolbox_web_contents_, inspected_web_contents_));
     if (main_web_contents_->GetRenderWidgetHostView() &&
         toolbox_web_contents_->GetRenderWidgetHostView()) {
       gfx::Size size =
@@ -1748,9 +1733,7 @@ void DevToolsWindow::UpdateBrowserWindow() {
 }
 
 WebContents* DevToolsWindow::GetInspectedWebContents() {
-  return inspected_contents_observer_
-             ? inspected_contents_observer_->web_contents()
-             : nullptr;
+  return inspected_web_contents_.get();
 }
 
 void DevToolsWindow::LoadCompleted() {

@@ -5,15 +5,29 @@
 #ifndef COMPONENTS_CERTIFICATE_TRANSPARENCY_CHROME_CT_POLICY_ENFORCER_H_
 #define COMPONENTS_CERTIFICATE_TRANSPARENCY_CHROME_CT_POLICY_ENFORCER_H_
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "net/cert/ct_policy_enforcer.h"
 
 namespace certificate_transparency {
+
+struct OperatorHistoryEntry {
+  // Name of the current operator for the log.
+  std::string current_operator_;
+  // Vector of previous operators (if any) for the log, represented as pairs of
+  // operator name and time when they stopped operating the log.
+  std::vector<std::pair<std::string, base::TimeDelta>> previous_operators_;
+
+  OperatorHistoryEntry();
+  ~OperatorHistoryEntry();
+  OperatorHistoryEntry(const OperatorHistoryEntry& other);
+};
 
 // A CTPolicyEnforcer that enforces the "Certificate Transparency in Chrome"
 // policies detailed at
@@ -34,7 +48,8 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
   ChromeCTPolicyEnforcer(
       base::Time log_list_date,
       std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs,
-      std::vector<std::string> operated_by_google_logs);
+      std::vector<std::string> operated_by_google_logs,
+      std::map<std::string, OperatorHistoryEntry> log_operator_history);
 
   ~ChromeCTPolicyEnforcer() override;
 
@@ -49,7 +64,8 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
   void UpdateCTLogList(
       base::Time update_time,
       std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs,
-      std::vector<std::string> operated_by_google_logs);
+      std::vector<std::string> operated_by_google_logs,
+      std::map<std::string, OperatorHistoryEntry> log_operator_history);
 
   void SetClockForTesting(const base::Clock* clock) { clock_ = clock; }
 
@@ -64,6 +80,11 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
   const std::vector<std::pair<std::string, base::TimeDelta>>&
   disqualified_logs_for_testing() {
     return disqualified_logs_;
+  }
+
+  const std::map<std::string, OperatorHistoryEntry>&
+  operator_history_for_testing() {
+    return log_operator_history_;
   }
 
  private:
@@ -86,13 +107,17 @@ class ChromeCTPolicyEnforcer : public net::CTPolicyEnforcer {
       const net::X509Certificate& cert,
       const net::ct::SCTList& verified_scts) const;
 
+  std::string GetOperatorForLog(std::string log_id, base::TimeDelta timestamp);
+
   // Map of SHA-256(SPKI) to log disqualification date.
   std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs_;
 
   // List of SHA-256(SPKI) for logs operated by Google.
   std::vector<std::string> operated_by_google_logs_;
 
-  const base::Clock* clock_;
+  std::map<std::string, OperatorHistoryEntry> log_operator_history_;
+
+  raw_ptr<const base::Clock> clock_;
 
   // The time at which |disqualified_logs_| and |operated_by_google_logs_| were
   // generated.

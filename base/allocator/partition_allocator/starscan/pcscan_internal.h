@@ -68,8 +68,8 @@ class PCScanInternal final {
   void SetCurrentPCScanTask(TaskHandle task);
   void ResetCurrentPCScanTask();
 
-  void RegisterScannableRoot(Root* root);
-  void RegisterNonScannableRoot(Root* root);
+  void RegisterScannableRoot(Root*);
+  void RegisterNonScannableRoot(Root*);
 
   RootsMap& scannable_roots() { return scannable_roots_; }
   const RootsMap& scannable_roots() const { return scannable_roots_; }
@@ -142,7 +142,7 @@ class PCScanInternal final {
   const SimdSupport simd_support_;
 
   std::unique_ptr<WriteProtector> write_protector_;
-  StatsReporter* stats_reporter_;
+  StatsReporter* stats_reporter_ = nullptr;
 
   bool is_initialized_ = false;
 };

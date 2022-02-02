@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/css_value_clamping_utils.h"
 #include "third_party/blink/renderer/platform/geometry/blend.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 
@@ -210,11 +211,12 @@ Length InterpolableLength::CreateLength(
   if (IsExpression())
     return Length(expression_->ToCalcValue(conversion_data, range, true));
 
+  DCHECK(IsLengthArray());
   bool has_percentage = HasPercentage();
   double pixels = 0;
   double percentage = 0;
   for (wtf_size_t i = 0; i < length_array_.values.size(); ++i) {
-    double value = length_array_.values[i];
+    double value = CSSValueClampingUtils::ClampLength(length_array_.values[i]);
     if (value == 0)
       continue;
     if (i == CSSPrimitiveValue::kUnitTypePercentage) {
@@ -223,13 +225,20 @@ Length InterpolableLength::CreateLength(
       pixels += conversion_data.ZoomedComputedPixels(value, IndexToUnitType(i));
     }
   }
+  pixels = CSSValueClampingUtils::ClampLength(pixels);
 
   if (percentage != 0)
     has_percentage = true;
   if (pixels != 0 && has_percentage) {
+    pixels = ClampTo<float>(pixels);
+    if (percentage == 0) {
+      // Match the clamping behavior in the StyleBuilder code path,
+      // which goes through CSSPrimitiveValue::CreateFromLength and then
+      // CSSPrimitiveValue::ConvertToLength.
+      pixels = CSSPrimitiveValue::ClampToCSSLengthRange(pixels);
+    }
     return Length(CalculationValue::Create(
-        PixelsAndPercent(ClampTo<float>(pixels), ClampTo<float>(percentage)),
-        range));
+        PixelsAndPercent(pixels, ClampTo<float>(percentage)), range));
   }
   if (has_percentage)
     return Length::Percent(ClampToRange(percentage, range));

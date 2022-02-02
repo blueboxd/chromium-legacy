@@ -4,8 +4,8 @@
 
 #include "ash/system/phonehub/silence_phone_quick_action_controller.h"
 
+#include "ash/components/phonehub/fake_do_not_disturb_controller.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/components/phonehub/fake_do_not_disturb_controller.h"
 
 namespace ash {
 
@@ -19,8 +19,7 @@ class SilencePhoneQuickActionControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    dnd_controller_ =
-        std::make_unique<chromeos::phonehub::FakeDoNotDisturbController>();
+    dnd_controller_ = std::make_unique<phonehub::FakeDoNotDisturbController>();
     controller_ = std::make_unique<SilencePhoneQuickActionController>(
         dnd_controller_.get());
 
@@ -37,7 +36,7 @@ class SilencePhoneQuickActionControllerTest : public AshTestBase {
  protected:
   SilencePhoneQuickActionController* controller() { return controller_.get(); }
 
-  chromeos::phonehub::FakeDoNotDisturbController* dnd_controller() {
+  phonehub::FakeDoNotDisturbController* dnd_controller() {
     return dnd_controller_.get();
   }
 
@@ -49,8 +48,7 @@ class SilencePhoneQuickActionControllerTest : public AshTestBase {
  private:
   std::unique_ptr<QuickActionItem> item_;
   std::unique_ptr<SilencePhoneQuickActionController> controller_;
-  std::unique_ptr<chromeos::phonehub::FakeDoNotDisturbController>
-      dnd_controller_;
+  std::unique_ptr<phonehub::FakeDoNotDisturbController> dnd_controller_;
 };
 
 TEST_F(SilencePhoneQuickActionControllerTest, ItemStateChanged) {

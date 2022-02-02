@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "ipc/ipc_message.h"
 
 namespace ipc_fuzzer {
@@ -18,11 +17,11 @@ using MessageVector = std::vector<std::unique_ptr<IPC::Message>>;
 
 class MessageFile {
  public:
+  MessageFile(const MessageFile&) = delete;
+  MessageFile& operator=(const MessageFile&) = delete;
+
   static bool Read(const base::FilePath& path, MessageVector* messages);
   static bool Write(const base::FilePath& path, const MessageVector& messages);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MessageFile);
 };
 
 }  // namespace ipc_fuzzer

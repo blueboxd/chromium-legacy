@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
+#include "chrome/browser/ui/webui/settings/privacy_review_handler.h"
 #include "chrome/browser/ui/webui/settings/privacy_sandbox_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
@@ -101,10 +102,14 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
+#include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
 #include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
 #include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/multidevice_setup/multidevice_setup_client_factory.h"
 #include "chrome/browser/ash/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -115,11 +120,9 @@
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/browser_resources.h"
-#include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/login/auth/password_visibility_utils.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
-#include "components/arc/arc_util.h"
 #include "components/user_manager/user.h"
 #include "ui/base/ui_base_features.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -140,6 +143,7 @@
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "chrome/browser/ui/webui/settings/url_handlers_handler.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #endif
 
 namespace settings {
@@ -212,7 +216,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<OnStartupHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<PeopleHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProfileInfoHandler>(profile));
-  AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>());
+  AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>(profile));
+  AddSettingsPageUIHandler(std::make_unique<PrivacyReviewHandler>());
   AddSettingsPageUIHandler(std::make_unique<PrivacySandboxHandler>());
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SecureDnsHandler>());
@@ -240,8 +245,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-  AddSettingsPageUIHandler(std::make_unique<UrlHandlersHandler>(
-      g_browser_process->local_state(), profile));
+  if (web_app::WebAppProvider::GetForWebApps(profile) != nullptr) {
+    AddSettingsPageUIHandler(std::make_unique<UrlHandlersHandler>(
+        g_browser_process->local_state(), profile));
+  }
 #endif
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -256,14 +263,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
         std::make_unique<IncompatibleApplicationsHandler>());
 #endif  // OS_WIN && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  bool enable_landing_page_redesign =
-      base::FeatureList::IsEnabled(features::kSettingsLandingPageRedesign);
-  html_source->AddString(
-      "enableLandingPageRedesignAttribute",
-      enable_landing_page_redesign ? "enable-landing-page-redesign" : "");
-  html_source->AddBoolean("enableLandingPageRedesign",
-                          enable_landing_page_redesign);
-
   html_source->AddString(
       "enableBrandingUpdateAttribute",
       base::FeatureList::IsEnabled(features::kWebUIBrandingUpdate)
@@ -277,11 +276,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
-
-  html_source->AddBoolean(
-      "enableMovingMultiplePasswordsToAccount",
-      base::FeatureList::IsEnabled(
-          password_manager::features::kEnableMovingMultiplePasswordsToAccount));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
@@ -408,8 +402,10 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
     auto* android_sms_service =
         ash::android_sms::AndroidSmsServiceFactory::GetForBrowserContext(
             profile);
-    chromeos::phonehub::PhoneHubManager* phone_hub_manager =
+    ash::phonehub::PhoneHubManager* phone_hub_manager =
         ash::phonehub::PhoneHubManagerFactory::GetForProfile(profile);
+    ash::eche_app::EcheAppManager* eche_app_manager =
+        ash::eche_app::EcheAppManagerFactory::GetForProfile(profile);
     web_ui()->AddMessageHandler(std::make_unique<
                                 chromeos::settings::MultideviceHandler>(
         profile->GetPrefs(),
@@ -421,7 +417,8 @@ void SettingsUI::InitBrowserSettingsWebUIHandlers() {
             ? android_sms_service->android_sms_pairing_state_tracker()
             : nullptr,
         android_sms_service ? android_sms_service->android_sms_app_manager()
-                            : nullptr));
+                            : nullptr,
+        eche_app_manager ? eche_app_manager->GetAppsAccessManager() : nullptr));
   }
 }
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)

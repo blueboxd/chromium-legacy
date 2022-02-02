@@ -158,10 +158,11 @@ const float kIdealPaddingRatio = 0.3f;
 
 // Returns a rect which is offset and scaled accordingly to |base_rect|'s
 // location and size.
-FloatRect NormalizeRect(const IntRect& to_normalize, const IntRect& base_rect) {
+FloatRect NormalizeRect(const gfx::Rect& to_normalize,
+                        const gfx::Rect& base_rect) {
   FloatRect result(to_normalize);
   result.set_origin(
-      FloatPoint(to_normalize.origin() - base_rect.OffsetFromOrigin()));
+      gfx::PointF(to_normalize.origin() - base_rect.OffsetFromOrigin()));
   result.Scale(1.0 / base_rect.width(), 1.0 / base_rect.height());
   return result;
 }
@@ -232,7 +233,7 @@ viz::FrameSinkId GetRemoteFrameSinkId(const HitTestResult& result) {
   if (!object->IsBox())
     return viz::FrameSinkId();
 
-  gfx::Point local_point = ToRoundedPoint(result.LocalPoint());
+  LayoutPoint local_point(ToRoundedPoint(result.LocalPoint()));
   if (!To<LayoutBox>(object)->ComputedCSSContentBoxRect().Contains(local_point))
     return viz::FrameSinkId();
 
@@ -357,9 +358,10 @@ gfx::Rect WebFrameWidgetImpl::ComputeBlockBound(
 
   // Return the bounding box in the root frame's coordinate space.
   if (node) {
-    IntRect absolute_rect = node->GetLayoutObject()->AbsoluteBoundingBoxRect();
+    gfx::Rect absolute_rect =
+        node->GetLayoutObject()->AbsoluteBoundingBoxRect();
     LocalFrame* frame = node->GetDocument().GetFrame();
-    return ToGfxRect(frame->View()->ConvertToRootFrame(absolute_rect));
+    return frame->View()->ConvertToRootFrame(absolute_rect);
   }
   return gfx::Rect();
 }
@@ -410,8 +412,8 @@ void WebFrameWidgetImpl::DragTargetDragLeave(
   }
 
   gfx::PointF point_in_root_frame(ViewportToRootFrame(point_in_viewport));
-  DragData drag_data(current_drag_data_.Get(), FloatPoint(point_in_root_frame),
-                     FloatPoint(screen_point), operations_allowed_);
+  DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
+                     screen_point, operations_allowed_);
 
   GetPage()->GetDragController().DragExited(&drag_data,
                                             *local_root_->GetFrame());
@@ -448,9 +450,8 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
 
   if (!IgnoreInputEvents()) {
     current_drag_data_->SetModifiers(key_modifiers);
-    DragData drag_data(current_drag_data_.Get(),
-                       FloatPoint(point_in_root_frame),
-                       FloatPoint(screen_point), operations_allowed_);
+    DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
+                       screen_point, operations_allowed_);
 
     GetPage()->GetDragController().PerformDrag(&drag_data,
                                                *local_root_->GetFrame());
@@ -474,9 +475,8 @@ void WebFrameWidgetImpl::DragSourceEndedAt(const gfx::PointF& point_in_viewport,
     CancelDrag();
     return;
   }
-  gfx::PointF point_in_root_frame(
-      ToGfxPointF(GetPage()->GetVisualViewport().ViewportToRootFrame(
-          FloatPoint(point_in_viewport))));
+  gfx::PointF point_in_root_frame =
+      GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport);
 
   WebMouseEvent fake_mouse_move(
       WebInputEvent::Type::kMouseMove, point_in_root_frame, screen_point,
@@ -583,13 +583,12 @@ viz::FrameSinkId WebFrameWidgetImpl::GetFrameSinkIdAtPoint(
 
   viz::FrameSinkId remote_frame_sink_id = GetRemoteFrameSinkId(result);
   if (remote_frame_sink_id.is_valid()) {
-    FloatPoint local_point = FloatPoint(result.LocalPoint());
+    gfx::PointF local_point(result.LocalPoint());
     LayoutObject* object = result_node->GetLayoutObject();
     if (auto* box = DynamicTo<LayoutBox>(object))
-      local_point.MoveBy(-FloatPoint(box->PhysicalContentBoxOffset()));
+      local_point -= gfx::Vector2dF(box->PhysicalContentBoxOffset());
 
-    *local_point_in_dips =
-        widget_base_->BlinkSpaceToDIPs(ToGfxPointF(local_point));
+    *local_point_in_dips = widget_base_->BlinkSpaceToDIPs(local_point);
     return remote_frame_sink_id;
   }
 
@@ -798,8 +797,8 @@ void WebFrameWidgetImpl::MouseContextMenu(const WebMouseEvent& event) {
   transformed_event.id = PointerEventFactory::kMouseId;
 
   // Find the right target frame. See issue 1186900.
-  HitTestResult result = HitTestResultForRootFramePos(
-      FloatPoint(transformed_event.PositionInRootFrame()));
+  HitTestResult result =
+      HitTestResultForRootFramePos(transformed_event.PositionInRootFrame());
   Frame* target_frame;
   if (result.InnerNodeOrImageMapImage())
     target_frame = result.InnerNodeOrImageMapImage()->GetDocument().GetFrame();
@@ -862,7 +861,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
           web_view->MinimumPageScaleFactor() !=
               web_view->MaximumPageScaleFactor()) {
         gfx::Point pos_in_local_frame_root =
-            FlooredIntPoint(scaled_event.PositionInRootFrame());
+            gfx::ToFlooredPoint(scaled_event.PositionInRootFrame());
         auto block_bounds = ComputeBlockBound(pos_in_local_frame_root, false);
 
         if (ForMainFrame()) {
@@ -1097,11 +1096,11 @@ DragOperation WebFrameWidgetImpl::DragTargetDragEnterOrOver(
     return DragOperation::kNone;
   }
 
-  FloatPoint point_in_root_frame(ViewportToRootFrame(point_in_viewport));
+  gfx::PointF point_in_root_frame = ViewportToRootFrame(point_in_viewport);
 
   current_drag_data_->SetModifiers(key_modifiers);
-  DragData drag_data(current_drag_data_.Get(), FloatPoint(point_in_root_frame),
-                     FloatPoint(screen_point), operations_allowed_);
+  DragData drag_data(current_drag_data_.Get(), point_in_root_frame,
+                     screen_point, operations_allowed_);
 
   DragOperation drag_operation =
       GetPage()->GetDragController().DragEnteredOrUpdated(
@@ -1179,8 +1178,7 @@ void WebFrameWidgetImpl::DisableDragAndDrop() {
 
 gfx::PointF WebFrameWidgetImpl::ViewportToRootFrame(
     const gfx::PointF& point_in_viewport) const {
-  return ToGfxPointF(GetPage()->GetVisualViewport().ViewportToRootFrame(
-      FloatPoint(point_in_viewport)));
+  return GetPage()->GetVisualViewport().ViewportToRootFrame(point_in_viewport);
 }
 
 WebViewImpl* WebFrameWidgetImpl::View() const {
@@ -1244,11 +1242,10 @@ void WebFrameWidgetImpl::RegisterSelection(cc::LayerSelection selection) {
   widget_base_->LayerTreeHost()->RegisterSelection(selection);
 }
 
-void WebFrameWidgetImpl::StartPageScaleAnimation(
-    const gfx::Vector2d& destination,
-    bool use_anchor,
-    float new_page_scale,
-    base::TimeDelta duration) {
+void WebFrameWidgetImpl::StartPageScaleAnimation(const gfx::Point& destination,
+                                                 bool use_anchor,
+                                                 float new_page_scale,
+                                                 base::TimeDelta duration) {
   widget_base_->LayerTreeHost()->StartPageScaleAnimation(
       destination, use_anchor, new_page_scale, duration);
 }
@@ -1912,29 +1909,20 @@ bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
 
   if (edit_context) {
     // Scroll the |EditContext| into view.
-    // EditContext's coordinates are in Device Independent Pixels.
-    gfx::Rect control_bounds_in_dip;
-    gfx::Rect selection_bounds_in_dip;
-    edit_context->GetLayoutBounds(&control_bounds_in_dip,
-                                  &selection_bounds_in_dip);
-
-    IntRect control_bounds_in_physical_pixel = IntRect(control_bounds_in_dip);
-    IntRect selection_bounds_in_physical_pixel =
-        IntRect(selection_bounds_in_dip);
-    control_bounds_in_physical_pixel.Scale(
-        View()->ZoomFactorForDeviceScaleFactor());
-    selection_bounds_in_physical_pixel.Scale(
-        View()->ZoomFactorForDeviceScaleFactor());
+    gfx::Rect control_bounds_in_physical_pixels;
+    gfx::Rect selection_bounds_in_physical_pixels;
+    edit_context->GetLayoutBounds(&control_bounds_in_physical_pixels,
+                                  &selection_bounds_in_physical_pixels);
 
     LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
 
     View()->ZoomAndScrollToFocusedEditableElementRect(
         main_frame_view->RootFrameToDocument(
             element->GetDocument().View()->ConvertToRootFrame(
-                control_bounds_in_physical_pixel)),
+                control_bounds_in_physical_pixels)),
         main_frame_view->RootFrameToDocument(
             element->GetDocument().View()->ConvertToRootFrame(
-                selection_bounds_in_physical_pixel)),
+                selection_bounds_in_physical_pixels)),
         View()->ShouldZoomToLegibleScale(*element));
 
     return true;
@@ -2034,8 +2022,8 @@ void WebFrameWidgetImpl::Resize(const gfx::Size& new_size) {
 
   size_ = new_size;
 
-  view->SetLayoutSize(IntSize(*size_));
-  view->Resize(IntSize(*size_));
+  view->SetLayoutSize(*size_);
+  view->Resize(*size_);
 }
 
 void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
@@ -2414,9 +2402,14 @@ void WebFrameWidgetImpl::SetHandlingInputEvent(bool handling) {
 
 void WebFrameWidgetImpl::ProcessInputEventSynchronouslyForTesting(
     const WebCoalescedInputEvent& event,
-    HandledEventCallback callback) {
+    WidgetBaseInputHandler::HandledEventCallback callback) {
   widget_base_->input_handler().HandleInputEvent(event, nullptr,
                                                  std::move(callback));
+}
+
+void WebFrameWidgetImpl::ProcessInputEventSynchronouslyForTesting(
+    const WebCoalescedInputEvent& event) {
+  ProcessInputEventSynchronouslyForTesting(event, base::DoNothing());
 }
 
 WebInputEventResult WebFrameWidgetImpl::DispatchBufferedTouchEvents() {
@@ -2819,8 +2812,7 @@ WebFrameWidgetImpl::EnsureCompositorMutatorDispatcher(
 HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
     const gfx::PointF& point_in_viewport) {
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  FloatPoint point_in_root_frame(
-      view->ViewportToFrame(FloatPoint(point_in_viewport)));
+  gfx::PointF point_in_root_frame(view->ViewportToFrame(point_in_viewport));
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
@@ -3589,11 +3581,14 @@ void WebFrameWidgetImpl::CollapseSelection() {
 }
 
 void WebFrameWidgetImpl::Replace(const String& word) {
-  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  auto* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame)
     return;
-  if (!focused_frame->HasSelection())
-    focused_frame->SelectWordAroundCaret();
+  if (!focused_frame->HasSelection()) {
+    focused_frame->SelectAroundCaret(mojom::blink::SelectionGranularity::kWord,
+                                     /*should_show_handle=*/false,
+                                     /*should_show_context_menu=*/false);
+  }
   focused_frame->ReplaceSelection(word);
   // If the resulting selection is not actually a change in selection, we do not
   // need to explicitly notify about the selection change.
@@ -3687,8 +3682,11 @@ void WebFrameWidgetImpl::MoveCaret(const gfx::Point& point_in_dips) {
 }
 
 #if defined(OS_ANDROID)
-void WebFrameWidgetImpl::SelectWordAroundCaret(
-    SelectWordAroundCaretCallback callback) {
+void WebFrameWidgetImpl::SelectAroundCaret(
+    mojom::blink::SelectionGranularity granularity,
+    bool should_show_handle,
+    bool should_show_context_menu,
+    SelectAroundCaretCallback callback) {
   auto* focused_frame = FocusedWebLocalFrameInWidget();
   if (!focused_frame) {
     std::move(callback).Run(false, 0, 0);
@@ -3700,8 +3698,10 @@ void WebFrameWidgetImpl::SelectWordAroundCaret(
   int end_adjust = 0;
   blink::WebRange initial_range = focused_frame->SelectionRange();
   SetHandlingInputEvent(true);
-  if (!initial_range.IsNull())
-    did_select = focused_frame->SelectWordAroundCaret();
+  if (!initial_range.IsNull()) {
+    did_select = focused_frame->SelectAroundCaret(
+        granularity, should_show_handle, should_show_context_menu);
+  }
   if (did_select) {
     blink::WebRange adjusted_range = focused_frame->SelectionRange();
     DCHECK(!adjusted_range.IsNull());
@@ -3727,8 +3727,8 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
   if (!local_frame)
     return;
 
-  IntRect anchor;
-  IntRect focus;
+  gfx::Rect anchor;
+  gfx::Rect focus;
   auto& selection = local_frame->Selection();
   if (!selection.ComputeAbsoluteBounds(anchor, focus))
     return;
@@ -3737,18 +3737,18 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
   // For subframes it will just be a 1:1 transformation and the browser
   // will then apply later transformations to these rects.
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-  anchor_root_frame = ToGfxRect(visual_viewport.RootFrameToViewport(
-      local_frame->View()->ConvertToRootFrame(anchor)));
-  focus_root_frame = ToGfxRect(visual_viewport.RootFrameToViewport(
-      local_frame->View()->ConvertToRootFrame(focus)));
+  anchor_root_frame = visual_viewport.RootFrameToViewport(
+      local_frame->View()->ConvertToRootFrame(anchor));
+  focus_root_frame = visual_viewport.RootFrameToViewport(
+      local_frame->View()->ConvertToRootFrame(focus));
 
   // Calculate the bounding box of the selection area.
   if (bounding_box_in_root_frame) {
-    const IntRect bounding_box = EnclosingIntRect(
+    const gfx::Rect bounding_box = ToEnclosingRect(
         CreateRange(selection.GetSelectionInDOMTree().ComputeRange())
             ->BoundingRect());
-    *bounding_box_in_root_frame = ToGfxRect(visual_viewport.RootFrameToViewport(
-        local_frame->View()->ConvertToRootFrame(bounding_box)));
+    *bounding_box_in_root_frame = visual_viewport.RootFrameToViewport(
+        local_frame->View()->ConvertToRootFrame(bounding_box));
   }
 }
 
@@ -3920,6 +3920,11 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
     View()->CancelPagePopup();
   }
 
+  const bool window_screen_has_changed =
+      !Screen::AreWebExposedScreenPropertiesEqual(
+          previous_original_screen_infos.current(),
+          original_screen_infos.current());
+
   // Update Screens interface data before firing any events. The API is designed
   // to offer synchronous access to the most up-to-date cached screen
   // information when a change event is fired.  It is not required but it
@@ -3929,21 +3934,17 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
       LocalRootImpl()->GetFrame(),
       WTF::BindRepeating(
           [](const display::ScreenInfos& original_screen_infos,
-             WebLocalFrameImpl* local_frame) {
+             bool window_screen_has_changed, WebLocalFrameImpl* local_frame) {
+            auto* screen = local_frame->GetFrame()->DomWindow()->screen();
+            screen->UpdateDisplayId(original_screen_infos.current().display_id);
             CoreInitializer::GetInstance().DidUpdateScreens(
                 *local_frame->GetFrame(), original_screen_infos);
+            if (window_screen_has_changed)
+              screen->DispatchEvent(*Event::Create(event_type_names::kChange));
           },
-          original_screen_infos));
+          original_screen_infos, window_screen_has_changed));
 
   if (previous_original_screen_infos != original_screen_infos) {
-    // TODO(enne): http://crbug.com/1202981 only send this event when properties
-    // on Screen (vs anything in ScreenInfo) change.
-    if (previous_original_screen_infos.current() !=
-        original_screen_infos.current()) {
-      local_root_->GetFrame()->DomWindow()->screen()->DispatchEvent(
-          *Event::Create(event_type_names::kChange));
-    }
-
     // Propagate changes down to child local root RenderWidgets and
     // BrowserPlugins in other frame trees/processes.
     ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
@@ -4035,8 +4036,8 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
 }
 
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
-    const FloatPoint& pos_in_root_frame) {
-  FloatPoint doc_point =
+    const gfx::PointF& pos_in_root_frame) {
+  gfx::PointF doc_point =
       LocalRootImpl()->GetFrame()->View()->ConvertFromRootFrame(
           pos_in_root_frame);
   HitTestLocation location(doc_point);
@@ -4288,9 +4289,9 @@ WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
   }
 
   LocalFrameView& frame_view = *element.GetDocument().View();
-  IntRect absolute_element_bounds =
+  gfx::Rect absolute_element_bounds =
       element.GetLayoutObject()->AbsoluteBoundingBoxRect();
-  IntRect absolute_caret_bounds =
+  gfx::Rect absolute_caret_bounds =
       element.GetDocument().GetFrame()->Selection().AbsoluteCaretBounds();
   // Ideally, the chosen rectangle includes the element box and caret bounds
   // plus some margin on the left. If this does not work (i.e., does not fit
@@ -4298,19 +4299,20 @@ WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
   // bounds. It is preferable to also include element bounds' location and left
   // align the scroll. If this cant be satisfied, the scroll will be right
   // aligned.
-  IntRect maximal_rect =
+  gfx::Rect maximal_rect =
       UnionRects(absolute_element_bounds, absolute_caret_bounds);
 
   // Set the ideal margin.
-  maximal_rect.ShiftXEdgeTo(
-      maximal_rect.x() -
-      static_cast<int>(kIdealPaddingRatio * absolute_element_bounds.width()));
+  int width =
+      static_cast<int>(kIdealPaddingRatio * absolute_element_bounds.width());
+  maximal_rect.set_x(maximal_rect.right() - width);
+  maximal_rect.set_height(width);
 
   bool maximal_rect_fits_in_frame =
       !(frame_view.Size() - maximal_rect.size()).IsEmpty();
 
   if (!maximal_rect_fits_in_frame) {
-    IntRect frame_rect(maximal_rect.origin(), frame_view.Size());
+    gfx::Rect frame_rect(maximal_rect.origin(), frame_view.Size());
     maximal_rect.Intersect(frame_rect);
     gfx::Point point_forced_to_be_visible =
         absolute_caret_bounds.bottom_right() +

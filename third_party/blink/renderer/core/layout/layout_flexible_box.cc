@@ -499,7 +499,7 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
     for (FlexLine& line_context : line_contexts) {
       for (FlexItem& flex_item : line_context.line_items_) {
         ResetAlignmentForChild(*flex_item.box_,
-                               flex_item.desired_location_.Y());
+                               flex_item.offset_->cross_axis_offset);
       }
     }
   }
@@ -791,11 +791,13 @@ LayoutUnit LayoutFlexibleBox::CrossAxisScrollbarExtentForChild(
                             : child.ComputeScrollbars().VerticalSum();
 }
 
-LayoutPoint LayoutFlexibleBox::FlowAwareLocationForChild(
+FlexOffset LayoutFlexibleBox::FlowAwareLocationForChild(
     const LayoutBox& child) const {
   NOT_DESTROYED();
-  return IsHorizontalFlow() ? child.Location()
-                            : child.Location().TransposedPoint();
+  LayoutPoint location = IsHorizontalFlow()
+                             ? child.Location()
+                             : child.Location().TransposedPoint();
+  return FlexOffset(location.X(), location.Y());
 }
 
 bool LayoutFlexibleBox::UseChildAspectRatio(const LayoutBox& child) const {
@@ -836,7 +838,7 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
   LayoutUnit border_and_padding;
   if (ar_type == EAspectRatioType::kRatio ||
       (ar_type == EAspectRatioType::kAutoAndRatio && aspect_ratio.IsEmpty())) {
-    FloatSize int_ratio = child.StyleRef().AspectRatio().GetRatio();
+    gfx::SizeF int_ratio = child.StyleRef().AspectRatio().GetRatio();
     aspect_ratio = LayoutSize{int_ratio.width(), int_ratio.height()};
     if (child.StyleRef().BoxSizingForAspectRatio() == EBoxSizing::kContentBox) {
       cross_size -= cross_axis_border_and_padding;
@@ -853,13 +855,15 @@ LayoutUnit LayoutFlexibleBox::ComputeMainSizeFromAspectRatioUsing(
 
 void LayoutFlexibleBox::SetFlowAwareLocationForChild(
     LayoutBox& child,
-    const LayoutPoint& location) {
+    const FlexOffset& flex_offset) {
   NOT_DESTROYED();
-  if (IsHorizontalFlow())
-    child.SetLocationAndUpdateOverflowControlsIfNeeded(location);
-  else
-    child.SetLocationAndUpdateOverflowControlsIfNeeded(
-        location.TransposedPoint());
+  if (IsHorizontalFlow()) {
+    child.SetLocationAndUpdateOverflowControlsIfNeeded(LayoutPoint(
+        flex_offset.main_axis_offset, flex_offset.cross_axis_offset));
+  } else {
+    child.SetLocationAndUpdateOverflowControlsIfNeeded(LayoutPoint(
+        flex_offset.cross_axis_offset, flex_offset.main_axis_offset));
+  }
 }
 
 bool LayoutFlexibleBox::MainAxisLengthIsDefinite(const LayoutBox& child,
@@ -1082,6 +1086,8 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   LayoutUnit cross_axis_offset = FlowAwareContentInsetBefore();
   LayoutUnit logical_width = LogicalWidth();
   FlexLine* current_line;
+  Vector<FlexOffset> item_offsets(flex_algorithm.NumItems());
+  FlexOffset* current_item_offset = item_offsets.begin();
   while ((current_line = flex_algorithm.ComputeNextFlexLine(logical_width))) {
     DCHECK_GE(current_line->line_items_.size(), 0ULL);
     current_line->SetContainerMainInnerSize(
@@ -1093,7 +1099,8 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
       DCHECK_GE(current_line->total_weighted_flex_shrink_, 0);
     }
 
-    LayoutLineItems(current_line, relayout_children, layout_scope);
+    LayoutLineItems(current_line, relayout_children, layout_scope,
+                    &current_item_offset);
 
     current_line->ComputeLineItemsPosition(FlowAwareContentInsetStart(),
                                            FlowAwareContentInsetEnd(),
@@ -1627,11 +1634,16 @@ EOverflow LayoutFlexibleBox::CrossAxisOverflowForChild(
 DISABLE_CFI_PERF
 void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
                                         bool relayout_children,
-                                        SubtreeLayoutScope& layout_scope) {
+                                        SubtreeLayoutScope& layout_scope,
+                                        FlexOffset** current_item_offset) {
   NOT_DESTROYED();
   for (wtf_size_t i = 0; i < current_line->line_items_.size(); ++i) {
     FlexItem& flex_item = current_line->line_items_[i];
     LayoutBox* child = flex_item.box_;
+
+    DCHECK(current_item_offset);
+    flex_item.offset_ = *current_item_offset;
+    (*current_item_offset)++;
 
     DCHECK(!flex_item.box_->IsOutOfFlowPositioned());
 
@@ -1698,7 +1710,7 @@ void LayoutFlexibleBox::ApplyLineItemsPosition(FlexLine* current_line) {
   for (wtf_size_t i = 0; i < current_line->line_items_.size(); ++i) {
     const FlexItem& flex_item = current_line->line_items_[i];
     LayoutBox* child = flex_item.box_;
-    SetFlowAwareLocationForChild(*child, flex_item.desired_location_);
+    SetFlowAwareLocationForChild(*child, *flex_item.offset_);
     child->SetMargin(flex_item.physical_margins_);
 
     if (is_paginated)
@@ -1750,8 +1762,8 @@ void LayoutFlexibleBox::LayoutColumnReverse(FlexItemVectorView& children,
 
     SetFlowAwareLocationForChild(
         *child,
-        LayoutPoint(main_axis_offset,
-                    cross_axis_offset + flex_item.FlowAwareMarginBefore()));
+        FlexOffset(main_axis_offset,
+                   cross_axis_offset + flex_item.FlowAwareMarginBefore()));
 
     main_axis_offset -= flex_item.FlowAwareMarginStart();
 
@@ -1781,7 +1793,8 @@ void LayoutFlexibleBox::AlignFlexLines(FlexLayoutAlgorithm& algorithm) {
        ++line_number) {
     FlexLine& line_context = line_contexts[line_number];
     for (FlexItem& flex_item : line_context.line_items_) {
-      ResetAlignmentForChild(*flex_item.box_, flex_item.desired_location_.Y());
+      ResetAlignmentForChild(*flex_item.box_,
+                             flex_item.offset_->cross_axis_offset);
     }
   }
 }
@@ -1791,7 +1804,8 @@ void LayoutFlexibleBox::ResetAlignmentForChild(
     LayoutUnit new_cross_axis_position) {
   NOT_DESTROYED();
   SetFlowAwareLocationForChild(
-      child, {FlowAwareLocationForChild(child).X(), new_cross_axis_position});
+      child, {FlowAwareLocationForChild(child).main_axis_offset,
+              new_cross_axis_position});
 }
 
 void LayoutFlexibleBox::AlignChildren(FlexLayoutAlgorithm& algorithm) {
@@ -1808,7 +1822,8 @@ void LayoutFlexibleBox::AlignChildren(FlexLayoutAlgorithm& algorithm) {
         ApplyStretchAlignmentToChild(flex_item);
         flex_item.needs_relayout_for_stretch_ = false;
       }
-      ResetAlignmentForChild(*flex_item.box_, flex_item.desired_location_.Y());
+      ResetAlignmentForChild(*flex_item.box_,
+                             flex_item.offset_->cross_axis_offset);
       flex_item.box_->SetMargin(flex_item.physical_margins_);
     }
   }
@@ -1856,11 +1871,12 @@ void LayoutFlexibleBox::FlipForRightToLeftColumn(
     for (const FlexItem& flex_item : line_context.line_items_) {
       DCHECK(!flex_item.box_->IsOutOfFlowPositioned());
 
-      LayoutPoint location = FlowAwareLocationForChild(*flex_item.box_);
+      FlexOffset offset = FlowAwareLocationForChild(*flex_item.box_);
       // For vertical flows, setFlowAwareLocationForChild will transpose x and
       // y, so using the y axis for a column cross axis extent is correct.
-      location.SetY(cross_extent - flex_item.cross_axis_size_ - location.Y());
-      SetFlowAwareLocationForChild(*flex_item.box_, location);
+      offset.cross_axis_offset =
+          cross_extent - flex_item.cross_axis_size_ - offset.cross_axis_offset;
+      SetFlowAwareLocationForChild(*flex_item.box_, offset);
     }
   }
 }

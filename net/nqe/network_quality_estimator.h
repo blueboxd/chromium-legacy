@@ -13,7 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -46,7 +46,6 @@ class TickClock;
 
 namespace net {
 
-class ConnectivityMonitor;
 class NetLog;
 
 namespace nqe {
@@ -546,7 +545,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   bool disable_offline_check_;
 
   // Tick clock used by the network quality estimator.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;
@@ -642,11 +641,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Whether the network id should be obtained on a worker thread.
   bool get_network_id_asynchronously_ = false;
 #endif
-
-  // Watches network activity and attempts to infer when the current network is
-  // effectively disconnected due to either substantial degradation or actual
-  // disconnection.
-  std::unique_ptr<ConnectivityMonitor> connectivity_monitor_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_{this};
 };

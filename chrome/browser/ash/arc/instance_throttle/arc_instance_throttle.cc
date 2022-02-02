@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ash/arc/instance_throttle/arc_instance_throttle.h"
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/mojom/power.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -19,10 +23,6 @@
 #include "chrome/browser/ash/arc/instance_throttle/arc_switch_throttle_observer.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/mojom/power.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
 
 namespace arc {
 
@@ -146,14 +146,14 @@ class ArcInstanceThrottleFactory
 };
 
 CpuRestrictionState LevelToCpuRestriction(
-    chromeos::ThrottleObserver::PriorityLevel level) {
+    ash::ThrottleObserver::PriorityLevel level) {
   switch (level) {
-    case chromeos::ThrottleObserver::PriorityLevel::CRITICAL:
-    case chromeos::ThrottleObserver::PriorityLevel::IMPORTANT:
-    case chromeos::ThrottleObserver::PriorityLevel::NORMAL:
+    case ash::ThrottleObserver::PriorityLevel::CRITICAL:
+    case ash::ThrottleObserver::PriorityLevel::IMPORTANT:
+    case ash::ThrottleObserver::PriorityLevel::NORMAL:
       return CpuRestrictionState::CPU_RESTRICTION_FOREGROUND;
-    case chromeos::ThrottleObserver::PriorityLevel::LOW:
-    case chromeos::ThrottleObserver::PriorityLevel::UNKNOWN:
+    case ash::ThrottleObserver::PriorityLevel::LOW:
+    case ash::ThrottleObserver::PriorityLevel::UNKNOWN:
       return CpuRestrictionState::CPU_RESTRICTION_BACKGROUND;
   }
 }
@@ -203,7 +203,7 @@ void ArcInstanceThrottle::OnConnectionReady() {
 }
 
 void ArcInstanceThrottle::ThrottleInstance(
-    chromeos::ThrottleObserver::PriorityLevel level) {
+    ash::ThrottleObserver::PriorityLevel level) {
   const CpuRestrictionState cpu_restriction_state =
       LevelToCpuRestriction(level);
   NotifyCpuRestriction(cpu_restriction_state);

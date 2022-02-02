@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/arc/arc_util.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/webshare/prepare_directory_task.h"
 #include "chrome/common/chrome_paths_internal.h"
-#include "components/arc/arc_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/constants/cryptohome.h"
@@ -69,8 +69,8 @@ void DeletePathAndFiles(const base::FilePath& file_path) {
 
 // Calculate the amount of disk space, in bytes, needed in |share_dir| to
 // stream |total_file_size| bytes from Android to the Chrome OS file system.
-static const int64_t CalculateRequiredSpace(const base::FilePath share_dir,
-                                            const uint64_t total_file_size) {
+static int64_t CalculateRequiredSpace(const base::FilePath share_dir,
+                                      const uint64_t total_file_size) {
   DVLOG(1) << __func__;
   int64_t free_disk_space = base::SysInfo::AmountOfFreeDiskSpace(share_dir);
   VLOG(1) << "Free disk space: " << free_disk_space;

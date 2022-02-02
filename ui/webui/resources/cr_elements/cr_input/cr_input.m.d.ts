@@ -9,7 +9,7 @@ interface CrInputElement extends LegacyElementMixin, HTMLElement {
   ariaLabel: string|null|undefined;
   autofocus: boolean;
   autoValidate: boolean|null|undefined;
-  disabled: boolean|null|undefined;
+  disabled: boolean;
   errorMessage: string|null|undefined;
   invalid: boolean;
   max: number|null|undefined;
@@ -31,6 +31,10 @@ interface CrInputElement extends LegacyElementMixin, HTMLElement {
   focusInput(): boolean;
   select(start?: number, end?: number): void;
   validate(): boolean;
+
+  $: {
+    error: HTMLElement,
+  };
 }
 
 export {CrInputElement};

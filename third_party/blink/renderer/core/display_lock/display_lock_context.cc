@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -333,9 +333,12 @@ void DisplayLockContext::DidStyleSelf() {
 }
 
 void DisplayLockContext::DidStyleChildren() {
-  // TODO(vmpstr): Is this needed here?
-  if (element_->ChildNeedsReattachLayoutTree())
-    element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
+  if (!element_->ChildNeedsReattachLayoutTree())
+    return;
+  auto* parent = element_->GetReattachParent();
+  if (!parent || parent->ChildNeedsReattachLayoutTree())
+    return;
+  element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
 }
 
 bool DisplayLockContext::ShouldLayoutChildren() const {
@@ -721,10 +724,6 @@ bool DisplayLockContext::MarkForCompositingUpdatesIfNeeded() {
     needs_graphics_layer_rebuild_ = false;
 
     if (forced_graphics_layer_update_blocked_) {
-      // We only add an extra dirty bit to the compositing state, which is safe
-      // since we do this before updating the compositing state.
-      DisableCompositingQueryAsserts disabler;
-
       auto* compositing_parent =
           layout_box->Layer()->EnclosingLayerWithCompositedLayerMapping(
               kIncludeSelf);
@@ -916,12 +915,6 @@ void DisplayLockContext::ElementConnected() {
   ScheduleAnimation();
 }
 
-void DisplayLockContext::ScheduleTopLayerCheck() {
-  has_pending_top_layer_check_ = true;
-  UpdateLifecycleNotificationRegistration();
-  ScheduleAnimation();
-}
-
 void DisplayLockContext::DetachLayoutTree() {
   // When |element_| is removed from the flat tree, we need to set this context
   // to visible.
@@ -929,6 +922,12 @@ void DisplayLockContext::DetachLayoutTree() {
     SetRequestedState(EContentVisibility::kVisible);
     blocked_child_recalc_change_ = StyleRecalcChange();
   }
+}
+
+void DisplayLockContext::ScheduleTopLayerCheck() {
+  has_pending_top_layer_check_ = true;
+  UpdateLifecycleNotificationRegistration();
+  ScheduleAnimation();
 }
 
 void DisplayLockContext::ScheduleAnimation() {

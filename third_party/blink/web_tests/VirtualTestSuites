@@ -37,6 +37,7 @@
               "external/wpt/web-animations/timing-model/animations",
               "fast/events/pointerevents/pinch",
               "lifecycle",
+              "http/tests/devtools/isolated-code-cache",
               "http/tests/devtools/tracing",
               "http/tests/worklet",
               "printing",
@@ -99,8 +100,7 @@
     "prefix": "v8-off-thread-finalization",
     "bases": [
       "external/wpt/html/semantics/scripting-1",
-      "fast/dom",
-      "http/tests/devtools/isolated-code-cache/"
+      "fast/dom"
     ],
     "args": ["--enable-features=V8OffThreadFinalization,SmallScriptStreaming,SharedArrayBuffer"]
   },
@@ -206,13 +206,6 @@
              "--enable-threaded-compositing"]
   },
   {
-    "prefix": "composite-after-paint",
-    "bases": ["compositing",
-              "paint",
-              "scrollingcoordinator"],
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
     "prefix": "fractional-scroll-offsets",
     "bases": ["external/wpt/css/css-position/sticky/"],
     "args": ["--enable-blink-features=FractionalScrollOffsets"]
@@ -279,18 +272,6 @@
     "prefix": "schemeful-same-site",
     "bases": ["external/wpt/cookies"],
     "args": ["--disable-features=SchemefulSameSite"]
-  },
-  {
-    "prefix": "layout_ng_block_frag",
-    "bases": ["external/wpt/css/css-break",
-              "external/wpt/css/css-contain",
-              "external/wpt/css/css-position/multicol",
-              "external/wpt/css/css-multicol",
-              "external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements",
-              "fast/forms/fieldset",
-              "fast/multicol",
-              "fragmentation"],
-    "args": ["--enable-blink-features=LayoutNGBlockFragmentation"]
   },
   {
     "prefix": "layout_ng_flex_frag",
@@ -462,6 +443,7 @@
               "external/wpt/xhr",
               "fast/workers",
               "http/tests/inspector-protocol/fetch",
+              "http/tests/inspector-protocol/network",
               "http/tests/origin_trials",
               "http/tests/workers",
               "inspector-protocol/worker"],
@@ -506,14 +488,6 @@
     "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   },
   {
-    "prefix": "cache-code-on-idle",
-    "bases": [
-      "http/tests/devtools/isolated-code-cache",
-      "http/tests/devtools/resources"
-    ],
-    "args": ["--enable-features=CacheCodeOnIdle"]
-  },
-  {
     "prefix": "wasm-site-isolated-code-cache",
     "bases": ["http/tests/devtools/wasm-isolated-code-cache"],
     "args": ["--disable-features=WebAssemblyBaseline",
@@ -539,13 +513,15 @@
     "prefix": "split-http-cache-not-site-per-process",
     "bases": ["http/tests/devtools/isolated-code-cache"],
     "args": ["--enable-features=SplitCacheByNetworkIsolationKey",
-             "--disable-site-isolation-trials"]
+             "--disable-site-isolation-trials",
+             "--enable-threaded-compositing"]
   },
   {
     "prefix": "not-split-http-cache-not-site-per-process",
     "bases": ["http/tests/devtools/isolated-code-cache"],
     "args": ["--disable-features=SplitCacheByNetworkIsolationKey",
-             "--disable-site-isolation-trials"]
+             "--disable-site-isolation-trials",
+             "--enable-threaded-compositing"]
   },
   {
     "prefix": "not-site-per-process",
@@ -565,6 +541,14 @@
       "external/wpt/wasm/serialization/module/window-domain-success.sub.html",
       "external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html",
       "external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html",
+      "external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html",
 
       "http/tests/printing/cross-site-frame-scrolled.html",
       "http/tests/printing/cross-site-frame.html"],
@@ -572,7 +556,10 @@
   },
   {
     "prefix": "no-auto-wpt-origin-isolation",
-    "bases": ["external/wpt/html/browsers/origin/origin-keyed-agent-clusters"],
+    "bases": [
+      "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
+      "external/wpt/app-history/navigate-event/cross-window"
+    ],
     "args": ["--disable-auto-wpt-origin-isolation"]
   },
   {
@@ -636,16 +623,6 @@
              "--enable-features=EyeDropper"]
   },
   {
-    "prefix": "container-queries",
-    "bases": ["wpt_internal/css/css-conditional/container-queries",
-              "wpt_internal/css/css-contain",
-              "inspector-protocol/css/css-get-styles-for-node.js",
-              "inspector-protocol/css/container-queries",
-              "inspector-protocol/dom/container-queries",
-              "inspector-protocol/overlay/overlay-container-query.js"],
-    "args": ["--enable-blink-features=CSSContainerQueries,CSSDelayedAnimationUpdates"]
-  },
-  {
     "prefix": "delayed-animation-updates",
     "bases": ["external/wpt/css/css-animations",
               "external/wpt/css/css-transitions",
@@ -680,7 +657,8 @@
               "external/wpt/css/css-values/",
               "external/wpt/css/css-transforms/parsing/",
               "external/wpt/css/css-transforms/crashtests/",
-              "external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/crashtests"],
+              "external/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/crashtests",
+              "external/wpt/css/css-transitions/crashtests/transition-large-word-spacing-001.html"],
     "args": ["--disable-blink-features=CSSCalcInfinityAndNaN"]
   },
   {
@@ -750,12 +728,6 @@
     "prefix": "disable-user-agent-client-hint-feature",
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=UserAgentClientHint"]
-  },
-  {
-    "prefix": "legacy-client-hints-no-fp-delegation",
-    "bases": [ "external/wpt/client-hints" ],
-    "args": [ "--enable-features=AllowClientHintsToThirdParty",
-              "--disable-features=FeaturePolicyForClientHints" ]
   },
   {
     "prefix": "storage-access-api",
@@ -842,6 +814,9 @@
     "prefix": "third-party-storage-partitioning",
     "bases": [
       "external/wpt/service-workers/service-worker/partitioned-service-worker.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-service-worker-getRegistrations.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-service-worker-matchAll.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-service-worker-claim.tentative.https.html",
       "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
@@ -946,7 +921,10 @@
   },
   {
     "prefix": "partitioned-cookies",
-    "bases": ["external/wpt/cookies/partitioned-cookies/"],
+    "bases": ["external/wpt/cookies/partitioned-cookies/",
+              "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe/",
+              "http/tests/cookies/partitioned-cookies",
+              "http/tests/inspector-protocol/network/"],
     "args": ["--enable-features=PartitionedCookies"]
   },
   {
@@ -1055,7 +1033,8 @@
     "prefix": "automatic-lazy-frame-loading",
     "bases": ["wpt_internal/lazyembed"],
     "args": [
-      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed"
+      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed",
+      "--disable-field-trial-config"
     ]
   },
   {
@@ -1072,7 +1051,8 @@
     "prefix": "css-highlight-inheritance",
     "bases": [
       "external/wpt/css/css-pseudo",
-      "wpt_internal/css/css-pseudo"
+      "wpt_internal/css/css-pseudo",
+      "external/wpt/css/css-highlight-api"
     ],
     "args": ["--enable-blink-features=HighlightInheritance"]
   },
@@ -1083,7 +1063,7 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2"]
   },
   {
     "prefix": "disable-custom-element-default-style",
@@ -1094,10 +1074,15 @@
     "prefix": "cors-non-wildcard-request-headers",
     "bases": ["external/wpt/fetch/api/cors/cors-preflight.any.js"],
     "args": ["--enable-features=CorsNonWildcardRequestHeadersSupport"]
-  }, 
+  },
   {
     "prefix": "enable-experimental-async-stack-tagging-api",
     "bases": ["inspector-protocol/runtime"],
     "args": ["--js-flags=--experimental-async-stack-tagging-api"]
+  },
+  {
+    "prefix": "change-service-worker-priority-when-client-foreground-state-change",
+    "bases": ["external/wpt/service-workers"],
+    "args": ["--enable-features=ChangeServiceWorkerPriorityForClientForegroundStateChange"]
   }
 ]

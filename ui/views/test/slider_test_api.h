@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TEST_SLIDER_TEST_API_H_
 #define UI_VIEWS_TEST_SLIDER_TEST_API_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace views {
 
@@ -32,7 +32,7 @@ class SliderTestApi {
   int initial_button_offset() const;
 
  private:
-  Slider* slider_;
+  raw_ptr<Slider> slider_;
 };
 
 }  // namespace test

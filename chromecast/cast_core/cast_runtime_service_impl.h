@@ -11,15 +11,11 @@
 #include "chromecast/cast_core/cast_runtime_service.h"
 #include "chromecast/cast_core/runtime_application_dispatcher.h"
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace chromecast {
 
-class CastWindowManager;
-
+class CastWebService;
 class CastEventBuilder;
+class RuntimeApplication;
 
 // This interface is to be used for building the Cast Runtime Service and act as
 // the border between shared Chromium code and the specifics of that
@@ -28,8 +24,7 @@ class CastRuntimeServiceImpl
     : public CastRuntimeService,
       public CastRuntimeMetricsRecorder::EventBuilderFactory {
  public:
-  CastRuntimeServiceImpl(content::BrowserContext* browser_context,
-                         CastWindowManager* window_manager,
+  CastRuntimeServiceImpl(CastWebService* web_service,
                          NetworkContextGetter network_context_getter);
   ~CastRuntimeServiceImpl() override;
 
@@ -38,12 +33,14 @@ class CastRuntimeServiceImpl
   void StopInternal() override;
   const std::string& GetAudioChannelEndpoint() override;
   CastWebService* GetCastWebService() override;
+  RuntimeApplication* GetRuntimeApplication() override;
 
  protected:
   // CastRuntimeMetricsRecorder::EventBuilderFactory overrides.
   std::unique_ptr<CastEventBuilder> CreateEventBuilder() override;
 
  private:
+  CastWebService* const web_service_;
   RuntimeApplicationDispatcher app_dispatcher_;
 };
 

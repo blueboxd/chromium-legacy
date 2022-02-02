@@ -6,6 +6,7 @@
 #define SERVICES_NETWORK_COOKIE_ACCESS_DELEGATE_IMPL_H_
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/same_party_context.h"
@@ -58,13 +59,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieAccessDelegateImpl
       const std::set<net::SchemefulSite>& party_context) const override;
   bool IsInNontrivialFirstPartySet(
       const net::SchemefulSite& site) const override;
+  absl::optional<net::SchemefulSite> FindFirstPartySetOwner(
+      const net::SchemefulSite& site) const override;
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
   RetrieveFirstPartySets() const override;
 
  private:
   const mojom::CookieAccessDelegateType type_;
-  const CookieSettings* const cookie_settings_;
-  const FirstPartySets* const first_party_sets_;
+  const raw_ptr<const CookieSettings> cookie_settings_;
+  const raw_ptr<const FirstPartySets> first_party_sets_;
 };
 
 }  // namespace network

@@ -20,6 +20,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -52,6 +53,11 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_url_handlers.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/settings/cros_settings_names.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using base::RandDouble;
 using base::RandInt;
@@ -297,6 +303,19 @@ void ExtensionUpdater::AddToDownloader(
     ManifestFetchData::FetchPriority fetch_priority,
     ExtensionUpdateCheckParams* update_check_params) {
   DCHECK(update_service_);
+
+  // In Kiosk mode extensions are downloaded and updated by the ExternalCache.
+  // Therefore we skip updates here to avoid conflicts.
+  bool kiosk_crx_manifest_update_url_ignored = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager && user_manager->IsLoggedInAsKioskApp()) {
+    ash::CrosSettings::Get()->GetBoolean(
+        ash::kKioskCRXManifestUpdateURLIgnored,
+        &kiosk_crx_manifest_update_url_ignored);
+  }
+#endif
+
   InProgressCheck& request = requests_in_progress_[request_id];
   for (ExtensionSet::const_iterator extension_iter = extensions->begin();
        extension_iter != extensions->end(); ++extension_iter) {
@@ -309,13 +328,19 @@ void ExtensionUpdater::AddToDownloader(
     // An extension might be overwritten by policy, and have its update url
     // changed. Make sure existing extensions aren't fetched again, if a
     // pending fetch for an extension with the same id already exists.
-    if (!base::Contains(pending_ids, extension_id)) {
-      if (CanUseUpdateService(extension_id)) {
-        update_check_params->update_info[extension_id] = ExtensionUpdateData();
-      } else if (AddExtensionToDownloader(extension, request_id,
-                                          fetch_priority)) {
-        request.in_progress_ids.insert(extension_id);
-      }
+    if (base::Contains(pending_ids, extension_id))
+      continue;
+
+    if (extension.location() == mojom::ManifestLocation::kExternalPolicy &&
+        kiosk_crx_manifest_update_url_ignored) {
+      continue;
+    }
+
+    if (CanUseUpdateService(extension_id)) {
+      update_check_params->update_info[extension_id] = ExtensionUpdateData();
+    } else if (AddExtensionToDownloader(extension, request_id,
+                                        fetch_priority)) {
+      request.in_progress_ids.insert(extension_id);
     }
   }
 }
@@ -783,7 +808,7 @@ void ExtensionUpdater::Observe(int type,
 void ExtensionUpdater::NotifyStarted() {
   content::NotificationService::current()->Notify(
       NOTIFICATION_EXTENSION_UPDATING_STARTED,
-      content::Source<Profile>(profile_),
+      content::Source<Profile>(profile_.get()),
       content::NotificationService::NoDetails());
 }
 

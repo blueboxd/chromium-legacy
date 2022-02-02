@@ -75,9 +75,10 @@ test(function() {
   assert_equals(disconnected_div.editContext, null);
 
   disconnected_div.editContext = editContext;
-  assert_equals(disconnected_div.editContext, null);
-  assert_equals(editContext.attachedElements().length, 0);
-}, 'EditContext can only be associated with an element that is in an active document.');
+  assert_equals(disconnected_div.editContext, editContext);
+  assert_equals(editContext.attachedElements().length, 1);
+  assert_equals(editContext.attachedElements()[0], disconnected_div);
+}, 'EditContext can be associated with an element that is not in the tree.');
 
 test(function() {
   const editContext = new EditContext();
@@ -93,9 +94,10 @@ test(function() {
   assert_equals(editContext.attachedElements()[0], div);
 
   document.body.removeChild(div);
-  assert_equals(div.editContext, null);
-  assert_equals(editContext.attachedElements().length, 0);
-}, 'If an element is removed from tree, it will disconnect its associated EditContext.');
+  assert_equals(div.editContext, editContext);
+  assert_equals(editContext.attachedElements().length, 1);
+  assert_equals(editContext.attachedElements()[0], div);
+}, 'If an element is removed from the tree, the associated EditContext remains connected to the element.');
 
 test(function() {
   const editContext = new EditContext();
@@ -112,9 +114,10 @@ test(function() {
   assert_equals(editContext.attachedElements()[0], div_child);
 
   document.body.removeChild(div_parent);
-  assert_equals(div_child.editContext, null);
-  assert_equals(editContext.attachedElements().length, 0);
-}, 'If an element\'s ancestor is removed from tree, the element will disconnect its associated EditContext.');
+  assert_equals(div_child.editContext, editContext);
+  assert_equals(editContext.attachedElements().length, 1);
+  assert_equals(editContext.attachedElements()[0], div_child);
+}, 'If an element\'s ancestor is removed from tree, the associated EditContext remains connected to the element.');
 
 test(function() {
   const editContext = new EditContext();
@@ -226,14 +229,7 @@ test(function() {
   assert_not_equals(editContext, null);
   const test = document.getElementById('test');
   test.innerHTML = "";
-  let formatRangeStart = 0;
-  let formatRangeEnd = 0;
-  let underlineColor = "";
-  let backgroundColor = "";
-  let textColor = "";
-  let suggestionHighlightColor = "";
-  let compositionTextUnderlineStyle = "";
-  let compositionTextUnderlineThickness = "";
+  let textFormats = [];
   // Add EditContext event listeners
   editContext.addEventListener("textupdate", e => {
     // Update the text in the div
@@ -242,27 +238,20 @@ test(function() {
   });
   editContext.addEventListener("textformatupdate", e => {
     //TODO: Currently Chromium only fires default styles
-    formatRangeStart = e.formatRangeStart;
-    formatRangeEnd = e.formatRangeEnd;
-    underlineColor = e.underlineColor;
-    backgroundColor = e.backgroundColor;
-    textColor = e.textColor;
-    suggestionHighlightColor = e.suggestionHighlightColor;
-    compositionTextUnderlineStyle = e.underlineStyle;
-    compositionTextUnderlineThickness = e.underlineThickness;
+    textFormats = e.getTextFormats();
   });
   test.editContext = editContext;
   test.focus();
   textInputController.setComposition("foo");
   assert_equals(test.innerHTML, "FOO");
-  assert_equals(formatRangeStart, 0);
-  assert_equals(formatRangeEnd, 3);
-  assert_equals(underlineColor, "rgba(0, 0, 0, 0)");
-  assert_equals(backgroundColor, "rgba(0, 0, 0, 0)");
-  assert_equals(textColor, "rgba(0, 0, 0, 0)");
-  assert_equals(suggestionHighlightColor, "rgba(0, 0, 0, 0)");
-  assert_equals(compositionTextUnderlineStyle, "Solid");
-  assert_equals(compositionTextUnderlineThickness, "Thin");
+  assert_equals(textFormats.length, 1);
+  assert_equals(textFormats[0].rangeStart, 0);
+  assert_equals(textFormats[0].rangeEnd, 3);
+  assert_equals(textFormats[0].underlineColor, "rgba(0, 0, 0, 0)");
+  assert_equals(textFormats[0].backgroundColor, "rgba(0, 0, 0, 0)");
+  assert_equals(textFormats[0].textColor, "rgba(0, 0, 0, 0)");
+  assert_equals(textFormats[0].underlineStyle, "Solid");
+  assert_equals(textFormats[0].underlineThickness, "Thin");
 }, 'Testing EditContext TextFormatUpdate');
 
 test(function() {
@@ -598,8 +587,32 @@ test(function() {
   assert_equals(editContext.selectionEnd, 1);
   editContext.selectionStart = 1;
   assert_equals(editContext.selectionStart, 1);
-  editContext.updateBounds(viewRect, caretRect);
+  editContext.updateControlBounds(viewRect);
+  editContext.updateSelectionBounds(caretRect);
 }, 'Testing EditContext update text, selection and layout');
+
+test(function() {
+  const editContext = new EditContext();
+  const test = document.getElementById('test');
+  var rect1 = DOMRect.fromRect({x:0, y:1, width:100, height:200});
+  var rect2 = DOMRect.fromRect({x:2, y:3, width:300, height:400});
+  var rectArray = [rect1, rect2];
+  var rangeStart = 2;
+  editContext.updateCharacterBounds(rangeStart, rectArray);
+  assert_equals(editContext.characterBoundsRangeStart, 2);
+
+  var actualRectArray = editContext.characterBounds();
+  assert_equals(actualRectArray.length, 2);
+  assert_equals(actualRectArray[0].x, 0);
+  assert_equals(actualRectArray[0].y, 1);
+  assert_equals(actualRectArray[0].width, 100);
+  assert_equals(actualRectArray[0].height, 200);
+  rect2.x=100;
+  assert_equals(actualRectArray[1].x, 2);  // the cached value shouldn't change.
+  assert_equals(actualRectArray[1].y, 3);
+  assert_equals(actualRectArray[1].width, 300);
+  assert_equals(actualRectArray[1].height, 400);
+}, 'updateCharacterBounds(), characterBounds(), and characterBoundsRangeStart should work properly');
 
 test(function() {
   const editContext = new EditContext();

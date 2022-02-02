@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/values.h"
@@ -196,7 +196,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void CreateNativeUIInspectionSession(const std::string& url);
   void OnFrontEndFinished();
 
-  InspectUI* const inspect_ui_;
+  const raw_ptr<InspectUI> inspect_ui_;
 
   base::WeakPtrFactory<InspectMessageHandler> weak_factory_{this};
 };
@@ -282,9 +282,25 @@ static bool ParseStringArgs(const base::ListValue* args,
                             std::string* arg1,
                             std::string* arg2 = 0) {
   int arg_size = args->GetList().size();
-  return (!arg0 || (arg_size > 0 && args->GetString(0, arg0))) &&
-         (!arg1 || (arg_size > 1 && args->GetString(1, arg1))) &&
-         (!arg2 || (arg_size > 2 && args->GetString(2, arg2)));
+  if (arg0) {
+    if (arg_size < 1 || !args->GetList()[0].is_string()) {
+      return false;
+    }
+    *arg0 = args->GetList()[0].GetString();
+  }
+  if (arg1) {
+    if (arg_size < 2 || !args->GetList()[1].is_string()) {
+      return false;
+    }
+    *arg1 = args->GetList()[1].GetString();
+  }
+  if (arg2) {
+    if (arg_size < 3 || !args->GetList()[2].is_string()) {
+      return false;
+    }
+    *arg2 = args->GetList()[2].GetString();
+  }
+  return true;
 }
 
 void InspectMessageHandler::HandleInspectCommand(const base::ListValue* args) {
@@ -356,9 +372,9 @@ void InspectMessageHandler::HandleBooleanPrefChanged(
   if (!profile)
     return;
 
-  bool enabled;
-  if (args->GetList().size() == 1 && args->GetBoolean(0, &enabled))
-    profile->GetPrefs()->SetBoolean(pref_name, enabled);
+  const auto& list = args->GetList();
+  if (list.size() == 1 && list[0].is_bool())
+    profile->GetPrefs()->SetBoolean(pref_name, list[0].GetBool());
 }
 
 void InspectMessageHandler::HandlePortForwardingConfigCommand(
@@ -367,9 +383,11 @@ void InspectMessageHandler::HandlePortForwardingConfigCommand(
   if (!profile)
     return;
 
-  const base::DictionaryValue* dict_src;
-  if (args->GetList().size() == 1 && args->GetDictionary(0, &dict_src))
-    profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
+  if (args->GetList().size() == 1) {
+    const base::Value& src = args->GetList()[0];
+    if (src.is_dict())
+      profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, src);
+  }
 }
 
 void InspectMessageHandler::HandleTCPDiscoveryConfigCommand(

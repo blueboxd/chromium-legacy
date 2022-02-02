@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 
+#include "ash/components/arc/arc_util.h"
 #include "ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/ash/smb_client/smbfs_share.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
-#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -484,6 +484,10 @@ void GuestOsSharePath::SharePaths(const std::string& vm_name,
                                   std::vector<base::FilePath> paths,
                                   bool persist,
                                   SuccessCallback callback) {
+  if (paths.empty()) {
+    std::move(callback).Run(true, "");
+    return;
+  }
   base::RepeatingCallback<void(const base::FilePath&, const base::FilePath&,
                                bool, const std::string&)>
       barrier = base::BindRepeating(

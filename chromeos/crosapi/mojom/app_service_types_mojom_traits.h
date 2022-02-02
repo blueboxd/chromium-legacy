@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chromeos/crosapi/mojom/app_service_types.mojom.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -141,6 +142,11 @@ struct StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr> {
   static const apps::mojom::OptionalBool& allow_uninstall(
       const apps::mojom::AppPtr& r) {
     return r->allow_uninstall;
+  }
+
+  static const apps::mojom::OptionalBool& handles_intents(
+      const apps::mojom::AppPtr& r) {
+    return r->handles_intents;
   }
 
   static bool Read(crosapi::mojom::AppDataView data, apps::mojom::AppPtr* out);
@@ -296,35 +302,30 @@ struct StructTraits<crosapi::mojom::CapabilityAccessDataView,
 };
 
 template <>
-struct EnumTraits<crosapi::mojom::IconType, apps::mojom::IconType> {
-  static crosapi::mojom::IconType ToMojom(apps::mojom::IconType input);
-  static bool FromMojom(crosapi::mojom::IconType input,
-                        apps::mojom::IconType* output);
+struct EnumTraits<crosapi::mojom::IconType, apps::IconType> {
+  static crosapi::mojom::IconType ToMojom(apps::IconType input);
+  static bool FromMojom(crosapi::mojom::IconType input, apps::IconType* output);
 };
 
 template <>
-struct StructTraits<crosapi::mojom::IconValueDataView,
-                    apps::mojom::IconValuePtr> {
-  static apps::mojom::IconType icon_type(const apps::mojom::IconValuePtr& r) {
+struct StructTraits<crosapi::mojom::IconValueDataView, apps::IconValuePtr> {
+  static apps::IconType icon_type(const apps::IconValuePtr& r) {
     return r->icon_type;
   }
 
-  static const gfx::ImageSkia& uncompressed(
-      const apps::mojom::IconValuePtr& r) {
+  static const gfx::ImageSkia& uncompressed(const apps::IconValuePtr& r) {
     return r->uncompressed;
   }
 
-  static const absl::optional<std::vector<uint8_t>>& compressed(
-      const apps::mojom::IconValuePtr& r) {
+  static const std::vector<uint8_t>& compressed(const apps::IconValuePtr& r) {
     return r->compressed;
   }
 
-  static bool is_placeholder_icon(const apps::mojom::IconValuePtr& r) {
+  static bool is_placeholder_icon(const apps::IconValuePtr& r) {
     return r->is_placeholder_icon;
   }
 
-  static bool Read(crosapi::mojom::IconValueDataView,
-                   apps::mojom::IconValuePtr* out);
+  static bool Read(crosapi::mojom::IconValueDataView, apps::IconValuePtr* out);
 };
 
 template <>

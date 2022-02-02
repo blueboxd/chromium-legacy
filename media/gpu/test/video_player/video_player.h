@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -49,6 +48,7 @@ enum class VideoPlayerEvent : size_t {
   kResetting,
   kResetDone,
   kConfigInfo,  // A config info was encountered in an H.264/HEVC video stream.
+  kNewBuffersRequested,
   kNumEvents,
 };
 

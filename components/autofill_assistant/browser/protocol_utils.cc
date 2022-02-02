@@ -22,7 +22,6 @@
 #include "components/autofill_assistant/browser/actions/expect_navigation_action.h"
 #include "components/autofill_assistant/browser/actions/generate_password_for_form_field_action.h"
 #include "components/autofill_assistant/browser/actions/get_element_status_action.h"
-#include "components/autofill_assistant/browser/actions/highlight_element_action.h"
 #include "components/autofill_assistant/browser/actions/navigate_action.h"
 #include "components/autofill_assistant/browser/actions/perform_on_single_element_action.h"
 #include "components/autofill_assistant/browser/actions/popup_message_action.h"
@@ -33,6 +32,7 @@
 #include "components/autofill_assistant/browser/actions/save_generated_password_action.h"
 #include "components/autofill_assistant/browser/actions/save_submitted_password_action.h"
 #include "components/autofill_assistant/browser/actions/select_option_action.h"
+#include "components/autofill_assistant/browser/actions/send_keystroke_events_action.h"
 #include "components/autofill_assistant/browser/actions/set_attribute_action.h"
 #include "components/autofill_assistant/browser/actions/set_persistent_ui_action.h"
 #include "components/autofill_assistant/browser/actions/set_touchable_area_action.h"
@@ -186,8 +186,6 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
       return std::make_unique<PromptAction>(delegate, action);
     case ActionProto::ActionInfoCase::kStop:
       return std::make_unique<StopAction>(delegate, action);
-    case ActionProto::ActionInfoCase::kHighlightElement:
-      return std::make_unique<HighlightElementAction>(delegate, action);
     case ActionProto::ActionInfoCase::kUploadDom:
       return std::make_unique<UploadDomAction>(delegate, action);
     case ActionProto::ActionInfoCase::kShowDetails:
@@ -286,16 +284,7 @@ std::unique_ptr<Action> ProtocolUtils::CreateAction(ActionDelegate* delegate,
           base::BindOnce(&WebController::JsClickElement,
                          delegate->GetWebController()->GetWeakPtr()));
     case ActionProto::ActionInfoCase::kSendKeystrokeEvents:
-      // TODO(crbug.com/1266332): Refactor this event into its own action,
-      // see https://chromium-review.googlesource.com/c/chromium/src/+/3245372
-      return PerformOnSingleElementAction::WithClientId(
-          delegate, action, action.send_keystroke_events().client_id(),
-          base::BindOnce(
-              &action_delegate_util::PerformWithTextValue, delegate,
-              action.send_keystroke_events().value(),
-              base::BindOnce(&WebController::SendTextInput,
-                             delegate->GetWebController()->GetWeakPtr(),
-                             action.send_keystroke_events().delay_in_ms())));
+      return std::make_unique<SendKeystrokeEventsAction>(delegate, action);
     case ActionProto::ActionInfoCase::kSendChangeEvent:
       return PerformOnSingleElementAction::WithClientId(
           delegate, action, action.send_change_event().client_id(),

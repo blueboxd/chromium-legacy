@@ -7,9 +7,7 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 
@@ -102,11 +100,5 @@ class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
 };
 
 }  // namespace ash
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::ExternalMetrics;
-}
 
 #endif  // CHROME_BROWSER_ASH_EXTERNAL_METRICS_H_

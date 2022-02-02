@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_IMPL_H_
 #define COMPONENTS_METRICS_UNSENT_LOG_STORE_METRICS_IMPL_H_
 
-#include "base/macros.h"
 #include "components/metrics/unsent_log_store_metrics.h"
 
 namespace metrics {
@@ -13,13 +12,14 @@ namespace metrics {
 // Implementation for recording metrics from UnsentLogStore.
 class UnsentLogStoreMetricsImpl : public UnsentLogStoreMetrics {
  public:
-  UnsentLogStoreMetricsImpl() {}
+  // TODO(crbug/1265440): Refactor to use MetricsLogStore::StorageLimits.
+  UnsentLogStoreMetricsImpl() = default;
 
   UnsentLogStoreMetricsImpl(const UnsentLogStoreMetricsImpl&) = delete;
   UnsentLogStoreMetricsImpl& operator=(const UnsentLogStoreMetricsImpl&) =
       delete;
 
-  ~UnsentLogStoreMetricsImpl() override {}
+  ~UnsentLogStoreMetricsImpl() override = default;
 
   // UnsentLogStoreMetrics:
   void RecordCompressionRatio(

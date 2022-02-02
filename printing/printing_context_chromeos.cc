@@ -22,6 +22,7 @@
 #include "printing/backend/cups_ipp_constants.h"
 #include "printing/backend/cups_ipp_helper.h"
 #include "printing/backend/cups_printer.h"
+#include "printing/buildflags/buildflags.h"
 #include "printing/metafile.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
@@ -193,8 +194,14 @@ std::vector<ScopedCupsOption> SettingsToCupsOptions(
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::CreateImpl(
-    Delegate* delegate) {
-  return std::make_unique<PrintingContextChromeos>(delegate);
+    Delegate* delegate,
+    bool skip_system_calls) {
+  auto context = std::make_unique<PrintingContextChromeos>(delegate);
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  if (skip_system_calls)
+    context->set_skip_system_calls();
+#endif
+  return context;
 }
 
 // static
@@ -292,10 +299,8 @@ gfx::Size PrintingContextChromeos::GetPdfPaperSizeDeviceUnits() {
 }
 
 mojom::ResultCode PrintingContextChromeos::UpdatePrinterSettings(
-    bool external_preview,
-    bool show_system_dialog,
-    int page_count) {
-  DCHECK(!show_system_dialog);
+    const PrinterSettings& printer_settings) {
+  DCHECK(!printer_settings.show_system_dialog);
 
   if (InitializeDevice(base::UTF16ToUTF8(settings_->device_name())) !=
       mojom::ResultCode::kSuccess) {
@@ -357,6 +362,9 @@ mojom::ResultCode PrintingContextChromeos::NewDocument(
   DCHECK(!in_print_job_);
   in_print_job_ = true;
 
+  if (skip_system_calls())
+    return mojom::ResultCode::kSuccess;
+
   std::string converted_name;
   if (send_user_info_) {
     DCHECK(printer_);
@@ -414,6 +422,22 @@ mojom::ResultCode PrintingContextChromeos::PageDone() {
   // Intentional No-op.
 
   return mojom::ResultCode::kSuccess;
+}
+
+mojom::ResultCode PrintingContextChromeos::PrintDocument(
+    const MetafilePlayer& metafile,
+    const PrintSettings& settings,
+    uint32_t num_pages) {
+#if defined(USE_CUPS)
+  std::vector<char> buffer;
+  if (!metafile.GetDataAsVector(&buffer))
+    return mojom::ResultCode::kFailed;
+
+  return StreamData(buffer);
+#else
+  NOTREACHED();
+  return mojom::ResultCode::kFailed;
+#endif  // defined(USE_CUPS)
 }
 
 mojom::ResultCode PrintingContextChromeos::DocumentDone() {

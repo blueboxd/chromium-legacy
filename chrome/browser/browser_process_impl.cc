@@ -19,7 +19,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -47,6 +46,7 @@
 #include "chrome/browser/devtools/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_status_updater.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -57,7 +57,6 @@
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
-#include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -470,9 +469,6 @@ void BrowserProcessImpl::StartTearDown() {
   if (gcm_driver_)
     gcm_driver_->Shutdown();
 
-  // Stop the watchdog thread before stopping other threads.
-  watchdog_thread_.reset();
-
   platform_part()->StartTearDown();
 
   // Cancel any uploads to release the system url request context references.
@@ -626,9 +622,11 @@ void BrowserProcessImpl::EndSession() {
   if (metrics) {
     metrics->RecordStartOfSessionEnd();
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-    // MetricsService lazily writes to prefs, force it to write now.
-    // On ChromeOS, chrome gets killed when hangs, so no need to
-    // commit metrics::prefs::kStabilitySessionEndCompleted change immediately.
+    // The MetricsService may update Local State prefs in memory without
+    // writing the updated prefs to disk, so schedule a Local State write now.
+    //
+    // Do not schedule a write on ChromeOS because writing to disk multiple
+    // times during shutdown was causing shutdown problems. See crbug/302578.
     local_state_->CommitPendingWrite(base::OnceClosure(),
                                      rundown_counter->GetRundownClosure());
 #endif
@@ -703,14 +701,6 @@ network::NetworkQualityTracker* BrowserProcessImpl::network_quality_tracker() {
         base::BindRepeating(&content::GetNetworkService));
   }
   return network_quality_tracker_.get();
-}
-
-WatchDogThread* BrowserProcessImpl::watchdog_thread() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!created_watchdog_thread_)
-    CreateWatchdogThread();
-  DCHECK(watchdog_thread_.get() != NULL);
-  return watchdog_thread_.get();
 }
 
 ProfileManager* BrowserProcessImpl::profile_manager() {
@@ -1079,11 +1069,13 @@ BrowserProcessImpl::component_updater() {
   std::unique_ptr<component_updater::UpdateScheduler> scheduler =
       std::make_unique<component_updater::TimerUpdateScheduler>();
 
+  std::string brand;
+  google_brand::GetBrand(&brand);
   component_updater_ = component_updater::ComponentUpdateServiceFactory(
       component_updater::MakeChromeComponentUpdaterConfigurator(
           base::CommandLine::ForCurrentProcess(),
           g_browser_process->local_state()),
-      std::move(scheduler));
+      std::move(scheduler), brand);
 
   return component_updater_.get();
 }
@@ -1103,18 +1095,6 @@ void BrowserProcessImpl::CreateNetworkQualityObserver() {
 }
 
 void BrowserProcessImpl::OnKeepAliveRestartStateChanged(bool can_restart) {}
-
-void BrowserProcessImpl::CreateWatchdogThread() {
-  DCHECK(!created_watchdog_thread_ && !watchdog_thread_);
-  created_watchdog_thread_ = true;
-
-  auto thread = std::make_unique<WatchDogThread>();
-  base::Thread::Options options;
-  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-  if (!thread->StartWithOptions(std::move(options)))
-    return;
-  watchdog_thread_.swap(thread);
-}
 
 void BrowserProcessImpl::CreateProfileManager() {
   DCHECK(!created_profile_manager_ && !profile_manager_);

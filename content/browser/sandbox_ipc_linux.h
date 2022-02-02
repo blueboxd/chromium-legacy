@@ -11,10 +11,8 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"
-#include "content/common/content_export.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
 namespace content {

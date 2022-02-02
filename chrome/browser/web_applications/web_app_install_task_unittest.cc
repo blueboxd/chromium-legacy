@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -21,7 +22,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_data_retriever.h"
 #include "chrome/browser/web_applications/test/fake_install_finalizer.h"
@@ -48,10 +48,8 @@
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/content_settings.h"
-#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "net/http/http_status_code.h"
@@ -64,13 +62,13 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_app_instance.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #endif
 
@@ -360,7 +358,7 @@ class WebAppInstallTaskTest : public WebAppTest {
   scoped_refptr<TestFileUtils> file_utils_;
 
   // Owned by install_task_:
-  FakeDataRetriever* data_retriever_ = nullptr;
+  raw_ptr<FakeDataRetriever> data_retriever_ = nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ArcAppTest arc_test_;
@@ -375,7 +373,7 @@ class WebAppInstallTaskTest : public WebAppTest {
  private:
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
   std::unique_ptr<TestWebAppUrlLoader> url_loader_;
-  FakeInstallFinalizer* fake_install_finalizer_ = nullptr;
+  raw_ptr<FakeInstallFinalizer> fake_install_finalizer_ = nullptr;
   base::HistogramTester histogram_tester_;
 };
 
@@ -1570,8 +1568,8 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     web_app_info->theme_color = theme_color;
     web_app_info->title = u"App Name";
 
-    WebApplicationShortcutsMenuItemInfo shortcut_item;
-    WebApplicationShortcutsMenuItemInfo::Icon icon;
+    WebAppShortcutsMenuItemInfo shortcut_item;
+    WebAppShortcutsMenuItemInfo::Icon icon;
     shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
     shortcut_item.url = shortcut_url;
 
@@ -1735,16 +1733,6 @@ class WebAppInstallTaskTestWithFileHandlers : public WebAppInstallTaskTest {
   WebAppInstallTaskTestWithFileHandlers() {
     scoped_feature_list_.InitWithFeatures({blink::features::kFileHandlingAPI},
                                           {});
-  }
-
-  void SetUp() override {
-    WebAppInstallTaskTest::SetUp();
-
-    HostContentSettingsMapFactory::GetForProfile(profile())
-        ->SetContentSettingCustomScope(ContentSettingsPattern::Wildcard(),
-                                       ContentSettingsPattern::Wildcard(),
-                                       ContentSettingsType::FILE_HANDLING,
-                                       ContentSetting::CONTENT_SETTING_ALLOW);
   }
 
   blink::mojom::ManifestPtr CreateManifest(const GURL& url) {

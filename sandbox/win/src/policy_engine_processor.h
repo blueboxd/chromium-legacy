@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "sandbox/win/src/policy_engine_opcodes.h"
 #include "sandbox/win/src/policy_engine_params.h"
 
@@ -114,6 +114,9 @@ class PolicyProcessor {
     SetInternalState(0, EVAL_FALSE);
   }
 
+  PolicyProcessor(const PolicyProcessor&) = delete;
+  PolicyProcessor& operator=(const PolicyProcessor&) = delete;
+
   // Evaluates a policy-opcode stream. See the comments at the top of this
   // class for more info. Returns POLICY_MATCH if a rule set was found that
   // matches an active policy.
@@ -134,8 +137,7 @@ class PolicyProcessor {
   // Sets the currently matching action result.
   void SetInternalState(size_t index, EvalResult result);
 
-  PolicyBuffer* policy_;
-  DISALLOW_COPY_AND_ASSIGN(PolicyProcessor);
+  raw_ptr<PolicyBuffer> policy_;
 };
 
 }  // namespace sandbox

@@ -5,7 +5,6 @@
 #ifndef UI_BASE_IME_DUMMY_INPUT_METHOD_H_
 #define UI_BASE_IME_DUMMY_INPUT_METHOD_H_
 
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method.h"
 
@@ -25,6 +24,7 @@ class DummyInputMethod : public InputMethod {
   // InputMethod overrides:
   void SetDelegate(internal::InputMethodDelegate* delegate) override;
   void OnFocus() override;
+  void OnTouch(ui::EventPointerType pointerType) override;
   void OnBlur() override;
 
 #if defined(OS_WIN)

@@ -34,6 +34,7 @@ buildflag_header("media_buildflags") {
     "ENABLE_PLATFORM_HEVC_DECODING=$enable_platform_hevc_decoding",
     "ENABLE_PLATFORM_ENCRYPTED_HEVC=$enable_platform_encrypted_hevc",
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
+    "ENABLE_HLS_DEMUXER=$enable_hls_demuxer",
     "ENABLE_LIBGAV1_DECODER=$enable_libgav1_decoder",
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_LIBVPX=$media_use_libvpx",
@@ -45,10 +46,12 @@ buildflag_header("media_buildflags") {
     "ENABLE_PLATFORM_MPEG_H_AUDIO=$enable_platform_mpeg_h_audio",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_CAST_STREAMING_RENDERER=$enable_cast_streaming_renderer",
+    "USE_ARC_PROTECTED_MEDIA=$use_arc_protected_media",
     "USE_CHROMEOS_MEDIA_ACCELERATION=$use_vaapi||$use_v4l2_codec",
     "USE_CHROMEOS_PROTECTED_AV1=$use_chromeos_protected_av1",
     "USE_CHROMEOS_PROTECTED_MEDIA=$use_chromeos_protected_media",
     "USE_PROPRIETARY_CODECS=$proprietary_codecs",
+    "ENABLE_PLATFORM_DTS_AUDIO=$enable_platform_dts_audio",
   ]
 }
 
@@ -159,7 +162,6 @@ test("media_unittests") {
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
     "//media/capabilities:unit_tests",
-    "//media/cast/receiver:unit_tests",
     "//media/cdm:unit_tests",
     "//media/device_monitors:unit_tests",
     "//media/filters:unit_tests",
@@ -271,6 +273,11 @@ test("audio_unittests") {
       "//media/base/android:media_java",
       "//ui/android:ui_java",
     ]
+  }
+
+  if (is_fuchsia) {
+    additional_manifest_fragments =
+        [ "//build/config/fuchsia/test/audio_capabilities.test-cmx" ]
   }
 }
 

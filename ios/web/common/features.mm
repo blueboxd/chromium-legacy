@@ -31,23 +31,14 @@ const base::Feature kClearOldNavigationRecordsWorkaround{
 const base::Feature kEnablePersistentDownloads{
     "EnablePersistentDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kUseDefaultUserAgentInWebClient{
-    "UseDefaultUserAgentInWebClient", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kPreserveScrollViewProperties{
     "PreserveScrollViewProperties", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kIOSLegacyTLSInterstitial{"IOSLegacyTLSInterstitial",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRecordSnapshotSize{"RecordSnapshotSize",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSetRequestAttribution{"SetRequestAttribution",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kWebViewNativeContextMenu{"WebViewNativeContextMenu",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebViewNativeContextMenuPhase2{
     "WebViewNativeContextMenuPhase2", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -71,17 +62,11 @@ const base::Feature kEnableNewDownloadAPI{"EnableNewDownloadAPI",
 const base::Feature kSynthesizedRestoreSession{
     "SynthesizedRestoreSession", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool UseWebClientDefaultUserAgent() {
-  return base::FeatureList::IsEnabled(kUseDefaultUserAgentInWebClient);
-}
+const base::Feature kEnableUnrealizedWebStates{
+    "EnableUnrealizedWebStates", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool UseWebViewNativeContextMenuWeb() {
   return base::FeatureList::IsEnabled(kDefaultWebViewContextMenu);
-}
-
-bool UseWebViewNativeContextMenuSystem() {
-  return base::FeatureList::IsEnabled(kWebViewNativeContextMenu) ||
-         base::FeatureList::IsEnabled(kWebViewNativeContextMenuPhase2);
 }
 
 bool ShouldTakeScreenshotOnNonHTMLContent() {

@@ -23,7 +23,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/proxy/proxy_config_handler.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/prefs/testing_pref_service.h"
@@ -42,7 +42,7 @@
 // rename. This is really more of an integration test than a unit test at this
 // point and currently relies on some chrome specific components.
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -541,4 +541,4 @@ TEST_F(ProxyConfigServiceImplTest, SharedEthernetAndUserPolicy) {
   EXPECT_TRUE(expected_config.value().Equals(actual_config.value()));
 }
 
-}  // namespace chromeos
+}  // namespace ash

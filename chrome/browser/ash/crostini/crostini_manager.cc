@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/disks/disk_mount_manager.h"
 #include "ash/constants/ash_features.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -61,7 +62,6 @@
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/image_loader/image_loader_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_device_handler.h"
 #include "components/component_updater/component_updater_service.h"
@@ -196,7 +196,7 @@ CrostiniManager::RestartOptions& CrostiniManager::RestartOptions::operator=(
     RestartOptions&&) = default;
 
 class CrostiniManager::CrostiniRestarter
-    : public chromeos::VmShutdownObserver,
+    : public ash::VmShutdownObserver,
       public chromeos::SchedulerConfigurationManagerBase::Observer {
  public:
   CrostiniRestarter(Profile* profile,
@@ -250,7 +250,7 @@ class CrostiniManager::CrostiniRestarter
     }
   }
 
-  // chromeos::VmShutdownObserver
+  // ash::VmShutdownObserver
   void OnVmShutdown(const std::string& vm_name) override {
     if (ReturnEarlyIfAborted()) {
       return;
@@ -617,6 +617,18 @@ class CrostiniManager::CrostiniRestarter
       crostini_manager_->GetTerminaVmKernelVersion(
           base::BindOnce(&CrostiniRestarter::GetTerminaVmKernelVersionFinished,
                          weak_ptr_factory_.GetWeakPtr()));
+    }
+
+    // Share any non-persisted paths for the VM.
+    guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePaths(
+        container_id_.vm_name, options_.share_paths, /*persist=*/false,
+        base::BindOnce(&CrostiniRestarter::SharePathsFinished,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  void SharePathsFinished(bool success, const std::string& failure_reason) {
+    if (!success) {
+      LOG(WARNING) << "Failed to share paths: " << failure_reason;
     }
     StartStage(mojom::InstallerState::kStartLxd);
     crostini_manager_->StartLxd(
@@ -2020,19 +2032,8 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostini(
     ContainerId container_id,
     CrostiniResultCallback callback,
     RestartObserver* observer) {
-  RestartOptions options;
-  auto it = restart_options_.find(container_id);
-  if (it != restart_options_.end()) {
-    options = std::move(it->second);
-    restart_options_.erase(it);
-  }
-  return RestartCrostiniWithOptions(std::move(container_id), std::move(options),
+  return RestartCrostiniWithOptions(std::move(container_id), RestartOptions(),
                                     std::move(callback), observer);
-}
-
-void CrostiniManager::SetRestartOptions(ContainerId container_id,
-                                        RestartOptions restart_options) {
-  restart_options_[container_id] = std::move(restart_options);
 }
 
 CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
@@ -2200,21 +2201,19 @@ void CrostiniManager::RemoveUpgradeContainerProgressObserver(
   upgrade_container_progress_observers_.RemoveObserver(observer);
 }
 
-void CrostiniManager::AddVmShutdownObserver(
-    chromeos::VmShutdownObserver* observer) {
+void CrostiniManager::AddVmShutdownObserver(ash::VmShutdownObserver* observer) {
   vm_shutdown_observers_.AddObserver(observer);
 }
 void CrostiniManager::RemoveVmShutdownObserver(
-    chromeos::VmShutdownObserver* observer) {
+    ash::VmShutdownObserver* observer) {
   vm_shutdown_observers_.RemoveObserver(observer);
 }
 
-void CrostiniManager::AddVmStartingObserver(
-    chromeos::VmStartingObserver* observer) {
+void CrostiniManager::AddVmStartingObserver(ash::VmStartingObserver* observer) {
   vm_starting_observers_.AddObserver(observer);
 }
 void CrostiniManager::RemoveVmStartingObserver(
-    chromeos::VmStartingObserver* observer) {
+    ash::VmStartingObserver* observer) {
   vm_starting_observers_.RemoveObserver(observer);
 }
 
@@ -2809,7 +2808,8 @@ void CrostiniManager::OnCreateLxdContainer(
       std::move(callback).Run(CrostiniResult::SUCCESS);
       break;
     default:
-      LOG(ERROR) << "Failed to start container: " << response->failure_reason();
+      LOG(ERROR) << "Failed to create container: "
+                 << response->failure_reason();
       std::move(callback).Run(CrostiniResult::CONTAINER_CREATE_FAILED);
   }
 }
@@ -3095,7 +3095,8 @@ void CrostiniManager::OnGetContainerAppIcons(
   for (auto& icon : *response->mutable_icons()) {
     icons.emplace_back(
         Icon{.desktop_file_id = std::move(*icon.mutable_desktop_file_id()),
-             .content = std::move(*icon.mutable_icon())});
+             .content = std::move(*icon.mutable_icon()),
+             .format = icon.format()});
   }
   std::move(callback).Run(/*success=*/true, icons);
 }

@@ -73,24 +73,24 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
                  2 * kReplacementTextRoundedRectLeftRightTextMargin),
       LayoutUnit(kReplacementTextRoundedRectHeight));
   background_rect.offset += content_rect.Center() - background_rect.Center();
-  background_rect = PhysicalRect(PixelSnappedIntRect(background_rect));
-  Path rounded_background_rect;
-  rounded_background_rect.AddRoundedRect(FloatRoundedRect(
-      FloatRect(background_rect), kReplacementTextRoundedRectRadius));
-  context.SetFillColor(
-      ScaleAlpha(Color::kWhite, kReplacementTextRoundedRectOpacity));
+  FloatRoundedRect rounded_background_rect(
+      gfx::RectF(ToPixelSnappedRect(background_rect)),
+      kReplacementTextRoundedRectRadius);
+  Color color = ScaleAlpha(Color::kWhite, kReplacementTextRoundedRectOpacity);
   AutoDarkMode auto_dark_mode(
       PaintAutoDarkMode(layout_embedded_object_.StyleRef(),
                         DarkModeFilter::ElementRole::kBackground));
-  context.FillPath(rounded_background_rect, auto_dark_mode);
+  context.FillRoundedRect(rounded_background_rect, color, auto_dark_mode);
 
-  FloatRect text_rect(FloatPoint(), text_geometry);
-  text_rect.Offset(FloatPoint(content_rect.Center()) - text_rect.CenterPoint());
+  FloatRect text_rect(gfx::PointF(), text_geometry);
+  text_rect.Offset(gfx::PointF(content_rect.Center()) -
+                   text_rect.CenterPoint());
   TextRunPaintInfo run_info(text_run);
   context.SetFillColor(ScaleAlpha(Color::kBlack, kReplacementTextTextOpacity));
   context.DrawBidiText(
       font, run_info,
-      text_rect.origin() + FloatSize(0, font_data->GetFontMetrics().Ascent()),
+      text_rect.origin() +
+          gfx::Vector2dF(0, font_data->GetFontMetrics().Ascent()),
       auto_dark_mode);
 }
 

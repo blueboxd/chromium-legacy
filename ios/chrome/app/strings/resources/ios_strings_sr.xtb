@@ -104,7 +104,6 @@
 <translation id="1832848789136765277">Да бисте били сигурни да увек можете да приступате синхронизованим подацима, потврдите да сте то ви</translation>
 <translation id="1870148520156231997">Прикажите лозинку</translation>
 <translation id="1872096359983322073">Блиц</translation>
-<translation id="1894205589103145703">Дошло је до проблема при пријављивању.</translation>
 <translation id="1911619930368729126">Отпреми у Google диск</translation>
 <translation id="1923342640370224680">Претходни сат</translation>
 <translation id="1930989359703290198">Организација вам дозвољава да се пријавите само помоћу одређених налога. Налози који нису дозвољени су скривени. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
@@ -138,6 +137,7 @@
 <translation id="225943865679747347">Кôд грешке: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Додај налог</translation>
 <translation id="2268044343513325586">Прецизирај</translation>
+<translation id="2271351792809375263">Користите лозинке које сте сачували у Chrome-у у другим апликацијама на уређају</translation>
 <translation id="2273327106802955778">Мени Још</translation>
 <translation id="2302742851632557585">Промените лозинку на веб-сајту</translation>
 <translation id="2316709634732130529">Користите предложену лозинку</translation>
@@ -258,6 +258,7 @@
 <translation id="3393920035788932672">Дозвољени искачући прозори</translation>
 <translation id="3399930248910934354">Отвори подешавања Chrome-а</translation>
 <translation id="3404744938087714423">Одјављивањем се искључује синхронизација.</translation>
+<translation id="3414451675185661089">2. Додирните Лозинке</translation>
 <translation id="3425644765244388016">Надимак картице</translation>
 <translation id="3433057996795775706">Брисањем ове лозинке нећете избрисати налог на <ph name="WEBSITE" />. Промените лозинку на <ph name="WEBSITE" /> да бисте је заштитили од других.</translation>
 <translation id="3443810440409579745">Картица је примљена.</translation>
@@ -379,6 +380,7 @@
 <translation id="4666531726415300315">Пријављени сте као <ph name="EMAIL" />.
 
 Подаци се шифрују помоћу приступне фразе за синхронизацију. Унесите је да бисте започели синхронизацију.</translation>
+<translation id="4682686630151240767">1. Отворите подешавања iPhone-а</translation>
 <translation id="4689564913179979534">Управљајте начинима плаћања...</translation>
 <translation id="470966556546083668">Не укључуј синхронизацију</translation>
 <translation id="473775607612524610">Ажурирај</translation>
@@ -459,8 +461,8 @@
 <translation id="5489208564673669003">Да бисте управљали колачићима за све сајтове, погледајте <ph name="BEGIN_LINK" />Подешавања колачића<ph name="END_LINK" />.</translation>
 <translation id="5490005495580364134">Блокирај све колачиће (не препоручује се)</translation>
 <translation id="5513681519188741830">пре <ph name="TIME" /> с</translation>
+<translation id="5523579157975978438">Да бисте искључили, отворите <ph name="BEGIN_LINK" />Подешавања<ph name="END_LINK" /> и идите у Лозинке.</translation>
 <translation id="5525269841082836315">Прављење приступне фразе</translation>
-<translation id="5532698011560297095">Не могу да се пријавим</translation>
 <translation id="5548760955356983418">Handoff вам омогућава да започнете прегледање веб-сајта на овом уређају, па да једноставно наставите на Mac-у. Веб-сајт који је тренутно отворен приказаће се на доку на Mac-у.
 
 Handoff треба да се омогући у одељку General (Опште) у менију Settings (Подешавања), а уређаји морају да користе исти iCloud налог.</translation>
@@ -637,6 +639,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6873263987691478642">Подељени приказ</translation>
 <translation id="6888009575607455378">Желите ли стварно да одбаците промене?</translation>
 <translation id="6896758677409633944">Копирај</translation>
+<translation id="6897187120838603299">Лозинка се чува на вашем уређају.</translation>
 <translation id="6914583639806229067">Потражите слику коју сте копирали</translation>
 <translation id="6914783257214138813">Лозинке ће бити видљиве свима који могу да виде извезену датотеку.</translation>
 <translation id="6930799952781667037">Додирните да бисте променили језик на овај.</translation>
@@ -740,12 +743,14 @@ Handoff треба да се омогући у одељку General (Опште)
 Сајтови могу да користе колачиће да би видели ваше активности прегледања на различитим сајтовима, на пример, за персонализацију огласа.</translation>
 <translation id="7971521879845308059">Блокирај искачуће прозоре</translation>
 <translation id="797413074872316787">Да бисте синхронизовали и персонализовали садржај на уређајима, укључите синхронизацију.</translation>
+<translation id="7978018860671536736">3. Додирните Аутоматски попуни лозинке</translation>
 <translation id="7982789257301363584">Мрежа</translation>
 <translation id="7993619969781047893">Функције на неким сајтовима могу да престану са радом</translation>
 <translation id="800361585186029508">Отвара унете URL-ове у Google Chrome-у.</translation>
 <translation id="802154636333426148">Преузимање није успело</translation>
 <translation id="8023878949384262191">Проширује одељак.</translation>
 <translation id="8027581147000338959">Отвори у новом прозору</translation>
+<translation id="8032569120109842252">Пратите</translation>
 <translation id="804225253087497565"><ph name="BEGIN_LINK" />Историја претраге<ph name="END_LINK" /> и <ph name="BEGIN_LINK" />други облици активности<ph name="END_LINK" /> могу да буду сачувани на Google налогу када сте пријављени. Можете да их избришете у било ком тренутку.</translation>
 <translation id="804427445359061970">Овде ћете пронаћи картице са других уређаја</translation>
 <translation id="8059533439631660104">Скупља одељак.</translation>
@@ -764,7 +769,8 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8197543752516192074">Преведи страницу</translation>
 <translation id="8205564605687841303">Откажи</translation>
 <translation id="8206354486702514201">Ово подешавање примењује администратор.</translation>
-<translation id="8225985093977202398">Кеширане слике и фајлови</translation>
+<translation id="8225985093977202398">Кеширане слике и датотеке</translation>
+<translation id="8237382152611443140">Отворите подешавања за аутоматско попуњавање лозинке</translation>
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8271720166617117963">Прихвати и пријави ме</translation>
 <translation id="8281781826761538115">Подразумевано – <ph name="DEFAULT_LOCALE" /></translation>
@@ -833,6 +839,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8917490105272468696">Да, омогући</translation>
 <translation id="8952559610785099500">Додајте лозинку</translation>
 <translation id="895541991026785598">Пријавите проблем</translation>
+<translation id="8974714402877957201">1. Отворите подешавања iPad-а</translation>
 <translation id="8976382372951310360">Помоћ</translation>
 <translation id="8976414606286374109">Картице се чувају на Google налогу.</translation>
 <translation id="8981454092730389528">Google контроле активности</translation>

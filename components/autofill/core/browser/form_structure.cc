@@ -32,7 +32,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -42,6 +41,7 @@
 #include "components/autofill/core/browser/form_processing/label_processing_util.h"
 #include "components/autofill/core/browser/form_processing/name_processing_util.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/browser/rationalization_util.h"
 #include "components/autofill/core/browser/validation.h"
@@ -356,6 +356,18 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "one-time-code")
     return HTML_TYPE_ONE_TIME_CODE;
 
+  if (autocomplete_attribute_value == "promo-code" ||
+      autocomplete_attribute_value == "promo_code" ||
+      autocomplete_attribute_value == "promotion-code" ||
+      autocomplete_attribute_value == "promotion_code" ||
+      autocomplete_attribute_value == "promotional-code" ||
+      autocomplete_attribute_value == "promotional_code" ||
+      autocomplete_attribute_value == "coupon-code" ||
+      autocomplete_attribute_value == "coupon_code" ||
+      autocomplete_attribute_value == "gift-code" ||
+      autocomplete_attribute_value == "gift_code")
+    return HTML_TYPE_MERCHANT_PROMO_CODE;
+
   return HTML_TYPE_UNRECOGNIZED;
 }
 
@@ -549,9 +561,9 @@ LogBufferSubmitter LogRationalization(LogManager* log_manager) {
 
 // Creates a unique name for the section that starts with |field|.
 //
-// The section is either named by the field's unique_name() or by a string of
-// the form "%s_%u_%u", where the first string is the field's name and the two
-// integers are the field's frame ID and its renderer ID.
+// The section name is a string of the form "%s_%u_%u", where the first string
+// is the field's name and the two integers are the field's frame ID and its
+// renderer ID.
 //
 // For the frame ID, we do not use LocalFrameTokens but instead map them to
 // consecutive integers using |frame_token_ids|, which uniquely identify a frame
@@ -561,16 +573,10 @@ LogBufferSubmitter LogRationalization(LogManager* log_manager) {
 // We intentionally do not include the LocalFrameToken in the section string
 // because frame tokens should not be sent to a renderer.
 //
-// TODO(crbug.com/896689): Remove unique_name.
 // TODO(crbug.com/1257141): Remove special handling of FrameTokens.
 std::u16string GetSectionName(
     const AutofillField& field,
     base::flat_map<LocalFrameToken, size_t>& frame_token_ids) {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillNameSectionsWithRendererIds)) {
-    return field.unique_name();
-  }
-
   size_t id = frame_token_ids.emplace(field.host_frame, frame_token_ids.size())
                   .first->second;
   return base::StrCat(
@@ -644,7 +650,6 @@ FormStructure::FormStructure(const FormData& form)
       host_frame_(form.host_frame),
       unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
-  std::map<std::u16string, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
     if (!ShouldSkipField(field))
       ++active_field_count_;
@@ -654,12 +659,7 @@ FormStructure::FormStructure(const FormData& form)
     else
       all_fields_are_passwords_ = false;
 
-    // Generate a unique name for this field by appending a counter to the name.
-    // Make sure to prepend the counter with a non-numeric digit so that we are
-    // guaranteed to avoid collisions.
-    std::u16string unique_name =
-        field.name + u"_" + base::NumberToString16(++unique_names[field.name]);
-    fields_.push_back(std::make_unique<AutofillField>(field, unique_name));
+    fields_.push_back(std::make_unique<AutofillField>(field));
   }
 
   form_signature_ = autofill::CalculateFormSignature(form);
@@ -1321,6 +1321,7 @@ void FormStructure::LogQualityMetrics(
 
     const ServerFieldTypeSet& field_types = field->possible_types();
     DCHECK(!field_types.empty());
+
     if (field_types.count(EMPTY_TYPE) || field_types.count(UNKNOWN_TYPE)) {
       DCHECK_EQ(field_types.size(), 1u);
       continue;
@@ -1355,6 +1356,22 @@ void FormStructure::LogQualityMetrics(
       if (field->is_autofilled || field->previously_autofilled()) {
         AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
             form_interactions_ukm_logger, *this, *field);
+
+        // If the field was a |ADDRESS_HOME_STATE| field which was autofilled,
+        // record the source of the autofilled value between
+        // |AlternativeStateNameMap| or the profile value.
+        if (field->is_autofilled &&
+            type.GetStorableType() == ADDRESS_HOME_STATE) {
+          AutofillMetrics::
+              LogAutofillingSourceForStateSelectionFieldAtSubmission(
+                  field->state_is_a_matching_type()
+                      ? AutofillMetrics::
+                            AutofilledSourceMetricForStateSelectionField::
+                                AUTOFILL_BY_ALTERNATIVE_STATE_NAME_MAP
+                      : AutofillMetrics::
+                            AutofilledSourceMetricForStateSelectionField::
+                                AUTOFILL_BY_VALUE);
+        }
       }
     }
   }
@@ -2625,16 +2642,6 @@ DenseSet<FormType> FormStructure::GetFormTypes() const {
     form_types.insert(FieldTypeGroupToFormType(field->Type().group()));
   }
   return form_types;
-}
-
-std::u16string FormStructure::GetIdentifierForRefill() const {
-  if (!form_name().empty())
-    return form_name();
-
-  if (field_count() && !field(0)->unique_name().empty())
-    return field(0)->unique_name();
-
-  return std::u16string();
 }
 
 void FormStructure::set_randomized_encoder(

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/action_value.pb.h"
@@ -93,6 +93,13 @@ class WebController {
   virtual void FindElement(const Selector& selector,
                            bool strict_mode,
                            ElementFinder::Callback callback);
+
+  // Find the element given by |selector| starting from the given
+  // |start_element|. Returns results or errors based on the |result_type|.
+  virtual void RunElementFinder(const ElementFinder::Result& start_element,
+                                const Selector& selector,
+                                ElementFinder::ResultType result_type,
+                                ElementFinder::Callback callback);
 
   // Find all elements matching |selector|. If there are no matches, the status
   // will be ELEMENT_RESOLUTION_FAILED.
@@ -202,11 +209,6 @@ class WebController {
   // Check if the selected option of the |element| is the expected |option|.
   virtual void CheckSelectedOptionElement(
       const ElementFinder::Result& option,
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&)> callback);
-
-  // Highlight an |element|.
-  virtual void HighlightElement(
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -408,9 +410,6 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::EvaluateResult> result);
-  void RunElementFinder(const Selector& selector,
-                        ElementFinder::ResultType result_type,
-                        ElementFinder::Callback callback);
   void OnFindElementResult(ElementFinder* finder_to_release,
                            ElementFinder::Callback callback,
                            const ClientStatus& status,
@@ -428,35 +427,21 @@ class WebController {
                               autofill::ContentAutofillDriver* driver,
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback);
-  void GetUniqueElementSelector(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
-          callback);
-  void OnGetElementTagForUniqueSelector(
-      const ElementFinder::Result& element,
-      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
-          callback,
-      const ClientStatus& tag_status,
-      const std::string& tag);
-  void GetElementQueryIndex(
-      const std::string& query_selector,
+  void GetBackendNodeId(
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&, int)> callback);
-  void OnGetElementQueryIndexForUniqueSelector(
-      base::OnceCallback<void(const ClientStatus&, const std::string&, int)>
-          callback,
-      const std::string& query_selector,
-      const ClientStatus& index_status,
-      int index);
-  void OnGetUniqueSelectorForFormAndFieldData(
+  void OnGetBackendNodeId(
+      base::OnceCallback<void(const ClientStatus&, int)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<dom::DescribeNodeResult> result);
+  void OnGetBackendNodeIdForFormAndFieldData(
       const ElementFinder::Result& element,
       base::OnceCallback<void(const ClientStatus&,
                               autofill::ContentAutofillDriver* driver,
                               const autofill::FormData&,
                               const autofill::FormFieldData&)> callback,
-      const ClientStatus& selector_status,
-      const std::string& query_selector,
-      int index);
+      const ClientStatus& node_status,
+      int backend_node_id);
   void OnGetFormAndFieldData(
       base::OnceCallback<void(const ClientStatus&,
                               autofill::ContentAutofillDriver* driver,
@@ -521,11 +506,11 @@ class WebController {
 
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
-  content::WebContents* const web_contents_;
+  const raw_ptr<content::WebContents> web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
   // Must not be |nullptr| and outlive this web controller.
-  const UserData* const user_data_;
-  ProcessedActionStatusDetailsProto* const log_info_;
+  const raw_ptr<const UserData> user_data_;
+  const raw_ptr<ProcessedActionStatusDetailsProto> log_info_;
 
   // Currently running workers.
   std::vector<std::unique_ptr<WebControllerWorker>> pending_workers_;

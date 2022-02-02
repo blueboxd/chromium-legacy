@@ -108,9 +108,9 @@ TEST_P(PaintLayerTest, RootLayerScrollBounds) {
   EXPECT_EQ(ScrollOffset(200 + scrollbarThickness, 400 + scrollbarThickness),
             plsa->MaximumScrollOffset());
 
-  EXPECT_EQ(IntRect(0, 0, 800 - scrollbarThickness, 600 - scrollbarThickness),
+  EXPECT_EQ(gfx::Rect(0, 0, 800 - scrollbarThickness, 600 - scrollbarThickness),
             plsa->VisibleContentRect());
-  EXPECT_EQ(IntRect(0, 0, 800, 600),
+  EXPECT_EQ(gfx::Rect(0, 0, 800, 600),
             plsa->VisibleContentRect(kIncludeScrollbars));
 }
 
@@ -454,20 +454,17 @@ LayersPaintingOverlayOverflowControlsAfter(const PaintLayer* layer) {
 enum OverlayType { kOverlayResizer, kOverlayScrollbars };
 
 class ReorderOverlayOverflowControlsTest
-    : public testing::WithParamInterface<std::tuple<unsigned, OverlayType>>,
-      private ScopedCompositeAfterPaintForTest,
+    : public testing::WithParamInterface<OverlayType>,
       public RenderingTest {
  public:
   ReorderOverlayOverflowControlsTest()
-      : ScopedCompositeAfterPaintForTest(std::get<0>(GetParam()) &
-                                         kCompositeAfterPaint),
-        RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
-  ~ReorderOverlayOverflowControlsTest() {
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+  ~ReorderOverlayOverflowControlsTest() override {
     // Must destruct all objects before toggling back feature flags.
     WebHeap::CollectAllGarbageForTesting();
   }
 
-  OverlayType GetOverlayType() const { return std::get<1>(GetParam()); }
+  OverlayType GetOverlayType() const { return GetParam(); }
 
   void InitOverflowStyle(const char* id) {
     GetDocument().getElementById(id)->setAttribute(
@@ -489,11 +486,10 @@ class ReorderOverlayOverflowControlsTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ReorderOverlayOverflowControlsTest,
-    ::testing::Combine(::testing::Values(0, kCompositeAfterPaint),
-                       ::testing::Values(kOverlayScrollbars, kOverlayResizer)));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ReorderOverlayOverflowControlsTest,
+                         ::testing::Values(kOverlayScrollbars,
+                                           kOverlayResizer));
 
 TEST_P(ReorderOverlayOverflowControlsTest, StackedWithInFlowDescendant) {
   SetBodyInnerHTML(R"HTML(
@@ -1097,7 +1093,7 @@ TEST_P(PaintLayerTest, SubsequenceCachingSVG) {
 TEST_P(PaintLayerTest, SubsequenceCachingMuticol) {
   SetBodyInnerHTML(R"HTML(
     <div style='columns: 2'>
-      <div id='target' style='position: relative'></div>
+      <div id='target' style='position: relative; height: 20px;'></div>
     </div>
   )HTML");
 
@@ -1296,16 +1292,19 @@ TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
 TEST_P(PaintLayerTest, CompositingContainerColumnSpanAll) {
   SetBodyInnerHTML(R"HTML(
     <div>
-      <div id='compositedContainer' style='columns: 1'>
-        <div id='columnSpan' style='-webkit-column-span: all; overflow: hidden'>
+      <div id='multicol' style='columns: 1; position: relative'>
+        <div id='paintContainer' style='position: relative'>
+          <div id='columnSpan' style='column-span: all; overflow: hidden'></div>
         </div>
       </div>
     </div>
   )HTML");
 
-  PaintLayer* target = GetPaintLayerByElementId("columnSpan");
-  EXPECT_EQ(target->Parent(), target->CompositingContainer());
-  EXPECT_EQ(target->Parent()->Parent(), target->ContainingLayer());
+  PaintLayer* columnSpan = GetPaintLayerByElementId("columnSpan");
+  EXPECT_EQ(GetPaintLayerByElementId("paintContainer"),
+            columnSpan->CompositingContainer());
+  EXPECT_EQ(GetPaintLayerByElementId("multicol"),
+            columnSpan->ContainingLayer());
 }
 
 TEST_P(PaintLayerTest,
@@ -1902,6 +1901,11 @@ TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
 }
 
 TEST_P(PaintLayerTest, CompositingContainerSelfPaintingNonStackedFloat) {
+  // Self-painting non-stacked layers don't exist in
+  // LayoutNGBlockFragmentation.
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='position: relative'>
       <span id='span' style='opacity: 0.9'>
@@ -1947,22 +1951,36 @@ TEST_P(PaintLayerTest, ColumnSpanLayerUnderExtraLayerScrolled) {
 
   EXPECT_EQ(extra_layer, spanner->Parent());
   EXPECT_EQ(columns, spanner->ContainingLayer());
-  EXPECT_EQ(columns, extra_layer->Parent()->Parent());
-  EXPECT_EQ(columns, extra_layer->ContainingLayer()->Parent());
-
-  EXPECT_EQ(PhysicalOffset(0, 0), spanner->LocationWithoutPositionOffset());
-  EXPECT_EQ(PhysicalOffset(50, 50),
-            spanner->GetLayoutObject().OffsetForInFlowPosition());
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+    EXPECT_EQ(columns, extra_layer->Parent());
+    EXPECT_EQ(columns, extra_layer->ContainingLayer());
+    EXPECT_EQ(PhysicalOffset(50, 50), spanner->LocationWithoutPositionOffset());
+    EXPECT_EQ(PhysicalOffset(0, 0),
+              spanner->GetLayoutObject().OffsetForInFlowPosition());
+    EXPECT_EQ(PhysicalOffset(100, 100),
+              extra_layer->LocationWithoutPositionOffset());
+    EXPECT_EQ(PhysicalOffset(0, 0),
+              extra_layer->GetLayoutObject().OffsetForInFlowPosition());
+    EXPECT_EQ(PhysicalOffset(-100, 100),
+              extra_layer->VisualOffsetFromAncestor(columns));
+  } else {
+    EXPECT_EQ(columns, extra_layer->Parent()->Parent());
+    EXPECT_EQ(columns, extra_layer->ContainingLayer()->Parent());
+    EXPECT_EQ(PhysicalOffset(0, 0), spanner->LocationWithoutPositionOffset());
+    EXPECT_EQ(PhysicalOffset(50, 50),
+              spanner->GetLayoutObject().OffsetForInFlowPosition());
+    EXPECT_EQ(PhysicalOffset(0, 0),
+              extra_layer->LocationWithoutPositionOffset());
+    EXPECT_EQ(PhysicalOffset(100, 100),
+              extra_layer->GetLayoutObject().OffsetForInFlowPosition());
+    // -60 = 2nd-column-x(40) - scroll-offset-x(200) + x-location(100)
+    // 20 = y-location(100) - column-height(80)
+    EXPECT_EQ(PhysicalOffset(-60, 20),
+              extra_layer->VisualOffsetFromAncestor(columns));
+  }
 
   EXPECT_EQ(gfx::Vector2d(200, 0),
             spanner->ContainingLayer()->PixelSnappedScrolledContentOffset());
-  EXPECT_EQ(PhysicalOffset(0, 0), extra_layer->LocationWithoutPositionOffset());
-  EXPECT_EQ(PhysicalOffset(100, 100),
-            extra_layer->GetLayoutObject().OffsetForInFlowPosition());
-  // -60 = 2nd-column-x(40) - scroll-offset-x(200) + x-location(100)
-  // 20 = y-location(100) - column-height(80)
-  EXPECT_EQ(PhysicalOffset(-60, 20),
-            extra_layer->VisualOffsetFromAncestor(columns));
   EXPECT_EQ(PhysicalOffset(-150, 50),
             spanner->VisualOffsetFromAncestor(columns));
 }
@@ -1988,7 +2006,7 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   SetBodyInnerHTML(R"HTML(
     <span id='span' style='opacity: 0.1'>
       <div id='target' style='overflow: hidden; float: left;
-          column-width: 10px'>
+          position: relative;'>
       </div>
     </span>
   )HTML");
@@ -1998,24 +2016,19 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   auto* target_object = target_element->GetLayoutObject();
   auto* target_layer = To<LayoutBoxModelObject>(target_object)->Layer();
 
-  // Target layer is self painting because it is a multicol container.
+  // Target layer is self painting because it is relatively positioned.
   EXPECT_TRUE(target_layer->IsSelfPaintingLayer());
   EXPECT_EQ(span_layer, target_layer->CompositingContainer());
   EXPECT_FALSE(target_layer->SelfNeedsRepaint());
   EXPECT_FALSE(span_layer->SelfNeedsRepaint());
 
-  // Removing column-width: 10px makes target layer no longer self-painting,
+  // Removing position:relative makes target layer no longer self-painting,
   // and change its compositing container. The original compositing container
   // span_layer should be marked SelfNeedsRepaint.
   target_element->setAttribute(html_names::kStyleAttr,
                                "overflow: hidden; float: left");
 
   UpdateAllLifecyclePhasesExceptPaint();
-  // TODO(yosin): Once multicol in LayoutNG, we should remove following
-  // assignments. This is because the layout tree maybe reattached. In LayoutNG
-  // phase 1, layout tree is reattached because multicol forces legacy layout.
-  target_object = target_element->GetLayoutObject();
-  target_layer = To<LayoutBoxModelObject>(target_object)->Layer();
   EXPECT_FALSE(target_layer->IsSelfPaintingLayer());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     EXPECT_EQ(span_layer, target_layer->CompositingContainer());
@@ -2059,7 +2072,7 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
 TEST_P(PaintLayerTest, FrameViewContentSize) {
   SetBodyInnerHTML(
       "<style> body { width: 1200px; height: 900px; margin: 0 } </style>");
-  EXPECT_EQ(IntSize(800, 600), GetDocument().View()->Size());
+  EXPECT_EQ(gfx::Size(800, 600), GetDocument().View()->Size());
 }
 
 TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {
@@ -2520,32 +2533,6 @@ TEST_P(PaintLayerTest, HitTestOverlayResizer) {
   }
 }
 
-TEST_P(PaintLayerTest, BackgroundIsKnownToBeOpaqueInRectChildren) {
-  // This test doesn't apply in CompositeAfterPaint.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      div {
-        width: 100px;
-        height: 100px;
-        position: relative;
-        isolation: isolate;
-      }
-    </style>
-    <div id='target'>
-      <div style='background: blue'></div>
-    </div>
-  )HTML");
-
-  PaintLayer* target_layer = GetPaintLayerByElementId("target");
-  EXPECT_TRUE(target_layer->BackgroundIsKnownToBeOpaqueInRect(
-      PhysicalRect(0, 0, 100, 100), true));
-  EXPECT_FALSE(target_layer->BackgroundIsKnownToBeOpaqueInRect(
-      PhysicalRect(0, 0, 100, 100), false));
-}
-
 TEST_P(PaintLayerTest,
        ChangeAlphaNeedsCompositingInputsAndPaintPropertyUpdate) {
   SetBodyInnerHTML(R"HTML(
@@ -2780,9 +2767,6 @@ TEST_P(PaintLayerTest, HasNonEmptyChildLayoutObjectsZeroSizeOverflowVisible) {
 }
 
 TEST_P(PaintLayerTest, AddLayerNeedsRepaintAndCullRectUpdate) {
-  if (!RuntimeEnabledFeatures::CullRectUpdateEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id="parent" style="opacity: 0.9">
       <div id="child"></div>
@@ -2841,11 +2825,11 @@ TEST_F(PaintLayerOverlapTest, FixedUsesExpandedBoundingBoxForOverlap) {
 
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 30, 20));
+            gfx::Rect(50, 50, 30, 20));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
 
   // Modify the viewport scroll offset and ensure that the bounding box is still
   // adjusted by the new amount the viewport can scroll in any direction.
@@ -2854,11 +2838,11 @@ TEST_F(PaintLayerOverlapTest, FixedUsesExpandedBoundingBoxForOverlap) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 30, 20));
+            gfx::Rect(50, 50, 30, 20));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(60, 60, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(60, 60, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(60, 60, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(60, 60, 10, 10));
 }
 
 TEST_F(PaintLayerOverlapTest, IncludeIntermediateScrollerOffset) {
@@ -2880,8 +2864,9 @@ TEST_F(PaintLayerOverlapTest, IncludeIntermediateScrollerOffset) {
       ScrollOffset(100, 100), mojom::blink::ScrollType::kProgrammatic);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(position->UnclippedAbsoluteBoundingBox(), IntRect(0, 50, 100, 100));
-  EXPECT_EQ(position->ClippedAbsoluteBoundingBox(), IntRect(0, 50, 100, 50));
+  EXPECT_EQ(position->UnclippedAbsoluteBoundingBox(),
+            gfx::Rect(0, 50, 100, 100));
+  EXPECT_EQ(position->ClippedAbsoluteBoundingBox(), gfx::Rect(0, 50, 100, 50));
 }
 
 TEST_F(PaintLayerOverlapTest,
@@ -2922,25 +2907,25 @@ TEST_F(PaintLayerOverlapTest,
 
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 30, 20));
+            gfx::Rect(50, 50, 30, 20));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
 
   // Modify the inner scroll offset and ensure that the bounding box is still
   // the same.
   PaintLayerScrollableArea* scrollable_area =
       GetPaintLayerByElementId("scroller")->GetScrollableArea();
-  scrollable_area->ScrollToAbsolutePosition(FloatPoint(10, 10));
+  scrollable_area->ScrollToAbsolutePosition(gfx::PointF(10, 10));
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 30, 20));
+            gfx::Rect(50, 50, 30, 20));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
 
   // Modify the viewport scroll offset and ensure that the bounding box is still
   // adjusted by the newamount the viewport can scroll in any direction.
@@ -2949,11 +2934,11 @@ TEST_F(PaintLayerOverlapTest,
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 30, 20));
+            gfx::Rect(50, 50, 30, 20));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(60, 60, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(60, 60, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(60, 60, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(60, 60, 10, 10));
 }
 
 TEST_F(PaintLayerOverlapTest,
@@ -2997,11 +2982,11 @@ TEST_F(PaintLayerOverlapTest,
   // block isn't the viewport.
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(117, 117, 66, 66));
+            gfx::Rect(117, 117, 66, 66));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(117, 117, 66, 66));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(118, 118, 64, 64));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(117, 117, 66, 66));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(118, 118, 64, 64));
 }
 
 TEST_F(PaintLayerOverlapTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
@@ -3050,11 +3035,11 @@ TEST_F(PaintLayerOverlapTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
           ChildDocument().getElementById("fixed")->GetLayoutObject())
           ->Layer();
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 410, 410));
+            gfx::Rect(50, 50, 410, 410));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
 
   // Modify the top-most viewport's scroll offset and ensure that the bounding
   // box is still the same. This shows that we're not considering the wrong
@@ -3064,11 +3049,11 @@ TEST_F(PaintLayerOverlapTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 410, 410));
+            gfx::Rect(50, 50, 410, 410));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(50, 50, 10, 10));
 
   // Now modify the iframe's scroll offset. This one should affect the fixed's
   // bounding box.
@@ -3077,11 +3062,11 @@ TEST_F(PaintLayerOverlapTest, NestedFixedUsesExpandedBoundingBoxForOverlap) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 50, 410, 410));
+            gfx::Rect(50, 50, 410, 410));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 10, 10));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(60, 60, 10, 10));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(60, 60, 10, 10));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(60, 60, 10, 10));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(60, 60, 10, 10));
 }
 
 TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForChild) {
@@ -3120,11 +3105,11 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForChild) {
   // can miss overlap from that child leading to incorrect composition order.
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 75, 625));
+            gfx::Rect(25, 25, 75, 625));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
 
   // Verify that the abs bounds is not expanded even though it is a child of a
   // fixed-pos layer. Expanding the abs bounds would mean that it could
@@ -3132,11 +3117,11 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForChild) {
   // overlap with.
   PaintLayer* abs = GetPaintLayerByElementId("abs");
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 225, 25, 25));
+            gfx::Rect(75, 225, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 225, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 225, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 225, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 225, 25, 25));
 
   // Modify the scroll offset and ensure that the bounding box is still the
   // same. Note that if we get different expanded bounding boxes for overlap
@@ -3148,18 +3133,18 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 75, 625));
+            gfx::Rect(25, 25, 75, 625));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 625, 25, 25));
+            gfx::Rect(75, 625, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
 }
 
 TEST_F(PaintLayerOverlapTest, FixedWithClippedExpandedBoundsForChild) {
@@ -3199,11 +3184,11 @@ TEST_F(PaintLayerOverlapTest, FixedWithClippedExpandedBoundsForChild) {
   // clipping which will limit the expansion.
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 50, 450));
+            gfx::Rect(25, 25, 50, 450));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
 
   // Verify that the abs bounds is not expanded even though it is a child of a
   // fixed-pos layer. Expanding the abs bounds would mean that it could
@@ -3212,11 +3197,11 @@ TEST_F(PaintLayerOverlapTest, FixedWithClippedExpandedBoundsForChild) {
   // clipping from the ancestor.
   PaintLayer* abs = GetPaintLayerByElementId("abs");
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 225, 25, 25));
+            gfx::Rect(75, 225, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 225, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(0, 0, 0, 0));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 225, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(0, 0, 0, 0));
 
   // Modify the scroll offset and ensure that the bounding box is still the
   // same. Note that if we get different expanded bounding boxes for overlap
@@ -3228,18 +3213,18 @@ TEST_F(PaintLayerOverlapTest, FixedWithClippedExpandedBoundsForChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 50, 450));
+            gfx::Rect(25, 25, 50, 450));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 625, 25, 25));
+            gfx::Rect(75, 625, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(0, 0, 0, 0));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(0, 0, 0, 0));
 }
 
 TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForGrandChild) {
@@ -3285,30 +3270,30 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForGrandChild) {
   // the absolutely positioned grandchild.
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 125, 725));
+            gfx::Rect(25, 25, 125, 725));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
 
   // Verify that the abs bounds is not expanded even though it is a child of a
   // fixed-pos layer. Additionally, it shouldn't include its child as only
   // fixed-pos expands to include descendants.
   PaintLayer* abs = GetPaintLayerByElementId("abs");
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 225, 25, 25));
+            gfx::Rect(75, 225, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 225, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 225, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 225, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 225, 25, 25));
 
   PaintLayer* abs2 = GetPaintLayerByElementId("abs2");
   EXPECT_EQ(abs2->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(125, 325, 25, 25));
+            gfx::Rect(125, 325, 25, 25));
   EXPECT_EQ(abs2->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), IntRect(125, 325, 25, 25));
-  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), IntRect(125, 325, 25, 25));
+  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), gfx::Rect(125, 325, 25, 25));
+  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), gfx::Rect(125, 325, 25, 25));
 
   // Modify the scroll offset and ensure that the bounding box is still the
   // same. Note that if we get different expanded bounding boxes for overlap
@@ -3320,25 +3305,25 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForGrandChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 125, 725));
+            gfx::Rect(25, 25, 125, 725));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 625, 25, 25));
+            gfx::Rect(75, 625, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
 
   EXPECT_EQ(abs2->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(125, 725, 25, 25));
+            gfx::Rect(125, 725, 25, 25));
   EXPECT_EQ(abs2->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
-  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
 
   // Add will-change to the middle child to ensure the bounds are still the
   // same. This helps confirm that the computation of the bounds is agnostic to
@@ -3348,25 +3333,25 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForGrandChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 125, 725));
+            gfx::Rect(25, 25, 125, 725));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 625, 25, 25));
+            gfx::Rect(75, 625, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
 
   EXPECT_EQ(abs2->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(125, 725, 25, 25));
+            gfx::Rect(125, 725, 25, 25));
   EXPECT_EQ(abs2->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
-  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
 
   // Add will-change to the grandchild and ensure the bounds are still the same.
   GetDocument().getElementById("abs2")->setAttribute(html_names::kStyleAttr,
@@ -3374,25 +3359,25 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForGrandChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 125, 725));
+            gfx::Rect(25, 25, 125, 725));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 625, 25, 25));
+            gfx::Rect(75, 625, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
 
   EXPECT_EQ(abs2->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(125, 725, 25, 25));
+            gfx::Rect(125, 725, 25, 25));
   EXPECT_EQ(abs2->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
-  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
 
   // Remove will-change from the middle child and ensure the bounds are still
   // the same.
@@ -3400,25 +3385,25 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForGrandChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 125, 725));
+            gfx::Rect(25, 25, 125, 725));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(abs->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(75, 625, 25, 25));
+            gfx::Rect(75, 625, 25, 25));
   EXPECT_EQ(abs->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
-  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), IntRect(75, 625, 25, 25));
+  EXPECT_EQ(abs->UnclippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
+  EXPECT_EQ(abs->ClippedAbsoluteBoundingBox(), gfx::Rect(75, 625, 25, 25));
 
   EXPECT_EQ(abs2->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(125, 725, 25, 25));
+            gfx::Rect(125, 725, 25, 25));
   EXPECT_EQ(abs2->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
-  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
-  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), IntRect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->UnclippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
+  EXPECT_EQ(abs2->ClippedAbsoluteBoundingBox(), gfx::Rect(125, 725, 25, 25));
 }
 
 TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForFixedChild) {
@@ -3456,23 +3441,23 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForFixedChild) {
   // can miss overlap from that child leading to incorrect composition order.
   PaintLayer* fixed = GetPaintLayerByElementId("fixed");
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 50, 500));
+            gfx::Rect(25, 25, 50, 500));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 25, 50, 50));
 
   // Note that the nested fixed should not expand its bounds as it doesn't move
   // relative to its siblings, fixed-pos or not.
   PaintLayer* nestedFixed = GetPaintLayerByElementId("nestedFixed");
   EXPECT_EQ(nestedFixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 100, 25, 25));
+            gfx::Rect(50, 100, 25, 25));
   EXPECT_EQ(nestedFixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
   EXPECT_EQ(nestedFixed->UnclippedAbsoluteBoundingBox(),
-            IntRect(50, 100, 25, 25));
+            gfx::Rect(50, 100, 25, 25));
   EXPECT_EQ(nestedFixed->ClippedAbsoluteBoundingBox(),
-            IntRect(50, 100, 25, 25));
+            gfx::Rect(50, 100, 25, 25));
 
   // Modify the scroll offset and ensure that the bounding box is still the
   // same.
@@ -3481,20 +3466,20 @@ TEST_F(PaintLayerOverlapTest, FixedWithExpandedBoundsForFixedChild) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(fixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(25, 25, 50, 500));
+            gfx::Rect(25, 25, 50, 500));
   EXPECT_EQ(fixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 50, 50));
-  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
-  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), IntRect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->UnclippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
+  EXPECT_EQ(fixed->ClippedAbsoluteBoundingBox(), gfx::Rect(25, 425, 50, 50));
 
   EXPECT_EQ(nestedFixed->ExpandedBoundingBoxForCompositingOverlapTest(false),
-            IntRect(50, 500, 25, 25));
+            gfx::Rect(50, 500, 25, 25));
   EXPECT_EQ(nestedFixed->LocalBoundingBoxForCompositingOverlapTest(),
             PhysicalRect(0, 0, 25, 25));
   EXPECT_EQ(nestedFixed->UnclippedAbsoluteBoundingBox(),
-            IntRect(50, 500, 25, 25));
+            gfx::Rect(50, 500, 25, 25));
   EXPECT_EQ(nestedFixed->ClippedAbsoluteBoundingBox(),
-            IntRect(50, 500, 25, 25));
+            gfx::Rect(50, 500, 25, 25));
 }
 
 }  // namespace blink

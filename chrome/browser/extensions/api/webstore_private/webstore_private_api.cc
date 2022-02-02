@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/json/values_util.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -1122,7 +1121,7 @@ WebstorePrivateIsPendingCustodianApprovalFunction::Run() {
       IsPendingCustodianApproval::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  if (!Profile::FromBrowserContext(browser_context())->IsSupervised())
+  if (!Profile::FromBrowserContext(browser_context())->IsChild())
     return RespondNow(BuildResponse(false));
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());

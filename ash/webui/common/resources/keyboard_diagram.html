@@ -1,12 +1,14 @@
 <style>
   :root {
-    --grid-gap: 3px;
+    --grid-gap: max(3px, 0.5vw);
     --key-travel: 3px;
+
+    --rows: minmax(18px, 1fr) repeat(5, 2fr);
   }
 
-  .keyboard {
+  #keyboard {
     column-gap: var(--grid-gap);
-    height: 200px;
+    height: 200px;  /* Overriden by JavaScript */
     width: 100%;
   }
 
@@ -14,7 +16,7 @@
     display: inline-grid;
     grid-gap: var(--grid-gap);
     grid-template-columns: repeat(29, 1fr);
-    grid-template-rows: 1fr repeat(5, 2fr);
+    grid-template-rows: var(--rows);
     height: 100%;
     width: 100%;
   }
@@ -22,14 +24,6 @@
   keyboard-key {
     --keyboard-key-travel: var(--key-travel);
     grid-column: span 2;
-  }
-
-  .left {
-    --keyboard-key-glyph-alignment: left;
-  }
-
-  .right {
-    --keyboard-key-glyph-alignment: right;
   }
 
   #topRow {
@@ -46,6 +40,7 @@
   #arrowKeyCluster {
     display: grid;
     grid-column: span 6;
+    grid-gap: var(--grid-gap);
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 1fr);
   }
@@ -55,7 +50,7 @@
     grid-row: 2;
   }
 
-  #arrowKeyCluster keyboard-key:first-child {
+  #arrowKeyCluster #upArrow {
     grid-column: 2;
     grid-row: 1;
   }
@@ -68,7 +63,7 @@
     grid-column: span 3;
   }
 
-  #searchKey,
+  #launcherKey,
   #rightShiftKey,
   #leftAltKey {
     grid-column: span 4;
@@ -151,6 +146,27 @@
     grid-column: span 7;
   }
 
+  /* Modifications for Dell Enterprise keyboards */
+
+  [data-physical-layout='dell-enterprise'] #leftCtrlKey {
+    grid-column: span 3;
+  }
+
+  [data-physical-layout='dell-enterprise'] #leftAltKey {
+    grid-column: span 2;
+  }
+
+  #arrowKeyCluster #dellPageUpKey,
+  #arrowKeyCluster #dellPageDownKey {
+    grid-row: 1;
+  }
+
+  /* Modifications for Assistant key */
+
+  [data-show-assistant-key] #leftCtrlKey {
+    grid-column: span 3;
+  }
+
   /* Number pad */
 
   #numberPad {
@@ -166,13 +182,14 @@
     display: inline-grid;
     grid-gap: var(--grid-gap);
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 1fr repeat(5, 2fr);
+    grid-template-rows: var(--rows);
     height: 100%;
     /*
      * The number pad will always be on the right, even in RTL locales, so
      * disable the lint warning.
      */
-    padding-left: 9px;  /* csschecker-disable-line left-right */
+    padding-left:  /* csschecker-disable-line left-right */
+        calc(var(--grid-gap) * 3);
     width: 23%;
   }
 
@@ -188,24 +205,36 @@
     grid-column: span 2;
   }
 </style>
-<div class="keyboard"
+<div id="widthChangeDetector">
+  <!--
+    We don't want to both observe and modify the size of #keyboard, so instead
+    we observe the size of this empty element, which will change widths at the
+    same time as #keyboard.
+  -->
+</div>
+<div id="keyboard"
     data-show-number-pad$="[[showNumberPad]]">
   <div class="main-cluster"
-      data-mech-layout$="[[mechanicalLayout]]">
+      data-mech-layout$="[[mechanicalLayout]]"
+      data-physical-layout$="[[physicalLayout]]"
+      data-show-assistant-key$="[[showAssistantKey]]">
     <div id="topRow">
       <keyboard-key main-glyph="esc"></keyboard-key>
-      <!-- TODO(crbug.com/1207678): Use icons for the top row keys. -->
-      <keyboard-key main-glyph="[b]"></keyboard-key>
-      <keyboard-key main-glyph="[r]"></keyboard-key>
-      <keyboard-key main-glyph="[fs]"></keyboard-key>
-      <keyboard-key main-glyph="[o]"></keyboard-key>
-      <keyboard-key main-glyph="[s]"></keyboard-key>
-      <keyboard-key main-glyph="[bd]"></keyboard-key>
-      <keyboard-key main-glyph="[bu]"></keyboard-key>
-      <keyboard-key main-glyph="[m]"></keyboard-key>
-      <keyboard-key main-glyph="[vd]"></keyboard-key>
-      <keyboard-key main-glyph="[vu]"></keyboard-key>
-      <keyboard-key main-glyph="[p]"></keyboard-key>
+      <!-- TODO(crbug.com/1207678): Populate the top row from Vivaldi data. -->
+      <keyboard-key icon="keyboard:back"></keyboard-key>
+      <keyboard-key icon="keyboard:refresh"></keyboard-key>
+      <keyboard-key icon="keyboard:fullscreen"></keyboard-key>
+      <keyboard-key icon="keyboard:overview"></keyboard-key>
+      <keyboard-key icon="keyboard:screenshot"></keyboard-key>
+      <keyboard-key icon="keyboard:display-brightness-down"></keyboard-key>
+      <keyboard-key icon="keyboard:display-brightness-up"></keyboard-key>
+      <keyboard-key icon="keyboard:volume-mute"></keyboard-key>
+      <keyboard-key icon="keyboard:volume-down"></keyboard-key>
+      <keyboard-key icon="keyboard:volume-up"></keyboard-key>
+      <template is="dom-if" if="[[isEqual_(physicalLayout, 'dell-enterprise')]]">
+        <keyboard-key id="dellDeleteKey" main-glyph="delete"></keyboard-key>
+      </template>
+      <keyboard-key icon="keyboard:power"></keyboard-key>
     </div>
 
     <!-- TODO(crbug.com/1207678): Apply glyphs from the backend to the keys. -->
@@ -242,7 +271,7 @@
     <keyboard-key main-glyph="]"></keyboard-key>
     <keyboard-key id="backslashKey" main-glyph="\\"></keyboard-key>
 
-    <keyboard-key id="searchKey" class="left" main-glyph="search"></keyboard-key>
+    <keyboard-key id="launcherKey" class="left" icon="keyboard:launcher"></keyboard-key>
     <keyboard-key main-glyph="a"></keyboard-key>
     <keyboard-key main-glyph="s"></keyboard-key>
     <keyboard-key main-glyph="d"></keyboard-key>
@@ -277,6 +306,14 @@
     <keyboard-key id="rightShiftKey" class="right" main-glyph="shift"></keyboard-key>
 
     <keyboard-key id="leftCtrlKey" class="left" main-glyph="ctrl"></keyboard-key>
+    <template is="dom-if" if="[[isEqual_(physicalLayout, 'dell-enterprise')]]">
+      <keyboard-key id="fnKey" class="disabled" main-glyph="fn"></keyboard-key>
+      <!-- TODO(crbug.com/1207678): Add an icon for the layout switch key. -->
+      <keyboard-key id="layoutSwitchKey" main-glyph="[g]"></keyboard-key>
+    </template>
+    <template is="dom-if" if="[[showAssistantKey]]">
+      <keyboard-key icon="keyboard:assistant"></keyboard-key>
+    </template>
     <keyboard-key id="leftAltKey" class="left" main-glyph="alt"></keyboard-key>
     <template is="dom-if" if="[[isEqual_(mechanicalLayout, 'jis')]]">
       <keyboard-key id="jisAlphanumericKey" main-glyph="英数"></keyboard-key>
@@ -288,12 +325,17 @@
     <keyboard-key id="rightAltKey" main-glyph="alt"></keyboard-key>
     <keyboard-key id="rightCtrlKey" main-glyph="ctrl"></keyboard-key>
 
-    <!-- TODO(crbug.com/1207678): Use proper icons for the arrow keys. -->
     <div id="arrowKeyCluster">
-      <keyboard-key main-glyph="↑"></keyboard-key>
-      <keyboard-key main-glyph="←"></keyboard-key>
-      <keyboard-key main-glyph="↓"></keyboard-key>
-      <keyboard-key main-glyph="→"></keyboard-key>
+      <template is="dom-if" if="[[isEqual_(physicalLayout, 'dell-enterprise')]]">
+        <keyboard-key id="dellPageUpKey" main-glyph="pg up"></keyboard-key>
+      </template>
+      <keyboard-key id="upArrow" icon="keyboard:arrow-up"></keyboard-key>
+      <template is="dom-if" if="[[isEqual_(physicalLayout, 'dell-enterprise')]]">
+        <keyboard-key id="dellPageDownKey" main-glyph="pg dn"></keyboard-key>
+      </template>
+      <keyboard-key icon="keyboard:arrow-left"></keyboard-key>
+      <keyboard-key icon="keyboard:arrow-down"></keyboard-key>
+      <keyboard-key icon="keyboard:arrow-right"></keyboard-key>
     </div>
   </div>
   <div id="numberPad">

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "build/build_config.h"
@@ -1342,8 +1343,8 @@ class IntersectingQuadPixelTest : public VizPixelTestWithParam {
 
   std::unique_ptr<AggregatedRenderPass> render_pass_;
   gfx::Rect viewport_rect_;
-  SharedQuadState* front_quad_state_;
-  SharedQuadState* back_quad_state_;
+  raw_ptr<SharedQuadState> front_quad_state_;
+  raw_ptr<SharedQuadState> back_quad_state_;
   gfx::Rect quad_rect_;
   AggregatedRenderPassList pass_list_;
 };
@@ -2327,8 +2328,7 @@ TEST_P(RendererPixelTest, FastPassFilterChain) {
       FuzzyForSkiaOnlyPixelComparator(renderer_type())));
 }
 
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TEST_P(RendererPixelTest, DISABLED_FastPassColorFilterAlphaTranslation) {
+TEST_P(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   AggregatedRenderPassId root_pass_id{1};
@@ -3068,10 +3068,11 @@ TEST_P(RendererPixelTestWithBackdropFilter, InvertFilter) {
 }
 
 TEST_P(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
-  // TODO(989312): The mask on gl_renderer and software_renderer appears to be
-  // offset from the correct location.
-  if (is_gl_renderer() || is_software_renderer())
+  // TODO(crbug.com/989312): Delete this condition with GLRendere. The mask
+  // appears to be offset from the correct location but this isn't relevant.
+  if (is_gl_renderer())
     return;
+
   this->backdrop_filters_.Append(cc::FilterOperation::CreateInvertFilter(1.f));
   this->filter_pass_layer_rect_ = gfx::Rect(this->device_viewport_size_);
   this->filter_pass_layer_rect_.Inset(12, 14, 16, 18);
@@ -3079,10 +3080,14 @@ TEST_P(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
       gfx::RRectF(gfx::RectF(this->filter_pass_layer_rect_));
   this->include_backdrop_mask_ = true;
   this->SetUpRenderPassList();
-  EXPECT_TRUE(this->RunPixelTest(
-      &this->pass_list_,
-      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_masked.png")),
-      cc::FuzzyPixelOffByOneComparator(false)));
+
+  base::FilePath expected_path(
+      is_software_renderer()
+          ? FILE_PATH_LITERAL("backdrop_filter_masked_sw.png")
+          : FILE_PATH_LITERAL("backdrop_filter_masked.png"));
+
+  EXPECT_TRUE(this->RunPixelTest(&this->pass_list_, expected_path,
+                                 cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 // Tests if drawing using the fast solid color draw feature returns the same
@@ -3753,8 +3758,6 @@ TEST_P(GPURendererPixelTest, BlendingWithoutAntiAliasing) {
       cc::ExactPixelComparator(/*discard_alpha=*/true)));
 }
 
-// Trilinear filtering is only supported in the gl renderer.
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
 TEST_P(GPURendererPixelTest, TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
@@ -4839,8 +4842,7 @@ TEST_P(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
   }
 }
 
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TEST_P(RendererPixelTest, DISABLED_RoundedCornerOnRenderPass) {
+TEST_P(RendererPixelTest, RoundedCornerOnRenderPass) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;
@@ -4900,8 +4902,7 @@ TEST_P(RendererPixelTest, DISABLED_RoundedCornerOnRenderPass) {
                                  cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TEST_P(RendererPixelTest, DISABLED_RoundedCornerMultiRadii) {
+TEST_P(RendererPixelTest, RoundedCornerMultiRadii) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr gfx::RoundedCornersF kCornerRadii(5, 15, 25, 35);
   constexpr int kInset = 20;
@@ -4955,8 +4956,7 @@ TEST_P(RendererPixelTest, DISABLED_RoundedCornerMultiRadii) {
   }
 }
 
-// TODO(https://crbug.com/1044841): Flaky, especially on Linux/TSAN and Fuchsia.
-TEST_P(RendererPixelTest, DISABLED_RoundedCornerMultipleQads) {
+TEST_P(RendererPixelTest, RoundedCornerMultipleQads) {
   const gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr gfx::RoundedCornersF kCornerRadiiUL(5, 0, 0, 0);
   constexpr gfx::RoundedCornersF kCornerRadiiUR(0, 15, 0, 0);
@@ -5128,6 +5128,12 @@ class ColorTransformPixelTest
     if ((src_color_space_.GetTransferID() == TransferID::PIECEWISE_HDR ||
          dst_color_space_.GetTransferID() == TransferID::PIECEWISE_HDR)) {
       LOG(ERROR) << "Skipping piecewise HDR function";
+      return;
+    }
+
+    if (src_color_space_.GetTransferID() == TransferID::SMPTEST2084 &&
+        !dst_color_space_.IsHDR()) {
+      LOG(ERROR) << "Skipping tonemapped output";
       return;
     }
 

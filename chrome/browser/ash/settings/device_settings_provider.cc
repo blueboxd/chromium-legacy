@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -18,7 +19,6 @@
 #include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/syslog_logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -29,10 +29,10 @@
 #include "chrome/browser/ash/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
+#include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/ash/tpm_firmware_update.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -125,6 +125,7 @@ const char* const kKnownSettings[] = {
     kDeviceChannelDowngradeBehavior,
     kReportDeviceActivityTimes,
     kReportDeviceAudioStatus,
+    kReportDeviceAudioStatusCheckingRateMs,
     kReportDeviceBluetoothInfo,
     kReportDeviceBoardStatus,
     kReportDeviceBootMode,
@@ -156,6 +157,7 @@ const char* const kKnownSettings[] = {
     kReportOsUpdateStatus,
     kReportRunningKioskApp,
     kReportUploadFrequency,
+    kRevenEnableDeviceHWDataUsage,
     kSamlLoginAuthenticationType,
     kServiceAccountIdentity,
     kSignedDataRoamingEnabled,
@@ -390,38 +392,33 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       }
       if (entry.android_kiosk_app().has_package_name()) {
         entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
+            kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
             base::Value(entry.android_kiosk_app().package_name()));
       }
       if (entry.android_kiosk_app().has_class_name()) {
-        entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
-            base::Value(entry.android_kiosk_app().class_name()));
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
+                          base::Value(entry.android_kiosk_app().class_name()));
       }
       if (entry.android_kiosk_app().has_action()) {
-        entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
-            base::Value(entry.android_kiosk_app().action()));
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
+                          base::Value(entry.android_kiosk_app().action()));
       }
       if (entry.android_kiosk_app().has_display_name()) {
         entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+            kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
             base::Value(entry.android_kiosk_app().display_name()));
       }
       if (entry.web_kiosk_app().has_url()) {
-        entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
-            base::Value(entry.web_kiosk_app().url()));
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
+                          base::Value(entry.web_kiosk_app().url()));
       }
       if (entry.web_kiosk_app().has_title()) {
-        entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle,
-            base::Value(entry.web_kiosk_app().title()));
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle,
+                          base::Value(entry.web_kiosk_app().title()));
       }
       if (entry.web_kiosk_app().has_icon_url()) {
-        entry_dict.SetKey(
-            chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
-            base::Value(entry.web_kiosk_app().icon_url()));
+        entry_dict.SetKey(kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
+                          base::Value(entry.web_kiosk_app().icon_url()));
       }
     } else if (entry.has_deprecated_public_session_id()) {
       // Deprecated public session specification.
@@ -792,6 +789,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       new_values_cache->SetInteger(
           kReportDeviceNetworkTelemetryEventCheckingRateMs,
           reporting_policy.report_network_telemetry_event_checking_rate_ms());
+    }
+    if (reporting_policy.has_report_device_audio_status_checking_rate_ms()) {
+      new_values_cache->SetInteger(
+          kReportDeviceAudioStatusCheckingRateMs,
+          reporting_policy.report_device_audio_status_checking_rate_ms());
     }
   }
 }
@@ -1243,6 +1245,13 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                                  base::Value(container.enabled()));
     }
   }
+
+  bool reven_enable_device_hw_data_usage =
+      policy.has_hardware_data_usage_enabled() &&
+      policy.hardware_data_usage_enabled().has_hardware_data_usage_enabled() &&
+      policy.hardware_data_usage_enabled().hardware_data_usage_enabled();
+  new_values_cache->SetBoolean(kRevenEnableDeviceHWDataUsage,
+                               reven_enable_device_hw_data_usage);
 }
 
 void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -1401,18 +1410,21 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
 
       // TODO(https://crbug.com/433840): Some of the above code can be
       // simplified or removed, once the DoSet function is removed - then there
-      // will be no pending writes. This is because the only value that needs to
-      // be written as a pending write is kStatsReportingPref, and this is now
-      // handled by the StatsReportingController - see below. Once DoSet is
-      // removed and there are no pending writes that are being maintained by
-      // DeviceSettingsProvider, this code for updating the signed settings for
-      // the new owner should probably be moved outside of
-      // DeviceSettingsProvider.
+      // will be no pending writes. This is because the only values that need to
+      // be written as a pending write is kStatsReportingPref and
+      // kEnableDeviceHWDataUsage, and those are now handled by the Controllers
+      // - see below. Once DoSet is removed and there are no pending writes that
+      // are being maintained by DeviceSettingsProvider, this code for updating
+      // the signed settings for the new owner should probably be moved outside
+      // of DeviceSettingsProvider.
 
       StatsReportingController::Get()->OnOwnershipTaken(
           device_settings_service_->GetOwnerSettingsService());
+      HWDataUsageController::Get()->OnOwnershipTaken(
+          device_settings_service_->GetOwnerSettingsService());
     } else if (chromeos::InstallAttributes::Get()->IsEnterpriseManaged()) {
       StatsReportingController::Get()->ClearPendingValue();
+      HWDataUsageController::Get()->ClearPendingValue();
     }
   }
 

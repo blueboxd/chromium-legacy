@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -142,6 +141,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
 
   // See "Alternate D-Bus Client" note above.
   BluetoothAdapterClient* GetAlternateBluetoothAdapterClient();
+  BluetoothAdminPolicyClient* GetAlternateBluetoothAdminPolicyClient();
   BluetoothDeviceClient* GetAlternateBluetoothDeviceClient();
 
  private:
@@ -224,6 +224,8 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManagerSetter {
 
   void SetAlternateBluetoothAdapterClient(
       std::unique_ptr<BluetoothAdapterClient> client);
+  void SetAlternateBluetoothAdminPolicyClient(
+      std::unique_ptr<BluetoothAdminPolicyClient> client);
   void SetAlternateBluetoothDeviceClient(
       std::unique_ptr<BluetoothDeviceClient> client);
 

@@ -17,7 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_piece.h"
 #include "build/chromeos_buildflags.h"
@@ -157,8 +157,7 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   };
 
   using LottieImageParseFunction =
-      gfx::ImageSkiaRep (*)(const base::RefCountedString& bytes_string,
-                            float scale);
+      gfx::ImageSkiaRep (*)(const base::RefCountedString& bytes_string);
 
   // Initialize the ResourceBundle for this process. Does not take ownership of
   // the |delegate| value. Returns the language selected or an empty string if
@@ -301,7 +300,8 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // (such as wallpaper).
   base::StringPiece GetRawDataResourceForScale(
       int resource_id,
-      ResourceScaleFactor scale_factor) const;
+      ResourceScaleFactor scale_factor,
+      ResourceScaleFactor* loaded_scale_factor = nullptr) const;
 
   // Return the contents of a scale independent resource, decompressed
   // into a newly allocated string given the resource id. Todo: Look into
@@ -399,8 +399,10 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   friend class ResourceBundleTest;
   friend class ChromeBrowserMainMacBrowserTest;
 
-  class ResourceBundleImageSource;
-  friend class ResourceBundleImageSource;
+  class BitmapImageSource;
+  friend class BitmapImageSource;
+  class LottieImageSource;
+  friend class LottieImageSource;
 
   using IdToStringMap = std::unordered_map<int, std::u16string>;
 
@@ -449,6 +451,9 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // Initializes the font description of default gfx::FontList.
   void InitDefaultFontList();
 
+  // Creates a |gfx::ImageSkia| for the given |resource_id|.
+  gfx::ImageSkia CreateImageSkia(int resource_id);
+
   // Fills the |bitmap| given the data file to look in and the |resource_id|.
   // Returns false if the resource does not exist.
   //
@@ -482,18 +487,9 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
                         bool* fell_back_to_1x);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Creates the |rep| from the Lottie asset with the given |resource_id|,
-  // rasterizing at the given |scale|. The |scale_factor| is used to select
-  // among multiple versions specially designed for different scales. For
-  // example, a picture of a flower could have a large-scale version with dew
-  // drops to add visual interest, and a small-scale version with no dew drops
-  // because such fine details cannot look good at that scale. There can only be
-  // a few such versions, but each of them is vector graphics to be rasterized
-  // at a more precise |scale|. Returns false if the resource does not exist.
-  bool LoadLottie(int resource_id,
-                  float scale,
-                  ResourceScaleFactor scale_factor,
-                  gfx::ImageSkiaRep* rep) const;
+  // Creates the |rep| from a Lottie asset, given the |resource_id|. Returns
+  // false if the resource does not exist.
+  bool LoadLottie(int resource_id, gfx::ImageSkiaRep* rep) const;
 #endif
 
   // Returns an empty image for when a resource cannot be loaded. This is a
@@ -516,7 +512,7 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
 
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
   // be null.
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   // Protects |locale_resources_data_|.
   std::unique_ptr<base::Lock> locale_resources_data_lock_;

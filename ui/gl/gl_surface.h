@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -28,6 +27,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_format.h"
+#include "ui/gl/gpu_preference.h"
 
 namespace gfx {
 namespace mojom {
@@ -327,8 +327,16 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface>,
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
           pending_receiver);
 
+  // This should be called at most once at GPU process startup time.
+  static void SetForcedGpuPreference(GpuPreference gpu_preference);
+  // If a gpu preference is forced (by GPU driver bug workaround, etc), return
+  // it. Otherwise, return the original input preference.
+  static GpuPreference AdjustGpuPreference(GpuPreference gpu_preference);
+
  protected:
   virtual ~GLSurface();
+
+  static GpuPreference forced_gpu_preference_;
 
  private:
   static void ClearCurrent();

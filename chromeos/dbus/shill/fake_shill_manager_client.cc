@@ -222,7 +222,8 @@ bool IsCellularTechnology(const std::string& type) {
           type == shill::kNetworkTechnologyHspa ||
           type == shill::kNetworkTechnologyHspaPlus ||
           type == shill::kNetworkTechnologyLte ||
-          type == shill::kNetworkTechnologyLteAdvanced);
+          type == shill::kNetworkTechnologyLteAdvanced ||
+          type == shill::kNetworkTechnology5gNr);
 }
 
 void SetInitialDeviceProperty(const std::string& device_path,
@@ -247,7 +248,8 @@ const char kRoamingRequired[] = "required";
 const char FakeShillManagerClient::kFakeEthernetNetworkGuid[] = "eth1_guid";
 
 FakeShillManagerClient::FakeShillManagerClient()
-    : cellular_technology_(shill::kNetworkTechnologyGsm) {
+    : cellular_technology_(shill::kNetworkTechnologyGsm),
+      return_null_properties_(false) {
   ParseCommandLineSwitch();
 }
 
@@ -268,6 +270,13 @@ void FakeShillManagerClient::RemovePropertyChangedObserver(
 void FakeShillManagerClient::GetProperties(
     DBusMethodCallback<base::Value> callback) {
   VLOG(1) << "Manager.GetProperties";
+  if (return_null_properties_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FakeShillManagerClient::PassNullopt,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    return;
+  }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeShillManagerClient::PassStubProperties,
@@ -477,6 +486,14 @@ void FakeShillManagerClient::ConnectToBestServices(
   ShillServiceClient::Get()->Connect(dbus::ObjectPath(best_service_),
                                      std::move(callback),
                                      std::move(error_callback));
+}
+
+void FakeShillManagerClient::AddPasspointCredentials(
+    const dbus::ObjectPath& profile_path,
+    const base::Value& properties,
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  return;
 }
 
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
@@ -1054,6 +1071,11 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 
 // Private methods
 
+void FakeShillManagerClient::PassNullopt(
+    DBusMethodCallback<base::Value> callback) const {
+  std::move(callback).Run(absl::nullopt);
+}
+
 void FakeShillManagerClient::PassStubProperties(
     DBusMethodCallback<base::Value> callback) const {
   base::Value stub_properties = stub_properties_.Clone();
@@ -1164,6 +1186,10 @@ void FakeShillManagerClient::ClearProfiles() {
   }
   GetListProperty(shill::kProfilesProperty)->ClearList();
   CallNotifyObserversPropertyChanged(shill::kProfilesProperty);
+}
+
+void FakeShillManagerClient::SetShouldReturnNullProperties(bool value) {
+  return_null_properties_ = value;
 }
 
 void FakeShillManagerClient::ScanCompleted(const std::string& device_path) {

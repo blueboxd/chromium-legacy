@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/test/test_timeouts.h"
@@ -593,6 +594,9 @@ class MainFrameSizeWaiter : public content::WebContentsObserver {
 // TODO(crbug.com/1249851): Test crashes on Windows
 #if defined(OS_WIN)
 #define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
+#elif defined(OS_LINUX) && defined(THREAD_SANITIZER)
+// TODO(crbug.com/1269076): Test is flaky for linux tsan builds
+#define MAYBE_BrowserActionPopup DISABLED_BrowserActionPopup
 #else
 #define MAYBE_BrowserActionPopup BrowserActionPopup
 #endif
@@ -615,8 +619,12 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, MAYBE_BrowserActionPopup) {
   ASSERT_GT(minSize.width() + kGrowFactor * 2, maxSize.width());
 
   // Simulate a click on the browser action and verify the size of the resulting
-  // popup.
-  const gfx::Size kExpectedSizes[] = {minSize, middleSize, maxSize};
+  // popup. It is important to do minSize last, because all browser actions
+  // start at minSize and later increase in size. The MainFrameSizeWaiter won't
+  // wait for the popup.js code to run in the minSize case, which can prevent it
+  // from setting and storing the size for the next iteration, resulting in test
+  // flakiness.
+  const gfx::Size kExpectedSizes[] = {maxSize, middleSize, minSize};
   for (size_t i = 0; i < base::size(kExpectedSizes); i++) {
     content::WebContentsAddedObserver popup_observer;
     actions_bar->Press(extension->id());
@@ -747,7 +755,7 @@ class RenderFrameChangedWatcher : public content::WebContentsObserver {
 
  private:
   base::RunLoop run_loop_;
-  content::RenderFrameHost* created_frame_;
+  raw_ptr<content::RenderFrameHost> created_frame_;
 };
 
 // Test that a browser action popup with a web iframe works correctly. The
@@ -933,8 +941,8 @@ class NavigatingExtensionPopupInteractiveTest
     }
   }
 
-  const Extension* popup_extension_;
-  const Extension* other_extension_;
+  raw_ptr<const Extension> popup_extension_;
+  raw_ptr<const Extension> other_extension_;
 };
 
 // Tests that an extension pop-up cannot be navigated to a web page.
@@ -1011,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
   // The test verification below is applicable only to scenarios where the
   // download shelf is supported - on ChromeOS, instead of the download shelf,
   // there is a download notification in the right-bottom corner of the screen.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 #endif
 }
@@ -1046,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupInteractiveTest,
   // The test verification below is applicable only to scenarios where the
   // download shelf is supported - on ChromeOS, instead of the download shelf,
   // there is a download notification in the right-bottom corner of the screen.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 #endif
 }

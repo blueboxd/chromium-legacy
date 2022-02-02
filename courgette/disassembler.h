@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
 #include "courgette/instruction_utils.h"
@@ -57,6 +56,9 @@ class Disassembler : public AddressTranslator {
    private:
     const AddressTranslator& translator_;
   };
+
+  Disassembler(const Disassembler&) = delete;
+  Disassembler& operator=(const Disassembler&) = delete;
 
   virtual ~Disassembler();
 
@@ -152,8 +154,6 @@ class Disassembler : public AddressTranslator {
   size_t length_;         // In current memory.
   const uint8_t* start_;  // In current memory, base for 'file offsets'.
   const uint8_t* end_;    // In current memory.
-
-  DISALLOW_COPY_AND_ASSIGN(Disassembler);
 };
 
 }  // namespace courgette

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -12,8 +13,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -24,6 +25,42 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
+#include "chrome/common/chrome_features.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/mojom/types.mojom-shared.h"
+
+namespace {
+
+// Returns true if `app_update` should be considered a new app install.
+bool IsNewInstall(const apps::AppUpdate& app_update) {
+  // Ignore internally-installed apps.
+  if (app_update.InstalledInternally() == apps::mojom::OptionalBool::kTrue)
+    return false;
+
+  switch (app_update.AppType()) {
+    case apps::mojom::AppType::kUnknown:
+    case apps::mojom::AppType::kBuiltIn:
+    case apps::mojom::AppType::kStandaloneBrowser:
+    case apps::mojom::AppType::kSystemWeb:
+      // Chrome, Lacros, Settings, etc. are built-in.
+      return false;
+    case apps::mojom::AppType::kMacOs:
+      NOTREACHED();
+      return false;
+    case apps::mojom::AppType::kArc:
+    case apps::mojom::AppType::kCrostini:
+    case apps::mojom::AppType::kChromeApp:
+    case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kPluginVm:
+    case apps::mojom::AppType::kRemote:
+    case apps::mojom::AppType::kBorealis:
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+      // Other app types are user-installed.
+      return true;
+  }
+}
+
+}  // namespace
 
 // static
 const char AppServiceAppItem::kItemType[] = "AppServiceAppItem";
@@ -34,21 +71,29 @@ AppServiceAppItem::AppServiceAppItem(
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const apps::AppUpdate& app_update)
     : ChromeAppListItem(profile, app_update.AppId()),
-      app_type_(app_update.AppType()),
-      is_platform_app_(false) {
-  OnAppUpdate(app_update, true);
+      app_type_(app_update.AppType()) {
+  OnAppUpdate(app_update, /*in_constructor=*/true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     InitFromSync(sync_item);
   } else {
-    syncer::StringOrdinal default_position;
-    if (app_type_ == apps::mojom::AppType::kRemote &&
-        ash::RemoteAppsManagerFactory::GetForProfile(profile)->ShouldAddToFront(
-            app_update.AppId())) {
-      default_position = model_updater->GetPositionBeforeFirstItem();
-    } else {
-      default_position = CalculateDefaultPositionIfApplicable(model_updater);
+    // Handle the case that the app under construction is a remote app.
+    if (app_type_ == apps::mojom::AppType::kRemote) {
+      ash::RemoteAppsManager* remote_manager =
+          ash::RemoteAppsManagerFactory::GetForProfile(profile);
+      if (remote_manager->ShouldAddToFront(app_update.AppId()))
+        SetPosition(model_updater->GetPositionBeforeFirstItem());
+
+      const ash::RemoteAppsModel::AppInfo* app_info =
+          remote_manager->GetAppInfo(app_update.AppId());
+      if (app_info)
+        SetChromeFolderId(app_info->folder_id);
     }
-    SetPosition(default_position);
+
+    if (!position().IsValid()) {
+      // If there is no default positions, the model builder will handle it when
+      // the item is inserted.
+      SetPosition(CalculateDefaultPositionIfApplicable());
+    }
 
     // Crostini apps and the Terminal System App start in the crostini folder.
     if (app_type_ == apps::mojom::AppType::kCrostini ||
@@ -58,6 +103,13 @@ AppServiceAppItem::AppServiceAppItem(
     }
   }
 
+  if (ash::features::IsProductivityLauncherEnabled()) {
+    const bool is_new_install = !sync_item && IsNewInstall(app_update);
+    DVLOG(1) << "New AppServiceAppItem is_new_install " << is_new_install
+             << " from update " << app_update;
+    SetIsNewInstall(is_new_install);
+  }
+
   // Set model updater last to avoid being called during construction.
   set_model_updater(model_updater);
 }
@@ -65,7 +117,7 @@ AppServiceAppItem::AppServiceAppItem(
 AppServiceAppItem::~AppServiceAppItem() = default;
 
 void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update) {
-  OnAppUpdate(app_update, false);
+  OnAppUpdate(app_update, /*in_constructor=*/false);
 }
 
 void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
@@ -117,7 +169,7 @@ void AppServiceAppItem::Activate(int event_flags) {
         if (update.AppType() == apps::mojom::AppType::kCrostini ||
             update.AppType() == apps::mojom::AppType::kWeb ||
             update.AppType() == apps::mojom::AppType::kSystemWeb ||
-            (update.AppType() == apps::mojom::AppType::kExtension &&
+            (update.AppType() == apps::mojom::AppType::kChromeApp &&
              update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
           is_active_app = true;
         }
@@ -141,9 +193,10 @@ const char* AppServiceAppItem::GetItemType() const {
   return AppServiceAppItem::kItemType;
 }
 
-void AppServiceAppItem::GetContextMenuModel(GetMenuModelCallback callback) {
-  context_menu_ = std::make_unique<AppServiceContextMenu>(this, profile(), id(),
-                                                          GetController());
+void AppServiceAppItem::GetContextMenuModel(bool add_sort_options,
+                                            GetMenuModelCallback callback) {
+  context_menu_ = std::make_unique<AppServiceContextMenu>(
+      this, profile(), id(), GetController(), add_sort_options);
 
   context_menu_->GetMenuModel(std::move(callback));
 }
@@ -165,24 +218,36 @@ void AppServiceAppItem::ExecuteLaunchCommand(int event_flags) {
 
 void AppServiceAppItem::Launch(int event_flags,
                                apps::mojom::LaunchSource launch_source) {
+  if (ash::features::IsProductivityLauncherEnabled()) {
+    // Launching an app clears the "new install" badge.
+    SetIsNewInstall(false);
+  }
   apps::AppServiceProxyFactory::GetForProfile(profile())->Launch(
       id(), event_flags, launch_source,
       apps::MakeWindowInfo(GetController()->GetAppListDisplayId()));
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
-  auto icon_type = apps::mojom::IconType::kStandard;
-  apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
-      app_type_, id(), icon_type,
-      ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
-      allow_placeholder_icon,
-      base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                     weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
+    apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
+        apps::ConvertMojomAppTypToAppType(app_type_), id(),
+        apps::IconType::kStandard,
+        ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+        allow_placeholder_icon,
+        base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
+        app_type_, id(), apps::mojom::IconType::kStandard,
+        ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+        allow_placeholder_icon,
+        apps::MojomIconValueToIconValueCallback(base::BindOnce(
+            &AppServiceAppItem::OnLoadIcon, weak_ptr_factory_.GetWeakPtr())));
+  }
 }
 
-void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {
-  auto icon_type = apps::mojom::IconType::kStandard;
-  if (icon_value->icon_type != icon_type) {
+void AppServiceAppItem::OnLoadIcon(apps::IconValuePtr icon_value) {
+  if (!icon_value || icon_value->icon_type != apps::IconType::kStandard) {
     return;
   }
   SetIcon(icon_value->uncompressed);

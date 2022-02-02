@@ -7,9 +7,10 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
+#include "third_party/blink/renderer/core/inspector/protocol/emulation.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/timezone/timezone_controller.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -117,6 +118,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response AssertPage();
   void VirtualTimeBudgetExpired();
   void InnerEnable();
+  void SetSystemThemeState();
 
   struct PendingVirtualTimePolicy {
     PageScheduler::VirtualTimePolicy policy;
@@ -130,6 +132,12 @@ class CORE_EXPORT InspectorEmulationAgent final
   HeapVector<Member<DocumentLoader>> pending_document_loaders_;
 
   std::unique_ptr<TimeZoneController::TimeZoneOverride> timezone_override_;
+
+  blink::WebThemeEngine::SystemColorInfoState initial_system_color_info_state_;
+
+  // Unlike other media features `forced-colors` state must be tracked outside
+  // the document.
+  bool forced_colors_override_ = false;
 
   // Supports a virtual time policy change scheduled to occur after any
   // navigation has started.

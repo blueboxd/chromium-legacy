@@ -15,6 +15,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
+#include "chrome/browser/ash/borealis/borealis_util.h"
+#include "chrome/browser/ash/borealis/testing/apps.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -179,6 +181,26 @@ class AppPlatformMetricsServiceTest : public testing::Test {
                  true /* should_notify_initialized */);
     deltas.clear();
 
+    deltas.push_back(MakeApp(/*app_id=*/borealis::kBorealisMainAppId,
+                             apps::mojom::AppType::kBorealis, "",
+                             apps::mojom::Readiness::kReady,
+                             apps::mojom::InstallReason::kUser,
+                             apps::mojom::InstallSource::kUnknown));
+    cache.OnApps(std::move(deltas), apps::mojom::AppType::kBorealis,
+                 true /* should_notify_initialized */);
+    deltas.clear();
+
+    borealis::CreateFakeApp(testing_profile_.get(), "borealistest",
+                            "borealis/123");
+    std::string borealis_app(borealis::FakeAppId("borealistest"));
+    deltas.push_back(MakeApp(
+        /*app_id=*/borealis_app.c_str(), apps::mojom::AppType::kBorealis, "",
+        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kUser,
+        apps::mojom::InstallSource::kUnknown));
+    cache.OnApps(std::move(deltas), apps::mojom::AppType::kBorealis,
+                 true /* should_notify_initialized */);
+    deltas.clear();
+
     deltas.push_back(MakeApp(/*app_id=*/crostini::kCrostiniTerminalSystemAppId,
                              apps::mojom::AppType::kCrostini, "",
                              apps::mojom::Readiness::kReady,
@@ -229,17 +251,17 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kSystem,
         apps::mojom::InstallSource::kUnknown));
     deltas.push_back(MakeApp(
-        /*app_id=*/"lcr", apps::mojom::AppType::kStandaloneBrowserExtension, "",
+        /*app_id=*/"lcr", apps::mojom::AppType::kStandaloneBrowserChromeApp, "",
         apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kUser,
         apps::mojom::InstallSource::kChromeWebStore));
     deltas.push_back(MakeApp(
         /*app_id=*/"r", apps::mojom::AppType::kRemote, "",
         apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kPolicy,
         apps::mojom::InstallSource::kUnknown));
-    deltas.push_back(MakeApp(/*app_id=*/"bo", apps::mojom::AppType::kBorealis,
-                             "", apps::mojom::Readiness::kReady,
-                             apps::mojom::InstallReason::kOem,
-                             apps::mojom::InstallSource::kUnknown));
+    deltas.push_back(MakeApp(
+        /*app_id=*/"subapp", apps::mojom::AppType::kWeb, "",
+        apps::mojom::Readiness::kReady, apps::mojom::InstallReason::kSubApp,
+        apps::mojom::InstallSource::kUnknown));
     cache.OnApps(std::move(deltas), apps::mojom::AppType::kUnknown,
                  false /* should_notify_initialized */);
   }
@@ -276,6 +298,28 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
             AppTypeName::kBuiltIn, apps::mojom::InstallReason::kSystem),
         /*expected_count=*/1);
+
+    // Should be 3 Borealis apps: The installer/launcher created by the
+    // BorealisApps class, plus the two created in this test.
+    const int borealis_apps_count = 3;
+    histogram_tester_.ExpectUniqueSample(
+        AppPlatformMetrics::GetAppsCountHistogramNameForTest(
+            AppTypeName::kBorealis),
+        /*sample=*/borealis_apps_count,
+        /*bucket_count=*/1);
+
+    // The installer/launcher is preinstalled, the others are user-installed.
+    histogram_tester_.ExpectUniqueSample(
+        AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
+            AppTypeName::kBorealis, apps::mojom::InstallReason::kDefault),
+        /*sample=*/1,
+        /*bucket_count=*/1);
+    histogram_tester_.ExpectUniqueSample(
+        AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
+            AppTypeName::kBorealis, apps::mojom::InstallReason::kUser),
+        /*sample=*/borealis_apps_count - 1,
+        /*bucket_count=*/1);
+
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
             AppTypeName::kCrostini),
@@ -322,20 +366,20 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
-            AppTypeName::kStandaloneBrowserExtension),
+            AppTypeName::kStandaloneBrowserChromeApp),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kStandaloneBrowserExtension,
+            AppTypeName::kStandaloneBrowserChromeApp,
             apps::mojom::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
-            AppTypeName::kStandaloneBrowserExtension),
+            AppTypeName::kStandaloneBrowserChromeApp),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kStandaloneBrowserExtension,
+            AppTypeName::kStandaloneBrowserChromeApp,
             apps::mojom::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
@@ -348,50 +392,39 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
-            AppTypeName::kBorealis),
-        /*expected_count=*/1);
-    histogram_tester_.ExpectTotalCount(
-        AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kBorealis, apps::mojom::InstallReason::kOem),
-        /*expected_count=*/1);
-    histogram_tester_.ExpectTotalCount(
-        AppPlatformMetrics::GetAppsCountHistogramNameForTest(
             AppTypeName::kSystemWeb),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
             AppTypeName::kSystemWeb, apps::mojom::InstallReason::kSystem),
         /*expected_count=*/1);
+    histogram_tester_.ExpectTotalCount(
+        AppPlatformMetrics::GetAppsCountHistogramNameForTest(AppTypeName::kWeb),
+        /*expected_count=*/1);
+    histogram_tester_.ExpectTotalCount(
+        AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
+            AppTypeName::kWeb, apps::mojom::InstallReason::kSubApp),
+        /*expected_count=*/1);
   }
 
   void ModifyInstance(const std::string& app_id,
                       aura::Window* window,
                       apps::InstanceState state) {
-    std::unique_ptr<apps::Instance> instance = std::make_unique<apps::Instance>(
-        app_id, apps::Instance::InstanceKey::ForWindowBasedApp(window));
-    instance->UpdateState(state, base::Time::Now());
-
-    std::vector<std::unique_ptr<apps::Instance>> deltas;
-    deltas.push_back(std::move(instance));
-
+    apps::InstanceParams params(app_id, window);
+    params.state = std::make_pair(state, base::Time::Now());
     apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get())
         ->InstanceRegistry()
-        .OnInstances(deltas);
+        .CreateOrUpdateInstance(std::move(params));
   }
 
   void ModifyWebAppInstance(const std::string& app_id,
                             aura::Window* window,
                             apps::InstanceState state) {
-    std::unique_ptr<apps::Instance> instance = std::make_unique<apps::Instance>(
-        app_id, apps::Instance::InstanceKey::ForWebBasedApp(window));
-    instance->UpdateState(state, base::Time::Now());
-
-    std::vector<std::unique_ptr<apps::Instance>> deltas;
-    deltas.push_back(std::move(instance));
-
+    apps::InstanceParams params(app_id, window);
+    params.state = std::make_pair(state, base::Time::Now());
     apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get())
         ->InstanceRegistry()
-        .OnInstances(deltas);
+        .CreateOrUpdateInstance(std::move(params));
   }
 
   std::unique_ptr<Browser> CreateBrowserWithAuraWindow1() {
@@ -746,7 +779,7 @@ TEST_F(AppPlatformMetricsServiceTest, InstallApps) {
 }
 
 TEST_F(AppPlatformMetricsServiceTest, BrowserWindow) {
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
 
@@ -1003,7 +1036,7 @@ TEST_F(AppPlatformMetricsServiceTest, ReactiveWindow) {
 // and an ARC app in one day.
 TEST_F(AppPlatformMetricsServiceTest, AppRunningPercentrage) {
   // Launch a browser window.
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
@@ -1066,7 +1099,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
   ModifyInstance(app_id, window.get(), kInactiveInstanceState);
 
   // Create a browser window
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
@@ -1105,7 +1138,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
 
 TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkm) {
   // Create a browser window.
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
@@ -1135,7 +1168,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkm) {
 
 TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmWithMultipleWindows) {
   // Create a browser window.
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser1 = CreateBrowserWithAuraWindow1();
@@ -1182,7 +1215,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmWithMultipleWindows) {
 TEST_F(AppPlatformMetricsServiceTest,
        UsageTimeUkmForWebAppOpenInTabWithInactivatedBrowswer) {
   // Create a browser window.
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
@@ -1255,7 +1288,7 @@ TEST_F(AppPlatformMetricsServiceTest,
 TEST_F(AppPlatformMetricsServiceTest,
        UsageTimeUkmForWebAppOpenInTabWithActivatedBrowser) {
   // Create a browser window.
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
@@ -1346,7 +1379,7 @@ TEST_F(AppPlatformMetricsServiceTest,
 
 TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmForMultipleWebAppOpenInTab) {
   // Create a browser window.
-  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kExtension,
+  InstallOneApp(extension_misc::kChromeAppId, apps::mojom::AppType::kChromeApp,
                 "Chrome", apps::mojom::Readiness::kReady,
                 apps::mojom::InstallSource::kSystem);
   std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
@@ -1458,6 +1491,24 @@ TEST_F(AppPlatformMetricsServiceTest, InstalledAppsUkm) {
 TEST_F(AppPlatformMetricsServiceTest, LaunchApps) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
   proxy->SetAppPlatformMetricsServiceForTesting(GetAppPlatformMetricsService());
+
+  proxy->Launch(
+      /*app_id=*/borealis::kBorealisMainAppId, ui::EventFlags::EF_NONE,
+      apps::mojom::LaunchSource::kFromChromeInternal, nullptr);
+  VerifyAppsLaunchUkm("app://borealis/client", AppTypeName::kBorealis,
+                      apps::mojom::LaunchSource::kFromChromeInternal);
+
+  VerifyAppLaunchPerAppTypeHistogram(1, AppTypeName::kBorealis);
+  VerifyAppLaunchPerAppTypeV2Histogram(1, AppTypeNameV2::kBorealis);
+
+  proxy->Launch(
+      /*app_id=*/borealis::FakeAppId("borealistest"), ui::EventFlags::EF_NONE,
+      apps::mojom::LaunchSource::kFromChromeInternal, nullptr);
+  VerifyAppsLaunchUkm("app://borealis/123", AppTypeName::kBorealis,
+                      apps::mojom::LaunchSource::kFromChromeInternal);
+
+  VerifyAppLaunchPerAppTypeHistogram(2, AppTypeName::kBorealis);
+  VerifyAppLaunchPerAppTypeV2Histogram(2, AppTypeNameV2::kBorealis);
 
   proxy->Launch(
       /*app_id=*/crostini::kCrostiniTerminalSystemAppId,

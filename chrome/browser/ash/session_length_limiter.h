@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -18,7 +16,7 @@
 
 class PrefRegistrySimple;
 
-namespace chromeos {
+namespace ash {
 
 // Enforces a session length limit by terminating the session when the limit is
 // reached.
@@ -77,11 +75,6 @@ class SessionLengthLimiter : public ui::UserActivityObserver {
   bool user_activity_seen_;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove once the migratin is finished.
-namespace ash {
-using ::chromeos::SessionLengthLimiter;
-}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_SESSION_LENGTH_LIMITER_H_

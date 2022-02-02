@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -44,6 +45,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user.h"
@@ -184,36 +186,6 @@ const std::vector<SearchConcept>& GetSyncOffSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetFingerprintSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_FINGERPRINT_ADD,
-       mojom::kFingerprintSubpagePath,
-       mojom::SearchResultIcon::kFingerprint,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kAddFingerprint}},
-      {IDS_OS_SETTINGS_TAG_FINGERPRINT,
-       mojom::kFingerprintSubpagePath,
-       mojom::SearchResultIcon::kFingerprint,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kFingerprint}},
-  });
-  return *tags;
-}
-
-const std::vector<SearchConcept>& GetRemoveFingerprintSearchConcepts() {
-  static const base::NoDestructor<std::vector<SearchConcept>> tags({
-      {IDS_OS_SETTINGS_TAG_FINGERPRINT_REMOVE,
-       mojom::kFingerprintSubpagePath,
-       mojom::SearchResultIcon::kFingerprint,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kRemoveFingerprint}},
-  });
-  return *tags;
-}
-
 const std::vector<SearchConcept>& GetParentalSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_PARENTAL_CONTROLS,
@@ -271,6 +243,14 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION_V2},
       {"accountManagerSecondaryAccountsDisabledText",
        IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT_V2},
+      {"removeLacrosAccountDialogTitle",
+       IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_LACROS_ACCOUNT_DIALOG_TITLE},
+      {"removeLacrosAccountDialogBody",
+       IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_LACROS_ACCOUNT_DIALOG_BODY},
+      {"removeLacrosAccountDialogRemove",
+       IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_LACROS_ACCOUNT_DIALOG_REMOVE},
+      {"removeLacrosAccountDialogCancel",
+       IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_LACROS_ACCOUNT_DIALOG_CANCEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -294,6 +274,8 @@ void AddAccountManagerPageStrings(content::WebUIDataSource* html_source,
       "accountManagerDescription",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION_V2,
                                  ui::GetChromeOSDeviceName()));
+  html_source->AddBoolean("lacrosEnabled",
+                          crosapi::browser_util::IsLacrosEnabled());
 }
 
 void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
@@ -517,6 +499,9 @@ void AddSyncControlsStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "browserSettingsSyncSetupUrl",
       base::StrCat({chrome::kChromeUISettingsURL, chrome::kSyncSetupSubPage}));
+
+  // This handler is for chrome://os-settings.
+  html_source->AddBoolean("isOSSettings", true);
 }
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {
@@ -666,7 +651,6 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"lockScreenFingerprintTitle",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE},
       {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
-      {"osSyncPageTitle", IDS_OS_SETTINGS_SYNC_PAGE_TITLE},
       {"syncAndNonPersonalizedServices",
        IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
       {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
@@ -837,65 +821,25 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   };
   RegisterNestedSettingBulk(mojom::Subpage::kSyncDeprecated,
                             kSyncDeprecatedSettings, generator);
+
+  // TODO(crbug.com/1227417): Remove after SyncSettingsCategorization launch.
   generator->RegisterNestedSubpage(
       IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE,
       mojom::Subpage::kSyncDeprecatedAdvanced, mojom::Subpage::kSyncDeprecated,
       mojom::SearchResultIcon::kSync, mojom::SearchResultDefaultRank::kMedium,
       mojom::kSyncDeprecatedAdvancedSubpagePath);
 
-  // OS sync.
+  // Page with OS-specific sync data types.
   generator->RegisterTopLevelSubpage(
-      IDS_OS_SETTINGS_SYNC_PAGE_TITLE, mojom::Subpage::kSync,
+      IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE, mojom::Subpage::kSync,
       mojom::SearchResultIcon::kSync, mojom::SearchResultDefaultRank::kMedium,
       mojom::kSyncSubpagePath);
   generator->RegisterNestedSetting(mojom::Setting::kSplitSyncOnOff,
                                    mojom::Subpage::kSync);
 
-  // Security and sign-in.
-  generator->RegisterTopLevelSubpage(
-      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK,
-      mojom::Subpage::kSecurityAndSignIn, mojom::SearchResultIcon::kLock,
-      mojom::SearchResultDefaultRank::kMedium,
-      mojom::kSecurityAndSignInSubpagePath);
-  static constexpr mojom::Setting kSecurityAndSignInSettings[] = {
-      mojom::Setting::kLockScreen,
-      mojom::Setting::kChangeAuthPin,
-  };
-  RegisterNestedSettingBulk(mojom::Subpage::kSecurityAndSignIn,
-                            kSecurityAndSignInSettings, generator);
-
-  // Fingerprint.
-  generator->RegisterNestedSubpage(
-      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE,
-      mojom::Subpage::kFingerprint, mojom::Subpage::kSecurityAndSignIn,
-      mojom::SearchResultIcon::kFingerprint,
-      mojom::SearchResultDefaultRank::kMedium, mojom::kFingerprintSubpagePath);
-  static constexpr mojom::Setting kFingerprintSettings[] = {
-      mojom::Setting::kAddFingerprint,
-      mojom::Setting::kRemoveFingerprint,
-  };
-  RegisterNestedSettingBulk(mojom::Subpage::kFingerprint, kFingerprintSettings,
-                            generator);
-
   // Smart Lock -- main setting is on multidevice page, but is mirrored here
   generator->RegisterNestedAltSetting(mojom::Setting::kSmartLockOnOff,
-                                      mojom::Subpage::kSecurityAndSignIn);
-
-  // Manage other people.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE,
-                                     mojom::Subpage::kManageOtherPeople,
-                                     mojom::SearchResultIcon::kAvatar,
-                                     mojom::SearchResultDefaultRank::kMedium,
-                                     mojom::kManageOtherPeopleSubpagePath);
-  static constexpr mojom::Setting kManageOtherPeopleSettings[] = {
-      mojom::Setting::kGuestBrowsing,
-      mojom::Setting::kShowUsernamesAndPhotosAtSignIn,
-      mojom::Setting::kRestrictSignIn,
-      mojom::Setting::kAddToUserAllowlist,
-      mojom::Setting::kRemoveFromUserAllowlist,
-  };
-  RegisterNestedSettingBulk(mojom::Subpage::kManageOtherPeople,
-                            kManageOtherPeopleSettings, generator);
+                                      mojom::Subpage::kSecurityAndSignInV2);
 }
 
 void PeopleSection::FetchAccounts() {

@@ -40,8 +40,8 @@ namespace {
 // Returns the string that can be used to record histograms for the request
 // context.
 //
-// Keep in sync with OptimizationGuide.RequestContexts histogram_suffixes in
-// histograms.xml.
+// Keep in sync with RequestContext variant list in
+// //tools/metrics/histograms/metadata/optimization/histograms.xml.
 std::string GetStringNameForRequestContext(
     proto::RequestContext request_context) {
   switch (request_context) {
@@ -55,6 +55,8 @@ std::string GetStringNameForRequestContext(
       return "BatchUpdateGoogleSRP";
     case proto::RequestContext::CONTEXT_BATCH_UPDATE_ACTIVE_TABS:
       return "BatchUpdateActiveTabs";
+    case proto::RequestContext::CONTEXT_BOOKMARKS:
+      return "Bookmarks";
   }
   NOTREACHED();
   return std::string();
@@ -124,7 +126,7 @@ HintsFetcher::~HintsFetcher() {
 void HintsFetcher::ClearHostsSuccessfullyFetched(PrefService* pref_service) {
   DictionaryPrefUpdate hosts_fetched_list(
       pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
-  hosts_fetched_list->Clear();
+  hosts_fetched_list->DictClear();
 }
 
 void HintsFetcher::SetTimeClockForTesting(const base::Clock* time_clock) {

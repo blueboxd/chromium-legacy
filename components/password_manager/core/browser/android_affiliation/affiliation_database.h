@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/sql_table_builder.h"
 
@@ -74,6 +73,10 @@ class AffiliationDatabase {
   void StoreAndRemoveConflicting(
       const AffiliatedFacetsWithUpdateTime& affiliated_facets,
       std::vector<AffiliatedFacetsWithUpdateTime>* removed_affiliations);
+
+  // Removes all the stored equivalence classes and branding information which
+  // aren't represented by |facet_uris|.
+  void RemoveMissingFacetURI(std::vector<FacetURI> facet_uris);
 
   // Deletes the database file at |path| along with all its auxiliary files. The
   // database must be closed before calling this.

@@ -12,7 +12,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -261,7 +261,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual bool ShouldSendKeyEventToIme();
 
   // Determines if native window occlusion should be enabled or not.
-  bool IsNativeWindowOcclusionEnabled();
+  bool IsNativeWindowOcclusionEnabled() const;
 
   // Remembers the current occlusion state, and if it has changed, notifies
   // observers of the change. `occluded_region` is only applicable when visible
@@ -382,11 +382,36 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void SetNativeWindowOcclusionEnabled(bool enable);
 
  private:
+  class HideHelper;
+
+  friend class HideHelper;
   friend class test::WindowTreeHostTestApi;
 
   void DecrementVideoCaptureCount();
   void MaybeUpdateComposibleVisibilityForVideoLockCountChange();
   bool CalculateCompositorVisibilityFromOcclusionState() const;
+
+  // See `kApplyNativeOcclusionToCompositorTypeRelease` for details.
+  bool ShouldReleaseResourcesWhenHidden() const;
+
+  // See `kApplyNativeOcclusionToCompositorTypeThrottle` for details.
+  bool ShouldThrottleWhenOccluded() const;
+
+  // Starts the steps necessary to release viz resources and hide.
+  void StartReleasingResourcesForHide();
+
+  // Restores temporary state set in StartReleasingResourcesForHide().
+  void RestoreHideTransitionState();
+
+  // Completes a hide initiated to release resources.
+  void FinishHideTransition();
+
+  static const base::flat_set<WindowTreeHost*>& GetThrottledHostsForTesting();
+
+  // Returns true if in the process of releasing resources before hiding.
+  bool is_transitioning_to_hidden() const {
+    return hide_helper_.get() != nullptr;
+  }
 
   // Moves the cursor to the specified location. This method is internally used
   // by MoveCursorToLocationInDIP() and MoveCursorToLocationInPixels().
@@ -403,7 +428,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // valid during its deletion. (Window's dtor notifies observers that may
   // attempt to reach back up to access this object which will be valid until
   // the end of the dtor).
-  Window* window_;  // Owning.
+  raw_ptr<Window> window_;  // Owning.
 
   // Keeps track of the occlusion state of the host, and used to send
   // notifications to observers when it changes.
@@ -437,7 +462,7 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // The InputMethod instance used to process key events.
   // If owned it, it is created in GetInputMethod() method;
   // If not owned it, it is passed in through SetSharedInputMethod() method.
-  ui::InputMethod* input_method_ = nullptr;
+  raw_ptr<ui::InputMethod> input_method_ = nullptr;
 
   // Whether the InputMethod instance is owned by this WindowTreeHost.
   bool owned_input_method_ = false;
@@ -452,6 +477,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Number of VideoCaptureLocks that have been created and not destroyed.
   int video_capture_count_ = 0;
+
+  // Used to set up and restore state necessary to release resources when
+  // hiding. Non-null while waiting for state to be released (transitioning).
+  std::unique_ptr<HideHelper> hide_helper_;
 
   base::WeakPtrFactory<WindowTreeHost> weak_factory_{this};
 };

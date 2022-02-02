@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/login/ui/auth_factor_model.h"
 #include "base/callback.h"
+#include "base/timer/timer.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -26,6 +28,8 @@ class ArrowButtonView;
 // login screens.
 class ASH_EXPORT LoginAuthFactorsView : public views::View {
  public:
+  using AuthFactorState = AuthFactorModel::AuthFactorState;
+
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
    public:
@@ -40,6 +44,7 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
     views::Label* label();
     views::View* auth_factor_icon_row();
     ArrowButtonView* arrow_button();
+    AuthIconView* arrow_nudge_animation();
     AuthIconView* checkmark_icon();
 
    private:
@@ -59,9 +64,10 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
 
-  // TODO(crbug.com/1233614): Many more methods will be added here to facilitate
-  // state management, especially after multiple auth factors have been
-  // implemented. See go/cros-smartlock-ui-revamp.
+  // Should be called when the visibility of PIN authentication changes.
+  // Used to determine whether strings should mention that PIN can be used as an
+  // authentication mechanism.
+  void SetCanUsePin(bool can_use_pin);
 
  private:
   // Recomputes the state and updates the label and icons. Should be called
@@ -71,7 +77,7 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
 
   void ShowArrowButton();
   void ShowSingleAuthFactor(AuthFactorModel* auth_factor);
-  void ShowReadyAuthFactors();
+  void ShowReadyAndDisabledAuthFactors();
   void ShowCheckmark();
 
   // Sets the text and accessible name of the label using the provided string
@@ -82,12 +88,30 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
   // Ready state.
   int GetReadyLabelId() const;
 
+  // Gets the label to be shown when no auth factor can be used.
+  int GetDefaultLabelId() const;
+
   // Causes screen readers to read the label as an alert.
   void FireAlert();
 
   // Should be called when the "click to enter" button is pressed.
   void ArrowButtonPressed(const ui::Event& event);
 
+  // Used when |arrow_nudge_animation_| is pressed. It prevents arrow button
+  // from receiving its click event directly, so it relays the click event.
+  void RelayArrowButtonPressed();
+
+  // Should be called when the error timer expires. Communicates the timeout to
+  // the auth factor models.
+  void OnErrorTimeout();
+
+  // Calls views::View::SetLayoutManager with views::BoxLayout for provided
+  // view.
+  void SetBoxLayout(views::View* parent_view);
+
+  // Sets visibility of |arrow_icon_container_|, |arrow_button_|, and
+  // |arrow_nudge_animation_| and starts/stops arrow animations accordingly.
+  void SetArrowVisibility(bool is_visible);
   /////////////////////////////////////////////////////////////////////////////
   // Child views, owned by the Views hierarchy
 
@@ -97,9 +121,20 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
   // The label shown under the icons. Always visible.
   AuthFactorsLabel* label_;
 
+  // A container laying arrow button and its corresponding animation view on top
+  // of each other.
+  views::View* arrow_icon_container_;
+
+  // A box layout container for arrow button and its label.
+  views::View* arrow_button_container_;
+
   // A button with an arrow icon. Only visible when an auth factor is in the
   // kClickRequired state.
   ArrowButtonView* arrow_button_;
+
+  // A view with nudge animation expanding from arrow icon to encourage user to
+  // tap. Only visible when an auth factor is in the kClickRequired state.
+  AuthIconView* arrow_nudge_animation_;
 
   // A green checkmark icon (or animation) shown when an auth factor reaches
   // the kAuthenticated state, just before the login/lock screen is dismissed.
@@ -107,12 +142,13 @@ class ASH_EXPORT LoginAuthFactorsView : public views::View {
 
   /////////////////////////////////////////////////////////////////////////////
 
-  // The auth factor models that have been added by calling AddAuthFactor().
+  // The auth factor models that have been added by calling `AddAuthFactor`.
   // The order here should match the order in which they appear in the UI when
   // multiple are visible.
   std::vector<std::unique_ptr<AuthFactorModel>> auth_factors_;
 
   base::RepeatingClosure on_click_to_enter_callback_;
+  base::OneShotTimer error_timer_;
 };
 
 }  // namespace ash

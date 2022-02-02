@@ -135,6 +135,7 @@ class InternalVisitedTextFillColor;
 class InternalVisitedTextStrokeColor;
 class LightingColor;
 class OutlineColor;
+class PointerEvents;
 class Position;
 class Resize;
 class StopColor;
@@ -248,6 +249,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedTextStrokeColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
+  friend class css_longhand::PointerEvents;
   friend class css_longhand::Position;
   friend class css_longhand::Resize;
   friend class css_longhand::StopColor;
@@ -284,7 +286,7 @@ class ComputedStyle : public ComputedStyleBase,
   StyleCachedData& EnsureCachedData() const;
 
   bool HasCachedPseudoElementStyles() const;
-  PseudoElementStyleCache* GetPseudoElementStyleCache() const;
+  CORE_EXPORT PseudoElementStyleCache* GetPseudoElementStyleCache() const;
   PseudoElementStyleCache& EnsurePseudoElementStyleCache() const;
 
   Vector<AtomicString>* GetVariableNamesCache() const;
@@ -417,6 +419,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   StyleHighlightData& MutableHighlightData();
+
+  HashSet<AtomicString>* CustomHighlightNames() const {
+    return CustomHighlightNamesInternal().get();
+  }
+  void SetHasCustomHighlightName(const AtomicString&);
 
   /**
    * ComputedStyle properties
@@ -1874,7 +1881,7 @@ class ComputedStyle : public ComputedStyleBase,
     SetBorderBottomLeftRadius(s);
     SetBorderBottomRightRadius(s);
   }
-  void SetBorderRadius(const IntSize& s) {
+  void SetBorderRadius(const gfx::Size& s) {
     SetBorderRadius(
         LengthSize(Length::Fixed(s.width()), Length::Fixed(s.height())));
   }
@@ -2072,9 +2079,8 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
 
   bool IsContainerForContainerQueries() const {
-    return (StyleType() == kPseudoIdNone) &&
-           (ContainsStyle() && ContainsLayout() &&
-            (ContainsInlineSize() || ContainsBlockSize()));
+    return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone &&
+           !InsideFragmentationContextWithNondeterministicEngine();
   }
 
   // Display utility functions.
@@ -2167,6 +2173,32 @@ class ComputedStyle : public ComputedStyleBase,
     }
   }
 
+  // Inertness utility functions.
+  bool IsInert() const { return InertnessInternal() != Inertness::kNone; }
+  void SetIsInert(bool is_inert) {
+    if (InertnessInternal() == Inertness::kForced) {
+      DCHECK(is_inert);
+      return;
+    }
+    SetInertnessInternal(is_inert ? Inertness::kOverridable : Inertness::kNone);
+  }
+  bool IsForcedInert() const {
+    return InertnessInternal() == Inertness::kForced;
+  }
+  void SetIsForcedInert() { SetInertnessInternal(Inertness::kForced); }
+
+  // Pointer-events utility functions.
+  EPointerEvents UsedPointerEvents() const {
+    if (IsInert())
+      return EPointerEvents::kNone;
+    return PointerEventsInternal();
+  }
+
+  bool IsSelectable() const {
+    return !IsInert() && !(UserSelect() == EUserSelect::kNone &&
+                           UserModify() == EUserModify::kReadOnly);
+  }
+
   // Text decoration utility functions.
   bool TextDecorationVisualOverflowEqual(const ComputedStyle& o) const;
   void ApplyTextDecorations(const Color& parent_text_decoration_color,
@@ -2175,7 +2207,7 @@ class ComputedStyle : public ComputedStyleBase,
   void RestoreParentTextDecorations(const ComputedStyle& parent_style);
   CORE_EXPORT const Vector<AppliedTextDecoration>& AppliedTextDecorations()
       const;
-  CORE_EXPORT TextDecoration TextDecorationsInEffect() const;
+  CORE_EXPORT TextDecorationLine TextDecorationsInEffect() const;
 
   // Overflow utility functions.
 
@@ -2237,7 +2269,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Visibility utility functions.
   bool VisibleToHitTesting() const {
     return Visibility() == EVisibility::kVisible &&
-           PointerEvents() != EPointerEvents::kNone;
+           UsedPointerEvents() != EPointerEvents::kNone;
   }
 
   // Animation utility functions.
@@ -2336,7 +2368,7 @@ class ComputedStyle : public ComputedStyleBase,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
   void ApplyTransform(TransformationMatrix&,
-                      const FloatRect& bounding_box,
+                      const gfx::RectF& bounding_box,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
@@ -2657,10 +2689,10 @@ class ComputedStyle : public ComputedStyleBase,
 
   LogicalSize LogicalAspectRatio() const {
     DCHECK_NE(AspectRatio().GetType(), EAspectRatioType::kAuto);
-    FloatSize ratio = AspectRatio().GetRatio();
+    gfx::SizeF ratio = AspectRatio().GetRatio();
     if (!IsHorizontalWritingMode())
-      ratio = ratio.TransposedSize();
-    return LogicalSize::AspectRatioFromFloatSize(ratio);
+      ratio.Transpose();
+    return LogicalSize::AspectRatioFromSizeF(ratio);
   }
 
   EBoxSizing BoxSizingForAspectRatio() const {
@@ -2674,6 +2706,7 @@ class ComputedStyle : public ComputedStyleBase,
  private:
   EClear Clear() const { return ClearInternal(); }
   EFloat Floating() const { return FloatingInternal(); }
+  EPointerEvents PointerEvents() const { return PointerEventsInternal(); }
   EResize Resize() const { return ResizeInternal(); }
 
   bool IsInlineSizeContainer() const {
@@ -2916,7 +2949,7 @@ class ComputedStyle : public ComputedStyleBase,
   void OverrideTextDecorationColors(Color propagated_color);
   void ApplyMotionPathTransform(float origin_x,
                                 float origin_y,
-                                const FloatRect& bounding_box,
+                                const gfx::RectF& bounding_box,
                                 TransformationMatrix&) const;
 
   bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
@@ -3059,6 +3092,7 @@ class ComputedStyle : public ComputedStyleBase,
       TextDecorationEqualDoesNotRequireRecomputeInkOverflow);
   FRIEND_TEST_ALL_PREFIXES(ComputedStyleTest,
                            TextDecorationNotEqualRequiresRecomputeInkOverflow);
+  FRIEND_TEST_ALL_PREFIXES(StyleEngineTest, ScrollbarStyleNoExcessiveCaching);
 };
 
 inline bool ComputedStyle::HasAnyPseudoElementStyles() const {

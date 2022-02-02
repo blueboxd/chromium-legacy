@@ -4,11 +4,17 @@
 
 #include "ash/system/phonehub/phone_hub_notification_controller.h"
 
+#include "ash/components/phonehub/notification.h"
+#include "ash/components/phonehub/notification_interaction_handler.h"
+#include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/components/phonehub/phone_model.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/ash_notification_view.h"
 #include "ash/system/message_center/message_view_factory.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
@@ -21,10 +27,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/components/phonehub/notification.h"
-#include "chromeos/components/phonehub/notification_interaction_handler.h"
-#include "chromeos/components/phonehub/phone_hub_manager.h"
-#include "chromeos/components/phonehub/phone_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_elider.h"
@@ -151,6 +153,100 @@ class PhoneHubNotificationView : public message_center::NotificationView {
   std::string custom_view_type_;
 };
 
+class PhoneHubAshNotificationView : public AshNotificationView {
+ public:
+  explicit PhoneHubAshNotificationView(
+      const message_center::Notification& notification,
+      bool shown_in_popup,
+      const std::u16string& phone_name)
+      : AshNotificationView(notification, shown_in_popup) {
+    // Add customized header.
+    message_center::NotificationHeaderView* header_row =
+        static_cast<message_center::NotificationHeaderView*>(
+            GetViewByID(message_center::NotificationView::kHeaderRow));
+    views::View* app_name_view =
+        GetViewByID(message_center::NotificationView::kAppNameView);
+    views::Label* summary_text_view = static_cast<views::Label*>(
+        GetViewByID(message_center::NotificationView::kSummaryTextView));
+
+    // The app name should be displayed in full, leaving the rest of the space
+    // for device name. App name will only be truncated when it reached it
+    // maximum width.
+    int app_name_width = std::min(app_name_view->GetPreferredSize().width(),
+                                  kNotificationAppNameMaxWidth);
+    int device_name_width = kNotificationHeaderTextWidth - app_name_width;
+    header_row->SetSummaryText(
+        gfx::ElideText(phone_name, summary_text_view->font_list(),
+                       device_name_width, gfx::ELIDE_TAIL));
+    custom_view_type_ = notification.custom_view_type();
+    if (custom_view_type_ == kNotificationCustomCallViewType) {
+      // Expand the action buttons row by default for Call Style notification.
+      SetManuallyExpandedOrCollapsed(true);
+      SetExpanded(true);
+      return;
+    }
+    action_buttons_row_ =
+        GetViewByID(message_center::NotificationView::kActionButtonsRow);
+    if (!action_buttons_row_->children().empty())
+      reply_button_ = static_cast<views::View*>(
+          action_buttons_row_->children()[kReplyButtonIndex]);
+
+    inline_reply_ = static_cast<message_center::NotificationInputContainer*>(
+        GetViewByID(message_center::NotificationView::kInlineReply));
+  }
+
+  ~PhoneHubAshNotificationView() override = default;
+  PhoneHubAshNotificationView(const PhoneHubAshNotificationView&) = delete;
+  PhoneHubAshNotificationView& operator=(const PhoneHubAshNotificationView&) =
+      delete;
+
+  // message_center::NotificationViewBase
+  void ActionButtonPressed(size_t index, const ui::Event& event) override {
+    if (custom_view_type_ == kNotificationCustomCallViewType) {
+      message_center::MessageCenter::Get()->ClickOnNotificationButton(
+          notification_id(), static_cast<int>(index));
+    } else {
+      AshNotificationView::ActionButtonPressed(index, event);
+    }
+  }
+
+  // message_center::NotificationView:
+  void OnNotificationInputSubmit(size_t index,
+                                 const std::u16string& text) override {
+    AshNotificationView::OnNotificationInputSubmit(index, text);
+
+    DCHECK(reply_button_);
+
+    // After sending a reply, take the UI back to action buttons and clear out
+    // text input.
+    inline_reply_->SetVisible(false);
+    action_buttons_row_->SetVisible(true);
+    inline_reply_->textfield()->SetText(std::u16string());
+
+    // Briefly disable reply button.
+    reply_button_->SetEnabled(false);
+    enable_reply_timer_.Start(
+        FROM_HERE, kInlineReplyDisableTime,
+        base::BindOnce(&PhoneHubAshNotificationView::EnableReplyButton,
+                       base::Unretained(this)));
+  }
+
+  void EnableReplyButton() {
+    reply_button_->SetEnabled(true);
+    enable_reply_timer_.AbandonAndStop();
+  }
+
+ private:
+  // Owned by view hierarchy.
+  views::View* action_buttons_row_ = nullptr;
+  views::View* reply_button_ = nullptr;
+  message_center::NotificationInputContainer* inline_reply_ = nullptr;
+
+  // Timer that fires to enable reply button after a brief period of time.
+  base::OneShotTimer enable_reply_timer_;
+  std::string custom_view_type_;
+};
+
 }  // namespace
 
 // Delegate for the displayed ChromeOS notification.
@@ -160,7 +256,7 @@ class PhoneHubNotificationController::NotificationDelegate
   NotificationDelegate(PhoneHubNotificationController* controller,
                        int64_t phone_hub_id,
                        const std::string& cros_id,
-                       chromeos::phonehub::Notification::Category category)
+                       phonehub::Notification::Category category)
       : controller_(controller),
         phone_hub_id_(phone_hub_id),
         cros_id_(cros_id),
@@ -191,9 +287,8 @@ class PhoneHubNotificationController::NotificationDelegate
     if (!controller_ || removed_by_phone_hub_)
       return;
 
-    if (category_ ==
-            chromeos::phonehub::Notification::Category::kIncomingCall ||
-        category_ == chromeos::phonehub::Notification::Category::kOngoingCall) {
+    if (category_ == phonehub::Notification::Category::kIncomingCall ||
+        category_ == phonehub::Notification::Category::kOngoingCall) {
       // TODO(b/203734343): Wait for UX confirm. Call notification is not
       // dismissible in android phone.
       PA_LOG(INFO)
@@ -216,8 +311,7 @@ class PhoneHubNotificationController::NotificationDelegate
                              ->app_metadata());
       return;
     }
-    if (category_ ==
-        chromeos::phonehub::Notification::Category::kIncomingCall) {
+    if (category_ == phonehub::Notification::Category::kIncomingCall) {
       // TODO(b/199223417): Implement actions.
       switch (*button_index) {
         case BUTTON_ANSWER:
@@ -227,8 +321,7 @@ class PhoneHubNotificationController::NotificationDelegate
           PA_LOG(INFO) << "decline button clicked";
           break;
       }
-    } else if (category_ ==
-               chromeos::phonehub::Notification::Category::kOngoingCall) {
+    } else if (category_ == phonehub::Notification::Category::kOngoingCall) {
       switch (*button_index) {
         case BUTTON_HANGUP:
           PA_LOG(INFO) << "hangup button clicked";
@@ -244,7 +337,7 @@ class PhoneHubNotificationController::NotificationDelegate
       controller_->OpenSettings();
   }
 
-  chromeos::phonehub::Notification::Category Category() { return category_; }
+  phonehub::Notification::Category Category() { return category_; }
 
  private:
   // Incoming call buttons that appear in notifications.
@@ -262,7 +355,7 @@ class PhoneHubNotificationController::NotificationDelegate
   const std::string cros_id_;
 
   // The category of the notification.
-  chromeos::phonehub::Notification::Category category_;
+  phonehub::Notification::Category category_;
 
   // Flag set if the notification was removed by PhoneHub so we avoid a cycle.
   bool removed_by_phone_hub_ = false;
@@ -300,7 +393,7 @@ PhoneHubNotificationController::~PhoneHubNotificationController() {
 }
 
 void PhoneHubNotificationController::SetManager(
-    chromeos::phonehub::PhoneHubManager* phone_hub_manager) {
+    phonehub::PhoneHubManager* phone_hub_manager) {
   if (manager_)
     manager_->RemoveObserver(this);
   if (phone_hub_manager) {
@@ -355,11 +448,11 @@ void PhoneHubNotificationController::OnFeatureStatusChanged() {
   // Various states in which the feature is enabled, even if it is not actually
   // in use (e.g., if Bluetooth is disabled or if the screen is locked).
   bool is_feature_enabled =
-      status == chromeos::phonehub::FeatureStatus::kUnavailableBluetoothOff ||
-      status == chromeos::phonehub::FeatureStatus::kLockOrSuspended ||
-      status == chromeos::phonehub::FeatureStatus::kEnabledButDisconnected ||
-      status == chromeos::phonehub::FeatureStatus::kEnabledAndConnecting ||
-      status == chromeos::phonehub::FeatureStatus::kEnabledAndConnected;
+      status == phonehub::FeatureStatus::kUnavailableBluetoothOff ||
+      status == phonehub::FeatureStatus::kLockOrSuspended ||
+      status == phonehub::FeatureStatus::kEnabledButDisconnected ||
+      status == phonehub::FeatureStatus::kEnabledAndConnecting ||
+      status == phonehub::FeatureStatus::kEnabledAndConnected;
 
   // Reset the set of shown notifications when Phone Hub is disabled. If it is
   // enabled, we skip this step to ensure that notifications that have already
@@ -430,7 +523,7 @@ void PhoneHubNotificationController::OnAttemptConnectionScanFailed() {
               message_center::NotifierType::SYSTEM_COMPONENT,
               kPhoneHubInstantTetherNotificationId),
           message_center::RichNotificationData(), std::move(delegate),
-          kPhoneHubEnableHotspotOnIcon,
+          kPhoneHubEnableHotspotIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
@@ -451,16 +544,16 @@ void PhoneHubNotificationController::DismissNotification(
 
 void PhoneHubNotificationController::HandleNotificationBodyClick(
     int64_t notification_id,
-    const chromeos::phonehub::Notification::AppMetadata& app_metadata) {
+    const phonehub::Notification::AppMetadata& app_metadata) {
   CHECK(manager_);
   if (!notification_interaction_handler_)
     return;
-  const chromeos::phonehub::Notification* notification =
+  const phonehub::Notification* notification =
       manager_->GetNotification(notification_id);
   if (!notification)
     return;
   if (notification->interaction_behavior() ==
-      chromeos::phonehub::Notification::InteractionBehavior::kOpenable) {
+      phonehub::Notification::InteractionBehavior::kOpenable) {
     notification_interaction_handler_->HandleNotificationClicked(
         notification_id, app_metadata);
   }
@@ -481,7 +574,7 @@ void PhoneHubNotificationController::LogNotificationCount() {
 }
 
 void PhoneHubNotificationController::SetNotification(
-    const chromeos::phonehub::Notification* notification,
+    const phonehub::Notification* notification,
     bool is_update) {
   int64_t phone_hub_id = notification->id();
   std::string cros_id = base::StrCat(
@@ -499,9 +592,9 @@ void PhoneHubNotificationController::SetNotification(
       CreateNotification(notification, cros_id, delegate, is_update);
 
   if (notification->category() ==
-          chromeos::phonehub::Notification::Category::kIncomingCall ||
+          phonehub::Notification::Category::kIncomingCall ||
       notification->category() ==
-          chromeos::phonehub::Notification::Category::kOngoingCall) {
+          phonehub::Notification::Category::kOngoingCall) {
     cros_notification->set_custom_view_type(kNotificationCustomCallViewType);
   } else {
     cros_notification->set_custom_view_type(kNotificationCustomViewType);
@@ -518,7 +611,7 @@ void PhoneHubNotificationController::SetNotification(
 
 std::unique_ptr<message_center::Notification>
 PhoneHubNotificationController::CreateNotification(
-    const chromeos::phonehub::Notification* notification,
+    const phonehub::Notification* notification,
     const std::string& cros_id,
     NotificationDelegate* delegate,
     bool is_update) {
@@ -558,7 +651,7 @@ PhoneHubNotificationController::CreateNotification(
     optional_fields.renotify = true;
 
   switch (notification->category()) {
-    case chromeos::phonehub::Notification::Category::kIncomingCall: {
+    case phonehub::Notification::Category::kIncomingCall: {
       message_center::ButtonInfo decline_button;
       decline_button.title = l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_NOTIFICATION_CALL_DECLINE_BUTTON);
@@ -570,7 +663,7 @@ PhoneHubNotificationController::CreateNotification(
       optional_fields.buttons.push_back(answer_button);
       break;
     }
-    case chromeos::phonehub::Notification::Category::kOngoingCall: {
+    case phonehub::Notification::Category::kOngoingCall: {
       message_center::ButtonInfo hangup_button;
       hangup_button.title = l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_NOTIFICATION_CALL_HANGUP_BUTTON);
@@ -600,7 +693,7 @@ PhoneHubNotificationController::CreateNotification(
 }
 
 int PhoneHubNotificationController::GetSystemPriorityForNotification(
-    const chromeos::phonehub::Notification* notification,
+    const phonehub::Notification* notification,
     bool is_update) {
   bool has_notification_been_shown =
       base::Contains(shown_notification_ids_, notification->id());
@@ -631,6 +724,12 @@ PhoneHubNotificationController::CreateCustomNotificationView(
     const message_center::Notification& notification,
     bool shown_in_popup) {
   DCHECK(notification.custom_view_type() == kNotificationCustomViewType);
+
+  if (features::IsNotificationsRefreshEnabled()) {
+    return std::make_unique<PhoneHubAshNotificationView>(
+        notification, shown_in_popup,
+        ash::GetPhoneName(notification_controller));
+  }
   return std::make_unique<PhoneHubNotificationView>(
       notification, ash::GetPhoneName(notification_controller));
 }
@@ -642,6 +741,12 @@ PhoneHubNotificationController::CreateCustomActionNotificationView(
     const message_center::Notification& notification,
     bool shown_in_popup) {
   DCHECK(notification.custom_view_type() == kNotificationCustomCallViewType);
+
+  if (features::IsNotificationsRefreshEnabled()) {
+    return std::make_unique<PhoneHubAshNotificationView>(
+        notification, shown_in_popup,
+        ash::GetPhoneName(notification_controller));
+  }
   return std::make_unique<PhoneHubNotificationView>(
       notification, ash::GetPhoneName(notification_controller));
 }

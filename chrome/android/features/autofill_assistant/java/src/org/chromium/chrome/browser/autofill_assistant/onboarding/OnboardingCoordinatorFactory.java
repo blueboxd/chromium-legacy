@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.autofill_assistant.onboarding;
 
 import android.content.Context;
+import android.view.View;
 
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.ui.util.AccessibilityUtil;
 
 import java.util.Map;
 
@@ -19,16 +20,18 @@ public class OnboardingCoordinatorFactory {
     private final Context mContext;
     private final BottomSheetController mBottomSheetController;
     private final BrowserControlsStateProvider mBrowserControls;
-    private final CompositorViewHolder mCompositorViewHolder;
+    private final View mRootView;
+    private final AccessibilityUtil mAccessibilityUtil;
 
     public OnboardingCoordinatorFactory(Context context,
             BottomSheetController bottomSheetController,
-            BrowserControlsStateProvider browserControls,
-            CompositorViewHolder compositorViewHolder) {
+            BrowserControlsStateProvider browserControls, View rootView,
+            AccessibilityUtil accessibilityUtil) {
         mContext = context;
         mBottomSheetController = bottomSheetController;
         mBrowserControls = browserControls;
-        mCompositorViewHolder = compositorViewHolder;
+        mRootView = rootView;
+        mAccessibilityUtil = accessibilityUtil;
     }
 
     /**
@@ -37,8 +40,8 @@ public class OnboardingCoordinatorFactory {
     public BaseOnboardingCoordinator createBottomSheetOnboardingCoordinator(
             String experimentIds, Map<String, String> parameters) {
         return new BottomSheetOnboardingCoordinator(experimentIds, parameters, mContext,
-                mBottomSheetController, mBrowserControls, mCompositorViewHolder,
-                mBottomSheetController.getScrimCoordinator());
+                mBottomSheetController, mBrowserControls, mRootView,
+                mBottomSheetController.getScrimCoordinator(), mAccessibilityUtil);
     }
 
     /**

@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEBSITE_LOGIN_MANAGER_IMPL_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -45,10 +46,9 @@ class WebsiteLoginManagerImpl : public WebsiteLoginManager {
   void EditPasswordForLogin(const Login& login,
                             const std::string& new_password,
                             base::OnceCallback<void(bool)> callback) override;
-  absl::optional<std::string> GeneratePassword(
-      autofill::FormSignature form_signature,
-      autofill::FieldSignature field_signature,
-      uint64_t max_length) override;
+  std::string GeneratePassword(autofill::FormSignature form_signature,
+                               autofill::FieldSignature field_signature,
+                               uint64_t max_length) override;
 
   void PresaveGeneratedPassword(const Login& login,
                                 const std::string& password,
@@ -76,9 +76,9 @@ class WebsiteLoginManagerImpl : public WebsiteLoginManager {
 
   void OnRequestFinished(const PendingRequest* request);
 
-  password_manager::PasswordManagerClient* const client_;
+  const raw_ptr<password_manager::PasswordManagerClient> client_;
 
-  content::WebContents* const web_contents_;
+  const raw_ptr<content::WebContents> web_contents_;
 
   // Update password request will be created in PresaveGeneratedPassword and
   // released in CommitGeneratedPassword after committing presaved password to

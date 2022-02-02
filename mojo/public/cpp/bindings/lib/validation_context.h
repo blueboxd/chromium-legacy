@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 static const int kMaxRecursionDepth = 200;
@@ -143,6 +143,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ValidationContext {
     ~ScopedDepthTracker() { --ctx_->stack_depth_; }
 
    private:
+    // `ctx_` is not a raw_ptr<...> for performance reasons: On-stack pointee
+    // (i.e. not covered by BackupRefPtr protection).
     ValidationContext* ctx_;
   };
 
@@ -160,7 +162,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ValidationContext {
     return end > begin && begin >= data_begin_ && end <= data_end_;
   }
 
-  Message* const message_;
+  const raw_ptr<Message> message_;
   const char* const description_;
   const ValidatorType validator_type_;
 

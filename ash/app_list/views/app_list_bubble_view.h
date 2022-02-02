@@ -10,6 +10,7 @@
 #include "ash/app_list/views/app_list_folder_controller.h"
 #include "ash/ash_export.h"
 #include "ash/search_box/search_box_view_delegate.h"
+#include "base/callback_forward.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -24,6 +25,7 @@ class AppListFolderView;
 class AppListViewDelegate;
 class FolderBackgroundView;
 class SearchBoxView;
+class SearchResultPageDialogController;
 
 // Contains the views for the bubble version of the launcher. It looks like a
 // system tray bubble. It does not derive from TrayBubbleView because it takes
@@ -41,6 +43,13 @@ class ASH_EXPORT AppListBubbleView : public views::View,
 
   // Starts the bubble show animation.
   void StartShowAnimation();
+
+  // Starts the bubble hide animation.
+  void StartHideAnimation(base::RepeatingClosure on_animation_ended);
+
+  // Aborts all layer animations started by StartShowAnimation() or
+  // StartHideAnimation(). This invokes their cleanup callbacks.
+  void AbortAllAnimations();
 
   // Handles back action if it we have a use for it besides dismissing.
   bool Back();
@@ -79,14 +88,17 @@ class ASH_EXPORT AppListBubbleView : public views::View,
   void ReparentFolderItemTransit(AppListFolderItem* folder_item) override;
   void ReparentDragEnded() override;
 
+  AppListBubbleAppsPage* apps_page() { return apps_page_; }
+
   views::View* separator_for_test() { return separator_; }
   bool showing_folder_for_test() { return showing_folder_; }
+  AppListBubbleAppsPage* apps_page_for_test() { return apps_page_; }
 
  private:
   friend class AppListTestHelper;
   friend class AssistantTestApiImpl;
 
-  // Initializes the main contents (search box and pages).
+  // Initializes the main contents (search box, apps page, and search page).
   void InitContentsView(ApplicationDragAndDropHost* drag_and_drop_host);
 
   // Initializes the folder view, which appears on top of all other views.
@@ -97,7 +109,13 @@ class ASH_EXPORT AppListBubbleView : public views::View,
   void DisableFocusForShowingActiveFolder(bool disabled);
 
   AppListViewDelegate* const view_delegate_;
+
   std::unique_ptr<AppListA11yAnnouncer> a11y_announcer_;
+
+  // Controller for showing a modal dialog in search results page.
+  std::unique_ptr<SearchResultPageDialogController>
+      search_page_dialog_controller_;
+
   SearchBoxView* search_box_view_ = nullptr;
   views::View* separator_ = nullptr;
   AppListBubbleAppsPage* apps_page_ = nullptr;

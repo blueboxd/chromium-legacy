@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "components/media_router/common/mojom/logger.mojom.h"
@@ -68,14 +68,6 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
                  base::TimeDelta timeout,
                  bool incognito,
                  JoinRouteCallback callback) override;
-  void ConnectRouteByRouteId(const std::string& media_source,
-                             const std::string& route_id,
-                             const std::string& presentation_id,
-                             const url::Origin& origin,
-                             int32_t tab_id,
-                             base::TimeDelta timeout,
-                             bool incognito,
-                             ConnectRouteByRouteIdCallback callback) override;
   void TerminateRoute(const std::string& route_id,
                       TerminateRouteCallback callback) override;
   void SendRouteMessage(const std::string& media_route_id,
@@ -122,13 +114,13 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   mojo::Remote<mojom::Logger> logger_;
 
   // Non-owned pointer to the Cast MediaSinkServiceBase instance.
-  MediaSinkServiceBase* const media_sink_service_;
+  const raw_ptr<MediaSinkServiceBase> media_sink_service_;
 
   // Non-owned pointer to the CastAppDiscoveryService instance.
-  CastAppDiscoveryService* const app_discovery_service_;
+  const raw_ptr<CastAppDiscoveryService> app_discovery_service_;
 
   // Non-owned pointer to the CastMessageHandler instance.
-  cast_channel::CastMessageHandler* const message_handler_;
+  const raw_ptr<cast_channel::CastMessageHandler> message_handler_;
 
   // Registered sink queries.
   base::flat_map<MediaSource::Id, base::CallbackListSubscription> sink_queries_;

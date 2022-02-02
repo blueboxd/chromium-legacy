@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/link_highlight.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -35,6 +36,15 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
+namespace {
+
+bool IsLinkHighlighted(const LayoutObject& object) {
+  return object.GetFrame()->GetPage()->GetLinkHighlight().IsHighlighting(
+      object);
+}
+
+}  // anonymous namespace
 
 static void SetNeedsCompositingLayerPropertyUpdate(const LayoutObject& object) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
@@ -49,7 +59,6 @@ static void SetNeedsCompositingLayerPropertyUpdate(const LayoutObject& object) {
 
   PaintLayer* paint_layer = To<LayoutBoxModelObject>(object).Layer();
 
-  DisableCompositingQueryAsserts disabler;
   // This ensures that CompositingLayerPropertyUpdater::Update will
   // be called and update LayerState for the LayoutView.
   auto* mapping = paint_layer->GetCompositedLayerMapping();
@@ -402,8 +411,6 @@ void PrePaintTreeWalk::UpdatePaintInvalidationContainer(
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
-  DisableCompositingQueryAsserts disabler;
-
   if (object.IsPaintInvalidationContainer()) {
     context.paint_invalidation_container = To<LayoutBoxModelObject>(&object);
     if (object.IsStackingContext() || object.IsSVGRoot()) {
@@ -509,8 +516,11 @@ FragmentData* PrePaintTreeWalk::GetOrCreateFragmentData(
         fragment_data->ClearNextFragment();
       }
     } else {
-      // We don't need any additional fragments for culled inlines.
-      if (!object.IsBox() && !object.HasInlineFragments())
+      // We don't need any additional fragments for culled inlines - unless this
+      // is the highlighted link (in which case even culled inlines get paint
+      // effects).
+      if (!object.IsBox() && !object.HasInlineFragments() &&
+          !IsLinkHighlighted(object))
         return nullptr;
 
       DCHECK(allow_update);
@@ -617,8 +627,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
           // Mark the previous paint invalidation container as needing
           // raster invalidation. This handles cases where raster invalidation
           // needs to happen but no compositing layers were added or removed.
-          DisableCompositingQueryAsserts disabler;
-
           const auto* paint_invalidation_container =
               context.paint_invalidation_container->Layer();
           if (!paint_invalidation_container->SelfNeedsRepaint()) {
@@ -752,6 +760,8 @@ void PrePaintTreeWalk::WalkFragmentationContextRootChildren(
 
   const auto outer_fragmentainer = context.current_fragmentainer;
   absl::optional<wtf_size_t> inner_fragmentainer_idx;
+
+  context.current_fragmentainer.fragmentation_nesting_level++;
 
   for (NGLink child : fragment.Children()) {
     const auto* box_fragment = To<NGPhysicalBoxFragment>(child.fragment);
@@ -985,25 +995,35 @@ void PrePaintTreeWalk::WalkLayoutObjectChildren(
       if (!box_fragment)
         continue;
     } else if (child->IsInline() && !child_box) {
-      // Deal with inline-level objects not searched for above.
-      //
-      // Needed for fragment-less objects that have children. This is the case
-      // for culled inlines. We're going to have to enter them for every
-      // fragment in the parent.
-      //
-      // The child is inline-level even if the parent fragment doesn't establish
-      // an inline formatting context. This may happen if there's only collapsed
-      // text, or if we had to insert a break in a block before we got to any
-      // inline content. Make sure that we visit such objects once.
+      // This child is a non-atomic inline (or text), but we have no cursor.
+      // The cursor will be missing if the child has no fragment representation,
+      // or if the container has no fragment items (which may happen if there's
+      // only collapsed text / culled inlines, or if we had to insert a break in
+      // a block before we got to any inline content, or if the container only
+      // has resumed floats).
 
-      is_first_for_node = parent_fragment->IsFirstForNode();
-      is_last_for_node = !parent_fragment->BreakToken();
+      // If the child has a fragment representation, we're going to find it in
+      // the fragmentainer(s) where it occurs.
+      if (child->HasInlineFragments())
+        continue;
 
-      // If the parent block fragment isn't an inline formatting context
-      // (e.g. because there are only resumed floats), there isn't a lot we need
-      // to do with this child. Only enter the inline when at the last parent
-      // fragment, to clear the paint flags.
-      if (!parent_fragment->HasItems() && !is_last_for_node)
+      if (!child->IsLayoutInline()) {
+        // We end up here for collapsed text nodes. Just clear the paint flags.
+        for (const LayoutObject* fragmentless = child; fragmentless;
+             fragmentless = fragmentless->NextInPreOrder(child)) {
+          DCHECK(fragmentless->IsText());
+          DCHECK(!fragmentless->HasInlineFragments());
+          fragmentless->GetMutableForPainting().ClearPaintFlags();
+        }
+        continue;
+      }
+
+      // We have to enter culled inlines for every block fragment where any of
+      // their children has a representation.
+      if (!parent_fragment->HasItems())
+        continue;
+      if (!parent_fragment->Items()->IsContainerForCulledInline(
+              To<LayoutInline>(*child), &is_first_for_node, &is_last_for_node))
         continue;
 
       // Inlines will pass their containing block fragment (and its incoming
@@ -1019,20 +1039,20 @@ void PrePaintTreeWalk::WalkLayoutObjectChildren(
       // be the right place to search.
       const NGPhysicalBoxFragment* search_fragment = parent_fragment;
       if (child_box->IsOutOfFlowPositioned()) {
-        if (child_box->IsFixedPositioned()) {
-          search_fragment = context.fixed_positioned_container.fragment;
-          fragmentainer_idx =
-              context.fixed_positioned_container.fragmentainer_idx;
-        } else {
-          search_fragment = context.absolute_positioned_container.fragment;
-          fragmentainer_idx =
-              context.absolute_positioned_container.fragmentainer_idx;
-        }
-        if (!search_fragment) {
-          // Only walk unfragmented legacy-contained OOFs once.
+        const ContainingFragment& containing_fragment_info =
+            child_box->IsFixedPositioned()
+                ? context.fixed_positioned_container
+                : context.absolute_positioned_container;
+        if (context.current_fragmentainer.fragmentation_nesting_level !=
+            containing_fragment_info.fragmentation_nesting_level) {
+          // Only walk OOFs once if they aren't contained within the current
+          // fragmentation context.
           if (!parent_fragment->IsFirstForNode())
             continue;
         }
+
+        search_fragment = containing_fragment_info.fragment;
+        fragmentainer_idx = containing_fragment_info.fragmentainer_idx;
       }
 
       if (search_fragment) {
@@ -1132,14 +1152,14 @@ void PrePaintTreeWalk::WalkChildren(const LayoutObject& object,
     }
     // The OOF containing block structure is special under block fragmentation:
     // A fragmentable OOF is always a direct child of a fragmentainer.
-    const auto* container_fragment = context.current_fragmentainer.fragment;
-    if (!container_fragment)
-      container_fragment = context.oof_container_candidate_fragment;
-    context.absolute_positioned_container = {
-        container_fragment, context.current_fragmentainer.fragmentainer_idx};
+    context.absolute_positioned_container = context.current_fragmentainer;
+    if (!context.absolute_positioned_container.fragment) {
+      context.absolute_positioned_container.fragment =
+          context.oof_container_candidate_fragment;
+    }
     if (object.CanContainFixedPositionObjects()) {
-      context.fixed_positioned_container = {
-          container_fragment, context.current_fragmentainer.fragmentainer_idx};
+      context.fixed_positioned_container =
+          context.absolute_positioned_container;
     }
   }
 

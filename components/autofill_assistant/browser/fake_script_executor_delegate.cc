@@ -70,8 +70,15 @@ bool FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
   return true;
 }
 
+AutofillAssistantState FakeScriptExecutorDelegate::GetState() {
+  return state_history_.empty() ? AutofillAssistantState::INACTIVE
+                                : state_history_.back();
+}
+
 void FakeScriptExecutorDelegate::SetTouchableElementArea(
-    const ElementAreaProto& element) {}
+    const ElementAreaProto& element_area) {
+  touchable_element_area_history_.emplace_back(element_area);
+}
 
 void FakeScriptExecutorDelegate::SetStatusMessage(const std::string& message) {
   status_message_ = message;

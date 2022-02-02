@@ -5,17 +5,18 @@
 #ifndef CHROME_BROWSER_ASH_INPUT_METHOD_NATIVE_INPUT_METHOD_ENGINE_H_
 #define CHROME_BROWSER_ASH_INPUT_METHOD_NATIVE_INPUT_METHOD_ENGINE_H_
 
+#include "ash/services/ime/public/cpp/suggestions.h"
+#include "ash/services/ime/public/mojom/input_engine.mojom.h"
+#include "ash/services/ime/public/mojom/input_method.mojom.h"
+#include "ash/services/ime/public/mojom/input_method_host.mojom.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/input_method/assistive_suggester.h"
+#include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/grammar_manager.h"
 #include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/ash/input_method/suggestions_collector.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chromeos/services/ime/public/cpp/suggestions.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
-#include "chromeos/services/ime/public/mojom/input_method_host.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -44,6 +45,10 @@ class NativeInputMethodEngine
  public:
   NativeInputMethodEngine();
   ~NativeInputMethodEngine() override;
+
+  // Used to override deps for testing.
+  NativeInputMethodEngine(
+      std::unique_ptr<AssistiveSuggesterSwitch> suggester_switch);
 
   // InputMethodEngine:
   void Initialize(std::unique_ptr<InputMethodEngineBase::Observer> observer,
@@ -104,6 +109,7 @@ class NativeInputMethodEngine
         const std::string& engine_id,
         int context_id,
         const IMEEngineHandlerInterface::InputContext& context) override;
+    void OnTouch(ui::EventPointerType pointerType) override;
     void OnBlur(const std::string& engine_id, int context_id) override;
     void OnKeyEvent(
         const std::string& engine_id,
@@ -206,6 +212,9 @@ class NativeInputMethodEngine
   base::ScopedObservation<ChromeKeyboardControllerClient,
                           ChromeKeyboardControllerClient::Observer>
       chrome_keyboard_controller_client_observer_{this};
+
+  // Optional dependency overrides used in testing.
+  std::unique_ptr<AssistiveSuggesterSwitch> suggester_switch_;
 };
 
 }  // namespace input_method

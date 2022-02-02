@@ -27,6 +27,7 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -168,8 +169,8 @@ NSString* const kLogSiriShortcuts = @"LogSiriShortcuts";
 // Constants for deferred sending of queued feedback.
 NSString* const kSendQueuedFeedback = @"SendQueuedFeedback";
 
-// Constants for deferring the deletion of pre-upgrade crash reports.
-NSString* const kCleanupCrashReports = @"CleanupCrashReports";
+// Constants for deferring the upload of crash reports.
+NSString* const kUploadCrashReports = @"UploadCrashReports";
 
 // Constants for deferring the cleanup of snapshots on disk.
 NSString* const kCleanupSnapshots = @"CleanupSnapshots";
@@ -331,8 +332,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)startFreeMemoryMonitoring;
 // Asynchronously schedules the reset of the failed startup attempt counter.
 - (void)scheduleStartupAttemptReset;
-// Asynchronously schedules the cleanup of crash reports.
-- (void)scheduleCrashReportCleanup;
+// Asynchronously schedules the upload of crash reports.
+- (void)scheduleCrashReportUpload;
 // Asynchronously schedules the cleanup of discarded session files on disk.
 - (void)scheduleDiscardedSessionsCleanup;
 // Asynchronously schedules the cleanup of snapshots on disk.
@@ -870,12 +871,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                   }];
 }
 
-- (void)scheduleCrashReportCleanup {
+- (void)scheduleCrashReportUpload {
   [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kCleanupCrashReports
+      enqueueBlockNamed:kUploadCrashReports
                   block:^{
-                    bool afterUpgrade = [self isFirstLaunchAfterUpgrade];
-                    crash_helper::CleanupCrashReports(afterUpgrade);
+                    crash_helper::UploadCrashReports();
                   }];
 }
 
@@ -907,7 +907,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)scheduleStartupCleanupTasks {
-  [self scheduleCrashReportCleanup];
+  [self scheduleCrashReportUpload];
 
   // ClearSessionCookies() is not synchronous.
   if (cookie_util::ShouldClearSessionCookies()) {
@@ -986,12 +986,25 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // field trial infrastruction isn't in extensions. Save the necessary values to
 // NSUserDefaults here.
 - (void)saveFieldTrialValuesForExtensions {
+  using password_manager::features::kIOSEnablePasswordManagerBrandingUpdate;
+
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
   NSNumber* passwordCreationValue = [NSNumber
       numberWithBool:base::FeatureList::IsEnabled(kPasswordCreationEnabled)];
   NSNumber* passwordCreationVersion =
       [NSNumber numberWithInt:kPasswordCreationFeatureVersion];
+
+  NSNumber* credentialProviderExtensionPromoValue =
+      [NSNumber numberWithBool:base::FeatureList::IsEnabled(
+                                   kCredentialProviderExtensionPromo)];
+  NSNumber* credentialProviderExtensionPromoVersion =
+      [NSNumber numberWithInt:kCredentialProviderExtensionPromoFeatureVersion];
+
+  NSNumber* passwordManagerBrandingUpdateValue =
+      @(base::FeatureList::IsEnabled(kIOSEnablePasswordManagerBrandingUpdate));
+  NSNumber* passwordManagerBrandingUpdateVersion =
+      [NSNumber numberWithInt:kPasswordManagerBrandingUpdateFeatureVersion];
 
   // Add other field trial values here if they are needed by extensions.
   // The general format is
@@ -1005,6 +1018,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     base::SysUTF8ToNSString(kPasswordCreationEnabled.name) : @{
       kFieldTrialValueKey : passwordCreationValue,
       kFieldTrialVersionKey : passwordCreationVersion,
+    },
+    base::SysUTF8ToNSString(kCredentialProviderExtensionPromo.name) : @{
+      kFieldTrialValueKey : credentialProviderExtensionPromoValue,
+      kFieldTrialVersionKey : credentialProviderExtensionPromoVersion,
+    },
+    base::SysUTF8ToNSString(kIOSEnablePasswordManagerBrandingUpdate.name) : @{
+      kFieldTrialValueKey : passwordManagerBrandingUpdateValue,
+      kFieldTrialVersionKey : passwordManagerBrandingUpdateVersion,
     }
   };
   [sharedDefaults setObject:fieldTrialValues
@@ -1138,7 +1159,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)crashIfRequested {
   if (experimental_flags::IsStartupCrashEnabled()) {
-    // Flush out the value cached for breakpad::SetUploadingEnabled().
+    // Flush out the value cached for crash_helper::SetEnabled().
     [[NSUserDefaults standardUserDefaults] synchronize];
 
     int* x = NULL;

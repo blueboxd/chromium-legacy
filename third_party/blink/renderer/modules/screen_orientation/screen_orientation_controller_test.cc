@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/ignore_result.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -61,7 +62,7 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
 class ScreenOrientationControllerTest : public PageTestBase {
  protected:
   void SetUp() override {
-    PageTestBase::SetUp(IntSize());
+    PageTestBase::SetUp(gfx::Size());
     HeapMojoAssociatedRemote<device::mojom::blink::ScreenOrientation>
         screen_orientation(GetFrame().DomWindow());
     ignore_result(screen_orientation.BindNewEndpointAndPassDedicatedReceiver());

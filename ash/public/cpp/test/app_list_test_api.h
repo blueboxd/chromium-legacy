@@ -16,6 +16,8 @@ class View;
 }
 
 namespace ash {
+class AppsGridView;
+class AppListModel;
 class PaginationModel;
 
 // Accesses ash data for app list view testing.
@@ -25,6 +27,19 @@ class ASH_EXPORT AppListTestApi {
   ~AppListTestApi();
   AppListTestApi(const AppListTestApi& other) = delete;
   AppListTestApi& operator=(const AppListTestApi& other) = delete;
+
+  // Returns the active app list model.
+  AppListModel* GetAppListModel();
+
+  // Waits for the bubble launcher window to open on the primary display.
+  // `wait_for_opening_animation` indicates whether to wait for the window
+  // opening animation. See AppListBubblePresenter::Show(). Only used with
+  // productivity launcher in clamshell mode.
+  void WaitForBubbleWindow(bool wait_for_opening_animation);
+
+  // Waits until all the animations on the app list widget end. No operations
+  // if the app list widget is already idle.
+  void WaitUntilAppListAnimationIdle();
 
   // Returns whether there is an item for |app_id|.
   bool HasApp(const std::string& app_id);
@@ -54,14 +69,27 @@ class ASH_EXPORT AppListTestApi {
   // Returns the item count of the top list.
   int GetTopListItemCount();
 
+  // Returns the last app list item view in the top level apps grid. Requires
+  // the app list UI to be shown.
+  views::View* GetLastItemInAppsGridView();
+
   // Returns the pagination model.
   PaginationModel* GetPaginationModel();
 
   // Updates the paged view structure.
   void UpdatePagedViewStructure();
 
-  // Returns the view able to trigger app list sort with `order`.
-  views::View* GetViewForAppListSort(AppListSortOrder order);
+  // Returns the top level apps grid view. Could be ScrollableAppsGridView if
+  // bubble launcher is enabled or PagedAppsGridView otherwise.
+  AppsGridView* GetTopLevelAppsGridView();
+
+  // Returns the app list bubble's undo button that reverts the temporary
+  // sorting order when triggered.
+  views::View* GetBubbleReorderUndoButton();
+
+  // Returns the visibility of the app list bubble's undo toast where the undo
+  // button is located.
+  bool GetBubbleReorderUndoToastVisibility() const;
 };
 
 }  // namespace ash

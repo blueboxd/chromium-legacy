@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 #include "ui/aura/env.h"
@@ -22,6 +21,8 @@ class AshTestSuite : public base::TestSuite {
   AshTestSuite& operator=(const AshTestSuite&) = delete;
 
   ~AshTestSuite() override;
+
+  static void LoadTestResources();
 
  protected:
   // base::TestSuite:

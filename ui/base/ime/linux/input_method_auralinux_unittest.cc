@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -152,6 +151,8 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(rs.str()));
     TestResult::GetInstance()->RecordAction(base::ASCIIToUTF16(re.str()));
   }
+
+  void SetContentType(TextInputType input_type, int input_flags) override {}
 
  private:
   LinuxInputMethodContextDelegate* delegate_;

@@ -11,6 +11,9 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -45,9 +48,6 @@
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_prefs.h"
-#include "components/arc/arc_util.h"
 #include "components/embedder_support/user_agent_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -149,7 +149,7 @@ bool IsUnaffiliatedArcAllowed() {
         return true;
     }
   }
-  if (ash::CrosSettings::Get()->GetBoolean(chromeos::kUnaffiliatedArcAllowed,
+  if (ash::CrosSettings::Get()->GetBoolean(ash::kUnaffiliatedArcAllowed,
                                            &arc_allowed)) {
     return arc_allowed;
   }
@@ -535,7 +535,7 @@ bool IsArcStatsReportingEnabled() {
   }
 
   bool pref = false;
-  ash::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref, &pref);
+  ash::CrosSettings::Get()->GetBoolean(ash::kStatsReportingPref, &pref);
   return pref;
 }
 
@@ -626,6 +626,8 @@ aura::Window* GetArcWindow(int32_t task_id) {
 std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
     Profile* profile,
     const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   scoped_refptr<content::SiteInstance> site_instance =
       tab_util::GetSiteInstanceForNewTab(profile, url);
   content::WebContents::CreateParams create_params(profile, site_instance);
@@ -643,7 +645,8 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
   ua_override.ua_string_override = content::BuildUserAgentFromOSAndProduct(
       kOsOverrideForTabletSite, product);
 
-  ua_override.ua_metadata_override = embedder_support::GetUserAgentMetadata();
+  ua_override.ua_metadata_override =
+      embedder_support::GetUserAgentMetadata(g_browser_process->local_state());
   ua_override.ua_metadata_override->platform = "Android";
   ua_override.ua_metadata_override->platform_version = "9";
   ua_override.ua_metadata_override->model = "Chrome tablet";
@@ -659,8 +662,9 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
   web_contents->GetController().LoadURLWithParams(load_url_params);
 
   // Add a flag to remember this tab originated in the ARC context.
-  web_contents->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                            std::make_unique<arc::ArcWebContentsData>());
+  web_contents->SetUserData(
+      &arc::ArcWebContentsData::kArcTransitionFlag,
+      std::make_unique<arc::ArcWebContentsData>(web_contents.get()));
 
   return web_contents;
 }

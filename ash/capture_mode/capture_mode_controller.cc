@@ -497,51 +497,18 @@ void CaptureModeController::EnableAudioRecording(bool enable_audio_recording) {
 }
 
 void CaptureModeController::Start(CaptureModeEntryType entry_type) {
-  if (capture_mode_session_)
+  if (capture_mode_session_ || pending_dlp_check_)
     return;
 
   if (!delegate_->IsCaptureAllowedByPolicy()) {
     ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
     return;
   }
-  if (delegate_->IsCaptureModeInitRestrictedByDlp()) {
-    ShowDisabledNotification(CaptureAllowance::kDisallowedByDlp);
-    return;
-  }
 
-  // Starting capture mode from the Projector app will put it in a special mode
-  // where only video recording is allowed, with audio recording enabled.
-  bool for_projector = false;
-
-  // Before we start the session, if video recording is in progress, we need to
-  // set the current type to image, as we can't have more than one recording at
-  // a time. The video toggle button in the capture mode bar will be disabled.
-  if (is_recording_in_progress()) {
-    SetType(CaptureModeType::kImage);
-  } else if (entry_type == CaptureModeEntryType::kProjector) {
-    DCHECK(features::IsProjectorEnabled());
-    for_projector = true;
-    // TODO(afakhry): Discuss with PM whether we want this to affect the audio
-    // settings of future generic capture mode sessions.
-    enable_audio_recording_ = true;
-    SetType(CaptureModeType::kVideo);
-  }
-
-  RecordCaptureModeEntryType(entry_type);
-  // Reset the user capture region if enough time has passed as it can be
-  // annoying to still have the old capture region from the previous session
-  // long time ago.
-  if (!user_capture_region_.IsEmpty() &&
-      base::TimeTicks::Now() - last_capture_region_update_time_ >
-          kResetCaptureRegionDuration) {
-    SetUserCaptureRegion(gfx::Rect(), /*by_user=*/false);
-  }
-
-  delegate_->OnSessionStateChanged(/*started=*/true);
-
-  capture_mode_session_ =
-      std::make_unique<CaptureModeSession>(this, for_projector);
-  capture_mode_session_->Initialize();
+  pending_dlp_check_ = true;
+  delegate_->CheckCaptureModeInitRestrictionByDlp(base::BindOnce(
+      &CaptureModeController::OnDlpRestrictionCheckedAtSessionInit,
+      weak_ptr_factory_.GetWeakPtr(), entry_type));
 }
 
 void CaptureModeController::Stop() {
@@ -647,64 +614,39 @@ CaptureModeController::GetCurrentCaptureFolder() const {
 }
 
 void CaptureModeController::CaptureScreenshotsOfAllDisplays() {
+  if (pending_dlp_check_)
+    return;
+
   if (!delegate_->IsCaptureAllowedByPolicy()) {
     ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
     return;
   }
-  if (delegate_->IsCaptureModeInitRestrictedByDlp()) {
-    ShowDisabledNotification(CaptureAllowance::kDisallowedByDlp);
-    return;
-  }
-  // Get a vector of RootWindowControllers with primary root window at first.
-  const std::vector<RootWindowController*> controllers =
-      RootWindowController::root_window_controllers();
-  // Capture screenshot for each individual display.
-  int display_index = 1;
-  for (RootWindowController* controller : controllers) {
-    // TODO(shidi): Check with UX what notification should show if
-    // some (but not all) of the displays have restricted content and
-    // whether we should localize the display name.
-    const CaptureParams capture_params{controller->GetRootWindow(),
-                                       controller->GetRootWindow()->bounds()};
-    CaptureImage(capture_params, controllers.size() == 1
-                                     ? BuildImagePath()
-                                     : BuildImagePathForDisplay(display_index));
-    ++display_index;
-  }
 
-  // Since this doesn't create a capture mode session, log metrics here.
-  RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
-  RecordCaptureModeConfiguration(CaptureModeType::kImage,
-                                 CaptureModeSource::kFullscreen,
-                                 /*audio_on=*/false);
+  pending_dlp_check_ = true;
+  delegate_->CheckCaptureModeInitRestrictionByDlp(base::BindOnce(
+      &CaptureModeController::
+          OnDlpRestrictionCheckedAtCaptureScreenshotsOfAllDisplays,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CaptureModeController::PerformCapture() {
   DCHECK(IsActive());
+
+  if (pending_dlp_check_)
+    return;
+
   const absl::optional<CaptureParams> capture_params = GetCaptureParams();
   if (!capture_params)
     return;
 
-  const CaptureAllowance allowance =
-      IsCaptureAllowedByEnterprisePolicies(*capture_params);
-  if (allowance != CaptureAllowance::kAllowed) {
-    ShowDisabledNotification(allowance);
-    Stop();
-    return;
-  }
-
-  if (type_ == CaptureModeType::kImage) {
-    CaptureImage(*capture_params, BuildImagePath());
-  } else {
-    // HDCP affects only video recording.
-    if (ShouldBlockRecordingForContentProtection(capture_params->window)) {
-      ShowDisabledNotification(CaptureAllowance::kDisallowedByHdcp);
-      Stop();
-      return;
-    }
-
-    CaptureVideo(*capture_params);
-  }
+  DCHECK(!pending_dlp_check_);
+  pending_dlp_check_ = true;
+  capture_mode_session_->OnWaitingForDlpConfirmationStarted();
+  delegate_->CheckCaptureOperationRestrictionByDlp(
+      capture_params->window, capture_params->bounds,
+      base::BindOnce(
+          &CaptureModeController::OnDlpRestrictionCheckedAtPerformingCapture,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CaptureModeController::EndVideoRecording(EndRecordingReason reason) {
@@ -756,6 +698,16 @@ void CaptureModeController::ToggleRecordingOverlayEnabled() {
 std::unique_ptr<RecordingOverlayView>
 CaptureModeController::CreateRecordingOverlayView() {
   return delegate_->CreateRecordingOverlayView();
+}
+
+bool CaptureModeController::IsRootDriveFsPath(
+    const base::FilePath& path) const {
+  base::FilePath mounted_path;
+  if (delegate_->GetDriveFsMountPointPath(&mounted_path)) {
+    if (path == mounted_path.Append("root"))
+      return true;
+  }
+  return false;
 }
 
 void CaptureModeController::OnRecordingEnded(
@@ -1028,9 +980,8 @@ CaptureAllowance CaptureModeController::IsCaptureAllowedByEnterprisePolicies(
   if (!delegate_->IsCaptureAllowedByPolicy()) {
     return CaptureAllowance::kDisallowedByPolicy;
   }
-  if (!delegate_->IsCaptureAllowedByDlp(
-          capture_params.window, capture_params.bounds,
-          /*for_video=*/type_ == CaptureModeType::kVideo)) {
+  if (!delegate_->IsCaptureAllowedByDlp(capture_params.window,
+                                        capture_params.bounds)) {
     return CaptureAllowance::kDisallowedByDlp;
   }
 
@@ -1349,51 +1300,16 @@ void CaptureModeController::OnVideoRecordCountDownFinished() {
     return;
   }
 
-  // During the 3-second count down, screen content might have changed such that
-  // admin-restricted or HDCP content became present. We must check again.
-  const CaptureAllowance allowance =
-      IsCaptureAllowedByEnterprisePolicies(*capture_params);
-  if (allowance != CaptureAllowance::kAllowed) {
-    Stop();
-    ShowDisabledNotification(allowance);
-    return;
-  }
-
-  if (ShouldBlockRecordingForContentProtection(capture_params->window)) {
-    Stop();
-    ShowDisabledNotification(CaptureAllowance::kDisallowedByHdcp);
-    return;
-  }
-
-  // In Projector mode, the creation of the DriveFS folder that will host the
-  // video is asynchronous. We don't want the user to be able to bail out of the
-  // session at this point, since we don't want to create that folder in vain.
-  capture_mode_session_->set_can_exit_on_escape(false);
-
-  if (capture_mode_session_->is_in_projector_mode()) {
-    ProjectorControllerImpl::Get()->CreateScreencastContainerFolder(
-        base::BindOnce(
-            &CaptureModeController::OnProjectorContainerFolderCreated,
-            weak_ptr_factory_.GetWeakPtr(), *capture_params));
-    return;
-  }
-  const base::FilePath current_path = BuildVideoPath();
-
-  // If the current capture folder is not the default `Downloads` folder, we
-  // need to validate the current folder first before starting the video
-  // recording.
-  if (!GetCurrentCaptureFolder().is_default_downloads_folder) {
-    blocking_task_runner_->PostTaskAndReplyWithResult(
-        FROM_HERE,
-        base::BindOnce(&SelectFilePathForCapturedFile, current_path,
-                       GetFallbackFilePathFromFile(current_path)),
-        base::BindOnce(&CaptureModeController::BeginVideoRecording,
-                       weak_ptr_factory_.GetWeakPtr(), *capture_params,
-                       /*for_projector=*/false));
-    return;
-  }
-
-  BeginVideoRecording(*capture_params, /*for_projector=*/false, current_path);
+  // During the 3-second count down, screen content might have changed. We must
+  // check again the DLP restrictions.
+  DCHECK(!pending_dlp_check_);
+  pending_dlp_check_ = true;
+  capture_mode_session_->OnWaitingForDlpConfirmationStarted();
+  delegate_->CheckCaptureOperationRestrictionByDlp(
+      capture_params->window, capture_params->bounds,
+      base::BindOnce(
+          &CaptureModeController::OnDlpRestrictionCheckedAtCountDownFinished,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CaptureModeController::OnProjectorContainerFolderCreated(
@@ -1471,6 +1387,158 @@ void CaptureModeController::InterruptVideoRecording() {
   EndVideoRecording(EndRecordingReason::kDlpInterruption);
 }
 
+void CaptureModeController::OnDlpRestrictionCheckedAtPerformingCapture(
+    bool proceed) {
+  DCHECK(IsActive());
+
+  pending_dlp_check_ = false;
+  capture_mode_session_->OnWaitingForDlpConfirmationEnded(proceed);
+
+  if (!proceed) {
+    Stop();
+    return;
+  }
+
+  const absl::optional<CaptureParams> capture_params = GetCaptureParams();
+  DCHECK(capture_params);
+
+  if (!delegate_->IsCaptureAllowedByPolicy()) {
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
+    Stop();
+    return;
+  }
+
+  if (type_ == CaptureModeType::kImage) {
+    CaptureImage(*capture_params, BuildImagePath());
+  } else {
+    // HDCP affects only video recording.
+    if (ShouldBlockRecordingForContentProtection(capture_params->window)) {
+      ShowDisabledNotification(CaptureAllowance::kDisallowedByHdcp);
+      Stop();
+      return;
+    }
+
+    CaptureVideo(*capture_params);
+  }
+}
+
+void CaptureModeController::OnDlpRestrictionCheckedAtCountDownFinished(
+    bool proceed) {
+  DCHECK(IsActive());
+
+  pending_dlp_check_ = false;
+  capture_mode_session_->OnWaitingForDlpConfirmationEnded(proceed);
+
+  if (!proceed) {
+    Stop();
+    return;
+  }
+
+  const absl::optional<CaptureParams> capture_params = GetCaptureParams();
+  if (!capture_params) {
+    Stop();
+    return;
+  }
+
+  // Now that we're done with DLP restrictions checks, we can perform the policy
+  // and HDCP checks, which may have changed during the 3-second count down and
+  // during the time the DLP warning dialog was shown.
+  if (!delegate_->IsCaptureAllowedByPolicy()) {
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
+    Stop();
+    return;
+  }
+
+  if (ShouldBlockRecordingForContentProtection(capture_params->window)) {
+    Stop();
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByHdcp);
+    return;
+  }
+
+  // In Projector mode, the creation of the DriveFS folder that will host the
+  // video is asynchronous. We don't want the user to be able to bail out of the
+  // session at this point, since we don't want to create that folder in vain.
+  capture_mode_session_->set_can_exit_on_escape(false);
+
+  if (capture_mode_session_->is_in_projector_mode()) {
+    ProjectorControllerImpl::Get()->CreateScreencastContainerFolder(
+        base::BindOnce(
+            &CaptureModeController::OnProjectorContainerFolderCreated,
+            weak_ptr_factory_.GetWeakPtr(), *capture_params));
+    return;
+  }
+  const base::FilePath current_path = BuildVideoPath();
+
+  // If the current capture folder is not the default `Downloads` folder, we
+  // need to validate the current folder first before starting the video
+  // recording.
+  if (!GetCurrentCaptureFolder().is_default_downloads_folder) {
+    blocking_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE,
+        base::BindOnce(&SelectFilePathForCapturedFile, current_path,
+                       GetFallbackFilePathFromFile(current_path)),
+        base::BindOnce(&CaptureModeController::BeginVideoRecording,
+                       weak_ptr_factory_.GetWeakPtr(), *capture_params,
+                       /*for_projector=*/false));
+    return;
+  }
+
+  BeginVideoRecording(*capture_params, /*for_projector=*/false, current_path);
+}
+
+void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
+    CaptureModeEntryType entry_type,
+    bool proceed) {
+  pending_dlp_check_ = false;
+
+  if (!proceed)
+    return;
+
+  DCHECK(!capture_mode_session_);
+
+  // Check policy again even though we checked in Start(), but due to the DLP
+  // warning dialog can be accepted after a long wait, maybe something changed
+  // in the middle.
+  if (!delegate_->IsCaptureAllowedByPolicy()) {
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
+    return;
+  }
+
+  // Starting capture mode from the Projector app will put it in a special mode
+  // where only video recording is allowed, with audio recording enabled.
+  bool for_projector = false;
+
+  // Before we start the session, if video recording is in progress, we need to
+  // set the current type to image, as we can't have more than one recording at
+  // a time. The video toggle button in the capture mode bar will be disabled.
+  if (is_recording_in_progress()) {
+    SetType(CaptureModeType::kImage);
+  } else if (entry_type == CaptureModeEntryType::kProjector) {
+    DCHECK(features::IsProjectorEnabled());
+    for_projector = true;
+    // TODO(afakhry): Discuss with PM whether we want this to affect the audio
+    // settings of future generic capture mode sessions.
+    enable_audio_recording_ = true;
+    SetType(CaptureModeType::kVideo);
+  }
+
+  RecordCaptureModeEntryType(entry_type);
+  // Reset the user capture region if enough time has passed as it can be
+  // annoying to still have the old capture region from the previous session
+  // long time ago.
+  if (!user_capture_region_.IsEmpty() &&
+      base::TimeTicks::Now() - last_capture_region_update_time_ >
+          kResetCaptureRegionDuration) {
+    SetUserCaptureRegion(gfx::Rect(), /*by_user=*/false);
+  }
+
+  delegate_->OnSessionStateChanged(/*started=*/true);
+
+  capture_mode_session_ =
+      std::make_unique<CaptureModeSession>(this, for_projector);
+  capture_mode_session_->Initialize();
+}
+
 void CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd(
     const gfx::ImageSkia& video_thumbnail,
     bool success,
@@ -1492,6 +1560,43 @@ void CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd(
   recording_start_time_ = base::TimeTicks();
 }
 
+void CaptureModeController::
+    OnDlpRestrictionCheckedAtCaptureScreenshotsOfAllDisplays(bool proceed) {
+  pending_dlp_check_ = false;
+  if (!proceed)
+    return;
+
+  // Due to fact that the DLP warning dialog may take a while, check policy
+  // again even though we checked in CaptureScreenshotsOfAllDisplays().
+  if (!delegate_->IsCaptureAllowedByPolicy()) {
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
+    return;
+  }
+
+  // Get a vector of RootWindowControllers with primary root window at first.
+  const std::vector<RootWindowController*> controllers =
+      RootWindowController::root_window_controllers();
+  // Capture screenshot for each individual display.
+  int display_index = 1;
+  for (RootWindowController* controller : controllers) {
+    // TODO(shidi): Check with UX what notification should show if
+    // some (but not all) of the displays have restricted content and
+    // whether we should localize the display name.
+    const CaptureParams capture_params{controller->GetRootWindow(),
+                                       controller->GetRootWindow()->bounds()};
+    CaptureImage(capture_params, controllers.size() == 1
+                                     ? BuildImagePath()
+                                     : BuildImagePathForDisplay(display_index));
+    ++display_index;
+  }
+
+  // Since this doesn't create a capture mode session, log metrics here.
+  RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
+  RecordCaptureModeConfiguration(CaptureModeType::kImage,
+                                 CaptureModeSource::kFullscreen,
+                                 /*audio_on=*/false);
+}
+
 CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(
     const base::FilePath& path) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
@@ -1500,10 +1605,11 @@ CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(
     return CaptureModeSaveToLocation::kDefault;
   base::FilePath mounted_path;
   if (delegate_->GetDriveFsMountPointPath(&mounted_path)) {
-    if (dir_path == mounted_path)
+    const auto drive_root_path = mounted_path.Append("root");
+    if (dir_path == drive_root_path)
       return CaptureModeSaveToLocation::kDrive;
 
-    if (mounted_path.IsParent(dir_path))
+    if (drive_root_path.IsParent(dir_path))
       return CaptureModeSaveToLocation::kDriveFolder;
   }
   return CaptureModeSaveToLocation::kCustomizedFolder;

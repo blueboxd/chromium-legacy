@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -52,7 +51,7 @@ ActivityLogDatabasePolicy::ActivityLogDatabasePolicy(
 
 void ActivityLogDatabasePolicy::Init() {
   LOG(WARNING) << "Scheduling init";
-  ScheduleAndForget(db_, &ActivityDatabase::Init, database_path_);
+  ScheduleAndForget(db_.get(), &ActivityDatabase::Init, database_path_);
 }
 
 void ActivityLogDatabasePolicy::Flush() {

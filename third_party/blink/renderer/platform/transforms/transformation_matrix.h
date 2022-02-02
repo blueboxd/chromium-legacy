@@ -34,12 +34,12 @@
 
 #include "build/build_config.h"
 #include "skia/ext/skia_matrix_44.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/skia/include/core/SkM44.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class PointF;
@@ -204,10 +204,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   // Map a 2D point through the transform, returning a 2D point.
   // Note that this ignores the z component, effectively projecting the point
   // into the z=0 plane.
-  FloatPoint MapPoint(const FloatPoint&) const;
-  gfx::PointF MapPoint(const gfx::PointF& p) const {
-    return ToGfxPointF(MapPoint(FloatPoint(p)));
-  }
+  gfx::PointF MapPoint(const gfx::PointF&) const;
 
   // If the matrix has 3D components, the z component of the result is
   // dropped, effectively projecting the rect into the z=0 plane
@@ -218,10 +215,8 @@ class PLATFORM_EXPORT TransformationMatrix {
 
   // Rounds the resulting mapped rectangle out. This is helpful for bounding
   // box computations but may not be what is wanted in other contexts.
-  IntRect MapRect(const IntRect&) const;
-  gfx::Rect MapRect(const gfx::Rect& r) const {
-    return ToGfxRect(MapRect(IntRect(r)));
-  }
+  gfx::Rect MapRect(const gfx::Rect&) const;
+
   LayoutRect MapRect(const LayoutRect&) const;
 
   // If the matrix has 3D components, the z component of the result is
@@ -232,7 +227,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   // transform applied, by extending a ray perpendicular to the source plane and
   // computing the local x,y position of the point where that ray intersects
   // with the destination plane.
-  FloatPoint ProjectPoint(const FloatPoint&, bool* clamped = nullptr) const;
+  gfx::PointF ProjectPoint(const gfx::PointF&, bool* clamped = nullptr) const;
   // Projects the four corners of the quad.
   FloatQuad ProjectQuad(const FloatQuad&) const;
   // Projects the four corners of the quad and takes a bounding box,
@@ -319,7 +314,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   // Append translation after existing operations. i.e.
   // TransformationMatrix t2 = t1;
   // t2.PostTranslate(x, y);
-  // t2.MapPoint(p) == t1.MapPoint(p) + FloatPoint(x, y)
+  // t2.MapPoint(p) == t1.MapPoint(p) + gfx::PointF(x, y)
   TransformationMatrix& PostTranslate(double tx, double ty);
   TransformationMatrix& PostTranslate3d(double tx, double ty, double tz);
 
@@ -494,7 +489,7 @@ class PLATFORM_EXPORT TransformationMatrix {
   String ToString(bool as_matrix = false) const;
 
  private:
-  FloatPoint InternalMapPoint(const FloatPoint& source_point) const;
+  gfx::PointF InternalMapPoint(const gfx::PointF& source_point) const;
   FloatPoint3D InternalMapPoint(const FloatPoint3D& source_point) const;
 
   void SetMatrix(const Matrix4& m) { memcpy(&matrix_, &m, sizeof(Matrix4)); }

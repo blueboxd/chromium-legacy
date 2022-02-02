@@ -51,6 +51,7 @@ class AppListItemList;
 class AppListItemView;
 class AppListModel;
 class AppListViewDelegate;
+class AppsGridContextMenu;
 class AppsGridViewFocusDelegate;
 class AppsGridViewFolderDelegate;
 class PulsingBlockView;
@@ -262,12 +263,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   // AshTestBase.
   bool IsTabletMode() const;
 
-  // Returns the expected bounds rect in grid coordinates for the item with the
-  // provided id, if the item is in the first page.
-  // If the item is not in the current page (or cannot be found), this will
-  // return 1x1 rectangle in the apps grid center.
-  gfx::Rect GetExpectedItemBoundsInFirstPage(const std::string& id) const;
-
   // Whether the provided view is hidden to facilitate drag operation (for
   // example, the drag view for which a drag icon proxy has been created).
   bool IsViewHiddenForDrag(const views::View* view) const;
@@ -316,6 +311,8 @@ class ASH_EXPORT AppsGridView : public views::View,
   }
 
   base::OneShotTimer* reorder_timer_for_test() { return &reorder_timer_; }
+
+  AppsGridContextMenu* context_menu_for_test() { return context_menu_.get(); }
 
  protected:
   // The cardified apps grid should be scaled down by this factor.
@@ -620,12 +617,6 @@ class ASH_EXPORT AppsGridView : public views::View,
   bool ReparentItemToAnotherFolder(AppListItem* item_view,
                                    const GridIndex& target);
 
-  // If there is only 1 item left in the source folder after reparenting an item
-  // from it, updates data model to remove last item from the source folder and
-  // remove the source folder.
-  void RemoveLastItemFromReparentItemFolderIfNecessary(
-      const std::string& source_folder_id);
-
   // Removes the AppListItemView at |index| in |view_model_|, removes it from
   // view structure as well and deletes it.
   void DeleteItemViewAtIndex(int index);
@@ -901,6 +892,8 @@ class ASH_EXPORT AppsGridView : public views::View,
 
   // The location when |current_ghost_view_| was shown.
   GridIndex current_ghost_location_;
+
+  std::unique_ptr<AppsGridContextMenu> context_menu_;
 };
 
 }  // namespace ash

@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/metrics/arc_metrics_constants.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -35,12 +37,11 @@
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/features.h"
-#include "components/app_restore/full_restore_read_handler.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_properties.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/exo/wm_helper.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -286,13 +287,13 @@ void ArcAppLaunchHandler::OnWindowActivated(
   if (!session_id.has_value())
     return;
 
+  auto it = session_id_to_window_id_.find(session_id.value());
+  if (it == session_id_to_window_id_.end())
+    return;
+
   const std::string* arc_app_id =
       new_active->GetProperty(::app_restore::kAppIdKey);
   if (!arc_app_id || arc_app_id->empty() || !IsAppReady(*arc_app_id))
-    return;
-
-  auto it = session_id_to_window_id_.find(session_id.value());
-  if (it == session_id_to_window_id_.end())
     return;
 
   RemoveWindow(*arc_app_id, it->second);
@@ -413,28 +414,28 @@ void ArcAppLaunchHandler::PrepareAppLaunching(const std::string& app_id) {
 
     DCHECK(data_it.second->event_flag.has_value());
 
-    // Set an ARC session id to find the restore window id based on the new
-    // created ARC task id in FullRestoreReadHandler.
-    int32_t arc_session_id = ::app_restore::GetArcSessionId();
+    // Set an ARC session id to find the restore window id based on the newly
+    // created ARC task id.
+    const int32_t arc_session_id = ::app_restore::GetArcSessionId();
     ::app_restore::SetArcSessionIdForWindowId(arc_session_id, data_it.first);
     window_id_to_session_id_[data_it.first] = arc_session_id;
     session_id_to_window_id_[arc_session_id] = data_it.first;
 
     bool launch_ghost_window = false;
 #if BUILDFLAG(ENABLE_WAYLAND_SERVER)
-    if (window_handler_ && (data_it.second->bounds_in_root.has_value() ||
-                            data_it.second->current_bounds.has_value())) {
-      RecordArcGhostWindowLaunch(/*is_arc_ghost_window=*/true);
-      window_handler_->LaunchArcGhostWindow(app_id, arc_session_id,
-                                            data_it.second.get());
+    if (window_handler_ &&
+        (data_it.second->bounds_in_root.has_value() ||
+         data_it.second->current_bounds.has_value()) &&
+        window_handler_->LaunchArcGhostWindow(app_id, arc_session_id,
+                                              data_it.second.get())) {
       launch_ghost_window = true;
     } else {
-      RecordArcGhostWindowLaunch(/*is_arc_ghost_window=*/false);
       // Only record bounds state when no ghost window launch.
       RecordLaunchBoundsState(data_it.second->bounds_in_root.has_value(),
                               data_it.second->current_bounds.has_value());
     }
 #endif
+    RecordArcGhostWindowLaunch(launch_ghost_window);
 
     const auto& file_path = handler_->profile()->GetPath();
     int32_t event_flags = data_it.second->event_flag.value();
@@ -528,6 +529,7 @@ bool ArcAppLaunchHandler::IsUnderCPUUsageLimiting() {
 }
 
 bool ArcAppLaunchHandler::IsAppReady(const std::string& app_id) {
+  DCHECK(handler_);
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(handler_->profile());
   if (!prefs)
     return false;
@@ -619,9 +621,9 @@ void ArcAppLaunchHandler::LaunchApp(const std::string& app_id,
     window_info->window_id = window_it->second;
     window_id_to_session_id_.erase(window_it);
   } else {
-    // Set an ARC session id to find the restore window id based on the new
-    // created ARC task id in FullRestoreReadHandler.
-    int32_t arc_session_id = ::app_restore::GetArcSessionId();
+    // Set an ARC session id to find the restore window id based on the newly
+    // created ARC task id.
+    const int32_t arc_session_id = ::app_restore::GetArcSessionId();
     window_info->window_id = arc_session_id;
     ::app_restore::SetArcSessionIdForWindowId(arc_session_id, window_id);
     window_id_to_session_id_[window_id] = arc_session_id;
@@ -805,10 +807,6 @@ void ArcAppLaunchHandler::RecordArcGhostWindowLaunch(bool is_arc_ghost_window) {
       base::UmaHistogramEnumeration(kNoGhostWindowReasonHistogram,
                                     NoGhostWindowReason::kFlagDisabled);
     }
-    if (!arc::IsArcVmEnabled()) {
-      base::UmaHistogramEnumeration(kNoGhostWindowReasonHistogram,
-                                    NoGhostWindowReason::kNotARCVM);
-    }
     if (!exo::WMHelper::HasInstance()) {
       base::UmaHistogramEnumeration(kNoGhostWindowReasonHistogram,
                                     NoGhostWindowReason::kNoExoHelper);
@@ -879,7 +877,7 @@ void ArcAppLaunchHandler::RecordRestoreResult() {
 #endif
 }
 
-chromeos::SchedulerConfigurationManager*
+ash::SchedulerConfigurationManager*
 ArcAppLaunchHandler::GetSchedulerConfigurationManager() {
   if (!g_browser_process || !g_browser_process->platform_part())
     return nullptr;

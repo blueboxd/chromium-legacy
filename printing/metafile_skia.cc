@@ -14,6 +14,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -44,6 +45,10 @@
 #endif  // defined(OS_ANDROID)
 
 namespace {
+
+// `InitFromData()` should make a copy of data for the safety of all operations
+// which would then operate upon that.
+constexpr bool kInitFromDataCopyData = true;
 
 bool WriteAssetToBuffer(const SkStreamAsset* asset, void* buffer, size_t size) {
   // Calling duplicate() keeps original asset state unchanged.
@@ -79,7 +84,7 @@ struct MetafileSkiaData {
   ContentToProxyTokenMap subframe_content_info;
   std::map<uint32_t, sk_sp<SkPicture>> subframe_pics;
   int document_cookie = 0;
-  ContentProxySet* typeface_content_info = nullptr;
+  raw_ptr<ContentProxySet> typeface_content_info = nullptr;
 
   // The scale factor is used because Blink occasionally calls
   // PaintCanvas::getTotalMatrix() even though the total matrix is not as
@@ -119,7 +124,7 @@ void MetafileSkia::UtilizeTypefaceContext(
 // MetafileSkia does.
 bool MetafileSkia::InitFromData(base::span<const uint8_t> data) {
   data_->data_stream = std::make_unique<SkMemoryStream>(
-      data.data(), data.size(), /*copy_data=*/true);
+      data.data(), data.size(), kInitFromDataCopyData);
   return true;
 }
 
@@ -263,6 +268,11 @@ bool MetafileSkia::GetData(void* dst_buffer, uint32_t dst_buffer_size) const {
     return false;
   return WriteAssetToBuffer(data_->data_stream.get(), dst_buffer,
                             base::checked_cast<size_t>(dst_buffer_size));
+}
+
+bool MetafileSkia::ShouldCopySharedMemoryRegionData() const {
+  // When `InitFromData()` copies the data, the caller doesn't have to.
+  return !kInitFromDataCopyData;
 }
 
 mojom::MetafileDataType MetafileSkia::GetDataType() const {

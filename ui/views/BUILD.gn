@@ -496,10 +496,7 @@ component("views") {
   ]
 
   sources += get_target_outputs(":views_vector_icons")
-  configs += [
-    "//build/config:precompiled_headers",
-    "//build/config/compiler:noshadowing",
-  ]
+  configs += [ "//build/config:precompiled_headers" ]
   defines = [ "VIEWS_IMPLEMENTATION" ]
 
   deps = [
@@ -537,7 +534,7 @@ component("views") {
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base",
     "//ui/base/clipboard",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/dragdrop:types",
     "//ui/base/dragdrop/mojom:mojom_headers",
     "//ui/base/ime/init",
@@ -768,6 +765,7 @@ component("views") {
     }
     deps += [
       "//ui/aura",
+      "//ui/base/cursor/mojom:cursor_type_shared",
       "//ui/events",
       "//ui/platform_window",
       "//ui/platform_window/wm",
@@ -796,10 +794,7 @@ component("views") {
         "widget/desktop_aura/desktop_screen_position_client.cc",
         "widget/desktop_aura/desktop_window_tree_host.cc",
       ]
-      public_deps += [
-        "//ui/base/cursor",
-        "//ui/base/cursor/mojom:cursor_type",
-      ]
+      public_deps += [ "//ui/aura/cursor" ]
       if (is_win) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_win.h" ]
         sources += [

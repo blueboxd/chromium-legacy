@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -234,6 +233,7 @@ MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
     std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<MetricsWebContentsObserver>(*web_contents),
       in_foreground_(web_contents->GetVisibility() !=
                      content::Visibility::HIDDEN),
       embedder_interface_(std::move(embedder_interface)),

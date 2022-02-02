@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -22,15 +21,16 @@ namespace syscall_broker {
 
 class BrokerFilePermissionTester {
  public:
+  BrokerFilePermissionTester(const BrokerFilePermissionTester&) = delete;
+  BrokerFilePermissionTester& operator=(const BrokerFilePermissionTester&) =
+      delete;
+
   static bool ValidatePath(const char* path) {
     return BrokerFilePermission::ValidatePath(path);
   }
   static const char* GetErrorMessage() {
     return BrokerFilePermission::GetErrorMessageForTests();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrokerFilePermissionTester);
 };
 
 namespace {

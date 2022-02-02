@@ -8,8 +8,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -434,8 +434,8 @@ class TouchActionBrowserTest : public ContentBrowserTest {
   void CheckScrollOffset(
       bool wait_until_scrolled,
       const gfx::Vector2d& expected_scroll_position_after_scroll) {
-    gfx::Vector2dF default_scroll_offset;
-    gfx::Vector2dF root_scroll_offset =
+    gfx::PointF default_scroll_offset;
+    gfx::PointF root_scroll_offset =
         frame_observer_->LastRenderFrameMetadata().root_scroll_offset.value_or(
             default_scroll_offset);
 

@@ -53,7 +53,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/components/audio/cras_audio_handler.h"
-#include "chromeos/disks/disk_mount_manager.h"
+#include "ash/components/disks/disk_mount_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "extensions/shell/browser/shell_audio_controller_chromeos.h"
 #include "extensions/shell/browser/shell_network_controller_chromeos.h"
@@ -73,7 +73,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/lacros/lacros_dbus_thread_manager.h"
+#include "chromeos/lacros/dbus/lacros_dbus_thread_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
@@ -102,13 +102,11 @@ void CrashForTest() {
 }  // namespace
 
 ShellBrowserMainParts::ShellBrowserMainParts(
-    const content::MainFunctionParams& parameters,
+    content::MainFunctionParams parameters,
     ShellBrowserMainDelegate* browser_main_delegate)
     : extension_system_(nullptr),
-      parameters_(parameters),
-      run_message_loop_(true),
-      browser_main_delegate_(browser_main_delegate) {
-}
+      parameters_(std::move(parameters)),
+      browser_main_delegate_(browser_main_delegate) {}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() = default;
 
@@ -119,19 +117,31 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
   // D-Bus objects.
   chromeos::DBusThreadManager::Initialize();
   dbus::Bus* bus = chromeos::DBusThreadManager::Get()->GetSystemBus();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::LacrosDBusThreadManager::Initialize();
+  dbus::Bus* bus = chromeos::LacrosDBusThreadManager::Get()->GetSystemBus();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (bus) {
+    bluez::BluezDBusManager::Initialize(bus);
+  } else {
+    bluez::BluezDBusManager::InitializeFake();
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (bus) {
     chromeos::hermes_clients::Initialize(bus);
-    bluez::BluezDBusManager::Initialize(bus);
     chromeos::CrasAudioClient::Initialize(bus);
     chromeos::PowerManagerClient::Initialize(bus);
   } else {
     chromeos::hermes_clients::InitializeFakes();
-    bluez::BluezDBusManager::InitializeFake();
     chromeos::CrasAudioClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
   }
 
-  chromeos::disks::DiskMountManager::Initialize();
+  ash::disks::DiskMountManager::Initialize();
 
   chromeos::NetworkHandler::Initialize();
   network_controller_ = std::make_unique<ShellNetworkController>(
@@ -147,13 +157,12 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
   // See crbug.com/381852 and revision fb69f142.
   // TODO(michaelpg): Verify this works for target environments.
   ui::InitializeInputMethodForTesting();
-
-  bluez::BluezDBusManager::Initialize(nullptr /* system_bus */);
 #else
   ui::InitializeInputMethodForTesting();
 #endif
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  chromeos::LacrosDBusThreadManager::Initialize();
+
+#if defined(OS_LINUX)
+  bluez::BluezDBusManager::Initialize(nullptr /* system_bus */);
 #endif
 }
 
@@ -243,26 +252,18 @@ int ShellBrowserMainParts::PreMainMessageLoopRun() {
           ::switches::kBrowserCrashTest))
     CrashForTest();
 
-  if (parameters_.ui_task) {
-    // For running browser tests.
-    std::move(*parameters_.ui_task).Run();
-    delete parameters_.ui_task;
-    run_message_loop_ = false;
-  } else {
+  // Skip these steps in integration tests.
+  if (!parameters_.ui_task) {
     browser_main_delegate_->Start(browser_context_.get());
+    desktop_controller_->PreMainMessageLoopRun();
   }
-
-  desktop_controller_->PreMainMessageLoopRun();
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void ShellBrowserMainParts::WillRunMainMessageLoop(
     std::unique_ptr<base::RunLoop>& run_loop) {
-  if (run_message_loop_)
-    desktop_controller_->WillRunMainMessageLoop(run_loop);
-  else
-    run_loop.reset();
+  desktop_controller_->WillRunMainMessageLoop(run_loop);
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
@@ -301,23 +302,27 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 void ShellBrowserMainParts::PostDestroyThreads() {
   extensions_browser_client_.reset();
   ExtensionsBrowserClient::Set(nullptr);
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  chromeos::LacrosDBusThreadManager::Shutdown();
-#endif
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  network_controller_.reset();
-  chromeos::NetworkHandler::Shutdown();
-  chromeos::disks::DiskMountManager::Shutdown();
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
-  chromeos::PowerManagerClient::Shutdown();
-  chromeos::CrasAudioClient::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
-#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#elif defined(OS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   bluez::BluezDBusThreadManager::Shutdown();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  network_controller_.reset();
+  chromeos::NetworkHandler::Shutdown();
+  ash::disks::DiskMountManager::Shutdown();
+  chromeos::PowerManagerClient::Shutdown();
+  chromeos::CrasAudioClient::Shutdown();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  chromeos::DBusThreadManager::Shutdown();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  chromeos::LacrosDBusThreadManager::Shutdown();
 #endif
 }
 

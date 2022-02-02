@@ -15,8 +15,8 @@
 #include "chrome/browser/ui/views/autofill/payments/promo_code_label_button.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/payments/payments_bubble_closed_reasons.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_P(OfferNotificationBubbleViewsInteractiveUiTest,
   std::u16string clicked_button_tooltip = l10n_util::GetStringUTF16(
       IDS_AUTOFILL_PROMO_CODE_OFFER_BUTTON_TOOLTIP_CLICKED);
   auto* promo_code_label_button =
-      GetOfferNotificationBubbleViews()->promo_code_label_button_;
+      GetOfferNotificationBubbleViews()->promo_code_label_button_.get();
   EXPECT_EQ(normal_button_tooltip, promo_code_label_button->GetTooltipText());
   EXPECT_EQ(promo_code_label_button->GetText() + u" " + normal_button_tooltip,
             promo_code_label_button->GetAccessibleName());

@@ -142,7 +142,8 @@ char* ReserveMemoryFromGigaCage(pool_handle pool,
   // If `MarkUsed` was called earlier, the other thread could incorrectly
   // determine that the allocation had come form PartitionAlloc.
   if (ptr)
-    AddressPoolManager::GetInstance()->MarkUsed(pool, ptr, requested_size);
+    AddressPoolManager::GetInstance()->MarkUsed(
+        pool, reinterpret_cast<uintptr_t>(ptr), requested_size);
 #endif
 
   PA_DCHECK(!(reinterpret_cast<uintptr_t>(ptr) % kSuperPageSize));
@@ -293,7 +294,8 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
 
     auto* super_page_extent =
         reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
-            PartitionSuperPageToMetadataArea(reservation_start));
+            PartitionSuperPageToMetadataArea(
+                reinterpret_cast<uintptr_t>(reservation_start)));
     super_page_extent->root = root;
     // The new structures are all located inside a fresh system page so they
     // will all be zeroed out. These DCHECKs are for documentation and to assert
@@ -356,8 +358,9 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
     // Note that we didn't check above, because if we cannot even commit a
     // single page, then this is likely hopeless anyway, and we will crash very
     // soon.
-    const bool ok = root->TryRecommitSystemPagesForData(slot_start, slot_size,
-                                                        PageUpdatePermissions);
+    const bool ok = root->TryRecommitSystemPagesForData(
+        reinterpret_cast<uintptr_t>(slot_start), slot_size,
+        PageUpdatePermissions);
     if (!ok) {
       if (!return_null) {
         PartitionOutOfMemoryCommitFailure(root, slot_size);
@@ -366,8 +369,9 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
       {
         ScopedSyscallTimer<thread_safe> timer{root};
 #if !defined(PA_HAS_64_BITS_POINTERS)
-        AddressPoolManager::GetInstance()->MarkUnused(pool, reservation_start,
-                                                      reservation_size);
+        AddressPoolManager::GetInstance()->MarkUnused(
+            pool, reinterpret_cast<uintptr_t>(reservation_start),
+            reservation_size);
 #endif
         AddressPoolManager::GetInstance()->UnreserveAndDecommit(
             pool, reservation_start, reservation_size);
@@ -548,8 +552,9 @@ PartitionBucket<thread_safe>::AllocNewSlotSpan(PartitionRoot<thread_safe>* root,
     PA_DEBUG_DATA_ON_STACK("spansize", slot_span_reservation_size);
     PA_DEBUG_DATA_ON_STACK("spancmt", slot_span_committed_size);
 
-    root->RecommitSystemPagesForData(slot_span_start, slot_span_committed_size,
-                                     PageUpdatePermissions);
+    root->RecommitSystemPagesForData(
+        reinterpret_cast<uintptr_t>(slot_span_start), slot_span_committed_size,
+        PageUpdatePermissions);
   }
 
   PA_CHECK(get_slots_per_span() <=
@@ -626,15 +631,6 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
         PageReadWrite, PageUpdatePermissions);
   }
 
-  // If PCScan is used, commit the quarantine bitmap. Otherwise, leave it
-  // uncommitted and let PartitionRoot::EnablePCScan commit it when needed.
-  if (root->IsQuarantineEnabled()) {
-    ScopedSyscallTimer<thread_safe> timer{root};
-    RecommitSystemPages(state_bitmap, state_bitmap_size_to_commit,
-                        PageReadWrite, PageUpdatePermissions);
-    PCScan::RegisterNewSuperPage(root, reinterpret_cast<uintptr_t>(super_page));
-  }
-
   // If we were after a specific address, but didn't get it, assume that
   // the system chose a lousy address. Here most OS'es have a default
   // algorithm that isn't randomized. For example, most Linux
@@ -648,7 +644,8 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
   // First check if this is a new extent or not.
   auto* latest_extent =
       reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
-          PartitionSuperPageToMetadataArea(super_page));
+          PartitionSuperPageToMetadataArea(
+              reinterpret_cast<uintptr_t>(super_page)));
   // By storing the root in every extent metadata object, we have a fast way
   // to go from a pointer within the partition to the root object.
   latest_extent->root = root;
@@ -680,6 +677,21 @@ ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSuperPage(
     PA_DCHECK(ret > SuperPagesBeginFromExtent(current_extent) &&
               ret < SuperPagesEndFromExtent(current_extent));
   }
+
+  // If PCScan is used, commit the state bitmap. Otherwise, leave it uncommitted
+  // and let PartitionRoot::RegisterScannableRoot() commit it when needed. Make
+  // sure to register the super-page after it has been fully initialized.
+  // Otherwise, the concurrent scanner may try to access |extent->root| which
+  // could be not initialized yet.
+  if (root->IsQuarantineEnabled()) {
+    {
+      ScopedSyscallTimer<thread_safe> timer{root};
+      RecommitSystemPages(state_bitmap, state_bitmap_size_to_commit,
+                          PageReadWrite, PageUpdatePermissions);
+    }
+    PCScan::RegisterNewSuperPage(root, reinterpret_cast<uintptr_t>(super_page));
+  }
+
   return ret;
 }
 
@@ -713,7 +725,7 @@ ALWAYS_INLINE char* PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
   // should not get here.)
   PA_DCHECK(num_slots + slot_span->num_allocated_slots == get_slots_per_span());
   // Similarly, make explicitly sure that the freelist is empty.
-  PA_DCHECK(!slot_span->freelist_head);
+  PA_DCHECK(!slot_span->get_freelist_head());
   PA_DCHECK(slot_span->num_allocated_slots >= 0);
 
   size_t size = slot_size;
@@ -749,7 +761,8 @@ ALWAYS_INLINE char* PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
   // Windows anyway).
   if (root->use_lazy_commit) {
     // TODO(lizeb): Handle commit failure.
-    root->RecommitSystemPagesForData(commit_start, commit_end - commit_start,
+    root->RecommitSystemPagesForData(reinterpret_cast<uintptr_t>(commit_start),
+                                     commit_end - commit_start,
                                      PageUpdatePermissions);
   }
 
@@ -763,11 +776,11 @@ ALWAYS_INLINE char* PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
   char* next_slot_end = next_slot + size;
   size_t free_list_entries_added = 0;
   while (next_slot_end <= commit_end) {
-    auto* entry = new (next_slot) PartitionFreelistEntry();
     if (LIKELY(size <= kMaxMemoryTaggingSize)) {
-      entry = memory::TagMemoryRangeRandomly(entry, size);
+      next_slot = memory::TagMemoryRangeRandomly(next_slot, size);
     }
-    if (!slot_span->freelist_head) {
+    auto* entry = new (next_slot) PartitionFreelistEntry();
+    if (!slot_span->get_freelist_head()) {
       PA_DCHECK(!prev_entry);
       PA_DCHECK(!free_list_entries_added);
       slot_span->SetFreelistHead(entry);
@@ -789,11 +802,14 @@ ALWAYS_INLINE char* PartitionBucket<thread_safe>::ProvisionMoreSlotsAndAllocOne(
   PA_DCHECK(slots_to_provision == free_list_entries_added + 1);
   // We didn't necessarily provision more than one slot (e.g. if |slot_size|
   // is large), meaning that |slot_span->freelist_head| can be nullptr.
-  if (slot_span->freelist_head) {
+  if (slot_span->get_freelist_head()) {
     PA_DCHECK(free_list_entries_added);
-    slot_span->freelist_head->CheckFreeList(slot_size);
+    slot_span->get_freelist_head()->CheckFreeList(slot_size);
   }
 #endif
+
+  // We had no free slots, and created some (potentially 0) in sorted order.
+  slot_span->freelist_is_sorted = true;
 
   return return_slot;
 }
@@ -851,7 +867,14 @@ template <bool thread_safe>
 void PartitionBucket<thread_safe>::SortSlotSpanFreelists() {
   for (auto* slot_span = active_slot_spans_head; slot_span;
        slot_span = slot_span->next_slot_span) {
-    if (slot_span->num_allocated_slots > 0)
+    // No need to sort the freelist if it's already sorted. Note that if the
+    // freelist is sorted, this means that it didn't change at all since the
+    // last call. This may be a good signal to shrink it if possible (if an
+    // entire OS page is free, we can decommit it).
+    //
+    // Besides saving CPU, this also avoid touching memory of fully idle slot
+    // spans, which may required paging.
+    if (slot_span->num_allocated_slots > 0 && !slot_span->freelist_is_sorted)
       slot_span->SortFreelist();
   }
 }
@@ -870,7 +893,7 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
   // when a higher-order alignment is requested, in which case the freelist
   // logic is bypassed and we go directly for slot span allocation.
   bool allocate_aligned_slot_span = slot_span_alignment > PartitionPageSize();
-  PA_DCHECK(!active_slot_spans_head->freelist_head ||
+  PA_DCHECK(!active_slot_spans_head->get_freelist_head() ||
             allocate_aligned_slot_span);
 
   SlotSpanMetadata<thread_safe>* new_slot_span = nullptr;
@@ -921,7 +944,7 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
       PA_DCHECK(new_slot_span->is_empty() || new_slot_span->is_decommitted());
       empty_slot_spans_head = new_slot_span->next_slot_span;
       // Accept the empty slot span unless it got decommitted.
-      if (new_slot_span->freelist_head) {
+      if (new_slot_span->get_freelist_head()) {
         new_slot_span->next_slot_span = nullptr;
         new_slot_span->ToSuperPageExtent()
             ->IncrementNumberOfNonemptySlotSpans();
@@ -952,8 +975,8 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
       // If lazy commit is enabled, pages will be recommitted when provisioning
       // slots, in ProvisionMoreSlotsAndAllocOne(), not here.
       if (!root->use_lazy_commit) {
-        void* addr =
-            SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(new_slot_span);
+        uintptr_t address = reinterpret_cast<uintptr_t>(
+            SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(new_slot_span));
         // If lazy commit was never used, we have a guarantee that all slot span
         // pages have been previously committed, and then decommitted using
         // PageKeepPermissionsIfPossible, so use the same option as an
@@ -962,7 +985,7 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
         // used on Windows and this flag is ignored there, thus no perf impact.)
         // TODO(lizeb): Handle commit failure.
         root->RecommitSystemPagesForData(
-            addr, new_slot_span->bucket->get_bytes_per_span(),
+            address, new_slot_span->bucket->get_bytes_per_span(),
             root->never_used_lazy_commit ? PageKeepPermissionsIfPossible
                                          : PageUpdatePermissions);
       }
@@ -1003,11 +1026,9 @@ void* PartitionBucket<thread_safe>::SlowPathAlloc(
 
   // If we found an active slot span with free slots, or an empty slot span, we
   // have a usable freelist head.
-  if (LIKELY(new_slot_span->freelist_head != nullptr)) {
-    PartitionFreelistEntry* entry = new_slot_span->freelist_head;
-    PartitionFreelistEntry* new_head = entry->GetNext(slot_size);
-    new_slot_span->SetFreelistHead(new_head);
-    new_slot_span->num_allocated_slots++;
+  if (LIKELY(new_slot_span->get_freelist_head() != nullptr)) {
+    PartitionFreelistEntry* entry =
+        new_slot_span->PopForAlloc(new_bucket->slot_size);
 
     // We likely set *is_already_zeroed to true above, make sure that the
     // freelist entry doesn't contain data.

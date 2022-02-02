@@ -292,6 +292,7 @@ static_library("test_support") {
   visibility = []
   visibility = [
     ":*",
+    "platform/flatland:flatland_unittests",
     "platform/wayland:wayland_unittests",
     "platform/x11:x11_unittests",
   ]
@@ -358,7 +359,14 @@ action("generate_test_support_constructor_list") {
 }
 
 test("ozone_unittests") {
-  deps = [ ":test_support" ]
+  if (is_chromeos_lacros && is_chromeos_device) {
+    configs += [ "//build/lacros:optional_shared_libgcc" ]
+  }
+
+  deps = [
+    ":test_support",
+    "//ui/ozone/common:unittests",
+  ]
 
   # Add tests of platform internals.
   deps += ozone_platform_test_deps

@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -227,7 +226,7 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
 
   MOCK_METHOD(void,
               SetAccessibilityDocInfo,
-              (const AccessibilityDocInfo&),
+              (AccessibilityDocInfo),
               (override));
 
   MOCK_METHOD(void,
@@ -240,7 +239,7 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
 
   MOCK_METHOD(void,
               SetAccessibilityViewportInfo,
-              (const AccessibilityViewportInfo&),
+              (AccessibilityViewportInfo),
               (override));
 
   MOCK_METHOD(void, NotifyFindResultsChanged, (int, bool), (override));

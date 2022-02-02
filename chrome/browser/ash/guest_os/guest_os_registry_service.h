@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
@@ -34,6 +33,10 @@ class Clock;
 class Time;
 }  // namespace base
 
+namespace apps {
+class SvgIconTranscoder;
+}  // namespace apps
+
 namespace vm_tools {
 namespace apps {
 class ApplicationList;
@@ -41,6 +44,8 @@ class ApplicationList;
 }  // namespace vm_tools
 
 namespace guest_os {
+
+using IconContentCallback = base::OnceCallback<void(std::string)>;
 
 // The GuestOsRegistryService  stores information about Desktop Entries (apps)
 // in Crostini. We store this in prefs so that it is readily available even when
@@ -196,7 +201,7 @@ class GuestOsRegistryService : public KeyedService {
   // Fetches icons from container.
   void RequestIcon(const std::string& app_id,
                    ui::ResourceScaleFactor scale_factor,
-                   base::OnceCallback<void(std::string)> callback);
+                   IconContentCallback callback);
 
   // Remove all apps from the named VM and container. If |container_name| is an
   // empty string, this function removes all apps associated with the VM,
@@ -256,19 +261,30 @@ class GuestOsRegistryService : public KeyedService {
   // Removes all the icons installed for an application.
   void RemoveAppData(const std::string& app_id);
 
-  // Migrates terminal from old crosh-based terminal to new Terminal System App.
-  // Old terminal is removed from registry, and launcher position and pinned
-  // attribute is copied to the new terminal.
-  // TODO(crbug.com/1019021):  Keep this code for at least 1 release after
-  // TerminalSystemApp feature is removed.  Current expectation is to remove
-  // feature in M83, this function can then be remoevd after M84.
-  void MigrateTerminal() const;
-
   // Apply container-specific badging to `icon`. This is run after the generic
   // icon loading code.
   void ApplyContainerBadge(SkColor badge_color,
                            apps::LoadIconCallback callback,
-                           std::unique_ptr<apps::IconValue> icon);
+                           apps::IconValuePtr icon);
+
+  // Call the callbacks |active_icon_requests_| for |app_id|.
+  void InvokeActiveIconCallbacks(std::string app_id,
+                                 ui::ResourceScaleFactor scale_factor,
+                                 std::string icon_content);
+
+  // If a valid .svg file is found at |svg_path|, transcode it to png and save
+  // it to |png_path| and invoke |callback|, otherwise invoke |fallback|.
+  void TranscodeIconFromSvg(
+      base::FilePath svg_path,
+      base::FilePath png_path,
+      apps::IconType icon_type,
+      int32_t size_hint_in_dip,
+      apps::IconEffects icon_effects,
+      base::OnceCallback<void(apps::LoadIconCallback)> fallback,
+      apps::LoadIconCallback callback);
+
+  // Callback for when a saved container icon is svg and was transcoded.
+  void OnSvgIconTranscoded(std::string app_id, std::string icon_content);
 
   // Owned by the Profile.
   Profile* const profile_;
@@ -290,10 +306,11 @@ class GuestOsRegistryService : public KeyedService {
   // which means there's a good chance the container is online and the request
   // will then succeed.
   std::map<std::pair<std::string, ui::ResourceScaleFactor>,
-           std::vector<base::OnceCallback<void(std::string)>>>
+           std::vector<IconContentCallback>>
       active_icon_requests_;
   std::map<std::string, uint32_t> retry_icon_requests_;
 
+  std::unique_ptr<apps::SvgIconTranscoder> svg_icon_transcoder_;
   base::WeakPtrFactory<GuestOsRegistryService> weak_ptr_factory_{this};
 };
 

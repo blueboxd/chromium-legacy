@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -61,7 +61,7 @@ class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
   bool Flush() final;
 
  private:
-  DecoderClient* client_;
+  raw_ptr<DecoderClient> client_;
   std::vector<uint8_t> buffer_;
   size_t put_offset_;
 };
@@ -115,8 +115,8 @@ bool WireServerCommandSerializer::Flush() {
 
     static uint32_t return_trace_id = 0;
     TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
-                           "DawnReturnCommands", TRACE_EVENT_FLAG_FLOW_OUT,
-                           return_trace_id++);
+                           "DawnReturnCommands", return_trace_id++,
+                           TRACE_EVENT_FLAG_FLOW_OUT);
 
     client_->HandleReturnData(base::make_span(buffer_.data(), put_offset_));
     put_offset_ = kDawnReturnCmdsOffset;
@@ -294,7 +294,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     return false;
   }
   bool WasContextLostByRobustnessExtension() const override {
-    NOTREACHED();
     return false;
   }
   void MarkContextLost(error::ContextLostReason reason) override {
@@ -594,9 +593,9 @@ void WebGPUDecoderImpl::DoRequestDevice(
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
 
-  dawn_native::DeviceDescriptor device_descriptor;
+  dawn_native::DawnDeviceDescriptor device_descriptor;
   if (request_device_properties.textureCompressionBC) {
-    device_descriptor.requiredFeatures.push_back("texture_compression_bc");
+    device_descriptor.requiredFeatures.push_back("texture-compression-bc");
   }
   if (request_device_properties.textureCompressionETC2) {
     device_descriptor.requiredFeatures.push_back("texture-compression-etc2");
@@ -605,19 +604,19 @@ void WebGPUDecoderImpl::DoRequestDevice(
     device_descriptor.requiredFeatures.push_back("texture-compression-astc");
   }
   if (request_device_properties.shaderFloat16) {
-    device_descriptor.requiredFeatures.push_back("shader_float16");
+    device_descriptor.requiredFeatures.push_back("shader-float16");
   }
   if (request_device_properties.pipelineStatisticsQuery) {
-    device_descriptor.requiredFeatures.push_back("pipeline_statistics_query");
+    device_descriptor.requiredFeatures.push_back("pipeline-statistics-query");
   }
   if (request_device_properties.timestampQuery) {
-    device_descriptor.requiredFeatures.push_back("timestamp_query");
+    device_descriptor.requiredFeatures.push_back("timestamp-query");
   }
   if (request_device_properties.depthClamping) {
-    device_descriptor.requiredFeatures.push_back("depth_clamping");
+    device_descriptor.requiredFeatures.push_back("depth-clamping");
   }
   if (request_device_properties.invalidFeature) {
-    device_descriptor.requiredFeatures.push_back("invalid_feature");
+    device_descriptor.requiredFeatures.push_back("invalid-feature");
   }
 
   // We need to request internal usage to be able to do operations with internal
@@ -1009,10 +1008,17 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
     const volatile void* cmd_data) {
   const volatile webgpu::cmds::RequestAdapter& c =
       *static_cast<const volatile webgpu::cmds::RequestAdapter*>(cmd_data);
-  PowerPreference power_preference =
-      static_cast<PowerPreference>(c.power_preference);
   DawnRequestAdapterSerial request_adapter_serial =
       static_cast<DawnRequestAdapterSerial>(c.request_adapter_serial);
+  PowerPreference power_preference =
+      static_cast<PowerPreference>(c.power_preference);
+  bool force_fallback_adapter = c.force_fallback_adapter;
+
+  if (force_fallback_adapter) {
+    SendAdapterProperties(request_adapter_serial, -1, nullptr,
+                          "WebGPU fallback adapter not implemented.");
+    return error::kNoError;
+  }
 
   if (gr_context_type_ != GrContextType::kVulkan) {
 #if defined(OS_LINUX)
@@ -1099,8 +1105,8 @@ error::Error WebGPUDecoderImpl::HandleDawnCommands(
 
   TRACE_EVENT_WITH_FLOW0(
       TRACE_DISABLED_BY_DEFAULT("gpu.dawn"), "DawnCommands",
-      TRACE_EVENT_FLAG_FLOW_IN,
-      (static_cast<uint64_t>(commands_shm_id) << 32) + commands_shm_offset);
+      (static_cast<uint64_t>(commands_shm_id) << 32) + commands_shm_offset,
+      TRACE_EVENT_FLAG_FLOW_IN);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("gpu.dawn"),
                "WebGPUDecoderImpl::HandleDawnCommands", "bytes", size);

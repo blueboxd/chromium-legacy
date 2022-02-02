@@ -34,11 +34,9 @@
 #include "chrome/browser/android/feedback/screenshot_mode.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
@@ -273,6 +271,7 @@ absl::optional<bool> GetPreviousFormSelectionResult(
 // static
 std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
     content::WebContents* web_contents,
+    const base::android::JavaRef<jobject>& jdependencies,
     const base::android::JavaRef<jobject>& joverlay_coordinator) {
   JNIEnv* env = AttachCurrentThread();
   auto jactivity = Java_AutofillAssistantUiController_findAppropriateActivity(
@@ -280,13 +279,14 @@ std::unique_ptr<UiControllerAndroid> UiControllerAndroid::CreateFromWebContents(
   if (!jactivity) {
     return nullptr;
   }
-  return std::make_unique<UiControllerAndroid>(env, jactivity,
+  return std::make_unique<UiControllerAndroid>(env, jactivity, jdependencies,
                                                joverlay_coordinator);
 }
 
 UiControllerAndroid::UiControllerAndroid(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jactivity,
+    const base::android::JavaRef<jobject>& jdependencies,
     const base::android::JavaRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
       header_delegate_(this),
@@ -298,7 +298,7 @@ UiControllerAndroid::UiControllerAndroid(
       env, jactivity,
       /* allowTabSwitching= */
       base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry),
-      reinterpret_cast<intptr_t>(this), joverlay_coordinator);
+      reinterpret_cast<intptr_t>(this), jdependencies, joverlay_coordinator);
   header_model_ = std::make_unique<AssistantHeaderModel>(
       Java_AssistantModel_getHeaderModel(env, GetModel()));
 
@@ -853,8 +853,7 @@ void UiControllerAndroid::OnCancelButtonClicked(
     return;
   }
 
-  CloseOrCancel(index, std::make_unique<TriggerContext>(),
-                Metrics::DropOutReason::SHEET_CLOSED);
+  CloseOrCancel(index, Metrics::DropOutReason::SHEET_CLOSED);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(
@@ -925,8 +924,7 @@ bool UiControllerAndroid::OnBackButtonClicked() {
     ui_delegate_->OnStop(back_button_settings->message(),
                          back_button_settings->undo_label());
   } else {
-    CloseOrCancel(-1, std::make_unique<TriggerContext>(),
-                  Metrics::DropOutReason::BACK_BUTTON_CLICKED);
+    CloseOrCancel(-1, Metrics::DropOutReason::BACK_BUTTON_CLICKED);
   }
   return true;
 }
@@ -935,10 +933,8 @@ void UiControllerAndroid::OnBottomSheetClosedWithSwipe() {
   // Nothing to do
 }
 
-void UiControllerAndroid::CloseOrCancel(
-    int action_index,
-    std::unique_ptr<TriggerContext> trigger_context,
-    Metrics::DropOutReason dropout_reason) {
+void UiControllerAndroid::CloseOrCancel(int action_index,
+                                        Metrics::DropOutReason dropout_reason) {
   // Close immediately.
   if (!ui_delegate_ ||
       ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
@@ -951,8 +947,7 @@ void UiControllerAndroid::CloseOrCancel(
   if (action_index >= 0 &&
       static_cast<size_t>(action_index) < user_actions.size() &&
       user_actions[action_index].chip().type == CLOSE_ACTION &&
-      ui_delegate_->PerformUserActionWithContext(action_index,
-                                                 std::move(trigger_context))) {
+      ui_delegate_->PerformUserAction(action_index)) {
     return;
   }
 
@@ -964,7 +959,7 @@ void UiControllerAndroid::CloseOrCancel(
                                     ui_delegate_->GetClientSettings()),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
-                              std::move(trigger_context), dropout_reason));
+                              dropout_reason));
 }
 
 absl::optional<std::pair<int, int>> UiControllerAndroid::GetWindowSize() const {
@@ -995,13 +990,10 @@ UiControllerAndroid::GetScreenOrientation() const {
   }
 }
 
-void UiControllerAndroid::OnCancel(
-    int action_index,
-    std::unique_ptr<TriggerContext> trigger_context,
-    Metrics::DropOutReason dropout_reason) {
+void UiControllerAndroid::OnCancel(int action_index,
+                                   Metrics::DropOutReason dropout_reason) {
   if (action_index == -1 || !ui_delegate_ ||
-      !ui_delegate_->PerformUserActionWithContext(action_index,
-                                                  std::move(trigger_context))) {
+      !ui_delegate_->PerformUserAction(action_index)) {
     Shutdown(dropout_reason);
   }
 }
@@ -1109,19 +1101,23 @@ UiControllerAndroid::GetCollectUserDataModel() {
 }
 
 void UiControllerAndroid::OnShippingAddressChanged(
-    std::unique_ptr<autofill::AutofillProfile> address) {
-  ui_delegate_->SetShippingAddress(std::move(address));
+    std::unique_ptr<autofill::AutofillProfile> address,
+    UserDataEventType event_type) {
+  ui_delegate_->SetShippingAddress(std::move(address), event_type);
 }
 
 void UiControllerAndroid::OnContactInfoChanged(
-    std::unique_ptr<autofill::AutofillProfile> profile) {
-  ui_delegate_->SetContactInfo(std::move(profile));
+    std::unique_ptr<autofill::AutofillProfile> profile,
+    UserDataEventType event_type) {
+  ui_delegate_->SetContactInfo(std::move(profile), event_type);
 }
 
 void UiControllerAndroid::OnCreditCardChanged(
     std::unique_ptr<autofill::CreditCard> card,
-    std::unique_ptr<autofill::AutofillProfile> billing_profile) {
-  ui_delegate_->SetCreditCard(std::move(card), std::move(billing_profile));
+    std::unique_ptr<autofill::AutofillProfile> billing_profile,
+    UserDataEventType event_type) {
+  ui_delegate_->SetCreditCard(std::move(card), std::move(billing_profile),
+                              event_type);
 }
 
 void UiControllerAndroid::OnTermsAndConditionsChanged(
@@ -1441,13 +1437,13 @@ void UiControllerAndroid::OnUserDataChanged(
       auto jcontact = Java_AssistantCollectUserDataModel_createAutofillContact(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_contacts_[index]),
+              env, *user_data.available_contacts_[index]->profile),
           collect_user_data_options->request_payer_name,
           collect_user_data_options->request_payer_phone,
           collect_user_data_options->request_payer_email);
       if (jcontact) {
         const auto& errors = user_data::GetContactValidationErrors(
-            user_data.available_contacts_[index].get(),
+            user_data.available_contacts_[index]->profile.get(),
             *collect_user_data_options);
         Java_AssistantCollectUserDataModel_addAutofillContact(
             env, jcontactlist, jcontact,
@@ -1465,11 +1461,11 @@ void UiControllerAndroid::OnUserDataChanged(
     // Billing addresses.
     auto jbillinglist =
         Java_AssistantCollectUserDataModel_createBillingAddressList(env);
-    for (const auto& profile : user_data.available_addresses_) {
+    for (const auto& address : user_data.available_addresses_) {
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *profile));
+              env, *address->profile));
       if (jaddress) {
         Java_AssistantCollectUserDataModel_addBillingAddress(env, jbillinglist,
                                                              jaddress);
@@ -1487,10 +1483,10 @@ void UiControllerAndroid::OnUserDataChanged(
       auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
           env, jcontext,
           autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_addresses_[index]));
+              env, *user_data.available_addresses_[index]->profile));
       if (jaddress) {
         const auto& errors = user_data::GetShippingAddressValidationErrors(
-            user_data.available_addresses_[index].get(),
+            user_data.available_addresses_[index]->profile.get(),
             *collect_user_data_options);
         Java_AssistantCollectUserDataModel_addShippingAddress(
             env, jshippinglist, jaddress,
@@ -1680,13 +1676,17 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form,
                   base::android::ToJavaIntArray(env, allowed_values)));
         }
 
+        const auto dependencies =
+            Java_AutofillAssistantUiController_getDependencies(
+                AttachCurrentThread(), java_object_);
+
         Java_AssistantFormModel_addInput(
             env, jinput_list,
             Java_AssistantFormInput_createCounterInput(
                 env, i, ConvertUTF8ToJavaString(env, counter_input.label()),
                 ConvertUTF8ToJavaString(env, counter_input.expand_text()),
                 ConvertUTF8ToJavaString(env, counter_input.minimize_text()),
-                jcounters, counter_input.minimized_count(),
+                jcounters, dependencies, counter_input.minimized_count(),
                 counter_input.min_counters_sum(),
                 counter_input.max_counters_sum(),
                 form_delegate_.GetJavaObject()));

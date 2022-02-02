@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 
+#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -320,6 +321,18 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [super viewDidLoad];
 
   self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
+
+  // Hardcode navigation bar style for iOS 14 and under to workaround bug that
+  // navigation bar height not adjusting consistently across subviews. Should be
+  // removed once iOS 14 is deprecated.
+  if (!base::ios::IsRunningOnIOS15OrLater()) {
+    UINavigationBarAppearance* appearance =
+        [[UINavigationBarAppearance alloc] init];
+    [appearance configureWithOpaqueBackground];
+    self.navigationBar.standardAppearance = appearance;
+    self.navigationBar.compactAppearance = appearance;
+    self.navigationBar.scrollEdgeAppearance = appearance;
+  }
 
   self.navigationBar.translucent = NO;
   self.toolbar.translucent = NO;

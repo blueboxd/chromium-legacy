@@ -531,7 +531,8 @@ Status ExecuteSendKeysToElement(Session* session,
   base::ListValue key_list_local;
   const base::Value* text = nullptr;
   if (session->w3c_compliant) {
-    if (!params.Get("text", &text) || !text->is_string())
+    text = params.FindKey("text");
+    if (text == nullptr || !text->is_string())
       return Status(kInvalidArgument, "'text' must be a string");
     key_list_local.Set(0, std::make_unique<base::Value>(text->Clone()));
     key_list = &key_list_local;
@@ -565,11 +566,11 @@ Status ExecuteSendKeysToElement(Session* session,
     }
     // Compress array into a single string.
     std::string paths_string;
-    for (size_t i = 0; i < key_list->GetList().size(); ++i) {
-      std::string path_part;
-      if (!key_list->GetString(i, &path_part))
+    for (const base::Value& i : key_list->GetList()) {
+      const std::string* path_part = i.GetIfString();
+      if (!path_part)
         return Status(kInvalidArgument, "'value' is invalid");
-      paths_string.append(path_part);
+      paths_string.append(*path_part);
     }
 
     // w3c spec specifies empty path_part should throw invalidArgument error

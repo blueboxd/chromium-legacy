@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/loader/back_forward_cache_loader_helper_impl.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -43,8 +44,11 @@ class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
 class WorkerThread;
 
-class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
-                                               public ExecutionContext {
+class CORE_EXPORT WorkerOrWorkletGlobalScope
+    : public EventTargetWithInlineData,
+      public ExecutionContext,
+      public scheduler::WorkerScheduler::Delegate,
+      public BackForwardCacheLoaderHelperImpl::Delegate {
  public:
   WorkerOrWorkletGlobalScope(
       v8::Isolate*,
@@ -75,6 +79,15 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   bool IsJSExecutionForbidden() const final;
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
+
+  // scheduler::WorkerScheduler::Delegate
+  void UpdateBackForwardCacheDisablingFeatures(
+      uint64_t features_mask) override {}
+
+  // BackForwardCacheLoaderHelperImpl::Delegate
+  void EvictFromBackForwardCache(
+      mojom::blink::RendererEvictionReason reason) override {}
+  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes) override {}
 
   // Returns true when the WorkerOrWorkletGlobalScope is closing (e.g. via
   // WorkerGlobalScope#close() method). If this returns true, the worker is

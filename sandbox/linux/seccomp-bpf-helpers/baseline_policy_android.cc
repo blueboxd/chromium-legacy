@@ -128,7 +128,6 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_set_thread_area:
 #endif
     case __NR_set_tid_address:
-    case __NR_sigaltstack:
 #if defined(__i386__) || defined(__arm__)
     case __NR_ugetrlimit:
 #else
@@ -165,13 +164,6 @@ ResultExpr BaselinePolicyAndroid::EvaluateSyscall(int sysno) const {
   // and then ptrace the parent. https://crbug.com/933418
   if (sysno == __NR_ptrace) {
     return RestrictPtrace();
-  }
-
-  // https://crbug.com/644759
-  if (sysno == __NR_rt_tgsigqueueinfo) {
-    const Arg<pid_t> tgid(0);
-    return If(tgid == policy_pid(), Allow())
-           .Else(Error(EPERM));
   }
 
   // https://crbug.com/766245

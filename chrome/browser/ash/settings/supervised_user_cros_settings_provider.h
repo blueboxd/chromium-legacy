@@ -8,8 +8,7 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
-#include "chromeos/settings/cros_settings_provider.h"
+#include "ash/components/settings/cros_settings_provider.h"
 
 namespace base {
 class Value;

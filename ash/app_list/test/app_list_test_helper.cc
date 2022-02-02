@@ -21,6 +21,7 @@
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/productivity_launcher_search_view.h"
+#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
@@ -36,7 +37,7 @@ AppListTestHelper::AppListTestHelper() {
   DCHECK(app_list_controller_);
 
   // Use a new app list client for each test
-  app_list_client_ = std::make_unique<TestAppListClient>(app_list_controller_);
+  app_list_client_ = std::make_unique<TestAppListClient>();
   app_list_controller_->SetClient(app_list_client_.get());
   app_list_controller_->SetActiveModel(/*profile_id=*/1, &model_,
                                        &search_model_);
@@ -113,6 +114,16 @@ void AppListTestHelper::AddPageBreakItem() {
   AppListModelProvider::Get()->model()->AddItem(std::move(page_break_item));
 }
 
+void AppListTestHelper::AddContinueSuggestionResults(int num_results) {
+  for (int i = 0; i < num_results; i++) {
+    auto result = std::make_unique<TestSearchResult>();
+    result->set_result_id(base::NumberToString(i));
+    result->set_result_type(AppListSearchResultType::kFileChip);
+    result->set_display_type(SearchResultDisplayType::kContinue);
+    GetSearchResults()->Add(std::move(result));
+  }
+}
+
 void AppListTestHelper::AddRecentApps(int num_apps) {
   for (int i = 0; i < num_apps; i++) {
     auto result = std::make_unique<TestSearchResult>();
@@ -143,6 +154,10 @@ AppListView* AppListTestHelper::GetAppListView() {
   return app_list_controller_->presenter()->GetView();
 }
 
+SearchBoxView* AppListTestHelper::GetSearchBoxView() {
+  return GetAppListView()->search_box_view();
+}
+
 AppsContainerView* AppListTestHelper::GetAppsContainerView() {
   return GetAppListView()
       ->app_list_main_view()
@@ -155,11 +170,31 @@ AppListFolderView* AppListTestHelper::GetFullscreenFolderView() {
 }
 
 RecentAppsView* AppListTestHelper::GetFullscreenRecentAppsView() {
-  return GetAppsContainerView()->recent_apps();
+  return GetAppsContainerView()->GetRecentApps();
+}
+
+ContinueSectionView* AppListTestHelper::GetFullscreenContinueSectionView() {
+  return GetAppsContainerView()->GetContinueSection();
 }
 
 PagedAppsGridView* AppListTestHelper::GetRootPagedAppsGridView() {
   return GetAppsContainerView()->apps_grid_view();
+}
+
+views::View* AppListTestHelper::GetFullscreenLauncherAppsSeparatorView() {
+  return GetAppsContainerView()->GetSeparatorView();
+}
+
+SearchResultPageView* AppListTestHelper::GetFullscreenSearchResultPageView() {
+  return GetAppListView()
+      ->app_list_main_view()
+      ->contents_view()
+      ->search_result_page_view();
+}
+
+SearchResultPageAnchoredDialog*
+AppListTestHelper::GetFullscreenSearchPageDialog() {
+  return GetFullscreenSearchResultPageView()->dialog_for_test();
 }
 
 AppListBubbleView* AppListTestHelper::GetBubbleView() {
@@ -185,7 +220,7 @@ AppListBubbleAppsPage* AppListTestHelper::GetBubbleAppsPage() {
       ->apps_page_;
 }
 
-ContinueSectionView* AppListTestHelper::GetContinueSectionView() {
+ContinueSectionView* AppListTestHelper::GetBubbleContinueSectionView() {
   return GetBubbleAppsPage()->continue_section_;
 }
 
@@ -203,6 +238,11 @@ AppListBubbleSearchPage* AppListTestHelper::GetBubbleSearchPage() {
       ->search_page_;
 }
 
+SearchResultPageAnchoredDialog* AppListTestHelper::GetBubbleSearchPageDialog() {
+  return app_list_controller_->bubble_presenter_for_test()
+      ->bubble_view_for_test()
+      ->search_page_dialog_controller_->dialog();
+}
 AppListBubbleAssistantPage* AppListTestHelper::GetBubbleAssistantPage() {
   return app_list_controller_->bubble_presenter_for_test()
       ->bubble_view_for_test()
@@ -213,11 +253,20 @@ SearchModel::SearchResults* AppListTestHelper::GetSearchResults() {
   return AppListModelProvider::Get()->search_model()->results();
 }
 
+std::vector<ash::AppListSearchResultCategory>*
+AppListTestHelper::GetOrderedResultCategories() {
+  return AppListModelProvider::Get()->search_model()->ordered_categories();
+}
+
 ProductivityLauncherSearchView*
 AppListTestHelper::GetProductivityLauncherSearchView() {
   return app_list_controller_->bubble_presenter_for_test()
       ->bubble_view_for_test()
       ->search_page_->search_view();
+}
+
+views::View* AppListTestHelper::GetBubbleLauncherAppsSeparatorView() {
+  return GetBubbleAppsPage()->separator_for_test();
 }
 
 }  // namespace ash

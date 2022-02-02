@@ -17,7 +17,6 @@
 
 #include "base/check.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/process/memory.h"
 
 namespace courgette {
@@ -167,6 +166,10 @@ class PagedArray {
   using iterator = PagedArray_iterator<ThisType, T>;
 
   PagedArray() = default;
+
+  PagedArray(const PagedArray&) = delete;
+  PagedArray& operator=(const PagedArray&) = delete;
+
   ~PagedArray() { clear(); }
 
   iterator begin() { return iterator(this, 0); }
@@ -237,8 +240,6 @@ class PagedArray {
   T** pages_ = nullptr;
   size_t size_ = 0U;
   size_t page_count_ = 0U;
-
-  DISALLOW_COPY_AND_ASSIGN(PagedArray);
 };
 
 }  // namespace courgette

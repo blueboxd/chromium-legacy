@@ -21,8 +21,8 @@ def merge_shard_results(summary_json, jsons_to_merge):
   try:
     with open(summary_json) as f:
       summary = json.load(f)
-  except (IOError, ValueError):
-    raise Exception('Summary json cannot be loaded.')
+  except (IOError, ValueError) as e:
+    raise Exception('Summary json cannot be loaded.') from e
 
   # Merge all JSON files together. Keep track of missing shards.
   merged = {
@@ -111,7 +111,7 @@ def load_shard_json(index, task_id, jsons_to_merge):
   if not matching_json_files:
     print('shard %s test output missing' % index, file=sys.stderr)
     return (None, 'shard %s test output was missing' % index)
-  elif len(matching_json_files) > 1:
+  if len(matching_json_files) > 1:
     print('duplicate test output for shard %s' % index, file=sys.stderr)
     return (None, 'shard %s test output was duplicated' % index)
 

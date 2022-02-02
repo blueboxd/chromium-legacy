@@ -64,7 +64,7 @@ LoginFailureReason GetLoginFailureReasonForReport(
     case AuthFailure::ALLOWLIST_CHECK_FAILED:
     case AuthFailure::AUTH_DISABLED:
     case AuthFailure::NUM_FAILURE_REASONS:
-      return LoginFailureReason::UNKNOWN;
+      return LoginFailureReason::UNKNOWN_LOGIN_FAILURE_REASON;
   }
 }
 }  // namespace
@@ -112,11 +112,11 @@ std::unique_ptr<LoginLogoutReporter> LoginLogoutReporter::CreateForTest(
 
 void LoginLogoutReporter::MaybeReportEvent(LoginLogoutRecord record,
                                            const AccountId& account_id) {
-  if (!reporter_helper_->ReportingEnabled(chromeos::kReportDeviceLoginLogout)) {
+  if (!reporter_helper_->ReportingEnabled(kReportDeviceLoginLogout)) {
     return;
   }
 
-  record.set_event_timestamp(base::Time::Now().ToTimeT());
+  record.set_event_timestamp_sec(base::Time::Now().ToTimeT());
   const std::string& user_email = account_id.GetUserEmail();
 
   if (IsManagedGuestSession(account_id)) {

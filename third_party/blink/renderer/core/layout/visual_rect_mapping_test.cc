@@ -32,7 +32,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
-  enum Flags { kContainsEnclosingIntRect = 1 << 0 };
+  enum Flags { kContainsToEnclosingRect = 1 << 0 };
 
   void SetUp() override {
     EnableCompositing();
@@ -73,15 +73,15 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       return;
     }
 
-    if (flags & kContainsEnclosingIntRect) {
+    if (flags & kContainsToEnclosingRect) {
       EXPECT_TRUE(
-          EnclosingIntRect(slow_map_rect)
-              .Contains(EnclosingIntRect(expected_visual_rect_in_ancestor)));
+          ToEnclosingRect(slow_map_rect)
+              .Contains(ToEnclosingRect(expected_visual_rect_in_ancestor)));
 
       if (object.FirstFragment().HasLocalBorderBoxProperties()) {
-        EXPECT_TRUE(gfx::ToEnclosingRect(geometry_mapper_rect.Rect())
-                        .Contains(ToGfxRect(EnclosingIntRect(
-                            expected_visual_rect_in_ancestor))));
+        EXPECT_TRUE(
+            gfx::ToEnclosingRect(geometry_mapper_rect.Rect())
+                .Contains(ToEnclosingRect(expected_visual_rect_in_ancestor)));
       }
     } else {
       EXPECT_EQ(expected_visual_rect_in_ancestor, slow_map_rect);
@@ -130,7 +130,7 @@ TEST_P(VisualRectMappingTest, LayoutText) {
 
   auto* scrollable_area = GetScrollableArea(container);
   scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().x(), 50));
+      gfx::PointF(scrollable_area->ScrollPosition().x(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   PhysicalRect original_rect(0, 60, 20, 80);
@@ -169,7 +169,7 @@ TEST_P(VisualRectMappingTest, LayoutTextContainerFlippedWritingMode) {
 
   auto* scrollable_area = GetScrollableArea(container);
   scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().x(), 50));
+      gfx::PointF(scrollable_area->ScrollPosition().x(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   // All results are the same as VisualRectMappingTest.LayoutText because all
@@ -206,7 +206,7 @@ TEST_P(VisualRectMappingTest, LayoutInline) {
 
   auto* scrollable_area = GetScrollableArea(container);
   scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().x(), 50));
+      gfx::PointF(scrollable_area->ScrollPosition().x(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   PhysicalRect original_rect(0, 60, 20, 80);
@@ -245,7 +245,7 @@ TEST_P(VisualRectMappingTest, LayoutInlineContainerFlippedWritingMode) {
 
   auto* scrollable_area = GetScrollableArea(container);
   scrollable_area->ScrollToAbsolutePosition(
-      FloatPoint(scrollable_area->ScrollPosition().x(), 50));
+      gfx::PointF(scrollable_area->ScrollPosition().x(), 50));
   UpdateAllLifecyclePhasesForTest();
 
   // All results are the same as VisualRectMappingTest.LayoutInline because all
@@ -462,7 +462,7 @@ TEST_P(VisualRectMappingTest, ContainerOverflowScroll) {
   auto* scrollable_area = GetScrollableArea(container);
   EXPECT_EQ(0, scrollable_area->ScrollPosition().y());
   EXPECT_EQ(0, scrollable_area->ScrollPosition().x());
-  scrollable_area->ScrollToAbsolutePosition(FloatPoint(8, 7));
+  scrollable_area->ScrollToAbsolutePosition(gfx::PointF(8, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -524,7 +524,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll) {
   // 150 = total_layout_overflow(100 + 100) - width(50)
   EXPECT_EQ(150, scrollable_area->ScrollPosition().x());
   // Scroll to the right by 8 pixels.
-  scrollable_area->ScrollToAbsolutePosition(FloatPoint(142, 7));
+  scrollable_area->ScrollToAbsolutePosition(gfx::PointF(142, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -592,7 +592,7 @@ TEST_P(VisualRectMappingTest, ContainerOverflowHidden) {
   auto* scrollable_area = GetScrollableArea(container);
   EXPECT_EQ(0, scrollable_area->ScrollPosition().y());
   EXPECT_EQ(0, scrollable_area->ScrollPosition().x());
-  scrollable_area->ScrollToAbsolutePosition(FloatPoint(28, 27));
+  scrollable_area->ScrollToAbsolutePosition(gfx::PointF(28, 27));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -628,7 +628,7 @@ TEST_P(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden) {
   // writing mode.
   // 150 = total_layout_overflow(100 + 100) - width(50)
   EXPECT_EQ(150, scrollable_area->ScrollPosition().x());
-  scrollable_area->ScrollToAbsolutePosition(FloatPoint(82, 7));
+  scrollable_area->ScrollToAbsolutePosition(gfx::PointF(82, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -668,7 +668,7 @@ TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
   // 150 = total_layout_overflow(100 + 100) - width(50)
   EXPECT_EQ(150, scrollable_area->ScrollPosition().x());
   // Scroll to the right by 8 pixels.
-  scrollable_area->ScrollToAbsolutePosition(FloatPoint(142, 7));
+  scrollable_area->ScrollToAbsolutePosition(gfx::PointF(142, 7));
   UpdateAllLifecyclePhasesForTest();
 
   auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
@@ -719,7 +719,7 @@ TEST_P(VisualRectMappingTest,
   )HTML");
 
   auto* scroller = To<LayoutBlock>(GetLayoutObjectByElementId("scroller"));
-  GetScrollableArea(scroller)->ScrollToAbsolutePosition(FloatPoint(88, 77));
+  GetScrollableArea(scroller)->ScrollToAbsolutePosition(gfx::PointF(88, 77));
   UpdateAllLifecyclePhasesForTest();
 
   auto* normal_flow =
@@ -1033,7 +1033,7 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
       PhysicalRect::EnclosingRect(matrix.MapRect(FloatRect(original_rect)));
 
   CheckVisualRect(*target, *target->View(), original_rect, output,
-                  kContainsEnclosingIntRect);
+                  kContainsToEnclosingRect);
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
@@ -1095,7 +1095,7 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
       PhysicalRect::EnclosingRect(matrix.MapRect(FloatRect(original_rect)));
 
   CheckVisualRect(*target, *target->View(), original_rect, output,
-                  kContainsEnclosingIntRect);
+                  kContainsToEnclosingRect);
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
@@ -1317,7 +1317,7 @@ TEST_P(VisualRectMappingTest, Perspective) {
 
   PhysicalRect rect(0, 0, 10, 10);
   child->MapToVisualRectInAncestorSpace(ancestor, rect);
-  EXPECT_EQ(IntRect(1, 0, 8, 10), EnclosingIntRect(rect));
+  EXPECT_EQ(gfx::Rect(1, 0, 8, 10), ToEnclosingRect(rect));
 }
 
 TEST_P(VisualRectMappingTest, PerspectiveWithAnonymousTable) {
@@ -1336,7 +1336,7 @@ TEST_P(VisualRectMappingTest, PerspectiveWithAnonymousTable) {
 
   PhysicalRect rect(0, 0, 10, 10);
   child->MapToVisualRectInAncestorSpace(ancestor, rect);
-  EXPECT_EQ(IntRect(1, -1, 8, 12), EnclosingIntRect(rect));
+  EXPECT_EQ(gfx::Rect(1, -1, 8, 12), ToEnclosingRect(rect));
 }
 
 }  // namespace blink

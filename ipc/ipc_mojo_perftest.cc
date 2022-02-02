@@ -6,7 +6,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/ignore_result.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -118,7 +120,7 @@ class PerformanceChannelListener : public Listener {
 
  private:
   std::string label_;
-  Sender* sender_;
+  raw_ptr<Sender> sender_;
   int msg_count_;
   size_t msg_size_;
   bool sync_;
@@ -283,6 +285,9 @@ class MojoInterfacePerfTest : public mojo::core::test::MojoTestBase {
  public:
   MojoInterfacePerfTest() : message_count_(0), count_down_(0) {}
 
+  MojoInterfacePerfTest(const MojoInterfacePerfTest&) = delete;
+  MojoInterfacePerfTest& operator=(const MojoInterfacePerfTest&) = delete;
+
  protected:
   void RunPingPongServer(MojoHandle mp, const std::string& label) {
     label_ = label;
@@ -366,8 +371,6 @@ class MojoInterfacePerfTest : public mojo::core::test::MojoTestBase {
   std::string payload_;
   mojo::Remote<IPC::mojom::Reflector> ping_receiver_;
   std::unique_ptr<base::PerfTimeLogger> perf_logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoInterfacePerfTest);
 };
 
 class InterfacePassingTestDriverImpl : public mojom::InterfacePassingTestDriver,
@@ -425,6 +428,10 @@ class InterfacePassingTestDriverImpl : public mojom::InterfacePassingTestDriver,
 class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
  public:
   MojoInterfacePassingPerfTest() = default;
+
+  MojoInterfacePassingPerfTest(const MojoInterfacePassingPerfTest&) = delete;
+  MojoInterfacePassingPerfTest& operator=(const MojoInterfacePassingPerfTest&) =
+      delete;
 
  protected:
   void RunInterfacePassingServer(MojoHandle mp,
@@ -541,8 +548,6 @@ class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
   mojo::Remote<mojom::InterfacePassingTestDriver> driver_remote_;
 
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoInterfacePassingPerfTest);
 };
 
 DEFINE_TEST_CLIENT_WITH_PIPE(InterfacePassingClient,
@@ -724,6 +729,9 @@ class CallbackPerfTest : public testing::Test {
   CallbackPerfTest()
       : client_thread_("PingPongClient"), message_count_(0), count_down_(0) {}
 
+  CallbackPerfTest(const CallbackPerfTest&) = delete;
+  CallbackPerfTest& operator=(const CallbackPerfTest&) = delete;
+
  protected:
   void RunMultiThreadPingPongServer() {
     client_thread_.Start();
@@ -857,8 +865,6 @@ class CallbackPerfTest : public testing::Test {
   int count_down_;
   std::string payload_;
   std::unique_ptr<base::PerfTimeLogger> perf_logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackPerfTest);
 };
 
 // Sends the same data as above using PostTask to a different thread instead of

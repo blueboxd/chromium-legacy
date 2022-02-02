@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -73,6 +73,10 @@ class Login
         const std::string& auth_mechanism,
         const net::NetworkTrafficAnnotationTag& traffic_annotation,
         network::NetworkConnectionTracker* network_connection_tracker);
+
+  Login(const Login&) = delete;
+  Login& operator=(const Login&) = delete;
+
   ~Login() override;
 
   // Starts connecting (or forces a reconnection if we're backed off).
@@ -112,16 +116,14 @@ class Login
   // reconnection.
   void DoReconnect();
 
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
   LoginSettings login_settings_;
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
   std::unique_ptr<SingleLoginAttempt> single_attempt_;
 
   // reconnection state.
   base::TimeDelta reconnect_interval_;
   base::OneShotTimer reconnect_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(Login);
 };
 
 }  // namespace notifier

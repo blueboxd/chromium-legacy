@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 
 class PrefService;
@@ -27,7 +29,8 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
   PasswordStoreBackendMigrationDecorator(
       std::unique_ptr<PasswordStoreBackend> built_in_backend,
       std::unique_ptr<PasswordStoreBackend> android_backend,
-      PrefService* prefs);
+      PrefService* prefs,
+      base::RepeatingCallback<bool()> is_syncing_passwords_callback);
   PasswordStoreBackendMigrationDecorator(
       const PasswordStoreBackendMigrationDecorator&) = delete;
   PasswordStoreBackendMigrationDecorator(
@@ -40,12 +43,13 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
 
  private:
   // Implements PasswordStoreBackend interface.
+  base::WeakPtr<PasswordStoreBackend> GetWeakPtr() override;
   void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
-  void GetAllLoginsAsync(LoginsReply callback) override;
-  void GetAutofillableLoginsAsync(LoginsReply callback) override;
+  void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
+  void GetAutofillableLoginsAsync(LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
       LoginsReply callback,
       bool include_psl,
@@ -73,7 +77,6 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
   FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
-  void GetSyncStatus(base::OnceCallback<void(bool)> callback) override;
 
   // Creates 'migrator_' and starts migration process.
   void StartMigration();
@@ -84,7 +87,9 @@ class PasswordStoreBackendMigrationDecorator : public PasswordStoreBackend {
   // Proxy backend to which all responsibilities are being delegated.
   std::unique_ptr<PasswordStoreBackend> active_backend_;
 
-  PrefService* prefs_ = nullptr;
+  raw_ptr<PrefService> prefs_ = nullptr;
+
+  base::RepeatingCallback<bool()> is_syncing_passwords_callback_;
 
   std::unique_ptr<BuiltInBackendToAndroidBackendMigrator> migrator_;
 

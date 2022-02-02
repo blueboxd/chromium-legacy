@@ -66,10 +66,11 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/frame/fragment_directive.h"
+#include "third_party/blink/renderer/core/fragment_directive/fragment_directive.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/font_preload_manager.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
@@ -77,6 +78,7 @@
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin_ignore.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace base {
@@ -177,13 +179,13 @@ class MediaQueryListListener;
 class MediaQueryMatcher;
 class NodeIterator;
 class NthIndexCache;
-class OriginAccessEntry;
 class Page;
 class PendingAnimations;
 class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
 class Range;
+class ResizeObserver;
 class ResourceFetcher;
 class RootScrollerController;
 class SVGDocumentExtensions;
@@ -213,6 +215,7 @@ class TreeWalker;
 class TrustedHTML;
 class V8NodeFilter;
 class V8UnionElementCreationOptionsOrString;
+class V8UnionStringOrTrustedHTML;
 class ViewportData;
 class VisitedLinkState;
 class WebMouseEvent;
@@ -1157,8 +1160,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // See "core/editing/commands/document_exec_command.cc" for implementations.
   bool execCommand(const String& command,
                    bool show_ui,
+                   const V8UnionStringOrTrustedHTML* value,
+                   ExceptionState&);
+
+  bool execCommand(const String& command,
+                   bool show_ui,
                    const String& value,
                    ExceptionState&);
+
   bool IsRunningExecCommand() const { return is_running_exec_command_; }
   bool queryCommandEnabled(const String& command, ExceptionState&);
   bool queryCommandIndeterm(const String& command, ExceptionState&);
@@ -1678,7 +1687,12 @@ class CORE_EXPORT Document : public ContainerNode,
                                  unsigned offset,
                                  unsigned old_length,
                                  unsigned new_length);
-  void NotifyChangeChildren(const ContainerNode& container);
+  void NotifyChangeChildren(const ContainerNode& container,
+                            const ContainerNode::ChildrenChange& change);
+  void NotifyAttributeChanged(const Element& element,
+                              const QualifiedName& name,
+                              const AtomicString& old_value,
+                              const AtomicString& new_value);
 
   FontPreloadManager& GetFontPreloadManager() { return *font_preload_manager_; }
   void FontPreloadingFinishedOrTimedOut();
@@ -1719,6 +1733,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool IsDirAttributeDirty() { return dir_attribute_dirty_; }
   void SetDirAttributeDirty() { dir_attribute_dirty_ = true; }
+
+  ResizeObserver& EnsureResizeObserver();
+
+  void ObserveForIntrinsicSize(Element* element);
+  void UnobserveForIntrinsicSize(Element* element);
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -1866,8 +1885,6 @@ class CORE_EXPORT Document : public ContainerNode,
     has_matched_cache_scope_ = has_matched_cache_scope;
   }
 
-  const OriginAccessEntry& AccessEntryFromURL();
-
   void UpdateActiveState(bool is_active, bool update_active_chain, Element*);
   void UpdateHoverState(Element*);
 
@@ -1945,7 +1962,6 @@ class CORE_EXPORT Document : public ContainerNode,
                             // over base_url_ (but not base_element_url_).
   KURL base_element_url_;   // The URL set by the <base> element.
   KURL cookie_url_;         // The URL to use for cookie access.
-  std::unique_ptr<OriginAccessEntry> access_entry_from_url_;
 
   KURL web_bundle_claimed_url_;
 
@@ -2105,14 +2121,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // the stack and cleared upon leaving its allocated scope. Hence it
   // is acceptable not to trace it -- should a conservative GC occur,
   // the cache object's references will be traced by a stack walk.
-  GC_PLUGIN_IGNORE("461878")
+  GC_PLUGIN_IGNORE("https://crbug.com/461878")
   NthIndexCache* nth_index_cache_ = nullptr;
 
   // This is an untraced pointer to the cache-scoped object that is first
   // allocated on the stack. It is set upon the first object being allocated
   // on the stack, and cleared upon leaving its allocated scope. The object's
   // references will be traced by a stack walk.
-  GC_PLUGIN_IGNORE("669058")
+  GC_PLUGIN_IGNORE("https://crbug.com/669058")
   HasMatchedCacheScope* has_matched_cache_scope_ = nullptr;
 
   DocumentClassFlags document_classes_;
@@ -2319,6 +2335,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // List of meta[name=theme-color] elements cached used when getting theme
   // color.
   HeapVector<Member<HTMLMetaElement>> meta_theme_color_elements_;
+
+  Member<ResizeObserver> intrinsic_size_observer_;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

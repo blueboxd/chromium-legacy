@@ -22,7 +22,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
@@ -46,16 +46,19 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/ntp_tiles/most_visited_sites.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/version_info/version_info.h"
+#include "components/webapps/common/constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -63,9 +66,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "components/arc/arc_util.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace web_app {
@@ -343,12 +346,18 @@ const char* PreinstalledWebAppManager::kHistogramUninstallAndReplaceCount =
 const char*
     PreinstalledWebAppManager::kHistogramAppToReplaceStillInstalledCount =
         "WebApp.Preinstalled.AppToReplaceStillInstalledCount";
+const char*
+    PreinstalledWebAppManager::kHistogramAppToReplaceStillSyncInstalledCount =
+        "WebApp.Preinstalled.AppToReplaceStillSyncInstalledCount";
+const char* PreinstalledWebAppManager::
+    kHistogramAppToReplaceStillInstalledInShelfCount =
+        "WebApp.Preinstalled.AppToReplaceStillInstalledInShelfCount";
 
 void PreinstalledWebAppManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kWebAppsLastPreinstallSynchronizeVersion,
                                "");
-  registry->RegisterListPref(prefs::kWebAppsMigratedPreinstalledApps);
+  registry->RegisterListPref(webapps::kWebAppsMigratedPreinstalledApps);
   registry->RegisterListPref(prefs::kWebAppsDidMigrateDefaultChromeApps);
   registry->RegisterListPref(prefs::kWebAppsUninstalledDefaultChromeApps);
 }
@@ -383,12 +392,18 @@ PreinstalledWebAppManager::PreinstalledWebAppManager(Profile* profile)
   }
 }
 
-PreinstalledWebAppManager::~PreinstalledWebAppManager() = default;
+PreinstalledWebAppManager::~PreinstalledWebAppManager() {
+  for (auto& observer : observers_) {
+    observer.OnDestroyed();
+  }
+}
 
 void PreinstalledWebAppManager::SetSubsystems(
     WebAppRegistrar* registrar,
+    const WebAppUiManager* ui_manager,
     ExternallyManagedAppManager* externally_managed_app_manager) {
   registrar_ = registrar;
+  ui_manager_ = ui_manager;
   externally_managed_app_manager_ = externally_managed_app_manager;
 }
 
@@ -402,6 +417,16 @@ void PreinstalledWebAppManager::Start() {
 
 void PreinstalledWebAppManager::LoadForTesting(ConsumeInstallOptions callback) {
   Load(std::move(callback));
+}
+
+void PreinstalledWebAppManager::AddObserver(
+    PreinstalledWebAppManager::Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PreinstalledWebAppManager::RemoveObserver(
+    PreinstalledWebAppManager::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void PreinstalledWebAppManager::LoadAndSynchronizeForTesting(
@@ -563,11 +588,11 @@ void PreinstalledWebAppManager::PostProcessConfigs(
     }
   }
 
-  UMA_HISTOGRAM_COUNTS_100(kHistogramEnabledCount,
-                           parsed_configs.options_list.size());
-  UMA_HISTOGRAM_COUNTS_100(kHistogramDisabledCount, disabled_count);
-  UMA_HISTOGRAM_COUNTS_100(kHistogramConfigErrorCount,
-                           parsed_configs.errors.size());
+  base::UmaHistogramCounts100(kHistogramEnabledCount,
+                              parsed_configs.options_list.size());
+  base::UmaHistogramCounts100(kHistogramDisabledCount, disabled_count);
+  base::UmaHistogramCounts100(kHistogramConfigErrorCount,
+                              parsed_configs.errors.size());
 
   std::move(callback).Run(parsed_configs.options_list);
 }
@@ -608,15 +633,21 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
 
   size_t uninstall_and_replace_count = 0;
   size_t app_to_replace_still_installed_count = 0;
+  size_t app_to_replace_still_sync_installed_count = 0;
+  size_t app_to_replace_still_installed_in_shelf_count = 0;
+
   for (const auto& url_and_result : install_results) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramInstallResult,
-                              url_and_result.second.code);
-    if (url_and_result.second.did_uninstall_and_replace) {
+    const ExternallyManagedAppManager::InstallResult& result =
+        url_and_result.second;
+    base::UmaHistogramEnumeration(kHistogramInstallResult, result.code);
+    if (result.did_uninstall_and_replace) {
       ++uninstall_and_replace_count;
     }
 
-    if (!IsSuccess(url_and_result.second.code))
+    if (!IsSuccess(result.code))
       continue;
+
+    DCHECK(result.app_id.has_value());
 
     auto iter = desired_uninstalls.find(url_and_result.first);
     if (iter == desired_uninstalls.end())
@@ -632,22 +663,37 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
       // Track whether the app to replace is still present. This is
       // possibly due to getting reinstalled by the user or by Chrome app
       // sync. See https://crbug.com/1266234 for context.
-      if (proxy && url_and_result.second.code ==
-                       InstallResultCode::kSuccessAlreadyInstalled) {
+      if (proxy && result.code == InstallResultCode::kSuccessAlreadyInstalled) {
+        bool is_installed = false;
         proxy->AppRegistryCache().ForOneApp(
-            replace_id, [&app_to_replace_still_installed_count](
-                            const apps::AppUpdate& app) {
-              if (apps_util::IsInstalled(app.Readiness()))
-                ++app_to_replace_still_installed_count;
+            replace_id, [&is_installed](const apps::AppUpdate& app) {
+              is_installed = apps_util::IsInstalled(app.Readiness());
             });
+
+        if (!is_installed)
+          continue;
+
+        ++app_to_replace_still_installed_count;
+
+        if (!extensions::IsExtensionDefaultInstalled(profile_, replace_id))
+          ++app_to_replace_still_sync_installed_count;
+
+        if (ui_manager_->CanAddAppToQuickLaunchBar()) {
+          if (ui_manager_->IsAppInQuickLaunchBar(result.app_id.value()))
+            ++app_to_replace_still_installed_in_shelf_count;
+        }
       }
     }
   }
-  UMA_HISTOGRAM_COUNTS_100(kHistogramUninstallAndReplaceCount,
-                           uninstall_and_replace_count);
+  base::UmaHistogramCounts100(kHistogramUninstallAndReplaceCount,
+                              uninstall_and_replace_count);
 
-  UMA_HISTOGRAM_COUNTS_100(kHistogramAppToReplaceStillInstalledCount,
-                           app_to_replace_still_installed_count);
+  base::UmaHistogramCounts100(kHistogramAppToReplaceStillInstalledCount,
+                              app_to_replace_still_installed_count);
+  base::UmaHistogramCounts100(kHistogramAppToReplaceStillSyncInstalledCount,
+                              app_to_replace_still_sync_installed_count);
+  base::UmaHistogramCounts100(kHistogramAppToReplaceStillInstalledInShelfCount,
+                              app_to_replace_still_installed_in_shelf_count);
 
   SetMigrationRun(profile_, kMigrateDefaultChromeAppToWebAppsGSuite.name,
                   IsPreinstalledAppInstallFeatureEnabled(
@@ -656,6 +702,11 @@ void PreinstalledWebAppManager::OnExternalWebAppsSynchronized(
       profile_, kMigrateDefaultChromeAppToWebAppsNonGSuite.name,
       IsPreinstalledAppInstallFeatureEnabled(
           kMigrateDefaultChromeAppToWebAppsNonGSuite.name, *profile_));
+  if (uninstall_and_replace_count > 0) {
+    for (auto& observer : observers_) {
+      observer.OnMigrationRun();
+    }
+  }
 
   if (callback) {
     std::move(callback).Run(std::move(install_results),

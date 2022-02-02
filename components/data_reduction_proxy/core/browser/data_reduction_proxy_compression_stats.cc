@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -50,11 +51,10 @@ namespace {
 // Returns the value at |index| of |list_value| as an int64_t.
 int64_t GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
   int64_t val = 0;
-  std::string pref_value;
-  bool rv = list_value.GetString(index, &pref_value);
-  DCHECK(rv);
-  if (rv) {
-    rv = base::StringToInt64(pref_value, &val);
+  base::Value::ConstListView list_value_view = list_value.GetList();
+  if (index < list_value_view.size() && list_value_view[index].is_string()) {
+    std::string pref_value = list_value_view[index].GetString();
+    bool rv = base::StringToInt64(pref_value, &val);
     DCHECK(rv);
   }
   return val;
@@ -129,7 +129,7 @@ void MoveAndClearDictionaryPrefs(PrefService* pref_service,
   base::DictionaryValue* pref_dict_dst = pref_update_dst.Get();
   DictionaryPrefUpdate pref_update_src(pref_service, pref_src);
   base::DictionaryValue* pref_dict_src = pref_update_src.Get();
-  pref_dict_dst->Clear();
+  pref_dict_dst->DictClear();
   pref_dict_dst->Swap(pref_dict_src);
   DCHECK(pref_dict_src->DictEmpty());
 }
@@ -265,9 +265,9 @@ class DataReductionProxyCompressionStats::DailyContentLengthUpdate {
   }
 
   // Non-owned. Lazily initialized, set to nullptr until initialized.
-  base::ListValue* update_;
+  raw_ptr<base::ListValue> update_;
   // Non-owned pointer.
-  DataReductionProxyCompressionStats* compression_stats_;
+  raw_ptr<DataReductionProxyCompressionStats> compression_stats_;
   // The path of the content length pref for |this|.
   const char* pref_path_;
 };

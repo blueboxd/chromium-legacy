@@ -5,7 +5,6 @@
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -15,9 +14,18 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include "device/base/features.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_service.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace device {
 
@@ -75,8 +83,18 @@ BluetoothAdapter::DeviceList GetLimitedNumDevices(
 // Filter out unknown devices from the list.
 BluetoothAdapter::DeviceList FilterUnknownDevices(
     const BluetoothAdapter::DeviceList& devices) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::switches::IsUnfilteredBluetoothDevicesEnabled())
     return devices;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (chromeos::LacrosService::Get()
+          ->init_params()
+          ->is_unfiltered_bluetooth_device_enabled) {
+    return devices;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   BluetoothAdapter::DeviceList result;
   for (BluetoothDevice* device : devices) {

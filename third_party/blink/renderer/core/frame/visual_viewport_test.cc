@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "ui/accessibility/ax_mode.h"
+#include "ui/gfx/geometry/test/geometry_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 #include <string>
@@ -255,7 +256,7 @@ TEST_P(VisualViewportTest, TestResize) {
   gfx::Size web_view_size = WebView()->MainFrameViewWidget()->Size();
 
   // Make sure the visual viewport was initialized.
-  EXPECT_EQ(web_view_size, ToGfxSize(visual_viewport.Size()));
+  EXPECT_EQ(web_view_size, visual_viewport.Size());
 
   // Resizing the WebView should change the VisualViewport.
   web_view_size = gfx::Size(640, 480);
@@ -264,10 +265,10 @@ TEST_P(VisualViewportTest, TestResize) {
       web_view_size, web_view_size, WebView()->GetBrowserControls().Params());
   UpdateAllLifecyclePhases();
   EXPECT_EQ(web_view_size, WebView()->MainFrameViewWidget()->Size());
-  EXPECT_EQ(web_view_size, ToGfxSize(visual_viewport.Size()));
+  EXPECT_EQ(web_view_size, visual_viewport.Size());
 
   // Resizing the visual viewport shouldn't affect the WebView.
-  IntSize new_viewport_size = IntSize(320, 200);
+  gfx::Size new_viewport_size = gfx::Size(320, 200);
   visual_viewport.SetSize(new_viewport_size);
   EXPECT_EQ(web_view_size, WebView()->MainFrameViewWidget()->Size());
   EXPECT_EQ(new_viewport_size, visual_viewport.Size());
@@ -282,33 +283,32 @@ TEST_P(VisualViewportTest, TestVisibleContentRect) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
 
-  IntSize size = IntSize(150, 100);
+  gfx::Size size(150, 100);
   // Vertical scrollbar width and horizontal scrollbar height.
-  IntSize scrollbar_size = IntSize(15, 15);
+  gfx::Size scrollbar_size(15, 15);
 
   WebView()->ResizeWithBrowserControls(
-      ToGfxSize(size), ToGfxSize(size),
-      WebView()->GetBrowserControls().Params());
+      size, size, WebView()->GetBrowserControls().Params());
   UpdateAllLifecyclePhases();
 
   // Scroll layout viewport and verify visibleContentRect.
-  WebView()->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 50));
+  WebView()->MainFrameImpl()->SetScrollOffset(gfx::PointF(0, 50));
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_EQ(IntRect(gfx::Point(0, 0), size - scrollbar_size),
+  EXPECT_EQ(gfx::Rect(gfx::Point(0, 0), size - scrollbar_size),
             visual_viewport.VisibleContentRect(kExcludeScrollbars));
-  EXPECT_EQ(IntRect(gfx::Point(0, 0), size),
+  EXPECT_EQ(gfx::Rect(gfx::Point(0, 0), size),
             visual_viewport.VisibleContentRect(kIncludeScrollbars));
 
   WebView()->SetPageScaleFactor(2.0);
 
   // Scroll visual viewport and verify visibleContentRect.
-  size.Scale(0.5);
-  scrollbar_size.Scale(0.5);
-  visual_viewport.SetLocation(FloatPoint(10, 10));
-  EXPECT_EQ(IntRect(gfx::Point(10, 10), size - scrollbar_size),
+  size = gfx::ScaleToFlooredSize(size, 0.5);
+  scrollbar_size = gfx::ScaleToFlooredSize(scrollbar_size, 0.5);
+  visual_viewport.SetLocation(gfx::PointF(10, 10));
+  EXPECT_EQ(gfx::Rect(gfx::Point(10, 10), size - scrollbar_size),
             visual_viewport.VisibleContentRect(kExcludeScrollbars));
-  EXPECT_EQ(IntRect(gfx::Point(10, 10), size),
+  EXPECT_EQ(gfx::Rect(gfx::Point(10, 10), size),
             visual_viewport.VisibleContentRect(kIncludeScrollbars));
 }
 
@@ -335,10 +335,10 @@ TEST_P(VisualViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation) {
   // Fully scroll both viewports.
   frame_view.LayoutViewport()->SetScrollOffset(
       ScrollOffset(10000, 10000), mojom::blink::ScrollType::kProgrammatic);
-  visual_viewport.Move(FloatSize(10000, 10000));
+  visual_viewport.Move(gfx::Vector2dF(10000, 10000));
 
   // Sanity check.
-  ASSERT_EQ(FloatSize(400, 300), visual_viewport.GetScrollOffset());
+  ASSERT_EQ(ScrollOffset(400, 300), visual_viewport.GetScrollOffset());
   ASSERT_EQ(ScrollOffset(200, 1400),
             frame_view.LayoutViewport()->GetScrollOffset());
 
@@ -400,7 +400,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
   WebView()->MainFrameViewWidget()->Resize(gfx::Size(100, 200));
 
   // Scroll main frame to the bottom of the document
-  WebView()->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 400));
+  WebView()->MainFrameImpl()->SetScrollOffset(gfx::PointF(0, 400));
   EXPECT_EQ(ScrollOffset(0, 400),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
 
@@ -408,8 +408,8 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
 
   // Scroll visual viewport to the bottom of the main frame
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  visual_viewport.SetLocation(FloatPoint(0, 300));
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 300), visual_viewport.GetScrollOffset());
+  visual_viewport.SetLocation(gfx::PointF(0, 300));
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(0, 300), visual_viewport.GetScrollOffset());
 
   // Verify the initial size of the visual viewport in the CSS pixels
   EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100),
@@ -437,7 +437,7 @@ TEST_P(VisualViewportTest, TestResizeAfterVerticalScroll) {
 
   EXPECT_EQ(ScrollOffset(0, 625),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(0, 75), visual_viewport.GetScrollOffset());
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(0, 75), visual_viewport.GetScrollOffset());
 
   // Verify the paint property nodes and GeometryMapper cache.
   {
@@ -496,8 +496,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
 
   // Scroll visual viewport to the right edge of the frame
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  visual_viewport.SetLocation(FloatPoint(150, 0));
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visual_viewport.GetScrollOffset());
+  visual_viewport.SetLocation(gfx::PointF(150, 0));
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(150, 0), visual_viewport.GetScrollOffset());
 
   // Verify the initial size of the visual viewport in the CSS pixels
   EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 100),
@@ -524,7 +524,7 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
 
   EXPECT_EQ(ScrollOffset(0, 0),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visual_viewport.GetScrollOffset());
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(150, 0), visual_viewport.GetScrollOffset());
 
   // Verify the paint property nodes and GeometryMapper cache.
   {
@@ -553,17 +553,16 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
 
   // Initial visible rect should be the whole frame.
-  EXPECT_EQ(IntSize(WebView()->MainFrameViewWidget()->Size()),
-            visual_viewport.Size());
+  EXPECT_EQ(WebView()->MainFrameViewWidget()->Size(), visual_viewport.Size());
 
   // Viewport is whole frame.
-  IntSize size = IntSize(400, 200);
-  WebView()->MainFrameViewWidget()->Resize(ToGfxSize(size));
+  gfx::Size size = gfx::Size(400, 200);
+  WebView()->MainFrameViewWidget()->Resize(size);
   UpdateAllLifecyclePhases();
   visual_viewport.SetSize(size);
 
   // Scale the viewport to 2X; size should not change.
-  FloatRect expected_rect(FloatPoint(0, 0), FloatSize(size));
+  FloatRect expected_rect(gfx::PointF(0, 0), FloatSize(size));
   expected_rect.Scale(0.5);
   visual_viewport.SetScale(2);
   EXPECT_EQ(2, visual_viewport.Scale());
@@ -571,23 +570,23 @@ TEST_P(VisualViewportTest, TestVisibleRect) {
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
 
   // Move the viewport.
-  expected_rect.set_origin(FloatPoint(5, 7));
+  expected_rect.set_origin(gfx::PointF(5, 7));
   visual_viewport.SetLocation(expected_rect.origin());
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
 
-  expected_rect.set_origin(FloatPoint(200, 100));
+  expected_rect.set_origin(gfx::PointF(200, 100));
   visual_viewport.SetLocation(expected_rect.origin());
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
 
   // Scale the viewport to 3X to introduce some non-int values.
-  FloatPoint oldLocation = expected_rect.origin();
-  expected_rect = FloatRect(FloatPoint(), FloatSize(size));
+  gfx::PointF oldLocation = expected_rect.origin();
+  expected_rect = FloatRect(gfx::PointF(), FloatSize(size));
   expected_rect.Scale(1 / 3.0f);
   expected_rect.set_origin(oldLocation);
   visual_viewport.SetScale(3);
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
 
-  expected_rect.set_origin(FloatPoint(0.25f, 0.333f));
+  expected_rect.set_origin(gfx::PointF(0.25f, 0.333f));
   visual_viewport.SetLocation(expected_rect.origin());
   EXPECT_FLOAT_RECT_EQ(expected_rect, visual_viewport.VisibleRect());
 }
@@ -606,7 +605,7 @@ TEST_P(VisualViewportTest, TestFractionalScrollOffsetIsNotOverwritten) {
   frame_view.LayoutViewport()->ScrollableArea::SetScrollOffset(
       ScrollOffset(10, 30.5), mojom::blink::ScrollType::kCompositor);
 
-  EXPECT_EQ(30.5, frame_view.LayoutViewport()->GetScrollOffset().height());
+  EXPECT_EQ(30.5, frame_view.LayoutViewport()->GetScrollOffset().y());
 }
 
 // Test that the viewport's scroll offset is always appropriately bounded such
@@ -627,45 +626,45 @@ TEST_P(VisualViewportTest, TestOffsetClamping) {
   // possible. At minimum scale, the viewport is 1280x960.
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   ASSERT_EQ(0.25, visual_viewport.Scale());
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
-  visual_viewport.SetLocation(FloatPoint(-1, -2));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(-1, -2));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
-  visual_viewport.SetLocation(FloatPoint(100, 200));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(100, 200));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
-  visual_viewport.SetLocation(FloatPoint(-5, 10));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(-5, 10));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
   // Scale to 2x. The viewport's visible rect should now have a size of 160x120.
   visual_viewport.SetScale(2);
-  FloatPoint location(10, 50);
+  gfx::PointF location(10, 50);
   visual_viewport.SetLocation(location);
   EXPECT_FLOAT_POINT_EQ(location, visual_viewport.VisibleRect().origin());
 
-  visual_viewport.SetLocation(FloatPoint(10000, 10000));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(1120, 840),
+  visual_viewport.SetLocation(gfx::PointF(10000, 10000));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(1120, 840),
                         visual_viewport.VisibleRect().origin());
 
-  visual_viewport.SetLocation(FloatPoint(-2000, -2000));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(-2000, -2000));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
   // Make sure offset gets clamped on scale out. Scale to 1.25 so the viewport
   // is 256x192.
-  visual_viewport.SetLocation(FloatPoint(1120, 840));
+  visual_viewport.SetLocation(gfx::PointF(1120, 840));
   visual_viewport.SetScale(1.25);
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(1024, 768),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(1024, 768),
                         visual_viewport.VisibleRect().origin());
 
   // Scale out smaller than 1.
   visual_viewport.SetScale(0.25);
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 }
 
@@ -682,59 +681,59 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResize) {
   // Visual viewport should be initialized to same size as frame so no scrolling
   // possible.
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
   // Shrink the viewport vertically. The resize shouldn't affect the location,
   // but it should allow vertical scrolling.
-  visual_viewport.SetSize(IntSize(320, 200));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetSize(gfx::Size(320, 200));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(10, 20));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 20),
+  visual_viewport.SetLocation(gfx::PointF(10, 20));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 20),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(0, 100));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 40),
+  visual_viewport.SetLocation(gfx::PointF(0, 100));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 40),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(0, 10));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 10),
+  visual_viewport.SetLocation(gfx::PointF(0, 10));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 10),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(0, -100));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(0, -100));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
   // Repeat the above but for horizontal dimension.
-  visual_viewport.SetSize(IntSize(280, 240));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetSize(gfx::Size(280, 240));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(10, 20));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(10, 0),
+  visual_viewport.SetLocation(gfx::PointF(10, 20));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(10, 0),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(100, 0));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(40, 0),
+  visual_viewport.SetLocation(gfx::PointF(100, 0));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(40, 0),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(10, 0));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(10, 0),
+  visual_viewport.SetLocation(gfx::PointF(10, 0));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(10, 0),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(-100, 0));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(-100, 0));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
   // Now with both dimensions.
-  visual_viewport.SetSize(IntSize(280, 200));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetSize(gfx::Size(280, 200));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(10, 20));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(10, 20),
+  visual_viewport.SetLocation(gfx::PointF(10, 20));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(10, 20),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(100, 100));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(40, 40),
+  visual_viewport.SetLocation(gfx::PointF(100, 100));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(40, 40),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(10, 3));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(10, 3),
+  visual_viewport.SetLocation(gfx::PointF(10, 3));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(10, 3),
                         visual_viewport.VisibleRect().origin());
-  visual_viewport.SetLocation(FloatPoint(-10, -4));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  visual_viewport.SetLocation(gfx::PointF(-10, -4));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 }
 
@@ -750,44 +749,43 @@ TEST_P(VisualViewportTest, TestOffsetClampingWithResizeAndScale) {
   // Visual viewport should be initialized to same size as WebView so no
   // scrolling possible.
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(0, 0),
                         visual_viewport.VisibleRect().origin());
 
   // Zoom in to 2X so we can scroll the viewport to 160x120.
   visual_viewport.SetScale(2);
-  visual_viewport.SetLocation(FloatPoint(200, 200));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(160, 120),
+  visual_viewport.SetLocation(gfx::PointF(200, 200));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(160, 120),
                         visual_viewport.VisibleRect().origin());
 
   // Now resize the viewport to make it 10px smaller. Since we're zoomed in by
   // 2X it should allow us to scroll by 5px more.
-  visual_viewport.SetSize(IntSize(310, 230));
-  visual_viewport.SetLocation(FloatPoint(200, 200));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(165, 125),
+  visual_viewport.SetSize(gfx::Size(310, 230));
+  visual_viewport.SetLocation(gfx::PointF(200, 200));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(165, 125),
                         visual_viewport.VisibleRect().origin());
 
   // The viewport can be larger than the main frame (currently 320, 240) though
   // typically the scale will be clamped to prevent it from actually being
   // larger.
-  visual_viewport.SetSize(IntSize(330, 250));
-  EXPECT_EQ(IntSize(330, 250), visual_viewport.Size());
+  visual_viewport.SetSize(gfx::Size(330, 250));
+  EXPECT_EQ(gfx::Size(330, 250), visual_viewport.Size());
 
   // Resize both the viewport and the frame to be larger.
   WebView()->MainFrameViewWidget()->Resize(gfx::Size(640, 480));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(IntSize(WebView()->MainFrameViewWidget()->Size()),
-            visual_viewport.Size());
-  EXPECT_EQ(IntSize(WebView()->MainFrameViewWidget()->Size()),
+  EXPECT_EQ(WebView()->MainFrameViewWidget()->Size(), visual_viewport.Size());
+  EXPECT_EQ(WebView()->MainFrameViewWidget()->Size(),
             GetFrame()->View()->FrameRect().size());
-  visual_viewport.SetLocation(FloatPoint(1000, 1000));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(320, 240),
+  visual_viewport.SetLocation(gfx::PointF(1000, 1000));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(320, 240),
                         visual_viewport.VisibleRect().origin());
 
   // Make sure resizing the viewport doesn't change its offset if the resize
   // doesn't make the viewport go out of bounds.
-  visual_viewport.SetLocation(FloatPoint(200, 200));
-  visual_viewport.SetSize(IntSize(880, 560));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(200, 200),
+  visual_viewport.SetLocation(gfx::PointF(200, 200));
+  visual_viewport.SetSize(gfx::Size(880, 560));
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(200, 200),
                         visual_viewport.VisibleRect().origin());
 }
 
@@ -807,7 +805,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToContent) {
 
   // Note: the size is ceiled and should match the behavior in CC's
   // LayerImpl::bounds().
-  EXPECT_EQ(IntSize(200, 267),
+  EXPECT_EQ(gfx::Size(200, 267),
             WebView()->MainFrameImpl()->GetFrameView()->FrameRect().size());
 }
 
@@ -824,7 +822,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToMinimumScale) {
   WebView()->MainFrameViewWidget()->Resize(gfx::Size(100, 160));
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(IntSize(100, 160),
+  EXPECT_EQ(gfx::Size(100, 160),
             WebView()->MainFrameImpl()->GetFrameView()->FrameRect().size());
 }
 
@@ -845,7 +843,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   visual_viewport.Move(ScrollOffset(50, 60));
 
   // Move and scale the viewport to make sure it gets reset in the navigation.
-  EXPECT_EQ(FloatSize(50, 60), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(50, 60), visual_viewport.GetScrollOffset());
   EXPECT_EQ(2, visual_viewport.Scale());
 
   // Navigate again, this time the LocalFrameView should be smaller.
@@ -859,7 +857,7 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
             visual_viewport.GetScrollNode()->ContentsRect());
 
   // Ensure the location and scale were reset.
-  EXPECT_EQ(FloatSize(), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(), visual_viewport.GetScrollOffset());
   EXPECT_EQ(1, visual_viewport.Scale());
 }
 
@@ -876,7 +874,7 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToViewportMetaMinimumScale) {
   WebView()->MainFrameViewWidget()->Resize(gfx::Size(100, 160));
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(IntSize(50, 80),
+  EXPECT_EQ(gfx::Size(50, 80),
             WebView()->MainFrameImpl()->GetFrameView()->FrameRect().size());
 }
 
@@ -884,15 +882,15 @@ TEST_P(VisualViewportTest, TestFrameViewSizedToViewportMetaMinimumScale) {
 TEST_P(VisualViewportTest, TestVisualViewportGetsSizeInAutoSizeMode) {
   InitializeWithDesktopSettings();
 
-  EXPECT_EQ(IntSize(0, 0), IntSize(WebView()->MainFrameViewWidget()->Size()));
-  EXPECT_EQ(IntSize(0, 0), GetFrame()->GetPage()->GetVisualViewport().Size());
+  EXPECT_EQ(gfx::Size(0, 0), WebView()->MainFrameViewWidget()->Size());
+  EXPECT_EQ(gfx::Size(0, 0), GetFrame()->GetPage()->GetVisualViewport().Size());
 
   WebView()->EnableAutoResizeMode(gfx::Size(10, 10), gfx::Size(1000, 1000));
 
   RegisterMockedHttpURLLoad("200-by-300.html");
   NavigateTo(base_url_ + "200-by-300.html");
 
-  EXPECT_EQ(IntSize(200, 300),
+  EXPECT_EQ(gfx::Size(200, 300),
             GetFrame()->GetPage()->GetVisualViewport().Size());
 }
 
@@ -914,19 +912,19 @@ TEST_P(VisualViewportTest, TestTextSelectionHandles) {
                                                              original_focus);
 
   WebView()->SetPageScaleFactor(2);
-  visual_viewport.SetLocation(FloatPoint(100, 400));
+  visual_viewport.SetLocation(gfx::PointF(100, 400));
 
   gfx::Rect anchor;
   gfx::Rect focus;
   WebView()->MainFrameViewWidget()->CalculateSelectionBounds(anchor, focus);
 
   gfx::Point expected = original_anchor.origin();
-  expected -= gfx::ToFlooredVector2d(
-      ToGfxVector2dF(visual_viewport.VisibleRect().origin()));
+  expected -=
+      gfx::ToFlooredVector2d(visual_viewport.VisibleRect().OffsetFromOrigin());
   expected = gfx::ScaleToRoundedPoint(expected, visual_viewport.Scale());
 
-  EXPECT_EQ(expected, IntRect(anchor).origin());
-  EXPECT_EQ(expected, IntRect(focus).origin());
+  EXPECT_EQ(expected, anchor.origin());
+  EXPECT_EQ(expected, focus.origin());
 
   // FIXME(bokan) - http://crbug.com/364154 - Figure out how to test text
   // selection as well rather than just carret.
@@ -959,7 +957,7 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
                    ->GetViewState()
                    ->page_scale_factor_);
 
-  visual_viewport.SetLocation(FloatPoint(10, 20));
+  visual_viewport.SetLocation(gfx::PointF(10, 20));
 
   EXPECT_EQ(ScrollOffset(10, 20),
             To<LocalFrame>(WebView()->GetPage()->MainFrame())
@@ -991,7 +989,7 @@ TEST_P(VisualViewportTest, TestRestoredFromHistoryItem) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_EQ(2, visual_viewport.Scale());
 
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(100, 120),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(100, 120),
                         visual_viewport.VisibleRect().origin());
 }
 
@@ -1022,7 +1020,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   EXPECT_EQ(2, visual_viewport.Scale());
   EXPECT_EQ(ScrollOffset(100, 150),
             GetFrame()->View()->LayoutViewport()->GetScrollOffset());
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(20, 30),
+  EXPECT_FLOAT_POINT_EQ(gfx::PointF(20, 30),
                         visual_viewport.VisibleRect().origin());
 }
 
@@ -1041,11 +1039,11 @@ TEST_P(VisualViewportTest,
   frame_view->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, 1000), mojom::blink::ScrollType::kProgrammatic);
 
-  EXPECT_EQ(IntSize(1000, 1000), frame_view->FrameRect().size());
+  EXPECT_EQ(gfx::Size(1000, 1000), frame_view->FrameRect().size());
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.SetScale(2);
-  visual_viewport.SetLocation(FloatPoint(350, 350));
+  visual_viewport.SetLocation(gfx::PointF(350, 350));
 
   Persistent<HistoryItem> firstItem = WebView()
                                           ->MainFrameImpl()
@@ -1121,7 +1119,7 @@ TEST_P(VisualViewportTest, TestWebViewResizeCausesViewportConstrainedLayout) {
 
   EXPECT_FALSE(navbar->NeedsLayout());
 
-  GetFrame()->View()->Resize(IntSize(500, 200));
+  GetFrame()->View()->Resize(gfx::Size(500, 200));
 
   EXPECT_TRUE(navbar->NeedsLayout());
 }
@@ -1189,7 +1187,7 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   WebView()->SetPageScaleFactor(2);
   EXPECT_CALL(mock_web_frame_client, DidChangeScrollOffset());
-  visual_viewport.SetLocation(FloatPoint(60, 80));
+  visual_viewport.SetLocation(gfx::PointF(60, 80));
   EXPECT_CALL(
       mock_web_frame_client,
       UpdateContextMenuDataForTesting(
@@ -1223,17 +1221,17 @@ TEST_P(VisualViewportTest, TestClientNotifiedOfScrollEvents) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
 
   EXPECT_CALL(mock_web_frame_client, DidChangeScrollOffset());
-  visual_viewport.SetLocation(FloatPoint(60, 80));
+  visual_viewport.SetLocation(gfx::PointF(60, 80));
   Mock::VerifyAndClearExpectations(&mock_web_frame_client);
 
   // Scroll vertically.
   EXPECT_CALL(mock_web_frame_client, DidChangeScrollOffset());
-  visual_viewport.SetLocation(FloatPoint(60, 90));
+  visual_viewport.SetLocation(gfx::PointF(60, 90));
   Mock::VerifyAndClearExpectations(&mock_web_frame_client);
 
   // Scroll horizontally.
   EXPECT_CALL(mock_web_frame_client, DidChangeScrollOffset());
-  visual_viewport.SetLocation(FloatPoint(70, 90));
+  visual_viewport.SetLocation(gfx::PointF(70, 90));
 
   // Reset the old client so destruction can occur naturally.
   WebView()->MainFrameImpl()->SetClient(old_client);
@@ -1270,7 +1268,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
     EXPECT_EQ(ScrollOffset(0, 900),
               layout_viewport_scrollable_area->GetScrollOffset());
   }
-  EXPECT_EQ(FloatSize(250.25f, 100.25f), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(250.25f, 100.25f), visual_viewport.GetScrollOffset());
 
   // Change the fractional part of the frameview to one that would round down.
   layout_viewport_scrollable_area->SetScrollOffset(
@@ -1284,7 +1282,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
     EXPECT_EQ(ScrollOffset(0, 900),
               layout_viewport_scrollable_area->GetScrollOffset());
   }
-  EXPECT_EQ(FloatSize(250.25f, 100.25f), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(250.25f, 100.25f), visual_viewport.GetScrollOffset());
 
   // Repeat both tests above with the visual viewport at a high fractional.
   WebView()->SetVisualViewportOffset(gfx::PointF(250.875f, 100.875f));
@@ -1299,7 +1297,8 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
     EXPECT_EQ(ScrollOffset(0, 900),
               layout_viewport_scrollable_area->GetScrollOffset());
   }
-  EXPECT_EQ(FloatSize(250.875f, 100.875f), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(250.875f, 100.875f),
+            visual_viewport.GetScrollOffset());
 
   // Change the fractional part of the frameview to one that would round down.
   layout_viewport_scrollable_area->SetScrollOffset(
@@ -1313,7 +1312,8 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
     EXPECT_EQ(ScrollOffset(0, 900),
               layout_viewport_scrollable_area->GetScrollOffset());
   }
-  EXPECT_EQ(FloatSize(250.875f, 100.875f), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(250.875f, 100.875f),
+            visual_viewport.GetScrollOffset());
 
   // Both viewports with a 0.5 fraction.
   WebView()->SetVisualViewportOffset(gfx::PointF(250.5f, 100.5f));
@@ -1328,7 +1328,7 @@ TEST_P(VisualViewportTest, ScrollIntoViewFractionalOffset) {
     EXPECT_EQ(ScrollOffset(0, 900),
               layout_viewport_scrollable_area->GetScrollOffset());
   }
-  EXPECT_EQ(FloatSize(250.5f, 100.5f), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(250.5f, 100.5f), visual_viewport.GetScrollOffset());
 }
 
 static ScrollOffset expectedMaxLayoutViewportScrollOffset(
@@ -1337,7 +1337,7 @@ static ScrollOffset expectedMaxLayoutViewportScrollOffset(
   float aspect_ratio = visual_viewport.VisibleRect().width() /
                        visual_viewport.VisibleRect().height();
   float new_height = frame_view.FrameRect().width() / aspect_ratio;
-  IntSize contents_size = frame_view.LayoutViewport()->ContentsSize();
+  gfx::Size contents_size = frame_view.LayoutViewport()->ContentsSize();
   return ScrollOffset(contents_size.width() - frame_view.FrameRect().width(),
                       contents_size.height() - new_height);
 }
@@ -1355,21 +1355,21 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(1);
-  EXPECT_EQ(FloatSize(500, 450), visual_viewport.VisibleRect().size());
-  EXPECT_EQ(IntSize(1000, 900), frame_view.FrameRect().size());
+  EXPECT_EQ(gfx::SizeF(500, 450), visual_viewport.VisibleRect().size());
+  EXPECT_EQ(gfx::Size(1000, 900), frame_view.FrameRect().size());
 
   // Simulate bringing down the browser controls by 20px.
   WebView()->MainFrameViewWidget()->ApplyViewportChangesForTesting(
       {gfx::Vector2dF(), gfx::Vector2dF(), 1, false, 1, 0,
        cc::BrowserControlsState::kBoth});
-  EXPECT_EQ(FloatSize(500, 430), visual_viewport.VisibleRect().size());
+  EXPECT_EQ(gfx::SizeF(500, 430), visual_viewport.VisibleRect().size());
 
   // Test that the scroll bounds are adjusted appropriately: the visual viewport
   // should be shrunk by 20px to 430px. The outer viewport was shrunk to
   // maintain the
   // aspect ratio so it's height is 860px.
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  EXPECT_EQ(FloatSize(500, 860 - 430), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(500, 860 - 430), visual_viewport.GetScrollOffset());
 
   // The outer viewport (LocalFrameView) should be affected as well.
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
@@ -1386,8 +1386,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustment) {
 
   // maximumScrollPosition |ceil|s the browser controls adjustment.
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(500, 881 - 441),
-                       visual_viewport.GetScrollOffset());
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(500, 881 - 441),
+                      visual_viewport.GetScrollOffset());
 
   // The outer viewport (LocalFrameView) should be affected as well.
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
@@ -1409,8 +1409,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(2);
-  EXPECT_EQ(FloatSize(250, 225), visual_viewport.VisibleRect().size());
-  EXPECT_EQ(IntSize(1000, 900), frame_view.FrameRect().size());
+  EXPECT_EQ(gfx::SizeF(250, 225), visual_viewport.VisibleRect().size());
+  EXPECT_EQ(gfx::Size(1000, 900), frame_view.FrameRect().size());
 
   // Simulate bringing down the browser controls by 20px. Since we're zoomed in,
   // the browser controls take up half as much space (in document-space) than
@@ -1418,11 +1418,11 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
   WebView()->MainFrameViewWidget()->ApplyViewportChangesForTesting(
       {gfx::Vector2dF(), gfx::Vector2dF(), 1, false, 1, 0,
        cc::BrowserControlsState::kBoth});
-  EXPECT_EQ(FloatSize(250, 215), visual_viewport.VisibleRect().size());
+  EXPECT_EQ(gfx::SizeF(250, 215), visual_viewport.VisibleRect().size());
 
   // Test that the scroll bounds are adjusted appropriately.
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  EXPECT_EQ(FloatSize(750, 860 - 215), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(750, 860 - 215), visual_viewport.GetScrollOffset());
 
   // The outer viewport (LocalFrameView) should be affected as well.
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
@@ -1442,26 +1442,26 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentWithScale) {
                                         mojom::blink::ScrollType::kUser);
   EXPECT_EQ(expected, frame_view.LayoutViewport()->GetScrollOffset());
 
-  EXPECT_EQ(FloatSize(500, 860 - 430), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(500, 860 - 430), visual_viewport.GetScrollOffset());
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  EXPECT_EQ(FloatSize(500, 860 - 430), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(500, 860 - 430), visual_viewport.GetScrollOffset());
 
   // Scale out, use a scale that causes fractional rects.
   WebView()->MainFrameViewWidget()->ApplyViewportChangesForTesting(
       {gfx::Vector2dF(), gfx::Vector2dF(), 0.8f, false, -1, 0,
        cc::BrowserControlsState::kBoth});
-  EXPECT_EQ(FloatSize(625, 562.5), visual_viewport.VisibleRect().size());
+  EXPECT_EQ(gfx::SizeF(625, 562.5), visual_viewport.VisibleRect().size());
 
   // Bring out the browser controls by 11
   WebView()->MainFrameViewWidget()->ApplyViewportChangesForTesting(
       {gfx::Vector2dF(), gfx::Vector2dF(), 1, false, 11 / 20.f, 0,
        cc::BrowserControlsState::kBoth});
-  EXPECT_EQ(FloatSize(625, 548.75), visual_viewport.VisibleRect().size());
+  EXPECT_EQ(gfx::SizeF(625, 548.75), visual_viewport.VisibleRect().size());
 
   // Ensure max scroll offsets are updated properly.
   visual_viewport.Move(ScrollOffset(10000, 10000));
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(375, 877.5 - 548.75),
-                       visual_viewport.GetScrollOffset());
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(375, 877.5 - 548.75),
+                      visual_viewport.GetScrollOffset());
 
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
                                         mojom::blink::ScrollType::kUser);
@@ -1503,13 +1503,13 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(page_scale);
-  EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
-                               page_scale),
+  EXPECT_EQ(gfx::SizeF(250, (visual_viewport_height - browser_controls_height) /
+                                page_scale),
             visual_viewport.VisibleRect().size());
-  EXPECT_EQ(IntSize(1000, layout_viewport_height -
-                              browser_controls_height / min_page_scale),
+  EXPECT_EQ(gfx::Size(1000, layout_viewport_height -
+                                browser_controls_height / min_page_scale),
             frame_view.FrameRect().size());
-  EXPECT_EQ(IntSize(500, visual_viewport_height - browser_controls_height),
+  EXPECT_EQ(gfx::Size(500, visual_viewport_height - browser_controls_height),
             visual_viewport.Size());
 
   // Scroll all the way to the bottom, hiding the browser controls in the
@@ -1519,7 +1519,7 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
                                         mojom::blink::ScrollType::kUser);
   WebView()->GetBrowserControls().SetShownRatio(0, 0);
 
-  EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
+  EXPECT_EQ(gfx::SizeF(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().size());
 
   ScrollOffset frame_view_expected =
@@ -1542,10 +1542,10 @@ TEST_P(VisualViewportTest, TestBrowserControlsAdjustmentAndResize) {
                                        controls);
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(IntSize(500, visual_viewport_height), visual_viewport.Size());
-  EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
+  EXPECT_EQ(gfx::Size(500, visual_viewport_height), visual_viewport.Size());
+  EXPECT_EQ(gfx::SizeF(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().size());
-  EXPECT_EQ(IntSize(1000, layout_viewport_height),
+  EXPECT_EQ(gfx::Size(1000, layout_viewport_height),
             frame_view.FrameRect().size());
 
   EXPECT_EQ(total_expected, visual_viewport.GetScrollOffset() +
@@ -1583,11 +1583,11 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
 
   visual_viewport.SetScale(page_scale);
-  EXPECT_EQ(FloatSize(250, visual_viewport_height / page_scale),
+  EXPECT_EQ(gfx::SizeF(250, visual_viewport_height / page_scale),
             visual_viewport.VisibleRect().size());
-  EXPECT_EQ(IntSize(1000, layout_viewport_height),
+  EXPECT_EQ(gfx::Size(1000, layout_viewport_height),
             frame_view.FrameRect().size());
-  EXPECT_EQ(IntSize(500, visual_viewport_height), visual_viewport.Size());
+  EXPECT_EQ(gfx::Size(500, visual_viewport_height), visual_viewport.Size());
 
   // Scroll all the way to the bottom, showing the the browser controls in the
   // process. (This could happen via window.scrollTo during a scroll, for
@@ -1597,8 +1597,8 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
   frame_view.LayoutViewport()->ScrollBy(ScrollOffset(10000, 10000),
                                         mojom::blink::ScrollType::kUser);
 
-  EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
-                               page_scale),
+  EXPECT_EQ(gfx::SizeF(250, (visual_viewport_height - browser_controls_height) /
+                                page_scale),
             visual_viewport.VisibleRect().size());
 
   ScrollOffset frame_view_expected(
@@ -1622,13 +1622,13 @@ TEST_P(VisualViewportTest, TestBrowserControlsShrinkAdjustmentAndResize) {
       true);
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(IntSize(500, visual_viewport_height - browser_controls_height),
+  EXPECT_EQ(gfx::Size(500, visual_viewport_height - browser_controls_height),
             visual_viewport.Size());
-  EXPECT_EQ(FloatSize(250, (visual_viewport_height - browser_controls_height) /
-                               page_scale),
+  EXPECT_EQ(gfx::SizeF(250, (visual_viewport_height - browser_controls_height) /
+                                page_scale),
             visual_viewport.VisibleRect().size());
-  EXPECT_EQ(IntSize(1000, layout_viewport_height -
-                              browser_controls_height / min_page_scale),
+  EXPECT_EQ(gfx::Size(1000, layout_viewport_height -
+                                browser_controls_height / min_page_scale),
             frame_view.FrameRect().size());
   EXPECT_EQ(total_expected, visual_viewport.GetScrollOffset() +
                                 frame_view.LayoutViewport()->GetScrollOffset());
@@ -1660,12 +1660,12 @@ TEST_P(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame) {
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
   frame_view.LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, 10000), mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_EQ(500, frame_view.LayoutViewport()->GetScrollOffset().height());
+  EXPECT_EQ(500, frame_view.LayoutViewport()->GetScrollOffset().y());
 
   // Now send the resize, make sure the scroll offset doesn't change.
   WebView()->ResizeWithBrowserControls(gfx::Size(1000, 1500), 500, 0, false);
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(500, frame_view.LayoutViewport()->GetScrollOffset().height());
+  EXPECT_EQ(500, frame_view.LayoutViewport()->GetScrollOffset().y());
 }
 
 static void configureHiddenScrollbarsSettings(WebSettings* settings) {
@@ -1739,11 +1739,11 @@ TEST_P(VisualViewportTest, ResizeVisualViewportStaysWithinOuterViewport) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.Move(ScrollOffset(0, 100));
 
-  EXPECT_EQ(100, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(100, visual_viewport.GetScrollOffset().y());
 
   WebView()->ResizeVisualViewport(gfx::Size(100, 200));
 
-  EXPECT_EQ(0, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(0, visual_viewport.GetScrollOffset().y());
 }
 
 TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
@@ -1757,23 +1757,23 @@ TEST_P(VisualViewportTest, ElementBoundsInViewportSpaceAccountsForViewport) {
   To<LocalFrame>(WebView()->GetPage()->MainFrame())->SetInitialFocus(false);
   Element* input_element = WebView()->FocusedElement();
 
-  IntRect bounds = input_element->GetLayoutObject()->AbsoluteBoundingBoxRect();
+  gfx::Rect bounds =
+      input_element->GetLayoutObject()->AbsoluteBoundingBoxRect();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  FloatPoint scrollDelta(250, 400);
+  gfx::Vector2dF scroll_delta(250, 400);
   visual_viewport.SetScale(2);
-  visual_viewport.SetLocation(scrollDelta);
+  visual_viewport.SetLocation(gfx::PointAtOffsetFromOrigin(scroll_delta));
 
-  const IntRect bounds_in_viewport = input_element->BoundsInViewport();
-  IntRect expectedBounds = bounds;
-  expectedBounds.Scale(2.f);
-  FloatPoint expectedScrollDelta = scrollDelta;
-  expectedScrollDelta.Scale(2.f, 2.f);
+  const gfx::Rect bounds_in_viewport = input_element->BoundsInViewport();
+  gfx::Rect expected_bounds = gfx::ScaleToRoundedRect(bounds, 2.f);
+  gfx::Vector2dF expected_scroll_delta = scroll_delta;
+  expected_scroll_delta.Scale(2.f, 2.f);
 
-  EXPECT_EQ(RoundedIntPoint(FloatPoint(FloatPoint(expectedBounds.origin()) -
-                                       expectedScrollDelta)),
+  EXPECT_EQ(gfx::ToRoundedPoint(gfx::PointF(expected_bounds.origin()) -
+                                expected_scroll_delta),
             bounds_in_viewport.origin());
-  EXPECT_EQ(expectedBounds.size(), bounds_in_viewport.size());
+  EXPECT_EQ(expected_bounds.size(), bounds_in_viewport.size());
 }
 
 TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
@@ -1840,8 +1840,8 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
       ScrollOffset(10, 15), mojom::blink::ScrollType::kProgrammatic,
       mojom::blink::ScrollBehavior::kInstant, ScrollableArea::ScrollCallback());
 
-  ASSERT_EQ(10, visual_viewport.GetScrollOffset().width());
-  ASSERT_EQ(15, visual_viewport.GetScrollOffset().height());
+  ASSERT_EQ(10, visual_viewport.GetScrollOffset().x());
+  ASSERT_EQ(15, visual_viewport.GetScrollOffset().y());
   EXPECT_EQ(0, window->scrollX());
   EXPECT_EQ(0, window->scrollY());
 
@@ -1849,28 +1849,28 @@ TEST_P(VisualViewportTest, visualViewportIsInert) {
   html->setScrollTop(30);
   EXPECT_EQ(5, html->scrollLeft());
   EXPECT_EQ(30, html->scrollTop());
-  EXPECT_EQ(10, visual_viewport.GetScrollOffset().width());
-  EXPECT_EQ(15, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().x());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().y());
 
   html->setScrollLeft(5000);
   html->setScrollTop(5000);
   EXPECT_EQ(600, html->scrollLeft());
   EXPECT_EQ(500, html->scrollTop());
-  EXPECT_EQ(10, visual_viewport.GetScrollOffset().width());
-  EXPECT_EQ(15, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().x());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().y());
 
   html->setScrollLeft(0);
   html->setScrollTop(0);
   EXPECT_EQ(0, html->scrollLeft());
   EXPECT_EQ(0, html->scrollTop());
-  EXPECT_EQ(10, visual_viewport.GetScrollOffset().width());
-  EXPECT_EQ(15, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().x());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().y());
 
   window->scrollTo(5000, 5000);
   EXPECT_EQ(600, html->scrollLeft());
   EXPECT_EQ(500, html->scrollTop());
-  EXPECT_EQ(10, visual_viewport.GetScrollOffset().width());
-  EXPECT_EQ(15, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(10, visual_viewport.GetScrollOffset().x());
+  EXPECT_EQ(15, visual_viewport.GetScrollOffset().y());
 }
 
 // Tests that when a new frame is created, it is created with the intended size
@@ -1890,7 +1890,7 @@ TEST_P(VisualViewportTest, TestMainFrameInitializationSizing) {
   local_frame->CreateFrameView();
 
   LocalFrameView& frame_view = *local_frame->GetFrameView();
-  EXPECT_EQ(IntSize(200, 400), frame_view.FrameRect().size());
+  EXPECT_EQ(gfx::Size(200, 400), frame_view.FrameRect().size());
   frame_view.Dispose();
 }
 
@@ -1926,7 +1926,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
       {gfx::Vector2dF(300, 200), gfx::Vector2dF(0, 0), 2, false, 0, 0,
        cc::BrowserControlsState::kBoth});
 
-  EXPECT_EQ(FloatSize(300, 200), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(300, 200), visual_viewport.GetScrollOffset());
 
   // Send a scroll event on the main thread path.
   WebGestureEvent gsb(
@@ -1952,7 +1952,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   GetFrame()->GetEventHandler().HandleGestureEvent(gsu);
 
   // The scroll sent from the impl-side must not be overwritten.
-  EXPECT_EQ(FloatSize(350, 260), visual_viewport.GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(350, 260), visual_viewport.GetScrollOffset());
 }
 
 TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
@@ -2000,44 +2000,47 @@ TEST_P(VisualViewportTest, TestCoordinateTransforms) {
   // At scale = 1 the transform should be a no-op.
   visual_viewport.SetScale(1);
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(314, 273),
-      visual_viewport.ViewportToRootFrame(FloatPoint(314, 273)));
+      gfx::PointF(314, 273),
+      visual_viewport.ViewportToRootFrame(gfx::PointF(314, 273)));
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(314, 273),
-      visual_viewport.RootFrameToViewport(FloatPoint(314, 273)));
+      gfx::PointF(314, 273),
+      visual_viewport.RootFrameToViewport(gfx::PointF(314, 273)));
 
   // At scale = 2.
   visual_viewport.SetScale(2);
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(55, 75), visual_viewport.ViewportToRootFrame(
-                                                FloatPoint(110, 150)));
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(110, 150),
-      visual_viewport.RootFrameToViewport(FloatPoint(55, 75)));
+      gfx::PointF(55, 75),
+      visual_viewport.ViewportToRootFrame(gfx::PointF(110, 150)));
+  EXPECT_FLOAT_POINT_EQ(
+      gfx::PointF(110, 150),
+      visual_viewport.RootFrameToViewport(gfx::PointF(55, 75)));
 
   // At scale = 2 and with the visual viewport offset.
-  visual_viewport.SetLocation(FloatPoint(10, 12));
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 62), visual_viewport.ViewportToRootFrame(
-                                                FloatPoint(80, 100)));
+  visual_viewport.SetLocation(gfx::PointF(10, 12));
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(80, 100),
-      visual_viewport.RootFrameToViewport(FloatPoint(50, 62)));
+      gfx::PointF(50, 62),
+      visual_viewport.ViewportToRootFrame(gfx::PointF(80, 100)));
+  EXPECT_FLOAT_POINT_EQ(
+      gfx::PointF(80, 100),
+      visual_viewport.RootFrameToViewport(gfx::PointF(50, 62)));
 
   // Test points that will cause non-integer values.
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(50.5, 62.4),
-      visual_viewport.ViewportToRootFrame(FloatPoint(81, 100.8)));
+      gfx::PointF(50.5, 62.4),
+      visual_viewport.ViewportToRootFrame(gfx::PointF(81, 100.8)));
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(81, 100.8),
-      visual_viewport.RootFrameToViewport(FloatPoint(50.5, 62.4)));
+      gfx::PointF(81, 100.8),
+      visual_viewport.RootFrameToViewport(gfx::PointF(50.5, 62.4)));
 
   // Scrolling the main frame should have no effect.
   frame_view.LayoutViewport()->SetScrollOffset(
       ScrollOffset(100, 120), mojom::blink::ScrollType::kProgrammatic);
-  EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 62), visual_viewport.ViewportToRootFrame(
-                                                FloatPoint(80, 100)));
   EXPECT_FLOAT_POINT_EQ(
-      FloatPoint(80, 100),
-      visual_viewport.RootFrameToViewport(FloatPoint(50, 62)));
+      gfx::PointF(50, 62),
+      visual_viewport.ViewportToRootFrame(gfx::PointF(80, 100)));
+  EXPECT_FLOAT_POINT_EQ(
+      gfx::PointF(80, 100),
+      visual_viewport.RootFrameToViewport(gfx::PointF(50, 62)));
 }
 
 // Tests that the window dimensions are available before a full layout occurs.
@@ -2587,25 +2590,25 @@ class VisualViewportScrollIntoViewTest : public VisualViewportSimTest {
 TEST_F(VisualViewportScrollIntoViewTest,
        ScrollingToFixedWithScrollSequenceAnimationShort) {
   VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
-  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().y());
   ScrollIntoView("bottom", true);
   visual_viewport.GetSmoothScrollSequencer()->RunQueuedAnimations();
-  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().y());
 }
 
 TEST_F(VisualViewportScrollIntoViewTest,
        ScrollingToFixedWithoutScrollSequenceAnimationShort) {
   VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
-  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().y());
   ScrollIntoView("bottom", false);
-  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().y());
 }
 
 TEST_F(VisualViewportScrollIntoViewTest, ScrollingToFixedFromJavascript) {
   VisualViewport& visual_viewport = WebView().GetPage()->GetVisualViewport();
-  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(0.f, visual_viewport.GetScrollOffset().y());
   GetDocument().getElementById("bottom")->scrollIntoView();
-  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().height());
+  EXPECT_EQ(100.f, visual_viewport.GetScrollOffset().y());
 }
 
 TEST_P(VisualViewportTest, DeviceEmulation) {
@@ -2756,20 +2759,20 @@ TEST_P(VisualViewportTest, DirectPinchZoomPropertyUpdate) {
 
   // Scroll visual viewport to the right edge of the frame
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  visual_viewport.SetScaleAndLocation(2.f, true, FloatPoint(150, 10));
+  visual_viewport.SetScaleAndLocation(2.f, true, gfx::PointF(150, 10));
 
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 10), visual_viewport.GetScrollOffset());
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(150, 10), visual_viewport.GetScrollOffset());
   EXPECT_EQ(2.f, visual_viewport.Scale());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
 
   // Update the scale and location and ensure that a PaintArtifactCompositor
   // update is not required.
-  visual_viewport.SetScaleAndLocation(3.f, true, FloatPoint(120, 10));
+  visual_viewport.SetScaleAndLocation(3.f, true, gfx::PointF(120, 10));
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
 
-  EXPECT_FLOAT_SIZE_EQ(FloatSize(120, 10), visual_viewport.GetScrollOffset());
+  EXPECT_VECTOR2DF_EQ(ScrollOffset(120, 10), visual_viewport.GetScrollOffset());
   EXPECT_EQ(3.f, visual_viewport.Scale());
 }
 
@@ -2841,17 +2844,17 @@ TEST_P(VisualViewportTest, SetLocationBeforePrePaint) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   visual_viewport.DisposeImpl();
   ASSERT_FALSE(visual_viewport.LayerForScrolling());
-  visual_viewport.SetScaleAndLocation(1.75, false, FloatPoint(12, 34));
-  EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
+  visual_viewport.SetScaleAndLocation(1.75, false, gfx::PointF(12, 34));
+  EXPECT_EQ(gfx::PointF(12, 34), visual_viewport.ScrollPosition());
 
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
+  EXPECT_EQ(gfx::PointF(12, 34), visual_viewport.ScrollPosition());
   // When we create the scrolling layer, we should update its scroll offset.
   ASSERT_TRUE(visual_viewport.LayerForScrolling());
 
   auto* layer_tree_host = GetFrame()->View()->RootCcLayer()->layer_tree_host();
   EXPECT_EQ(
-      gfx::Vector2dF(12, 34),
+      gfx::PointF(12, 34),
       layer_tree_host->property_trees()->scroll_tree.current_scroll_offset(
           visual_viewport.GetScrollElementId()));
 }
@@ -2864,7 +2867,7 @@ TEST_P(VisualViewportTest, ScrollbarGeometryOnSizeChange) {
   NavigateTo(base_url_ + "content-width-1000.html");
 
   auto& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_EQ(IntSize(100, 100), visual_viewport.Size());
+  EXPECT_EQ(gfx::Size(100, 100), visual_viewport.Size());
   auto* horizontal_scrollbar = visual_viewport.LayerForHorizontalScrollbar();
   auto* vertical_scrollbar = visual_viewport.LayerForVerticalScrollbar();
   ASSERT_TRUE(horizontal_scrollbar);
@@ -2882,7 +2885,7 @@ TEST_P(VisualViewportTest, ScrollbarGeometryOnSizeChange) {
   EXPECT_TRUE(
       GetFrame()->View()->VisualViewportOrOverlayNeedsRepaintForTesting());
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(IntSize(100, 120), visual_viewport.Size());
+  EXPECT_EQ(gfx::Size(100, 120), visual_viewport.Size());
   ASSERT_EQ(horizontal_scrollbar,
             visual_viewport.LayerForHorizontalScrollbar());
   ASSERT_EQ(vertical_scrollbar, visual_viewport.LayerForVerticalScrollbar());

@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -172,7 +173,7 @@ class WebAppFileHandlerRegistrationWinTest : public testing::Test {
   base::ScopedTempDir temp_version_dir_;
   content::BrowserTaskEnvironment task_environment_{
       content::BrowserTaskEnvironment::IO_MAINLOOP};
-  TestingProfile* profile_ = nullptr;
+  raw_ptr<TestingProfile> profile_ = nullptr;
   std::unique_ptr<TestingProfileManager> testing_profile_manager_;
   const AppId app_id_ = "app_id";
   // These are set in SetUp() and are the ProgIds for file handlers in the
@@ -199,12 +200,10 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
   AddAndVerifyFileAssociations(profile2, kAppName, " (Profile 2)");
 
-  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name(
-      ShellUtil::GetFileAssociationsAndAppName(file_handler1_prog_id()));
-  ASSERT_FALSE(file_associations_and_app_name.app_name.empty());
+  const std::wstring app_name(ShellUtil::GetAppName(file_handler1_prog_id()));
+  ASSERT_FALSE(app_name.empty());
   // Profile 1's app name should now include the profile in the name.
-  std::string app_name_str =
-      base::WideToUTF8(file_associations_and_app_name.app_name);
+  const std::string app_name_str = base::WideToUTF8(app_name);
   EXPECT_EQ(app_name_str, "app name (Default)");
   // Profile 1's app_launcher should include the profile in its name.
   base::FilePath profile1_app_specific_launcher_path =
@@ -266,17 +265,14 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   EXPECT_FALSE(base::PathExists(app_specific_launcher_path));
   // Verify that "(Profile 2)" was removed from the web app launcher and
   // file association registry entries.
-  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name =
-      ShellUtil::GetFileAssociationsAndAppName(profile2_file_handler1_prog_id);
-  ASSERT_FALSE(file_associations_and_app_name.app_name.empty());
+  const std::wstring app_name =
+      ShellUtil::GetAppName(profile2_file_handler1_prog_id);
   // Profile 2's app name should no longer include the profile in the name.
-  std::string app_name_str =
-      base::WideToUTF8(file_associations_and_app_name.app_name);
-  EXPECT_EQ(app_name_str, kAppName);
+  EXPECT_EQ(base::WideToUTF8(app_name), kAppName);
   // Profile 2's app_launcher should no longer include the profile in its name.
-  base::FilePath profile2_app_specific_launcher_path =
+  const base::FilePath profile2_app_specific_launcher_path =
       GetAppSpecificLauncherFilePath(kAppName);
-  base::FilePath profile2_launcher_path =
+  const base::FilePath profile2_launcher_path =
       ShellUtil::GetApplicationPathForProgId(profile2_file_handler1_prog_id);
   EXPECT_EQ(profile2_launcher_path.BaseName(),
             profile2_app_specific_launcher_path);
@@ -293,7 +289,7 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
 TEST_F(WebAppFileHandlerRegistrationWinTest,
        UnRegisterFileHandlersForWebAppIn3Profiles) {
   AddAndVerifyFileAssociations(profile(), kAppName, "");
-  base::FilePath app_specific_launcher_path =
+  const base::FilePath app_specific_launcher_path =
       ShellUtil::GetApplicationPathForProgId(file_handler1_prog_id());
 
   Profile* profile2 =
@@ -317,30 +313,25 @@ TEST_F(WebAppFileHandlerRegistrationWinTest,
   // file association registry entries.
   const std::wstring profile2_file_handler1_prog_id =
       GetProgIdForAppFileHandler(profile2->GetPath(), app_id(), {".txt"});
-  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name2(
-      ShellUtil::GetFileAssociationsAndAppName(profile2_file_handler1_prog_id));
-  ASSERT_FALSE(file_associations_and_app_name2.app_name.empty());
+  const std::wstring app_name2(
+      ShellUtil::GetAppName(profile2_file_handler1_prog_id));
   // Profile 2's app name should still include the profile name in its name.
-  std::string app_name_str =
-      base::WideToUTF8(file_associations_and_app_name2.app_name);
-  EXPECT_EQ(app_name_str, "app name (Profile 2)");
+  EXPECT_EQ(base::WideToUTF8(app_name2), "app name (Profile 2)");
 
   // Profile 3's app name should still include the profile name in its name.
   const std::wstring profile3_file_handler1_prog_id =
       GetProgIdForAppFileHandler(profile3->GetPath(), app_id(), {".txt"});
-  ShellUtil::FileAssociationsAndAppName file_associations_and_app_name3(
-      ShellUtil::GetFileAssociationsAndAppName(profile3_file_handler1_prog_id));
-  ASSERT_FALSE(file_associations_and_app_name3.app_name.empty());
-  // Profile 2's app name should still include the profile in the name.
-  app_name_str = base::WideToUTF8(file_associations_and_app_name3.app_name);
-  EXPECT_EQ(app_name_str, "app name (Profile 3)");
+  const std::wstring app_name3(
+      ShellUtil::GetAppName(profile3_file_handler1_prog_id));
+  // Profile 3's app name should still include the profile in the name.
+  EXPECT_EQ(base::WideToUTF8(app_name3), "app name (Profile 3)");
 }
 
 TEST_F(WebAppFileHandlerRegistrationWinTest, UnregisterFileHandlersForWebApp) {
   // Register file handlers, and then verify that unregistering removes
   // the registry settings and the app-specific launcher.
   AddAndVerifyFileAssociations(profile(), kAppName, "");
-  base::FilePath app_specific_launcher_path =
+  const base::FilePath app_specific_launcher_path =
       ShellUtil::GetApplicationPathForProgId(file_handler1_prog_id());
 
   UnregisterFileHandlersWithOs(app_id(), profile(), base::DoNothing());
@@ -352,12 +343,10 @@ TEST_F(WebAppFileHandlerRegistrationWinTest, UnregisterFileHandlersForWebApp) {
   EXPECT_FALSE(
       ProgIdRegisteredForFileExtension(".doc", file_handler2_prog_id()));
 
-  const ShellUtil::FileAssociationsAndAppName file_associations_and_app_name1 =
-      ShellUtil::GetFileAssociationsAndAppName(file_handler1_prog_id());
-  EXPECT_TRUE(file_associations_and_app_name1.app_name.empty());
-  const ShellUtil::FileAssociationsAndAppName file_associations_and_app_name2 =
-      ShellUtil::GetFileAssociationsAndAppName(file_handler2_prog_id());
-  EXPECT_TRUE(file_associations_and_app_name2.app_name.empty());
+  const std::wstring app_name1(ShellUtil::GetAppName(file_handler1_prog_id()));
+  EXPECT_TRUE(app_name1.empty());
+  const std::wstring app_name2(ShellUtil::GetAppName(file_handler2_prog_id()));
+  EXPECT_TRUE(app_name2.empty());
 }
 
 }  // namespace web_app

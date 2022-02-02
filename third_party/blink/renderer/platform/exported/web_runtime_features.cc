@@ -65,14 +65,22 @@ void WebRuntimeFeatures::EnableWebBluetooth(bool enable) {
   RuntimeEnabledFeatures::SetWebBluetoothEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebBluetoothGetDevices(bool enable) {
+  RuntimeEnabledFeatures::SetWebBluetoothGetDevicesEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebBluetoothManufacturerDataFilter(bool enable) {
+  RuntimeEnabledFeatures::SetWebBluetoothManufacturerDataFilterEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableWebBluetoothRemoteCharacteristicNewWriteValue(
     bool enable) {
   RuntimeEnabledFeatures::
       SetWebBluetoothRemoteCharacteristicNewWriteValueEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebBluetoothManufacturerDataFilter(bool enable) {
-  RuntimeEnabledFeatures::SetWebBluetoothManufacturerDataFilterEnabled(enable);
+void WebRuntimeFeatures::EnableWebBluetoothWatchAdvertisements(bool enable) {
+  RuntimeEnabledFeatures::SetWebBluetoothWatchAdvertisementsEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableCompositeBGColorAnimation(bool enable) {
@@ -381,6 +389,10 @@ void WebRuntimeFeatures::EnableSharedWorker(bool enable) {
 
 void WebRuntimeFeatures::EnableTextFragmentAnchor(bool enable) {
   RuntimeEnabledFeatures::SetTextFragmentIdentifiersEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableCSSSelectorFragmentAnchor(bool enable) {
+  RuntimeEnabledFeatures::SetCSSSelectorFragmentAnchorEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePreciseMemoryInfo(bool enable) {

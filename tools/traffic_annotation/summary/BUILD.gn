@@ -4,5 +4,5 @@
 
 copy("annotations_xml") {
   sources = [ "annotations.xml" ]
-  outputs = [ "$target_out_dir/annotations.xml" ]
+  outputs = [ "$target_out_dir/{{source_file_part}}" ]
 }

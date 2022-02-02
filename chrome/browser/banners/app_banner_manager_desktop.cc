@@ -82,7 +82,8 @@ AppBannerManagerDesktop::AsTestAppBannerManagerDesktopForTesting() {
 
 AppBannerManagerDesktop::AppBannerManagerDesktop(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents) {
+    : AppBannerManager(web_contents),
+      content::WebContentsUserData<AppBannerManagerDesktop>(*web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   extension_registry_ = extensions::ExtensionRegistry::Get(profile);
@@ -169,6 +170,13 @@ bool AppBannerManagerDesktop::ShouldAllowWebAppReplacementInstall() {
   if (!registrar().IsLocallyInstalled(app_id))
     return false;
 
+  // We prompt the user to re-install if the site wants to be in a standalone
+  // window but the user has opted for opening in browser tab. This is to
+  // support the situation where a site is not a PWA, users have installed it
+  // via Create Shortcut action, the site becomes a standalone PWA later and we
+  // want to prompt them to "install" the new PWA experience.
+  // TODO(crbug.com/1205529): Showing an install button when it's already
+  // installed is confusing.
   auto display_mode = registrar().GetAppUserDisplayMode(app_id);
   return display_mode == blink::mojom::DisplayMode::kBrowser;
 }

@@ -28,7 +28,7 @@ HOST_IP_ADDRESS = '10.0.2.2'
 GUEST_MAC_ADDRESS = '52:54:00:63:5e:7b'
 
 # Capacity of the system's blobstore volume.
-EXTENDED_BLOBSTORE_SIZE = 1073741824  # 1GB
+EXTENDED_BLOBSTORE_SIZE = 2147483648  # 2GB
 
 
 def GetTargetType():
@@ -115,7 +115,7 @@ class QemuTarget(emu_target.EmuTarget):
     # Configure the machine to emulate, based on the target architecture.
     if self._target_cpu == 'arm64':
       emu_command.extend([
-          '-machine','virt,gic_version=3',
+          '-machine','virt,gic-version=3',
       ])
     else:
       emu_command.extend([
@@ -152,7 +152,7 @@ class QemuTarget(emu_target.EmuTarget):
 
     emu_command.extend(kvm_command)
 
-    kernel_args = boot_data.GetKernelArgs(self._out_dir)
+    kernel_args = boot_data.GetKernelArgs()
 
     # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
     # noisy ANSI spew from the user's terminal emulator.

@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -43,7 +42,7 @@ class PaymentRequestCanMakePaymentTestBase
         GetActiveWebContents()->GetBrowserContext());
     autofill::PersonalDataManager* personal_data_manager =
         autofill::PersonalDataManagerFactory::GetForProfile(profile);
-    personal_data_manager->SetSyncServiceForTest(&sync_service_);
+    personal_data_manager->OnSyncServiceInitialized(&sync_service_);
   }
 
   void NavigateTo(const std::string& file_path) {

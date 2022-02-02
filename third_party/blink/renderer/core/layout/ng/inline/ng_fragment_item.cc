@@ -394,11 +394,10 @@ PhysicalOffset NGFragmentItem::MapPointInContainer(
   if (Type() != kSvgText || !HasSvgTransformForBoundingBox())
     return point;
   const float scaling_factor = SvgScalingFactor();
-  return PhysicalOffset::FromFloatPointRound(
-      BuildSvgTransformForBoundingBox()
-          .Inverse()
-          .MapPoint(FloatPoint(point).ScaledBy(scaling_factor))
-          .ScaledBy(1 / scaling_factor));
+  return PhysicalOffset::FromPointFRound(
+      gfx::ScalePoint(BuildSvgTransformForBoundingBox().Inverse().MapPoint(
+                          gfx::ScalePoint(gfx::PointF(point), scaling_factor)),
+                      scaling_factor));
 }
 
 float NGFragmentItem::ScaleInlineOffset(LayoutUnit inline_offset) const {
@@ -652,8 +651,7 @@ AffineTransform NGFragmentItem::BuildSvgTransformForTextPath(
   AffineTransform transform;
   transform.Rotate(svg_data.angle);
 
-  const SimpleFontData* font_data =
-      To<LayoutSVGInlineText>(GetLayoutObject())->ScaledFont().PrimaryFont();
+  const SimpleFontData* font_data = ScaledFont().PrimaryFont();
 
   // https://svgwg.org/svg2-draft/text.html#TextpathLayoutRules
   // The rotation should be about the center of the baseline.
@@ -692,8 +690,7 @@ AffineTransform NGFragmentItem::BuildSvgTransformForBoundingBox() const {
     return BuildSvgTransformForTextPath(AffineTransform());
 
   transform.Rotate(svg_data.angle);
-  const SimpleFontData* font_data =
-      To<LayoutSVGInlineText>(GetLayoutObject())->ScaledFont().PrimaryFont();
+  const SimpleFontData* font_data = ScaledFont().PrimaryFont();
   // https://svgwg.org/svg2-draft/text.html#TextElementRotateAttribute
   // > The supplemental rotation, in degrees, about the current text position
   //
@@ -1022,7 +1019,7 @@ PhysicalRect NGFragmentItem::ComputeTextBoundsRectForHitTest(
   // See svg/hittest/text-small-font-size.html.
   if (Type() == kSvgText)
     return border_rect;
-  return PhysicalRect(PixelSnappedIntRect(border_rect));
+  return PhysicalRect(ToPixelSnappedRect(border_rect));
 }
 
 PositionWithAffinity NGFragmentItem::PositionForPointInText(

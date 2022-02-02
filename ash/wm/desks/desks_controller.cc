@@ -11,6 +11,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/desk_template.h"
+#include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -25,6 +26,7 @@
 #include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -53,12 +55,15 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/wm/core/window_animations.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -702,15 +707,27 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
   // the one that has already been added.
   if (!visible_on_all_desks_windows_.emplace(window).second)
     return;
+  wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
   NotifyAllDesksForContentChanged();
   UMA_HISTOGRAM_ENUMERATION(
       kMoveWindowFromActiveDeskHistogramName,
       DesksMoveWindowFromActiveDeskSource::kVisibleOnAllDesks);
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_VIRTUAL_DESKS_ASSIGNED_TO_ALL_DESKS, window->GetTitle()));
 }
 
 void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
-  if (visible_on_all_desks_windows_.erase(window))
+  if (visible_on_all_desks_windows_.erase(window)) {
+    wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     NotifyAllDesksForContentChanged();
+    Shell::Get()
+        ->accessibility_controller()
+        ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+            IDS_ASH_VIRTUAL_DESKS_UNASSIGNED_FROM_ALL_DESKS, window->GetTitle(),
+            active_desk_->name()));
+  }
 }
 
 void DesksController::NotifyAllDesksForContentChanged() {
@@ -857,25 +874,37 @@ void DesksController::SendToDeskAtIndex(aura::Window* window, int desk_index) {
                              DesksMoveWindowFromActiveDeskSource::kSendToDesk);
 }
 
-std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
-    const {
+void DesksController::CaptureActiveDeskAsTemplate(
+    GetDeskTemplateCallback callback) const {
   DCHECK(current_account_id_.is_valid());
 
   // Construct |restore_data| for |desk_template|.
-  std::unique_ptr<app_restore::RestoreData> restore_data =
-      std::make_unique<app_restore::RestoreData>();
+  auto restore_data = std::make_unique<app_restore::RestoreData>();
   auto* shell = Shell::Get();
   auto mru_windows =
       shell->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
+  auto* delegate = shell->desks_templates_delegate();
+  std::vector<aura::Window*> unsupported_apps;
   for (auto* window : mru_windows) {
+    if (!delegate->IsWindowSupportedForDeskTemplate(window) &&
+        !wm::GetTransientParent(window)) {
+      unsupported_apps.push_back(window);
+      continue;
+    }
+
+    // Exclude window that does not asscociate with a full restore app id,
+    // silently omitting them.
+    const std::string app_id = full_restore::GetAppId(window);
+    if (app_id.empty())
+      continue;
+
     std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info =
-        shell->shell_delegate()->GetAppLaunchDataForDeskTemplate(window);
+        delegate->GetAppLaunchDataForDeskTemplate(window);
     if (!app_launch_info)
       continue;
 
     // We need to copy |app_launch_info->app_id| to |app_id| as the below
     // function AddAppLaunchInfo() will destroy |app_launch_info|.
-    const std::string app_id = app_launch_info->app_id;
     const int32_t window_id = window->GetProperty(app_restore::kWindowIdKey);
     restore_data->AddAppLaunchInfo(std::move(app_launch_info));
 
@@ -894,7 +923,17 @@ std::unique_ptr<DeskTemplate> DesksController::CaptureActiveDeskAsTemplate()
 
   desk_template->set_desk_restore_data(std::move(restore_data));
 
-  return desk_template;
+  if (!unsupported_apps.empty() &&
+      shell->overview_controller()->InOverviewSession()) {
+    // There were some unsupported apps in the active desk so open up a dialog
+    // to let the user know.
+    DesksTemplatesDialogController::Get()->ShowUnsupportedAppsDialog(
+        shell->GetPrimaryRootWindow(), unsupported_apps, std::move(callback),
+        std::move(desk_template));
+    return;
+  }
+
+  std::move(callback).Run(std::move(desk_template));
 }
 
 void DesksController::CreateAndActivateNewDeskForTemplate(

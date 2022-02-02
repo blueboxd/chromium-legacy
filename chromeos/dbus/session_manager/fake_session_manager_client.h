@@ -12,7 +12,6 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
@@ -31,6 +30,15 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
                 // fake D-Bus client implementation, see
                 // SessionManagerClient::Create().
     kInMemory,  // Store policy in memory only. Usually used for tests.
+  };
+
+  enum class ServerBackedStateKeysHandling {
+    // session_manager responds with configured state keys.
+    kRegular,
+    // session_manager responds with no state keys being available.
+    kForceNotAvailable,
+    // session_manager does not respond on GetServerBackedStateKeys.
+    kNoResponse,
   };
 
   // A callback tht FakeSessionManagerClient can use to inform the test that
@@ -137,6 +145,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
       const std::vector<std::string>& feature_flags,
       const std::map<std::string, std::string>& origin_list_flags) override;
   void GetServerBackedStateKeys(StateKeysCallback callback) override;
+  void GetPsmDeviceActiveSecret(
+      PsmDeviceActiveSecretCallback callback) override;
 
   void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
@@ -236,6 +246,11 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     server_backed_state_keys_ = state_keys;
   }
 
+  void set_psm_device_active_secret(
+      const std::string& psm_device_active_secret) {
+    psm_device_active_secret_ = psm_device_active_secret;
+  }
+
   int clear_forced_re_enrollment_vpd_call_count() const {
     return clear_forced_re_enrollment_vpd_call_count_;
   }
@@ -274,8 +289,9 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     arc_start_time_ = arc_start_time;
   }
 
-  void set_force_state_keys_missing(bool force_state_keys_missing) {
-    force_state_keys_missing_ = force_state_keys_missing;
+  void set_state_keys_handling(
+      ServerBackedStateKeysHandling state_keys_handling) {
+    state_keys_handling_ = state_keys_handling;
   }
 
   void set_adb_sideload_enabled(bool adb_sideload_enabled) {
@@ -327,6 +343,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   SessionManagerClient::ActiveSessionsMap user_sessions_;
   std::vector<std::string> server_backed_state_keys_;
 
+  std::string psm_device_active_secret_;
+
   // Policy is stored in |policy_| if |policy_storage_| type is
   // PolicyStorageType::kInMemory. Uses the relative stub file path as key.
   const PolicyStorageType policy_storage_;
@@ -354,7 +372,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   int start_tpm_firmware_update_call_count_ = 0;
   std::string last_tpm_firmware_update_mode_;
   bool screen_is_locked_ = false;
-  bool force_state_keys_missing_ = false;
+  ServerBackedStateKeysHandling state_keys_handling_ =
+      ServerBackedStateKeysHandling::kRegular;
   OnLoadShillProfileCallback on_load_shill_profile_callback_;
 
   bool arc_available_ = false;

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/public/base/consent_level.h"
@@ -43,6 +45,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 
 using ::testing::ElementsAre;
@@ -136,7 +139,7 @@ class ReauthTestObserver : SigninReauthViewController::Observer {
   }
 
  private:
-  SigninReauthViewController* controller_;
+  raw_ptr<SigninReauthViewController> controller_;
   base::RunLoop run_loop_;
 };
 
@@ -181,9 +184,11 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  void ShowReauthPrompt() {
+  void ShowReauthPrompt(
+      signin_metrics::ReauthAccessPoint access_point =
+          signin_metrics::ReauthAccessPoint::kAutofillDropdown) {
     abort_handle_ = browser()->signin_view_controller()->ShowReauthPrompt(
-        account_id_, signin_metrics::ReauthAccessPoint::kAutofillDropdown,
+        account_id_, access_point,
         base::BindOnce(&SigninReauthViewControllerBrowserTest::OnReauthResult,
                        base::Unretained(this)));
   }
@@ -579,6 +584,55 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
       browser(), kReauthDialogTimeout));
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kUnexpectedResponse);
+}
+
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       MessageIfPasswordWasSavedLocally) {
+  // The AccessPoint specifies that the password was already saved locally
+  // before the reauth prompt was shown.
+  ShowReauthPrompt(
+      signin_metrics::ReauthAccessPoint::kPasswordSaveLocallyBubble);
+  content::WebContents* confirmation_dialog_contents =
+      signin_reauth_view_controller()->GetWebContents();
+  content::TestNavigationObserver navigation_observer(
+      confirmation_dialog_contents);
+  navigation_observer.Wait();
+
+  std::string dialog_message;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      confirmation_dialog_contents,
+      "window.domAutomationController.send("
+      "document.querySelector('signin-reauth-app').shadowRoot."
+      "querySelector('.message-container').innerText)",
+      &dialog_message));
+  // The dialog message should specify that the password was already saved
+  // locally.
+  EXPECT_EQ(dialog_message,
+            l10n_util::GetStringUTF8(
+                IDS_ACCOUNT_PASSWORDS_REAUTH_DESC_ALREADY_SAVED_LOCALLY));
+}
+
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       MessageIfPasswordWasNotSavedLocally) {
+  // The AccessPoint specifies that the password was NOT already saved locally
+  // before the reauth prompt was shown.
+  ShowReauthPrompt(signin_metrics::ReauthAccessPoint::kPasswordSaveBubble);
+  content::WebContents* confirmation_dialog_contents =
+      signin_reauth_view_controller()->GetWebContents();
+  content::TestNavigationObserver navigation_observer(
+      confirmation_dialog_contents);
+  navigation_observer.Wait();
+
+  std::string dialog_message;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      confirmation_dialog_contents,
+      "window.domAutomationController.send("
+      "document.querySelector('signin-reauth-app').shadowRoot."
+      "querySelector('.message-container').innerText)",
+      &dialog_message));
+  // The dialog message should be the regular one.
+  EXPECT_EQ(dialog_message,
+            l10n_util::GetStringUTF8(IDS_ACCOUNT_PASSWORDS_REAUTH_DESC));
 }
 
 class SigninReauthViewControllerDarkModeBrowserTest

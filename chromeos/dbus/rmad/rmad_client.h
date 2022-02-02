@@ -53,6 +53,10 @@ class COMPONENT_EXPORT(RMAD) RmadClient {
 
     // Called when finalization progress is updated.
     virtual void FinalizationProgress(const rmad::FinalizeStatus& status) {}
+
+    // Called when overall calibration progress is updated.
+    virtual void RoFirmwareUpdateProgress(rmad::UpdateRoFirmwareStatus status) {
+    }
   };
 
   // Creates and initializes a global instance. |bus| must not be null.
@@ -66,6 +70,8 @@ class COMPONENT_EXPORT(RMAD) RmadClient {
 
   // Returns the global instance which may be null if not initialized.
   static RmadClient* Get();
+
+  virtual void CheckInRma(DBusMethodCallback<bool> callback) = 0;
 
   // Asynchronously gets the current RMA state.
   // The response contains an error code and the current state of the RMA

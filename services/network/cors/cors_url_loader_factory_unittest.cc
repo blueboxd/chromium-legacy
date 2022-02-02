@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/test_support/fake_message_dispatch_context.h"
@@ -146,10 +145,10 @@ TEST_F(CorsURLLoaderFactoryTest, DestructionOrder) {
   request.url = url;
   request.request_initiator = url::Origin::Create(url);
 
-  // As of r609458 setting |keepalive| to true was triggerring a dereference of
-  // |factory_params_| in the destructor of network::URLLoader.  This
+  // As of r609458 setting `keepalive` to true was triggerring a dereference of
+  // `factory_params_` in the destructor of network::URLLoader.  This
   // dereference assumes that the network::URLLoaderFactory (which keeps
-  // |factory_params_| alive) lives longer than the network::URLLoaders created
+  // `factory_params_` alive) lives longer than the network::URLLoaders created
   // via the factory (which necessitates being careful with the destruction
   // order of fields of network::cors::CorsURLLoaderFactory which owns both
   // network::URLLoaderFactory and the network::URLLoaders it creates).
@@ -176,7 +175,7 @@ TEST_F(CorsURLLoaderFactoryTest, CleanupWithSharedCacheObjectInUse) {
   test_cors_loader_clients().back()->RunUntilResponseReceived();
 
   // Read only requests will fail synchonously on destruction of the request
-  // they're waiting on if they're in the |done_headers_queue| when the other
+  // they're waiting on if they're in the `done_headers_queue` when the other
   // request fails. Make a large number of such requests, spin the message loop
   // so they end up blocked on the hung request, and then destroy all loads. A
   // large number of loaders is needed because they're stored in a set, indexed
@@ -202,6 +201,7 @@ TEST_F(CorsURLLoaderFactoryTest,
   request.destination = mojom::RequestDestination::kEmpty;
   request.method = net::HttpRequestHeaders::kPostMethod;
   request.url = GURL("https://some.other.origin/echoall");
+  request.navigation_redirect_chain.push_back(request.url);
   request.request_initiator = url::Origin::Create(url);
   mojo::test::BadMessageObserver bad_message_observer;
   CreateLoaderAndStart(request);
@@ -217,12 +217,50 @@ TEST_F(CorsURLLoaderFactoryTest, NavigationFromRendererWithBadRedirectMode) {
   request.destination = mojom::RequestDestination::kEmpty;
   request.method = net::HttpRequestHeaders::kPostMethod;
   request.url = url;
+  request.navigation_redirect_chain.push_back(request.url);
   request.request_initiator = url::Origin::Create(url).DeriveNewOpaqueOrigin();
   mojo::test::BadMessageObserver bad_message_observer;
   CreateLoaderAndStart(request);
   EXPECT_EQ(
       "CorsURLLoaderFactory: navigate from non-browser-process with "
       "redirect_mode set to 'follow'",
+      bad_message_observer.WaitForBadMessage());
+}
+
+TEST_F(CorsURLLoaderFactoryTest,
+       NavigationFromRendererWithBadRequestNavigationRedirectChain) {
+  ResourceRequest request;
+  GURL url = test_server()->GetURL("/echoall");
+  request.mode = mojom::RequestMode::kNavigate;
+  request.redirect_mode = mojom::RedirectMode::kManual;
+  request.destination = mojom::RequestDestination::kEmpty;
+  request.method = net::HttpRequestHeaders::kPostMethod;
+  request.url = url;
+  // Do not add url to navigation_redirect_chain
+  request.request_initiator = url::Origin::Create(url);
+  mojo::test::BadMessageObserver bad_message_observer;
+  CreateLoaderAndStart(request);
+  EXPECT_EQ(
+      "CorsURLLoaderFactory: navigate from non-browser-process without "
+      "a redirect chain provided",
+      bad_message_observer.WaitForBadMessage());
+}
+
+TEST_F(CorsURLLoaderFactoryTest, NavigationRedirectChainWithBadMode) {
+  ResourceRequest request;
+  GURL url = test_server()->GetURL("/echoall");
+  request.mode = mojom::RequestMode::kCors;
+  request.redirect_mode = mojom::RedirectMode::kFollow;
+  request.destination = mojom::RequestDestination::kEmpty;
+  request.method = net::HttpRequestHeaders::kGetMethod;
+  request.url = url;
+  request.navigation_redirect_chain.push_back(request.url);
+  request.request_initiator = url::Origin::Create(url);
+  mojo::test::BadMessageObserver bad_message_observer;
+  CreateLoaderAndStart(request);
+  EXPECT_EQ(
+      "CorsURLLoaderFactory: navigation redirect chain set for a "
+      "non-navigation",
       bad_message_observer.WaitForBadMessage());
 }
 
@@ -234,6 +272,7 @@ TEST_F(CorsURLLoaderFactoryTest, OriginalDestinationIsDocumentWithBadMode) {
   request.destination = mojom::RequestDestination::kEmpty;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.url = url;
+  request.navigation_redirect_chain.push_back(request.url);
   request.request_initiator =
       url::Origin::Create(GURL("https://some.other.origin"));
   request.original_destination = mojom::RequestDestination::kDocument;
@@ -254,6 +293,7 @@ TEST_F(CorsURLLoaderFactoryTest,
   request.destination = mojom::RequestDestination::kIframe;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.url = url;
+  request.navigation_redirect_chain.push_back(request.url);
   request.request_initiator =
       url::Origin::Create(GURL("https://some.other.origin"));
   request.original_destination = mojom::RequestDestination::kDocument;

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
@@ -60,6 +59,9 @@ class COMPONENT_EXPORT(UI_BASE_IME_TYPES) CharacterComposer {
 
   // Filters keypress in key sequence mode.
   bool FilterKeyPressSequenceMode(const ui::KeyEvent& event);
+
+  // Updates preedit string in key sequence mode.
+  void UpdatePreeditStringSequenceMode();
 
   // Filters keypress in hexadecimal mode.
   bool FilterKeyPressHexMode(const ui::KeyEvent& event);

@@ -23,6 +23,7 @@ declare_args() {
 
 if (is_android) {
   import("//build/config/android/config.gni")
+  import("//build/config/android/create_unwind_table.gni")
   import("//build/config/android/extract_unwind_tables.gni")
   import("//build/config/android/rules.gni")
   import("//build/config/sanitizers/sanitizers.gni")
@@ -198,9 +199,16 @@ template("test") {
       if (defined(invoker.add_unwind_tables_in_apk) &&
           invoker.add_unwind_tables_in_apk) {
         _unwind_table_asset_name = "${target_name}_unwind_assets"
-        unwind_table_asset(_unwind_table_asset_name) {
-          library_target = _library_target
-          deps = [ ":$_library_target" ]
+        if (use_android_unwinder_v2) {
+          unwind_table_asset_v2(_unwind_table_asset_name) {
+            library_target = _library_target
+            deps = [ ":$_library_target" ]
+          }
+        } else {
+          unwind_table_asset(_unwind_table_asset_name) {
+            library_target = _library_target
+            deps = [ ":$_library_target" ]
+          }
         }
       }
 
@@ -533,6 +541,7 @@ template("test") {
 
       if (ios_use_shared_bundle_id_for_test_apps) {
         bundle_identifier = "$ios_app_bundle_id_prefix.gtest.unittests"
+        not_needed([ "_output_name" ])
       } else {
         bundle_identifier = "$ios_app_bundle_id_prefix.gtest." +
                             string_replace(_output_name, "_", "-")
@@ -854,9 +863,6 @@ template("script_test") {
     if (defined(invoker.run_under_python2) && invoker.run_under_python2) {
       use_vpython3 = false
       data += [ "//.vpython" ]
-    } else {
-      use_vpython3 = true
-      data += [ "//.vpython3" ]
     }
 
     if (defined(invoker.data)) {

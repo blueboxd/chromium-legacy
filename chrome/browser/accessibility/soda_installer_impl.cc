@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
@@ -72,6 +71,8 @@ base::FilePath SodaInstallerImpl::GetLanguagePath(
 }
 
 void SodaInstallerImpl::InstallSoda(PrefService* global_prefs) {
+  if (never_download_soda_for_testing_)
+    return;
   soda_binary_installed_ = false;
   is_soda_downloading_ = true;
   component_updater::RegisterSodaComponent(
@@ -90,6 +91,8 @@ void SodaInstallerImpl::InstallSoda(PrefService* global_prefs) {
 
 void SodaInstallerImpl::InstallLanguage(const std::string& language,
                                         PrefService* global_prefs) {
+  if (never_download_soda_for_testing_)
+    return;
   speech::LanguageCode locale = speech::GetLanguageCode(language);
   language_pack_progress_.insert({locale, 0.0});
   SodaInstaller::RegisterLanguage(language, global_prefs);

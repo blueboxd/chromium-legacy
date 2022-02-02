@@ -15,8 +15,9 @@
 #include "base/callback_list.h"
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -104,11 +105,12 @@ class PasswordStore : public PasswordStoreInterface {
   void Unblocklist(const PasswordFormDigest& form_digest,
                    base::OnceClosure completion) override;
   void GetLogins(const PasswordFormDigest& form,
-                 PasswordStoreConsumer* consumer) override;
-  void GetAutofillableLogins(PasswordStoreConsumer* consumer) override;
-  void GetAllLogins(PasswordStoreConsumer* consumer) override;
+                 base::WeakPtr<PasswordStoreConsumer> consumer) override;
+  void GetAutofillableLogins(
+      base::WeakPtr<PasswordStoreConsumer> consumer) override;
+  void GetAllLogins(base::WeakPtr<PasswordStoreConsumer> consumer) override;
   void GetAllLoginsWithAffiliationAndBrandingInformation(
-      PasswordStoreConsumer* consumer) override;
+      base::WeakPtr<PasswordStoreConsumer> consumer) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
@@ -133,15 +135,12 @@ class PasswordStore : public PasswordStoreInterface {
     kFailure,
   };
 
-  // TODO(crbug.com/1217071): Remove when local backend doesn't inherit from
-  // this class anymore.
-  PasswordStore();
   ~PasswordStore() override;
 
   // This member is called to perform the actual interaction with the storage.
   // TODO(crbug.com/1217071): Make private std::unique_ptr as soon as the
   // backend is passed into the store instead of it being the store(_impl).
-  PasswordStoreBackend* backend_ = nullptr;
+  raw_ptr<PasswordStoreBackend> backend_ = nullptr;
 
  private:
   using InsecureCredentialsTask =
@@ -153,8 +152,7 @@ class PasswordStore : public PasswordStoreInterface {
   void OnInitCompleted(bool success);
 
   // Notifies observers that password store data may have been changed.
-  void NotifyLoginsChangedOnMainSequence(
-      const PasswordStoreChangeList& changes);
+  void NotifyLoginsChangedOnMainSequence(PasswordStoreChangeList changes);
 
   // The following methods notify observers that the password store may have
   // been modified via NotifyLoginsChangedOnMainSequence(). Note that there is
@@ -186,7 +184,7 @@ class PasswordStore : public PasswordStoreInterface {
 
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 
-  PrefService* prefs_ = nullptr;
+  raw_ptr<PrefService> prefs_ = nullptr;
 
   InitStatus init_status_ = InitStatus::kUnknown;
 };

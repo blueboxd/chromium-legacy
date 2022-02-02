@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -421,8 +420,9 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraDSFBrowserTest,
 
   // Select text and wait until the bounding box updates.
   auto* wc = shell()->web_contents();
+  BoundingBoxUpdateWaiter select_waiter(wc);
   ASSERT_TRUE(ExecJs(wc, "selectText();"));
-  WaitForSelectionBoundingBoxUpdate(wc);
+  select_waiter.Wait();
 
   // Verify the device scale factor.
   const float device_scale_factor =

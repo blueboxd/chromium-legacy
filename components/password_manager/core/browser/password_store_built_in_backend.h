@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -79,12 +79,13 @@ class PasswordStoreBuiltInBackend : protected PasswordStoreSync,
                            UpdatePasswordsStoredForAffiliatedWebsites);
 
   // Implements PasswordStoreBackend interface.
+  base::WeakPtr<PasswordStoreBackend> GetWeakPtr() override;
   void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
-  void GetAllLoginsAsync(LoginsReply callback) override;
-  void GetAutofillableLoginsAsync(LoginsReply callback) override;
+  void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
+  void GetAutofillableLoginsAsync(LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
       LoginsReply callback,
       bool include_psl,
@@ -112,13 +113,12 @@ class PasswordStoreBuiltInBackend : protected PasswordStoreSync,
   FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
-  void GetSyncStatus(base::OnceCallback<void(bool)> callback) override;
 
   // SmartBubbleStatsStore:
   void AddSiteStats(const InteractionsStats& stats) override;
   void RemoveSiteStats(const GURL& origin_domain) override;
   void GetSiteStats(const GURL& origin_domain,
-                    PasswordStoreConsumer* consumer) override;
+                    base::WeakPtr<PasswordStoreConsumer> consumer) override;
   void RemoveStatisticsByOriginAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
@@ -127,7 +127,7 @@ class PasswordStoreBuiltInBackend : protected PasswordStoreSync,
 
   // FieldInfoStore:
   void AddFieldInfo(const FieldInfo& field_info) override;
-  void GetAllFieldInfo(PasswordStoreConsumer* consumer) override;
+  void GetAllFieldInfo(base::WeakPtr<PasswordStoreConsumer> consumer) override;
   void RemoveFieldInfoByTime(base::Time remove_begin,
                              base::Time remove_end,
                              base::OnceClosure completion) override;
@@ -188,8 +188,6 @@ class PasswordStoreBuiltInBackend : protected PasswordStoreSync,
   // StoreMetricsReporter. Namely, metrics related to inaccessible passwords,
   // and bubble statistics.
   void ReportMetrics();
-
-  bool IsSyncEnabled() const;
 
   // Used to trigger DCHECKs if tasks are posted after shut down.
   bool was_shutdown_{false};

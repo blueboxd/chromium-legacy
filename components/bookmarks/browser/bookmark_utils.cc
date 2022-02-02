@@ -16,7 +16,6 @@
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/string_search.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -199,6 +198,8 @@ QueryFields::~QueryFields() {}
 
 VectorIterator::VectorIterator(std::vector<const BookmarkNode*>* nodes)
     : nodes_(nodes), current_(nodes->begin()) {}
+
+VectorIterator::~VectorIterator() = default;
 
 bool VectorIterator::has_next() {
   return (current_ != nodes_->end());

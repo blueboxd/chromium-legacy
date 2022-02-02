@@ -10,16 +10,15 @@
 #include <queue>
 #include <vector>
 
+#include "ash/components/arc/mojom/process.mojom-forward.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_iterator.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/arc/process/arc_process.h"
 #include "chrome/browser/ash/process_snapshot_server.h"
-#include "components/arc/mojom/process.mojom-forward.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -65,7 +64,7 @@ class ArcBridgeService;
 // while RequestSystemProcessList() is responsible for System Processes.
 class ArcProcessService : public KeyedService,
                           public ConnectionObserver<mojom::ProcessInstance>,
-                          public ProcessSnapshotServer::Observer {
+                          public ash::ProcessSnapshotServer::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.

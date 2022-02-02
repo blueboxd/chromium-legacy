@@ -280,8 +280,17 @@ std::u16string PrivacySandboxSettings::GetFlocResetExplanationForDisplay()
 }
 
 std::u16string PrivacySandboxSettings::GetFlocStatusForDisplay() const {
-  // FLoC always disabled while OT not active.
-  // TODO(crbug.com/1287951): Perform cleanup / adjustment as required.
+  const bool floc_feature_enabled = base::FeatureList::IsEnabled(
+      blink::features::kInterestCohortAPIOriginTrial);
+  const bool floc_setting_enabled = IsFlocAllowed();
+  if (floc_setting_enabled) {
+    return floc_feature_enabled
+               ? l10n_util::GetStringUTF16(
+                     IDS_PRIVACY_SANDBOX_FLOC_STATUS_ACTIVE)
+               : l10n_util::GetStringUTF16(
+                     IDS_PRIVACY_SANDBOX_FLOC_STATUS_ELIGIBLE_NOT_ACTIVE);
+  }
+
   return l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE);
 }
 
@@ -525,9 +534,9 @@ void PrivacySandboxSettings::MaybeReconcilePrivacySandboxPref() {
   DCHECK(sync_service_);
   DCHECK(identity_manager_);
   if (!sync_service_observer_.IsObserving())
-    sync_service_observer_.Observe(sync_service_);
+    sync_service_observer_.Observe(sync_service_.get());
   if (!identity_manager_observer_.IsObserving())
-    identity_manager_observer_.Observe(identity_manager_);
+    identity_manager_observer_.Observe(identity_manager_.get());
 }
 
 void PrivacySandboxSettings::ReconcilePrivacySandboxPref() {

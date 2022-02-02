@@ -11,7 +11,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace media {
@@ -34,7 +33,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryAndroid
 
   ~VideoCaptureDeviceFactoryAndroid() override;
 
-  std::unique_ptr<VideoCaptureDevice> CreateDevice(
+  VideoCaptureErrorOrDevice CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
   void GetDevicesInfo(GetDevicesInfoCallback callback) override;
 

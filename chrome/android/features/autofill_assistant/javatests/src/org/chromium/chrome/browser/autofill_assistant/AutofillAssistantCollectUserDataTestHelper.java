@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollect
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantUserDataEventType;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpanderAccordion;
 import org.chromium.chrome.browser.payments.AutofillAddress;
@@ -124,19 +125,22 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
         @Override
         public void onContactInfoChanged(
-                @Nullable AssistantCollectUserDataModel.ContactModel contactModel) {
+                @Nullable AssistantCollectUserDataModel.ContactModel contactModel,
+                @AssistantUserDataEventType int eventType) {
             mContact = contactModel == null ? null : contactModel.mOption;
         }
 
         @Override
         public void onShippingAddressChanged(
-                @Nullable AssistantCollectUserDataModel.AddressModel addressModel) {
+                @Nullable AssistantCollectUserDataModel.AddressModel addressModel,
+                @AssistantUserDataEventType int eventType) {
             mAddress = addressModel == null ? null : addressModel.mOption;
         }
 
         @Override
         public void onPaymentMethodChanged(@Nullable AssistantCollectUserDataModel
-                                                   .PaymentInstrumentModel paymentInstrumentModel) {
+                                                   .PaymentInstrumentModel paymentInstrumentModel,
+                @AssistantUserDataEventType int eventType) {
             mPaymentMethod = paymentInstrumentModel == null ? null : paymentInstrumentModel.mOption;
         }
 
@@ -147,7 +151,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
         @Override
         public void onLoginChoiceChanged(
-                @Nullable AssistantCollectUserDataModel.LoginChoiceModel loginChoiceModel) {
+                @Nullable AssistantCollectUserDataModel.LoginChoiceModel loginChoiceModel,
+                @AssistantUserDataEventType int eventType) {
             mLoginChoice = loginChoiceModel == null ? null : loginChoiceModel.mOption;
         }
 
@@ -265,8 +270,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
         return new PersonalDataManager.AutofillProfile(/* guid= */ "", "https://www.example.com",
                 /* honorificPrefix= */ "", fullName, "Acme Inc.", "123 Main", "California",
                 "Los Angeles",
-                /* dependentLocality= */ "", postcode, /* sortingCode= */ "", "UZ", "555 123-4567",
-                email, /* languageCode= */ "");
+                /* dependentLocality= */ "", postcode, /* sortingCode= */ "", "UZ",
+                /* phoneNumber= */ "", email, /* languageCode= */ "");
     }
 
     /**

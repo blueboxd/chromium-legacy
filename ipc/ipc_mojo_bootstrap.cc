@@ -18,8 +18,8 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/queue.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -155,6 +155,11 @@ class ChannelAssociatedGroupController
 
     GetMemoryDumpProvider().AddController(this);
   }
+
+  ChannelAssociatedGroupController(const ChannelAssociatedGroupController&) =
+      delete;
+  ChannelAssociatedGroupController& operator=(
+      const ChannelAssociatedGroupController&) = delete;
 
   size_t GetQueuedMessageCount() {
     base::AutoLock lock(outgoing_messages_lock_);
@@ -464,7 +469,7 @@ class ChannelAssociatedGroupController
     mojo::Message& value() { return value_; }
 
    private:
-    ChannelAssociatedGroupController* controller_ = nullptr;
+    raw_ptr<ChannelAssociatedGroupController> controller_ = nullptr;
     mojo::Message value_;
   };
 
@@ -473,6 +478,9 @@ class ChannelAssociatedGroupController
    public:
     Endpoint(ChannelAssociatedGroupController* controller, mojo::InterfaceId id)
         : controller_(controller), id_(id) {}
+
+    Endpoint(const Endpoint&) = delete;
+    Endpoint& operator=(const Endpoint&) = delete;
 
     mojo::InterfaceId id() const { return id_; }
 
@@ -623,7 +631,7 @@ class ChannelAssociatedGroupController
 
       scoped_refptr<Endpoint> keepalive(this);
       scoped_refptr<AssociatedGroupController> controller_keepalive(
-          controller_);
+          controller_.get());
       base::AutoLock locker(controller_->lock_);
       bool more_to_process = false;
       if (!sync_messages_.empty()) {
@@ -677,7 +685,7 @@ class ChannelAssociatedGroupController
       return id;
     }
 
-    ChannelAssociatedGroupController* const controller_;
+    const raw_ptr<ChannelAssociatedGroupController> controller_;
     const mojo::InterfaceId id_;
 
     bool closed_ = false;
@@ -685,13 +693,11 @@ class ChannelAssociatedGroupController
     bool handle_created_ = false;
     bool was_bound_off_sequence_ = false;
     absl::optional<mojo::DisconnectReason> disconnect_reason_;
-    mojo::InterfaceEndpointClient* client_ = nullptr;
+    raw_ptr<mojo::InterfaceEndpointClient> client_ = nullptr;
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
     std::unique_ptr<mojo::SequenceLocalSyncEventWatcher> sync_watcher_;
     base::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
     uint32_t next_sync_message_id_ = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(Endpoint);
   };
 
   class ControlMessageProxyThunk : public MessageReceiver {
@@ -700,15 +706,17 @@ class ChannelAssociatedGroupController
         ChannelAssociatedGroupController* controller)
         : controller_(controller) {}
 
+    ControlMessageProxyThunk(const ControlMessageProxyThunk&) = delete;
+    ControlMessageProxyThunk& operator=(const ControlMessageProxyThunk&) =
+        delete;
+
    private:
     // MessageReceiver:
     bool Accept(mojo::Message* message) override {
       return controller_->SendMessage(message);
     }
 
-    ChannelAssociatedGroupController* controller_;
-
-    DISALLOW_COPY_AND_ASSIGN(ControlMessageProxyThunk);
+    raw_ptr<ChannelAssociatedGroupController> controller_;
   };
 
   ~ChannelAssociatedGroupController() override {
@@ -1105,8 +1113,6 @@ class ChannelAssociatedGroupController
   uint32_t next_interface_id_ = 2;
 
   std::map<uint32_t, scoped_refptr<Endpoint>> endpoints_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelAssociatedGroupController);
 };
 
 bool ControllerMemoryDumpProvider::OnMemoryDump(

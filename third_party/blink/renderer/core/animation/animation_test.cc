@@ -33,7 +33,7 @@
 #include <memory>
 
 #include "base/bits.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +66,8 @@
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -2074,6 +2075,22 @@ TEST_P(AnimationAnimationTestNoCompositing,
   animation->cancel();
   EXPECT_EQ("idle", animation->playState());
   EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_FALSE(animation->HasPendingActivity());
+}
+
+TEST_P(AnimationAnimationTestCompositing, InvalidExecutionContext) {
+  // Test for crbug.com/1254444. Guard against setting an invalid execution
+  // context.
+  EXPECT_TRUE(animation->GetExecutionContext());
+  GetDocument().GetExecutionContext()->NotifyContextDestroyed();
+  EXPECT_FALSE(animation->GetExecutionContext());
+  Animation* original_animation = animation;
+  ResetWithCompositedAnimation();
+  EXPECT_TRUE(animation);
+  EXPECT_NE(animation, original_animation);
+  EXPECT_FALSE(animation->GetExecutionContext());
+  // Cancel queues an event if there is a valid execution context.
+  animation->cancel();
   EXPECT_FALSE(animation->HasPendingActivity());
 }
 

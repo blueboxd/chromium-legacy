@@ -7,7 +7,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/button_style.h"
+#include "ash/style/pill_button.h"
+#include "ash/style/style_util.h"
 #include "ash/system/message_center/message_center_constants.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_constants.h"
@@ -55,9 +56,9 @@ class StackingBarLabelButton : public PillButton {
         features::IsNotificationsRefreshEnabled()
             ? gfx::kPlaceholderColor
             : message_center_style::kUnifiedMenuButtonColorActive;
-    PillButton::ConfigureInkDrop(this, TrayPopupInkDropStyle::FILL_BOUNDS,
-                                 /*highlight_on_hover=*/true,
-                                 /*highlight_on_focus=*/true, bg_color);
+    StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
+                                     /*highlight_on_hover=*/true,
+                                     /*highlight_on_focus=*/true, bg_color);
   }
 
   StackingBarLabelButton(const StackingBarLabelButton&) = delete;

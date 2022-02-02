@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -75,10 +74,6 @@ void PopulateValidatedMethodData(
       stringified_method_data);
 }
 
-std::string ToString(bool value) {
-  return value ? "true" : "false";
-}
-
 }  // namespace
 
 PaymentRequestSpec::PaymentRequestSpec(
@@ -108,16 +103,6 @@ PaymentRequestSpec::PaymentRequestSpec(
       &payment_method_identifiers_set_, &stringified_method_data_);
 
   query_for_quota_ = stringified_method_data_;
-  if (base::Contains(payment_method_identifiers_set_, methods::kBasicCard) &&
-      PaymentsExperimentalFeatures::IsEnabled(
-          features::kStrictHasEnrolledAutofillInstrument)) {
-    query_for_quota_["basic-card-payment-options"] = {
-        base::ReplaceStringPlaceholders(
-            "{payerEmail:$1,payerName:$2,payerPhone:$3,shipping:$4}",
-            {ToString(request_payer_email()), ToString(request_payer_name()),
-             ToString(request_payer_phone()), ToString(request_shipping())},
-            nullptr)};
-  }
 
   app_store_billing_methods_.insert(methods::kGooglePlayBilling);
 }

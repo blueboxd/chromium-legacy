@@ -38,13 +38,8 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"                 // nogncheck
 #include "ui/ozone/public/ozone_platform.h"           // nogncheck
 #include "ui/ozone/public/platform_gl_egl_utility.h"  // nogncheck
-#endif
-
-#if defined(USE_X11)
-#include "ui/gl/gl_utils.h"
 #endif
 
 #if BUILDFLAG(USE_DAWN) || BUILDFLAG(SKIA_USE_DAWN)
@@ -325,15 +320,13 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
 
   bool useSoftwareGLForTests =
       command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests);
-  bool useSoftwareGLForHeadless =
-      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForHeadless);
   gl::GLImplementationParts legacyImpl =
       gl::GetLegacySoftwareGLImplementation();
   gl::GLImplementationParts swangleImpl = gl::GetSoftwareGLImplementation();
 
-  if ((implementation == legacyImpl) ||
-      ((useSoftwareGLForTests || useSoftwareGLForHeadless) &&
-       (legacyImpl == gl::init::GetSoftwareGLImplementationForPlatform()))) {
+  if (implementation == legacyImpl ||
+      (useSoftwareGLForTests &&
+       legacyImpl == gl::init::GetSoftwareGLImplementationForPlatform())) {
     // If using the software GL implementation, use fake vendor and
     // device ids to make sure it never gets blocklisted. It allows us
     // to proceed with loading the blocklist which may have non-device
@@ -349,10 +342,10 @@ bool CollectBasicGraphicsInfo(const base::CommandLine* command_line,
         std::string(gl::GetGLImplementationGLName(legacyImpl));
 
     return true;
-  } else if ((implementation == swangleImpl) ||
-             ((useSoftwareGLForTests || useSoftwareGLForHeadless) &&
-              (swangleImpl ==
-               gl::init::GetSoftwareGLImplementationForPlatform()))) {
+  } else if (implementation == swangleImpl ||
+             (useSoftwareGLForTests &&
+              swangleImpl ==
+                  gl::init::GetSoftwareGLImplementationForPlatform())) {
     // Similarly to the above, use fake vendor and device ids
     // to make sure they never gets blocklisted for SwANGLE as well.
     gpu_info->gpu.vendor_id = 0xffff;
@@ -614,20 +607,12 @@ bool CollectGpuExtraInfo(gfx::GpuExtraInfo* gpu_extra_info,
   }
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    const auto* const egl_utility =
-        ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
-    if (egl_utility)
-      egl_utility->CollectGpuExtraInfo(prefs.enable_native_gpu_memory_buffers,
-                                       *gpu_extra_info);
-    return true;
+  if (const auto* const egl_utility =
+          ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility()) {
+    egl_utility->CollectGpuExtraInfo(prefs.enable_native_gpu_memory_buffers,
+                                     *gpu_extra_info);
   }
 #endif
-#if defined(USE_X11)
-  gl::CollectX11GpuExtraInfo(prefs.enable_native_gpu_memory_buffers,
-                             *gpu_extra_info);
-#endif
-
   return true;
 }
 

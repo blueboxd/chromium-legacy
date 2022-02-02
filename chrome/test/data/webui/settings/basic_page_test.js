@@ -6,6 +6,7 @@
 
 // clang-format off
 import 'chrome://settings/settings.js';
+import 'chrome://settings/lazy_load.js';
 
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -14,14 +15,27 @@ import {loadTimeData, pageVisibility, Router, routes} from 'chrome://settings/se
 import {eventToPromise, flushTasks, isVisible} from 'chrome://webui-test/test_util.js';
 // clang-format on
 
-// Register mocha tests.
-suite('SettingsBasicPage', function() {
+suite('SettingsBasicPage', () => {
   let page = null;
 
-  setup(function() {
+  setup(async function() {
     PolymerTest.clearBody();
     page = document.createElement('settings-basic-page');
     document.body.appendChild(page);
+    page.scroller = document.body;
+
+    // Need to wait for the 'show-container' event to fire after every
+    // transition, to ensure no logic related to previous transitions is still
+    // running when later transitions are tested.
+    const whenDone = eventToPromise('show-container', page);
+
+    // Ensure that all settings-section instances are rendered.
+    flush();
+    await page.$$('#advancedPageTemplate').get();
+    const sections = page.shadowRoot.querySelectorAll('settings-section');
+    assertTrue(sections.length > 1);
+
+    await whenDone;
   });
 
   test('load page', function() {
@@ -54,41 +68,6 @@ suite('SettingsBasicPage', function() {
 
     const sectionElement = page.$$('settings-section-safety-check');
     assertFalse(!!sectionElement);
-  });
-});
-
-suite('SettingsBasicPageRedesign', () => {
-  let page = null;
-
-  suiteSetup(function() {
-    assertTrue(loadTimeData.getBoolean('enableLandingPageRedesign'));
-    const attribute =
-        loadTimeData.getString('enableLandingPageRedesignAttribute');
-    assertEquals('enable-landing-page-redesign', attribute);
-
-    // Do this manually as it is normally part of settings.html, which is not
-    // part of this test.
-    document.documentElement.toggleAttribute(attribute, true);
-  });
-
-  setup(async function() {
-    PolymerTest.clearBody();
-    page = document.createElement('settings-basic-page');
-    document.body.appendChild(page);
-    page.scroller = document.body;
-
-    // Need to wait for the 'show-container' event to fire after every
-    // transition, to ensure no logic related to previous transitions is still
-    // running when later transitions are tested.
-    const whenDone = eventToPromise('show-container', page);
-
-    // Ensure that all settings-section instances are rendered.
-    flush();
-    await page.$$('#advancedPageTemplate').get();
-    const sections = page.shadowRoot.querySelectorAll('settings-section');
-    assertTrue(sections.length > 1);
-
-    await whenDone;
   });
 
   /** @param {string} section */
@@ -190,10 +169,21 @@ suite('SettingsBasicPageRedesign', () => {
     whenDone = eventToPromise('show-container', page);
     // Navigate specifically to a subpage that is *not* a child of
     // TOP_LEVEL_EQUIVALENT_ROUTE .
-    Router.getInstance().navigateTo(routes.FONTS);
+    Router.getInstance().navigateTo(routes.COOKIES);
     await whenDone;
     await flushTasks();
-    assertActiveSubpage(routes.FONTS.section);
+    assertActiveSubpage(routes.COOKIES.section);
+
+    // RouteState.SUBPAGE -> RoutState.DIALOG
+    Router.getInstance().navigateTo(routes.CLEAR_BROWSER_DATA);
+    await flushTasks();
+
+    // RouteState.DIALOG -> RoutState.SUBPAGE
+    whenDone = eventToPromise('show-container', page);
+    Router.getInstance().navigateTo(routes.SYNC);
+    await whenDone;
+    await flushTasks();
+    assertActiveSubpage(routes.SYNC.section);
   });
 
   // Test cases where a settings-section is appearing next to another section

@@ -37,7 +37,7 @@ bool IsValidOptimizationGuideNavigation(
     // Not a NSP navigation if there is no NSP manager.
     return true;
   }
-  return !(no_state_prefetch_manager->IsWebContentsPrerendering(
+  return !(no_state_prefetch_manager->IsWebContentsPrefetching(
       navigation_handle->GetWebContents()));
 }
 
@@ -45,7 +45,9 @@ bool IsValidOptimizationGuideNavigation(
 
 OptimizationGuideWebContentsObserver::OptimizationGuideWebContentsObserver(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<OptimizationGuideWebContentsObserver>(
+          *web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   optimization_guide_keyed_service_ =
@@ -137,10 +139,12 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
           navigation_handle->GetRedirectChain()));
 }
 
-void OptimizationGuideWebContentsObserver::PostFetchHintsUsingManager(
-    content::RenderFrameHost* render_frame_host) {
+void OptimizationGuideWebContentsObserver::PostFetchHintsUsingManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!render_frame_host->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
+  if (!web_contents()
+           ->GetMainFrame()
+           ->GetLastCommittedURL()
+           .SchemeIsHTTPOrHTTPS())
     return;
 
   if (!optimization_guide_keyed_service_)
@@ -209,7 +213,7 @@ void OptimizationGuideWebContentsObserver::AddURLsToBatchFetchBasedOnPrediction(
     return;
   page_data.InsertHintTargetUrls(urls);
 
-  PostFetchHintsUsingManager(web_contents->GetMainFrame());
+  PostFetchHintsUsingManager();
 }
 
 OptimizationGuideWebContentsObserver::PageData&

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "components/viz/service/main/viz_compositor_thread_runner.h"
@@ -47,17 +46,18 @@ class VizCompositorThreadRunnerImpl : public VizCompositorThreadRunner {
   base::SingleThreadTaskRunner* task_runner() override;
   base::PlatformThreadId thread_id() override;
   void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params) override;
-  void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params,
-                              gpu::CommandBufferTaskExecutor* task_executor,
-                              GpuServiceImpl* gpu_service,
-                              gfx::RenderingPipeline* gpu_pipeline) override;
+  void CreateFrameSinkManager(
+      mojom::FrameSinkManagerParamsPtr params,
+      gpu::CommandBufferTaskExecutor* task_executor,
+      GpuServiceImpl* gpu_service,
+      HintSessionFactory* hint_session_factory) override;
 
  private:
   void CreateFrameSinkManagerOnCompositorThread(
       mojom::FrameSinkManagerParamsPtr params,
       gpu::CommandBufferTaskExecutor* task_executor,
       GpuServiceImpl* gpu_service,
-      gfx::RenderingPipeline* gpu_pipeline);
+      HintSessionFactory* hint_session_factory);
   void TearDownOnCompositorThread();
 
   // Start variables to be accessed only on |task_runner_|.

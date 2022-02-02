@@ -4,13 +4,12 @@
 
 #include "chrome/browser/ash/startup_settings_cache.h"
 
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
+namespace ash {
 
 class StartupSettingsCacheTest : public testing::Test {
  public:
@@ -31,4 +30,4 @@ TEST_F(StartupSettingsCacheTest, RoundTrip) {
   EXPECT_EQ("foo", startup_settings_cache::ReadAppLocale());
 }
 
-}  // namespace chromeos
+}  // namespace ash

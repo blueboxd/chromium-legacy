@@ -99,8 +99,8 @@ class FrameHostImpl final : public fuchsia::web::FrameHost {
 
 WebEngineBrowserMainParts::WebEngineBrowserMainParts(
     content::ContentBrowserClient* browser_client,
-    const content::MainFunctionParams& parameters)
-    : browser_client_(browser_client), parameters_(parameters) {}
+    content::MainFunctionParams parameters)
+    : browser_client_(browser_client), parameters_(std::move(parameters)) {}
 
 WebEngineBrowserMainParts::~WebEngineBrowserMainParts() {
   display::Screen::SetScreenInstance(nullptr);
@@ -230,10 +230,6 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
   if (parameters_.ui_task) {
     // Since the main loop won't run, there is nothing to quit.
     quit_closure_ = base::DoNothing();
-
-    std::move(*parameters_.ui_task).Run();
-    delete parameters_.ui_task;
-    run_message_loop_ = false;
   }
 
   return content::RESULT_CODE_NORMAL_EXIT;
@@ -241,11 +237,7 @@ int WebEngineBrowserMainParts::PreMainMessageLoopRun() {
 
 void WebEngineBrowserMainParts::WillRunMainMessageLoop(
     std::unique_ptr<base::RunLoop>& run_loop) {
-  if (run_message_loop_) {
-    quit_closure_ = run_loop->QuitClosure();
-  } else {
-    run_loop = nullptr;
-  }
+  quit_closure_ = run_loop->QuitClosure();
 }
 
 void WebEngineBrowserMainParts::PostMainMessageLoopRun() {

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_store_backend_migration_decorator.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
@@ -40,7 +41,10 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
   PasswordStoreBackendMigrationDecoratorTest() {
     backend_migration_decorator_ =
         std::make_unique<PasswordStoreBackendMigrationDecorator>(
-            CreateBuiltInBackend(), CreateAndroidBackend(), /*prefs=*/nullptr);
+            CreateBuiltInBackend(), CreateAndroidBackend(), /*prefs=*/nullptr,
+            /*is_syncing_passwords_callback=*/base::BindRepeating([]() {
+              return false;
+            }));
   }
 
   ~PasswordStoreBackendMigrationDecoratorTest() override {
@@ -77,8 +81,8 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
   }
 
   base::test::SingleThreadTaskEnvironment task_env_;
-  FakePasswordStoreBackend* built_in_backend_;
-  FakePasswordStoreBackend* android_backend_;
+  raw_ptr<FakePasswordStoreBackend> built_in_backend_;
+  raw_ptr<FakePasswordStoreBackend> android_backend_;
 
   std::unique_ptr<PasswordStoreBackendMigrationDecorator>
       backend_migration_decorator_;
@@ -86,12 +90,11 @@ class PasswordStoreBackendMigrationDecoratorTest : public testing::Test {
 
 TEST_F(PasswordStoreBackendMigrationDecoratorTest,
        UseBuiltInBackendToGetAllLoginsAsync) {
-  base::MockCallback<LoginsReply> mock_reply;
+  base::MockCallback<LoginsOrErrorReply> mock_reply;
   std::vector<std::unique_ptr<PasswordForm>> expected_logins =
       CreateTestLogins();
   AddTestLogins();
-  EXPECT_CALL(mock_reply,
-              Run(UnorderedPasswordFormElementsAre(&expected_logins)));
+  EXPECT_CALL(mock_reply, Run(LoginsResultsOrErrorAre(&expected_logins)));
   backend_migration_decorator()->GetAllLoginsAsync(mock_reply.Get());
   RunUntilIdle();
 }

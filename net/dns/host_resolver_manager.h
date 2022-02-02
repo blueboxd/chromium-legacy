@@ -17,6 +17,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -100,29 +101,6 @@ class NET_EXPORT HostResolverManager
   using MdnsListener = HostResolver::MdnsListener;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
 
-  // A request that allows explicit cancellation before destruction. Enables
-  // callers (e.g. ContextHostResolver) to implement cancellation of requests on
-  // the callers' destruction.
-  class CancellableRequest {
-   public:
-    CancellableRequest() = default;
-    CancellableRequest(const CancellableRequest&) = delete;
-    CancellableRequest& operator=(const CancellableRequest&) = delete;
-    virtual ~CancellableRequest() = default;
-
-    // If running asynchronously, silently cancels the request as if destroyed.
-    // Callbacks will never be invoked. Noop if request is already complete or
-    // never started.
-    virtual void Cancel() = 0;
-  };
-
-  // CancellableRequest versions of different request types.
-  class CancellableResolveHostRequest
-      : public CancellableRequest,
-        public HostResolver::ResolveHostRequest {};
-  class CancellableProbeRequest : public CancellableRequest,
-                                  public HostResolver::ProbeRequest {};
-
   // Creates a HostResolver as specified by |options|. Blocking tasks are run in
   // ThreadPool.
   //
@@ -155,7 +133,7 @@ class NET_EXPORT HostResolverManager
   //
   // TODO(crbug.com/1022059): Use the HostCache out of the ResolveContext
   // instead of passing it separately.
-  std::unique_ptr<CancellableResolveHostRequest> CreateRequest(
+  std::unique_ptr<HostResolver::ResolveHostRequest> CreateRequest(
       absl::variant<url::SchemeHostPort, HostPortPair> host,
       NetworkIsolationKey network_isolation_key,
       NetLogWithSource net_log,
@@ -164,8 +142,8 @@ class NET_EXPORT HostResolverManager
       HostCache* host_cache);
   // |resolve_context| is the context to use for the probes, and it is expected
   // to be the context of the calling ContextHostResolver.
-  std::unique_ptr<CancellableProbeRequest> CreateDohProbeRequest(
-      ResolveContext* resolvet_context);
+  std::unique_ptr<HostResolver::ProbeRequest> CreateDohProbeRequest(
+      ResolveContext* resolve_context);
   std::unique_ptr<MdnsListener> CreateMdnsListener(const HostPortPair& host,
                                                    DnsQueryType query_type);
 
@@ -400,6 +378,9 @@ class NET_EXPORT HostResolverManager
   // Removes |job_it| from |jobs_| and return.
   std::unique_ptr<Job> RemoveJob(JobMap::iterator job_it);
 
+  // Removes Jobs for this context.
+  void RemoveAllJobs(const ResolveContext* context);
+
   // Aborts both scheduled and running jobs with ERR_NETWORK_CHANGED and
   // notifies their requests. Aborts only running jobs if |in_progress_only| is
   // true. Might start new jobs.
@@ -461,12 +442,12 @@ class NET_EXPORT HostResolverManager
   // Parameters for ProcTask.
   ProcTaskParams proc_params_;
 
-  NetLog* net_log_;
+  raw_ptr<NetLog> net_log_;
 
   // If present, used by DnsTask and ServeFromHosts to resolve requests.
   std::unique_ptr<DnsClient> dns_client_;
 
-  SystemDnsConfigChangeNotifier* system_dns_config_notifier_;
+  raw_ptr<SystemDnsConfigChangeNotifier> system_dns_config_notifier_;
 
   // False if IPv6 should not be attempted and assumed unreachable when on a
   // WiFi connection. See https://crbug.com/696569 for further context.
@@ -486,7 +467,7 @@ class NET_EXPORT HostResolverManager
   scoped_refptr<base::TaskRunner> proc_task_runner_;
 
   // Shared tick clock, overridden for testing.
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   // For per-context cache invalidation notifications.
   base::ObserverList<ResolveContext,

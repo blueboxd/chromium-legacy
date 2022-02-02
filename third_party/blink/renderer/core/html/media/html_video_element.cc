@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -247,9 +248,8 @@ unsigned HTMLVideoElement::videoHeight() const {
   return GetWebMediaPlayer()->NaturalSize().height();
 }
 
-IntSize HTMLVideoElement::videoVisibleSize() const {
-  return GetWebMediaPlayer() ? IntSize(GetWebMediaPlayer()->VisibleSize())
-                             : IntSize();
+gfx::Size HTMLVideoElement::videoVisibleSize() const {
+  return GetWebMediaPlayer() ? GetWebMediaPlayer()->VisibleSize() : gfx::Size();
 }
 
 bool HTMLVideoElement::IsURLAttribute(const Attribute& attribute) const {
@@ -381,7 +381,7 @@ void HTMLVideoElement::RequestExitPictureInPicture() {
 }
 
 void HTMLVideoElement::PaintCurrentFrame(cc::PaintCanvas* canvas,
-                                         const IntRect& dest_rect,
+                                         const gfx::Rect& dest_rect,
                                          const PaintFlags* flags) const {
   if (!GetWebMediaPlayer())
     return;
@@ -395,7 +395,7 @@ void HTMLVideoElement::PaintCurrentFrame(cc::PaintCanvas* canvas,
     media_flags.setBlendMode(SkBlendMode::kSrc);
   }
 
-  GetWebMediaPlayer()->Paint(canvas, ToGfxRect(dest_rect), media_flags);
+  GetWebMediaPlayer()->Paint(canvas, dest_rect, media_flags);
 }
 
 bool HTMLVideoElement::HasAvailableVideoFrame() const {
@@ -526,7 +526,7 @@ scoped_refptr<StaticBitmapImage> HTMLVideoElement::CreateStaticBitmapImage(
   if (!media_video_frame || !video_renderer)
     return nullptr;
 
-  const auto intrinsic_size = IntSize(media_video_frame->natural_size());
+  const gfx::Size intrinsic_size = media_video_frame->natural_size();
   if (!resource_provider_ ||
       allow_accelerated_images != resource_provider_->IsAccelerated() ||
       intrinsic_size != resource_provider_->Size()) {
@@ -556,7 +556,7 @@ scoped_refptr<StaticBitmapImage> HTMLVideoElement::CreateStaticBitmapImage(
 
 scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    const FloatSize&,
+    const gfx::SizeF&,
     const AlphaDisposition alpha_disposition) {
   // UnpremultiplyAlpha is not implemented yet.
   DCHECK_EQ(alpha_disposition, kPremultiplyAlpha);
@@ -575,19 +575,19 @@ bool HTMLVideoElement::WouldTaintOrigin() const {
   return !IsMediaDataCorsSameOrigin();
 }
 
-FloatSize HTMLVideoElement::ElementSize(
-    const FloatSize&,
+gfx::SizeF HTMLVideoElement::ElementSize(
+    const gfx::SizeF&,
     const RespectImageOrientationEnum) const {
-  return FloatSize(videoWidth(), videoHeight());
+  return gfx::SizeF(videoWidth(), videoHeight());
 }
 
-IntSize HTMLVideoElement::BitmapSourceSize() const {
-  return IntSize(videoWidth(), videoHeight());
+gfx::Size HTMLVideoElement::BitmapSourceSize() const {
+  return gfx::Size(videoWidth(), videoHeight());
 }
 
 ScriptPromise HTMLVideoElement::CreateImageBitmap(
     ScriptState* script_state,
-    absl::optional<IntRect> crop_rect,
+    absl::optional<gfx::Rect> crop_rect,
     const ImageBitmapOptions* options,
     ExceptionState& exception_state) {
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {

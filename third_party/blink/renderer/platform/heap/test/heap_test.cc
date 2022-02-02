@@ -35,11 +35,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_counted_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_objects.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_platform.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
+#include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -53,6 +60,8 @@ namespace blink {
 namespace {
 
 class HeapTest : public TestSupportingGC {};
+
+class HeapDeathTest : public TestSupportingGC {};
 
 class IntWrapper : public GarbageCollected<IntWrapper> {
  public:
@@ -186,7 +195,7 @@ class PreFinalizerVectorBackingExpandForbidden final
 };
 }  // namespace
 
-TEST(HeapDeathTest, PreFinalizerVectorBackingExpandForbidden) {
+TEST_F(HeapDeathTest, PreFinalizerVectorBackingExpandForbidden) {
   MakeGarbageCollected<PreFinalizerVectorBackingExpandForbidden>();
   TestSupportingGC::PreciselyCollectGarbage();
 }
@@ -217,7 +226,7 @@ class PreFinalizerHashTableBackingExpandForbidden final
 };
 }  // namespace
 
-TEST(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
+TEST_F(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
   MakeGarbageCollected<PreFinalizerHashTableBackingExpandForbidden>();
   TestSupportingGC::PreciselyCollectGarbage();
 }
@@ -290,7 +299,7 @@ class HeapTestResurrectingPreFinalizer
 };
 }  // namespace
 
-TEST(HeapDeathTest, DiesOnResurrectedHeapVectorMember) {
+TEST_F(HeapDeathTest, DiesOnResurrectedHeapVectorMember) {
   Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
       MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
   MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
@@ -299,7 +308,7 @@ TEST(HeapDeathTest, DiesOnResurrectedHeapVectorMember) {
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
-TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetMember) {
+TEST_F(HeapDeathTest, DiesOnResurrectedHeapHashSetMember) {
   Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
       MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
   MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
@@ -308,7 +317,7 @@ TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetMember) {
   TestSupportingGC::PreciselyCollectGarbage();
 }
 
-TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
+TEST_F(HeapDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
   Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
       MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
   MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
@@ -1684,7 +1693,7 @@ int ThingWithDestructor::live_things_with_destructor_;
 class RefCountedAndGarbageCollected final
     : public GarbageCollected<RefCountedAndGarbageCollected> {
  public:
-  RefCountedAndGarbageCollected() : keep_alive_(PERSISTENT_FROM_HERE) {}
+  RefCountedAndGarbageCollected() = default;
   ~RefCountedAndGarbageCollected() { ++destructor_calls_; }
 
   void AddRef() {

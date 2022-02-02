@@ -215,6 +215,14 @@ const char kForceUpdateRemoteUrl[] = "force-update-remote-url";
 // means that dummy info will be used.
 const char kSysInfoFilePath[] = "sys-info-file-path";
 
+// Specifies the directory where system extensions are found.
+// Default is "/system/chrome/extensions".
+const char kExtensionsDir[] = "cast-extensions-dir";
+
+// Defer initialization of the base::FeatureList in an external service process,
+// allowing the process to include its own non-default features.
+const char kDeferFeatureList[] = "defer-feature-list";
+
 }  // namespace switches
 
 namespace chromecast {

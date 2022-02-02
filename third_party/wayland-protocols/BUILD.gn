@@ -136,10 +136,6 @@ wayland_protocol("wayland_drm_protocol") {
   sources = [ "mesa/wayland-drm/wayland-drm.xml" ]
 }
 
-wayland_protocol("color_management_protocol") {
-  sources = [ "unstable/color-management/color-management-unstable-v1.xml" ]
-}
-
 wayland_protocol("xdg_foreign") {
   sources = [
     "src/unstable/xdg-foreign/xdg-foreign-unstable-v1.xml",
@@ -157,4 +153,8 @@ wayland_protocol("weston_test") {
 
 wayland_protocol("org_kde_kwin_idle") {
   sources = [ "kde/src/protocols/idle.xml" ]
+}
+
+wayland_protocol("touchpad_haptics_protocol") {
+  sources = [ "unstable/touchpad-haptics/touchpad-haptics-unstable-v1.xml" ]
 }

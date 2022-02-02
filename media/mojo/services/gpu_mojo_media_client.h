@@ -7,13 +7,14 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
+#include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "media/base/android_overlay_mojo_factory.h"
@@ -42,11 +43,12 @@ struct VideoDecoderTraits {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner;
   std::unique_ptr<MediaLog> media_log;
   RequestOverlayInfoCB request_overlay_info_cb;
-  const gfx::ColorSpace* const target_color_space;
+  const raw_ptr<const gfx::ColorSpace> target_color_space;
   gpu::GpuPreferences gpu_preferences;
   gpu::GpuFeatureInfo gpu_feature_info;
-  const gpu::GpuDriverBugWorkarounds* const gpu_workarounds;
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory;
+  gpu::GPUInfo gpu_info;
+  const raw_ptr<const gpu::GpuDriverBugWorkarounds> gpu_workarounds;
+  const raw_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory;
 
   // Windows decoders need to ensure that the cache is populated.
   GetConfigCacheCB get_cached_configs_cb;
@@ -64,6 +66,7 @@ struct VideoDecoderTraits {
       const gfx::ColorSpace* target_color_space,
       gpu::GpuPreferences gpu_preferences,
       gpu::GpuFeatureInfo gpu_feature_info,
+      gpu::GPUInfo gpu_info,
       const gpu::GpuDriverBugWorkarounds* gpu_workarounds,
       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
       GetConfigCacheCB get_cached_configs_cb,
@@ -86,6 +89,7 @@ absl::optional<SupportedVideoDecoderConfigs>
 GetPlatformSupportedVideoDecoderConfigs(
     gpu::GpuDriverBugWorkarounds gpu_workarounds,
     gpu::GpuPreferences gpu_preferences,
+    const gpu::GPUInfo& gpu_info,
     base::OnceCallback<SupportedVideoDecoderConfigs()> get_vda_configs);
 
 // Creates a platform-specific media::AudioDecoder. Most platforms don't do
@@ -100,7 +104,8 @@ std::unique_ptr<CdmFactory> CreatePlatformCdmFactory(
 // Queries the platform decoder type.
 VideoDecoderType GetPlatformDecoderImplementationType(
     gpu::GpuDriverBugWorkarounds gpu_workarounds,
-    gpu::GpuPreferences gpu_preferences);
+    gpu::GpuPreferences gpu_preferences,
+    const gpu::GPUInfo& gpu_info);
 
 class GpuMojoMediaClient final : public MojoMediaClient {
  public:
@@ -110,6 +115,7 @@ class GpuMojoMediaClient final : public MojoMediaClient {
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
       const gpu::GpuFeatureInfo& gpu_feature_info,
+      const gpu::GPUInfo& gpu_info,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
@@ -119,6 +125,8 @@ class GpuMojoMediaClient final : public MojoMediaClient {
   GpuMojoMediaClient& operator=(const GpuMojoMediaClient&) = delete;
 
   ~GpuMojoMediaClient() final;
+
+  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   // MojoMediaClient implementation.
   SupportedVideoDecoderConfigs GetSupportedVideoDecoderConfigs() final;
@@ -145,10 +153,11 @@ class GpuMojoMediaClient final : public MojoMediaClient {
   gpu::GpuPreferences gpu_preferences_;
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   gpu::GpuFeatureInfo gpu_feature_info_;
+  gpu::GPUInfo gpu_info_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager_;
   AndroidOverlayMojoFactoryCB android_overlay_factory_cb_;
-  gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+  const raw_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 };
 
 }  // namespace media

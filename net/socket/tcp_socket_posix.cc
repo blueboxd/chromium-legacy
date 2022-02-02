@@ -31,6 +31,7 @@
 #include "net/base/network_activity_monitor.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/sockaddr_storage.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -42,6 +43,10 @@
 #include "net/socket/socket_posix.h"
 #include "net/socket/socket_tag.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+
+#if defined(OS_ANDROID)
+#include "net/android/radio_activity_tracker.h"
+#endif  // defined(OS_ANDROID)
 
 // If we don't have a definition for TCPI_OPT_SYN_DATA, create one.
 #if !defined(TCPI_OPT_SYN_DATA)
@@ -306,6 +311,10 @@ int TCPSocketPosix::Write(
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(socket_);
   DCHECK(!callback.is_null());
+
+#if defined(OS_ANDROID)
+  android::MaybeRecordTCPWriteForWakeupTrigger(traffic_annotation);
+#endif  // defined(OS_ANDROID)
 
   CompletionOnceCallback write_callback = base::BindOnce(
       &TCPSocketPosix::WriteCompleted,

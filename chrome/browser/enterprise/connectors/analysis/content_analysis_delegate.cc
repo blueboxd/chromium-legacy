@@ -87,6 +87,8 @@ StringAnalysisRequest::StringAnalysisRequest(
     std::string text,
     BinaryUploadService::ContentAnalysisCallback callback)
     : Request(std::move(callback), analysis_url) {
+  data_.size = text.size();
+
   // Only remember strings less than the maximum allowed.
   if (text.size() < BinaryUploadService::kMaxUploadSizeBytes) {
     data_.contents = std::move(text);
@@ -104,7 +106,7 @@ StringAnalysisRequest::~StringAnalysisRequest() {
 }
 
 void StringAnalysisRequest::GetRequestData(DataCallback callback) {
-  std::move(callback).Run(result_, data_);
+  std::move(callback).Run(result_, std::move(data_));
 }
 
 bool ContentAnalysisActionAllowsDataUse(
@@ -626,7 +628,7 @@ void ContentAnalysisDelegate::OnGotFileInfo(
     std::unique_ptr<BinaryUploadService::Request> request,
     const base::FilePath& path,
     BinaryUploadService::Result result,
-    const BinaryUploadService::Request::Data& data) {
+    BinaryUploadService::Request::Data data) {
   auto it = std::find(data_.paths.begin(), data_.paths.end(), path);
   DCHECK(it != data_.paths.end());
   size_t index = std::distance(data_.paths.begin(), it);

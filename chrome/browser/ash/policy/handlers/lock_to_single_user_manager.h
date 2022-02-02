@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_POLICY_HANDLERS_LOCK_TO_SINGLE_USER_MANAGER_H_
 #define CHROME_BROWSER_ASH_POLICY_HANDLERS_LOCK_TO_SINGLE_USER_MANAGER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
@@ -24,7 +23,7 @@ class LockToSingleUserManager final
     : public user_manager::UserManager::UserSessionStateObserver,
       public arc::ArcSessionManagerObserver,
       public chromeos::ConciergeClient::VmObserver,
-      public chromeos::VmStartingObserver {
+      public ash::VmStartingObserver {
  public:
   static LockToSingleUserManager* GetLockToSingleUserManagerInstance();
 
@@ -49,7 +48,7 @@ class LockToSingleUserManager final
   void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;
   void OnVmStopped(const vm_tools::concierge::VmStoppedSignal& signal) override;
 
-  // chromeos::VmStartingObserver:
+  // ash::VmStartingObserver:
   void OnVmStarting() override;
 
   // On affiliation established of the active user.

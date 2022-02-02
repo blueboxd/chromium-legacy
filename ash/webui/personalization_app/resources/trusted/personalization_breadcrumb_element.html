@@ -1,0 +1,58 @@
+<style include="cr-icons common-style">
+  #container {
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row nowrap;
+    height: 100%;
+    padding: 0 8px;
+  }
+
+  #backButton {
+    /* Make the arrow align with the thumbnail image */
+    --cr-icon-button-margin-start: -12px;
+    --cr-icon-button-margin-end: 8px;
+  }
+
+  #breadcrumbContainer {
+    color: var(--cros-text-color-secondary);
+    align-items: center;
+    box-sizing: border-box;
+    display: flex;
+    flex-flow: row nowrap;
+    font: var(--cros-headline-1-font);
+    height: 100%;
+  }
+
+  #breadcrumbContainer>* {
+    margin: 0;
+  }
+
+  #breadcrumbContainer>*+* {
+    margin-left: 8px;
+  }
+
+  .breadcrumb {
+    cursor: pointer;
+  }
+
+  iron-icon {
+    height: 20px;
+    width: 20px;
+  }
+</style>
+<div id="container">
+  <template is="dom-if" if="[[showBackButton_]]">
+    <cr-icon-button aria-label="[[getBackButtonAriaLabel_()]]" id="backButton"
+      class="icon-arrow-back" role="button" on-click="onBackClick_">
+    </cr-icon-button>
+  </template>
+  <div id="breadcrumbContainer">
+    <template is="dom-repeat" items="[[breadcrumbs_]]" as="breadcrumb">
+      <template is="dom-if" if="[[index]]">
+        <iron-icon icon="cr:chevron-right" aria-hidden$="true"></iron-icon>
+      </template>
+      <p class="breadcrumb" on-click="onBreadcrumbClick_">[[breadcrumb]]</p>
+    </template>
+  </div>
+</div>

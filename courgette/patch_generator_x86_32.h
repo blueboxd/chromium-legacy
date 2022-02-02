@@ -6,7 +6,6 @@
 #define COURGETTE_PATCH_GENERATOR_X86_32_H_
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "courgette/courgette_flow.h"
 #include "courgette/ensemble.h"
 #include "courgette/patcher_x86_32.h"
@@ -25,6 +24,9 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
       : TransformationPatchGenerator(old_element, new_element, patcher),
         kind_(kind) {
   }
+
+  PatchGeneratorX86_32(const PatchGeneratorX86_32&) = delete;
+  PatchGeneratorX86_32& operator=(const PatchGeneratorX86_32&) = delete;
 
   virtual ExecutableType Kind() { return kind_; }
 
@@ -105,8 +107,6 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
   virtual ~PatchGeneratorX86_32() { }
 
   ExecutableType kind_;
-
-  DISALLOW_COPY_AND_ASSIGN(PatchGeneratorX86_32);
 };
 
 }  // namespace courgette

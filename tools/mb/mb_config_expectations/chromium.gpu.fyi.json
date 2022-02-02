@@ -25,8 +25,7 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_rbe": true,
-      "use_remoteexec": true,
+      "use_goma": true,
       "use_static_angle": true
     }
   },
@@ -138,20 +137,6 @@
       "use_static_angle": true
     }
   },
-  "Android FYI dEQP Release (Nexus 5X)": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": true,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_goma": true
-    }
-  },
   "ChromeOS FYI Release (amd64-generic)": {
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
@@ -195,8 +180,7 @@
       "symbol_level": 1,
       "use_bundled_weston": true,
       "use_goma": true,
-      "use_ozone": true,
-      "use_x11": false
+      "use_ozone": true
     }
   },
   "GPU FYI Linux Builder": {
@@ -225,16 +209,6 @@
       "is_debug": true,
       "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "GPU FYI Linux dEQP Builder": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": false,
       "symbol_level": 1,
       "use_goma": true
     }

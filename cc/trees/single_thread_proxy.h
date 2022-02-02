@@ -11,6 +11,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -76,11 +77,11 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   }
   void SetUkmSmoothnessDestination(
       base::WritableSharedMemoryMapping ukm_smoothness_data) override {}
-  void ClearHistory() override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
   void SetEnableFrameRateThrottling(
       bool enable_frame_rate_throttling) override {}
+  uint32_t GetAverageThroughput() const override;
 
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
@@ -148,6 +149,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool IsInSynchronousComposite() const override;
   void FrameSinksToThrottleUpdated(
       const base::flat_set<viz::FrameSinkId>& ids) override;
+  void ClearHistory() override;
+  size_t CommitDurationSampleCountForTesting() const override;
 
   void RequestNewLayerTreeFrameSink();
 
@@ -187,10 +190,10 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DidReceiveCompositorFrameAck();
 
   // Accessed on main thread only.
-  LayerTreeHost* layer_tree_host_;
-  LayerTreeHostSingleThreadClient* single_thread_client_;
+  raw_ptr<LayerTreeHost> layer_tree_host_;
+  raw_ptr<LayerTreeHostSingleThreadClient> single_thread_client_;
 
-  TaskRunnerProvider* task_runner_provider_;
+  raw_ptr<TaskRunnerProvider> task_runner_provider_;
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.
@@ -268,7 +271,7 @@ class DebugScopedSetImplThread {
 
  private:
   bool previous_value_;
-  TaskRunnerProvider* task_runner_provider_;
+  raw_ptr<TaskRunnerProvider> task_runner_provider_;
 #endif
 };
 
@@ -300,7 +303,7 @@ class DebugScopedSetMainThread {
 
  private:
   bool previous_value_;
-  TaskRunnerProvider* task_runner_provider_;
+  raw_ptr<TaskRunnerProvider> task_runner_provider_;
 #endif
 };
 

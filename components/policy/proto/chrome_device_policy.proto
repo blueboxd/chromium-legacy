@@ -10,6 +10,8 @@ import "policy_common_definitions.proto";
 
 package enterprise_management;
 
+option go_package="chromium/policy/enterprise_management_proto";
+
 // Everything below this comment will be synchronized between client and server
 // repos ( go/cros-proto-sync ).
 
@@ -167,6 +169,10 @@ message DeviceReportingProto {
       [default = 600000];
   optional int64 report_network_telemetry_event_checking_rate_ms = 34
       [default = 60000];
+
+  // Audio telemetry policy
+  optional int64 report_device_audio_status_checking_rate_ms = 35
+      [default = 600000];
 }
 
 message EphemeralUsersEnabledProto {
@@ -1835,6 +1841,13 @@ message DeviceI18nShortcutsEnabledProto {
   optional bool enabled = 1 [default = true];
 }
 
+// reven board collects hardware data of the device to provide relevant updates.
+// Setting that controls whether device hardware data can be also used for other
+// purposes.
+message RevenDeviceHWDataUsageEnabledProto {
+  optional bool hardware_data_usage_enabled = 1 [default = false];
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -2002,4 +2015,6 @@ message ChromeDeviceSettingsProto {
       login_screen_prompt_on_multiple_matching_certificates = 126;
   optional BooleanPolicyProto kiosk_crx_manifest_update_url_ignored = 127;
   optional DeviceI18nShortcutsEnabledProto device_i18n_shortcuts_enabled = 128;
+  optional BooleanPolicyProto chromad_to_cloud_migration_enabled = 129;
+  optional RevenDeviceHWDataUsageEnabledProto hardware_data_usage_enabled = 130;
 }

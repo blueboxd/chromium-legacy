@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cros_healthd/fake_cros_healthd_service.h"
@@ -114,8 +113,14 @@ class COMPONENT_EXPORT(CROS_HEALTHD) FakeCrosHealthdClient
   // Calls the audio event OnUnderrun on all registered audio observers.
   void EmitAudioUnderrunEventForTesting();
 
+  // Calls the audio event OnSevereUnderrun on all registered audio observers.
+  void EmitAudioSevereUnderrunEventForTesting();
+
   // Calls the Thunderbolt event OnAdd on all registered Thunderbolt observers.
   void EmitThunderboltAddEventForTesting();
+
+  // Calls the USB event OnAdd on all registered USB observers.
+  void EmitUsbAddEventForTesting();
 
   // Calls the network event OnConnectionStateChangedEvent on all registered
   // network observers.

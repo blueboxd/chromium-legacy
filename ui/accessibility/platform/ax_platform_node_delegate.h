@@ -172,7 +172,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Only text displayed on screen is included. Text from ARIA and HTML
   // attributes that is either not displayed on screen, or outside this node,
   // e.g. aria-label and HTML title, is not returned.
-  virtual std::u16string GetInnerText() const = 0;
+  virtual std::u16string GetTextContentUTF16() const = 0;
 
   // Returns the value of a control such as a text field, a slider, a <select>
   // element, a date picker or an ARIA combo box. In order to minimize
@@ -209,7 +209,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.
-  virtual gfx::NativeViewAccessible GetParent() = 0;
+  virtual gfx::NativeViewAccessible GetParent() const = 0;
 
   // Get the index in parent. Typically this is the AXNode's index_in_parent_.
   // This should return -1 if the index in parent is unknown.
@@ -365,8 +365,19 @@ class AX_EXPORT AXPlatformNodeDelegate {
       const AXClippingBehavior clipping_behavior,
       AXOffscreenResult* offscreen_result = nullptr) const = 0;
 
-  virtual gfx::Rect GetClippedScreenBoundsRect(
-      AXOffscreenResult* offscreen_result = nullptr) const = 0;
+  // Derivative utils for AXPlatformNodeDelegate::GetBoundsRect
+  gfx::Rect GetClippedScreenBoundsRect(
+      AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedScreenBoundsRect(
+      AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetClippedRootFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedRootFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetClippedFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
+  gfx::Rect GetUnclippedFrameBoundsRect(
+      ui::AXOffscreenResult* offscreen_result = nullptr) const;
 
   // Return the bounds of the text range given by text offsets relative to
   // GetHypertext in the coordinate system indicated. If the clipping behavior
@@ -469,21 +480,6 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   virtual const AXUniqueId& GetUniqueId() const = 0;
 
-  // Finds the previous or next offset from the provided offset, that matches
-  // the provided boundary type.
-  //
-  // This method finds text boundaries in the text used for platform text APIs.
-  // Implementations may use side-channel data such as line or word indices to
-  // produce appropriate results. It may optionally return no value, indicating
-  // that the delegate does not have all the information required to calculate
-  // this value and it is the responsibility of the AXPlatformNode itself to
-  // to calculate it.
-  virtual absl::optional<int> FindTextBoundary(
-      ax::mojom::TextBoundary boundary,
-      int offset,
-      ax::mojom::MoveDirection direction,
-      ax::mojom::TextAffinity affinity) const = 0;
-
   // Return a vector of all the descendants of this delegate's node. This method
   // is only meaningful for Windows UIA.
   virtual const std::vector<gfx::NativeViewAccessible>
@@ -539,6 +535,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // or treegrid.
   virtual bool IsCellOrHeaderOfAriaGrid() const = 0;
 
+  // True if this is a web area, and its grandparent is a presentational iframe.
+  virtual bool IsWebAreaForPresentationalIframe() const = 0;
+
   // Ordered-set-like and item-like nodes.
   virtual bool IsOrderedSetItem() const = 0;
   virtual bool IsOrderedSet() const = 0;
@@ -588,7 +587,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
   // Creates a string representation of this delegate's data.
-  std::string ToString() { return GetData().ToString(); }
+  std::string ToString() const { return GetData().ToString(); }
 
   // Returns a string representation of the subtree of delegates rooted at this
   // delegate.

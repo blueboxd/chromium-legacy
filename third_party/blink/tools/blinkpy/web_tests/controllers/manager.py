@@ -44,6 +44,7 @@ import random
 import signal
 import sys
 import time
+import traceback
 
 from six.moves import range
 
@@ -167,10 +168,16 @@ class Manager(object):
         should_retry_failures = self._options.num_retries > 0
 
         try:
-            _is_win = self._port.host.platform.is_win()
-            if not _is_win:
+            if not self._port.host.platform.is_win():
+                _pid = os.getpid()
                 def sighandler(signum, frame):
-                    os.killpg(os.getpgrp(), signal.SIGINT)
+                    self._printer.write_update("Received SIGTERM in %d" % os.getpid())
+                    message = ''.join(traceback.format_stack(frame))
+                    self._printer.write_update(message)
+                    if os.getpid() == _pid:
+                        os.killpg(os.getpgrp(), signal.SIGINT)
+                    else:
+                        os.kill(os.getpid(), signal.SIGINT)
                 signal.signal(signal.SIGTERM, sighandler)
             self._start_servers(tests_to_run)
             if self._options.watch:

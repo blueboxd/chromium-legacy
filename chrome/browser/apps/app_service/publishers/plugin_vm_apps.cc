@@ -12,6 +12,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
@@ -68,6 +69,7 @@ void SetAppAllowed(apps::mojom::App* app, bool allowed) {
   app->show_in_launcher = opt_allowed;
   app->show_in_shelf = opt_allowed;
   app->show_in_search = opt_allowed;
+  app->handles_intents = opt_allowed;
 }
 
 void SetShowInAppManagement(apps::mojom::App* app, bool installed) {
@@ -143,20 +145,6 @@ PluginVmApps::PluginVmApps(AppServiceProxy* proxy)
   }
   registry_->AddObserver(this);
 
-  PublisherBase::Initialize(proxy->AppService(),
-                            apps::mojom::AppType::kPluginVm);
-
-  std::vector<std::unique_ptr<App>> apps;
-  apps.push_back(CreatePluginVmApp(profile_, is_allowed_));
-  for (const auto& pair :
-       registry_->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
-                                        ApplicationList_VmType_PLUGIN_VM)) {
-    const guest_os::GuestOsRegistryService::Registration& registration =
-        pair.second;
-    apps.push_back(CreateApp(registration, /*generate_new_icon_key=*/true));
-  }
-  AppPublisher::Publish(std::move(apps));
-
   // Register for Plugin VM changes to policy and installed state, so that we
   // can update the availability and status of the Plugin VM app. Unretained is
   // safe as these are cleaned up upon destruction.
@@ -205,6 +193,28 @@ void PluginVmApps::Connect(
   subscribers_.Add(std::move(subscriber));
 }
 
+void PluginVmApps::Initialize() {
+  if (!registry_) {
+    return;
+  }
+
+  PublisherBase::Initialize(proxy()->AppService(),
+                            apps::mojom::AppType::kPluginVm);
+
+  RegisterPublisher(AppType::kPluginVm);
+
+  std::vector<std::unique_ptr<App>> apps;
+  apps.push_back(CreatePluginVmApp(profile_, is_allowed_));
+  for (const auto& pair :
+       registry_->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
+                                        ApplicationList_VmType_PLUGIN_VM)) {
+    const guest_os::GuestOsRegistryService::Registration& registration =
+        pair.second;
+    apps.push_back(CreateApp(registration, /*generate_new_icon_key=*/true));
+  }
+  AppPublisher::Publish(std::move(apps));
+}
+
 void PluginVmApps::LoadIcon(const std::string& app_id,
                             const IconKey& icon_key,
                             IconType icon_type,
@@ -228,12 +238,19 @@ void PluginVmApps::LoadIcon(const std::string& app_id,
     return;
   }
 
-  std::unique_ptr<IconKey> key =
-      ConvertMojomIconKeyToIconKey(std::move(icon_key));
+  std::unique_ptr<IconKey> key = ConvertMojomIconKeyToIconKey(icon_key);
   registry_->LoadIcon(app_id, *key, ConvertMojomIconTypeToIconType(icon_type),
                       size_hint_in_dip, allow_placeholder_icon,
                       apps::mojom::IconKey::kInvalidResourceId,
                       IconValueToMojomIconValueCallback(std::move(callback)));
+}
+
+void PluginVmApps::LaunchAppWithParams(AppLaunchParams&& params,
+                                       LaunchCallback callback) {
+  Launch(params.app_id, ui::EF_NONE, apps::mojom::LaunchSource::kUnknown,
+         nullptr);
+  // TODO(crbug.com/1244506): Add launch return value.
+  std::move(callback).Run(LaunchResult());
 }
 
 void PluginVmApps::Launch(const std::string& app_id,

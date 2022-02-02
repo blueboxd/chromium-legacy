@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
+#include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_client.h"
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -147,7 +148,7 @@ class ChromePersonalizationAppUiDelegateTest : public testing::Test {
   void AddWallpaperImage(
       uint64_t asset_id,
       const ChromePersonalizationAppUiDelegate::ImageInfo& image_info) {
-    delegate_->image_asset_id_map_[asset_id] = image_info;
+    delegate_->image_asset_id_map_.insert({asset_id, image_info});
   }
 
   TestWallpaperController* test_wallpaper_controller() {
@@ -201,10 +202,18 @@ TEST_F(ChromePersonalizationAppUiDelegateTest, SelectWallpaper) {
   test_wallpaper_controller()->ClearCounts();
 
   const uint64_t asset_id = 1;
+  const GURL image_url("http://test_url");
+  const uint64_t unit_id = 1;
+  std::vector<ash::OnlineWallpaperVariant> variants;
+  variants.emplace_back(ash::OnlineWallpaperVariant(
+      asset_id, image_url, backdrop::Image::IMAGE_TYPE_UNKNOWN));
 
   AddWallpaperImage(asset_id, /*image_info=*/{
-                        GURL("test_url"),
+                        image_url,
                         "collection_id",
+                        asset_id,
+                        unit_id,
+                        backdrop::Image::IMAGE_TYPE_UNKNOWN,
                     });
 
   base::RunLoop loop;
@@ -218,24 +227,31 @@ TEST_F(ChromePersonalizationAppUiDelegateTest, SelectWallpaper) {
   loop.Run();
 
   EXPECT_EQ(1, test_wallpaper_controller()->set_online_wallpaper_count());
-  EXPECT_EQ(
-      ash::WallpaperInfo(
-          {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
-           absl::make_optional(asset_id), GURL("test_url"), "collection_id",
-           ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-           /*preview_mode=*/false, /*from_user=*/true,
-           /*daily_refresh_enabled=*/false}),
-      test_wallpaper_controller()->wallpaper_info().value());
+  EXPECT_EQ(ash::WallpaperInfo(
+                {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
+                 absl::make_optional(asset_id), image_url, "collection_id",
+                 ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                 /*preview_mode=*/false, /*from_user=*/true,
+                 /*daily_refresh_enabled=*/false, unit_id, variants}),
+            test_wallpaper_controller()->wallpaper_info().value());
 }
 
 TEST_F(ChromePersonalizationAppUiDelegateTest, PreviewWallpaper) {
   test_wallpaper_controller()->ClearCounts();
 
   const uint64_t asset_id = 1;
+  const GURL image_url("http://test_url");
+  const uint64_t unit_id = 1;
+  std::vector<ash::OnlineWallpaperVariant> variants;
+  variants.emplace_back(ash::OnlineWallpaperVariant(
+      asset_id, image_url, backdrop::Image::IMAGE_TYPE_UNKNOWN));
 
   AddWallpaperImage(asset_id, /*image_info=*/{
-                        GURL("test_url"),
+                        image_url,
                         "collection_id",
+                        asset_id,
+                        unit_id,
+                        backdrop::Image::IMAGE_TYPE_UNKNOWN,
                     });
 
   base::RunLoop loop;
@@ -249,14 +265,13 @@ TEST_F(ChromePersonalizationAppUiDelegateTest, PreviewWallpaper) {
   loop.Run();
 
   EXPECT_EQ(1, test_wallpaper_controller()->set_online_wallpaper_count());
-  EXPECT_EQ(
-      ash::WallpaperInfo(
-          {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
-           absl::make_optional(asset_id), GURL("test_url"), "collection_id",
-           ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
-           /*preview_mode=*/true, /*from_user=*/true,
-           /*daily_refresh_enabled=*/false}),
-      test_wallpaper_controller()->wallpaper_info().value());
+  EXPECT_EQ(ash::WallpaperInfo(
+                {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
+                 absl::make_optional(asset_id), image_url, "collection_id",
+                 ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                 /*preview_mode=*/true, /*from_user=*/true,
+                 /*daily_refresh_enabled=*/false, unit_id, variants}),
+            test_wallpaper_controller()->wallpaper_info().value());
 }
 
 TEST_F(ChromePersonalizationAppUiDelegateTest, ObserveWallpaperFiresWhenBound) {
@@ -265,13 +280,26 @@ TEST_F(ChromePersonalizationAppUiDelegateTest, ObserveWallpaperFiresWhenBound) {
       CreateSolidImageSkia(/*width=*/1, /*height=*/1, SK_ColorBLACK));
 
   const uint64_t asset_id = 1;
+  const GURL image_url("http://test_url");
+  const uint64_t unit_id = 1;
+  std::vector<ash::OnlineWallpaperVariant> variants;
+  variants.emplace_back(ash::OnlineWallpaperVariant(
+      asset_id, image_url, backdrop::Image::IMAGE_TYPE_UNKNOWN));
+
+  AddWallpaperImage(asset_id, /*image_info=*/{
+                        image_url,
+                        "collection_id",
+                        asset_id,
+                        unit_id,
+                        backdrop::Image::IMAGE_TYPE_UNKNOWN,
+                    });
 
   test_wallpaper_controller()->SetOnlineWallpaper(
       {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
-       absl::make_optional(asset_id), GURL("test_url"), "collection_id",
+       absl::make_optional(asset_id), image_url, "collection_id",
        ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
        /*preview_mode=*/false, /*from_user=*/true,
-       /*daily_refresh_enabled=*/false},
+       /*daily_refresh_enabled=*/false, unit_id, variants},
       base::DoNothing());
 
   EXPECT_EQ(nullptr, current_wallpaper());
@@ -289,4 +317,40 @@ TEST_F(ChromePersonalizationAppUiDelegateTest, ObserveWallpaperFiresWhenBound) {
   EXPECT_EQ(webui::GetBitmapDataUrl(
                 *CreateSolidImageSkia(256, 256, SK_ColorBLACK).bitmap()),
             current->url);
+}
+
+class ChromePersonalizationAppUiDelegateGooglePhotosTest
+    : public ChromePersonalizationAppUiDelegateTest,
+      public testing::WithParamInterface<bool /* google_photos_enabled */> {
+ public:
+  // Returns true if the test should run with the Google Photos Wallpaper
+  // integration enabled, false otherwise.
+  bool GooglePhotosEnabled() const { return GetParam(); }
+
+ protected:
+  // ChromePersonalizationAppUiDelegateTest:
+  void SetUp() override {
+    ChromePersonalizationAppUiDelegateTest::SetUp();
+    scoped_feature_list_.InitWithFeatureState(
+        ash::features::kWallpaperGooglePhotosIntegration,
+        GooglePhotosEnabled());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ChromePersonalizationAppUiDelegateGooglePhotosTest,
+                         /*google_photos_enabled=*/::testing::Bool());
+
+TEST_P(ChromePersonalizationAppUiDelegateGooglePhotosTest, FetchCount) {
+  base::RunLoop loop;
+  wallpaper_provider_remote()->get()->FetchGooglePhotosCount(
+      base::BindLambdaForTesting([&, this](int64_t count) {
+        EXPECT_EQ(count, GooglePhotosEnabled() ? 0 : -1);
+        loop.QuitClosure().Run();
+      }));
+  wallpaper_provider_remote()->FlushForTesting();
+  loop.Run();
 }

@@ -38,11 +38,16 @@
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 // Exposes |DumpStatistics()| for dumping information about nodes. To use, call
 // |DumpStatistics()| from the Node constructor or GDB.
 // This needs to be here because Element.h also depends on it.
 #define DUMP_NODE_STATISTICS 0
+
+namespace gfx {
+class Rect;
+}
 
 namespace blink {
 
@@ -57,7 +62,6 @@ class FlatTreeNodeData;
 class GetRootNodeOptions;
 class HTMLQualifiedName;
 class HTMLSlotElement;
-class IntRect;
 class KURL;
 class LayoutBox;
 class LayoutBoxModelObject;
@@ -596,7 +600,7 @@ class CORE_EXPORT Node : public EventTarget {
   LinkHighlightCandidate IsLinkHighlightCandidate() const;
 
   virtual PhysicalRect BoundingBox() const;
-  IntRect PixelSnappedBoundingBox() const;
+  gfx::Rect PixelSnappedBoundingBox() const;
 
   // BoundingBoxForScrollIntoView() is the node's scroll snap area.
   // It is expanded from the BoundingBox() by scroll-margin.

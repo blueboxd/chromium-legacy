@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "build/util/chromium_git_revision.h"
 
 #if defined(OS_MAC)
@@ -112,7 +111,12 @@ std::string GetLowEntropyCpuArchitecture() {
 #if defined(OS_WIN)
   base::win::OSInfo::WindowsArchitecture windows_architecture =
       base::win::OSInfo::GetInstance()->GetArchitecture();
-  if (windows_architecture == base::win::OSInfo::ARM64_ARCHITECTURE) {
+  base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
+  // When running a Chrome x86_64 (AMD64) build on an ARM64 device,
+  // the OS lies and returns 0x9 (PROCESSOR_ARCHITECTURE_AMD64)
+  // for wProcessorArchitecture.
+  if (windows_architecture == base::win::OSInfo::ARM64_ARCHITECTURE ||
+      os_info->IsWowX86OnARM64() || os_info->IsWowAMD64OnARM64()) {
     return "arm";
   } else if ((windows_architecture == base::win::OSInfo::X86_ARCHITECTURE) ||
              (windows_architecture == base::win::OSInfo::X64_ARCHITECTURE)) {
@@ -158,8 +162,7 @@ std::string GetLowEntropyCpuBitness() {
 std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
                          IncludeAndroidModel include_android_model) {
   std::string os_version;
-#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
   int32_t os_major_version = 0;
   int32_t os_minor_version = 0;
   int32_t os_bugfix_version = 0;

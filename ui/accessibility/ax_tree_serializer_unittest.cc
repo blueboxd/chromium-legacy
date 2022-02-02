@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -284,7 +284,7 @@ class AXTreeSourceWithInvalidId : public AXTreeSource<const AXNode*> {
   }
 
  private:
-  AXTree* tree_;
+  raw_ptr<AXTree> tree_;
   int invalid_id_;
 };
 
@@ -516,7 +516,7 @@ class AXTreeSourceTestWrapper : public AXTreeSource<const AXNode*> {
   }
 
  private:
-  AXTreeSource<const AXNode*>* tree_source_;
+  raw_ptr<AXTreeSource<const AXNode*>> tree_source_;
   std::set<AXNodeID> cleared_node_ids_;
 };
 

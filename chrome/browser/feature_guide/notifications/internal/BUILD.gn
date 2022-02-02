@@ -1,0 +1,80 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
+source_set("internal") {
+  sources = [
+    "feature_notification_guide_notification_client.cc",
+    "feature_notification_guide_notification_client.h",
+    "feature_notification_guide_service_impl.cc",
+    "feature_notification_guide_service_impl.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/browser/feature_guide/notifications:public",
+    "//components/feature_engagement/public",
+    "//skia",
+  ]
+
+  if (is_android) {
+    sources += [
+      "android/feature_notification_guide_bridge.cc",
+      "android/feature_notification_guide_bridge.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
+}
+
+if (is_android) {
+  android_library("internal_java") {
+    visibility = [
+      ":*",
+      "//chrome/android:chrome_all_java",
+    ]
+    sources = [
+      "android/java/src/org/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationGuideBridge.java",
+      "android/java/src/org/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationGuideServiceFactory.java",
+    ]
+
+    deps = [
+      "//base:base_java",
+      "//chrome/browser/feature_guide/notifications:java",
+      "//chrome/browser/profiles/android:java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
+    ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [
+      ":*",
+      "//chrome/browser",
+    ]
+
+    sources = [
+      "android/java/src/org/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationGuideBridge.java",
+      "android/java/src/org/chromium/chrome/browser/feature_guide/notifications/FeatureNotificationGuideServiceFactory.java",
+    ]
+  }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [ "feature_notification_guide_service_impl_unittest.cc" ]
+
+  deps = [
+    ":internal",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

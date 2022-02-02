@@ -93,7 +93,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     this.addListener_(EventType.LIVE_REGION_CHANGED, this.onLiveRegionChanged);
 
     this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
-    this.addListener_(EventType.MENU_END, this.onMenuEnd);
+    this.addListener_(EventType.FOCUS_AFTER_MENU_CLOSE, this.onMenuEnd);
     this.addListener_(EventType.MENU_START, this.onEventDefault);
     this.addListener_(EventType.RANGE_VALUE_CHANGED, this.onValueChanged);
     this.addListener_(
@@ -142,6 +142,13 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
    * @param {!AutomationNode} node The hit result.
    */
   onHitTestResult(node) {
+    // It's possible the |node| hit has lost focus (via its root).
+    const host = node.root.parent;
+    if (node.parent && host && host.role === RoleType.WEB_VIEW &&
+        !host.state.focused) {
+      return;
+    }
+
     // It is possible that the user moved since we requested a hit test.  Bail
     // if the current range is valid and on the same page as the hit result
     // (but not the root).
@@ -658,6 +665,13 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         override = !!walker || override;
       }
 
+      // The popup view associated with a datalist element does not descend
+      // from the input with which it is associated.
+      if (focus.role === RoleType.TEXT_FIELD_WITH_COMBO_BOX &&
+          target.role === RoleType.LIST_BOX_OPTION) {
+        override = true;
+      }
+
       if (override || AutomationUtil.isDescendantOf(target, focus)) {
         this.onEventDefault(evt);
       }
@@ -669,16 +683,18 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
    * @param {!ChromeVoxEvent} evt
    */
   onMenuEnd(evt) {
-    this.onEventDefault(evt);
-
     // This is a work around for Chrome context menus not firing a focus event
     // after you close them.
     chrome.automation.getFocus(function(focus) {
       if (focus) {
-        const event = new CustomAutomationEvent(
-            EventType.FOCUS, focus,
-            {eventFrom: 'page', eventFromAction: ActionType.FOCUS});
-        this.onFocus(event);
+        // Directly output the node here; do not go through |onFocus| as it
+        // contains a lot of logic that can move the selection (if in an
+        // editable).
+        const range = cursors.Range.fromNode(focus);
+        new Output()
+            .withRichSpeechAndBraille(range, null, OutputEventType.NAVIGATE)
+            .go();
+        ChromeVoxState.instance.setCurrentRange(range);
       }
     }.bind(this));
   }

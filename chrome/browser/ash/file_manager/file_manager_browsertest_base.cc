@@ -10,6 +10,14 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/test/arc_util_test_support.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_file_system_instance.h"
+#include "ash/components/disks/mount_point.h"
 #include "ash/components/drivefs/drivefs_host.h"
 #include "ash/components/drivefs/fake_drivefs.h"
 #include "ash/components/drivefs/mojom/drivefs.mojom.h"
@@ -29,6 +37,7 @@
 #include "base/json/json_value_converter.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -88,14 +97,6 @@
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/disks/mount_point.h"
-#include "components/arc/arc_features.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
-#include "components/arc/test/arc_util_test_support.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_file_system_instance.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -1480,6 +1481,30 @@ class MediaViewTestVolume : public DocumentsProviderTestVolume {
   }
 };
 
+// An internal volume which is hidden from file manager.
+class HiddenTestVolume : public FakeTestVolume {
+ public:
+  HiddenTestVolume()
+      : FakeTestVolume("internal_test",
+                       VolumeType::VOLUME_TYPE_SYSTEM_INTERNAL,
+                       chromeos::DeviceType::DEVICE_TYPE_UNKNOWN) {}
+  HiddenTestVolume(const HiddenTestVolume&) = delete;
+  HiddenTestVolume& operator=(const HiddenTestVolume&) = delete;
+
+  bool Mount(Profile* profile) override {
+    if (!MountSetup(profile))
+      return false;
+
+    // Expose the mount point with the given volume and device type.
+    VolumeManager::Get(profile)->AddVolumeForTesting(
+        root_path(), volume_type_, device_type_, read_only_,
+        /*device_path=*/base::FilePath(),
+        /*drive_label=*/"", /*file_system_type=*/"", /*hidden=*/true);
+    base::RunLoop().RunUntilIdle();
+    return true;
+  }
+};
+
 class MockSmbFsMounter : public smbfs::SmbFsMounter {
  public:
   MOCK_METHOD(void,
@@ -1591,9 +1616,9 @@ class SmbfsTestVolume : public LocalTestVolume {
           std::move(mount_callback)
               .Run(smbfs::mojom::MountError::kOk,
                    std::make_unique<smbfs::SmbFsHost>(
-                       std::make_unique<chromeos::disks::MountPoint>(
+                       std::make_unique<ash::disks::MountPoint>(
                            mount_path(),
-                           chromeos::disks::DiskMountManager::GetInstance()),
+                           ash::disks::DiskMountManager::GetInstance()),
                        delegate, std::move(smbfs_remote),
                        delegate_.BindNewPipeAndPassReceiver()));
         });
@@ -1909,6 +1934,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
   smbfs_volume_ = std::make_unique<SmbfsTestVolume>();
 
+  hidden_volume_ = std::make_unique<HiddenTestVolume>();
+
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
 
@@ -2179,9 +2206,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "getWindowsSWA") {
-    bool is_swa = false;
-    ASSERT_TRUE(value.GetBoolean("isSWA", &is_swa));
-    ASSERT_TRUE(is_swa);
+    absl::optional<bool> is_swa = value.FindBoolKey("isSWA");
+    ASSERT_TRUE(is_swa.has_value());
+    ASSERT_TRUE(is_swa.value());
 
     base::DictionaryValue dictionary;
 
@@ -2548,40 +2575,47 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "mountHidden") {
+    DCHECK(hidden_volume_);
+    ASSERT_TRUE(hidden_volume_->Mount(profile()));
+    return;
+  }
+
   if (name == "setDriveEnabled") {
-    bool enabled;
-    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
-    profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, !enabled);
+    absl::optional<bool> enabled = value.FindBoolKey("enabled");
+    ASSERT_TRUE(enabled.has_value());
+    profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive,
+                                      !enabled.value());
     return;
   }
 
   if (name == "setPdfPreviewEnabled") {
-    bool enabled;
-    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    absl::optional<bool> enabled = value.FindBoolKey("enabled");
+    ASSERT_TRUE(enabled.has_value());
     profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysOpenPdfExternally,
-                                      !enabled);
+                                      !enabled.value());
     return;
   }
 
   if (name == "setCrostiniEnabled") {
-    bool enabled;
-    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    absl::optional<bool> enabled = value.FindBoolKey("enabled");
+    ASSERT_TRUE(enabled.has_value());
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled,
-                                      enabled);
+                                      enabled.value());
     return;
   }
 
   if (name == "setCrostiniRootAccessAllowed") {
-    bool enabled;
-    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
-    crostini_features_.set_root_access_allowed(enabled);
+    absl::optional<bool> enabled = value.FindBoolKey("enabled");
+    ASSERT_TRUE(enabled.has_value());
+    crostini_features_.set_root_access_allowed(enabled.value());
     return;
   }
 
   if (name == "setCrostiniExportImportAllowed") {
-    bool enabled;
-    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
-    crostini_features_.set_export_import_ui_allowed(enabled);
+    absl::optional<bool> enabled = value.FindBoolKey("enabled");
+    ASSERT_TRUE(enabled.has_value());
+    crostini_features_.set_export_import_ui_allowed(enabled.value());
     return;
   }
 
@@ -2629,10 +2663,8 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "dispatchTabKey") {
     // Read optional modifier parameter |shift|.
-    bool shift;
-    if (!value.GetBoolean("shift", &shift)) {
-      shift = false;
-    }
+    absl::optional<bool> shift_opt = value.FindBoolKey("shift");
+    bool shift = shift_opt.value_or(false);
 
     int flag = shift ? ui::EF_SHIFT_DOWN : 0;
     ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, flag);
@@ -2704,7 +2736,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "getVolumesCount") {
     file_manager::VolumeManager* volume_manager = VolumeManager::Get(profile());
-    *output = base::NumberToString(volume_manager->GetVolumeList().size());
+    *output = base::NumberToString(base::ranges::count_if(
+        volume_manager->GetVolumeList(),
+        [](const auto& volume) { return !volume->hidden(); }));
     return;
   }
 

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
@@ -21,7 +22,9 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/base/isolation_info.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -168,6 +171,10 @@ class DedicatedWorkerHost final
   void DidChangeBackForwardCacheDisablingFeatures(
       uint64_t features_mask) override;
 
+  // Returns the features set that disable back-forward cache.
+  blink::scheduler::WebSchedulerTrackedFeatures
+  GetBackForwardCacheDisablingFeatures() const;
+
   base::WeakPtr<DedicatedWorkerHost> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -209,6 +216,8 @@ class DedicatedWorkerHost final
       base::WeakPtr<ServiceWorkerObjectHost>
           controller_service_worker_object_host,
       const GURL& final_response_url);
+  void ScriptLoadStartFailed(const GURL& url,
+                             const network::URLLoaderCompletionStatus& status);
 
   // Sets up the observer of network service crash.
   void ObserveNetworkServiceCrash(StoragePartitionImpl* storage_partition_impl);
@@ -239,13 +248,13 @@ class DedicatedWorkerHost final
   //  - RenderProcessHostImpl outlives DedicatedWorkerHost.
   // As the conclusion of the above, DedicatedWorkerServiceImpl outlives
   // DedicatedWorkerHost.
-  DedicatedWorkerServiceImpl* const service_;
+  const raw_ptr<DedicatedWorkerServiceImpl> service_;
 
   // The renderer generated ID of this worker, unique across all processes.
   const blink::DedicatedWorkerToken token_;
 
   // The RenderProcessHost that hosts this worker. This outlives `this`.
-  RenderProcessHost* const worker_process_host_;
+  const raw_ptr<RenderProcessHost> worker_process_host_;
 
   base::ScopedObservation<RenderProcessHost, RenderProcessHostObserver>
       scoped_process_host_observation_{this};
@@ -338,6 +347,8 @@ class DedicatedWorkerHost final
   // CodeCacheHost processes requests to fetch / write generated code for
   // JavaScript / WebAssembly resources.
   CodeCacheHostImpl::ReceiverSet code_cache_host_receivers_;
+
+  blink::scheduler::WebSchedulerTrackedFeatures bfcache_disabling_features_;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 };

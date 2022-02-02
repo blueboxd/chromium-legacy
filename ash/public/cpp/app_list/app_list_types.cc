@@ -12,6 +12,101 @@ const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 // Generated using crx_file::id_util::GenerateId("LinuxAppsFolder")
 const char kCrostiniFolderId[] = "ddolnhmblagmcagkedkbfejapapdimlk";
 
+bool IsAppListSearchResultAnApp(AppListSearchResultType result_type) {
+  switch (result_type) {
+    case AppListSearchResultType::kInstalledApp:
+    case AppListSearchResultType::kInternalApp:
+    case AppListSearchResultType::kPlayStoreApp:
+    case AppListSearchResultType::kPlayStoreReinstallApp:
+    case AppListSearchResultType::kArcAppShortcut:
+    case AppListSearchResultType::kInstantApp:
+      return true;
+    case AppListSearchResultType::kUnknown:
+    case AppListSearchResultType::kOmnibox:
+    case AppListSearchResultType::kLauncher:
+    case AppListSearchResultType::kAnswerCard:
+    case AppListSearchResultType::kZeroStateFile:
+    case AppListSearchResultType::kZeroStateDrive:
+    case AppListSearchResultType::kFileChip:
+    case AppListSearchResultType::kDriveChip:
+    case AppListSearchResultType::kAssistantChip:
+    case AppListSearchResultType::kOsSettings:
+    case AppListSearchResultType::kInternalPrivacyInfo:
+    case AppListSearchResultType::kAssistantText:
+    case AppListSearchResultType::kHelpApp:
+    case AppListSearchResultType::kFileSearch:
+    case AppListSearchResultType::kDriveSearch:
+      return false;
+  }
+}
+
+// IconColor -------------------------------------------------------------------
+
+// static
+constexpr int IconColor::kHueInvalid;
+constexpr int IconColor::kHueMin;
+constexpr int IconColor::kHueMax;
+
+IconColor::IconColor() = default;
+
+IconColor::IconColor(sync_pb::AppListSpecifics::ColorGroup background_color,
+                     int hue)
+    : background_color_(background_color), hue_(hue) {}
+
+IconColor::IconColor(const IconColor& rhs)
+    : background_color_(rhs.background_color()), hue_(rhs.hue()) {}
+
+IconColor& IconColor::operator=(const IconColor& rhs) = default;
+
+IconColor::~IconColor() = default;
+
+bool IconColor::operator<(const IconColor& rhs) {
+  DCHECK(IsValid());
+  DCHECK(rhs.IsValid());
+
+  // Compare background colors first.
+  if (background_color_ != rhs.background_color())
+    return background_color_ < rhs.background_color();
+
+  return hue_ < rhs.hue();
+}
+
+bool IconColor::operator>(const IconColor& rhs) {
+  DCHECK(IsValid());
+  DCHECK(rhs.IsValid());
+
+  // Compare background colors first.
+  if (background_color_ != rhs.background_color())
+    return background_color_ > rhs.background_color();
+
+  return hue_ > rhs.hue();
+}
+
+bool IconColor::operator>=(const IconColor& rhs) {
+  return !(*this < rhs);
+}
+
+bool IconColor::operator<=(const IconColor& rhs) {
+  return !(*this > rhs);
+}
+
+bool IconColor::operator==(const IconColor& rhs) {
+  return !(*this != rhs);
+}
+
+bool IconColor::operator!=(const IconColor& rhs) {
+  DCHECK(IsValid());
+  DCHECK(rhs.IsValid());
+
+  return *this < rhs || *this > rhs;
+}
+
+bool IconColor::IsValid() const {
+  const bool is_hue_valid = (hue_ >= kHueMin && hue_ <= kHueMax);
+  return background_color_ != sync_pb::AppListSpecifics::COLOR_EMPTY &&
+         is_hue_valid;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppListItemMetadata:
 
@@ -19,19 +114,6 @@ AppListItemMetadata::AppListItemMetadata() = default;
 AppListItemMetadata::AppListItemMetadata(const AppListItemMetadata& rhs) =
     default;
 AppListItemMetadata::~AppListItemMetadata() = default;
-
-// TODO: This method could be eliminated, by passing the action with result
-// action metadata instead of implicitly relying on order in which actions are
-// listed in SearchResult::actions().
-SearchResultActionType GetSearchResultActionType(int button_index) {
-  if (button_index < 0 ||
-      button_index >= static_cast<int>(
-                          SearchResultActionType::kSearchResultActionTypeMax)) {
-    return SearchResultActionType::kSearchResultActionTypeMax;
-  }
-
-  return static_cast<SearchResultActionType>(button_index);
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // SearchResultIconInfo:
@@ -64,12 +146,14 @@ SearchResultTag::SearchResultTag(int styles, uint32_t start, uint32_t end)
 ////////////////////////////////////////////////////////////////////////////////
 // SearchResultAction:
 
-SearchResultAction::SearchResultAction() {}
+SearchResultAction::SearchResultAction() = default;
 
-SearchResultAction::SearchResultAction(const gfx::ImageSkia& image,
+SearchResultAction::SearchResultAction(SearchResultActionType type,
+                                       const gfx::ImageSkia& image,
                                        const std::u16string& tooltip_text,
                                        bool visible_on_hover)
-    : image(image),
+    : type(type),
+      image(image),
       tooltip_text(tooltip_text),
       visible_on_hover(visible_on_hover) {}
 

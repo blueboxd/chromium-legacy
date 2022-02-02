@@ -51,8 +51,13 @@ class LayoutIFrame final : public LayoutEmbeddedContent {
   }
 
   PaintLayerType LayerTypeRequired() const override;
-  void StyleWillChange(StyleDifference,
-                       const ComputedStyle& new_style) override;
+};
+
+template <>
+struct DowncastTraits<LayoutIFrame> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsLayoutIFrame();
+  }
 };
 
 }  // namespace blink

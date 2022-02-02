@@ -7,8 +7,12 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/containers/flat_map.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/memory/weak_ptr.h"
+#include "components/exo/capabilities.h"
 #include "components/exo/display.h"
+#include "components/exo/wayland/server.h"
 
 namespace exo {
 
@@ -17,10 +21,10 @@ class Server;
 }  // namespace wayland
 
 class DataExchangeDelegate;
-class WMHelper;
-class NotificationSurfaceManager;
 class InputMethodSurfaceManager;
+class NotificationSurfaceManager;
 class ToastSurfaceManager;
+class WMHelper;
 
 class WaylandServerController {
  public:
@@ -34,6 +38,10 @@ class WaylandServerController {
       std::unique_ptr<NotificationSurfaceManager> notification_surface_manager,
       std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
       std::unique_ptr<ToastSurfaceManager> toast_surface_manager);
+
+  // Returns a handle to the global-singletone instance of the server
+  // controller.
+  static WaylandServerController* Get();
 
   WaylandServerController(const WaylandServerController&) = delete;
   WaylandServerController& operator=(const WaylandServerController&) = delete;
@@ -50,10 +58,20 @@ class WaylandServerController {
       std::unique_ptr<InputMethodSurfaceManager> input_method_surface_manager,
       std::unique_ptr<ToastSurfaceManager> toast_surface_manager);
 
+  void CreateServer(std::unique_ptr<Capabilities> capabilities,
+                    wayland::Server::StartCallback callback);
+  void DeleteServer(const base::FilePath& path);
+
  private:
+  void OnStarted(std::unique_ptr<wayland::Server> server,
+                 wayland::Server::StartCallback callback,
+                 bool success,
+                 const base::FilePath& path);
+
   std::unique_ptr<WMHelper> wm_helper_;
   std::unique_ptr<Display> display_;
-  std::unique_ptr<wayland::Server> wayland_server_;
+  base::flat_map<base::FilePath, std::unique_ptr<wayland::Server>> servers_;
+  base::WeakPtrFactory<WaylandServerController> weak_factory_{this};
 };
 
 }  // namespace exo

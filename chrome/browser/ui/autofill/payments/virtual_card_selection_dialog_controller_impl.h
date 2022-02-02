@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_selection_dialog_controller.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
@@ -20,7 +20,6 @@ class VirtualCardSelectionDialogView;
 // VirtualCardSelectionDialogView. Lazily initialized when used.
 class VirtualCardSelectionDialogControllerImpl
     : public VirtualCardSelectionDialogController,
-      public content::WebContentsObserver,
       public content::WebContentsUserData<
           VirtualCardSelectionDialogControllerImpl> {
  public:
@@ -66,7 +65,7 @@ class VirtualCardSelectionDialogControllerImpl
   // is accepted. Will pass the |selected_card_id_| as the param.
   base::OnceCallback<void(const std::string&)> callback_;
 
-  VirtualCardSelectionDialogView* dialog_view_ = nullptr;
+  raw_ptr<VirtualCardSelectionDialogView> dialog_view_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

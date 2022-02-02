@@ -96,7 +96,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // changed default theme assets, if you need themes to recreate their generated
 // images (which are cached), if you changed how missing values are
 // generated, or if you changed any constants.
-const int kThemePackVersion = 76;
+const int kThemePackVersion = 77;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -880,16 +880,17 @@ BrowserThemePack::BrowserThemePack(ThemeType theme_type)
 bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
   // Add resources for each of the property arrays.
   RawDataForWriting resources;
-  resources[kHeaderID] = base::StringPiece(
-      reinterpret_cast<const char*>(header_), sizeof(BrowserThemePackHeader));
-  resources[kTintsID] = base::StringPiece(
-      reinterpret_cast<const char*>(tints_),
-      sizeof(TintEntry[kTintTableLength]));
+  resources[kHeaderID] =
+      base::StringPiece(reinterpret_cast<const char*>(header_.get()),
+                        sizeof(BrowserThemePackHeader));
+  resources[kTintsID] =
+      base::StringPiece(reinterpret_cast<const char*>(tints_.get()),
+                        sizeof(TintEntry[kTintTableLength]));
   resources[kColorsID] =
-      base::StringPiece(reinterpret_cast<const char*>(colors_),
+      base::StringPiece(reinterpret_cast<const char*>(colors_.get()),
                         sizeof(ColorPair[kColorsArrayLength]));
   resources[kDisplayPropertiesID] = base::StringPiece(
-      reinterpret_cast<const char*>(display_properties_),
+      reinterpret_cast<const char*>(display_properties_.get()),
       sizeof(DisplayPropertyPair[kDisplayPropertiesSize]));
 
   int source_count = 1;
@@ -897,7 +898,7 @@ bool BrowserThemePack::WriteToDisk(const base::FilePath& path) const {
   for (; *end != -1; end++)
     source_count++;
   resources[kSourceImagesID] =
-      base::StringPiece(reinterpret_cast<const char*>(source_images_),
+      base::StringPiece(reinterpret_cast<const char*>(source_images_.get()),
                         source_count * sizeof(*source_images_));
 
   // Store results of GetResourceScaleFactorsAsString() in std::string as
@@ -1411,7 +1412,7 @@ void BrowserThemePack::AddFileAtScaleToMap(const std::string& image_name,
 
 void BrowserThemePack::BuildSourceImagesArray(const FilePathMap& file_paths) {
   source_images_ = new int[file_paths.size() + 1];
-  std::transform(file_paths.begin(), file_paths.end(), source_images_,
+  std::transform(file_paths.begin(), file_paths.end(), source_images_.get(),
                  [](const auto& entry) { return entry.first; });
   source_images_[file_paths.size()] = -1;
 }

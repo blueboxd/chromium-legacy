@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "chrome/app/chrome_main_delegate.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -33,9 +32,9 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
 
   bool BasicStartupComplete(int* exit_code) override;
   void PreSandboxStartup() override;
-  int RunProcess(
+  absl::variant<int, content::MainFunctionParams> RunProcess(
       const std::string& process_type,
-      const content::MainFunctionParams& main_function_params) override;
+      content::MainFunctionParams main_function_params) override;
   void ProcessExiting(const std::string& process_type) override;
 
  private:

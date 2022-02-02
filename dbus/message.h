@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "dbus/dbus_export.h"
 #include "dbus/object_path.h"
 
@@ -84,6 +83,9 @@ class CHROME_DBUS_EXPORT Message {
     UNIX_FD = DBUS_TYPE_UNIX_FD,
   };
 
+  Message(const Message&) = delete;
+  Message& operator=(const Message&) = delete;
+
   // Returns the type of the message. Returns MESSAGE_INVALID if
   // raw_message_ is NULL.
   MessageType GetMessageType();
@@ -137,7 +139,6 @@ class CHROME_DBUS_EXPORT Message {
                                MessageReader* reader);
 
   DBusMessage* raw_message_;
-  DISALLOW_COPY_AND_ASSIGN(Message);
 };
 
 // MessageCall is a type of message used for calling a method via D-Bus.
@@ -155,6 +156,9 @@ class CHROME_DBUS_EXPORT MethodCall : public Message {
   // The constructor creates the internal raw message.
   MethodCall(const std::string& interface_name, const std::string& method_name);
 
+  MethodCall(const MethodCall&) = delete;
+  MethodCall& operator=(const MethodCall&) = delete;
+
   // Returns a newly created MethodCall from the given raw message of the
   // type DBUS_MESSAGE_TYPE_METHOD_CALL. Takes the ownership of |raw_message|.
   static std::unique_ptr<MethodCall> FromRawMessage(DBusMessage* raw_message);
@@ -163,8 +167,6 @@ class CHROME_DBUS_EXPORT MethodCall : public Message {
   // Creates a method call message. The internal raw message is NULL.
   // Only used internally.
   MethodCall();
-
-  DISALLOW_COPY_AND_ASSIGN(MethodCall);
 };
 
 // Signal is a type of message used to send a signal.
@@ -182,6 +184,9 @@ class CHROME_DBUS_EXPORT Signal : public Message {
   // The constructor creates the internal raw_message_.
   Signal(const std::string& interface_name, const std::string& method_name);
 
+  Signal(const Signal&) = delete;
+  Signal& operator=(const Signal&) = delete;
+
   // Returns a newly created SIGNAL from the given raw message of the type
   // DBUS_MESSAGE_TYPE_SIGNAL. Takes the ownership of |raw_message|.
   static std::unique_ptr<Signal> FromRawMessage(DBusMessage* raw_message);
@@ -190,8 +195,6 @@ class CHROME_DBUS_EXPORT Signal : public Message {
   // Creates a signal message. The internal raw message is NULL.
   // Only used internally.
   Signal();
-
-  DISALLOW_COPY_AND_ASSIGN(Signal);
 };
 
 // Response is a type of message used for receiving a response from a
@@ -211,12 +214,12 @@ class CHROME_DBUS_EXPORT Response : public Message {
   // Useful for testing.
   static std::unique_ptr<Response> CreateEmpty();
 
+  Response(const Response&) = delete;
+  Response& operator=(const Response&) = delete;
+
  protected:
   // Creates a Response message. The internal raw message is NULL.
   Response();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Response);
 };
 
 // ErrorResponse is a type of message used to return an error to the
@@ -237,11 +240,12 @@ class CHROME_DBUS_EXPORT ErrorResponse : public Response {
       const std::string& error_name,
       const std::string& error_message);
 
+  ErrorResponse(const ErrorResponse&) = delete;
+  ErrorResponse& operator=(const ErrorResponse&) = delete;
+
  private:
   // Creates an ErrorResponse message. The internal raw message is NULL.
   ErrorResponse();
-
-  DISALLOW_COPY_AND_ASSIGN(ErrorResponse);
 };
 
 // MessageWriter is used to write outgoing messages for calling methods

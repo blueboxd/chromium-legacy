@@ -84,6 +84,7 @@ PageContentAnnotationsService::PageContentAnnotationsService(
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   model_manager_ = std::make_unique<PageContentAnnotationsModelManager>(
       optimization_guide_model_provider);
+  annotator_ = model_manager_.get();
 #endif
 }
 
@@ -108,8 +109,8 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit,
 }
 
 void PageContentAnnotationsService::OverridePageContentAnnotatorForTesting(
-    std::unique_ptr<PageContentAnnotator> annotator) {
-  annotator_ = std::move(annotator);
+    PageContentAnnotator* annotator) {
+  annotator_ = annotator;
 }
 
 void PageContentAnnotationsService::BatchAnnotate(
@@ -117,11 +118,31 @@ void PageContentAnnotationsService::BatchAnnotate(
     const std::vector<std::string>& inputs,
     AnnotationType annotation_type) {
   if (!annotator_) {
-    std::move(callback).Run(CreateEmptyBatchAnnotationResultsWithStatus(
-        inputs, ExecutionStatus::kErrorInternalError));
+    std::move(callback).Run(CreateEmptyBatchAnnotationResults(inputs));
     return;
   }
   annotator_->Annotate(std::move(callback), inputs, annotation_type);
+}
+
+absl::optional<ModelInfo> PageContentAnnotationsService::GetModelInfoForType(
+    AnnotationType type) const {
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  DCHECK(model_manager_);
+  return model_manager_->GetModelInfoForType(type);
+#else
+  return absl::nullopt;
+#endif
+}
+
+void PageContentAnnotationsService::NotifyWhenModelAvailable(
+    AnnotationType type,
+    base::OnceCallback<void(bool)> callback) {
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  DCHECK(model_manager_);
+  model_manager_->NotifyWhenModelAvailable(type, std::move(callback));
+#else
+  std::move(callback).Run(false);
+#endif
 }
 
 void PageContentAnnotationsService::ExtractRelatedSearches(
@@ -231,15 +252,6 @@ void PageContentAnnotationsService::OnURLQueried(
   }
   LogPageContentAnnotationsStorageStatus(
       did_store_content_annotations ? kSuccess : kSpecificVisitForUrlNotFound);
-}
-
-absl::optional<int64_t>
-PageContentAnnotationsService::GetPageTopicsModelVersion() const {
-#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
-  return model_manager_->GetPageTopicsModelVersion();
-#else
-  return absl::nullopt;
-#endif
 }
 
 void PageContentAnnotationsService::GetMetadataForEntityId(

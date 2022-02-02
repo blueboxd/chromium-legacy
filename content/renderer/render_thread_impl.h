@@ -19,7 +19,6 @@
 #include "base/clang_profiling_buildflags.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
@@ -75,10 +74,6 @@ class Thread;
 
 namespace cc {
 class TaskGraphRunner;
-}
-
-namespace gfx {
-class RenderingPipeline;
 }
 
 namespace gpu {
@@ -209,8 +204,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::scheduler::WebThreadScheduler* GetWebMainThreadScheduler();
   cc::TaskGraphRunner* GetTaskGraphRunner();
-  gfx::RenderingPipeline* GetMainThreadPipeline();
-  gfx::RenderingPipeline* GetCompositorThreadPipeline();
   bool IsLcdTextEnabled();
   bool IsElasticOverscrollEnabled();
   bool IsScrollAnimatorEnabled();
@@ -285,6 +278,8 @@ class CONTENT_EXPORT RenderThreadImpl
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   gpu::GpuChannelHost* GetGpuChannel();
+
+  base::PlatformThreadId GetIOPlatformThreadId() const;
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which media operations should be run. Must be called
@@ -477,6 +472,8 @@ class CONTENT_EXPORT RenderThreadImpl
 #endif
   void SetIsCrossOriginIsolated(bool value) override;
   void SetIsDirectSocketEnabled(bool value) override;
+  void EnableBlinkRuntimeFeatures(
+      const std::vector<std::string>& features) override;
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
@@ -543,9 +540,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Thread for running multimedia operations (e.g., video decoding).
   std::unique_ptr<base::Thread> media_thread_;
-
-  std::unique_ptr<gfx::RenderingPipeline> main_thread_pipeline_;
-  std::unique_ptr<gfx::RenderingPipeline> compositor_thread_pipeline_;
 
   // Will point to appropriate task runner after initialization,
   // regardless of whether |compositor_thread_| is overriden.

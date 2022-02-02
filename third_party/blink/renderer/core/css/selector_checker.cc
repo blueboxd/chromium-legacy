@@ -235,8 +235,10 @@ SelectorChecker::MatchStatus SelectorChecker::MatchSelector(
   if (!CheckOne(context, sub_result))
     return kSelectorFailsLocally;
 
-  if (sub_result.dynamic_pseudo != kPseudoIdNone)
+  if (sub_result.dynamic_pseudo != kPseudoIdNone) {
     result.dynamic_pseudo = sub_result.dynamic_pseudo;
+    result.custom_highlight_name = sub_result.custom_highlight_name;
+  }
 
   if (context.selector->IsLastInTagHistory())
     return kSelectorMatches;
@@ -1247,6 +1249,18 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return dialog_element->IsModal();
       return false;
     case CSSSelector::kPseudoHas:
+      if (mode_ == kResolvingStyle) {
+        if (context.in_rightmost_compound) {
+          // Set 'AffectedByHas' flag to indicate that the element is affected
+          // by a ':has()' state. It means that, when we have a mutation on a
+          // descendant of the element, we may need to invalidate the style of
+          // the element because the mutation can affect the state of this
+          // ':has()' selector.
+          element_style_->SetAffectedByHas();
+          element_style_->SetAncestorsAffectedByHas(true);
+        }
+        // TODO(blee@igalia.com) non-terminal ':has() is not supported yet
+      }
       return CheckPseudoHas(context, result);
     case CSSSelector::kPseudoRelativeLeftmost:
       DCHECK(context.relative_leftmost_element);
@@ -1325,7 +1339,11 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       // element through result.dynamic_pseudo. For ::highlight() pseudo
       // elements we have a single flag for tracking whether an element may
       // match _any_ ::highlight() element (kPseudoIdHighlight).
-      return !pseudo_argument_ || pseudo_argument_ == selector.Argument();
+      if (!pseudo_argument_ || pseudo_argument_ == selector.Argument()) {
+        result.custom_highlight_name = selector.Argument();
+        return true;
+      }
+      return false;
     }
     case CSSSelector::kPseudoTargetText:
       if (!is_ua_rule_) {

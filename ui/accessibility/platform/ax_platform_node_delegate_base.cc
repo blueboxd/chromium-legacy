@@ -209,7 +209,7 @@ ax::mojom::NameFrom AXPlatformNodeDelegateBase::GetNameFrom() const {
   return GetData().GetNameFrom();
 }
 
-std::u16string AXPlatformNodeDelegateBase::GetInnerText() const {
+std::u16string AXPlatformNodeDelegateBase::GetTextContentUTF16() const {
   // Unlike in web content The "kValue" attribute always takes precedence,
   // because we assume that users of this base class, such as Views controls,
   // are carefully crafted by hand, in contrast to HTML pages, where any content
@@ -228,7 +228,7 @@ std::u16string AXPlatformNodeDelegateBase::GetInnerText() const {
   if (IsLeaf() && !IsInvisibleOrIgnored())
     return GetString16Attribute(ax::mojom::StringAttribute::kName);
 
-  std::u16string inner_text;
+  std::u16string text_content;
   for (int i = 0; i < GetChildCount(); ++i) {
     // TODO(nektar): Add const to all tree traversal methods and remove
     // const_cast.
@@ -236,9 +236,9 @@ std::u16string AXPlatformNodeDelegateBase::GetInnerText() const {
         const_cast<AXPlatformNodeDelegateBase*>(this)->ChildAtIndex(i));
     if (!child || !child->GetDelegate())
       continue;
-    inner_text += child->GetDelegate()->GetInnerText();
+    text_content += child->GetDelegate()->GetTextContentUTF16();
   }
-  return inner_text;
+  return text_content;
 }
 
 std::u16string AXPlatformNodeDelegateBase::GetValueForControl() const {
@@ -265,7 +265,6 @@ const AXTree::Selection AXPlatformNodeDelegateBase::GetUnignoredSelection()
 AXNodePosition::AXPositionInstance AXPlatformNodeDelegateBase::CreatePositionAt(
     int offset,
     ax::mojom::TextAffinity affinity) const {
-  NOTIMPLEMENTED();
   return AXNodePosition::CreateNullPosition();
 }
 
@@ -273,7 +272,6 @@ AXNodePosition::AXPositionInstance
 AXPlatformNodeDelegateBase::CreateTextPositionAt(
     int offset,
     ax::mojom::TextAffinity affinity) const {
-  NOTIMPLEMENTED();
   return AXNodePosition::CreateNullPosition();
 }
 
@@ -286,7 +284,7 @@ AXPlatformNodeDelegateBase::GetNativeViewAccessible() {
   return nullptr;
 }
 
-gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetParent() {
+gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetParent() const {
   return nullptr;
 }
 
@@ -593,18 +591,6 @@ gfx::Rect AXPlatformNodeDelegateBase::GetInnerTextRangeBoundsRect(
   return gfx::Rect();
 }
 
-gfx::Rect AXPlatformNodeDelegateBase::GetClippedScreenBoundsRect(
-    AXOffscreenResult* offscreen_result) const {
-  return GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
-                       AXClippingBehavior::kClipped, offscreen_result);
-}
-
-gfx::Rect AXPlatformNodeDelegateBase::GetUnclippedScreenBoundsRect(
-    AXOffscreenResult* offscreen_result) const {
-  return GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
-                       AXClippingBehavior::kUnclipped, offscreen_result);
-}
-
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::HitTestSync(
     int screen_physical_pixel_x,
     int screen_physical_pixel_y) const {
@@ -770,6 +756,17 @@ bool AXPlatformNodeDelegateBase::IsCellOrHeaderOfAriaGrid() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsWebAreaForPresentationalIframe() const {
+  if (!IsPlatformDocument(GetRole()))
+    return false;
+
+  AXPlatformNodeDelegate* parent = GetParentDelegate();
+  if (!parent)
+    return false;
+
+  return parent->GetRole() == ax::mojom::Role::kIframePresentational;
+}
+
 bool AXPlatformNodeDelegateBase::IsOrderedSetItem() const {
   return false;
 }
@@ -932,14 +929,6 @@ const AXUniqueId& AXPlatformNodeDelegateBase::GetUniqueId() const {
   return *dummy_unique_id;
 }
 
-absl::optional<int> AXPlatformNodeDelegateBase::FindTextBoundary(
-    ax::mojom::TextBoundary boundary,
-    int offset,
-    ax::mojom::MoveDirection direction,
-    ax::mojom::TextAffinity affinity) const {
-  return absl::nullopt;
-}
-
 const std::vector<gfx::NativeViewAccessible>
 AXPlatformNodeDelegateBase::GetUIADirectChildrenInRange(
     ui::AXPlatformNodeDelegate* start,
@@ -951,7 +940,7 @@ std::string AXPlatformNodeDelegateBase::GetLanguage() const {
   return std::string();
 }
 
-AXPlatformNodeDelegate* AXPlatformNodeDelegateBase::GetParentDelegate() {
+AXPlatformNodeDelegate* AXPlatformNodeDelegateBase::GetParentDelegate() const {
   AXPlatformNode* parent_node =
       ui::AXPlatformNode::FromNativeViewAccessible(GetParent());
   if (parent_node)

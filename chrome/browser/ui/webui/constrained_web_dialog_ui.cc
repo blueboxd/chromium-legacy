@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -49,7 +49,7 @@ class ConstrainedWebDialogDelegateUserData
   ConstrainedWebDialogDelegate* delegate() { return delegate_; }
 
  private:
-  ConstrainedWebDialogDelegate* delegate_;  // unowned
+  raw_ptr<ConstrainedWebDialogDelegate> delegate_;  // unowned
 };
 
 }  // namespace
@@ -93,8 +93,15 @@ void ConstrainedWebDialogUI::OnDialogCloseMessage(const base::ListValue* args) {
     return;
 
   std::string json_retval;
-  if (!args->GetList().empty() && !args->GetString(0, &json_retval))
-    NOTREACHED() << "Could not read JSON argument";
+  if (!args->GetList().empty()) {
+    if (args->GetList()[0].is_string()) {
+      json_retval = args->GetList()[0].GetString();
+    } else {
+      NOTREACHED() << "Could not read JSON argument";
+    }
+  }
+
+  DCHECK(delegate->GetWebDialogDelegate());
   delegate->GetWebDialogDelegate()->OnDialogClosed(json_retval);
   delegate->OnDialogCloseFromWebUI();
 }

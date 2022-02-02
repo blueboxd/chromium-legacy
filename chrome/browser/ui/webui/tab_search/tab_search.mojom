@@ -8,6 +8,7 @@ import "components/tab_groups/public/mojom/tab_group_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/token.mojom";
 import "url/mojom/url.mojom";
+import "chrome/browser/ui/webui/tabs/tabs.mojom";
 
 // Collection of tab searching details associated with a profile.
 struct ProfileData {
@@ -29,6 +30,9 @@ struct Window {
 struct Tab {
   // Whether the tab is active.
   bool active;
+
+  // The alert states of the tab.
+  array<tabs.mojom.TabAlertState> alert_states;
 
   // The index of the tab in the current tab strip.
   int32 index;
@@ -143,6 +147,15 @@ struct TabUpdateInfo {
   Tab tab;
 };
 
+// Information about a tab removal event.
+struct TabsRemovedInfo {
+  // The tab Ids for the removed tabs.
+  array<int32> tab_ids;
+
+  // Recently closed tab objects that were created for the removed tabs.
+  array<RecentlyClosedTab> recently_closed_tabs;
+};
+
 // Used by the WebUI page to bootstrap bidirectional communication.
 interface PageHandlerFactory {
   // The WebUI calls this method when the page is first initialized.
@@ -188,5 +201,5 @@ interface Page {
   TabUpdated(TabUpdateInfo tabUpdateInfo);
 
   // Callback when tabs are removed.
-  TabsRemoved(array<int32> tab_ids);
+  TabsRemoved(TabsRemovedInfo tabsRemovedInfo);
 };

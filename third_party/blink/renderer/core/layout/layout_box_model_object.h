@@ -185,7 +185,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // This will work on inlines to return the bounding box of all of the lines'
   // border boxes.
-  virtual IntRect BorderBoundingBox() const = 0;
+  virtual gfx::Rect BorderBoundingBox() const = 0;
 
   virtual PhysicalRect PhysicalVisualOverflowRect() const = 0;
 
@@ -510,8 +510,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
       bool first_line,
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const = 0;
-
-  void ContentChanged(ContentChangeType);
 
   // Returns true if the background is painted opaque in the given rect.
   // The query rect is given in local coordinate system.

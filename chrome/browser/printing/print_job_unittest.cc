@@ -9,12 +9,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "chrome/browser/printing/printer_query.h"
+#include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/child_process_host.h"
@@ -74,7 +76,7 @@ class TestPrintJob : public PrintJob {
   }
  private:
   ~TestPrintJob() override { *check_ = true; }
-  volatile bool* check_;
+  raw_ptr<volatile bool> check_;
 };
 
 class TestPrintNotificationObserver : public content::NotificationObserver {

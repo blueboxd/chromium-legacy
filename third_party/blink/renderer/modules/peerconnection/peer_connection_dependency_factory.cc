@@ -16,7 +16,6 @@
 #include "base/cpu.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/waitable_event.h"
@@ -92,20 +91,20 @@ namespace {
 using PassKey = base::PassKey<PeerConnectionDependencyFactory>;
 
 enum WebRTCIPHandlingPolicy {
-  DEFAULT,
-  DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES,
-  DEFAULT_PUBLIC_INTERFACE_ONLY,
-  DISABLE_NON_PROXIED_UDP,
+  kDefault,
+  kDefaultPublicAndPrivateInterfaces,
+  kDefaultPublicInterfaceOnly,
+  kDisableNonProxiedUdp,
 };
 
 WebRTCIPHandlingPolicy GetWebRTCIPHandlingPolicy(const String& preference) {
   if (preference == kWebRTCIPHandlingDefaultPublicAndPrivateInterfaces)
-    return DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES;
+    return kDefaultPublicAndPrivateInterfaces;
   if (preference == kWebRTCIPHandlingDefaultPublicInterfaceOnly)
-    return DEFAULT_PUBLIC_INTERFACE_ONLY;
+    return kDefaultPublicInterfaceOnly;
   if (preference == kWebRTCIPHandlingDisableNonProxiedUdp)
-    return DISABLE_NON_PROXIED_UDP;
-  return DEFAULT;
+    return kDisableNonProxiedUdp;
+  return kDefault;
 }
 
 bool IsValidPortRange(uint16_t min_port, uint16_t max_port) {
@@ -140,11 +139,8 @@ class PeerConnectionStaticDeps {
  public:
   PeerConnectionStaticDeps()
       : chrome_signaling_thread_("WebRTC_Signaling"),
-        chrome_network_thread_("WebRTC_Network") {
-    if (base::FeatureList::IsEnabled(features::kWebRtcDistinctWorkerThread)) {
-      chrome_worker_thread_.emplace("WebRTC_Worker");
-    }
-  }
+        chrome_worker_thread_("WebRTC_Worker"),
+        chrome_network_thread_("WebRTC_Network") {}
 
   void EnsureChromeThreadsStarted() {
     if (!chrome_signaling_thread_.IsRunning())
@@ -152,8 +148,8 @@ class PeerConnectionStaticDeps {
     if (!chrome_network_thread_.IsRunning())
       chrome_network_thread_.Start();
 
-    if (chrome_worker_thread_ && !chrome_worker_thread_->IsRunning())
-      chrome_worker_thread_->Start();
+    if (!chrome_worker_thread_.IsRunning())
+      chrome_worker_thread_.Start();
 
     // To allow sending to the signaling/worker threads.
     jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -161,13 +157,9 @@ class PeerConnectionStaticDeps {
   }
 
   base::WaitableEvent& InitializeWorkerThread() {
-    // If there is no worker thread, the event was already created SIGNALED.
-    if (!chrome_worker_thread_)
-      return init_worker_event;
-
     if (!worker_thread_) {
       PostCrossThreadTask(
-          *chrome_worker_thread_->task_runner(), FROM_HERE,
+          *chrome_worker_thread_.task_runner(), FROM_HERE,
           CrossThreadBindOnce(
               &PeerConnectionStaticDeps::InitializeOnThread,
               CrossThreadUnretained(&worker_thread_),
@@ -216,10 +208,6 @@ class PeerConnectionStaticDeps {
   rtc::Thread* GetWorkerThread() { return worker_thread_; }
   rtc::Thread* GetNetworkThread() { return network_thread_; }
   base::Thread& GetChromeSignalingThread() { return chrome_signaling_thread_; }
-  base::Thread* GetChromeWorkerThread() {
-    return chrome_worker_thread_.has_value() ? &*chrome_worker_thread_
-                                             : nullptr;
-  }
   base::Thread& GetChromeNetworkThread() { return chrome_network_thread_; }
 
  private:
@@ -276,7 +264,7 @@ class PeerConnectionStaticDeps {
   rtc::Thread* worker_thread_ = nullptr;
   rtc::Thread* network_thread_ = nullptr;
   base::Thread chrome_signaling_thread_;
-  absl::optional<base::Thread> chrome_worker_thread_;
+  base::Thread chrome_worker_thread_;
   base::Thread chrome_network_thread_;
 
   // WaitableEvents for observing thread initialization.
@@ -285,11 +273,7 @@ class PeerConnectionStaticDeps {
       base::WaitableEvent::InitialState::NOT_SIGNALED};
   base::WaitableEvent init_worker_event{
       base::WaitableEvent::ResetPolicy::MANUAL,
-      // If we don't create a separate worker thread, start the event as already
-      // signaled so it doesn't block anything.
-      base::FeatureList::IsEnabled(features::kWebRtcDistinctWorkerThread)
-          ? base::WaitableEvent::InitialState::NOT_SIGNALED
-          : base::WaitableEvent::InitialState::SIGNALED};
+      base::WaitableEvent::InitialState::NOT_SIGNALED};
   base::WaitableEvent init_network_event{
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED};
@@ -313,9 +297,6 @@ rtc::Thread* GetNetworkThread() {
 }
 base::Thread& GetChromeSignalingThread() {
   return StaticDeps().GetChromeSignalingThread();
-}
-base::Thread* GetChromeWorkerThread() {
-  return StaticDeps().GetChromeWorkerThread();
 }
 base::Thread& GetChromeNetworkThread() {
   return StaticDeps().GetChromeNetworkThread();
@@ -523,7 +504,7 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   // Wait for the worker thread, since `InitializeSignalingThread` needs to
   // refer to `worker_thread_`.
   worker_thread_started_event.Wait();
-  CHECK(!GetChromeWorkerThread() || GetWorkerThread());
+  CHECK(GetWorkerThread());
 
   if (!metronome_source_ &&
       base::FeatureList::IsEnabled(kWebRtcMetronomeTaskQueue)) {
@@ -784,18 +765,18 @@ PeerConnectionDependencyFactory::CreatePortAllocator(
       switch (policy) {
         // TODO(guoweis): specify the flag of disabling local candidate
         // collection when webrtc is updated.
-        case DEFAULT_PUBLIC_INTERFACE_ONLY:
-        case DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES:
+        case kDefaultPublicInterfaceOnly:
+        case kDefaultPublicAndPrivateInterfaces:
           port_config.enable_multiple_routes = false;
           port_config.enable_nonproxied_udp = true;
           port_config.enable_default_local_candidate =
-              (policy == DEFAULT_PUBLIC_AND_PRIVATE_INTERFACES);
+              (policy == kDefaultPublicAndPrivateInterfaces);
           break;
-        case DISABLE_NON_PROXIED_UDP:
+        case kDisableNonProxiedUdp:
           port_config.enable_multiple_routes = false;
           port_config.enable_nonproxied_udp = false;
           break;
-        case DEFAULT:
+        case kDefault:
           port_config.enable_multiple_routes = true;
           port_config.enable_nonproxied_udp = true;
           break;

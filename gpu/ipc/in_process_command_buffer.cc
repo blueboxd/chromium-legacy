@@ -17,6 +17,7 @@
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
@@ -85,7 +86,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -115,7 +115,7 @@ class ScopedEvent {
   ~ScopedEvent() { event_->Signal(); }
 
  private:
-  base::WaitableEvent* event_;
+  raw_ptr<base::WaitableEvent> event_;
 };
 
 // Has to be called after Initialize.
@@ -450,8 +450,7 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           break;
       }
 #if defined(USE_OZONE)
-      if (features::IsUsingOzonePlatform() &&
-          params.surface_handle != gpu::kNullSurfaceHandle) {
+      if (params.surface_handle != gpu::kNullSurfaceHandle) {
         window_surface_ =
             ui::OzonePlatform::GetInstance()
                 ->GetSurfaceFactoryOzone()

@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/mojom/process.mojom.h"
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
@@ -25,7 +25,6 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "components/arc/mojom/process.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/wm/public/activation_change_observer.h"

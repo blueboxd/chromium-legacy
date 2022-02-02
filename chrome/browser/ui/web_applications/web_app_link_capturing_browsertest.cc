@@ -614,143 +614,29 @@ class WebAppDeclarativeLinkCapturingOriginTrialBrowserTest
   base::test::ScopedFeatureList features_;
 };
 
-namespace {
-
-// Using localhost to avoid the HTTPS requirement for InstallableManager to even
-// load the manifest.
-constexpr char kTestWebAppUrl[] = "http://127.0.0.1:8000/";
-constexpr char kTestWebAppHeaders[] =
-    "HTTP/1.1 200 OK\nContent-Type: text/html; charset=utf-8\n";
-constexpr char kTestWebAppBody[] = R"(
-  <!DOCTYPE html>
-  <head>
-    <link rel="manifest" href="manifest.webmanifest">
-    <meta http-equiv="origin-trial" content="$1">
-  </head>
-)";
-
-constexpr char kTestIconUrl[] = "http://127.0.0.1:8000/icon.png";
-constexpr char kTestManifestUrl[] =
-    "http://127.0.0.1:8000/manifest.webmanifest";
-constexpr char kTestManifestHeaders[] =
-    "HTTP/1.1 200 OK\nContent-Type: application/json; charset=utf-8\n";
-constexpr char kTestManifestBody[] = R"({
-  "name": "Test app",
-  "display": "standalone",
-  "start_url": "/",
-  "scope": "/",
-  "icons": [{
-    "src": "icon.png",
-    "sizes": "192x192",
-    "type": "image/png"
-  }],
-  "capture_links": "new-client"
-})";
-
-// Generated from script:
-// $ tools/origin_trials/generate_token.py http://127.0.0.1:8000 \
-// WebAppLinkCapturing --expire-timestamp=2000000000
-constexpr char kOriginTrialToken[] =
-    "A9FvND2pz57gueYZNHgjh4f5vPfcFyck04vOsOOO+OMqj2naHRG9RwO92Vv1C/"
-    "X32R39B+"
-    "EaMCn7r3imGvWVvAsAAABbeyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgIm"
-    "ZlYXR1cmUiOiAiV2ViQXBwTGlua0NhcHR1cmluZyIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ"
-    "==";
-
-}  // namespace
-
-// The origin trial migration is not needed in Lacros as it will be removed
-// long before Lacros ships.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_OriginTrialMigration DISABLED_CaptureLinksNewClient
-#else
-#define MAYBE_OriginTrialMigration OriginTrialMigration
-#endif
-// Tests that the DLC origin trial works and that we can migrate off it into
-// the intent handling persistence user preference model seamlessly.
+// Tests that the DLC origin trial has been disabled from M98.
 IN_PROC_BROWSER_TEST_F(WebAppDeclarativeLinkCapturingOriginTrialBrowserTest,
-                       MAYBE_OriginTrialMigration) {
-  ManifestUpdateTask::BypassWindowCloseWaitingForTesting() = true;
+                       OriginTrialDisabled) {
+  InstallTestApp(embedded_test_server()->GetURL(
+                     "/web_apps/capture_links_origin_trial.html"),
+                 /*await_metric=*/false);
 
-  bool serve_token = true;
-  content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
-      [&serve_token](
-          content::URLLoaderInterceptor::RequestParams* params) -> bool {
-
-        if (params->url_request.url.spec() == kTestWebAppUrl) {
-          content::URLLoaderInterceptor::WriteResponse(
-              kTestWebAppHeaders,
-              base::ReplaceStringPlaceholders(
-                  kTestWebAppBody, {serve_token ? kOriginTrialToken : ""},
-                  nullptr),
-              params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.spec() == kTestManifestUrl) {
-          content::URLLoaderInterceptor::WriteResponse(
-              kTestManifestHeaders, kTestManifestBody, params->client.get());
-          return true;
-        }
-
-        if (params->url_request.url.spec() == kTestIconUrl) {
-          content::URLLoaderInterceptor::WriteResponse(
-              "chrome/test/data/web_apps/basic-192.png", params->client.get());
-          return true;
-        }
-
-        return false;
-      }));
-
-  InstallTestApp(GURL(kTestWebAppUrl), /*await_metric=*/false);
-
-#if !defined(OS_CHROMEOS)
-  // The origin trial is not available outside of Chrome OS.
+  // The origin trial is not available as of M98:
+  // https://groups.google.com/a/chromium.org/g/blink-dev/c/2c4bul4V3GQ/m/Anluh1txBQAJ
   EXPECT_EQ(provider().registrar().GetAppCaptureLinks(app_id_),
             blink::mojom::CaptureLinks::kUndefined);
-  return;
-#endif  // !defined(OS_CHROMEOS)
-
-  // Origin trial should grant the app access.
-  EXPECT_EQ(provider().registrar().GetAppCaptureLinks(app_id_),
-            blink::mojom::CaptureLinks::kNewClient);
-
-  // Open app with the token missing.
-  {
-    WebAppTestManifestUpdatedObserver update_awaiter(&provider().registrar());
-    update_awaiter.BeginListening();
-
-    serve_token = false;
-
-    Browser* app_browser =
-        GetNewBrowserFromNavigation(browser(), GURL(kTestWebAppUrl));
-    // Automatic link capturing should be triggered because DLC is enabled.
-    EXPECT_TRUE(AppBrowserController::IsForWebApp(app_browser, app_id_));
-
-    update_awaiter.Wait();
-  }
-
-  // The app should update to no longer have capture_links defined without the
-  // origin trial.
-  EXPECT_EQ(provider().registrar().GetAppCaptureLinks(app_id_),
-            blink::mojom::CaptureLinks::kUndefined);
-
-  // Automatic link capturing should continue to be enabled.
-  Browser* app_browser =
-      GetNewBrowserFromNavigation(browser(), GURL(kTestWebAppUrl));
-  EXPECT_TRUE(AppBrowserController::IsForWebApp(app_browser, app_id_));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-class WebAppLaunchHanderLinkCaptureBrowserTest
+class WebAppLaunchHandlerLinkCaptureBrowserTest
     : public WebAppLinkCapturingBrowserTest {
  public:
-  WebAppLaunchHanderLinkCaptureBrowserTest() {
+  WebAppLaunchHandlerLinkCaptureBrowserTest() {
     feature_list_.InitWithFeatures({blink::features::kWebAppEnableLaunchHandler,
                                     features::kIntentPickerPWAPersistence},
                                    {});
   }
-  ~WebAppLaunchHanderLinkCaptureBrowserTest() override = default;
+  ~WebAppLaunchHandlerLinkCaptureBrowserTest() override = default;
 
  protected:
   Profile* profile() { return browser()->profile(); }
@@ -768,7 +654,7 @@ class WebAppLaunchHanderLinkCaptureBrowserTest
       OsIntegrationManager::ScopedSuppressOsHooksForTesting()};
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppLaunchHanderLinkCaptureBrowserTest,
+IN_PROC_BROWSER_TEST_F(WebAppLaunchHandlerLinkCaptureBrowserTest,
                        RouteToExistingClientFromBrowser) {
   InstallTestApp(
       "/web_apps/"

@@ -5,10 +5,12 @@
 #include "ash/capture_mode/capture_mode_advanced_settings_view.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -128,8 +130,13 @@ void CaptureModeAdvancedSettingsView::OnCaptureFolderMayHaveChanged() {
     return;
   }
 
-  save_to_menu_group_->AddOrUpdateExistingOption(
-      custom_path.BaseName().AsUTF16Unsafe(), kCustomFolder);
+  const std::u16string folder_name =
+      controller->IsRootDriveFsPath(custom_path)
+          ? l10n_util::GetStringUTF16(
+                IDS_ASH_SCREEN_CAPTURE_SAVE_TO_GOOGLE_DRIVE)
+          : custom_path.BaseName().AsUTF16Unsafe();
+  save_to_menu_group_->AddOrUpdateExistingOption(folder_name, kCustomFolder);
+
   controller->CheckFolderAvailability(
       custom_path,
       base::BindOnce(
@@ -164,6 +171,8 @@ void CaptureModeAdvancedSettingsView::OnOptionSelected(int option_id) const {
       break;
     case kDownloadsFolder:
       controller->SetUsesDefaultCaptureFolder(true);
+      RecordSwitchToDefaultFolderReason(
+          CaptureModeSwitchToDefaultReason::kUserSelectedFromSettingsMenu);
       break;
     case kCustomFolder:
       controller->SetUsesDefaultCaptureFolder(false);
@@ -221,7 +230,10 @@ void CaptureModeAdvancedSettingsView::OnCustomFolderAvailabilityChecked(
   DCHECK(save_to_menu_group_);
   is_custom_folder_available_ = available;
   save_to_menu_group_->RefreshOptionsSelections();
-
+  if (!is_custom_folder_available_.value_or(false)) {
+    RecordSwitchToDefaultFolderReason(
+        CaptureModeSwitchToDefaultReason::kFolderUnavailable);
+  }
   if (on_settings_menu_refreshed_callback_for_test_)
     std::move(on_settings_menu_refreshed_callback_for_test_).Run();
 }

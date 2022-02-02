@@ -165,6 +165,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="UMA.CleanExitBeacon.BeaconFileConsistency"
+    enum="UmaCleanExitConsistency2" expires_after="2022-08-01">
+  <owner>caitlinfischer@google.com</owner>
+  <owner>src/base/metrics/OWNERS</owner>
+  <summary>
+    Emitted by clients in the |kSignalAndWriteViaFileUtilGroup| of the Extended
+    Variations Safe Mode experiment when the CleanExitBeacon is initialized.
+    Reports the combined state of distinct beacons stored the beacon file and in
+    Local State.
+  </summary>
+</histogram>
+
 <histogram name="UMA.CleanExitBeaconConsistency" enum="UmaCleanExitConsistency"
     expires_after="2022-01-18">
   <obsolete>
@@ -191,11 +203,14 @@ chromium-metrics-reviews@google.com.
   <owner>olivierrobin@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
-    Recorded when the CleanExitBeacon is constructed. Reports the combined state
-    of distinct clean exit beacons stored in Local State and the Windows
-    registry (or NSUserDefaults on iOS). They are normally expected to be
-    identical. Updated from CleanExitBeaconConsistency to add missing values in
-    local state.
+    Recorded when the CleanExitBeacon is initialized. Reports the combined state
+    of distinct beacons stored in a platform-specific location (e.g. the Windows
+    registry or NSUserDefaults on iOS) and in Local State. They are normally
+    expected to be identical.
+
+    Unlike it's predecessor, UMA.CleanExitBeaconConsistency, this histogram has
+    buckets that account for the situation in which Local State is missing a
+    beacon value.
   </summary>
 </histogram>
 
@@ -228,7 +243,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.DataValidation.LogNormal" units="random values"
-    expires_after="2021-11-14">
+    expires_after="never">
+<!-- expires-never: needed for ensuring correct UMA operation -->
+
   <owner>sweilun@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -339,7 +356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedHistogramSampleCount"
-    units="samples" expires_after="2022-03-21">
+    units="samples" expires_after="2022-06-05">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -350,7 +367,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedUserActionCount"
-    units="samples" expires_after="2022-03-21">
+    units="samples" expires_after="2022-06-05">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -636,7 +653,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.PrimaryUserType" enum="UserType"
-    expires_after="2022-03-27">
+    expires_after="2022-05-29">
   <owner>michaelpg@chromium.org</owner>
   <owner>yilkal@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -645,7 +662,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="UMA.ProfileSignInStatus" enum="ProfileSyncStatus"
+<histogram name="UMA.ProfileSignInStatus" enum="ProfileSyncConsentStatus"
     expires_after="never">
 <!-- expires-never: For the signin_status filter in dynamic table. -->
 
@@ -655,8 +672,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     WARNING: despite the name, this histogram is about *sync*, not sign-in.
 
-    An enum representing the sync status of all opened profiles during one UMA
-    session.
+    An enum representing the sync consent status of all opened profiles during
+    one UMA session. Recorded once in every ongoing metrics log; not recorded in
+    logs about the previous session.
+
+    This does not mean the user is actively syncing. Some common reasons for
+    consent but not syncing: (i) user signed out of the web (which disables sync
+    but doesn't remove consent for it so it will resume when the user signs in
+    again) and (ii) user changed password and hasn't yet reauthenticated. There
+    are a variety of rarer reasons as well. Examples: user disabled syncing for
+    all sync data types but did not revoke consent, user enabled the sync
+    passphrase and hasn't entered the passphrase in the current profile yet.
 
     Reported incorrect data on ChromeOS before M80. Removed from ChromeOS in
     M97.
@@ -865,7 +891,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2022-05-01">
+    expires_after="2022-06-05">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

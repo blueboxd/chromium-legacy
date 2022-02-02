@@ -5,6 +5,7 @@
 #include "fuchsia/engine/web_instance_host/web_instance_host.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <lib/async/default.h>
 #include <lib/fdio/directory.h>
 #include <lib/fdio/fd.h>
@@ -21,7 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_paths_fuchsia.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -29,11 +29,11 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -171,9 +171,8 @@ bool HandleDataDirectoryParam(fuchsia::web::CreateContextParams* params,
     return false;
   }
 
-  base::FilePath data_path;
-  CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_path));
-  launch_info->flat_namespace->paths.push_back(data_path.value());
+  launch_info->flat_namespace->paths.push_back(
+      base::kPersistedDataDirectoryPath);
   launch_info->flat_namespace->directories.push_back(
       std::move(data_directory_channel));
   if (params->has_data_quota_bytes()) {
@@ -340,6 +339,24 @@ bool HandleKeyboardFeatureFlags(fuchsia::web::ContextFeatureFlags features,
   }
 
   return true;
+}
+
+// Checks the supported ozone platform with Scenic if no arg is specified.
+void HandleOzonePlatformArgs(base::CommandLine* launch_args) {
+  if (launch_args->HasSwitch(switches::kOzonePlatform))
+    return;
+  fuchsia::ui::scenic::ScenicSyncPtr scenic;
+  zx_status_t status =
+      base::ComponentContextForProcess()->svc()->Connect(scenic.NewRequest());
+  if (status != ZX_OK) {
+    ZX_LOG(ERROR, status) << "Couldn't connect to Scenic.";
+    return;
+  }
+
+  bool scenic_uses_flatland = false;
+  scenic->UsesFlatland(&scenic_uses_flatland);
+  launch_args->AppendSwitchNative(switches::kOzonePlatform,
+                                  scenic_uses_flatland ? "flatland" : "scenic");
 }
 
 // Returns false if the config is present but has invalid contents.
@@ -680,6 +697,7 @@ zx_status_t WebInstanceHost::CreateInstanceForContext(
 
   HandleUnsafelyTreatInsecureOriginsAsSecureParam(&params, &launch_args);
   HandleCorsExemptHeadersParam(&params, &launch_args);
+  HandleOzonePlatformArgs(&launch_args);
 
   // Set the command-line flag to enable DevTools, if requested.
   if (enable_remote_debug_mode_)

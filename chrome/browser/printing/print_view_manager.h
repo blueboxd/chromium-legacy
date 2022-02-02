@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
 #define CHROME_BROWSER_PRINTING_PRINT_VIEW_MANAGER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/printing/print_view_manager_base.h"
 #include "components/printing/common/print.mojom-forward.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -125,26 +125,11 @@ class PrintViewManager : public PrintViewManagerBase,
 
   void MaybeUnblockScriptedPreviewRPH();
 
-  // Checks whether printing is restricted due to Data Leak Protection rules.
-  // Virtual to allow tests to override.
-  virtual bool IsPrintingRestricted() const;
-
-  // Checks whether printing is not advised due to Data Leak Protection rules.
-  // Virtual to allow tests to override.
-  virtual bool ShouldWarnBeforePrinting() const;
-
-  // On ChromeOS, shows a warning dialog that will invoke |callback| and pass to
-  // it the user's response. Virtual to allow tests to override.
-  virtual void ShowWarning(
-      base::OnceCallback<void(bool should_proceed)> callback) const;
-
-  // On ChromeOS, shows a notification that the printing is blocked.
-  void ShowBlockedNotification() const;
-
   // Checks whether printing is currently restricted and aborts print preview if
   // needed. Since this check is performed asynchronously, invokes |callback|
   // with an indicator whether to proceed or not.
-  void RejectPrintPreviewRequestIfRestricted(
+  // Virtual to allow tests to override.
+  virtual void RejectPrintPreviewRequestIfRestricted(
       base::OnceCallback<void(bool should_proceed)> callback);
 
   // Helper method for RejectPrintPreviewRequestIfRestricted(). Handles any
@@ -167,10 +152,10 @@ class PrintViewManager : public PrintViewManagerBase,
 
   // The current RFH that is print previewing. It should be a nullptr when
   // |print_preview_state_| is NOT_PREVIEWING.
-  content::RenderFrameHost* print_preview_rfh_ = nullptr;
+  raw_ptr<content::RenderFrameHost> print_preview_rfh_ = nullptr;
 
   // Keeps track of the pending callback during scripted print preview.
-  content::RenderProcessHost* scripted_print_preview_rph_ = nullptr;
+  raw_ptr<content::RenderProcessHost> scripted_print_preview_rph_ = nullptr;
 
   // True if |scripted_print_preview_rph_| needs to be unblocked.
   bool scripted_print_preview_rph_set_blocked_ = false;

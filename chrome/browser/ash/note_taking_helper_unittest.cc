@@ -7,6 +7,17 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/arc/mojom/file_system.mojom.h"
+#include "ash/components/arc/mojom/intent_common.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/session/connection_holder.h"
+#include "ash/components/arc/test/connection_holder_util.h"
+#include "ash/components/arc/test/fake_file_system_instance.h"
+#include "ash/components/disks/disk.h"
+#include "ash/components/disks/disk_mount_manager.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/note_taking_client.h"
 #include "base/bind.h"
@@ -21,7 +32,9 @@
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/note_taking_controller_client.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -41,18 +54,7 @@
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/disks/disk.h"
-#include "chromeos/disks/disk_mount_manager.h"
-#include "components/arc/arc_prefs.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/mojom/file_system.mojom.h"
-#include "components/arc/mojom/intent_common.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
-#include "components/arc/session/connection_holder.h"
-#include "components/arc/test/connection_holder_util.h"
-#include "components/arc/test/fake_file_system_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
@@ -1125,20 +1127,18 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
 }
 
 TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
-  chromeos::disks::DiskMountManager::InitializeForTesting(
+  disks::DiskMountManager::InitializeForTesting(
       new file_manager::FakeDiskMountManager);
 
-  ASSERT_TRUE(chromeos::disks::DiskMountManager::GetInstance()->AddDiskForTest(
-      chromeos::disks::Disk::Builder()
+  ASSERT_TRUE(disks::DiskMountManager::GetInstance()->AddDiskForTest(
+      disks::Disk::Builder()
           .SetDevicePath("/device/source_path")
           .SetFileSystemUUID("0123-abcd")
           .Build()));
-  ASSERT_TRUE(
-      chromeos::disks::DiskMountManager::GetInstance()->AddMountPointForTest(
-          chromeos::disks::DiskMountManager::MountPointInfo(
-              "/device/source_path", "/media/removable/UNTITLED",
-              chromeos::MOUNT_TYPE_DEVICE,
-              chromeos::disks::MOUNT_CONDITION_NONE)));
+  ASSERT_TRUE(disks::DiskMountManager::GetInstance()->AddMountPointForTest(
+      disks::DiskMountManager::MountPointInfo(
+          "/device/source_path", "/media/removable/UNTITLED",
+          chromeos::MOUNT_TYPE_DEVICE, disks::MOUNT_CONDITION_NONE)));
 
   const std::string kPackage = "org.chromium.package";
   std::vector<IntentHandlerInfoPtr> handlers;
@@ -1201,7 +1201,7 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
       NoteTakingHelper::kDefaultLaunchResultHistogramName,
       static_cast<int>(LaunchResult::ANDROID_FAILED_TO_CONVERT_PATH), 1);
 
-  chromeos::disks::DiskMountManager::Shutdown();
+  disks::DiskMountManager::Shutdown();
 }
 
 TEST_F(NoteTakingHelperTest, NoAppsAvailable) {
@@ -1595,9 +1595,17 @@ TEST_F(NoteTakingHelperTest, LockScreenSupportInSecondaryProfile) {
   RegisterUserProfilePrefs(prefs->registry());
   sync_preferences::TestingPrefServiceSyncable* profile_prefs = prefs.get();
   const std::string kSecondProfileName = "second-profile";
+  const AccountId account_id(AccountId::FromUserEmail(kSecondProfileName));
+  ash::FakeChromeUserManager* fake_user_manager =
+      static_cast<ash::FakeChromeUserManager*>(
+          user_manager::UserManager::Get());
+  auto* user = fake_user_manager->AddUser(account_id);
   TestingProfile* second_profile = profile_manager()->CreateTestingProfile(
-      kSecondProfileName, std::move(prefs), u"Test profile", 1 /*avatar_id*/,
+      kSecondProfileName, std::move(prefs),
+      base::UTF8ToUTF16(kSecondProfileName), 1 /*avatar_id*/,
       std::string() /*supervised_user_id*/, TestingProfile::TestingFactories());
+  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+      user, second_profile);
   InitExtensionService(second_profile);
 
   // Add test apps to secondary profile.

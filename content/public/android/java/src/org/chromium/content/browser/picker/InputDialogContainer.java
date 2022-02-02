@@ -274,7 +274,7 @@ public class InputDialogContainer {
         return mDialog != null && mDialog.isShowing();
     }
 
-    public void dismissDialog() {
+    private void dismissDialog() {
         if (isDialogShowing()) mDialog.dismiss();
     }
 

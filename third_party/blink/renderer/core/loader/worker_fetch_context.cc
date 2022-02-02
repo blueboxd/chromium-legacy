@@ -163,10 +163,7 @@ bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
       CountDeprecation(
           WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
 
-      // TODO(mkwst): Remove the runtime check one way or the other once we're
-      // sure it's going to stick (or that it's not).
-      if (RuntimeEnabledFeatures::BlockCredentialedSubresourcesEnabled())
-        return true;
+      return true;
     }
   }
   return false;
@@ -176,14 +173,6 @@ const KURL& WorkerFetchContext::Url() const {
   return GetResourceFetcherProperties()
       .GetFetchClientSettingsObject()
       .GlobalObjectUrl();
-}
-
-const SecurityOrigin* WorkerFetchContext::GetParentSecurityOrigin() const {
-  // This method was introduced to check the parent frame's security context
-  // while loading iframe document resources. So this method is not suitable for
-  // workers.
-  NOTREACHED();
-  return nullptr;
 }
 
 ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy() const {
@@ -217,7 +206,7 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
   if (save_data_enabled_)
     request.SetHttpHeaderField(http_names::kSaveData, "on");
 
-  AddBackForwardCacheExperimentHTTPHeaderIfNeeded(global_scope_, request);
+  AddBackForwardCacheExperimentHTTPHeaderIfNeeded(request);
 }
 
 void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
@@ -295,6 +284,10 @@ WorkerFetchContext::GetContentSecurityNotifier() {
             global_scope_->GetTaskRunner(TaskType::kInternalLoading)));
   }
   return *content_security_notifier_.get();
+}
+
+ExecutionContext* WorkerFetchContext::GetExecutionContext() const {
+  return global_scope_;
 }
 
 void WorkerFetchContext::Trace(Visitor* visitor) const {

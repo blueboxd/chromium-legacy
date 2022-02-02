@@ -287,6 +287,8 @@
       </div>
     </div>
     <div id="view-crop-document" class="review-views">
+      <div id="document-corner-move-desc" i18n-text="document_corner_move_desc">
+      </div>
       <div class="review-frame">
         <div class="review-image">
           <svg class="crop-area-container">
@@ -590,7 +592,7 @@
     <div id="view-flash">
       <div id="processing-indicator" class="centered-overlay">
         <div class="icon"></div>
-        <div class="msg" i18n-text="msg_processing_image"></div>
+        <div class="msg" tabindex="0" i18n-text="msg_processing_image"></div>
       </div>
     </div>
     <div id="view-splash"></div>
@@ -608,7 +610,8 @@
         </div>
       </div>
     </div>
-    <div id="toast" class="centered-overlay" aria-live="polite"></div>
+    <div id="toast" class="centered-overlay" aria-hidden="true"
+         aria-live="polite"></div>
     <div id="focus-ring"></div>
     <div id="tooltip" aria-hidden="true"></div>
     <audio id="sound-tick-final" src="/sounds/tick_final.ogg">
@@ -666,7 +669,9 @@
       <div class="side line"></div>
     </template>
     <template id="document-drag-point-template">
-      <button tabindex="0" class="dot"></button>
+      <div tabindex="0" class="dot"
+           aria-describedby="document-corner-move-desc">
+      </div>
     </template>
     <template id="inkdrop-template">
       <div class="inkdrop-ripple"></div>

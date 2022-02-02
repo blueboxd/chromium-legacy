@@ -9,6 +9,7 @@
 
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
@@ -21,7 +22,6 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -140,7 +140,7 @@ class InflightCallWithInvoker final
   }
 
   // `registry_` owns `this`
-  ServiceWorkerRegistry* const registry_;
+  const raw_ptr<ServiceWorkerRegistry> registry_;
   const base::RepeatingCallback<void(InflightCallWithInvoker*, ReplyCallback)>
       invoker_;
   base::OnceCallback<void(ReplyArgs...)> reply_callback_;
@@ -195,7 +195,11 @@ void ServiceWorkerRegistry::CreateNewRegistrationWithBucketInfo(
     const blink::StorageKey& key,
     NewRegistrationCallback callback,
     storage::QuotaErrorOr<storage::BucketInfo> result) {
-  DCHECK(result.ok());
+  // Return nullptr if GetOrCreateBucket fails.
+  if (!result.ok()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
   CreateInvokerAndStartRemoteCall(
       &storage::mojom::ServiceWorkerStorageControl::GetNewRegistrationId,
       base::BindOnce(&ServiceWorkerRegistry::DidGetNewRegistrationId,

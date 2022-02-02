@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_channel_handle.h"
@@ -45,6 +45,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<ClientSessionEvents> client_session_events,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
       const DesktopEnvironmentOptions& options);
 
@@ -100,6 +101,7 @@ class IpcDesktopEnvironmentFactory
   // DesktopEnvironmentFactory implementation.
   std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<ClientSessionEvents> client_session_events,
       const DesktopEnvironmentOptions& options) override;
   bool SupportsAudioCapture() const override;
 
@@ -128,7 +130,7 @@ class IpcDesktopEnvironmentFactory
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // IPC channel connected to the daemon process.
-  IPC::Sender* daemon_channel_;
+  raw_ptr<IPC::Sender> daemon_channel_;
 
   // List of DesktopEnvironment instances we've told the daemon process about.
   typedef std::map<int, DesktopSessionProxy*> ActiveConnectionsList;

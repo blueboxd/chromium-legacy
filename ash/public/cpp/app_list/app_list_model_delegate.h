@@ -31,7 +31,8 @@ class AppListModelDelegate {
   // Requests the owner to move the item indexed by `id` into the specified
   // folder.
   virtual void RequestMoveItemToFolder(std::string id,
-                                       const std::string& folder_id) = 0;
+                                       const std::string& folder_id,
+                                       RequestMoveToFolderReason reason) = 0;
 
   // Requests the owner to move the item indexed by `id` out of its parent
   // folder. `target_position` is the item position after move.
@@ -44,6 +45,13 @@ class AppListModelDelegate {
   // instead of item position to the browser side.
   virtual void RequestMoveItemToRoot(std::string id,
                                      syncer::StringOrdinal target_position) = 0;
+
+  // Invoked when app list sort is requested.
+  virtual void RequestAppListSort(AppListSortOrder order) = 0;
+
+  // Invoked when the ash side requests to revert the app list temporary sort
+  // order (i.e. the order that has not been committed yet).
+  virtual void RequestAppListSortRevert() = 0;
 
  protected:
   virtual ~AppListModelDelegate() = default;

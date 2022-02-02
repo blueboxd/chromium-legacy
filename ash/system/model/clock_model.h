@@ -5,11 +5,10 @@
 #ifndef ASH_SYSTEM_MODEL_CLOCK_MODEL_H_
 #define ASH_SYSTEM_MODEL_CLOCK_MODEL_H_
 
+#include "ash/components/settings/timezone_settings.h"
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
-#include "chromeos/settings/timezone_settings.h"
 
 namespace ash {
 
@@ -17,7 +16,7 @@ class ClockObserver;
 
 // Model to notify system clock and related configuration change.
 class ClockModel : public chromeos::SystemClockClient::Observer,
-                   public chromeos::system::TimezoneSettings::Observer {
+                   public system::TimezoneSettings::Observer {
  public:
   ClockModel();
 
@@ -48,7 +47,7 @@ class ClockModel : public chromeos::SystemClockClient::Observer,
   void SystemClockUpdated() override;
   void SystemClockCanSetTimeChanged(bool can_set_time) override;
 
-  // chromeos::system::TimezoneSettings::Observer:
+  // ash::system::TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
   base::HourClockType hour_clock_type() const { return hour_clock_type_; }

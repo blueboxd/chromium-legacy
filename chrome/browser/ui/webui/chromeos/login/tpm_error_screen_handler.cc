@@ -10,11 +10,12 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace {
-const char kTPMErrorDefaultStep[] = "default";
 const char kTPMErrorOwnedStep[] = "tpm-owned";
+const char kTPMErrorDbusStep[] = "dbus-error";
 }  // namespace
 
 constexpr StaticOobeScreenId TpmErrorView::kScreenId;
@@ -33,20 +34,19 @@ TpmErrorScreenHandler::~TpmErrorScreenHandler() {
 void TpmErrorScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("errorTpmFailureTitle", IDS_LOGIN_ERROR_TPM_FAILURE_TITLE);
+  builder->Add("errorTpmDbusErrorTitle", IDS_LOGIN_ERROR_TPM_DBUS_ERROR_TITLE);
   builder->Add("errorTpmFailureReboot", IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT);
   builder->Add("errorTpmFailureRebootButton",
                IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON);
 
   builder->Add("errorTPMOwnedTitle",
                IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_TITLE);
-  builder->Add("errorTPMOwnedSubtitle",
-               IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_SUBTITLE);
-  builder->Add("errorTPMOwnedContent",
-               IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_CONTENT);
-
-  // OS names
-  builder->Add("osInstallChromiumOS", IDS_CHROMIUM_OS_NAME);
-  builder->Add("osInstallCloudReadyOS", IDS_CLOUD_READY_OS_NAME);
+  builder->AddF("errorTPMOwnedSubtitle",
+                IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_SUBTITLE,
+                IDS_INSTALLED_PRODUCT_OS_NAME);
+  builder->AddF("errorTPMOwnedContent",
+                IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_CONTENT,
+                IDS_INSTALLED_PRODUCT_OS_NAME);
 }
 
 void TpmErrorScreenHandler::Initialize() {
@@ -64,14 +64,13 @@ void TpmErrorScreenHandler::Show() {
   ShowScreen(kScreenId);
 }
 
-void TpmErrorScreenHandler::SetTPMOwnedErrorStep(bool show_tpm_owned_step) {
+void TpmErrorScreenHandler::SetTPMOwnedErrorStep() {
   CallJS("login.TPMErrorMessageScreen.setStep",
-         show_tpm_owned_step ? std::string(kTPMErrorOwnedStep)
-                             : std::string(kTPMErrorDefaultStep));
+         std::string(kTPMErrorOwnedStep));
 }
 
-void TpmErrorScreenHandler::SetIsBrandedBuild(bool is_branded) {
-  CallJS("login.TPMErrorMessageScreen.setIsBrandedBuild", is_branded);
+void TpmErrorScreenHandler::SetTPMDbusErrorStep() {
+  CallJS("login.TPMErrorMessageScreen.setStep", std::string(kTPMErrorDbusStep));
 }
 
 void TpmErrorScreenHandler::Bind(TpmErrorScreen* screen) {

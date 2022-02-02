@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 
+#include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/hash/sha1.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_prefs.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/consent_level.h"
@@ -57,10 +57,15 @@ std::string GetGoogleEulaOnlineUrl() {
 }
 
 std::string GetCrosEulaOnlineUrl() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kOobeEulaUrlForTests)) {
+    return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kOobeEulaUrlForTests);
+  }
+
   return base::StringPrintf(chrome::kCrosEulaOnlineURLPath,
                             g_browser_process->GetApplicationLocale().c_str());
 }
-
 }  // namespace
 
 std::string ConsolidatedConsentScreen::GetResultString(Result result) {
@@ -92,6 +97,9 @@ ConsolidatedConsentScreen::~ConsolidatedConsentScreen() {
   if (view_) {
     view_->Unbind();
   }
+
+  for (auto& observer : observer_list_)
+    observer.OnConsolidatedConsentScreenDestroyed();
 }
 
 void ConsolidatedConsentScreen::OnViewDestroyed(
@@ -105,11 +113,16 @@ bool ConsolidatedConsentScreen::MaybeSkip(WizardContext* context) {
     return false;
 
   // For managed users, admins are required to accept ToS on the server side.
-  // So, if the user is managed and no Negotiation is needed, skip the screen.
-  bool is_managed_account = ProfileManager::GetActiveUserProfile()
-                                ->GetProfilePolicyConnector()
-                                ->IsManaged();
-  if ((is_managed_account &&
+  // So, if the user is managed and no arc negotiation is needed, skip the
+  // screen. IsManaged() returns true for child users, don't skip consolidated
+  // consent in that case.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  CHECK(profile);
+  bool is_child_account =
+      user_manager::UserManager::Get()->IsLoggedInAsChildUser();
+  bool is_enterprise_managed =
+      profile->GetProfilePolicyConnector()->IsManaged() && !is_child_account;
+  if ((is_enterprise_managed &&
        !arc::IsArcTermsOfServiceOobeNegotiationNeeded()) ||
       !context->is_branded_build) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
@@ -122,23 +135,22 @@ void ConsolidatedConsentScreen::ShowImpl() {
   if (!view_)
     return;
 
+  is_child_account_ = user_manager::UserManager::Get()->IsLoggedInAsChildUser();
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  CHECK(profile);
+  is_enterprise_managed_account_ =
+      profile->GetProfilePolicyConnector()->IsManaged() && !is_child_account_;
+
   bool is_demo = arc::IsArcDemoModeSetupFlow();
   bool is_arc_enabled = arc::IsArcTermsOfServiceOobeNegotiationNeeded();
   if (!is_demo && is_arc_enabled) {
-    is_child_account_ =
-        user_manager::UserManager::Get()->IsLoggedInAsChildUser();
-
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    CHECK(profile);
-
     // Enable ARC to match ArcSessionManager logic. ArcSessionManager expects
     // that ARC is enabled (prefs::kArcEnabled = true) on showing Terms of
     // Service. If user accepts ToS then prefs::kArcEnabled is left activated.
     // If user skips ToS then prefs::kArcEnabled is automatically reset in
     // ArcSessionManager.
     arc::SetArcPlayStoreEnabledForProfile(profile, true);
-    arc_managed_ =
-        arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);
 
     pref_handler_ = std::make_unique<arc::ArcOptInPreferenceHandler>(
         this, profile->GetPrefs());
@@ -148,7 +160,7 @@ void ConsolidatedConsentScreen::ShowImpl() {
   ConsolidatedConsentScreenView::ScreenConfig config;
   config.is_arc_enabled = is_arc_enabled;
   config.is_demo = is_demo;
-  config.is_arc_managed = arc_managed_;
+  config.is_enterprise_managed_account = is_enterprise_managed_account_;
   config.is_child_account = is_child_account_;
   config.country_code = base::CountryCodeForCurrentTimezone();
   config.google_eula_url = GetGoogleEulaOnlineUrl();
@@ -212,6 +224,8 @@ void ConsolidatedConsentScreen::RecordConsents(
       IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
   play_consent.set_consent_flow(ArcPlayTermsOfServiceConsent::SETUP);
   if (params.record_arc_tos_consent) {
+    play_consent.set_confirmation_grd_id(
+        IDS_CONSOLIDATED_CONSENT_ACCEPT_AND_CONTINUE);
     play_consent.set_play_terms_of_service_text_length(
         params.tos_content.length());
     play_consent.set_play_terms_of_service_hash(
@@ -274,7 +288,7 @@ void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,
 
   ConsentsParameters consents;
   consents.tos_content = tos_content;
-  consents.record_arc_tos_consent = !arc_managed_;
+  consents.record_arc_tos_consent = !is_enterprise_managed_account_;
   consents.record_backup_consent = !backup_restore_managed_;
   consents.backup_accepted = enable_backup_restore;
   consents.record_location_consent = !location_services_managed_;

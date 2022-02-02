@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import json
 import os
+import re
 import subprocess
 import sys
 
@@ -16,6 +17,9 @@ tool_dir = os.path.abspath(os.path.join(script_dir, '../../clang/pylib'))
 sys.path.insert(0, tool_dir)
 
 from clang import compile_db  # type: ignore
+
+# Valid return values for GetCurrentPlatform().
+SUPPORTED_PLATFORMS = ['android', 'linux', 'windows']
 
 
 class NetworkTrafficAnnotationTools():
@@ -39,14 +43,14 @@ class NetworkTrafficAnnotationTools():
 
     # For each platform, map the returned platform name from python sys, to
     # directory name of traffic_annotation_auditor executable.
-    platform = {
+    host_platform = {
         'linux': 'linux64',
         'linux2': 'linux64',
         'darwin': 'mac',
         'win32': 'win32',
     }[sys.platform]
 
-    path = os.path.join(self.this_dir, '..', 'bin', platform,
+    path = os.path.join(self.this_dir, '..', 'bin', host_platform,
                         'traffic_annotation_auditor')
     if sys.platform == 'win32':
       path += '.exe'

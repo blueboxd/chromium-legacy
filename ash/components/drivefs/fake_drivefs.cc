@@ -356,6 +356,9 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   metadata->alternate_url = GURL(base::StrCat({prefix, suffix})).spec();
   metadata->capabilities = stored_metadata.capabilities.Clone();
   metadata->stable_id = stored_metadata.stable_id;
+  if (stored_metadata.hosted) {
+    metadata->can_pin = mojom::FileMetadata::CanPinStatus::kDisabled;
+  }
 
   std::move(callback).Run(drive::FILE_ERROR_OK, std::move(metadata));
 }
@@ -499,6 +502,12 @@ void FakeDriveFs::LocateFilesByItemIds(
     }
   }
   std::move(callback).Run(std::move(response));
+}
+
+void FakeDriveFs::GetQuotaUsage(
+    drivefs::mojom::DriveFs::GetQuotaUsageCallback callback) {
+  std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
+                          mojom::QuotaUsage::New());
 }
 
 }  // namespace drivefs

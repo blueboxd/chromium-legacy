@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/ignore_result.h"
 #include "base/pickle.h"
 
 namespace ui {

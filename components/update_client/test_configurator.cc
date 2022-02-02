@@ -36,11 +36,7 @@ std::vector<GURL> MakeDefaultUrls() {
 }  // namespace
 
 TestConfigurator::TestConfigurator(PrefService* pref_service)
-    : brand_("TEST"),
-      initial_time_(0),
-      ondemand_time_(0),
-      enabled_cup_signing_(false),
-      enabled_component_updates_(true),
+    : enabled_cup_signing_(false),
       pref_service_(pref_service),
       unzip_factory_(base::MakeRefCounted<update_client::UnzipChromiumFactory>(
           base::BindRepeating(&unzip::LaunchInProcessUnzipper))),
@@ -99,10 +95,6 @@ std::string TestConfigurator::GetChannel() const {
   return "fake_channel_string";
 }
 
-std::string TestConfigurator::GetBrand() const {
-  return brand_;
-}
-
 std::string TestConfigurator::GetLang() const {
   return "fake_lang";
 }
@@ -142,20 +134,12 @@ bool TestConfigurator::EnabledDeltas() const {
   return true;
 }
 
-bool TestConfigurator::EnabledComponentUpdates() const {
-  return enabled_component_updates_;
-}
-
 bool TestConfigurator::EnabledBackgroundDownloader() const {
   return false;
 }
 
 bool TestConfigurator::EnabledCupSigning() const {
   return enabled_cup_signing_;
-}
-
-void TestConfigurator::SetBrand(const std::string& brand) {
-  brand_ = brand;
 }
 
 void TestConfigurator::SetOnDemandTime(int seconds) {
@@ -168,11 +152,6 @@ void TestConfigurator::SetInitialDelay(double seconds) {
 
 void TestConfigurator::SetEnabledCupSigning(bool enabled_cup_signing) {
   enabled_cup_signing_ = enabled_cup_signing;
-}
-
-void TestConfigurator::SetEnabledComponentUpdates(
-    bool enabled_component_updates) {
-  enabled_component_updates_ = enabled_component_updates;
 }
 
 void TestConfigurator::SetDownloadPreference(

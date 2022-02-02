@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/raw_ptr.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar.h"
 
@@ -33,7 +34,8 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
   bool Update() override;
 
   void PushPropertiesTo(LayerImpl* layer,
-                        const CommitState& commit_state) override;
+                        const CommitState& commit_state,
+                        const ThreadUnsafeCommitState& unsafe_state) override;
 
   using PaintedScrollbarLayer::IgnoreSetNeedsCommit;
 
@@ -58,7 +60,7 @@ class FakePaintedScrollbarLayer : public PaintedScrollbarLayer {
 
   int update_count_;
   size_t push_properties_count_;
-  FakeScrollbar* fake_scrollbar_;
+  raw_ptr<FakeScrollbar> fake_scrollbar_;
 };
 
 }  // namespace cc

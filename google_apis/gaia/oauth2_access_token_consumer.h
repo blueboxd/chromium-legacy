@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/time/time.h"
 
 class GoogleServiceAuthError;
@@ -70,6 +69,11 @@ class OAuth2AccessTokenConsumer {
   };
 
   OAuth2AccessTokenConsumer() = default;
+
+  OAuth2AccessTokenConsumer(const OAuth2AccessTokenConsumer&) = delete;
+  OAuth2AccessTokenConsumer& operator=(const OAuth2AccessTokenConsumer&) =
+      delete;
+
   virtual ~OAuth2AccessTokenConsumer();
 
   // Success callback.
@@ -80,9 +84,6 @@ class OAuth2AccessTokenConsumer {
 
   // Returns the OAuth token consumer name, should be used for logging only.
   virtual std::string GetConsumerName() const = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenConsumer);
 };
 
 #endif  // GOOGLE_APIS_GAIA_OAUTH2_ACCESS_TOKEN_CONSUMER_H_

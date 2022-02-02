@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -173,8 +174,9 @@ class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
   GURL article_url_;
 };
 
+// Disabled as flaky: https://crbug.com/1275025
 IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
-                       DistillCurrentPageSwapsWebContents) {
+                       DISABLED_DistillCurrentPageSwapsWebContents) {
   content::WebContents* initial_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   TestDistillabilityObserver distillability_observer(initial_web_contents);
@@ -242,8 +244,17 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, UMATimesAreLogged) {
   histogram_tester.ExpectTotalCount(kDistillablePageHistogram, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
-                       DistillAndViewCreatesNewWebContentsAndPreservesOld) {
+// TODO(crbug.com/1272152): Flaky on linux.
+#if defined(OS_LINUX)
+#define MAYBE_DistillAndViewCreatesNewWebContentsAndPreservesOld \
+  DISABLED_DistillAndViewCreatesNewWebContentsAndPreservesOld
+#else
+#define MAYBE_DistillAndViewCreatesNewWebContentsAndPreservesOld \
+  DistillAndViewCreatesNewWebContentsAndPreservesOld
+#endif
+IN_PROC_BROWSER_TEST_F(
+    DomDistillerTabUtilsBrowserTest,
+    MAYBE_DistillAndViewCreatesNewWebContentsAndPreservesOld) {
   content::WebContents* source_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -277,7 +288,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
   destroyed_watcher.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest, ToggleOriginalPage) {
+// TODO(crbug.com/1271740): Flaky on linux.
+#if defined(OS_LINUX)
+#define MAYBE_ToggleOriginalPage DISABLED_ToggleOriginalPage
+#else
+#define MAYBE_ToggleOriginalPage ToggleOriginalPage
+#endif
+IN_PROC_BROWSER_TEST_F(DomDistillerTabUtilsBrowserTest,
+                       MAYBE_ToggleOriginalPage) {
   content::WebContents* source_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -439,7 +457,7 @@ class DistilledPageImageLoadWaiter {
     // If they aren't loaded or the size is wrong, stay in the loop until the
     // load completes.
     ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        contents_,
+        contents_.get(),
         content::JsReplace("var ok = document.getElementById('main-content')"
                            "    .getElementsByTagName('img')[$1];"
                            "var bad = document.getElementById('main-content')"
@@ -453,7 +471,7 @@ class DistilledPageImageLoadWaiter {
       runner_.Quit();
   }
 
-  content::WebContents* contents_;
+  raw_ptr<content::WebContents> contents_;
   int ok_elem_;
   int ok_width_;
   int bad_elem_;

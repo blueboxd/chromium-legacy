@@ -16,9 +16,11 @@
 #include "ash/app_list/views/continue_task_view.h"
 #include "ash/bubble/bubble_utils.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
 #include "base/strings/string_util.h"
 #include "extensions/common/constants.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -38,9 +40,9 @@ constexpr int kSectionHorizontalPadding = 20;
 constexpr int kHeaderVerticalSpacing = 4;
 constexpr int kHeaderHorizontalPadding = 12;
 
-// Suggested tasks layout constants. Should this change, we should update the
-// Layout to leave out empty rows.
-constexpr int kMinFilesForContinueSection = 3;
+// Suggested tasks layout constants.
+constexpr size_t kMinFilesForContinueSectionClamshellMode = 3;
+constexpr size_t kMinFilesForContinueSectionTabletMode = 2;
 
 std::unique_ptr<views::Label> CreateContinueLabel(const std::u16string& text) {
   auto label = std::make_unique<views::Label>(text);
@@ -52,7 +54,8 @@ std::unique_ptr<views::Label> CreateContinueLabel(const std::u16string& text) {
 
 ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
                                          int columns,
-                                         bool tablet_mode) {
+                                         bool tablet_mode)
+    : tablet_mode_(tablet_mode) {
   DCHECK(view_delegate);
 
   AppListModelProvider::Get()->AddObserver(this);
@@ -61,14 +64,15 @@ ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
       views::BoxLayout::Orientation::kVertical,
       gfx::Insets(kSectionVerticalPadding, kSectionHorizontalPadding),
       kHeaderVerticalSpacing));
-  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kStart);
+  layout->set_main_axis_alignment(
+      tablet_mode ? views::BoxLayout::MainAxisAlignment::kCenter
+                  : views::BoxLayout::MainAxisAlignment::kStart);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  // TODO(https://crbug.com/1204551): Localized strings.
-  // TODO(https://crbug.com/1204551): Styling.
   if (!tablet_mode) {
-    auto* continue_label = AddChildView(CreateContinueLabel(u"Continue"));
+    auto* continue_label = AddChildView(CreateContinueLabel(
+        l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL)));
     continue_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     continue_label->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(0, kHeaderHorizontalPadding)));
@@ -94,7 +98,7 @@ void ContinueSectionView::OnActiveAppListModelsChanged(
 }
 
 size_t ContinueSectionView::GetTasksSuggestionsCount() const {
-  return static_cast<size_t>(suggestions_container_->num_results());
+  return suggestions_container_->num_results();
 }
 
 void ContinueSectionView::DisableFocusForShowingActiveFolder(bool disabled) {
@@ -118,7 +122,8 @@ void ContinueSectionView::UpdateSuggestionTasks() {
 
 void ContinueSectionView::OnSearchResultContainerResultsChanged() {
   SetVisible(suggestions_container_->num_results() >=
-             kMinFilesForContinueSection);
+             (tablet_mode_ ? kMinFilesForContinueSectionTabletMode
+                           : kMinFilesForContinueSectionClamshellMode));
 }
 
 BEGIN_METADATA(ContinueSectionView, views::View)

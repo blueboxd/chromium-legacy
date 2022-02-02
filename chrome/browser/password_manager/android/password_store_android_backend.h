@@ -9,6 +9,8 @@
 #include <unordered_map>
 
 #include "base/containers/small_map.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/types/strong_alias.h"
@@ -72,22 +74,23 @@ class PasswordStoreAndroidBackend
         const override;
     void RecordMemoryUsageAndCountsHistograms() override;
 
-    PasswordStoreAndroidBackendBridge* const bridge_;
+    const raw_ptr<PasswordStoreAndroidBackendBridge> bridge_;
     base::WeakPtrFactory<SyncModelTypeControllerDelegate> weak_ptr_factory_{
         this};
   };
 
-  // Wraps the handler for an asynchronous job (if successful). Also provides
-  // means to record metrics about the job (if successful or not). An object of
-  // this type shall be created and stored in |request_for_job_| once an
-  // asynchronous begins, and destroyed once the job is finished.
+  // Wraps the handler for one or multiple asynchronous jobs (if successful).
+  // Also provides means to record metrics about the jobs (if successful or
+  // not). An object of this type shall be created and stored in
+  // |request_for_job_| once an asynchronous begins, and destroyed once jobs are
+  // finished.
   class JobReturnHandler {
    public:
     using ErrorReply = base::OnceClosure;
     using MetricInfix = base::StrongAlias<struct MetricNameTag, std::string>;
-    using WasSuccess = base::StrongAlias<struct WasSuccessTag, bool>;
 
     JobReturnHandler();
+    JobReturnHandler(LoginsOrErrorReply callback, MetricInfix metric_name);
     JobReturnHandler(LoginsReply callback, MetricInfix metric_name);
     JobReturnHandler(PasswordStoreChangeListReply callback,
                      MetricInfix metric_infix);
@@ -108,10 +111,16 @@ class PasswordStoreAndroidBackend
     // Records metrics for this job:
     // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.Latency"
     // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.Success"
-    void RecordMetrics(WasSuccess success) const;
+    // In case of failure. the following are recorded in addition:
+    // - "PasswordManager.PasswordStoreAndroidBackend.APIError"
+    // - "PasswordManager.PasswordStoreAndroidBackend.ErrorCode"
+    // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.APIError"
+    // - "PasswordManager.PasswordStoreAndroidBackend.<metric_infix_>.ErrorCode"
+    void RecordMetrics(absl::optional<AndroidBackendError> error) const;
 
    private:
-    absl::variant<LoginsReply, PasswordStoreChangeListReply> success_callback_;
+    absl::variant<LoginsReply, LoginsOrErrorReply, PasswordStoreChangeListReply>
+        success_callback_;
     MetricInfix metric_infix_;
     base::Time start_ = base::Time::Now();
   };
@@ -121,14 +130,19 @@ class PasswordStoreAndroidBackend
   // like a bulk deletion just as well as the normal, rather small job load.
   using JobMap = base::small_map<
       std::unordered_map<JobId, JobReturnHandler, JobId::Hasher>>;
+  using AccumulatedLoginsReply =
+      base::OnceCallback<void(std::unique_ptr<LoginsResult>)>;
+  using AccumulatedPasswordStoreChangeListReply =
+      base::OnceCallback<void(std::unique_ptr<PasswordStoreChangeList>)>;
 
   // Implements PasswordStoreBackend interface.
+  base::WeakPtr<PasswordStoreBackend> GetWeakPtr() override;
   void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
-  void GetAllLoginsAsync(LoginsReply callback) override;
-  void GetAutofillableLoginsAsync(LoginsReply callback) override;
+  void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
+  void GetAutofillableLoginsAsync(LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
       LoginsReply callback,
       bool include_psl,
@@ -156,7 +170,6 @@ class PasswordStoreAndroidBackend
   FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
-  void GetSyncStatus(base::OnceCallback<void(bool)> callback) override;
 
   // Implements PasswordStoreAndroidBackendBridge::Consumer interface.
   void OnCompleteWithLogins(PasswordStoreAndroidBackendBridge::JobId job_id,
@@ -171,6 +184,20 @@ class PasswordStoreAndroidBackend
 
   void QueueNewJob(JobId job_id, JobReturnHandler return_handler);
   JobReturnHandler GetAndEraseJob(JobId job_id);
+
+  // Gets logins matching |form|.
+  void GetLoginsAsync(const PasswordFormDigest& form,
+                      bool include_psl,
+                      LoginsReply callback);
+
+  // Filters |logins| created between |delete_begin| and |delete_end| time
+  // that match |url_filer| and asynchronously removes them.
+  void FilterAndRemoveLogins(
+      const base::RepeatingCallback<bool(const GURL&)>& url_filter,
+      base::Time delete_begin,
+      base::Time delete_end,
+      PasswordStoreChangeListReply reply,
+      LoginsResultOrError result);
 
   // Observer to propagate remote form changes to.
   RemoteChangesReceived remote_form_changes_received_;

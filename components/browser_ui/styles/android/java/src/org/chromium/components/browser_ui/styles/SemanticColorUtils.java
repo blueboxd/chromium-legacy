@@ -31,6 +31,11 @@ public class SemanticColorUtils {
         }
     }
 
+    /** Returns the semantic color value that corresponds to default_bg_color. */
+    public static @ColorInt int getDefaultBgColor(Context context) {
+        return resolve(R.attr.colorSurface, R.color.default_bg_color_baseline, context);
+    }
+
     /** Returns the semantic color value that corresponds to default_text_color. */
     public static @ColorInt int getDefaultTextColor(Context context) {
         return resolve(R.attr.colorOnSurface, R.color.default_text_color_baseline, context);
@@ -41,8 +46,43 @@ public class SemanticColorUtils {
         return resolve(R.attr.colorPrimary, R.color.default_text_color_blue, context);
     }
 
+    /** Returns the semantic color value that corresponds to default_icon_color. */
+    public static @ColorInt int getDefaultIconColor(Context context) {
+        return resolve(R.attr.colorOnSurface, R.color.default_icon_color_baseline, context);
+    }
+
     /** Returns the semantic color value that corresponds to default_icon_color_accent1. */
     public static @ColorInt int getDefaultIconColorAccent1(Context context) {
         return resolve(R.attr.colorPrimary, R.color.default_icon_color_accent1_baseline, context);
+    }
+
+    /** Returns the semantic color value that corresponds to divider_line_bg_color. */
+    public static @ColorInt int getDividerLineBgColor(Context context) {
+        return resolve(R.attr.colorSurfaceVariant, R.color.divider_line_bg_color_baseline, context);
+    }
+
+    /** Returns the semantic color value that corresponds to bottom_system_nav_divider_color. */
+    public static @ColorInt int getBottomSystemNavDividerColor(Context context) {
+        return getDividerLineBgColor(context);
+    }
+
+    /** Returns the semantic color value that corresponds to overlay_panel_separator_line_color. */
+    public static @ColorInt int getOverlayPanelSeparatorLineColor(Context context) {
+        return getDividerLineBgColor(context);
+    }
+
+    /** Returns the semantic color value that corresponds to tab_grid_card_divider_tint_color. */
+    public static @ColorInt int getTabGridCardDividerTintColor(Context context) {
+        return getDividerLineBgColor(context);
+    }
+
+    /** Returns the semantic color value that corresponds to default_control_color_active. */
+    public static @ColorInt int getDefaultControlColorActive(Context context) {
+        return resolve(R.attr.colorPrimary, R.color.default_control_color_active_baseline, context);
+    }
+
+    /** Returns the semantic color value that corresponds to progress_bar_foreground. */
+    public static @ColorInt int getProgressBarForeground(Context context) {
+        return getDefaultControlColorActive(context);
     }
 }

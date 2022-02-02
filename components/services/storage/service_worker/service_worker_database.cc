@@ -49,8 +49,11 @@
 //   Note: This has changed from `GURL origin` to StorageKey but the name will
 //   be updated in the future to avoid a migration.
 //   TODO(crbug.com/1199077): Update name during a migration to Version 3.
-//   key: "INITDATA_UNIQUE_ORIGIN:" + <StorageKey 'key'.origin> + [ "^" +
+//   key: "INITDATA_UNIQUE_ORIGIN:" + <StorageKey 'key'.origin> + "/" + [ "^0" +
 //   <StorageKey `key`.top_level_site> ]
+//   - or -
+//   key: "INITDATA_UNIQUE_ORIGIN:" + <StorageKey 'key'.origin> + "/" + "^1" +
+//   <StorageKey 'nonce'.High64Bits> + "^2" + <StorageKey 'nonce'.Low64Bits>
 //   value: <empty>
 //
 //   key: "PRES:" + <int64_t 'purgeable_resource_id'>
@@ -59,9 +62,13 @@
 //   Note: This has changed from `GURL origin` to StorageKey but the name will
 //   be updated in the future to avoid a migration.
 //   TODO(crbug.com/1199077): Update name during a migration to Version 3.
-//   key: "REG:" + <StorageKey 'key'.origin> + [ "^" + <StorageKey
+//   key: "REG:" + <StorageKey 'key'.origin> + "/" + [ "^0" + <StorageKey
 //   `key`.top_level_site> ] + '\x00' + <int64_t 'registration_id'>
-//     (ex. "REG:http://example.com\x00123456")
+//   - or -
+//   key: "REG:" + <StorageKey 'key'.origin> + "/" + "^1" + <StorageKey
+//   'nonce'.High64Bits> + "^2" + <StorageKey 'nonce'.Low64Bits> + '\x00' +
+//   <int64_t 'registration_id'>
+//    (ex. "REG:http://example.com\x00123456")
 //   value: <ServiceWorkerRegistrationData (except for the StorageKey)
 //   serialized as a string>
 //
@@ -87,8 +94,11 @@
 //   be updated in the future to avoid a migration.
 //   TODO(crbug.com/1199077): Update name during a migration to Version 3.
 //   key: "REGID_TO_ORIGIN:" + <int64_t 'registration_id'>
-//   value: <StorageKey 'key'.origin> + [ "^" + <StorageKey
+//   value: <StorageKey 'key'.origin> + "/" + [ "^0" + <StorageKey
 //   `key`.top_level_site> ]
+//   - or -
+//   value: <StorageKey 'key'.origin> + "/" + "^1" + <StorageKey
+//   'nonce'.High64Bits> + "^2" + <StorageKey 'nonce'.Low64Bits>
 //
 //   OBSOLETE: https://crbug.com/539713
 //   key: "INITDATA_DISKCACHE_MIGRATION_NOT_NEEDED"
@@ -107,20 +117,40 @@
 //   value: <empty>
 namespace {
 
-// Returns true if the registration key string is partitioned but storage
-// partitioning is currently disabled.
+// Returns true if the registration key string is partitioned by top-level site
+// but storage partitioning is currently disabled. Returns false if the key
+// string contains a serialized nonce.
 bool ShouldSkipKeyDueToPartitioning(const std::string& reg_key_string) {
   // Don't skip anything if storage partitioning is enabled.
   if (blink::StorageKey::IsThirdPartyStoragePartitioningEnabled())
     return false;
 
-  // If partitioning is disabled then skip partitioned 3p keys. Partitioned keys
-  // have a '^' (caret) as a delimter.
-  if (reg_key_string.find_first_of('^') != std::string::npos)
-    return true;
+  // TODO(crbug.com/1246549) : This currently counts carets to tell the
+  // difference between nonce and top-level site schemes. When the ancestor bit
+  // is implemented this will need to be modified to handle that case (since it
+  // will also use 2 carets).
+  int number_of_carets =
+      std::count(reg_key_string.begin(), reg_key_string.end(), '^');
 
-  // Otherwise this is a 1p context key, don't skip it.
-  return false;
+  switch (number_of_carets) {
+    case 2: {
+      // Don't skip if a nonce serialization scheme is found.
+      return false;
+    }
+    case 1: {
+      // Do skip if partitioning is disabled and we detect a top-level site
+      // serialization scheme.
+      return true;
+    }
+    case 0: {
+      // Don't skip for a 1p context key.
+      return false;
+    }
+    default: {
+      NOTREACHED();
+      return true;
+    }
+  }
 }
 
 }  // namespace
@@ -180,7 +210,7 @@ bool RemovePrefix(const std::string& str,
 
 std::string CreateRegistrationKeyPrefix(const blink::StorageKey& key) {
   return base::StringPrintf("%s%s%c", service_worker_internals::kRegKeyPrefix,
-                            key.SerializeForServiceWorker().c_str(),
+                            key.Serialize().c_str(),
                             service_worker_internals::kKeySeparator);
 }
 
@@ -203,7 +233,7 @@ std::string CreateResourceRecordKey(int64_t version_id, int64_t resource_id) {
 
 std::string CreateUniqueOriginKey(const blink::StorageKey& key) {
   return base::StringPrintf("%s%s", service_worker_internals::kUniqueOriginKey,
-                            key.SerializeForServiceWorker().c_str());
+                            key.Serialize().c_str());
 }
 
 std::string CreateResourceIdKey(const char* key_prefix, int64_t resource_id) {
@@ -405,7 +435,7 @@ ServiceWorkerDatabase::GetStorageKeysWithRegistrations(
         continue;
 
       absl::optional<blink::StorageKey> key =
-          blink::StorageKey::DeserializeForServiceWorker(key_str);
+          blink::StorageKey::Deserialize(key_str);
       if (!key) {
         status = Status::kErrorCorrupted;
         keys->clear();
@@ -597,7 +627,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
         continue;
 
       absl::optional<blink::StorageKey> key =
-          blink::StorageKey::DeserializeForServiceWorker(reg_key_string);
+          blink::StorageKey::Deserialize(reg_key_string);
       if (!key)
         break;
 
@@ -673,7 +703,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationStorageKey(
   DCHECK(!ShouldSkipKeyDueToPartitioning(value));
 
   absl::optional<blink::StorageKey> parsed =
-      blink::StorageKey::DeserializeForServiceWorker(value);
+      blink::StorageKey::Deserialize(value);
   if (!parsed) {
     status = Status::kErrorCorrupted;
     HandleReadResult(FROM_HERE, status);
@@ -712,7 +742,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   blink::StorageKey key = registration.key;
 
   batch.Put(CreateRegistrationIdToStorageKey(registration.registration_id),
-            key.SerializeForServiceWorker());
+            key.Serialize());
 
   // Used for avoiding multiple writes for the same resource id or url.
   std::set<int64_t> pushed_resources;

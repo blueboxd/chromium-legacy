@@ -8,6 +8,14 @@
 #include <utility>
 
 #include "apps/launcher.h"
+#include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/components/arc/metrics/arc_metrics_service.h"
+#include "ash/components/arc/mojom/file_system.mojom.h"
+#include "ash/components/arc/mojom/intent_common.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/arc/session/connection_holder.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "base/bind.h"
@@ -34,14 +42,6 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
-#include "components/arc/metrics/arc_metrics_service.h"
-#include "components/arc/mojom/file_system.mojom.h"
-#include "components/arc/mojom/intent_common.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
-#include "components/arc/session/connection_holder.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_update.h"
@@ -88,10 +88,12 @@ bool LooksLikeAndroidPackageName(const std::string& app_id) {
 }
 
 bool IsInstalledWebApp(const std::string& app_id, Profile* profile) {
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
+    return false;
   auto* cache =
       &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
-  bool result = false;
 
+  bool result = false;
   cache->ForOneApp(app_id, [&result](const apps::AppUpdate& update) {
     if (apps_util::IsInstalled(update.Readiness()) &&
         update.AppType() == apps::mojom::AppType::kWeb) {
@@ -114,9 +116,11 @@ arc::mojom::IntentInfoPtr CreateIntentInfo(const GURL& clip_data_uri) {
 // Returns the name of the installed app with the given `app_id`.
 std::string GetAppName(Profile* profile, const std::string& app_id) {
   DCHECK(!app_id.empty());
+  std::string name;
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile))
+    return name;
   auto* cache =
       &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
-  std::string name;
 
   cache->ForOneApp(app_id, [&name](const apps::AppUpdate& update) {
     if (apps_util::IsInstalled(update.Readiness()))
@@ -225,7 +229,11 @@ std::unique_ptr<std::set<std::string>> GetAllowedLockScreenApps(
 
 NoteTakingHelper::LaunchResult LaunchWebAppInternal(const std::string& app_id,
                                                     Profile* profile) {
+  // IsInstalledWebApp must be called before trying to launch. It also ensures
+  // App Service is available.
   DCHECK(IsInstalledWebApp(app_id, profile));
+  DCHECK(
+      apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile));
   auto* cache =
       &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
 
@@ -595,8 +603,11 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
       extensions::ExtensionRegistry::Get(profile);
   const extensions::ExtensionSet& enabled_extensions =
       extension_registry->enabled_extensions();
-  auto* cache =
-      &apps::AppServiceProxyFactory::GetForProfile(profile)->AppRegistryCache();
+  apps::AppRegistryCache* maybe_cache = nullptr;
+  if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    maybe_cache = &apps::AppServiceProxyFactory::GetForProfile(profile)
+                       ->AppRegistryCache();
+  }
 
   std::vector<std::string> app_ids;
   for (const auto& id : allowed_app_ids_) {
@@ -607,14 +618,16 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
       continue;
     }
 
-    cache->ForOneApp(id, [&app_ids](const apps::AppUpdate& update) {
-      if (!apps_util::IsInstalled(update.Readiness()))
-        return;
-      if (update.AppType() != apps::mojom::AppType::kWeb)
-        return;
-      DCHECK(!base::Contains(app_ids, update.AppId()));
-      app_ids.push_back(update.AppId());
-    });
+    if (maybe_cache) {
+      maybe_cache->ForOneApp(id, [&app_ids](const apps::AppUpdate& update) {
+        if (!apps_util::IsInstalled(update.Readiness()))
+          return;
+        if (update.AppType() != apps::mojom::AppType::kWeb)
+          return;
+        DCHECK(!base::Contains(app_ids, update.AppId()));
+        app_ids.push_back(update.AppId());
+      });
+    }
   }
 
   // Add any Chrome Apps that have a "note" action in their manifest
@@ -631,17 +644,19 @@ std::vector<std::string> NoteTakingHelper::GetNoteTakingAppIds(
     }
   }
 
-  cache->ForEachApp([&app_ids](const apps::AppUpdate& update) {
-    if (!apps_util::IsInstalled(update.Readiness()))
-      return;
-    if (base::Contains(app_ids, update.AppId()))
-      return;
-    if (HasNoteTakingIntentFilter(update.IntentFilters())) {
-      // Currently only web apps are expected to have this intent set.
-      DCHECK(update.AppType() == apps::mojom::AppType::kWeb);
-      app_ids.push_back(update.AppId());
-    }
-  });
+  if (maybe_cache) {
+    maybe_cache->ForEachApp([&app_ids](const apps::AppUpdate& update) {
+      if (!apps_util::IsInstalled(update.Readiness()))
+        return;
+      if (base::Contains(app_ids, update.AppId()))
+        return;
+      if (HasNoteTakingIntentFilter(update.IntentFilters())) {
+        // Currently only web apps are expected to have this intent set.
+        DCHECK(update.AppType() == apps::mojom::AppType::kWeb);
+        app_ids.push_back(update.AppId());
+      }
+    });
+  }
 
   return app_ids;
 }
@@ -815,7 +830,7 @@ void NoteTakingHelper::OnShutdown(extensions::ExtensionRegistry* registry) {
 void NoteTakingHelper::OnAppUpdate(const apps::AppUpdate& update) {
   bool is_web_app = update.AppType() == apps::mojom::AppType::kWeb;
   bool is_chrome_app =
-      update.AppType() == apps::mojom::AppType::kStandaloneBrowserExtension;
+      update.AppType() == apps::mojom::AppType::kStandaloneBrowserChromeApp;
   if (!is_web_app && !is_chrome_app)
     return;
   // App was added, removed, enabled, or disabled.

@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/address_profile_save_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_name.h"
@@ -32,6 +31,7 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -199,6 +199,19 @@ bool IsMinimumAddress(const AutofillProfile& profile,
     is_zip_or_state_requirement_violated = true;
   }
 
+  bool is_line1_or_house_number_violated = false;
+  if (country.requires_line1_or_house_number() &&
+      profile.GetRawInfo(ADDRESS_HOME_LINE1).empty() &&
+      profile.GetRawInfo(ADDRESS_HOME_HOUSE_NUMBER).empty()) {
+    if (import_log_buffer) {
+      *import_log_buffer
+          << LogMessage::kImportAddressProfileFromFormFailed
+          << "Missing required ADDRESS_HOME_LINE1 or ADDRESS_HOME_HOUSE_NUMBER."
+          << CTag{};
+    }
+    is_line1_or_house_number_violated = true;
+  }
+
   // Collect metrics regarding the requirements.
   AutofillMetrics::LogAddressFormImportRequirementMetric(
       is_line1_missing ? AddressImportRequirement::LINE1_REQUIREMENT_VIOLATED
@@ -226,7 +239,8 @@ bool IsMinimumAddress(const AutofillProfile& profile,
 
   // Return true if all requirements are fulfilled.
   return !(is_line1_missing || is_city_missing || is_state_missing ||
-           is_zip_missing || is_zip_or_state_requirement_violated);
+           is_zip_missing || is_zip_or_state_requirement_violated ||
+           is_line1_or_house_number_violated);
 }
 
 }  // namespace
@@ -526,19 +540,19 @@ bool FormDataImporter::ImportAddressProfileForSection(
 
   // Go through each |form| field and attempt to constitute a valid profile.
   for (const auto& field : form) {
-    // TODO(crbug/1213301): Remove this. This hack replaces the UNKNOWN_TYPE
-    // (due to autocomplete) of fields of a specific signature with their server
-    // or heuristic type. The changed value is reset below.
-    bool is_autocomplete_workaround =
-        base::FeatureList::IsEnabled(
-            features::kAutofillIgnoreAutocompleteForImport) &&
-        field->GetFieldSignature() == FieldSignature(2281611779) &&
-        field->Type().IsUnknown();
-
     // Reject fields that are not within the specified |section|.
     // If section is empty, use all fields.
     if (field->section != section && !section.empty())
       continue;
+
+    // TODO(crbug/1213301): Remove this. This hack replaces the UNKNOWN_TYPE
+    // (due to autocomplete) of fields of a specific signature with their server
+    // or heuristic type. The changed value is reset below.
+    bool is_autocomplete_workaround =
+        field->GetFieldSignature() == FieldSignature(2281611779) &&
+        field->Type().IsUnknown() &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillIgnoreAutocompleteForImport);
 
     std::u16string value;
     base::TrimWhitespace(field->value, base::TRIM_ALL, &value);

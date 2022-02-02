@@ -109,7 +109,7 @@ UnittestingSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
 gfx::Size UnittestingSystemAppDelegate::GetMinimumWindowSize() const {
   return minimum_window_size_;
 }
-bool UnittestingSystemAppDelegate::ShouldBeSingleWindow() const {
+bool UnittestingSystemAppDelegate::ShouldReuseExistingWindow() const {
   return single_window_;
 }
 bool UnittestingSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
@@ -161,6 +161,10 @@ gfx::Rect UnittestingSystemAppDelegate::GetDefaultBounds(
 bool UnittestingSystemAppDelegate::IsAppEnabled() const {
   return true;
 }
+bool UnittestingSystemAppDelegate::IsUrlInSystemAppScope(
+    const GURL& url) const {
+  return url == url_in_system_app_scope_;
+}
 
 void UnittestingSystemAppDelegate::SetAppIdsToUninstallAndReplace(
     const std::vector<AppId>& ids) {
@@ -169,7 +173,7 @@ void UnittestingSystemAppDelegate::SetAppIdsToUninstallAndReplace(
 void UnittestingSystemAppDelegate::SetMinimumWindowSize(const gfx::Size& size) {
   minimum_window_size_ = size;
 }
-void UnittestingSystemAppDelegate::SetShouldBeSingleWindow(bool value) {
+void UnittestingSystemAppDelegate::SetShouldReuseExistingWindow(bool value) {
   single_window_ = value;
 }
 void UnittestingSystemAppDelegate::SetShouldShowNewWindowMenuOption(
@@ -220,6 +224,9 @@ void UnittestingSystemAppDelegate::SetTimerInfo(
 void UnittestingSystemAppDelegate::SetDefaultBounds(
     base::RepeatingCallback<gfx::Rect(Browser*)> lambda) {
   get_default_bounds_ = std::move(lambda);
+}
+void UnittestingSystemAppDelegate::SetUrlInSystemAppScope(const GURL& url) {
+  url_in_system_app_scope_ = url;
 }
 
 TestSystemWebAppInstallation::TestSystemWebAppInstallation(
@@ -295,7 +302,7 @@ TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp() {
           SystemAppType::TERMINAL, "Terminal",
           GURL("chrome://test-system-app/pwa.html"),
           base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
-  delegate->SetShouldBeSingleWindow(false);
+  delegate->SetShouldReuseExistingWindow(false);
   delegate->SetShouldHaveTabStrip(true);
 
   return base::WrapUnique(
@@ -310,6 +317,7 @@ TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp() {
           SystemAppType::SETTINGS, "OSSettings",
           GURL("chrome://test-system-app/pwa.html"),
           base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
+  delegate->SetUrlInSystemAppScope(GURL("http://example.com/in-scope"));
 
   return base::WrapUnique(
       new TestSystemWebAppInstallation(std::move(delegate)));
@@ -535,7 +543,7 @@ TestSystemWebAppInstallation::SetUpAppWithNewWindowMenuItem() {
           GURL("chrome://test-system-app/pwa.html"),
           base::BindRepeating(&GenerateWebApplicationInfoForTestApp));
   delegate->SetShouldShowNewWindowMenuOption(true);
-  delegate->SetShouldBeSingleWindow(false);
+  delegate->SetShouldReuseExistingWindow(false);
 
   return base::WrapUnique(
       new TestSystemWebAppInstallation(std::move(delegate)));
@@ -553,13 +561,13 @@ TestSystemWebAppInstallation::SetUpAppWithShortcuts() {
                 GenerateWebApplicationInfoForTestApp();
             info->title = u"Shortcuts";
             {
-              WebApplicationShortcutsMenuItemInfo menu_item;
+              WebAppShortcutsMenuItemInfo menu_item;
               menu_item.name = u"One";
               menu_item.url = GURL("chrome://test-system-app/pwa.html#one");
               info->shortcuts_menu_item_infos.push_back(std::move(menu_item));
             }
             {
-              WebApplicationShortcutsMenuItemInfo menu_item;
+              WebAppShortcutsMenuItemInfo menu_item;
               menu_item.name = u"Two";
               menu_item.url = GURL("chrome://test-system-app/pwa.html#two");
               info->shortcuts_menu_item_infos.push_back(std::move(menu_item));
@@ -598,19 +606,19 @@ CreateSystemAppDelegateWithWindowConfig(
 
   switch (window_config) {
     case SystemWebAppWindowConfig::SINGLE_WINDOW:
-      delegate->SetShouldBeSingleWindow(true);
+      delegate->SetShouldReuseExistingWindow(true);
       delegate->SetShouldHaveTabStrip(false);
       break;
     case SystemWebAppWindowConfig::SINGLE_WINDOW_TAB_STRIP:
-      delegate->SetShouldBeSingleWindow(true);
+      delegate->SetShouldReuseExistingWindow(true);
       delegate->SetShouldHaveTabStrip(true);
       break;
     case SystemWebAppWindowConfig::MULTI_WINDOW:
-      delegate->SetShouldBeSingleWindow(false);
+      delegate->SetShouldReuseExistingWindow(false);
       delegate->SetShouldHaveTabStrip(false);
       break;
     case SystemWebAppWindowConfig::MULTI_WINDOW_TAB_STRIP:
-      delegate->SetShouldBeSingleWindow(false);
+      delegate->SetShouldReuseExistingWindow(false);
       delegate->SetShouldHaveTabStrip(true);
       break;
   }

@@ -10,10 +10,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 
+@class BubblePresenter;
 @class ContentSuggestionsHeaderViewController;
 @class ContentSuggestionsViewController;
 @class DiscoverFeedMetricsRecorder;
 @class DiscoverFeedWrapperViewController;
+@class FeedHeaderViewController;
+@protocol FeedMenuCommands;
 @protocol NewTabPageContentDelegate;
 @protocol OverscrollActionsControllerDelegate;
 @class ViewRevealingVerticalPanHandler;
@@ -62,6 +65,15 @@
 // Whether or not the feed is visible.
 @property(nonatomic, assign, getter=isFeedVisible) BOOL feedVisible;
 
+// The view controller representing the NTP feed header.
+@property(nonatomic, assign) FeedHeaderViewController* feedHeaderViewController;
+
+// The handler for feed menu commands.
+@property(nonatomic, weak) id<FeedMenuCommands> feedMenuHandler;
+
+// Bubble presenter for displaying IPH bubbles relating to the NTP.
+@property(nonatomic, strong) BubblePresenter* bubblePresenter;
+
 // Initializes the new tab page view controller.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
@@ -83,17 +95,23 @@
 // omnibox back to initial state.
 - (void)setContentOffsetToTop;
 
-// Lays out content above feed and adjusts content suggestions.
-- (void)updateNTPLayout;
-
-// Returns the current height of the content suggestions content.
-- (CGFloat)contentSuggestionsContentHeight;
+// Updates the ContentSuggestionsViewController and its header for the current
+// layout.
+// TODO(crbug.com/1170995): Remove once ContentSuggestions can be added as part
+// of a header.
+- (void)updateContentSuggestionForCurrentLayout;
 
 // Scrolls up the collection view enough to focus the omnibox.
 - (void)focusFakebox;
 
 // Returns whether the NTP is scrolled to the top or not.
 - (BOOL)isNTPScrolledToTop;
+
+// Returns the height of the content above the feed. The views above the feed
+// (like the content suggestions) are added through a content inset in the feed
+// collection view, so this property is used to track the total height of those
+// additional views.
+- (CGFloat)heightAboveFeed;
 
 @end
 

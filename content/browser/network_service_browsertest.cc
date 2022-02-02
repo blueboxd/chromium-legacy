@@ -514,12 +514,15 @@ int64_t GetFirstPartySetCountFromNetworkService() {
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
   content::GetNetworkService()->BindTestInterface(
       network_service_test.BindNewPipeAndPassReceiver());
-  network_service_test.FlushForTesting();
-
-  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
   int64_t count = 0;
-  EXPECT_TRUE(network_service_test->GetFirstPartySetEntriesCount(&count));
+  base::RunLoop run_loop;
+  network_service_test->GetFirstPartySetEntriesCount(
+      base::BindLambdaForTesting([&](int64_t count_from_network_service) {
+        count = count_from_network_service;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 
   return count;
 }
@@ -1038,8 +1041,8 @@ void MigrationTestInternal(const base::FilePath& tempdir_one,
       longer_lived_file = base::File(
           tempdir_two.Append(kNetworkSubpath).Append(kCookieDatabaseName),
           base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
-              base::File::FLAG_EXCLUSIVE_WRITE |
-              base::File::FLAG_EXCLUSIVE_READ);
+              base::File::FLAG_WIN_EXCLUSIVE_WRITE |
+              base::File::FLAG_WIN_EXCLUSIVE_READ);
       EXPECT_TRUE(longer_lived_file.IsValid());
       break;
     case FailureType::kSourceCookieFileIsLocked:
@@ -1050,8 +1053,8 @@ void MigrationTestInternal(const base::FilePath& tempdir_one,
       longer_lived_file =
           base::File(tempdir_two.Append(kCookieDatabaseName),
                      base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE |
-                         base::File::FLAG_EXCLUSIVE_WRITE |
-                         base::File::FLAG_EXCLUSIVE_READ);
+                         base::File::FLAG_WIN_EXCLUSIVE_WRITE |
+                         base::File::FLAG_WIN_EXCLUSIVE_READ);
       EXPECT_TRUE(longer_lived_file.IsValid());
       break;
 #endif  // defined(OS_WIN)

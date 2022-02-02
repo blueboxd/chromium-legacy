@@ -1,14 +1,13 @@
 <style include="cr-shared-style shimless-rma-shared">
 </style>
 
-<base-page>
+<base-page orientation="column">
   <div slot="header">
-    <!-- TODO(gavindodd): Update text for i18n -->
-    <h1>Waiting For Manual Hardware Write Protection Disable</h1>
+    <h1>[[i18n('manuallyDisableWpTitleText')]]</h1>
+    <div id="manuallyDisableHwwpInstructions">
+      [[i18n('manuallyDisableWpInstructionsText')]]
+    </div>
   </div>
   <div slot="body">
-    <p id="manuallyDisableHwwpInstructions">
-      [[getBodyText_(hwwpEnabled_)]]
-    </p>
   </div>
 </base-page>

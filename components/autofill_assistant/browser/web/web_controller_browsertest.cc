@@ -374,13 +374,6 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     return result;
   }
 
-  ClientStatus HighlightElement(const Selector& selector) {
-    auto actions = std::make_unique<element_action_util::ElementActionVector>();
-    actions->emplace_back(base::BindOnce(&WebController::HighlightElement,
-                                         web_controller_->GetWeakPtr()));
-    return FindElementAndPerformAll(selector, std::move(actions));
-  }
-
   ClientStatus GetOuterHtml(const Selector& selector,
                             bool include_all_inner_text,
                             std::string* html_output) {
@@ -761,61 +754,6 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
       *rect_output = rect;
     }
     *result_output = rect_status;
-    std::move(done_callback).Run();
-  }
-
-  ClientStatus GetElementQueryIndex(const std::string& query_selector,
-                                    const ElementFinder::Result& element,
-                                    int* index) {
-    ClientStatus status;
-
-    base::RunLoop run_loop;
-    web_controller_->GetElementQueryIndex(
-        query_selector, element,
-        base::BindOnce(&WebControllerBrowserTest::OnGetElementQueryIndex,
-                       base::Unretained(this), run_loop.QuitClosure(), &status,
-                       index));
-    run_loop.Run();
-
-    return status;
-  }
-
-  void OnGetElementQueryIndex(base::OnceClosure done_callback,
-                              ClientStatus* result_output,
-                              int* index_output,
-                              const ClientStatus& query_status,
-                              int index) {
-    *result_output = query_status;
-    *index_output = index;
-    std::move(done_callback).Run();
-  }
-
-  ClientStatus GetUniqueElementSelector(const ElementFinder::Result& element,
-                                        std::string* query,
-                                        int* index) {
-    ClientStatus status;
-
-    base::RunLoop run_loop;
-    web_controller_->GetUniqueElementSelector(
-        element,
-        base::BindOnce(&WebControllerBrowserTest::OnGetUniqueElementSelector,
-                       base::Unretained(this), run_loop.QuitClosure(), &status,
-                       query, index));
-    run_loop.Run();
-
-    return status;
-  }
-
-  void OnGetUniqueElementSelector(base::OnceClosure done_callback,
-                                  ClientStatus* result_output,
-                                  std::string* query_output,
-                                  int* index_output,
-                                  const ClientStatus& query_status,
-                                  const std::string& query,
-                                  int index) {
-    *result_output = query_status;
-    *query_output = query;
-    *index_output = index;
     std::move(done_callback).Run();
   }
 
@@ -2241,20 +2179,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, NavigateToUrl) {
             shell()->web_contents()->GetLastCommittedURL().spec());
 }
 
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, HighlightElement) {
-  Selector selector({"#select"});
-
-  const std::string javascript = R"(
-    let select = document.querySelector("#select");
-    select.style.boxShadow;
-  )";
-  EXPECT_EQ("", content::EvalJs(shell(), javascript));
-  EXPECT_EQ(ACTION_APPLIED, HighlightElement(selector).proto_status());
-  // We only make sure that the element has a non-empty boxShadow style without
-  // requiring an exact string match.
-  EXPECT_NE("", content::EvalJs(shell(), javascript));
-}
-
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, WaitForHeightChange) {
   base::RunLoop run_loop;
   ClientStatus result;
@@ -2644,32 +2568,6 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   EXPECT_EQ(ELEMENT_POSITION_NOT_FOUND,
             WaitUntilElementIsStable(element, 10, base::Milliseconds(100))
                 .proto_status());
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementQueryIndex) {
-  ClientStatus element_status;
-  ElementFinder::Result element;
-  FindElement(Selector({"#input3"}), &element_status, &element);
-  ASSERT_EQ(ACTION_APPLIED, element_status.proto_status());
-
-  int index;
-  EXPECT_EQ(ACTION_APPLIED,
-            GetElementQueryIndex("input", element, &index).proto_status());
-  EXPECT_EQ(3, index);
-}
-
-IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, UniqueElementSelector) {
-  ClientStatus element_status;
-  ElementFinder::Result element;
-  FindElement(Selector({"#input3"}), &element_status, &element);
-  ASSERT_EQ(ACTION_APPLIED, element_status.proto_status());
-
-  std::string query;
-  int index;
-  EXPECT_EQ(ACTION_APPLIED,
-            GetUniqueElementSelector(element, &query, &index).proto_status());
-  EXPECT_EQ("INPUT", query);
-  EXPECT_EQ(3, index);
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionElement) {
@@ -3074,6 +2972,76 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElementError) {
             3);
   EXPECT_EQ(log_info_.element_finder_info(0).status(),
             ELEMENT_RESOLUTION_FAILED);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       RunElementFinderFromFrameElement) {
+  ClientStatus frame_status;
+  ElementFinder::Result frame_element;
+  FindElement(Selector({"#iframe", "body"}), &frame_status, &frame_element);
+  ASSERT_EQ(ACTION_APPLIED, frame_status.proto_status());
+
+  ClientStatus button_status;
+  ElementFinder::Result button_element;
+  base::RunLoop button_run_loop;
+  web_controller_->RunElementFinder(
+      frame_element, Selector({"#shadowsection", "#shadowbutton"}),
+      ElementFinder::ResultType::kExactlyOneMatch,
+      base::BindOnce(&WebControllerBrowserTest::OnFindElement,
+                     base::Unretained(this), button_run_loop.QuitClosure(),
+                     &button_status, &button_element));
+  button_run_loop.Run();
+  ASSERT_EQ(ACTION_APPLIED, button_status.proto_status());
+
+  ClientStatus js_click_status;
+  base::RunLoop js_click_run_loop;
+  web_controller_->JsClickElement(
+      button_element,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                     base::Unretained(this), js_click_run_loop.QuitClosure(),
+                     &js_click_status));
+  js_click_run_loop.Run();
+  EXPECT_EQ(ACTION_APPLIED, js_click_status.proto_status());
+
+  WaitForElementRemove(Selector({"#iframe", "#button"}));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, RunElementFinderFromOOPIF) {
+  ClientStatus frame_status;
+  ElementFinder::Result frame_element;
+  FindElement(Selector({"#iframeExternal", "body"}), &frame_status,
+              &frame_element);
+  ASSERT_EQ(ACTION_APPLIED, frame_status.proto_status());
+
+  // Create fake element without object id and frame information only.
+  ElementFinder::Result fake_frame_element;
+  fake_frame_element.container_frame_host = frame_element.container_frame_host;
+  fake_frame_element.dom_object.object_data.node_frame_id =
+      frame_element.container_frame_host->GetDevToolsFrameToken().ToString();
+
+  ClientStatus button_status;
+  ElementFinder::Result button_element;
+  base::RunLoop button_run_loop;
+  web_controller_->RunElementFinder(
+      fake_frame_element, Selector({"#button"}),
+      ElementFinder::ResultType::kExactlyOneMatch,
+      base::BindOnce(&WebControllerBrowserTest::OnFindElement,
+                     base::Unretained(this), button_run_loop.QuitClosure(),
+                     &button_status, &button_element));
+  button_run_loop.Run();
+  ASSERT_EQ(ACTION_APPLIED, button_status.proto_status());
+
+  ClientStatus js_click_status;
+  base::RunLoop js_click_run_loop;
+  web_controller_->JsClickElement(
+      button_element,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                     base::Unretained(this), js_click_run_loop.QuitClosure(),
+                     &js_click_status));
+  js_click_run_loop.Run();
+  EXPECT_EQ(ACTION_APPLIED, js_click_status.proto_status());
+
+  WaitForElementRemove(Selector({"#iframeExternal", "#div"}));
 }
 
 }  // namespace autofill_assistant

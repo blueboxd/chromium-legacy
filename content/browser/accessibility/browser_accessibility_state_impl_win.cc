@@ -93,7 +93,8 @@ class WindowsAccessibilityEnabler
 
   void OnProbableUIAutomationScreenReaderDetected() override {
     // Same as kAXModeComplete but without kHTML as it is not needed for UIA.
-    AddAXModeForUIA(ui::kAXModeCompleteNoHTML);
+    AddAXModeForUIA(ui::AXMode::kNativeAPIs | ui::AXMode::kWebContents |
+                    ui::AXMode::kScreenReader);
   }
 
   void OnTextPatternRequested() override {
@@ -171,18 +172,6 @@ void BrowserAccessibilityStateImplWin::UpdateHistogramsOnOtherThread() {
   // needs to run in the UI thread can be run in
   // UpdateHistogramsOnUIThread instead.
 
-  AUDIODESCRIPTION audio_description = {0};
-  audio_description.cbSize = sizeof(AUDIODESCRIPTION);
-  SystemParametersInfo(SPI_GETAUDIODESCRIPTION, 0, &audio_description, 0);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinAudioDescription",
-                        !!audio_description.Enabled);
-
-  // This screen reader flag is nearly meaningless, it is set very often
-  // when there is no screen reader, and is not set for Narrator.
-  BOOL win_screen_reader = FALSE;
-  SystemParametersInfo(SPI_GETSCREENREADER, 0, &win_screen_reader, 0);
-  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader", !!win_screen_reader);
-
   // Better all-encompassing screen reader metric.
   // See also specific screen reader metrics below, e.g. WinJAWS, WinNVDA.
   ui::AXMode mode =
@@ -195,14 +184,6 @@ void BrowserAccessibilityStateImplWin::UpdateHistogramsOnOtherThread() {
   SystemParametersInfo(SPI_GETSTICKYKEYS, 0, &sticky_keys, 0);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinStickyKeys",
                         0 != (sticky_keys.dwFlags & SKF_STICKYKEYSON));
-
-  // We only measure systems where SPI_GETCLIENTAREAANIMATION exists.
-  BOOL win_anim_enabled = TRUE;
-  if (SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &win_anim_enabled,
-                           0)) {
-    UMA_HISTOGRAM_BOOLEAN("Accessibility.Win.AnimationsEnabled",
-                          win_anim_enabled);
-  }
 
   // Get the file paths of all DLLs loaded.
   HANDLE process = GetCurrentProcess();

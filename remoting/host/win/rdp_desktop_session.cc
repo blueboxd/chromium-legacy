@@ -8,7 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/host/screen_resolution.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/win/chromoting_module.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -20,14 +20,14 @@ RdpDesktopSession::RdpDesktopSession() {
 RdpDesktopSession::~RdpDesktopSession() {
 }
 
-STDMETHODIMP RdpDesktopSession::Connect(
-    long width,
-    long height,
-    long dpi_x,
-    long dpi_y,
-    BSTR terminal_id,
-    DWORD port_number,
-    IRdpDesktopSessionEventHandler* event_handler) {
+COM_DECLSPEC_NOTHROW STDMETHODIMP
+RdpDesktopSession::Connect(long width,
+                           long height,
+                           long dpi_x,
+                           long dpi_y,
+                           BSTR terminal_id,
+                           DWORD port_number,
+                           IRdpDesktopSessionEventHandler* event_handler) {
   event_handler_ = event_handler;
 
   scoped_refptr<AutoThreadTaskRunner> task_runner =
@@ -42,16 +42,17 @@ STDMETHODIMP RdpDesktopSession::Connect(
   return S_OK;
 }
 
-STDMETHODIMP RdpDesktopSession::Disconnect() {
+COM_DECLSPEC_NOTHROW STDMETHODIMP RdpDesktopSession::Disconnect() {
   client_.reset();
   event_handler_ = nullptr;
   return S_OK;
 }
 
-STDMETHODIMP RdpDesktopSession::ChangeResolution(long width,
-                                                 long height,
-                                                 long dpi_x,
-                                                 long dpi_y) {
+COM_DECLSPEC_NOTHROW STDMETHODIMP
+RdpDesktopSession::ChangeResolution(long width,
+                                    long height,
+                                    long dpi_x,
+                                    long dpi_y) {
   if (client_) {
     client_->ChangeResolution(ScreenResolution(
         webrtc::DesktopSize(width, height),
@@ -60,7 +61,7 @@ STDMETHODIMP RdpDesktopSession::ChangeResolution(long width,
   return S_OK;
 }
 
-STDMETHODIMP RdpDesktopSession::InjectSas() {
+COM_DECLSPEC_NOTHROW STDMETHODIMP RdpDesktopSession::InjectSas() {
   if (client_) {
     client_->InjectSas();
   }

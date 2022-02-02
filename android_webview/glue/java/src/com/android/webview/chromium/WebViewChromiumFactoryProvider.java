@@ -54,6 +54,8 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.VerifiesOnN;
+import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.build.BuildConfig;
@@ -93,6 +95,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
      * verification does not occur until it is actually used for N and above.
      */
     @TargetApi(Build.VERSION_CODES.N)
+    @VerifiesOnN
     private static class ObjectHolderForN {
         public ServiceWorkerController mServiceWorkerController;
     }
@@ -102,6 +105,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
      * verification does not occur until it is actually used for P and above.
      */
     @TargetApi(Build.VERSION_CODES.P)
+    @VerifiesOnP
     private static class ObjectHolderForP {
         public TracingController mTracingController;
     }
@@ -289,7 +293,18 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                 resourcePackage = packageInfo.applicationInfo.metaData.getString(
                         "com.android.webview.WebViewDonorPackage", resourcePackage);
             }
-            int packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
+            int packageId;
+            try {
+                packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
+            } catch (RuntimeException e) {
+                // We failed to find the package ID, which likely means this context's AssetManager
+                // doesn't have WebView loaded in it. This may be because WebViewFactory doesn't add
+                // the package persistently to ResourcesManager and the app's AssetManager has been
+                // recreated. Try adding it again using WebViewDelegate, which does add it
+                // persistently.
+                webViewDelegate.addWebViewAssetPath(ctx);
+                packageId = webViewDelegate.getPackageId(ctx.getResources(), resourcePackage);
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
                     && AwBrowserProcess.getApkType() != ApkType.TRICHROME
                     && packageId > SHARED_LIBRARY_MAX_ID) {

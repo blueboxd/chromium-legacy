@@ -241,7 +241,9 @@ class SelfDestroyAppItem : public ChromeAppListItem {
   ~SelfDestroyAppItem() override = default;
 
   // ChromeAppListItem:
-  void Activate(int event_flags) override { updater_->RemoveItem(id()); }
+  void Activate(int event_flags) override {
+    updater_->RemoveItem(id(), /*is_uninstall=*/true);
+  }
 
  private:
   AppListModelUpdater* updater_;
@@ -333,11 +335,13 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
 
   base::RunLoop run_loop;
   std::unique_ptr<ui::SimpleMenuModel> menu_model;
-  item->GetContextMenuModel(base::BindLambdaForTesting(
-      [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
-        menu_model = std::move(created_menu);
-        run_loop.Quit();
-      }));
+  item->GetContextMenuModel(
+      /*add_sort_options=*/false,
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<ui::SimpleMenuModel> created_menu) {
+            menu_model = std::move(created_menu);
+            run_loop.Quit();
+          }));
   run_loop.Run();
   EXPECT_TRUE(menu_model);
 

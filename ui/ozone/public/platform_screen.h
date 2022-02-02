@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "ui/gfx/gpu_extra_info.h"
 #include "ui/gfx/native_widget_types.h"
@@ -87,11 +86,11 @@ class COMPONENT_EXPORT(OZONE_BASE) PlatformScreen {
   virtual display::Display GetDisplayMatching(
       const gfx::Rect& match_rect) const = 0;
 
-  // Suspends the platform-specific screensaver, if applicable.
-  // Can be called more than once with the same value for |suspend|, but those
-  // states should not stack: the first alternating value should toggle the
-  // state of the suspend.
-  virtual void SetScreenSaverSuspended(bool suspend);
+  // Suspends or un-suspends the platform-specific screensaver, and returns
+  // whether the operation was successful. Can be called more than once with the
+  // same value for |suspend|, but those states should not stack: the first
+  // alternating value should toggle the state of the suspend.
+  virtual bool SetScreenSaverSuspended(bool suspend);
 
   // Returns whether the screensaver is currently running.
   virtual bool IsScreenSaverActive() const;

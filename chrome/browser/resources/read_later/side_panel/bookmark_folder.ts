@@ -11,7 +11,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from '../read_later_api_proxy.js';
 
-import {BookmarksApiProxy} from './bookmarks_api_proxy.js';
+import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
 
 /** Event interface for dom-repeat. */
 interface RepeaterMouseEvent extends MouseEvent {
@@ -58,12 +58,10 @@ export class BookmarkFolderElement extends PolymerElement {
       open_: {
         type: Boolean,
         value: false,
+        computed: 'computeIsOpen_(openFolders, folder.id)'
       },
 
-      openFolders: {
-        type: Array,
-        observer: 'onOpenFoldersChanged_',
-      },
+      openFolders: Array,
     };
   }
 
@@ -72,7 +70,8 @@ export class BookmarkFolderElement extends PolymerElement {
   folder: chrome.bookmarks.BookmarkTreeNode;
   private open_: boolean;
   openFolders: string[];
-  private bookmarksApi_: BookmarksApiProxy = BookmarksApiProxy.getInstance();
+  private bookmarksApi_: BookmarksApiProxy =
+      BookmarksApiProxyImpl.getInstance();
 
   static get observers() {
     return [
@@ -160,13 +159,12 @@ export class BookmarkFolderElement extends PolymerElement {
       return;
     }
 
-    this.open_ = !this.open_;
     this.dispatchEvent(new CustomEvent(FOLDER_OPEN_CHANGED_EVENT, {
       bubbles: true,
       composed: true,
       detail: {
         id: this.folder.id,
-        open: this.open_,
+        open: !this.open_,
       }
     }));
 
@@ -175,14 +173,43 @@ export class BookmarkFolderElement extends PolymerElement {
                      'SidePanel.Bookmarks.FolderClose');
   }
 
-  private onOpenFoldersChanged_() {
-    this.open_ =
-        Boolean(this.openFolders) && this.openFolders.includes(this.folder.id);
+  private computeIsOpen_() {
+    return Boolean(this.openFolders) &&
+        this.openFolders.includes(this.folder.id);
   }
 
   private getFocusableRows_(): HTMLElement[] {
     return Array.from(
         this.shadowRoot!.querySelectorAll('.row, bookmark-folder'));
+  }
+
+  getFocusableElement(path: chrome.bookmarks.BookmarkTreeNode[]): (HTMLElement|
+                                                                   null) {
+    const currentNode = path.shift();
+    if (currentNode) {
+      const currentNodeId = currentNode.id;
+      const currentNodeElement =
+          this.shadowRoot!.querySelector(`#bookmark-${currentNodeId}`) as (
+              HTMLElement | null);
+      if (currentNodeElement &&
+          currentNodeElement.classList.contains('bookmark')) {
+        // Found a bookmark item.
+        return currentNodeElement;
+      }
+
+      if (currentNodeElement &&
+          currentNodeElement instanceof BookmarkFolderElement) {
+        // Bookmark item may be a grandchild or be deeper. Iterate through
+        // child BookmarkFolderElements until the bookmark item is found.
+        const nestedElement = currentNodeElement.getFocusableElement(path);
+        if (nestedElement) {
+          return nestedElement;
+        }
+      }
+    }
+
+    // If all else fails, return the focusable folder row.
+    return this.shadowRoot!.querySelector('#folder');
   }
 
   moveFocus(delta: -1|1): boolean {
@@ -219,13 +246,20 @@ export class BookmarkFolderElement extends PolymerElement {
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    'bookmark-folder': BookmarkFolderElement;
+  }
+}
+
 customElements.define(BookmarkFolderElement.is, BookmarkFolderElement);
 
 interface DraggableElement extends HTMLElement {
   dataBookmark: chrome.bookmarks.BookmarkTreeNode;
 }
 
-export function getBookmarkFromElement(element: HTMLElement) {
+export function getBookmarkFromElement(element: HTMLElement):
+    chrome.bookmarks.BookmarkTreeNode {
   return (element as DraggableElement).dataBookmark;
 }
 

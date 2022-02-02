@@ -29,7 +29,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
@@ -48,7 +47,6 @@ import org.chromium.url.ShadowGURL;
  * Tests for {@link LinkToTextCoordinator}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
 @Config(shadows = {ShadowGURL.class})
 public class LinkToTextCoordinatorTest {
     @Rule
@@ -98,44 +96,7 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
-    public void getUrlToShareTest() {
-        String selector = "selector";
-        String expectedUrlToShare = VISIBLE_URL + "#:~:text=selector";
-
-        ChromeShareExtras chromeShareExtras = new ChromeShareExtras.Builder().build();
-        LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
-                mTab, mShareCallback, chromeShareExtras, 1, VISIBLE_URL, SELECTED_TEXT);
-        Assert.assertEquals(expectedUrlToShare, coordinator.getUrlToShare(selector));
-    }
-
-    @Test
-    @SmallTest
-    public void getUrlToShareTest_URLWithFragment() {
-        String selector = "selector";
-        String expectedUrlToShare = VISIBLE_URL + "#:~:text=selector";
-
-        ChromeShareExtras chromeShareExtras = new ChromeShareExtras.Builder().build();
-        LinkToTextCoordinator coordinator = new LinkToTextCoordinator(mTab, mShareCallback,
-                chromeShareExtras, 1, VISIBLE_URL + "#elementid", SELECTED_TEXT);
-        Assert.assertEquals(expectedUrlToShare, coordinator.getUrlToShare(selector));
-    }
-
-    @Test
-    @SmallTest
-    public void getUrlToShareTest_EmptySelector() {
-        String selector = "";
-        String expectedUrlToShare = VISIBLE_URL;
-
-        ChromeShareExtras chromeShareExtras = new ChromeShareExtras.Builder().build();
-        LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
-                mTab, mShareCallback, chromeShareExtras, 1, VISIBLE_URL, SELECTED_TEXT);
-        Assert.assertEquals(expectedUrlToShare, coordinator.getUrlToShare(selector));
-    }
-
-    @Test
-    @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
-    public void showShareSheetTest_PreemptiveLinkToTextGeneration_LinkGeneration() {
+    public void showShareSheetTest_LinkGeneration() {
         String selector = "selector";
         String expectedUrlToShare = VISIBLE_URL + "#:~:text=selector";
 
@@ -151,11 +112,10 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
-    public void showShareSheetTest_LinkGenerationMultiHighlights_PreemptiveLinkToTextGeneration() {
+    public void showShareSheetTest_LinkGenerationMultiHighlights() {
         String[] selectors = {"selector1", "selector2", "selector3"};
         String fragmentDirective =
-                String.join(LinkToTextCoordinator.ADDITIONAL_TEXT_FRAGMENT_SELECTOR, selectors);
+                String.join(LinkToTextHelper.ADDITIONAL_TEXT_FRAGMENT_SELECTOR, selectors);
         String expectedUrlToShare =
                 VISIBLE_URL + "#:~:text=selector1&text=selector2&text=selector3";
 
@@ -171,8 +131,7 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
-    public void showShareSheetTest_EmptySelector_PreemptiveLinkToTextGeneration() {
+    public void showShareSheetTest_EmptySelector() {
         String selector = "";
         String expectedUrlToShare = "";
 

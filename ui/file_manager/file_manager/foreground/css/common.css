@@ -178,6 +178,7 @@ cr-menu.chrome-menu > [checked]::before {
 }
 
 .cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok:hover {
+  /* TODO(crbug.com/1275388): use blend() instead */
   background: linear-gradient(rgba(0 0 0 / 8%), rgba(0 0 0 / 8%)),
                               var(--cros-button-background-color-primary);
 }
@@ -217,7 +218,7 @@ cr-menu.chrome-menu > [checked]::before {
 
 :root.focus-outline-visible .cr-dialog-container.files-ng .cr-dialog-buttons > button:not(:active):focus,
 :host-context(:root.focus-outline-visible) .cr-dialog-container.files-ng .cr-dialog-buttons > button:not(:active):focus {
-  outline: 2px auto var(--cros-focus-ring-color);
+  outline: 2px solid var(--cros-focus-ring-color);
   outline-offset: 2px;
 }
 
@@ -225,7 +226,7 @@ cr-menu.chrome-menu > [checked]::before {
    rather than the 'OK' button. The dialog buttons should have focus rings in
    this case (regardless of mouse, pointer, keyboard interaction). */
 .cr-dialog-container.files-ng .cr-dialog-frame.files-confirm-dialog-cancel-default .cr-dialog-buttons > button:not(:active):focus {
-  outline: 2px auto var(--cros-focus-ring-color);
+  outline: 2px solid var(--cros-focus-ring-color);
   outline-offset: 2px;
 }
 
@@ -363,9 +364,10 @@ html[dir='rtl'] .entry-name {
 
 .cr-dialog-container.files-ng #suggest-app-dialog .cr-dialog-close,
 .cr-dialog-container.files-ng #default-task-dialog .cr-dialog-close {
-  background: url(../images/common/ic_close.svg);
-  background-position: center;
-  background-repeat: no-repeat;
+  -webkit-mask-image: url(../images/common/ic_close.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: var(--cros-icon-color-primary);
   cursor: pointer;
   display: inline-block;
   height: 32px;

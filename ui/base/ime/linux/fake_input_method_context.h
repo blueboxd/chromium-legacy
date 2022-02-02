@@ -6,7 +6,6 @@
 #define UI_BASE_IME_LINUX_FAKE_INPUT_METHOD_CONTEXT_H_
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
 
 namespace ui {
@@ -29,6 +28,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) FakeInputMethodContext
   void SetCursorLocation(const gfx::Rect& rect) override;
   void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
+  void SetContentType(TextInputType input_type, int input_flags) override;
 };
 
 }  // namespace ui

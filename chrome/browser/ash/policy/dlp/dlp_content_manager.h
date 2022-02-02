@@ -11,15 +11,15 @@
 
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "base/callback.h"
-#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/ash/policy/dlp/dlp_confidential_contents.h"
-#include "chrome/browser/ash/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/ash/policy/dlp/dlp_window_observer.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_confidential_contents.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_observer.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/media_stream_request.h"
@@ -38,10 +38,9 @@ class WebContents;
 
 namespace policy {
 
-using OnDlpRestrictionCheckedCallback =
-    base::OnceCallback<void(bool should_proceed)>;
-
 class DlpReportingManager;
+
+class DlpWarnNotifier;
 
 // System-wide class that tracks the set of currently known confidential
 // WebContents and whether any of them are currently visible.
@@ -83,22 +82,12 @@ class DlpContentManager : public DlpContentObserver,
       const ScreenshotArea& area,
       ash::OnCaptureModeDlpRestrictionChecked callback);
 
-  // Returns whether video capture should be restricted.
-  // TODO(crbug.com/1257493): Remove when it won't be used anymore.
-  bool IsVideoCaptureRestricted(const ScreenshotArea& area);
-
-  // Checks whether video capture of |area| is restricted or not advised.
+  // Checks whether printing of |web_contents| is restricted or not advised.
   // Depending on the result, calls |callback| and passes an indicator whether
   // to proceed or not.
-  void CheckVideoCaptureRestriction(
-      const ScreenshotArea& area,
-      ash::OnCaptureModeDlpRestrictionChecked callback);
-
-  // Returns whether printing should be restricted.
-  bool IsPrintingRestricted(content::WebContents* web_contents);
-
-  // Returns whether the user should be warned before printing.
-  bool ShouldWarnBeforePrinting(content::WebContents* web_contents);
+  virtual void CheckPrintingRestriction(
+      content::WebContents* web_contents,
+      OnDlpRestrictionCheckedCallback callback);
 
   // Returns whether screen capture of the defined content should be restricted.
   // TODO(crbug.com/1257493): Remove when it won't be used anymore.
@@ -106,12 +95,14 @@ class DlpContentManager : public DlpContentObserver,
       const content::DesktopMediaID& media_id);
 
   // Checks whether screen sharing of content from the |media_id| source with
-  // the calling application |application_title| is restricted or not advised.
-  // Depending on the result, calls |callback| and passes an indicator whether
-  // to proceed or not.
-  void CheckScreenShareRestriction(const content::DesktopMediaID& media_id,
-                                   const std::u16string& application_title,
-                                   OnDlpRestrictionCheckedCallback callback);
+  // application |application_name| is restricted or not advised. Depending on
+  // the result, calls |callback| and passes an indicator whether to proceed or
+  // not.
+  // Virtual to allow tests to override.
+  virtual void CheckScreenShareRestriction(
+      const content::DesktopMediaID& media_id,
+      const std::u16string& application_title,
+      OnDlpRestrictionCheckedCallback callback);
 
   // Called when video capturing for |area| is started.
   void OnVideoCaptureStarted(const ScreenshotArea& area);
@@ -146,10 +137,6 @@ class DlpContentManager : public DlpContentObserver,
   void OnScreenCaptureStopped(const std::string& label,
                               const content::DesktopMediaID& media_id);
 
-  // Called when a Capture Mode session is finished to reset the stored user's
-  // choice.
-  void ResetCaptureModeAllowance();
-
   // The caller (test) should manage |dlp_content_manager| lifetime.
   // Reset doesn't delete the object.
   // Please use ScopedDlpContentManagerForTesting instead of these methods,
@@ -160,6 +147,10 @@ class DlpContentManager : public DlpContentObserver,
 
  protected:
   void SetReportingManagerForTesting(DlpReportingManager* manager);
+
+  void SetWarnNotifierForTesting(
+      std::unique_ptr<DlpWarnNotifier> warn_notifier);
+  void ResetWarnNotifierForTesting();
 
  private:
   friend class DlpContentManagerTestHelper;
@@ -236,8 +227,8 @@ class DlpContentManager : public DlpContentObserver,
     DlpConfidentialContents confidential_contents;
   };
 
-  // Structure to relate a list of confidential contents to the corresponding
-  // restriction level.
+  // Structure that relates a list of confidential contents to the
+  // corresponding restriction level.
   struct ConfidentialContentsInfo {
     RestrictionLevelAndUrl restriction_info;
     DlpConfidentialContents confidential_contents;
@@ -292,20 +283,6 @@ class DlpContentManager : public DlpContentObserver,
   // in the corresponding areas.
   void CheckRunningVideoCapture();
 
-  // Called back from Screen Share warning dialogs that are shown during the
-  // screen share. Saves the user's response, based on which either resumes or
-  // fully stops the share.
-  void OnScreenShareReply(DlpConfidentialContents& confidential_contents,
-                          ScreenShareInfo screen_share,
-                          bool should_proceed);
-
-  // Called back from Screen Share warning dialogs before it's started. Saves
-  // the user's response and passes it along to |callback| which handles
-  // continuing or cancelling the action based on this response.
-  void OnScreenShareInitReply(DlpConfidentialContents& confidential_contents,
-                              OnDlpRestrictionCheckedCallback callback,
-                              bool should_proceed);
-
   // Checks and stops the running screen shares if restricted content appeared
   // in the corresponding areas.
   void CheckRunningScreenShares();
@@ -324,21 +301,41 @@ class DlpContentManager : public DlpContentObserver,
       ConfidentialContentsInfo info,
       ash::OnCaptureModeDlpRestrictionChecked callback);
 
+  // Called back from Screen Share warning dialogs that are shown during the
+  // screen share. Passes along the user's response, reflected in the value of
+  // |should_proceed| along to |callback| which handles continuing or cancelling
+  // the action based on this response. In case that |should_proceed| is true,
+  // also saves the |confidential_contents| that were allowed to be shared by
+  // the user to avoid future warnings.
+  void OnDlpScreenShareWarnDialogReply(
+      const DlpConfidentialContents& confidential_contents,
+      ScreenShareInfo screen_share,
+      bool should_proceed);
+
+  // Called back from warning dialogs. Passes along the user's response,
+  // reflected in the value of |should_proceed| along to |callback| which
+  // handles continuing or cancelling the action based on this response. In case
+  // that |should_proceed| is true, also saves the |confidential_contents| that
+  // were allowed by the user for |restriction| to avoid future warnings.
+  void OnDlpWarnDialogReply(
+      const DlpConfidentialContents& confidential_contents,
+      DlpRulesManager::Restriction restriction,
+      OnDlpRestrictionCheckedCallback callback,
+      bool should_proceed);
+
   // Reports events if required by the |restriction_info| and
   // `reporting_manager` is configured.
   void MaybeReportEvent(const RestrictionLevelAndUrl& restriction_info,
                         DlpRulesManager::Restriction restriction);
 
-  // Reports warning events if required by the |restriction_info| and
-  // `reporting_manager` is configured.
-  void MaybeReportWarnEvent(const RestrictionLevelAndUrl& restriction_info,
-                            DlpRulesManager::Restriction restriction);
+  // Reports warning events if `reporting_manager` is configured.
+  void ReportWarningEvent(const RestrictionLevelAndUrl& restriction_info,
+                          DlpRulesManager::Restriction restriction);
 
-  // Called back from Screen Capture warning dialogs. Saves the user's response
-  // and passes it along to |callback| which handles continuing or cancelling
-  // the action based on this response.
-  void OnScreenCaptureReply(ash::OnCaptureModeDlpRestrictionChecked callback,
-                            bool proceed);
+  // Removes all elements of |contents| that the user has recently already
+  // acknowledged the warning for.
+  void RemoveAllowedContents(DlpConfidentialContents& contents,
+                             DlpRulesManager::Restriction restriction);
 
   // Map from currently known confidential WebContents to the restrictions.
   base::flat_map<content::WebContents*, DlpContentRestrictionSet>
@@ -357,18 +354,13 @@ class DlpContentManager : public DlpContentObserver,
   // List of the currently running screen shares.
   std::vector<ScreenShareInfo> running_screen_shares_;
 
-  // List of contents for which the user bypassed the warning during the current
-  // user session.
-  // TODO(crbug.com/1264803): Limit the size + delete if related WebContents are
-  // destroyed
-  DlpConfidentialContents user_allowed_contents_for_screen_share_;
-
-  // Keeps track of user's selection after being shown a warning modal
-  // dialog, to avoid showing the dialog multiple times during the same capture
-  // mode session.
-  bool user_allowed_screen_capture_ = false;
+  // Keeps track of the contents for which the user allowed the action after
+  // being shown a warning for each type of restriction.
+  DlpConfidentialContentsCache user_allowed_contents_cache_;
 
   DlpReportingManager* reporting_manager_;
+
+  std::unique_ptr<DlpWarnNotifier> warn_notifier_;
 };
 
 // Helper class to call SetDlpContentManagerForTesting and

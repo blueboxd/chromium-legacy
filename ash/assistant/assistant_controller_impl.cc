@@ -121,6 +121,7 @@ void AssistantControllerImpl::DownloadImage(
                 "Generally triggered in direct response to a user issued "
                 "query. A single query may necessitate the downloading of "
                 "multiple images."
+              data: "None."
               destination: GOOGLE_OWNED_SERVICE
             }
             policy {
@@ -128,6 +129,9 @@ void AssistantControllerImpl::DownloadImage(
               setting:
                 "The Google Assistant can be enabled/disabled in Chrome "
                 "Settings and is subject to eligibility requirements."
+              policy_exception_justification:
+                "The users can disable this feature. This does not send/store "
+                "user data."
             })");
 
   ImageDownloader::Get()->Download(url, kNetworkTrafficAnnotationTag,
@@ -229,7 +233,6 @@ void AssistantControllerImpl::OnDeepLinkReceived(
     case DeepLinkType::kQuery:
     case DeepLinkType::kReminders:
     case DeepLinkType::kSettings:
-    case DeepLinkType::kWhatsOnMyScreen:
       // No action needed.
       break;
   }

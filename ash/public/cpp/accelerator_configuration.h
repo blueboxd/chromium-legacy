@@ -9,17 +9,11 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/mojom/accelerator_keys.mojom.h"
 #include "base/callback.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace ash {
-
-// Represents all sources that have accelerators.
-enum class AcceleratorSource {
-  kAsh,      // ChromeOS-specific shortcuts
-  kBrowser,  // LaCrOS/chrome shortcuts
-  kAndroid,  // Arc++ apps
-};
 
 // Represents the type of accelerator.
 enum class AcceleratorType {
@@ -69,10 +63,10 @@ using AcceleratorAction = uint32_t;
 class ASH_PUBLIC_EXPORT AcceleratorConfiguration {
  public:
   using AcceleratorsUpdatedCallback = base::RepeatingCallback<void(
-      AcceleratorSource,
+      ash::mojom::AcceleratorSource,
       std::multimap<AcceleratorAction, AcceleratorInfo>)>;
 
-  explicit AcceleratorConfiguration(AcceleratorSource source);
+  explicit AcceleratorConfiguration(ash::mojom::AcceleratorSource source);
   virtual ~AcceleratorConfiguration();
 
   // Callback will fire immediately once after updating.
@@ -119,7 +113,7 @@ class ASH_PUBLIC_EXPORT AcceleratorConfiguration {
  private:
   // The source of the accelerators. Derived classes are responsible for only
   // one source.
-  const AcceleratorSource source_;
+  const ash::mojom::AcceleratorSource source_;
 
   // Container of all invoked callbacks when the accelerators are updated. Call
   // AddAcceleratorsUpdatedCallback or RemoveAcceleratorsUpdatedCallback to

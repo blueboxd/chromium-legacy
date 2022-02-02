@@ -210,8 +210,7 @@
       "symbol_level": 1,
       "use_bundled_weston": true,
       "use_goma": true,
-      "use_ozone": true,
-      "use_x11": false
+      "use_ozone": true
     }
   },
   "gpu-fyi-try-lacros-intel-rel": {
@@ -227,8 +226,7 @@
       "symbol_level": 1,
       "use_bundled_weston": true,
       "use_goma": true,
-      "use_ozone": true,
-      "use_x11": false
+      "use_ozone": true
     }
   },
   "gpu-fyi-try-linux-amd-rel": {
@@ -243,16 +241,6 @@
       "is_debug": false,
       "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "gpu-fyi-try-linux-intel-dqp": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": false,
       "symbol_level": 1,
       "use_goma": true
     }
@@ -329,16 +317,6 @@
       "is_debug": true,
       "is_gpu_fyi_bot": true,
       "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "gpu-fyi-try-linux-nvidia-dqp": {
-    "gn_args": {
-      "build_angle_deqp_tests": true,
-      "dcheck_always_on": true,
-      "is_component_build": true,
-      "is_debug": false,
       "symbol_level": 1,
       "use_goma": true
     }
@@ -848,6 +826,7 @@
       "is_debug": false,
       "ozone_auto_platforms": false,
       "ozone_platform": "wayland",
+      "ozone_platform_headless": true,
       "ozone_platform_wayland": true,
       "proprietary_codecs": true,
       "symbol_level": 0,
@@ -1100,18 +1079,6 @@
       "is_debug": false,
       "is_ubsan_no_recover": true,
       "is_ubsan_vptr": true,
-      "use_goma": true
-    }
-  },
-  "linux_layout_tests_composite_after_paint": {
-    "gn_args": {
-      "blink_enable_generated_code_formatting": false,
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
       "use_goma": true
     }
   },

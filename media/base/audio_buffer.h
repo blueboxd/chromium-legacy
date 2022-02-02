@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -126,7 +125,7 @@ class MEDIA_EXPORT AudioBuffer
   static std::unique_ptr<AudioBus> WrapOrCopyToAudioBus(
       scoped_refptr<AudioBuffer> audio_buffer);
 
-  // Create a AudioBuffer indicating we've reached end of stream.
+  // Create an AudioBuffer indicating we've reached end of stream.
   // Calling any method other than end_of_stream() on the resulting buffer
   // is disallowed.
   static scoped_refptr<AudioBuffer> CreateEOSBuffer();

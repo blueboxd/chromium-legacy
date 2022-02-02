@@ -14,6 +14,7 @@
 #include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"

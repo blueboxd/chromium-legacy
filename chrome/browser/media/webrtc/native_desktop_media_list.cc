@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -95,7 +96,7 @@ gfx::ImageSkia ScaleDesktopFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
 
 #if defined(OS_MAC)
 const base::Feature kWindowCaptureMacV2{"WindowCaptureMacV2",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 }  // namespace
@@ -365,7 +366,14 @@ void NativeDesktopMediaList::RefreshForVizFrameSinkWindows(
     if (source.id.type != DesktopMediaID::TYPE_WINDOW)
       continue;
 
-#if defined(USE_AURA)
+// TODO(https://crbug.com/1270801): The capturer id to aura::Window mapping on
+// lacros is currently broken because they both separately use monotonically
+// increasing ints as ids. This causes collisions where we mistakenly try to
+// capture non-aura windows as aura windows. While the preview matches what is
+// ultimately captured, it does not match the title of the window in the preview
+// and is both unexpected for the user and means that the collided non-aura
+// window cannot be captured.
+#if defined(USE_AURA) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     aura::WindowTreeHost* const host =
         aura::WindowTreeHost::GetForAcceleratedWidget(
             *reinterpret_cast<gfx::AcceleratedWidget*>(&source.id.id));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 
 #include <stddef.h>
 
@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/custom_handlers/pref_names.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -31,6 +34,7 @@
 
 using content::BrowserThread;
 using content::ProtocolHandler;
+using custom_handlers::ProtocolHandlerRegistry;
 
 namespace {
 
@@ -67,16 +71,12 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
     registered_protocols_.erase(protocol);
   }
 
-  void RegisterWithOSAsDefaultClient(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override {
+  void RegisterWithOSAsDefaultClient(const std::string& protocol,
+                                     DefaultClientCallback callback) override {
     // Do as-if the registration has to run on another sequence and post back
     // the result with a task to the current thread.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback),
-                       force_os_failure_ ? shell_integration::NOT_DEFAULT
-                                         : shell_integration::IS_DEFAULT));
+        FROM_HERE, base::BindOnce(std::move(callback), !force_os_failure_));
 
     if (!force_os_failure_)
       os_registered_protocols_.insert(protocol);
@@ -85,6 +85,11 @@ class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
   bool IsExternalHandlerRegistered(const std::string& protocol) override {
     return registered_protocols_.find(protocol) != registered_protocols_.end();
   }
+
+  void CheckDefaultClientWithOS(const std::string& protocol,
+                                DefaultClientCallback callback) override {}
+
+  bool ShouldRemoveHandlersNotInOS() override { return true; }
 
   bool IsFakeRegisteredWithOS(const std::string& protocol) {
     return os_registered_protocols_.find(protocol) !=
@@ -155,15 +160,13 @@ class QueryProtocolHandlerOnChange : public ProtocolHandlerRegistry::Observer {
   bool called() const { return called_; }
 
  private:
-  ProtocolHandlerRegistry* local_registry_;
+  raw_ptr<ProtocolHandlerRegistry> local_registry_;
   bool called_ = false;
 
   base::ScopedObservation<ProtocolHandlerRegistry,
                           ProtocolHandlerRegistry::Observer>
       registry_observation_{this};
 };
-
-}  // namespace
 
 class ProtocolHandlerRegistryTest : public testing::Test {
  protected:
@@ -212,8 +215,8 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   }
 
   int InPrefHandlerCount() {
-    const base::ListValue* in_pref_handlers =
-        profile()->GetPrefs()->GetList(prefs::kRegisteredProtocolHandlers);
+    const base::ListValue* in_pref_handlers = profile()->GetPrefs()->GetList(
+        custom_handlers::prefs::kRegisteredProtocolHandlers);
     return static_cast<int>(in_pref_handlers->GetList().size());
   }
 
@@ -227,7 +230,8 @@ class ProtocolHandlerRegistryTest : public testing::Test {
 
   int InPrefIgnoredHandlerCount() {
     const base::ListValue* in_pref_ignored_handlers =
-        profile()->GetPrefs()->GetList(prefs::kIgnoredProtocolHandlers);
+        profile()->GetPrefs()->GetList(
+            custom_handlers::prefs::kIgnoredProtocolHandlers);
     return static_cast<int>(in_pref_ignored_handlers->GetList().size());
   }
 
@@ -269,10 +273,12 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
-  FakeDelegate* delegate_;  // Registry assumes ownership of delegate_.
+  raw_ptr<FakeDelegate> delegate_;  // Registry assumes ownership of delegate_.
   std::unique_ptr<ProtocolHandlerRegistry> registry_;
   ProtocolHandler test_protocol_handler_;
 };
+
+}  // namespace
 
 TEST_F(ProtocolHandlerRegistryTest, AcceptProtocolHandlerHandlesProtocol) {
   ASSERT_FALSE(registry()->IsHandledProtocol("news"));
@@ -869,10 +875,12 @@ TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapRegister) {
   handlers_registered_by_policy.Append(
       GetProtocolHandlerValueWithDefault("mailto", URL_p3u1, true));
 
-  profile()->GetPrefs()->Set(prefs::kRegisteredProtocolHandlers,
-                             handlers_registered_by_pref);
-  profile()->GetPrefs()->Set(prefs::kPolicyRegisteredProtocolHandlers,
-                             handlers_registered_by_policy);
+  profile()->GetPrefs()->Set(
+      custom_handlers::prefs::kRegisteredProtocolHandlers,
+      handlers_registered_by_pref);
+  profile()->GetPrefs()->Set(
+      custom_handlers::prefs::kPolicyRegisteredProtocolHandlers,
+      handlers_registered_by_policy);
   registry()->InitProtocolSettings();
 
   // Duplicate p1u2 eliminated in memory but not yet saved in pref
@@ -946,10 +954,11 @@ TEST_F(ProtocolHandlerRegistryTest, TestPrefPolicyOverlapIgnore) {
   handlers_ignored_by_policy.Append(GetProtocolHandlerValue("news", URL_p1u3));
   handlers_ignored_by_policy.Append(GetProtocolHandlerValue("im", URL_p2u1));
 
-  profile()->GetPrefs()->Set(prefs::kIgnoredProtocolHandlers,
+  profile()->GetPrefs()->Set(custom_handlers::prefs::kIgnoredProtocolHandlers,
                              handlers_ignored_by_pref);
-  profile()->GetPrefs()->Set(prefs::kPolicyIgnoredProtocolHandlers,
-                             handlers_ignored_by_policy);
+  profile()->GetPrefs()->Set(
+      custom_handlers::prefs::kPolicyIgnoredProtocolHandlers,
+      handlers_ignored_by_policy);
   registry()->InitProtocolSettings();
 
   // Duplicate p1u2 eliminated in memory but not yet saved in pref

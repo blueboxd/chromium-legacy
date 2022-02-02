@@ -13,10 +13,12 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_registry.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -28,7 +30,8 @@
 
 namespace apps {
 
-WebAppsCrosapi::WebAppsCrosapi(AppServiceProxy* proxy) : proxy_(proxy) {
+WebAppsCrosapi::WebAppsCrosapi(AppServiceProxy* proxy)
+    : apps::AppPublisher(proxy), proxy_(proxy) {
   // This object may be created when the flag is on or off, but only register
   // the publisher if the flag is on.
   if (web_app::IsWebAppsCrosapiEnabled()) {
@@ -44,6 +47,8 @@ WebAppsCrosapi::~WebAppsCrosapi() = default;
 
 void WebAppsCrosapi::RegisterWebAppsCrosapiHost(
     mojo::PendingReceiver<crosapi::mojom::AppPublisher> receiver) {
+  RegisterPublisher(AppType::kWeb);
+
   // At the moment the app service publisher will only accept one client
   // publishing apps to ash chrome. Any extra clients will be ignored.
   // TODO(crbug.com/1174246): Support SxS lacros.
@@ -53,6 +58,36 @@ void WebAppsCrosapi::RegisterWebAppsCrosapiHost(
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(base::BindOnce(
       &WebAppsCrosapi::OnCrosapiDisconnected, base::Unretained(this)));
+}
+
+void WebAppsCrosapi::LoadIcon(const std::string& app_id,
+                              const IconKey& icon_key,
+                              IconType icon_type,
+                              int32_t size_hint_in_dip,
+                              bool allow_placeholder_icon,
+                              apps::LoadIconCallback callback) {
+  if (!LogIfNotConnected(FROM_HERE)) {
+    std::move(callback).Run(std::make_unique<IconValue>());
+    return;
+  }
+
+  const uint32_t icon_effects = icon_key.icon_effects;
+  controller_->LoadIcon(
+      app_id, ConvertIconKeyToMojomIconKey(icon_key), icon_type,
+      size_hint_in_dip,
+      base::BindOnce(&WebAppsCrosapi::OnLoadIcon, weak_factory_.GetWeakPtr(),
+                     icon_effects, size_hint_in_dip, std::move(callback)));
+}
+
+void WebAppsCrosapi::LaunchAppWithParams(AppLaunchParams&& params,
+                                         LaunchCallback callback) {
+  if (!LogIfNotConnected(FROM_HERE)) {
+    std::move(callback).Run(LaunchResult());
+    return;
+  }
+  controller_->Launch(
+      apps::ConvertLaunchParamsToCrosapi(params, proxy_->profile()),
+      apps::LaunchResultToMojomLaunchResultCallback(std::move(callback)));
 }
 
 void WebAppsCrosapi::Connect(
@@ -81,9 +116,11 @@ void WebAppsCrosapi::LoadIcon(const std::string& app_id,
 
   const uint32_t icon_effects = icon_key->icon_effects;
   controller_->LoadIcon(
-      app_id, std::move(icon_key), icon_type, size_hint_in_dip,
+      app_id, std::move(icon_key), ConvertMojomIconTypeToIconType(icon_type),
+      size_hint_in_dip,
       base::BindOnce(&WebAppsCrosapi::OnLoadIcon, weak_factory_.GetWeakPtr(),
-                     icon_effects, size_hint_in_dip, std::move(callback)));
+                     icon_effects, size_hint_in_dip,
+                     IconValueToMojomIconValueCallback(std::move(callback))));
 }
 
 void WebAppsCrosapi::Launch(const std::string& app_id,
@@ -94,10 +131,11 @@ void WebAppsCrosapi::Launch(const std::string& app_id,
     return;
   }
 
-  auto launch_params = crosapi::mojom::LaunchParams::New();
-  launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
-  controller_->Launch(std::move(launch_params), base::DoNothing());
+  controller_->Launch(
+      CreateCrosapiLaunchParamsWithEventFlags(
+          proxy_, app_id, event_flags, launch_source,
+          window_info ? window_info->display_id : display::kInvalidDisplayId),
+      base::DoNothing());
 }
 
 void WebAppsCrosapi::LaunchAppWithIntent(
@@ -112,12 +150,13 @@ void WebAppsCrosapi::LaunchAppWithIntent(
     return;
   }
 
-  auto launch_params = crosapi::mojom::LaunchParams::New();
-  launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
-  launch_params->intent =
+  auto params = CreateCrosapiLaunchParamsWithEventFlags(
+      proxy_, app_id, event_flags, launch_source,
+      window_info ? window_info->display_id : display::kInvalidDisplayId);
+
+  params->intent =
       apps_util::ConvertAppServiceToCrosapiIntent(intent, proxy_->profile());
-  controller_->Launch(std::move(launch_params), base::DoNothing());
+  controller_->Launch(std::move(params), base::DoNothing());
   // TODO(crbug/1261263): handle the case where launch fails.
   std::move(callback).Run(/*success=*/true);
 }
@@ -130,12 +169,10 @@ void WebAppsCrosapi::LaunchAppWithFiles(const std::string& app_id,
     return;
   }
 
-  auto launch_params = crosapi::mojom::LaunchParams::New();
-  launch_params->app_id = app_id;
-  launch_params->launch_source = launch_source;
-  launch_params->intent =
-      apps_util::CreateCrosapiIntentForViewFiles(file_paths);
-  controller_->Launch(std::move(launch_params), base::DoNothing());
+  auto params = CreateCrosapiLaunchParamsWithEventFlags(
+      proxy_, app_id, event_flags, launch_source, display::kInvalidDisplayId);
+  params->intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
+  controller_->Launch(std::move(params), base::DoNothing());
 }
 
 void WebAppsCrosapi::Uninstall(const std::string& app_id,
@@ -155,19 +192,16 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
                                   int64_t display_id,
                                   GetMenuModelCallback callback) {
   bool is_system_web_app = false;
-  bool can_use_uninstall = true;
+  bool can_use_uninstall = false;
   apps::mojom::WindowMode display_mode = apps::mojom::WindowMode::kUnknown;
 
   proxy_->AppRegistryCache().ForOneApp(
       app_id, [&is_system_web_app, &can_use_uninstall,
                &display_mode](const apps::AppUpdate& update) {
-        if (update.InstallReason() == apps::mojom::InstallReason::kSystem) {
-          is_system_web_app = true;
-          can_use_uninstall = false;
-        } else if (update.InstallReason() ==
-                   apps::mojom::InstallReason::kPolicy) {
-          can_use_uninstall = false;
-        }
+        is_system_web_app =
+            update.InstallReason() == apps::mojom::InstallReason::kSystem;
+        can_use_uninstall =
+            update.AllowUninstall() == apps::mojom::OptionalBool::kTrue;
         display_mode = update.WindowMode();
       });
 
@@ -320,6 +354,13 @@ void WebAppsCrosapi::SetPermission(const std::string& app_id,
 void WebAppsCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   if (!web_app::IsWebAppsCrosapiEnabled())
     return;
+
+  std::vector<std::unique_ptr<App>> apps;
+  for (apps::mojom::AppPtr& delta : deltas) {
+    apps.push_back(ConvertMojomAppToApp(delta));
+  }
+  apps::AppPublisher::Publish(std::move(apps));
+
   for (auto& subscriber : subscribers_) {
     subscriber->OnApps(apps_util::CloneStructPtrVector(deltas),
                        apps::mojom::AppType::kWeb, should_notify_initialized_);
@@ -368,12 +409,11 @@ void WebAppsCrosapi::OnControllerDisconnected() {
 
 void WebAppsCrosapi::OnLoadIcon(uint32_t icon_effects,
                                 int size_hint_in_dip,
-                                LoadIconCallback callback,
-                                apps::mojom::IconValuePtr icon_value) {
+                                apps::LoadIconCallback callback,
+                                IconValuePtr icon_value) {
   // We apply the masking effect here, as masking is not implemented in Lacros.
   ApplyIconEffects(static_cast<IconEffects>(icon_effects), size_hint_in_dip,
-                   ConvertMojomIconValueToIconValue(std::move(icon_value)),
-                   IconValueToMojomIconValueCallback(std::move(callback)));
+                   std::move(icon_value), std::move(callback));
 }
 
 }  // namespace apps

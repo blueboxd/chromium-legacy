@@ -16,7 +16,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"  // for FileAccessProvider
 #include "base/i18n/string_compare.h"
-#include "base/macros.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -414,7 +413,7 @@ void CertificatesHandler::HandleViewCertificate(const base::ListValue* args) {
 void CertificatesHandler::AssignWebUICallbackId(const base::ListValue* args) {
   CHECK_LE(1U, args->GetList().size());
   CHECK(webui_callback_id_.empty());
-  CHECK(args->GetString(0, &webui_callback_id_));
+  webui_callback_id_ = args->GetList()[0].GetString();
 }
 
 void CertificatesHandler::HandleGetCATrust(const base::ListValue* args) {
@@ -446,7 +445,8 @@ void CertificatesHandler::HandleGetCATrust(const base::ListValue* args) {
 }
 
 void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
-  CHECK_EQ(5U, args->GetList().size());
+  const auto& list = args->GetList();
+  CHECK_EQ(5U, list.size());
   AssignWebUICallbackId(args);
 
   CertificateManagerModel::CertInfo* cert_info =
@@ -463,12 +463,9 @@ void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
     return;
   }
 
-  bool trust_ssl = false;
-  bool trust_email = false;
-  bool trust_obj_sign = false;
-  CHECK(args->GetBoolean(2, &trust_ssl));
-  CHECK(args->GetBoolean(3, &trust_email));
-  CHECK(args->GetBoolean(4, &trust_obj_sign));
+  const bool trust_ssl = list[2].GetBool();
+  const bool trust_email = list[3].GetBool();
+  const bool trust_obj_sign = list[4].GetBool();
 
   bool result = certificate_manager_model_->SetCertTrust(
       cert_info->cert(), net::CA_CERT,
@@ -523,9 +520,10 @@ void CertificatesHandler::ExportPersonalFileSelected(
 
 void CertificatesHandler::HandleExportPersonalPasswordSelected(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
+  const base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(2U, args_list.size());
   AssignWebUICallbackId(args);
-  CHECK(args->GetString(1, &password_));
+  password_ = UTF8ToUTF16(args_list[1].GetString());  // CHECKs if non-string.
 
   // Currently, we don't support exporting more than one at a time.  If we do,
   // this would need to either change this to use UnlockSlotsIfNecessary or
@@ -584,9 +582,10 @@ void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
     return;
   }
 
-  CHECK_EQ(2U, args->GetList().size());
+  const auto& list = args->GetList();
+  CHECK_EQ(2U, list.size());
   AssignWebUICallbackId(args);
-  CHECK(args->GetBoolean(1, &use_hardware_backed_));
+  use_hardware_backed_ = list[1].GetBool();
 
   ui::SelectFileDialog::FileTypeInfo file_type_info;
   file_type_info.extensions.resize(1);
@@ -665,9 +664,10 @@ void CertificatesHandler::ImportPersonalFileRead(const int* read_errno,
 
 void CertificatesHandler::HandleImportPersonalPasswordSelected(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
+  base::Value::ConstListView args_list = args->GetList();
+  CHECK_EQ(2U, args_list.size());
   AssignWebUICallbackId(args);
-  CHECK(args->GetString(1, &password_));
+  password_ = UTF8ToUTF16(args_list[1].GetString());  // CHECKs if non-string.
 
   if (use_hardware_backed_) {
     slot_ = certificate_manager_model_->cert_db()->GetPrivateSlot();
@@ -877,15 +877,13 @@ void CertificatesHandler::ImportCAFileRead(const int* read_errno,
 
 void CertificatesHandler::HandleImportCATrustSelected(
     const base::ListValue* args) {
-  CHECK_EQ(4U, args->GetList().size());
+  const auto& list = args->GetList();
+  CHECK_EQ(4U, list.size());
   AssignWebUICallbackId(args);
 
-  bool trust_ssl = false;
-  bool trust_email = false;
-  bool trust_obj_sign = false;
-  CHECK(args->GetBoolean(1, &trust_ssl));
-  CHECK(args->GetBoolean(2, &trust_email));
-  CHECK(args->GetBoolean(3, &trust_obj_sign));
+  const bool trust_ssl = list[1].GetBool();
+  const bool trust_email = list[2].GetBool();
+  const bool trust_obj_sign = list[3].GetBool();
 
   // TODO(mattm): add UI for setting explicit distrust, too.
   // http://crbug.com/128411

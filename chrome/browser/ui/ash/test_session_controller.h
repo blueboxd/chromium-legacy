@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/session/session_controller.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -57,7 +56,6 @@ class TestSessionController : public ash::SessionController {
   void UpdateUserSession(const ash::UserSession& user_session) override;
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
-  void PrepareForLock(PrepareForLockCallback callback) override;
   void StartLock(StartLockCallback callback) override;
   void NotifyChromeLockAnimationsComplete() override;
   void RunUnlockAnimation(RunUnlockAnimationCallback callback) override;

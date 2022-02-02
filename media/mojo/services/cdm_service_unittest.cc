@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
@@ -47,21 +49,19 @@ class CdmFactoryWrapper : public CdmFactory {
       : cdm_factory_(cdm_factory) {}
 
   // CdmFactory implementation.
-  void Create(const std::string& key_system,
-              const CdmConfig& cdm_config,
+  void Create(const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,
               const SessionKeysChangeCB& session_keys_change_cb,
               const SessionExpirationUpdateCB& session_expiration_update_cb,
               CdmCreatedCB cdm_created_cb) override {
-    cdm_factory_->Create(key_system, cdm_config, session_message_cb,
-                         session_closed_cb, session_keys_change_cb,
-                         session_expiration_update_cb,
+    cdm_factory_->Create(cdm_config, session_message_cb, session_closed_cb,
+                         session_keys_change_cb, session_expiration_update_cb,
                          std::move(cdm_created_cb));
   }
 
  private:
-  CdmFactory* const cdm_factory_;
+  const raw_ptr<CdmFactory> cdm_factory_;
 };
 
 class MockCdmServiceClient : public media::CdmService::Client {
@@ -83,7 +83,7 @@ class MockCdmServiceClient : public media::CdmService::Client {
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
  private:
-  CdmFactory* const cdm_factory_;
+  const raw_ptr<CdmFactory> cdm_factory_;
 };
 
 class CdmServiceTest : public testing::Test {
@@ -129,7 +129,7 @@ class CdmServiceTest : public testing::Test {
 
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     cdm_factory_remote_->CreateCdm(
-        key_system, CdmConfig(),
+        {key_system, false, false, false},
         base::BindOnce(&CdmServiceTest::OnCdmCreated, base::Unretained(this),
                        expected_result));
     cdm_factory_remote_.FlushForTesting();
@@ -172,7 +172,7 @@ class CdmServiceTest : public testing::Test {
         &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
   }
   std::unique_ptr<CdmService> service_;
-  MockCdmServiceClient* mock_cdm_service_client_ = nullptr;
+  raw_ptr<MockCdmServiceClient> mock_cdm_service_client_ = nullptr;
 };
 
 }  // namespace

@@ -148,7 +148,9 @@ void WaitForServerExit(UpdaterScope scope);
 #if defined(OS_WIN)
 void ExpectInterfacesRegistered(UpdaterScope scope);
 void ExpectLegacyUpdate3WebSucceeds(UpdaterScope scope,
-                                    const std::string& app_id);
+                                    const std::string& app_id,
+                                    int expected_final_state,
+                                    int expected_error_code);
 void ExpectLegacyProcessLauncherSucceeds(UpdaterScope scope);
 void RunTestServiceCommand(const std::string& sub_command);
 
@@ -158,6 +160,8 @@ void RunTestServiceCommand(const std::string& sub_command);
 void InvokeTestServiceFunction(
     const std::string& function_name,
     const base::flat_map<std::string, base::Value>& arguments);
+
+void RunUninstallCmdLine(UpdaterScope scope);
 #endif  // OS_WIN
 
 // Returns the number of files in the directory, not including directories,

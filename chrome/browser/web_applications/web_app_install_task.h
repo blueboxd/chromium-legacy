@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
@@ -106,6 +107,13 @@ class WebAppInstallTask : content::WebContentsObserver {
       webapps::WebappInstallSource install_source,
       OnceInstallCallback callback);
 
+  // Load |install_url| and install SubApp. Posts |LoadUrl| task to |url_loader|
+  // immediately. Doesn't memorize |url_loader| pointer.
+  void LoadAndInstallSubAppFromURL(const GURL& install_url,
+                                   content::WebContents* contents,
+                                   WebAppUrlLoader* url_loader,
+                                   OnceInstallCallback install_callback);
+
   // Fetches the icon URLs in |web_application_info| to populate the icon
   // bitmaps. Once fetched uses the contents of |web_application_info| as the
   // entire web app installation data.
@@ -143,6 +151,12 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   static std::unique_ptr<content::WebContents> CreateWebContents(
       Profile* profile);
+
+  // Returns the pre-existing web contents the installation was
+  // initiated with.
+  // This is different to web_contents which is created
+  // specifically for the install task.
+  content::WebContents* GetInstallingWebContents();
 
   base::WeakPtr<WebAppInstallTask> GetWeakPtr();
 
@@ -290,11 +304,12 @@ class WebAppInstallTask : content::WebContentsObserver {
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
   std::unique_ptr<WebApplicationInfo> web_application_info_;
   std::unique_ptr<content::WebContents> web_contents_;
+  content::WebContents* installing_web_contents_ = nullptr;
 
-  OsIntegrationManager* os_integration_manager_;
-  WebAppInstallFinalizer* install_finalizer_;
-  Profile* const profile_;
-  WebAppRegistrar* registrar_;
+  raw_ptr<OsIntegrationManager> os_integration_manager_;
+  raw_ptr<WebAppInstallFinalizer> install_finalizer_;
+  const raw_ptr<Profile> profile_;
+  raw_ptr<WebAppRegistrar> registrar_;
 
   std::unique_ptr<base::Value> error_dict_;
 

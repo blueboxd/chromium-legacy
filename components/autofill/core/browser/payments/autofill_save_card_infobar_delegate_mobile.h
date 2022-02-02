@@ -9,10 +9,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/gfx/image/image.h"
@@ -31,10 +30,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // cloud, as opposed to saving locally. Only one of
   // |upload_save_card_prompt_callback| and |local_save_card_prompt_callback|
   // will be executed.
-  // If |upload| is true, |displayed_target_account| must either be the account
-  // where the card will be saved, or empty if no target account should be
-  // shown.
-  // TODO(crbug.com/1206190): Split into 2 static constructors (local/cloud),
+  // If |upload| is true, |displayed_target_account| should be the account to
+  // which the card will be saved. If |upload| is false, it must be empty.
+  // TODO(crbug.com/1277904): Split into 2 static constructors (local/cloud),
   // each with the minimum set of required parameters. Also consider merging
   // the 2 callbacks into one.
   AutofillSaveCardInfoBarDelegateMobile(

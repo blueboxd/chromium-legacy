@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BROWSER_INTERFACE_BROKER_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_INTERFACE_BROKER_IMPL_H_
 
+#include "base/memory/raw_ptr.h"
 #include "content/browser/browser_interface_binders.h"
 #include "content/browser/mojo_binder_policy_applier.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
@@ -59,8 +60,8 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
       BindInterface(std::move(receiver));
     } else {
       std::string interface_name = receiver.interface_name().value();
-      // base::Unretained is safe because `this` owns `policy_applier_`.
-      policy_applier_->ApplyPolicyToBinder(
+      // base::Unretained is safe because `this` outlives `policy_applier_`.
+      policy_applier_->ApplyPolicyToNonAssociatedBinder(
           interface_name,
           base::BindOnce(&BrowserInterfaceBrokerImpl::BindInterface,
                          base::Unretained(this), std::move(receiver)));
@@ -68,27 +69,19 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
   }
 
   // Sets MojoBinderPolicyApplier to control when to bind interfaces.
-  void ApplyMojoBinderPolicies(
-      std::unique_ptr<MojoBinderPolicyApplier> policy_applier) {
+  void ApplyMojoBinderPolicies(MojoBinderPolicyApplier* policy_applier) {
     DCHECK(blink::features::IsPrerender2Enabled());
     DCHECK(policy_applier);
     DCHECK(!policy_applier_);
-    policy_applier_ = std::move(policy_applier);
+    policy_applier_ = policy_applier;
   }
 
-  // Resolves requests that were previously deferred and stops applying policies
-  // to binding requests.
+  // Stops applying policies to binding requests.
   void ReleaseMojoBinderPolicies() {
     DCHECK(blink::features::IsPrerender2Enabled());
     DCHECK(policy_applier_);
-    policy_applier_->GrantAll();
     // Reset `policy_applier_` to disable capability control.
-    policy_applier_.reset();
-  }
-
-  MojoBinderPolicyApplier* GetMojoBinderPolicyApplier() {
-    DCHECK(blink::features::IsPrerender2Enabled());
-    return policy_applier_.get();
+    policy_applier_ = nullptr;
   }
 
  private:
@@ -102,10 +95,14 @@ class BrowserInterfaceBrokerImpl : public blink::mojom::BrowserInterfaceBroker {
     }
   }
 
-  ExecutionContextHost* const host_;
+  const raw_ptr<ExecutionContextHost> host_;
   mojo::BinderMap binder_map_;
   mojo::BinderMapWithContext<InterfaceBinderContext> binder_map_with_context_;
-  std::unique_ptr<MojoBinderPolicyApplier> policy_applier_;
+
+  // The lifetime of `policy_applier_` is managed by the owner of this instance.
+  // The owner should call `ReleaseMojoBinderPolicies()` when it destroys the
+  // applier.
+  raw_ptr<MojoBinderPolicyApplier> policy_applier_ = nullptr;
 };
 
 }  // namespace content

@@ -5,11 +5,12 @@
 #define ASH_SYSTEM_PHONEHUB_CAMERA_ROLL_OPT_IN_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/components/phonehub/camera_roll_manager.h"
 #include "ash/system/phonehub/sub_feature_opt_in_view.h"
-#include "chromeos/components/phonehub/camera_roll_manager.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
 namespace ash {
+
 /**
  * Dialog inside camera roll view for user to opt in camera roll feature or
  * dismiss.
@@ -18,8 +19,7 @@ class ASH_EXPORT CameraRollOptInView : public SubFeatureOptInView {
  public:
   METADATA_HEADER(CameraRollOptInView);
 
-  CameraRollOptInView(
-      chromeos::phonehub::CameraRollManager* camera_roll_manager);
+  CameraRollOptInView(phonehub::CameraRollManager* camera_roll_manager);
   ~CameraRollOptInView() override;
   CameraRollOptInView(CameraRollOptInView&) = delete;
   CameraRollOptInView operator=(CameraRollOptInView&) = delete;
@@ -29,8 +29,9 @@ class ASH_EXPORT CameraRollOptInView : public SubFeatureOptInView {
   void SetUpButtonPressed() override;
   void DismissButtonPressed() override;
 
-  chromeos::phonehub::CameraRollManager* camera_roll_manager_ = nullptr;
+  phonehub::CameraRollManager* camera_roll_manager_ = nullptr;
 };
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_PHONEHUB_CAMERA_ROLL_OPT_IN_VIEW_H_

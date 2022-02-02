@@ -4,6 +4,7 @@
 
 #include "ui/views/layout/table_layout.h"
 
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/border.h"
 #include "ui/views/view.h"
@@ -67,7 +68,7 @@ class TableLayoutTest : public testing::Test {
 
  private:
   std::unique_ptr<View> host_;
-  TableLayout* layout_;
+  raw_ptr<TableLayout> layout_;
 };
 
 class TableLayoutAlignmentTest : public testing::Test {
@@ -92,7 +93,7 @@ class TableLayoutAlignmentTest : public testing::Test {
 
  private:
   std::unique_ptr<View> host_;
-  TableLayout* layout_;
+  raw_ptr<TableLayout> layout_;
 };
 
 TEST_F(TableLayoutAlignmentTest, Fill) {
@@ -746,34 +747,6 @@ TEST_F(TableLayoutTest, InsufficientChildren) {
   ExpectViewBoundsEquals(0, 0, 10, 20, v1);
   ExpectViewBoundsEquals(10, 0, 20, 20, v2);
   ExpectViewBoundsEquals(0, 20, 10, 20, v3);
-}
-
-TEST_F(TableLayoutTest, ExcessChildren) {
-  layout()
-      .AddColumn(LayoutAlignment::kStart, LayoutAlignment::kStart,
-                 TableLayout::kFixedSize,
-                 TableLayout::ColumnSize::kUsePreferred, 0, 0)
-      .AddColumn(LayoutAlignment::kStart, LayoutAlignment::kStart,
-                 TableLayout::kFixedSize,
-                 TableLayout::ColumnSize::kUsePreferred, 0, 0)
-      .AddRows(2, TableLayout::kFixedSize);
-  auto* v1 = host()->AddChildView(CreateSizedView(gfx::Size(10, 20)));
-  auto* v2 = host()->AddChildView(CreateSizedView(gfx::Size(20, 20)));
-  auto* v3 = host()->AddChildView(CreateSizedView(gfx::Size(10, 20)));
-  auto* v4 = host()->AddChildView(CreateSizedView(gfx::Size(20, 20)));
-  auto* v5 = host()->AddChildView(CreateSizedView(gfx::Size(10, 20)));
-
-  gfx::Size pref = GetPreferredSize();
-  EXPECT_EQ(gfx::Size(30, 40), pref);
-  EXPECT_TRUE(v5->GetVisible());
-
-  host()->SetBounds(0, 0, pref.width(), pref.height());
-  layout().Layout(host());
-  ExpectViewBoundsEquals(0, 0, 10, 20, v1);
-  ExpectViewBoundsEquals(10, 0, 20, 20, v2);
-  ExpectViewBoundsEquals(0, 20, 10, 20, v3);
-  ExpectViewBoundsEquals(10, 20, 20, 20, v4);
-  EXPECT_FALSE(v5->GetVisible());
 }
 
 }  // namespace views

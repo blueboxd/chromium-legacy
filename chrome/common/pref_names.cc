@@ -273,7 +273,6 @@ const char kWebKitSerifFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_SERIF;
 const char kWebKitSansSerifFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_SANSERIF;
 const char kWebKitCursiveFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_CURSIVE;
 const char kWebKitFantasyFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_FANTASY;
-const char kWebKitPictographFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_PICTOGRAPH;
 const char kWebKitStandardFontFamilyArabic[] =
     "webkit.webprefs.fonts.standard.Arab";
 #if defined(OS_WIN)
@@ -366,8 +365,6 @@ const char kWebKitSansSerifFontFamily[] =
     "webkit.webprefs.fonts.sansserif.Zyyy";
 const char kWebKitCursiveFontFamily[] = "webkit.webprefs.fonts.cursive.Zyyy";
 const char kWebKitFantasyFontFamily[] = "webkit.webprefs.fonts.fantasy.Zyyy";
-const char kWebKitPictographFontFamily[] =
-    "webkit.webprefs.fonts.pictograph.Zyyy";
 const char kWebKitDefaultFontSize[] = "webkit.webprefs.default_font_size";
 const char kWebKitDefaultFixedFontSize[] =
     "webkit.webprefs.default_fixed_font_size";
@@ -830,6 +827,15 @@ const char kHatsSmartLockSurveyCycleEndTs[] =
 // Experience survey
 const char kHatsSmartLockDeviceIsSelected[] =
     "hats_smartlock_device_is_selected";
+
+// An int64 pref. This is the timestamp that indicates the end of the most
+// recent ARC Games survey cycle.
+const char kHatsArcGamesSurveyCycleEndTs[] =
+    "hats_arc_games_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the ARC Games survey
+const char kHatsArcGamesDeviceIsSelected[] =
+    "hats_arc_games_device_is_selected";
 
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
@@ -1639,6 +1645,10 @@ const char kQuietNotificationPermissionPromoWasShown[] =
 const char kSuppressDifferentOriginSubframeJSDialogs[] =
     "suppress_different_origin_subframe_js_dialogs";
 
+// Enum indicating if the user agent reduction feature should be forced enabled
+// or disabled. Defaults to blink::features::kReduceUserAgent field trial.
+const char kUserAgentReduction[] = "user_agent_reduction";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 
@@ -2012,10 +2022,6 @@ const char kWebAppsAppAgnosticIphState[] = "web_apps.app_agnostic_iph_state";
 // synchronised for.
 const char kWebAppsLastPreinstallSynchronizeVersion[] =
     "web_apps.last_preinstall_synchronize_version";
-
-// A list of all apps that have been migrated to web apps.
-const char kWebAppsMigratedPreinstalledApps[] =
-    "web_apps.migrated_default_apps";
 
 // A list of migrated features for migrating default chrome apps.
 const char kWebAppsDidMigrateDefaultChromeApps[] =
@@ -2614,6 +2620,13 @@ const char kMacRestoreLocationPermissionsExperimentCount[] =
     "mac_restore_location_permissions_experiment_count";
 #endif  // defined(OS_MAC)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Boolean indicating whether the Enrollment ID (EID) has already been uploaded
+// to DM Server. Only used on Chromad devices. If this pref is true, the device
+// is ready for the remote migration to cloud management.
+const char kEnrollmentIdUploadedOnChromad[] = "chromad.enrollment_id_uploaded";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // *************** SERVICE PREFS ***************
 // These are attached to the service process.
 
@@ -2683,26 +2696,6 @@ const char kHardwareAccelerationModeEnabled[] =
 // Hardware acceleration mode from previous browser launch.
 const char kHardwareAccelerationModePrevious[] =
     "hardware_acceleration_mode_previous";
-
-// List of protocol handlers.
-const char kRegisteredProtocolHandlers[] =
-    "custom_handlers.registered_protocol_handlers";
-
-// List of protocol handlers the user has requested not to be asked about again.
-const char kIgnoredProtocolHandlers[] =
-    "custom_handlers.ignored_protocol_handlers";
-
-// List of protocol handlers registered by policy.
-const char kPolicyRegisteredProtocolHandlers[] =
-    "custom_handlers.policy.registered_protocol_handlers";
-
-// List of protocol handlers the policy has requested to be ignored.
-const char kPolicyIgnoredProtocolHandlers[] =
-    "custom_handlers.policy.ignored_protocol_handlers";
-
-// Whether user-specified handlers for protocols and content types can be
-// specified.
-const char kCustomHandlersEnabled[] = "custom_handlers.enabled";
 
 // Integer that specifies the policy refresh rate for device-policy in
 // milliseconds. Not all values are meaningful, so it is clamped to a sane range
@@ -2919,10 +2912,6 @@ const char kLatestVersionWhenClickedUpdateMenuItem[] =
 const char kCommerceMerchantViewerMessagesShownTime[] =
     "commerce_merchant_viewer_messages_shown_time";
 #endif
-
-// Policy that indicates the state of updates for the binary components.
-const char kComponentUpdatesEnabled[] =
-    "component_updates.component_updates_enabled";
 
 #if defined(OS_ANDROID)
 // Whether the search geolocation disclosure has been dismissed by the user.
@@ -3387,6 +3376,9 @@ const char kLensRegionSearchEnabled[] = "policy.lens_region_search_enabled";
 
 // A boolean indicating whether the Privacy Review Welcome Card should be shown.
 const char kPrivacyReviewShowWelcomeCard[] = "privacy_review.show_welcome_card";
+
+// A boolean indicating whether the Privacy guide feature has been viewed.
+const char kPrivacyGuideViewed[] = "privacy_guide.viewed";
 
 // A boolean indicating support of "CORS non-wildcard request header name".
 // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name

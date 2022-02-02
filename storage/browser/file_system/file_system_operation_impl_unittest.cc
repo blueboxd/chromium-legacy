@@ -15,7 +15,6 @@
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -49,6 +48,10 @@ class FileSystemOperationImplTest : public testing::Test {
  public:
   FileSystemOperationImplTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+
+  FileSystemOperationImplTest(const FileSystemOperationImplTest&) = delete;
+  FileSystemOperationImplTest& operator=(const FileSystemOperationImplTest&) =
+      delete;
 
  protected:
   void SetUp() override {
@@ -456,8 +459,6 @@ class FileSystemOperationImplTest : public testing::Test {
   UpdateObserverList update_observers_;
 
   base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplTest);
 };
 
 TEST_F(FileSystemOperationImplTest, TestMoveFailureSrcDoesntExist) {

@@ -15,6 +15,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
@@ -232,7 +233,7 @@ class MockProxyResolvingSocketFactory
       proxy_resolving_socket_receivers_;
 
   // Owned by |proxy_resolving_socket_receivers_|.
-  MockProxyResolvingSocket* socket_raw_;
+  raw_ptr<MockProxyResolvingSocket> socket_raw_;
 };
 
 void MockProxyResolvingSocket::RunEvents(std::vector<Event>&& events) {
@@ -305,6 +306,10 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
     // when called. Use the threadsafe mode to avoid this problem.
     testing::GTEST_FLAG(death_test_style) = "threadsafe";
   }
+
+  NetworkServiceAsyncSocketTest(const NetworkServiceAsyncSocketTest&) = delete;
+  NetworkServiceAsyncSocketTest& operator=(
+      const NetworkServiceAsyncSocketTest&) = delete;
 
   ~NetworkServiceAsyncSocketTest() override {}
 
@@ -588,7 +593,7 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
   std::unique_ptr<net::MockClientSocketFactory> mock_client_socket_factory_;
   std::unique_ptr<net::TestURLRequestContext> test_url_request_context_;
   // Either null or owned by proxy_resolving_socket_factory_.
-  MockProxyResolvingSocketFactory* mock_proxy_resolving_socket_factory_;
+  raw_ptr<MockProxyResolvingSocketFactory> mock_proxy_resolving_socket_factory_;
   std::unique_ptr<network::mojom::ProxyResolvingSocketFactory>
       proxy_resolving_socket_factory_;
   std::unique_ptr<mojo::Receiver<network::mojom::ProxyResolvingSocketFactory>>
@@ -597,9 +602,6 @@ class NetworkServiceAsyncSocketTest : public testing::Test,
   std::unique_ptr<NetworkServiceAsyncSocket> ns_async_socket_;
   base::circular_deque<SignalSocketState> signal_socket_states_;
   const net::HostPortPair addr_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceAsyncSocketTest);
 };
 
 TEST_F(NetworkServiceAsyncSocketTest, InitialState) {

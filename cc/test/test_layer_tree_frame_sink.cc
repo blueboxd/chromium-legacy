@@ -68,8 +68,8 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     return false;
 
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
-  frame_sink_manager_ =
-      std::make_unique<viz::FrameSinkManagerImpl>(shared_bitmap_manager_.get());
+  frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
+      viz::FrameSinkManagerImpl::InitParams(shared_bitmap_manager_.get()));
 
   std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
       display_controller;
@@ -104,8 +104,7 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
     }
     scheduler = std::make_unique<viz::DisplayScheduler>(
         display_begin_frame_source_, compositor_task_runner_.get(),
-        display_output_surface->capabilities().max_frames_pending,
-        display_output_surface->capabilities().max_frames_pending_120hz);
+        display_output_surface->capabilities().pending_swap_params);
   }
 
   auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
@@ -195,7 +194,7 @@ void TestLayerTreeFrameSink::SubmitCompositorFrame(viz::CompositorFrame frame,
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
   if (!display_->has_scheduler()) {
-    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DrawAndSwap(base::TimeTicks::Now(), base::TimeTicks::Now());
     // Post this to get a new stack frame so that we exit this function before
     // calling the client to tell it that it is done.
     compositor_task_runner_->PostTask(

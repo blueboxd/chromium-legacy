@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
+#include "url/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "ui/base/clipboard/clipboard_android.h"
@@ -141,6 +142,27 @@ void ClipboardRecentContentGeneric::GetRecentImageFromClipboard(
       base::BindOnce(&OnGetRecentImageFromClipboard, std::move(callback)));
 }
 
+absl::optional<std::set<ClipboardContentType>>
+ClipboardRecentContentGeneric::GetCachedClipboardContentTypes() {
+  if (GetClipboardContentAge() > MaximumAgeOfClipboard()) {
+    return absl::nullopt;
+  }
+
+  std::set<ClipboardContentType> clipboard_content_types;
+
+  if (HasRecentURLFromClipboard()) {
+    clipboard_content_types.insert(ClipboardContentType::URL);
+  }
+  if (HasRecentTextFromClipboard()) {
+    clipboard_content_types.insert(ClipboardContentType::Text);
+  }
+  if (HasRecentImageFromClipboard()) {
+    clipboard_content_types.insert(ClipboardContentType::Image);
+  }
+
+  return clipboard_content_types;
+}
+
 bool ClipboardRecentContentGeneric::HasRecentImageFromClipboard() {
   if (GetClipboardContentAge() > MaximumAgeOfClipboard())
     return false;
@@ -220,6 +242,13 @@ bool ClipboardRecentContentGeneric::IsAppropriateSuggestion(const GURL& url) {
   // Check to make sure it's a scheme we're willing to suggest.
   for (const auto* authorized_scheme : kAuthorizedSchemes) {
     if (url.SchemeIs(authorized_scheme))
+      return true;
+  }
+
+  // Check if the schemes is an application-defined scheme.
+  std::vector<std::string> standard_schemes = url::GetStandardSchemes();
+  for (const auto& standard_scheme : standard_schemes) {
+    if (url.SchemeIs(standard_scheme))
       return true;
   }
 

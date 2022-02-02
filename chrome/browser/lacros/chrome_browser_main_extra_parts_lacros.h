@@ -9,6 +9,7 @@
 
 #include <memory>
 
+class ArcIconCacheLacros;
 class AutomationManagerLacros;
 class BrowserServiceLacros;
 class DriveFsCache;
@@ -19,6 +20,7 @@ class LacrosExtensionAppsController;
 class LacrosExtensionAppsPublisher;
 class KioskSessionServiceLacros;
 class FieldTrialObserver;
+class StandaloneBrowserTestController;
 
 namespace crosapi {
 class TaskManagerLacros;
@@ -42,6 +44,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
  private:
   // ChromeBrowserMainExtraParts:
   void PostBrowserStart() override;
+
+  // Receiver and cache of arc icon info updates.
+  std::unique_ptr<ArcIconCacheLacros> arc_icon_cache_;
 
   std::unique_ptr<AutomationManagerLacros> automation_manager_;
 
@@ -72,6 +77,14 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Sends extension app events to ash.
   std::unique_ptr<LacrosExtensionAppsPublisher> extension_apps_publisher_;
+
+  // A test controller that is registered with the ash-chrome's test controller
+  // service over crosapi to let tests running in ash-chrome control this Lacros
+  // instance. It is only instantiated in Linux builds AND only when Ash's test
+  // controller is available (practically, just test binaries), so this will
+  // remain null in production builds.
+  std::unique_ptr<StandaloneBrowserTestController>
+      standalone_browser_test_controller_;
 
   // Receiver of field trial updates.
   std::unique_ptr<FieldTrialObserver> field_trial_observer_;

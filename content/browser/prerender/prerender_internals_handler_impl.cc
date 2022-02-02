@@ -34,8 +34,6 @@ const char* FinalStatusToString(PrerenderHost::FinalStatus final_status) {
       return "MainFrameNavigation";
     case PrerenderHost::FinalStatus::kMojoBinderPolicy:
       return "MojoBinderPolicy";
-    case PrerenderHost::FinalStatus::kPlugin:
-      return "Plugin";
     case PrerenderHost::FinalStatus::kRendererProcessCrashed:
       return "RendererProcessCrashed";
     case PrerenderHost::FinalStatus::kRendererProcessKilled:
@@ -74,6 +72,10 @@ const char* FinalStatusToString(PrerenderHost::FinalStatus final_status) {
       return "MixedContent";
     case PrerenderHost::FinalStatus::kTriggerBackgrounded:
       return "TriggerBackgrounded";
+    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndSameOriginRedirected:
+      return "EmbedderTriggeredAndSameOriginRedirected";
+    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
+      return "EmbedderTriggeredAndCrossOriginRedirected";
   }
   NOTREACHED();
   return "";

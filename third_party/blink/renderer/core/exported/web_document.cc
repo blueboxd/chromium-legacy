@@ -45,8 +45,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_statistics_collector.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -62,7 +64,8 @@
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -266,8 +269,7 @@ WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {
     for (wtf_size_t i = 0; i < regions.size(); i++) {
       const AnnotatedRegionValue& value = regions[i];
       draggable_regions[i].draggable = value.draggable;
-      draggable_regions[i].bounds =
-          ToGfxRect(PixelSnappedIntRect(value.bounds));
+      draggable_regions[i].bounds = ToPixelSnappedRect(value.bounds);
     }
   }
   return draggable_regions;
@@ -315,6 +317,15 @@ void WebDocument::SetCookieManager(
     CrossVariantMojoRemote<network::mojom::RestrictedCookieManagerInterfaceBase>
         cookie_manager) {
   Unwrap<Document>()->SetCookieManager(std::move(cookie_manager));
+}
+
+WebElement WebDocument::GetElementByDevToolsNodeId(const int node_id) {
+  Node* node = DOMNodeIds::NodeForId(static_cast<DOMNodeId>(node_id));
+  if (!node || !node->IsElementNode() ||
+      !node->IsDescendantOrShadowDescendantOf(private_.Get())) {
+    return WebElement();
+  }
+  return WebElement(blink::To<Element>(node));
 }
 
 WebDocument::WebDocument(Document* elem) : WebNode(elem) {}

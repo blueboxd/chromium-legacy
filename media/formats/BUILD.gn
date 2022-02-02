@@ -84,9 +84,7 @@ source_set("formats") {
     "//third_party/libwebm",
   ]
 
-  configs += [
-    "//media:subcomponent_config",
-  ]
+  configs += [ "//media:subcomponent_config" ]
 
   if (proprietary_codecs) {
     deps += [ "//media/video" ]
@@ -122,6 +120,19 @@ source_set("formats") {
     sources += [
       "mp4/dolby_vision.cc",
       "mp4/dolby_vision.h",
+    ]
+  }
+
+  if (proprietary_codecs && enable_platform_dts_audio) {
+    sources += [
+      "dts/dts_stream_parser.cc",
+      "dts/dts_stream_parser.h",
+      "dts/dts_util.cc",
+      "dts/dts_util.h",
+      "mp4/dts.cc",
+      "mp4/dts.h",
+      "mp4/dtsx.cc",
+      "mp4/dtsx.h",
     ]
   }
 
@@ -170,6 +181,19 @@ source_set("formats") {
       "mp2t/ts_section_cets_pssh.h",
     ]
   }
+
+  # TODO(https://crbug.com/1266991): These should be gated behind `enable_hls_demuxer`, once that's enabled by default.
+  sources += [
+    "hls/items.cc",
+    "hls/items.h",
+    "hls/parse_context.cc",
+    "hls/parse_context.h",
+    "hls/parse_status.h",
+    "hls/types.cc",
+    "hls/types.h",
+  ]
+  deps += [ "//third_party/re2" ]
+  public_deps = [ "//third_party/abseil-cpp:absl" ]
 }
 
 static_library("test_support") {
@@ -247,6 +271,14 @@ source_set("unit_tests") {
 
     deps += [ "//crypto" ]
 
+    if (enable_platform_dts_audio) {
+      sources += [
+        "dts/dts_util_unittest.cc",
+        "mp4/dts_unittest.cc",
+        "mp4/dtsx_unittest.cc",
+      ]
+    }
+
     if (enable_mse_mpeg2ts_stream_parser) {
       sources += [
         "mp2t/es_adapter_video_unittest.cc",
@@ -266,6 +298,21 @@ source_set("unit_tests") {
       sources += [ "mp4/hevc_unittest.cc" ]
     }
   }
+
+  # TODO(https://crbug.com/1266991): This should be gated behind `enable_hls_demuxer`, once that's enabled by default.
+  sources += [
+    "hls/items_unittest.cc",
+    "hls/types_unittest.cc",
+  ]
+}
+
+# TODO(https://crbug.com/1266991): This should be gated behind `enable_hls_demuxer`, once that's enabled by default.
+fuzzer_test("hls_items_fuzzer") {
+  sources = [ "hls/items_fuzzer.cc" ]
+  deps = [
+    "//base",
+    "//media",
+  ]
 }
 
 if (proprietary_codecs) {

@@ -36,7 +36,6 @@ WebSocketInterceptor::InterceptResult WebSocketInterceptor::Intercept(
     size_t size,
     base::OnceClosure retry_callback) {
   DCHECK(!pending_callback_);
-  DCHECK(!frame_started_);
 
   auto* throttling_interceptor =
       ThrottlingController::GetInterceptor(net_log_source_id_);
@@ -44,7 +43,6 @@ WebSocketInterceptor::InterceptResult WebSocketInterceptor::Intercept(
   if (!throttling_interceptor)
     return kContinue;
 
-  frame_started_ = true;
   throttling_interceptor->SetSuspendWhenOffline(true);
   int start_throttle_result = throttling_interceptor->StartThrottle(
       /*result=*/0, size, /*send_end=*/base::TimeTicks(), /*start=*/false,
@@ -54,12 +52,6 @@ WebSocketInterceptor::InterceptResult WebSocketInterceptor::Intercept(
     return kShouldWait;
   }
   return kContinue;
-}
-
-void WebSocketInterceptor::FinishFrame() {
-  DCHECK(frame_started_);
-  DCHECK(pending_callback_.is_null());
-  frame_started_ = false;
 }
 
 void WebSocketInterceptor::ThrottleCallback(int result, int64_t bytes) {

@@ -47,6 +47,7 @@
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 
 namespace content {
 
@@ -162,9 +163,11 @@ void WorkerScriptFetcher::CreateAndStart(
     int worker_process_id,
     const DedicatedOrSharedWorkerToken& worker_token,
     const GURL& initial_request_url,
+    RenderFrameHost* ancestor_render_frame_host,
     RenderFrameHost* creator_render_frame_host,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& request_initiator,
+    const blink::StorageKey& request_initiator_storage_key,
     const net::IsolationInfo& trusted_isolation_info,
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
@@ -210,12 +213,12 @@ void WorkerScriptFetcher::CreateAndStart(
       factory_bundle_for_browser = CreateFactoryBundle(
           LoaderType::kMainResource, worker_process_id, storage_partition,
           storage_domain, constructor_uses_file_url, filesystem_url_support,
-          creator_render_frame_host);
+          creator_render_frame_host, request_initiator_storage_key);
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
       subresource_loader_factories = CreateFactoryBundle(
           LoaderType::kSubResource, worker_process_id, storage_partition,
           storage_domain, constructor_uses_file_url, filesystem_url_support,
-          creator_render_frame_host);
+          creator_render_frame_host, request_initiator_storage_key);
 
   // Create a resource request for initiating worker script fetch from the
   // browser process.
@@ -270,6 +273,16 @@ void WorkerScriptFetcher::CreateAndStart(
       blink::mojom::InsecureRequestsPolicy::kUpgrade;
 
   AddAdditionalRequestHeaders(resource_request.get(), browser_context);
+
+  // Notify that the request for fetching the main worker script is about to
+  // start to DevTools. It fires `Network.onRequestWillBeSent` event. For
+  // dedicated workers, `creator_render_frame_host` can be null when a worker
+  // is nested. So reports to DevTools in the ancestor's frame instead. For
+  // shared workers, `ancestor_render_frame_host` and
+  // `creator_render_frame_host` are always same.
+  devtools_instrumentation::OnWorkerMainScriptRequestWillBeSent(
+      FrameTreeNode::From(ancestor_render_frame_host), devtools_worker_token,
+      *resource_request);
 
   WorkerScriptFetcher::CreateScriptLoader(
       worker_process_id, worker_token, initial_request_url,
@@ -422,7 +435,8 @@ WorkerScriptFetcher::CreateFactoryBundle(
     const std::string& storage_domain,
     bool file_support,
     bool filesystem_url_support,
-    RenderFrameHost* creator_render_frame_host) {
+    RenderFrameHost* creator_render_frame_host,
+    const blink::StorageKey& request_initiator_storage_key) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
@@ -430,13 +444,14 @@ WorkerScriptFetcher::CreateFactoryBundle(
                                 DataURLLoaderFactory::Create());
   if (filesystem_url_support) {
     // TODO(https://crbug.com/986188): Pass ChildProcessHost::kInvalidUniqueID
-    // instead of valid |worker_process_id| for |factory_bundle_for_browser|
+    // instead of valid `worker_process_id` for `factory_bundle_for_browser`
     // once CanCommitURL-like check is implemented in PlzWorker.
     non_network_factories.emplace(
         url::kFileSystemScheme,
         CreateFileSystemURLLoaderFactory(
             worker_process_id, RenderFrameHost::kNoFrameTreeNodeId,
-            storage_partition->GetFileSystemContext(), storage_domain));
+            storage_partition->GetFileSystemContext(), storage_domain,
+            request_initiator_storage_key));
   }
   if (file_support) {
     // USER_VISIBLE because worker script fetch may affect the UI.

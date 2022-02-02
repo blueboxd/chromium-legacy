@@ -8,10 +8,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/containers/flat_set.h"
+#include "base/trace_event/traced_value.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 #include "ui/ozone/platform/drm/gpu/crtc_commit_request.h"
@@ -53,6 +55,8 @@ struct HardwareDisplayPlaneList {
   std::vector<PageFlipInfo> legacy_page_flips;
 
   ScopedDrmAtomicReqPtr atomic_property_set;
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 };
 
 class HardwareDisplayPlaneManager {
@@ -167,6 +171,9 @@ class HardwareDisplayPlaneManager {
   virtual bool ValidatePrimarySize(const DrmOverlayPlane& primary,
                                    const drmModeModeInfo& mode) = 0;
 
+  // Get the set of CRTC IDs from a plane's possible CRTCs bitmap
+  base::flat_set<uint32_t> CrtcMaskToCrtcIds(uint32_t crtc_mask) const;
+
   const std::vector<std::unique_ptr<HardwareDisplayPlane>>& planes() const {
     return planes_;
   }
@@ -230,10 +237,10 @@ class HardwareDisplayPlaneManager {
   virtual std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id);
 
   // Finds the plane located at or after |*index| that is not in use and can
-  // be used with |crtc_index|.
+  // be used with |crtc_id|.
   HardwareDisplayPlane* FindNextUnusedPlane(
       size_t* index,
-      uint32_t crtc_index,
+      uint32_t crtc_id,
       const DrmOverlayPlane& overlay) const;
 
   // Convert |crtc/connector_id| into an index, returning empty if the ID
@@ -245,10 +252,10 @@ class HardwareDisplayPlaneManager {
   CrtcState& CrtcStateForCrtcId(uint32_t crtc_id);
 
   // Returns true if |plane| can support |overlay| and compatible with
-  // |crtc_index|.
+  // |crtc_id|.
   virtual bool IsCompatible(HardwareDisplayPlane* plane,
                             const DrmOverlayPlane& overlay,
-                            uint32_t crtc_index) const;
+                            uint32_t crtc_id) const;
 
   // Resets |plane_list| setting all planes to unused.
   // Frees any temporary data structure in |plane_list| used for pageflipping.

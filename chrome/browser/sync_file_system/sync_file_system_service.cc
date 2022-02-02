@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -252,7 +252,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
     std::move(callback).Run(status);
   }
 
-  RemoteFileSyncService* remote_service_;
+  raw_ptr<RemoteFileSyncService> remote_service_;
   RemoteServiceState last_state_;
   base::WeakPtrFactory<RemoteSyncRunner> factory_{this};
 };
@@ -310,12 +310,12 @@ void SyncFileSystemService::GetExtensionStatusMap(
                      AsWeakPtr(), std::move(callback)));
 }
 
-void SyncFileSystemService::DumpFiles(const GURL& origin,
-                                      DumpFilesCallback callback) {
+void SyncFileSystemService::DumpFiles(
+    content::StoragePartition* storage_partition,
+    const GURL& origin,
+    DumpFilesCallback callback) {
   DCHECK(!origin.is_empty());
 
-  content::StoragePartition* storage_partition =
-      profile_->GetStoragePartitionForUrl(origin);
   storage::FileSystemContext* file_system_context =
       storage_partition->GetFileSystemContext();
   local_service_->MaybeInitializeFileSystemContext(

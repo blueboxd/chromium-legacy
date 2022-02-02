@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -406,10 +405,6 @@ void PdfConverterImpl::RecordConversionMetrics() {
     case PdfRenderSettings::Mode::TEXTONLY:
       // Intentionally not logged.
       return;
-    case PdfRenderSettings::Mode::GDI_TEXT:
-      UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.EmfWithGdiText",
-                              average_page_size_in_kb);
-      return;
     case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
       UMA_HISTOGRAM_MEMORY_KB("Printing.ConversionSize.PostScript2",
                               average_page_size_in_kb);
@@ -421,11 +416,6 @@ void PdfConverterImpl::RecordConversionMetrics() {
     case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION:
       UMA_HISTOGRAM_MEMORY_KB(
           "Printing.ConversionSize.EmfWithReducedRasterization",
-          average_page_size_in_kb);
-      return;
-    case PdfRenderSettings::Mode::EMF_WITH_REDUCED_RASTERIZATION_AND_GDI_TEXT:
-      UMA_HISTOGRAM_MEMORY_KB(
-          "Printing.ConversionSize.EmfWithReducedRasterizationAndGdiText",
           average_page_size_in_kb);
       return;
     case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3_WITH_TYPE42_FONTS:

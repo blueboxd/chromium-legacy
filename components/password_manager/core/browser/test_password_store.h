@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -65,12 +65,13 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
   ~TestPasswordStore() override;
 
   // PasswordStoreBackend interface
+  base::WeakPtr<PasswordStoreBackend> GetWeakPtr() override;
   void InitBackend(RemoteChangesReceived remote_form_changes_received,
                    base::RepeatingClosure sync_enabled_or_disabled_cb,
                    base::OnceCallback<void(bool)> completion) override;
   void Shutdown(base::OnceClosure shutdown_completed) override;
-  void GetAllLoginsAsync(LoginsReply callback) override;
-  void GetAutofillableLoginsAsync(LoginsReply callback) override;
+  void GetAllLoginsAsync(LoginsOrErrorReply callback) override;
+  void GetAutofillableLoginsAsync(LoginsOrErrorReply callback) override;
   void FillMatchingLoginsAsync(
       LoginsReply callback,
       bool include_psl,
@@ -98,7 +99,6 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
   FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
-  void GetSyncStatus(base::OnceCallback<void(bool)> callback) override;
 
  private:
   LoginsResult GetAllLoginsInternal();
@@ -126,6 +126,8 @@ class TestPasswordStore : public PasswordStore, public PasswordStoreBackend {
 
   // Number of calls of FillMatchingLogins() method.
   int fill_matching_logins_calls_ = 0;
+
+  base::WeakPtrFactory<TestPasswordStore> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

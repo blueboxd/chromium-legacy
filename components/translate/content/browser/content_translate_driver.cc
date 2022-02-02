@@ -58,18 +58,14 @@ const base::Feature kAutoHrefTranslateAllOrigins{
 
 ContentTranslateDriver::ContentTranslateDriver(
     content::WebContents& web_contents,
-    content::NavigationController* nav_controller,
     language::UrlLanguageHistogram* url_language_histogram,
     translate::TranslateModelService* translate_model_service)
     : content::WebContentsObserver(&web_contents),
-      navigation_controller_(nav_controller),
       translate_manager_(nullptr),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
       next_page_seq_no_(0),
       language_histogram_(url_language_histogram),
-      translate_model_service_(translate_model_service) {
-  DCHECK(navigation_controller_);
-}
+      translate_model_service_(translate_model_service) {}
 
 ContentTranslateDriver::~ContentTranslateDriver() = default;
 
@@ -110,12 +106,11 @@ void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
 // TranslateDriver methods
 
 bool ContentTranslateDriver::IsLinkNavigation() {
-  return navigation_controller_ &&
-         navigation_controller_->GetLastCommittedEntry() &&
-         ui::PageTransitionCoreTypeIs(
-             navigation_controller_->GetLastCommittedEntry()
-                 ->GetTransitionType(),
-             ui::PAGE_TRANSITION_LINK);
+  return ui::PageTransitionCoreTypeIs(web_contents()
+                                          ->GetController()
+                                          .GetLastCommittedEntry()
+                                          ->GetTransitionType(),
+                                      ui::PAGE_TRANSITION_LINK);
 }
 
 void ContentTranslateDriver::OnTranslateEnabledChanged() {
@@ -151,7 +146,7 @@ void ContentTranslateDriver::RevertTranslation(int page_seq_no) {
 }
 
 bool ContentTranslateDriver::IsIncognito() {
-  return navigation_controller_->GetBrowserContext()->IsOffTheRecord();
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
 const std::string& ContentTranslateDriver::GetContentsMimeType() {
@@ -171,7 +166,13 @@ ukm::SourceId ContentTranslateDriver::GetUkmSourceId() {
 }
 
 bool ContentTranslateDriver::HasCurrentPage() {
-  return (navigation_controller_->GetLastCommittedEntry() != nullptr);
+  // TODO(https://crbug.com/524208): This function used to check the existence
+  // of GetLastCommittedEntry(), which will always exist now. Should its callers
+  // just assume HasCurrentPage() is true, and can we remove this function then?
+  return !web_contents()
+              ->GetController()
+              .GetLastCommittedEntry()
+              ->IsInitialEntry();
 }
 
 void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {
@@ -338,8 +339,7 @@ void ContentTranslateDriver::RegisterPage(
     // associated, thus avoiding the potential for corner cases where the
     // detected language is attributed to the wrong page.
     auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
-    if (entry != nullptr)
-      SetPageLanguageInNavigation(details.adopted_language, entry);
+    SetPageLanguageInNavigation(details.adopted_language, entry);
   }
 
   for (auto& observer : language_detection_observers())

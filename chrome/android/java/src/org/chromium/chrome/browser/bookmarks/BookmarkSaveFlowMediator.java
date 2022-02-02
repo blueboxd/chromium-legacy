@@ -10,8 +10,7 @@ import android.widget.CompoundButton;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.google.common.primitives.UnsignedLongs;
-
+import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -20,9 +19,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscription.CommerceSubscriptionType;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscription.SubscriptionManagementType;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscription.TrackingIdType;
 import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -40,6 +36,8 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
     private boolean mFromExplicitTrackUi;
     private SubscriptionsManager mSubscriptionsManager;
     private CommerceSubscription mSubscription;
+    private Callback<Integer> mSubscriptionsManagerCallback;
+    private String mFolderName;
 
     /**
      * @param bookmarkModel The {@link BookmarkModel} which supplies the data.
@@ -91,11 +89,7 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
         });
 
         if (meta != null) {
-            // Use UnsignedLongs to convert ProductClusterId to avoid overflow.
-            mSubscription = new CommerceSubscription(CommerceSubscriptionType.PRICE_TRACK,
-                    UnsignedLongs.toString(
-                            mPowerBookmarkMeta.getShoppingSpecifics().getProductClusterId()),
-                    SubscriptionManagementType.USER_MANAGED, TrackingIdType.PRODUCT_CLUSTER_ID);
+            mSubscription = PowerBookmarkUtils.createCommerceSubscriptionForPowerBookmarkMeta(meta);
         }
         bindBookmarkProperties(mBookmarkId, mPowerBookmarkMeta, mFromExplicitTrackUi);
         bindPowerBookmarkProperties(mBookmarkId, mPowerBookmarkMeta, mFromExplicitTrackUi);
@@ -104,15 +98,15 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
     private void bindBookmarkProperties(
             BookmarkId bookmarkId, PowerBookmarkMeta meta, boolean fromExplicitTrackUi) {
         BookmarkItem item = mBookmarkModel.getBookmarkById(bookmarkId);
-        String folderName = mBookmarkModel.getBookmarkTitle(item.getParentId());
+        mFolderName = mBookmarkModel.getBookmarkTitle(item.getParentId());
         mPropertyModel.set(BookmarkSaveFlowProperties.TITLE_TEXT,
-                BookmarkUtils.getSaveFlowTitleForBookmark(mContext, bookmarkId, meta));
+                mContext.getResources().getString(R.string.bookmark_save_flow_title));
         mPropertyModel.set(BookmarkSaveFlowProperties.FOLDER_SELECT_ICON,
                 BookmarkUtils.getFolderIcon(mContext, bookmarkId.getType()));
         mPropertyModel.set(BookmarkSaveFlowProperties.FOLDER_SELECT_ICON_ENABLED, item.isMovable());
         mPropertyModel.set(BookmarkSaveFlowProperties.SUBTITLE_TEXT,
                 mContext.getResources().getString(
-                        R.string.bookmark_page_saved_location, folderName));
+                        R.string.bookmark_page_saved_location, mFolderName));
     }
 
     private void bindPowerBookmarkProperties(
@@ -120,45 +114,60 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
         if (meta == null) return;
 
         if (meta.getType() == PowerBookmarkType.SHOPPING) {
-            if (fromExplicitTrackUi) {
-                // TODO(crbug.com/1243383): Follow-up with UX about failing to subscribe.
-                mSubscriptionsManager.subscribe(mSubscription, (status) -> {});
-                return;
-            }
-
+            setPriceTrackingNotificationUiEnabled(true);
+            setPriceTrackingIconForEnabledState(false);
             mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_VISIBLE, true);
-            mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_START_ICON,
-                    ResourcesCompat.getDrawable(mContext.getResources(),
-                            R.drawable.price_tracking_enabled, /*theme=*/null));
             mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TITLE,
-                    mContext.getResources().getString(
-                            R.string.price_tracking_save_flow_notification_switch_title));
-            mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_SUBTITLE,
-                    mContext.getResources().getString(
-                            R.string.price_tracking_save_flow_notification_switch_subtitle));
+                    mContext.getResources().getString(R.string.enable_price_tracking_menu_item));
             mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TOGGLE_LISTENER,
                     this::handleNotificationSwitchToggle);
+
+            if (fromExplicitTrackUi) {
+                mPropertyModel.set(BookmarkSaveFlowProperties.TITLE_TEXT,
+                        mContext.getResources().getString(R.string.price_tracking_title));
+                mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TOGGLED, true);
+            }
         }
     }
 
     void handleNotificationSwitchToggle(CompoundButton view, boolean toggled) {
-        if (toggled) {
-            mSubscriptionsManager.subscribe(
-                    mSubscription, mCallbackController.makeCancelable((status) -> {
-                        // TODO(crbug.com/1243383): Follow-up with UX about failure.
-                        if (status != SubscriptionsManager.StatusCode.OK) {
-                            view.setChecked(false);
-                        }
-                    }));
-        } else {
-            mSubscriptionsManager.unsubscribe(
-                    mSubscription, mCallbackController.makeCancelable((status) -> {
-                        // TODO(crbug.com/1243383): Follow-up with UX about failure.
-                        if (status != SubscriptionsManager.StatusCode.OK) {
-                            view.setChecked(true);
-                        }
-                    }));
+        if (mSubscriptionsManagerCallback == null) {
+            mSubscriptionsManagerCallback = mCallbackController.makeCancelable((Integer status) -> {
+                boolean statusOk = (status == SubscriptionsManager.StatusCode.OK);
+                if (statusOk) {
+                    setPriceTrackingIconForEnabledState(toggled);
+                } else {
+                    // Set it back to the previous state if the request.
+                    mPropertyModel.set(
+                            BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TOGGLE_LISTENER, null);
+                    view.setChecked(!toggled);
+                    mPropertyModel.set(
+                            BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TOGGLE_LISTENER,
+                            this::handleNotificationSwitchToggle);
+                    setPriceTrackingIconForEnabledState(!toggled);
+                }
+                setPriceTrackingNotificationUiEnabled(statusOk);
+            });
         }
+        // TODO(crbug.com/1243383): Follow-up with UX about failure.
+        PowerBookmarkUtils.setPriceTrackingEnabled(mSubscriptionsManager, mBookmarkModel,
+                mBookmarkId, toggled, mSubscriptionsManagerCallback);
+    }
+
+    void setPriceTrackingNotificationUiEnabled(boolean enabled) {
+        mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_UI_ENABLED, enabled);
+        mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_SUBTITLE,
+                mContext.getResources().getString(enabled
+                                ? R.string.price_tracking_save_flow_notification_switch_subtitle
+                                : R.string.price_tracking_save_flow_notification_switch_subtitle_error));
+    }
+
+    void setPriceTrackingIconForEnabledState(boolean enabled) {
+        mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_START_ICON,
+                ResourcesCompat.getDrawable(mContext.getResources(),
+                        enabled ? R.drawable.price_tracking_enabled_filled
+                                : R.drawable.price_tracking_disabled,
+                        /*theme=*/null));
     }
 
     void destroy() {

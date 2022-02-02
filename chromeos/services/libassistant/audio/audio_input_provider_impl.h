@@ -7,9 +7,8 @@
 
 #include <cstdint>
 
-#include "base/macros.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "chromeos/services/libassistant/audio/audio_input_impl.h"
-#include "libassistant/shared/public/platform_audio_input.h"
 
 namespace chromeos {
 namespace libassistant {

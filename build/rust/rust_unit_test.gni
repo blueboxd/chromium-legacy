@@ -29,6 +29,13 @@ import("//build/config/rust.gni")
 #     ]
 #     sources = [ "src/lib.rs" ]
 #   }
+#
+# Implementation note: you might assume it makes sense to implement this
+# in terms of rust_target in order to avoid the duplication of logic around
+# features and editions. We don't do that because rust_target actually
+# depends on this template in order to build embedded unit tests
+# (and therefore depending on rust_target here would lead to an infinite
+# import loop).
 
 template("rust_unit_test") {
   if (defined(invoker.crate_root)) {
@@ -43,11 +50,15 @@ template("rust_unit_test") {
     }
   }
   _configs = invoker.configs
-  if (defined(invoker.edition) && invoker.edition == "2015") {
-    _configs += [ "//build/rust:edition_2015" ]
-  } else {
-    _configs += [ "//build/rust:edition_2018" ]
+  _edition = "2021"
+  if (defined(invoker.edition)) {
+    _edition = invoker.edition
   }
+  _configs += [ string_join("",
+                            [
+                              "//build/rust:edition_",
+                              _edition,
+                            ]) ]
 
   # We require that all source files are listed, even though this is
   # not a requirement for rustc. The reason is to ensure that tools
@@ -78,13 +89,14 @@ template("rust_unit_test") {
       "--test",
     ]
     rustflags += _rustflags
-    configs += _configs
+    configs = []
+    configs = _configs
     crate_root = _crate_root
   }
 }
 
 set_defaults("rust_unit_test") {
-  configs = []
+  configs = default_executable_configs
   deps = []
   rustflags = []
 }

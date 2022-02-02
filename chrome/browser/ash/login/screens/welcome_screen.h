@@ -10,7 +10,6 @@
 
 #include "ash/public/cpp/locale_update_controller.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -60,13 +59,19 @@ class WelcomeScreen : public BaseScreen,
 
   class Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
 
     // Called when language list is reloaded.
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  enum class Result { NEXT, NEXT_OS_INSTALL, SETUP_DEMO, ENABLE_DEBUGGING };
+  enum class Result {
+    NEXT,
+    NEXT_OS_INSTALL,
+    SETUP_DEMO,
+    ENABLE_DEBUGGING,
+    QUICK_START
+  };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
@@ -86,7 +91,7 @@ class WelcomeScreen : public BaseScreen,
   const std::string& language_list_locale() const {
     return language_list_locale_;
   }
-  const base::ListValue* language_list() const { return language_list_.get(); }
+  const base::Value& language_list() const { return language_list_; }
 
   void UpdateLanguageList();
 
@@ -180,7 +185,7 @@ class WelcomeScreen : public BaseScreen,
   // Creation of language list happens on Blocking Pool, so we cache
   // resolved data.
   std::string language_list_locale_;
-  std::unique_ptr<base::ListValue> language_list_;
+  base::Value language_list_{base::Value::Type::LIST};
 
   // The exact language code selected by user in the menu.
   std::string selected_language_code_;

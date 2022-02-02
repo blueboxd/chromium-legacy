@@ -8,23 +8,20 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/mojom/web_launch/file_handling_expiry.mojom-forward.h"
 
 class Profile;
-
-namespace content {
-class WebContents;
-}
 
 namespace web_app {
 
 class WebAppRegistrar;
+class WebAppSyncBridge;
 
 class WebAppFileHandlerManager {
  public:
@@ -33,8 +30,7 @@ class WebAppFileHandlerManager {
   WebAppFileHandlerManager& operator=(const WebAppFileHandlerManager&) = delete;
   virtual ~WebAppFileHandlerManager();
 
-  // |registrar| is used to observe OnWebAppInstalled/Uninstalled events.
-  void SetSubsystems(WebAppRegistrar* registrar);
+  void SetSubsystems(WebAppSyncBridge* sync_bridge);
   void Start();
 
   // Disables OS integrations, such as shortcut creation on Linux or modifying
@@ -57,11 +53,6 @@ class WebAppFileHandlerManager {
   // feature flag must also separately be enabled.
   static void SetIconsSupportedByOsForTesting(bool value);
 
-  // Set a callback which is fired when the file handling expiry time is
-  // updated.
-  void SetOnFileHandlingExpiryUpdatedForTesting(
-      base::RepeatingCallback<void()> on_file_handling_expiry_updated);
-
   // Returns |app_id|'s URL registered to handle |launch_files|'s extensions, or
   // nullopt otherwise.
   const absl::optional<GURL> GetMatchingFileHandlerURL(
@@ -79,24 +70,6 @@ class WebAppFileHandlerManager {
   void DisableAndUnregisterOsFileHandlers(const AppId& app_id,
                                           ResultCallback callback);
 
-  // Updates the file handling origin trial expiry timer based on a currently
-  // open instance of the site. This will not update the expiry timer if
-  // |app_id| has force enabled file handling origin trial.
-  void MaybeUpdateFileHandlingOriginTrialExpiry(
-      content::WebContents* web_contents,
-      const AppId& app_id);
-
-  // Force enables File Handling origin trial. This will register the App's file
-  // handlers even if the App does not have a valid origin trial token.
-  void ForceEnableFileHandlingOriginTrial(const AppId& app_id);
-
-  // Disable a force enabled File Handling origin trial. This will unregister
-  // App's file handlers.
-  void DisableForceEnabledFileHandlingOriginTrial(const AppId& app_id);
-
-  // Returns whether App's file handling is force enabled.
-  bool IsFileHandlingForceEnabled(const AppId& app_id);
-
   // Gets all enabled file handlers for |app_id|. |nullptr| if the app has no
   // enabled file handlers. Note: The lifetime of the file handlers are tied to
   // the app they belong to.
@@ -106,9 +79,6 @@ class WebAppFileHandlerManager {
   // the app has a valid origin trial token for the file handling API or if the
   // FileHandlingAPI flag is enabled.
   bool IsFileHandlingAPIAvailable(const AppId& app_id);
-
-  // Indicates whether file handlers have been registered for an app.
-  bool AreFileHandlersEnabled(const AppId& app_id) const;
 
   // Returns true when the system supports file type association icons.
   static bool IconsEnabled();
@@ -121,26 +91,29 @@ class WebAppFileHandlerManager {
   virtual const apps::FileHandlers* GetAllFileHandlers(const AppId& app_id);
 
  private:
-  void OnOriginTrialExpiryTimeReceived(
-      mojo::AssociatedRemote<blink::mojom::FileHandlingExpiry> /*interface*/,
-      const AppId& app_id,
-      base::Time expiry_time);
-
   // Removes file handlers whose origin trials have expired (assuming
   // kFileHandlingAPI isn't enabled). Returns the number of apps that had file
   // handlers unregistered, for use in tests.
   int CleanupAfterOriginTrials();
 
-  void UpdateFileHandlersForOriginTrialExpiryTime(
-      const AppId& app_id,
-      const base::Time& expiry_time);
+  // Sets whether `app_id` should have its File Handling abilities surfaces in
+  // the OS. In theory, this should match the actual OS integration state (e.g.
+  // the contents of the .desktop file on Linux), however, that's only enforced
+  // on a best-effort basis.
+  void SetOsIntegrationState(const AppId& app_id, OsIntegrationState os_state);
+
+  // Indicates whether file handlers should be OS-registered for an app. As with
+  // `SetOsIntegrationState()`, there may be a mismatch with the actual OS
+  // registry.
+  bool ShouldOsIntegrationBeEnabled(const AppId& app_id) const;
+
+  const WebAppRegistrar* GetRegistrar() const;
 
   static bool disable_automatic_file_handler_cleanup_for_testing_;
   bool disable_os_integration_for_testing_ = false;
-  base::RepeatingCallback<void()> on_file_handling_expiry_updated_for_testing_;
 
-  Profile* const profile_;
-  WebAppRegistrar* registrar_ = nullptr;
+  const raw_ptr<Profile> profile_;
+  raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
 
   base::WeakPtrFactory<WebAppFileHandlerManager> weak_ptr_factory_{this};
 };

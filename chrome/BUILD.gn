@@ -342,17 +342,8 @@ if (!is_android && !is_mac) {
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
 
-    # Lacros is built with "{arch}-generic" configuration. However, in Chrome
-    # OS, it is just "one board variation", so the libraries on the *-generic
-    # boards may not be compatible with the ones on the actual DUTs.
-    # One of the common pattern recently we hit is symbols exposed by libgcc.
-    # The symbols start to be exposed recently because of libunwind transition
-    # and along with it they are or are not re-exposed by other libraries, too,
-    # depending on per-board implementation.
-    # To mitigate the situation, marking -shared-libgcc to look up the system
-    # libgcc always.
     if (is_chromeos_lacros && is_chromeos_device) {
-      ldflags += [ "-shared-libgcc" ]
+      configs += [ "//build/lacros:optional_shared_libgcc" ]
     }
 
     data_deps += [
@@ -486,6 +477,7 @@ if (is_win) {
       ":chrome_app_strings_bundle_data",
       ":chrome_resources",
       ":chrome_versioned_bundle_data",
+      "//base/allocator:early_zone_registration_mac",
       "//chrome/common:buildflags",
       "//chrome/common:version_header",
     ]
@@ -710,6 +702,7 @@ if (is_win) {
       defines = [ "HELPER_EXECUTABLE" ]
 
       deps = [
+        "//base/allocator:early_zone_registration_mac",
         "//chrome/common:version_header",
         "//sandbox/mac:seatbelt",
       ]
@@ -1389,7 +1382,10 @@ group("browser_dependencies") {
   }
 
   if (is_chromeos_lacros) {
-    public_deps += [ "//chromeos/lacros" ]
+    public_deps += [
+      "//chromeos/lacros",
+      "//chromeos/lacros/dbus",
+    ]
   }
 
   if (is_chromeos_ash) {

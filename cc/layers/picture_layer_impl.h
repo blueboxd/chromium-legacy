@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -176,6 +177,8 @@ class CC_EXPORT PictureLayerImpl
   }
 
  protected:
+  friend class RasterizeAndRecordBenchmarkImpl;
+
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(const gfx::AxisTransform2d& contents_transform);
   void RemoveAllTilings();
@@ -240,7 +243,7 @@ class CC_EXPORT PictureLayerImpl
   // will change transform.
   bool HasWillChangeTransformHint() const;
 
-  PictureLayerImpl* twin_layer_ = nullptr;
+  raw_ptr<PictureLayerImpl> twin_layer_ = nullptr;
 
   std::unique_ptr<PictureLayerTilingSet> tilings_ =
       CreatePictureLayerTilingSet();

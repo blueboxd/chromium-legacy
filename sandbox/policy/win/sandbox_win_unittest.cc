@@ -20,19 +20,19 @@
 #include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
-#include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/win/security_util.h"
+#include "base/win/sid.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "sandbox/policy/features.h"
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "sandbox/policy/switches.h"
-#include "sandbox/win/src/app_container_base.h"
+#include "sandbox/policy/win/sandbox_test_utils.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_policy_diagnostic.h"
-#include "sandbox/win/src/sid.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,17 +43,6 @@ namespace sandbox {
 namespace policy {
 
 namespace {
-
-constexpr wchar_t kBaseSecurityDescriptor[] = L"D:(A;;GA;;;WD)";
-constexpr char kAppContainerId[] = "SandboxWinTest";
-constexpr wchar_t kPackageSid[] =
-    L"S-1-15-2-1505217662-1870513255-555216753-1864132992-3842232122-"
-    L"1807018979-869957911";
-constexpr wchar_t kChromeInstallFiles[] = L"chromeInstallFiles";
-constexpr wchar_t kLpacChromeInstallFiles[] = L"lpacChromeInstallFiles";
-constexpr wchar_t kRegistryRead[] = L"registryRead";
-constexpr wchar_t klpacPnpNotifications[] = L"lpacPnpNotifications";
-
 class TestTargetPolicy : public TargetPolicy {
  public:
   void AddRef() override {}
@@ -155,26 +144,6 @@ class TestTargetPolicy : public TargetPolicy {
   scoped_refptr<AppContainerBase> app_container_;
 };
 
-std::vector<Sid> GetCapabilitySids(
-    const std::initializer_list<std::wstring>& capabilities) {
-  std::vector<Sid> sids;
-  for (const auto& capability : capabilities) {
-    sids.emplace_back(Sid::FromNamedCapability(capability.c_str()));
-  }
-  return sids;
-}
-
-std::wstring GetAccessAllowedForCapabilities(
-    const std::initializer_list<std::wstring>& capabilities) {
-  std::wstring sddl = kBaseSecurityDescriptor;
-  for (const auto& capability : GetCapabilitySids(capabilities)) {
-    std::wstring sid_string;
-    CHECK(capability.ToSddlString(&sid_string));
-    base::StrAppend(&sddl, {L"(A;;GRGX;;;", sid_string, L")"});
-  }
-  return sddl;
-}
-
 // Drops a temporary file granting RX access to a list of capabilities.
 bool DropTempFileWithSecurity(
     const base::ScopedTempDir& temp_dir,
@@ -192,35 +161,6 @@ bool DropTempFileWithSecurity(
       path->value().c_str(), DACL_SECURITY_INFORMATION, security_descriptor);
   ::LocalFree(security_descriptor);
   return !!result;
-}
-
-void EqualSidList(const std::vector<Sid>& left, const std::vector<Sid>& right) {
-  EXPECT_EQ(left.size(), right.size());
-  auto result = std::mismatch(left.cbegin(), left.cend(), right.cbegin(),
-                              [](const auto& left_sid, const auto& right_sid) {
-                                return !!::EqualSid(left_sid.GetPSID(),
-                                                    right_sid.GetPSID());
-                              });
-  EXPECT_EQ(result.first, left.cend());
-}
-
-void CheckCapabilities(
-    AppContainerBase* profile,
-    const std::initializer_list<std::wstring>& additional_capabilities) {
-  auto additional_caps = GetCapabilitySids(additional_capabilities);
-  auto impersonation_caps =
-      GetCapabilitySids({kChromeInstallFiles, klpacPnpNotifications,
-                         kLpacChromeInstallFiles, kRegistryRead});
-  auto base_caps = GetCapabilitySids(
-      {klpacPnpNotifications, kLpacChromeInstallFiles, kRegistryRead});
-
-  impersonation_caps.insert(impersonation_caps.end(), additional_caps.begin(),
-                            additional_caps.end());
-  base_caps.insert(base_caps.end(), additional_caps.begin(),
-                   additional_caps.end());
-
-  EqualSidList(impersonation_caps, profile->GetImpersonationCapabilities());
-  EqualSidList(base_caps, profile->GetCapabilities());
 }
 
 class SandboxWinTest : public ::testing::Test {
@@ -254,9 +194,14 @@ class SandboxWinTest : public ::testing::Test {
                         &command_line);
     }
 
+    std::string appcontainer_id =
+        testing::UnitTest::GetInstance()->current_test_info()->test_case_name();
+    appcontainer_id += ".";
+    appcontainer_id +=
+        testing::UnitTest::GetInstance()->current_test_info()->name();
     TestTargetPolicy policy;
     ResultCode result = SandboxWin::AddAppContainerProfileToPolicy(
-        command_line, sandbox_type, kAppContainerId, &policy);
+        command_line, sandbox_type, appcontainer_id, &policy);
     if (result == SBOX_ALL_OK)
       *profile = policy.GetAppContainerBase();
     return result;
@@ -301,10 +246,11 @@ TEST_F(SandboxWinTest, AppContainerCheckProfile) {
       command_line, false, sandbox::mojom::Sandbox::kGpu, &profile);
   ASSERT_EQ(SBOX_ALL_OK, result);
   ASSERT_NE(nullptr, profile);
-  auto package_sid = Sid::FromSddlString(kPackageSid);
-  ASSERT_TRUE(package_sid.IsValid());
-  EXPECT_TRUE(
-      ::EqualSid(package_sid.GetPSID(), profile->GetPackageSid().GetPSID()));
+  absl::optional<base::win::Sid> package_sid = base::win::Sid::FromSddlString(
+      L"S-1-15-2-2402834154-1919024995-1520873375-1190013510-771931769-"
+      L"834570634-3212001585");
+  ASSERT_TRUE(package_sid);
+  EXPECT_EQ(package_sid, profile->GetPackageSid());
   EXPECT_TRUE(profile->GetEnableLowPrivilegeAppContainer());
   CheckCapabilities(profile.get(), {});
 }

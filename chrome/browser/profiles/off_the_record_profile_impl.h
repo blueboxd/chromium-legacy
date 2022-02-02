@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -51,7 +52,6 @@ class OffTheRecordProfileImpl : public Profile {
   bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
-  bool IsSupervised() const override;
   bool IsChild() const override;
   bool AllowsBrowserWindows() const override;
   ExtensionSpecialStoragePolicy* GetExtensionSpecialStoragePolicy() override;
@@ -137,7 +137,7 @@ class OffTheRecordProfileImpl : public Profile {
   void UpdateDefaultZoomLevel();
 
   // The real underlying profile.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   // Prevent |profile_| from being destroyed first.
   ScopedProfileKeepAlive profile_keep_alive_;
 

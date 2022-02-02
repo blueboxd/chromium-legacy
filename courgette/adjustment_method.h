@@ -5,8 +5,6 @@
 #ifndef COURGETTE_ADJUSTMENT_METHOD_H_
 #define COURGETTE_ADJUSTMENT_METHOD_H_
 
-#include "base/macros.h"
-
 namespace courgette {
 
 class AssemblyProgram;
@@ -29,6 +27,9 @@ class AdjustmentMethod {
   // Returns the new shingle tiling adjustment method.
   static AdjustmentMethod* MakeShingleAdjustmentMethod();
 
+  AdjustmentMethod(const AdjustmentMethod&) = delete;
+  AdjustmentMethod& operator=(const AdjustmentMethod&) = delete;
+
   // AdjustmentMethod interface:
 
   // Adjusts |program| to increase similarity to |model|.  |program| can be
@@ -43,8 +44,6 @@ class AdjustmentMethod {
  protected:
   AdjustmentMethod() {}
   virtual ~AdjustmentMethod() {}
-
-  DISALLOW_COPY_AND_ASSIGN(AdjustmentMethod);
 };
 
 }  // namespace courgette

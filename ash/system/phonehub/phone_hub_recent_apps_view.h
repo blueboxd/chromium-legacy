@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_RECENT_APPS_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/components/phonehub/recent_apps_interaction_handler.h"
 #include "base/gtest_prod_util.h"
-#include "chromeos/components/phonehub/recent_apps_interaction_handler.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
@@ -18,8 +18,7 @@ namespace ash {
 class ASH_EXPORT PhoneHubRecentAppsView : public views::View {
  public:
   explicit PhoneHubRecentAppsView(
-      chromeos::phonehub::RecentAppsInteractionHandler*
-          recent_apps_interaction_handler);
+      phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler);
   ~PhoneHubRecentAppsView() override;
   PhoneHubRecentAppsView(PhoneHubRecentAppsView&) = delete;
   PhoneHubRecentAppsView operator=(PhoneHubRecentAppsView&) = delete;
@@ -55,8 +54,8 @@ class ASH_EXPORT PhoneHubRecentAppsView : public views::View {
 
   RecentAppButtonsView* recent_app_buttons_view_ = nullptr;
   std::vector<std::unique_ptr<views::View>> recent_app_button_list_;
-  chromeos::phonehub::RecentAppsInteractionHandler*
-      recent_apps_interaction_handler_ = nullptr;
+  phonehub::RecentAppsInteractionHandler* recent_apps_interaction_handler_ =
+      nullptr;
 };
 
 }  // namespace ash

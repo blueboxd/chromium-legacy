@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -4711,6 +4710,114 @@ TEST_F(ManifestParserTest, StorageIsolationBadScope) {
   }
 }
 
+TEST_F(ManifestParserTest, PermissionsPolicy) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
+  {
+    auto& manifest = ParseManifest(
+        R"({ "permissions_policy": {
+                "geolocation": ["https://example.com"],
+                "microphone": ["https://example.com"]
+        }})");
+    EXPECT_EQ(0u, GetErrorCount());
+    EXPECT_EQ(2u, manifest->permissions_policy.size());
+  }
+}
+
+TEST_F(ManifestParserTest, PermissionsPolicyEmptyOrigin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
+  {
+    auto& manifest = ParseManifest(
+        R"({ "permissions_policy": {
+                "geolocation": ["https://example.com"],
+                "microphone": [""],
+                "midi": []
+        }})");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(1u, manifest->permissions_policy.size());
+  }
+}
+
+TEST_F(ManifestParserTest, PermissionsPolicyAsArray) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
+  {
+    auto& manifest = ParseManifest(
+        R"({ "permissions_policy": [
+          {"geolocation": ["https://example.com"]},
+          {"microphone": [""]},
+          {"midi": []}
+        ]})");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->permissions_policy.size());
+    EXPECT_EQ("property 'permissions_policy' ignored, type object expected.",
+              errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, PermissionsPolicyInvalidType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
+  {
+    auto& manifest = ParseManifest(R"({ "permissions_policy": true})");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->permissions_policy.size());
+    EXPECT_EQ("property 'permissions_policy' ignored, type object expected.",
+              errors()[0]);
+  }
+}
+
+TEST_F(ManifestParserTest, PermissionsPolicyInvalidAllowlistType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
+  {
+    auto& manifest = ParseManifest(
+        R"({ "permissions_policy": {
+            "geolocation": ["https://example.com"],
+            "microphone": 0,
+            "midi": true
+          }})");
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(1u, manifest->permissions_policy.size());
+    EXPECT_EQ(
+        "permission 'microphone' ignored, invalid allowlist: type array "
+        "expected.",
+        errors()[0]);
+    EXPECT_EQ(
+        "permission 'midi' ignored, invalid allowlist: type array expected.",
+        errors()[1]);
+  }
+}
+
+TEST_F(ManifestParserTest, PermissionsPolicyInvalidAllowlistEntry) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      blink::features::kWebAppEnableIsolatedStorage);
+  {
+    auto& manifest = ParseManifest(
+        R"({ "permissions_policy": {
+            "geolocation": ["https://example.com", null],
+            "microphone": ["https://example.com", {}]
+          }})");
+    EXPECT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(0u, manifest->permissions_policy.size());
+    EXPECT_EQ(
+        "permissions_policy entry ignored, required property 'origin' contains "
+        "an invalid element: type string expected.",
+        errors()[0]);
+    EXPECT_EQ(
+        "permissions_policy entry ignored, required property 'origin' contains "
+        "an invalid element: type string expected.",
+        errors()[1]);
+  }
+}
+
 TEST_F(ManifestParserTest, CaptureLinksParseRules) {
   {
     ScopedWebAppLinkCapturingForTest feature(false);
@@ -5115,6 +5222,103 @@ TEST_F(ManifestParserTest, TranslationsStringsParseRules) {
               errors()[1]);
     EXPECT_EQ("property 'description' of 'translations' is an empty string.",
               errors()[2]);
+  }
+}
+
+TEST_F(ManifestParserTest, UserPreferencesParseRules) {
+  {
+    ScopedWebAppDarkModeForTest feature(false);
+
+    // Feature not enabled, should not be parsed.
+    auto& manifest = ParseManifest(
+        R"({ "user_preferences":
+        {"color_scheme_dark": {"theme_color": "#FF0000"}} })");
+    EXPECT_TRUE(manifest->user_preferences.is_null());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+  {
+    ScopedWebAppDarkModeForTest feature(true);
+
+    // Manifest does not contain a 'user_preferences' field.
+    {
+      auto& manifest = ParseManifest(R"({ })");
+      EXPECT_TRUE(manifest->user_preferences.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // user_preferences object is empty.
+    {
+      auto& manifest = ParseManifest(R"({ "user_preferences": {} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Empty preference is ignored.
+    {
+      auto& manifest =
+          ParseManifest(R"({ "user_preferences": {"color_scheme_dark": {}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Valid theme_color and background_color should be parsed
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences": {"color_scheme_dark":
+          {"theme_color": "#FF0000", "background_color": "#FFF"}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
+                0xFFFF0000u);
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->background_color,
+                0xFFFFFFFFu);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Don't parse if the property isn't an object.
+    {
+      auto& manifest = ParseManifest(R"({ "user_preferences": [] })");
+      EXPECT_TRUE(manifest->user_preferences.is_null());
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("property 'user_preferences' ignored, object expected.",
+                errors()[0]);
+    }
+
+    // Ignore preference if it isn't an object.
+    {
+      auto& manifest =
+          ParseManifest(R"({ "user_preferences": {"color_scheme_dark": []} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("preference 'color_scheme_dark' ignored, object expected.",
+                errors()[0]);
+    }
+
+    // Preferences overriding a single value should be parsed.
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences":
+          {"color_scheme_dark": {"theme_color": "#FF0000"}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
+                0xFFFF0000u);
+      EXPECT_FALSE(
+          manifest->user_preferences->color_scheme_dark->has_background_color);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Unknown preference string should be ignored.
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences": {"something": {"theme_color": "#FF0000"}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
   }
 }
 

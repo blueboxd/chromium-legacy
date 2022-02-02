@@ -148,7 +148,7 @@ template("gcc_toolchain") {
       # Whether rustc can successfully link binaries. (If not, rust code
       # can still be linked by our C++ toolchain). See
       # //build/config/rust.gni
-      rustc_can_link = !use_thin_lto && current_os != "android"
+      rustc_can_link = current_os != "android"
     }
 
     # When the invoker has explicitly overridden use_remoteexec, use_goma or
@@ -667,12 +667,12 @@ template("gcc_toolchain") {
     }
 
     if (toolchain_has_rust) {
-      rustc = ""
-      if (defined(rust_compiler_prefix)) {
-        rustc += rust_compiler_prefix
+      if (!defined(rust_compiler_prefix)) {
+        rust_compiler_prefix = ""
       }
-      rustc += rust_prefix
-      rustc += "rustc"
+      rustc_bin = rebase_path("${rust_sysroot}/bin/rustc", root_build_dir)
+      rustc = "$rust_compiler_prefix${rustc_bin}"
+      rust_sysroot_relative_to_out = rebase_path(rust_sysroot, root_out_dir)
 
       # RSP files not used due to https://bugs.chromium.org/p/gn/issues/detail?id=249
       tool("rust_staticlib") {
@@ -680,6 +680,7 @@ template("gcc_toolchain") {
         depfile = "{{output}}.d"
         command = "$rustc $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile"
         description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
         outputs = [ rust_outfile ]
       }
 
@@ -688,31 +689,37 @@ template("gcc_toolchain") {
         depfile = "{{output}}.d"
         command = "$rustc $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile"
         description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
         outputs = [ rust_outfile ]
       }
 
       if (toolchain_args.rustc_can_link) {
+        rust_link_wrapper = rebase_path("//build/rust/rust_link_wrapper.py")
+
         tool("rust_bin") {
           rust_outfile = "{{root_out_dir}}/{{crate_name}}"
           depfile = "{{output}}.d"
-          command = "$rustc $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile"
+          command = "$python_path \"$rust_link_wrapper\" --rustc=$rustc -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags}"
           description = "RUST $rust_outfile"
+          rust_sysroot = rust_sysroot_relative_to_out
           outputs = [ rust_outfile ]
         }
 
         tool("rust_cdylib") {
           rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.so"
           depfile = "{{output}}.d"
-          command = "$rustc $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile"
+          command = "$python_path \"$rust_link_wrapper\" --rustc=$rustc -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags}"
           description = "RUST $rust_outfile"
+          rust_sysroot = rust_sysroot_relative_to_out
           outputs = [ rust_outfile ]
         }
 
         tool("rust_macro") {
           rust_outfile = "{{target_out_dir}}/lib{{crate_name}}.so"
           depfile = "{{output}}.d"
-          command = "$rustc $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile"
+          command = "$python_path \"$rust_link_wrapper\" --rustc=$rustc -- -Clinker=\"${invoker.cc}\" $rustc_common_args --emit=dep-info=$depfile,link -Clinker=$ld -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags}"
           description = "RUST $rust_outfile"
+          rust_sysroot = rust_sysroot_relative_to_out
           outputs = [ rust_outfile ]
         }
       }

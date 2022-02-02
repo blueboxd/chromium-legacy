@@ -210,8 +210,6 @@ const base::Feature kEnableDrDc{"EnableDrDc",
 // before gpu service is enabled by default.
 const base::Feature kWebGPUService{"WebGPUService",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-// Enable raw draw for tiles.
-const base::Feature kRawDraw{"RawDraw", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 
@@ -325,12 +323,6 @@ bool IsDrDcEnabled() {
   if (!IsAImageReaderEnabled())
     return false;
 
-  // Do not enable DrDc if angle context virtualization group is not supported.
-  // Both gpu main thread and compositor gpu thread should be mapped to a
-  // different angle's backend context and hence different virtualization group.
-  if (!gl::GLSurfaceEGL::IsANGLEContextVirtualizationSupported())
-    return false;
-
   return base::FeatureList::IsEnabled(kEnableDrDc);
 #else
   return false;
@@ -367,10 +359,6 @@ bool IsANGLEValidationEnabled() {
   }
 
   return base::FeatureList::IsEnabled(kDefaultEnableANGLEValidation);
-}
-
-bool IsUsingRawDraw() {
-  return base::FeatureList::IsEnabled(kRawDraw);
 }
 
 #if defined(OS_ANDROID)

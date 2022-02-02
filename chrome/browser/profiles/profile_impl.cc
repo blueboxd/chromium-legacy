@@ -1036,10 +1036,6 @@ const Profile* ProfileImpl::GetOriginalProfile() const {
   return this;
 }
 
-bool ProfileImpl::IsSupervised() const {
-  return !GetPrefs()->GetString(prefs::kSupervisedUserId).empty();
-}
-
 bool ProfileImpl::IsChild() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return GetPrefs()->GetString(prefs::kSupervisedUserId) ==
@@ -1154,16 +1150,14 @@ bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
 
 bool ProfileImpl::ShouldRestoreOldSessionCookies() {
 #if defined(OS_ANDROID)
-  SessionStartupPref::Type startup_pref_type =
-      SessionStartupPref::GetDefaultStartupType();
-  return startup_pref_type == SessionStartupPref::LAST;
+  SessionStartupPref startup_pref(SessionStartupPref::GetDefaultStartupType());
+  return startup_pref.ShouldRestoreLastSession();
 #else
-  SessionStartupPref::Type startup_pref_type =
+  SessionStartupPref startup_pref =
       StartupBrowserCreator::GetSessionStartupPref(
-          *base::CommandLine::ForCurrentProcess(), this)
-          .type;
+          *base::CommandLine::ForCurrentProcess(), this);
   return ExitTypeService::GetLastSessionExitType(this) == ExitType::kCrashed ||
-         startup_pref_type == SessionStartupPref::LAST;
+         startup_pref.ShouldRestoreLastSession();
 #endif
 }
 
@@ -1472,7 +1466,7 @@ void ProfileImpl::OnLogin() {
 }
 
 void ProfileImpl::InitChromeOSPreferences() {
-  chromeos_preferences_ = std::make_unique<chromeos::Preferences>();
+  chromeos_preferences_ = std::make_unique<ash::Preferences>();
   chromeos_preferences_->Init(
       this, chromeos::ProfileHelper::Get()->GetUserByProfile(this));
 }

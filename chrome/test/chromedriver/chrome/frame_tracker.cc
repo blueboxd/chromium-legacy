@@ -84,7 +84,7 @@ Status FrameTracker::OnConnected(DevToolsClient* client) {
   if (status.IsError())
     return status;
   // Enable runtime events to allow tracking execution context creation.
-  params.Clear();
+  params.DictClear();
   status = client->SendCommand("Runtime.enable", params);
   if (status.IsError())
     return status;
@@ -111,14 +111,20 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, method + " has invalid 'context': " + json);
     }
 
-    if (context->HasKey("auxData")) {
-      const base::DictionaryValue* auxData;
-      if (!context->GetDictionary("auxData", &auxData))
+    if (const base::Value* auxData = context->FindDictKey("auxData")) {
+      if (!auxData->is_dict()) {
         return Status(kUnknownError, method + " has invalid 'auxData' value");
-      if (!auxData->GetBoolean("isDefault", &is_default))
+      }
+      if (absl::optional<bool> b = auxData->FindBoolKey("isDefault")) {
+        is_default = *b;
+      } else {
         return Status(kUnknownError, method + " has invalid 'isDefault' value");
-      if (!auxData->GetString("frameId", &frame_id))
+      }
+      if (const std::string* s = auxData->FindStringKey("frameId")) {
+        frame_id = *s;
+      } else {
         return Status(kUnknownError, method + " has invalid 'frameId' value");
+      }
     }
 
     if (is_default && !frame_id.empty())
@@ -148,8 +154,7 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
                     "missing frameId in Page.frameDetached event");
     attached_frames_.erase(frame_id);
   } else if (method == "Page.frameNavigated") {
-    const base::Value* unused_value;
-    if (!params.Get("frame.parentId", &unused_value))
+    if (!params.FindPath("frame.parentId"))
       frame_to_context_map_.clear();
   } else if (method == "Target.attachedToTarget") {
     std::string type, target_id, session_id;

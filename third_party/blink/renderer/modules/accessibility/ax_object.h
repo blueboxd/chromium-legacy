@@ -34,13 +34,12 @@
 #include <utility>
 
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
+#include "third_party/blink/renderer/core/inspector/protocol/accessibility.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -563,8 +562,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
                                  NameSources* name_sources) const {
     return String();
   }
-  virtual String TextFromDescendants(AXObjectSet& visited,
-                                     bool recursive) const {
+  virtual String TextFromDescendants(
+      AXObjectSet& visited,
+      const AXObject* aria_label_or_description_root,
+      bool recursive) const {
     return String();
   }
 
@@ -606,7 +607,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Return the content of an image or canvas as an image data url in
   // PNG format. If |maxSize| is not empty and if the image is larger than
   // those dimensions, the image will be resized proportionally first to fit.
-  virtual String ImageDataUrl(const IntSize& max_size) const {
+  virtual String ImageDataUrl(const gfx::Size& max_size) const {
     return g_null_atom;
   }
   // If this element points to another element in the same page, e.g.
@@ -1227,7 +1228,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool RequestScrollToGlobalPointAction(const gfx::Point&);
   bool RequestScrollToMakeVisibleAction();
   bool RequestScrollToMakeVisibleWithSubFocusAction(
-      const IntRect&,
+      const gfx::Rect&,
       blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
       blink::mojom::blink::ScrollAlignment vertical_scroll_alignment);
   bool RequestSetSelectedAction(bool);
@@ -1251,7 +1252,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool OnNativeScrollToGlobalPointAction(const gfx::Point&) const;
   bool OnNativeScrollToMakeVisibleAction() const;
   bool OnNativeScrollToMakeVisibleWithSubFocusAction(
-      const IntRect&,
+      const gfx::Rect&,
       blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
       blink::mojom::blink::ScrollAlignment vertical_scroll_alignment) const;
   virtual bool OnNativeSetSelectedAction(bool);
@@ -1302,7 +1303,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Blink-internal DOM Node ID. Currently used for PDF exporting.
   int GetDOMNodeId() const;
 
-  bool IsHiddenForTextAlternativeCalculation() const;
+  bool IsHiddenForTextAlternativeCalculation(
+      const AXObject* aria_label_or_description_root) const;
 
   // What should the role be assuming an ARIA role is not present?
   virtual ax::mojom::blink::Role NativeRoleIgnoringAria() const = 0;

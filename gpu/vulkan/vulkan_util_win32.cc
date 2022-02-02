@@ -4,6 +4,7 @@
 
 #include "gpu/vulkan/vulkan_util.h"
 
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 

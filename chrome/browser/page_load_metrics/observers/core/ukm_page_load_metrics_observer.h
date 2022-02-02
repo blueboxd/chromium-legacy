@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_CORE_UKM_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_CORE_UKM_PAGE_LOAD_METRICS_OBSERVER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "content/public/browser/navigation_handle_timing.h"
 #include "content/public/browser/site_instance_process_assignment.h"
+#include "net/base/load_timing_info.h"
 #include "net/http/http_response_info.h"
+#include "net/nqe/effective_connection_type.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
@@ -115,9 +118,7 @@ class UkmPageLoadMetricsObserver
   // Records page load internal timing metrics, which are used for debugging.
   void RecordInternalTimingMetrics(
       const page_load_metrics::ContentfulPaintTimingInfo&
-          all_frames_largest_contentful_paint,
-      const page_load_metrics::ContentfulPaintTimingInfo&
-          all_frames_experimental_largest_contentful_paint);
+          all_frames_largest_contentful_paint);
 
   // Records metrics based on the page load information exposed by the observer
   // delegate, as well as updating the URL. |app_background_time| should be set
@@ -192,8 +193,13 @@ class UkmPageLoadMetricsObserver
       const net::CookieAccessResultList& cookies,
       const net::CookieAccessResultList& excluded_cookies);
 
+  // Record some experimental cumulative shift metrics that have occurred on
+  // the page until the first time the page moves from the foreground to the
+  // background.
+  void ReportLayoutInstabilityAfterFirstForeground();
+
   // Guaranteed to be non-null during the lifetime of |this|.
-  network::NetworkQualityTracker* network_quality_tracker_;
+  raw_ptr<network::NetworkQualityTracker> network_quality_tracker_;
 
   // The ID of this navigation, as recorded at each navigation start.
   int64_t navigation_id_ = -1;
@@ -259,7 +265,7 @@ class UkmPageLoadMetricsObserver
   absl::optional<bool> main_frame_request_had_cookies_;
 
   // The browser context this navigation is operating in.
-  content::BrowserContext* browser_context_ = nullptr;
+  raw_ptr<content::BrowserContext> browser_context_ = nullptr;
 
   // Whether the navigation resulted in the main frame being hosted in
   // a different process.
@@ -291,6 +297,10 @@ class UkmPageLoadMetricsObserver
   absl::optional<net::HttpResponseInfo::ConnectionInfo> connection_info_;
 
   base::ReadOnlySharedMemoryMapping ukm_smoothness_data_;
+
+  // Only true if the page became hidden after the first time it was shown in
+  // the foreground, no matter how it started.
+  bool was_hidden_after_first_show_in_foreground = false;
 
   base::WeakPtrFactory<UkmPageLoadMetricsObserver> weak_factory_{this};
 };

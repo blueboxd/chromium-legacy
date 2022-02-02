@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android.h"
 #include "components/autofill_assistant/browser/client.h"
@@ -74,6 +74,10 @@ class ClientAndroid : public Client,
                      const base::android::JavaParamRef<jobject>& jcaller,
                      jboolean success,
                      const base::android::JavaParamRef<jstring>& access_token);
+  void OnPaymentsClientToken(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jclient_token);
 
   void FetchWebsiteActions(
       JNIEnv* env,
@@ -108,6 +112,10 @@ class ClientAndroid : public Client,
       const base::android::JavaParamRef<jobject>& jcaller,
       jboolean enabled);
 
+  base::android::ScopedJavaGlobalRef<jobject> GetDependencies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
+
   // Overrides Client
   void AttachUI() override;
   void DestroyUI() override;
@@ -116,6 +124,8 @@ class ClientAndroid : public Client,
   std::string GetChromeSignedInEmailAddress() const override;
   absl::optional<std::pair<int, int>> GetWindowSize() const override;
   ClientContextProto::ScreenOrientation GetScreenOrientation() const override;
+  void FetchPaymentsClientToken(
+      base::OnceCallback<void(const std::string&)> callback) override;
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() const override;
   WebsiteLoginManager* GetWebsiteLoginManager() const override;
@@ -137,7 +147,8 @@ class ClientAndroid : public Client,
  private:
   friend class content::WebContentsUserData<ClientAndroid>;
 
-  explicit ClientAndroid(content::WebContents* web_contents);
+  explicit ClientAndroid(content::WebContents* web_contents,
+                         const base::android::JavaRef<jobject>& jdependencies);
 
   void CreateController(
       std::unique_ptr<Service> service,
@@ -161,7 +172,7 @@ class ClientAndroid : public Client,
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-  content::WebContents* web_contents_;
+  const base::android::ScopedJavaGlobalRef<jobject> jdependencies_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
@@ -181,6 +192,8 @@ class ClientAndroid : public Client,
 
   base::OnceCallback<void(bool, const std::string&)>
       fetch_access_token_callback_;
+  base::OnceCallback<void(const std::string&)>
+      fetch_payments_client_token_callback_;
 
   base::WeakPtrFactory<ClientAndroid> weak_ptr_factory_{this};
 };

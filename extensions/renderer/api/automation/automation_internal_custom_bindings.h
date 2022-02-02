@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "extensions/common/api/automation.h"
 #include "extensions/renderer/api/automation/automation_ax_tree_wrapper.h"
 #include "extensions/renderer/object_backed_native_handler.h"
@@ -67,6 +66,10 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler {
   ui::AXNode* GetParent(ui::AXNode* node,
                         AutomationAXTreeWrapper** in_out_tree_wrapper,
                         bool should_use_app_id = true) const;
+
+  // Gets the hosting node in a parent tree.
+  ui::AXNode* GetHostInParentTree(
+      AutomationAXTreeWrapper** in_out_tree_wrapper) const;
 
   // Gets the root of a node's child tree and adjusts incoming arguments
   // accordingly. Returns false if no adjustments were made.

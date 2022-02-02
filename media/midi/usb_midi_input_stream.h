@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "media/midi/usb_midi_export.h"
 #include "media/midi/usb_midi_jack.h"
@@ -82,7 +82,7 @@ class USB_MIDI_EXPORT UsbMidiInputStream {
   std::map<JackUniqueKey, size_t> jack_dictionary_;
 
   // Not owned
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 };
 
 }  // namespace midi

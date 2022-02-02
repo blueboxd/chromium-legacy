@@ -45,7 +45,6 @@
 #include "net/cookies/canonical_cookie.h"
 
 #include <limits>
-#include <sstream>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -1077,11 +1076,6 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     }
   }
 
-  if (status.ShouldRecordDowngradeMetrics()) {
-    UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteContextDowngradeRequest",
-                              status.GetBreakingDowngradeMetricsEnumValue(url));
-  }
-
   if (status.HasWarningReason(
           CookieInclusionStatus::
               WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION)) {
@@ -1440,13 +1434,8 @@ void CanonicalCookie::RecordCookiePrefixMetrics(
     CanonicalCookie::CookiePrefix prefix,
     bool is_cookie_valid) {
   const char kCookiePrefixHistogram[] = "Cookie.CookiePrefix";
-  const char kCookiePrefixBlockedHistogram[] = "Cookie.CookiePrefixBlocked";
   UMA_HISTOGRAM_ENUMERATION(kCookiePrefixHistogram, prefix,
                             CanonicalCookie::COOKIE_PREFIX_LAST);
-  if (!is_cookie_valid) {
-    UMA_HISTOGRAM_ENUMERATION(kCookiePrefixBlockedHistogram, prefix,
-                              CanonicalCookie::COOKIE_PREFIX_LAST);
-  }
 }
 
 // Returns true if the cookie does not violate any constraints imposed

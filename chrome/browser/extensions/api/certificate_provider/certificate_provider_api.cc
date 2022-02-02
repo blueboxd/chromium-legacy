@@ -14,7 +14,6 @@
 #include "ash/components/security_token_pin/constants.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
@@ -75,6 +74,8 @@ const char kCertificateProviderErrorTimeout[] =
 const char kCertificateProviderErrorInvalidId[] = "Invalid requestId";
 const char kCertificateProviderErrorUnexpectedError[] =
     "Error supplied with non-empty data.";
+const char kCertificateProviderErrorNeitherResultNorError[] =
+    "Neither the result nor an error supplied.";
 const char kCertificateProviderErrorNoAlgorithms[] = "Algorithm list is empty.";
 
 // requestPin constants.
@@ -611,6 +612,11 @@ CertificateProviderReportSignatureFunction::Run() {
   if (params->details.signature && !params->details.signature->empty() &&
       params->details.error) {
     return RespondNow(Error(kCertificateProviderErrorUnexpectedError));
+  }
+  if ((!params->details.signature || params->details.signature->empty()) &&
+      !params->details.error) {
+    // It's not allowed to supply empty result without an error code.
+    return RespondNow(Error(kCertificateProviderErrorNeitherResultNorError));
   }
 
   ash::CertificateProviderService* const service =

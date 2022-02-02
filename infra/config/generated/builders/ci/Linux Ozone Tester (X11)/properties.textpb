@@ -25,6 +25,10 @@
   "builder_group": "chromium.linux",
   "recipe": "chromium",
   "sheriff_rotations": [
+<<<<<<< HEAD:infra/config/generated/builders/ci/Linux Ozone Tester (X11)/properties.textpb
     "chrome_browser_release"
+=======
+    "chromium"
+>>>>>>> a2b2a8d987fdc9b77b737dbea6daa8985296a3b3:infra/config/generated/builders/ci/Leak Detection Linux/properties.textpb
   ]
 }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_controller_delegate.h"
@@ -48,12 +49,13 @@ class CONTENT_EXPORT FencedFrame : public blink::mojom::FencedFrameOwnerHost,
 
   // FrameTree::Delegate.
   void DidStartLoading(FrameTreeNode* frame_tree_node,
-                       bool to_different_document) override {}
+                       bool should_show_loading_ui) override {}
   void DidStopLoading() override;
   void DidChangeLoadProgress() override {}
   bool IsHidden() override;
   void NotifyPageChanged(PageImpl& page) override {}
   int GetOuterDelegateFrameTreeNodeId() override;
+  bool IsPortal() override;
 
   // FrameTreeNode::Observer.
   // We are monitoring the destruction of the outer delegate dummy
@@ -98,7 +100,7 @@ class CONTENT_EXPORT FencedFrame : public blink::mojom::FencedFrameOwnerHost,
   // for use by the embedding RenderFrameHostImpl.
   void CreateProxyAndAttachToOuterFrameTree();
 
-  WebContentsImpl* const web_contents_;
+  const raw_ptr<WebContentsImpl> web_contents_;
 
   // This is the RenderFrameHostImpl that owns the <fencedframe> element in the
   // renderer, as such this object never outlives the RenderFrameHostImpl (and
@@ -115,12 +117,12 @@ class CONTENT_EXPORT FencedFrame : public blink::mojom::FencedFrameOwnerHost,
   // `CreateProxyAndAttachToOuterFrameTree()`).
   // Furthermore, the lifetime of `this` is directly tied to it (see
   // `OnFrameTreeNodeDestroyed()`).
-  FrameTreeNode* outer_delegate_frame_tree_node_ = nullptr;
+  raw_ptr<FrameTreeNode> outer_delegate_frame_tree_node_ = nullptr;
   // This is for use by the "outer" FrameTree (i.e., the one that
   // `owner_render_frame_host_` is associated with). It is set in the
   // constructor. Initially null, and only set in the constructor (indirectly
   // via `CreateProxyAndAttachToOuterFrameTree()`).
-  RenderFrameProxyHost* proxy_to_inner_main_frame_ = nullptr;
+  raw_ptr<RenderFrameProxyHost> proxy_to_inner_main_frame_ = nullptr;
 
   // The FrameTree that we create to host the "inner" fenced frame contents.
   std::unique_ptr<FrameTree> frame_tree_;

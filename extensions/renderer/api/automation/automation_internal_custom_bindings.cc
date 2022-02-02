@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/i18n/string_search.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -881,7 +880,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
         const std::vector<int> line_starts =
-            node->GetOrComputeLineStartOffsets();
+            node->GetIntListAttribute(ax::mojom::IntListAttribute::kLineStarts);
         v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, line_starts.size()));
@@ -2152,9 +2151,23 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
     }
   }
 
-  if (node->GetUnignoredParent())
-    return node->GetUnignoredParent();
+  ui::AXNode* parent = node->GetUnignoredParent();
+  if (!parent) {
+    // Search up ancestor trees until we find one with a host that is unignored.
+    while ((parent = GetHostInParentTree(in_out_tree_wrapper))) {
+      if (*in_out_tree_wrapper && !(*in_out_tree_wrapper)->IsTreeIgnored())
+        break;
+    }
 
+    if (parent && parent->IsIgnored())
+      parent = parent->GetUnignoredParent();
+  }
+
+  return parent;
+}
+
+ui::AXNode* AutomationInternalCustomBindings::GetHostInParentTree(
+    AutomationAXTreeWrapper** in_out_tree_wrapper) const {
   AutomationAXTreeWrapper* parent_tree_wrapper = nullptr;
 
   ui::AXTreeID parent_tree_id =
@@ -2472,6 +2485,12 @@ bool AutomationInternalCustomBindings::SendTreeChangeEvent(
   // At this point, don't bother dispatching to js if the node is ignored. A js
   // client shouldn't process ignored nodes.
   if (node->IsIgnored())
+    return false;
+
+  // Likewise, don't process tree changes on ignored trees.
+  auto* tree_wrapper =
+      GetAutomationAXTreeWrapperFromTreeID(tree->GetAXTreeID());
+  if (!tree_wrapper || tree_wrapper->IsTreeIgnored())
     return false;
 
   bool has_filter = false;
@@ -2834,7 +2853,7 @@ std::vector<int> AutomationInternalCustomBindings::CalculateSentenceBoundary(
   if (!head_pos->AtStartOfParagraph()) {
     ui::AXNodePosition::AXPositionInstance start_para_pos =
         head_pos->CreatePreviousParagraphStartPosition(
-            ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
+            ui::AXBoundaryBehavior::kStopAtLastAnchorBoundary);
     ui::AXRange<ui::AXPosition<ui::AXNodePosition, ui::AXNode>> pre_range(
         start_para_pos->Clone(), head_pos->Clone());
     pre_str = pre_range.GetText();
@@ -2844,7 +2863,7 @@ std::vector<int> AutomationInternalCustomBindings::CalculateSentenceBoundary(
   // node to the end of the paragraph.
   ui::AXNodePosition::AXPositionInstance end_para_pos =
       head_pos->CreateNextParagraphEndPosition(
-          ui::AXBoundaryBehavior::StopAtLastAnchorBoundary);
+          ui::AXBoundaryBehavior::kStopAtLastAnchorBoundary);
   ui::AXRange<ui::AXPosition<ui::AXNodePosition, ui::AXNode>> post_range(
       head_pos->Clone(), end_para_pos->Clone());
   post_str = post_range.GetText();

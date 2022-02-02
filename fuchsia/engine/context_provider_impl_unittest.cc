@@ -19,7 +19,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_paths_fuchsia.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -47,6 +46,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
+#include "ui/ozone/public/ozone_switches.h"
 
 namespace {
 
@@ -67,8 +67,7 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
 
   LOG(INFO) << "SpawnContextServer test component started.";
 
-  base::FilePath data_dir;
-  CHECK(base::PathService::Get(base::DIR_APP_DATA, &data_dir));
+  base::FilePath data_dir(base::kPersistedDataDirectoryPath);
   if (base::PathExists(data_dir.AppendASCII(kTestDataFileIn))) {
     auto out_file = data_dir.AppendASCII(kTestDataFileOut);
     CHECK_EQ(base::WriteFile(out_file, nullptr, 0), 0);
@@ -318,6 +317,9 @@ class ContextProviderImplTest : public base::MultiProcessTest {
                           sys_launcher_.get()),
         provider_(std::make_unique<ContextProviderImpl>()) {
     bindings_.AddBinding(provider_.get(), provider_ptr_.NewRequest());
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
+        switches::kOzonePlatform, "scenic");
   }
 
   ContextProviderImplTest(const ContextProviderImplTest&) = delete;

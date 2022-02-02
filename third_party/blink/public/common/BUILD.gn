@@ -188,10 +188,12 @@ source_set("headers") {
     "page/drag_mojom_traits.h",
     "page/drag_operation.h",
     "page/launching_process_state.h",
+    "page/page_lifecycle_state_updater.h",
     "page/page_zoom.h",
     "page_state/page_state.h",
     "page_state/page_state_serialization.h",
     "peerconnection/webrtc_ip_handling_policy.h",
+    "performance/largest_contentful_paint_type.h",
     "permissions/permission_utils.h",
     "permissions_policy/document_policy.h",
     "permissions_policy/document_policy_features.h",
@@ -220,6 +222,7 @@ source_set("headers") {
     "unique_name/unique_name_helper.h",
     "use_counter/use_counter_feature.h",
     "use_counter/use_counter_feature_tracker.h",
+    "user_agent/user_agent_brand_version_type.h",
     "user_agent/user_agent_metadata.h",
     "web_cache/web_cache_resource_type_stats.h",
     "web_package/signed_exchange_consts.h",
@@ -312,4 +315,19 @@ if (is_android) {
     # files, they should be added here as necessary.
     srcjar_deps = [ ":java_features_srcjar" ]
   }
+}
+
+proto_library("storage_key_proto") {
+  proto_in_dir = "//"
+  sources = [ "storage_key/proto/storage_key.proto" ]
+}
+
+source_set("storage_key_proto_converter") {
+  sources = [
+    "storage_key/storage_key_proto_converter.cc",
+    "storage_key/storage_key_proto_converter.h",
+  ]
+  deps = [ ":common" ]
+
+  public_deps = [ ":storage_key_proto" ]
 }

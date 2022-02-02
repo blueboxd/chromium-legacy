@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -125,7 +125,7 @@ def main():
   expectations_instance = gpu_expectations.GpuExpectations()
 
   test_expectation_map = expectations_instance.CreateTestExpectationMap(
-      args.expectation_file, args.tests)
+      args.expectation_file, args.tests, args.expectation_grace_period)
   ci_builders = builders_instance.GetCiBuilders(
       SUITE_TO_TELEMETRY_SUITE_MAP.get(args.suite, args.suite))
 
@@ -149,15 +149,18 @@ def main():
   affected_urls = set()
   stale_message = ''
   if args.remove_stale_expectations:
-    stale_expectations = []
     for expectation_file, expectation_map in stale.items():
-      stale_expectations.extend(expectation_map.keys())
-      stale_expectations.extend(unused_expectations.get(expectation_file, []))
-    affected_urls |= expectations_instance.RemoveExpectationsFromFile(
-        stale_expectations, args.expectation_file)
-    stale_message += ('Stale expectations removed from %s. Stale comments, '
-                      'etc. may still need to be removed.\n' %
-                      args.expectation_file)
+      affected_urls |= expectations_instance.RemoveExpectationsFromFile(
+          expectation_map.keys(), expectation_file)
+      stale_message += ('Stale expectations removed from %s. Stale comments, '
+                        'etc. may still need to be removed.\n' %
+                        expectation_file)
+    for expectation_file, unused_list in unused_expectations.items():
+      affected_urls |= expectations_instance.RemoveExpectationsFromFile(
+          unused_list, expectation_file)
+      stale_message += ('Unused expectations removed from %s. Stale comments, '
+                        'etc. may still need to be removed.\n' %
+                        expectation_file)
 
   if args.modify_semi_stale_expectations:
     affected_urls |= expectations_instance.ModifySemiStaleExpectations(

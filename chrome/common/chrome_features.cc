@@ -38,13 +38,13 @@ const base::Feature kAllowDisableMouseAcceleration{
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust and disable touchpad haptic feedback.
 const base::Feature kAllowDisableTouchpadHapticFeedback{
-    "AllowDisableTouchpadHapticFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowDisableTouchpadHapticFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust the touchpad haptic click settings.
 const base::Feature kAllowTouchpadHapticClickSettings{
-    "AllowTouchpadHapticClickSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AllowTouchpadHapticClickSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(IS_CHROMEOS_ASH)
 
 // Always reinstall system web apps, instead of only doing so after version
@@ -75,7 +75,7 @@ const base::Feature kAppManagementIntentSettings{
 const base::Feature kAppServiceExternalProtocol{
     "AppServiceExternalProtocol", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceLoadIconWithoutMojom{
-    "AppServiceLoadIconWithoutMojom", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppServiceLoadIconWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_MAC)
@@ -90,6 +90,12 @@ const base::Feature kAppShimRemoteCocoa{"AppShimRemoteCocoa",
 const base::Feature kAppShimNewCloseBehavior{"AppShimNewCloseBehavior",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MAC)
+
+#if defined(OS_CHROMEOS)
+// Controls whether ARC ghost window will be applied on ARC P version.
+const base::Feature kArcPiGhostWindow{"ArcPiGhostWindow",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
 
 // Enables the built-in DNS resolver.
 const base::Feature kAsyncDns {
@@ -212,7 +218,7 @@ const base::Feature kCryptohomeUserDataAuthKillswitch{
     "CryptohomeUserDataAuthKillswitch", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 // Enables parsing and enforcing Data Leak Prevention policy rules that
 // restricts usage of some system features, e.g.clipboard, screenshot, etc.
 // for confidential content.
@@ -223,6 +229,14 @@ const base::Feature kDataLeakPreventionPolicy{"DataLeakPreventionPolicy",
 // DLP policy there. The daemond might restrict access to some protected files.
 const base::Feature kDataLeakPreventionFilesRestriction{
     "DataLeakPreventionFilesRestriction", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// When enabled, newly installed ARC apps will not capture links clicked in the
+// browser by default. Users can still enable link capturing for apps through
+// the intent picker or settings.
+const base::Feature kDefaultLinkCapturingInBrowser{
+    "DefaultLinkCapturingInBrowser", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -238,14 +252,8 @@ const base::Feature kPreinstalledWebAppInstallation{
     "DefaultWebAppInstallation", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Updates the default set of pinned apps in the Chrome OS shelf for new
-// profiles.
-const base::Feature kDefaultPinnedAppsUpdate2021Q2{
-    "DefaultPinnedAppsUpdate2021Q2", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_FUCHSIA)
 // Enables Desktop PWAs shortcuts menu to be visible and executable in ChromeOS,
 // MacOS and Linux.
 const base::Feature kDesktopPWAsAppIconShortcutsMenuUI{
@@ -267,17 +275,6 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 const base::Feature kDesktopPWAsElidedExtensionsMenu{
   "DesktopPWAsElidedExtensionsMenu",
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-// Use settings instead of permissions to control access to the PWA File
-// Handling API.
-const base::Feature kDesktopPWAsFileHandlingSettingsGated{
-  "DesktopPWAsFileHandlingSettingsGated",
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -310,11 +307,6 @@ const base::Feature kDesktopPWAsRunOnOsLogin {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// API that allows installed PWAs to add additional shortcuts by means of
-// installing sub app components.
-const base::Feature kDesktopPWAsSubApps{"DesktopPWAsSubApps",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes user navigations via links within web app scopes get captured tab
 // tabbed app windows.
@@ -417,12 +409,6 @@ const base::Feature kEnableRestrictedWebApis{"EnableRestrictedWebApis",
 const base::Feature kEnableWebAppUninstallFromOsSettings{
     "EnableWebAppUninstallFromOsSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_MAC)
-const base::Feature kEnterpriseReportingApiKeychainRecreation{
-    "EnterpriseReportingApiKeychainRecreation",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Causes extension manifest versions to be included in the extension info
 // section of CBCM reports.
 const base::Feature kEnterpriseReportingExtensionManifestVersion{
@@ -452,12 +438,6 @@ const base::Feature kExternalExtensionDefaultButtonControl{
 // https://crbug.com/918428
 const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if defined(OS_WIN)
-// Enables using GDI to print text as simply text.
-const base::Feature kGdiTextPrinting{"GdiTextPrinting",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Controls whether the GeoLanguage system is enabled. GeoLanguage uses IP-based
@@ -561,6 +541,16 @@ const base::FeatureParam<base::TimeDelta>
 const base::Feature kHappinessTrackingSurveysForDesktopNtpModules{
     "HappinessTrackingSurveysForDesktopNtpModules",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Happiness Tracking System for Chrome What's New.
+const base::Feature kHappinessTrackingSurveysForDesktopWhatsNew{
+    "HappinessTrackingSurveysForDesktopWhatsNew",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<base::TimeDelta>
+    kHappinessTrackingSurveysForDesktopWhatsNewTime{
+        &kHappinessTrackingSurveysForDesktopWhatsNew, "whats-new-time",
+        base::Seconds(20)};
+
 #endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -582,6 +572,9 @@ const base::Feature kHappinessTrackingSystemUnlock{
 // Enables or disables the Happiness Tracking System for Smart Lock.
 const base::Feature kHappinessTrackingSystemSmartLock{
     "HappinessTrackingSmartLock", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables or disables the Happiness Tracking System for ARC Games survey.
+const base::Feature kHappinessTrackingSystemArcGames{
+    "HappinessTrackingArcGames", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -662,6 +655,10 @@ const base::Feature kIntentPickerPWAPersistence{
 const base::Feature kInvalidatorUniqueOwnerName{
     "InvalidatorUniqueOwnerName", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, shows a demo of in-product help in a WebUI context.
+const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
@@ -679,11 +676,6 @@ constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorModerateLevel{
 constexpr base::FeatureParam<int> kLinuxLowMemoryMonitorCriticalLevel{
     &kLinuxLowMemoryMonitor, "critical_level", 255};
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-// Enables LiteVideos, a data-saving optimization that throttles media requests
-// to reduce the bitrate of adaptive media streams. Only for Lite mode users
-// (formerly DataSaver).
-const base::Feature kLiteVideo{"LiteVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_MAC)
 // Uses NSFullSizeContentViewWindowMask where available instead of adding our
@@ -787,10 +779,6 @@ const base::Feature kOobeMarketingAdditionalCountriesSupported{
 const base::Feature kOobeMarketingDoubleOptInCountriesSupported{
     "kOobeMarketingDoubleOptInCountriesSupported",
     base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables the marketing opt-in screen in OOBE
-const base::Feature kOobeMarketingScreen{"OobeMarketingScreen",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Enables or disabled the OOM intervention.
@@ -903,7 +891,7 @@ const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
 
 #if defined(OS_ANDROID)
 const base::Feature kScrollCapture{"ScrollCapture",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Controls whether SCT audit reports are queued and the rate at which they
@@ -932,7 +920,7 @@ const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kSharesheetCopyToClipboard{
-    "SharesheetCopyToClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SharesheetCopyToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID)
@@ -1099,11 +1087,12 @@ const base::Feature kWebAppManifestPolicyAppIdentityUpdate{
     "WebAppManifestPolicyAppIdentityUpdate", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// When enabled, the web (PWA) Kiosk session uses Lacros-chrome as the web
-// browser to launch web (PWA) applications . When disabled, the Ash-chrome will
-// be used instead.
+// When this feature flag is enabled together with the LacrosAvailability
+// policy, the web (PWA) Kiosk session uses Lacros-chrome as the web browser to
+// launch web (PWA) applications. When disabled, the Ash-chrome will be used
+// instead.
 const base::Feature kWebKioskEnableLacros{"WebKioskEnableLacros",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, the Ash browser only manages system web apps, and non-system
 // web apps are managed by the Lacros browser. When disabled, the Ash browser
@@ -1192,5 +1181,12 @@ bool IsParentAccessCodeForOnlineLoginEnabled() {
 // Enables omnibox trigger prerendering.
 const base::Feature kOmniboxTriggerForPrerender2{
     "OmniboxTriggerForPrerender2", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables omnibox trigger no state prefetch. Only one of
+// kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
+// enabled in the experiment.
+// TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
+const base::Feature kOmniboxTriggerForNoStatePrefetch{
+    "OmniboxTriggerForNoStatePrefetch", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features

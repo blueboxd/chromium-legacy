@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
@@ -44,6 +43,7 @@ struct VideoDecoderClientConfig {
   // without waiting for the result of the previous decode requests.
   size_t max_outstanding_decode_requests = 1;
   DecoderImplementation implementation = DecoderImplementation::kVDA;
+  bool linear_output = false;
 };
 
 // The video decoder client is responsible for the communication between the
@@ -151,9 +151,13 @@ class VideoDecoderClient {
   void FlushDoneTask(media::Status status);
   // Called by the decoder when resetting has completed.
   void ResetDoneTask();
+  // Called by the decoder when a resolution change was requested, returns
+  // whether we should continue or abort the resolution change.
+  bool ResolutionChangeTask();
 
-  // Fire the specified event.
-  void FireEvent(VideoPlayerEvent event);
+  // Fire the specified event, and return true if the decoder should continue
+  // the decoding.
+  bool FireEvent(VideoPlayerEvent event);
 
   VideoPlayer::EventCallback event_cb_;
   std::unique_ptr<FrameRenderer> frame_renderer_;

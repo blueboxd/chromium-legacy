@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"
 
@@ -34,10 +33,9 @@ class MEDIA_EXPORT CdmFactory {
 
   virtual ~CdmFactory();
 
-  // Creates a CDM for |key_system| and returns it through |cdm_created_cb|
+  // Creates a CDM for |cdm_config| and returns it through |cdm_created_cb|
   // asynchronously.
   virtual void Create(
-      const std::string& key_system,
       const CdmConfig& cdm_config,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,

@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -63,7 +64,7 @@ class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
                       const gfx::Rect& active_match_rect,
                       int active_match_ordinal,
                       mojom::blink::FindMatchUpdateType final_update) final {
-    active_match_rect_ = IntRect(active_match_rect);
+    active_match_rect_ = active_match_rect;
     active_index_ = active_match_ordinal;
     find_results_are_ready_ =
         (final_update == mojom::blink::FindMatchUpdateType::kFinalUpdate);
@@ -72,17 +73,17 @@ class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
   bool FindResultsAreReady() const { return find_results_are_ready_; }
   int Count() const { return count_; }
   int ActiveIndex() const { return active_index_; }
-  IntRect ActiveMatchRect() const { return active_match_rect_; }
+  gfx::Rect ActiveMatchRect() const { return active_match_rect_; }
 
   void Reset() {
     find_results_are_ready_ = false;
     count_ = -1;
     active_index_ = -1;
-    active_match_rect_ = IntRect();
+    active_match_rect_ = gfx::Rect();
   }
 
  private:
-  IntRect active_match_rect_;
+  gfx::Rect active_match_rect_;
   bool find_results_are_ready_;
   int active_index_;
 
@@ -180,16 +181,17 @@ class DisplayLockContextTest
     return context->render_affecting_state_[static_cast<int>(
         DisplayLockContext::RenderAffectingState::kSubtreeHasSelection)];
   }
+  DisplayLockUtilities::ScopedForcedUpdate GetScopedForcedUpdate(
+      const Node* node,
+      DisplayLockContext::ForcedPhase phase,
+      bool include_self = false) {
+    return DisplayLockUtilities::ScopedForcedUpdate(node, phase, include_self);
+  }
 
   const int FAKE_FIND_ID = 1;
 
  private:
   frame_test_helpers::WebViewHelper web_view_helper_;
-};
-
-class DisplayLockContextPreCAPTest : public DisplayLockContextTest {
- private:
-  ScopedCompositeAfterPaintForTest cap_{false};
 };
 
 TEST_F(DisplayLockContextTest, LockAfterAppendStyleDirtyBits) {
@@ -489,19 +491,20 @@ TEST_F(DisplayLockContextTest,
   ASSERT_EQ(4u, tick_rects.size());
 
   // Sort the layout rects by y coordinate for deterministic checks below.
-  std::sort(tick_rects.begin(), tick_rects.end(),
-            [](const IntRect& a, const IntRect& b) { return a.y() < b.y(); });
+  std::sort(
+      tick_rects.begin(), tick_rects.end(),
+      [](const gfx::Rect& a, const gfx::Rect& b) { return a.y() < b.y(); });
 
   int y_offset = tick_rects[0].height();
 
   // The first tick rect will be based on the text itself, so we don't need to
   // check that. The next three should be the small, medium and large rects,
   // since those are the locked roots.
-  EXPECT_EQ(IntRect(0, y_offset, 100, 100), tick_rects[1]);
+  EXPECT_EQ(gfx::Rect(0, y_offset, 100, 100), tick_rects[1]);
   y_offset += tick_rects[1].height();
-  EXPECT_EQ(IntRect(0, y_offset, 150, 150), tick_rects[2]);
+  EXPECT_EQ(gfx::Rect(0, y_offset, 150, 150), tick_rects[2]);
   y_offset += tick_rects[2].height();
-  EXPECT_EQ(IntRect(0, y_offset, 200, 200), tick_rects[3]);
+  EXPECT_EQ(gfx::Rect(0, y_offset, 200, 200), tick_rects[3]);
 }
 
 TEST_F(DisplayLockContextTest,
@@ -2023,12 +2026,6 @@ class DisplayLockContextRenderingTest
   }
 };
 
-class DisplayLockContextPreCAPRenderingTest
-    : public DisplayLockContextRenderingTest {
- private:
-  ScopedCompositeAfterPaintForTest cap_{false};
-};
-
 TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   SetHtmlInnerHTML(R"HTML(
     <iframe id="frame"></iframe>
@@ -2900,127 +2897,6 @@ TEST_F(DisplayLockContextRenderingTest, UseCounter) {
       WebFeature::kContentVisibilityHiddenMatchable));
 }
 
-TEST_F(DisplayLockContextPreCAPRenderingTest,
-       CompositingRootIsSkippedIfLocked) {
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-      .hidden { content-visibility: hidden; }
-      .contained { contain: strict; }
-      #target { backface-visibility: hidden; }
-    </style>
-    <div id=hide>
-      <div id=container class=contained>
-        <div id=target></div>
-      </div>
-    </div>
-  )HTML");
-
-  // Lock an ancestor.
-  auto* hide = GetDocument().getElementById("hide");
-  hide->classList().Add("hidden");
-  UpdateAllLifecyclePhasesForTest();
-
-  auto* target = GetDocument().getElementById("target");
-  ASSERT_TRUE(target->GetLayoutObject());
-  auto* target_box = target->GetLayoutBoxModelObject();
-  ASSERT_TRUE(target_box);
-  EXPECT_TRUE(target_box->Layer());
-  EXPECT_TRUE(target_box->HasSelfPaintingLayer());
-  auto* target_layer = target_box->Layer();
-
-  target_layer->SetNeedsCompositingInputsUpdate();
-  EXPECT_TRUE(target_layer->NeedsCompositingInputsUpdate());
-
-  auto* container = GetDocument().getElementById("container");
-  ASSERT_TRUE(container->GetLayoutObject());
-  auto* container_box = container->GetLayoutBoxModelObject();
-  ASSERT_TRUE(container_box);
-  EXPECT_TRUE(container_box->Layer());
-  EXPECT_TRUE(container_box->HasSelfPaintingLayer());
-  auto* container_layer = container_box->Layer();
-
-  auto* compositor = target_layer->Compositor();
-  ASSERT_TRUE(compositor);
-
-  EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
-
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
-  EXPECT_TRUE(target_layer->NeedsCompositingInputsUpdate());
-
-  hide->classList().Remove("hidden");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(compositor->GetCompositingInputsRoot());
-  EXPECT_FALSE(target_layer->NeedsCompositingInputsUpdate());
-}
-
-TEST_F(DisplayLockContextPreCAPRenderingTest,
-       CompositingRootIsProcessedIfLockedButForced) {
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-      .hidden { content-visibility: hidden; }
-      .contained { contain: strict; }
-      #target { backface-visibility: hidden; }
-    </style>
-    <div id=hide>
-      <div class=contained>
-        <div id=container class=contained>
-          <div id=target></div>
-        </div>
-      </div>
-    </div>
-  )HTML");
-
-  // Lock an ancestor.
-  auto* hide = GetDocument().getElementById("hide");
-  hide->classList().Add("hidden");
-  UpdateAllLifecyclePhasesForTest();
-
-  auto* target = GetDocument().getElementById("target");
-  ASSERT_TRUE(target->GetLayoutObject());
-  auto* target_box = To<LayoutBoxModelObject>(target->GetLayoutObject());
-  ASSERT_TRUE(target_box);
-  EXPECT_TRUE(target_box->Layer());
-  EXPECT_TRUE(target_box->HasSelfPaintingLayer());
-  auto* target_layer = target_box->Layer();
-
-  target_layer->SetNeedsCompositingInputsUpdate();
-  EXPECT_TRUE(target_layer->NeedsCompositingInputsUpdate());
-
-  auto* container = GetDocument().getElementById("container");
-  ASSERT_TRUE(container->GetLayoutObject());
-  auto* container_box = container->GetLayoutBoxModelObject();
-  ASSERT_TRUE(container_box);
-  EXPECT_TRUE(container_box->Layer());
-  EXPECT_TRUE(container_box->HasSelfPaintingLayer());
-  auto* container_layer = container_box->Layer();
-
-  auto* compositor = target_layer->Compositor();
-  ASSERT_TRUE(compositor);
-
-  EXPECT_EQ(compositor->GetCompositingInputsRoot(), container_layer);
-
-  {
-    auto scope =
-        GetScopedForcedUpdate(hide, DisplayLockContext::ForcedPhase::kPrePaint,
-                              true /* include self */);
-    UpdateAllLifecyclePhasesForTest();
-  }
-
-  EXPECT_FALSE(compositor->GetCompositingInputsRoot());
-  EXPECT_FALSE(target_layer->NeedsCompositingInputsUpdate());
-
-  hide->classList().Remove("hidden");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(compositor->GetCompositingInputsRoot());
-  EXPECT_FALSE(target_layer->NeedsCompositingInputsUpdate());
-}
-
 TEST_F(DisplayLockContextRenderingTest,
        NeedsLayoutTreeUpdateForNodeRespectsForcedLocks) {
   SetHtmlInnerHTML(R"HTML(
@@ -3340,34 +3216,6 @@ TEST_F(DisplayLockContextRenderingTest,
   EXPECT_TRUE(context->HadAnyViewportIntersectionNotifications());
 }
 
-TEST_F(DisplayLockContextPreCAPRenderingTest, LocalFrameGraphicsUpdateForced) {
-  SetHtmlInnerHTML(R"HTML(
-    <iframe id="frame"></iframe>
-  )HTML");
-  SetChildFrameHTML(R"HTML(
-    <style>
-      .cv { content-visibility: hidden; }
-      div {
-        width: 100px;
-        height: 100px;
-      }
-    </style>
-    <div id=target class=cv></target>
-  )HTML");
-
-  UpdateAllLifecyclePhasesForTest();
-
-  auto* target = ChildDocument().getElementById("target");
-  ASSERT_TRUE(target);
-  ASSERT_TRUE(target->GetDisplayLockContext());
-
-  target->GetDisplayLockContext()->NotifyForcedGraphicsLayerUpdateBlocked();
-  target->classList().Remove("cv");
-
-  // This should not crash.
-  UpdateAllLifecyclePhasesForTest();
-}
-
 class DisplayLockContextLegacyRenderingTest
     : public RenderingTest,
       private ScopedCSSContentVisibilityHiddenMatchableForTest,
@@ -3417,56 +3265,6 @@ TEST_F(DisplayLockContextLegacyRenderingTest,
   UpdateAllLifecyclePhasesForTest();
 }
 
-TEST_F(DisplayLockContextPreCAPTest,
-       GraphicsLayerBitsNotCheckedInLockedSubtree) {
-  ResizeAndFocus();
-  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(true);
-
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-    div {
-      width: 100px;
-      height: 100px;
-      contain: style layout;
-      will-change: transform;
-    }
-    .locked {
-      content-visibility: hidden;
-    }
-    </style>
-    <div id=container>
-      <div>
-        <div id=target></div>
-      </div>
-    </div>
-  )HTML");
-
-  // Check if the result is correct if we update the contents.
-  auto* container = GetDocument().getElementById("container");
-  auto* target = GetDocument().getElementById("target");
-  auto* target_box = target->GetLayoutBoxModelObject();
-  ASSERT_TRUE(target_box);
-  EXPECT_TRUE(target_box->Layer());
-  EXPECT_TRUE(target_box->HasSelfPaintingLayer());
-  auto* target_layer = target_box->Layer();
-  ASSERT_TRUE(target_layer->HasCompositedLayerMapping());
-
-  container->classList().Add("locked");
-  target_layer->GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
-      kGraphicsLayerUpdateLocal);
-  // This should not DCHECK.
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_TRUE(
-      target_layer->GetCompositedLayerMapping()->NeedsGraphicsLayerUpdate());
-
-  container->classList().Remove("locked");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(
-      target_layer->GetCompositedLayerMapping()->NeedsGraphicsLayerUpdate());
-}
-
 TEST_F(DisplayLockContextTest, PrintingUnlocksAutoLocks) {
   ResizeAndFocus();
 
@@ -3506,7 +3304,6 @@ TEST_F(DisplayLockContextTest, PrintingUnlocksAutoLocks) {
 }
 
 TEST_F(DisplayLockContextTest, CullRectUpdate) {
-  ScopedCullRectUpdateForTest cull_rect_update(true);
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
     <style>
@@ -3616,6 +3413,167 @@ TEST_F(DisplayLockContextTest, ConnectedElementDefersSubtreeChecks) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_TRUE(HasSelection(context));
+}
+
+TEST_F(DisplayLockContextTest, BlockedReattachOfSlotted) {
+  GetDocument().body()->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <div id="host">
+      <template shadowroot="open">
+        <style>
+          slot { display: block; }
+          .locked {
+            content-visibility: hidden;
+          }
+        </style>
+        <slot id="slot"></slot>
+      </template>
+      <span id="slotted"></span>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* host = GetDocument().getElementById("host");
+  auto* slotted = GetDocument().getElementById("slotted");
+  auto* slot = host->GetShadowRoot()->getElementById("slot");
+
+  EXPECT_TRUE(slot->GetLayoutObject());
+
+  slot->classList().Add("locked");
+  GetDocument().documentElement()->SetForceReattachLayoutTree();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(slotted->GetLayoutObject());
+}
+
+TEST_F(DisplayLockContextTest, BlockedReattachOfShadowTree) {
+  GetDocument().body()->setInnerHTMLWithDeclarativeShadowDOMForTesting(R"HTML(
+    <style>
+      .locked { content-visibility: hidden; }
+    </style>
+    <div id="host">
+      <template shadowroot="open">
+        <span id="span"></span>
+      </template>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* host = GetDocument().getElementById("host");
+  auto* span = host->GetShadowRoot()->getElementById("span");
+
+  ASSERT_TRUE(host->GetLayoutObject());
+  EXPECT_TRUE(span->GetLayoutObject());
+
+  host->classList().Add("locked");
+  GetDocument().documentElement()->SetForceReattachLayoutTree();
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(host->GetLayoutObject());
+  EXPECT_FALSE(span->GetLayoutObject());
+}
+
+TEST_F(DisplayLockContextTest, BlockedReattachOfPseudoElements) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #locked::before { content: "X"; }
+      .locked { content-visibility: hidden; }
+    </style>
+    <div id="locked"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* locked = GetDocument().getElementById("locked");
+
+  ASSERT_TRUE(locked->GetLayoutObject());
+  ASSERT_TRUE(locked->GetPseudoElement(kPseudoIdBefore));
+  EXPECT_TRUE(locked->GetPseudoElement(kPseudoIdBefore)->GetLayoutObject());
+
+  locked->classList().Add("locked");
+  GetDocument().documentElement()->SetForceReattachLayoutTree();
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(locked->GetLayoutObject());
+  ASSERT_TRUE(locked->GetPseudoElement(kPseudoIdBefore));
+  EXPECT_FALSE(locked->GetPseudoElement(kPseudoIdBefore)->GetLayoutObject());
+}
+
+TEST_F(DisplayLockContextTest, BlockedReattachWhitespaceSibling) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #locked { display: inline-block; }
+      .locked { content-visibility: hidden; }
+    </style>
+    <span id="locked"><span>X</span></span> <span>X</span>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* locked = GetDocument().getElementById("locked");
+
+  EXPECT_TRUE(locked->GetLayoutObject());
+  EXPECT_TRUE(locked->firstChild()->GetLayoutObject());
+  EXPECT_TRUE(locked->firstChild()->firstChild()->GetLayoutObject());
+  EXPECT_TRUE(locked->nextSibling()->GetLayoutObject());
+  EXPECT_TRUE(locked->nextSibling()->nextSibling()->GetLayoutObject());
+
+  locked->classList().Add("locked");
+  GetDocument().documentElement()->SetForceReattachLayoutTree();
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(locked->GetLayoutObject());
+  EXPECT_FALSE(locked->firstChild()->GetLayoutObject());
+  EXPECT_FALSE(locked->firstChild()->firstChild()->GetLayoutObject());
+  EXPECT_TRUE(locked->nextSibling()->GetLayoutObject());
+  EXPECT_TRUE(locked->nextSibling()->nextSibling()->GetLayoutObject());
+}
+
+TEST_F(DisplayLockContextTest, ReattachPropagationBlockedByDisplayLock) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <style>
+      #locked { content-visibility: hidden; }
+    </style>
+    <div id=parent>
+      <div id=locked>
+        <div id=child>
+          <div id=grandchild></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* locked = GetDocument().getElementById("locked");
+  auto* grandchild = GetDocument().getElementById("grandchild");
+  auto* parent = GetDocument().getElementById("parent");
+
+  // Force update all layout objects
+  grandchild->getBoundingClientRect();
+
+  ASSERT_TRUE(locked->GetLayoutObject());
+  ASSERT_TRUE(grandchild->GetLayoutObject());
+  ASSERT_TRUE(parent->GetLayoutObject());
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  grandchild->SetNeedsReattachLayoutTree();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+
+  EXPECT_TRUE(locked->ChildNeedsReattachLayoutTree());
+  EXPECT_TRUE(grandchild->NeedsReattachLayoutTree());
+  EXPECT_FALSE(parent->ChildNeedsReattachLayoutTree());
+
+  EXPECT_FALSE(GetDocument().GetStyleEngine().NeedsLayoutTreeRebuild());
+
+  auto scope = GetScopedForcedUpdate(
+      grandchild, DisplayLockContext::ForcedPhase::kStyleAndLayoutTree);
+  // Pretend we styled the children.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  locked->GetDisplayLockContext()->DidStyleChildren();
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+
+  EXPECT_TRUE(locked->ChildNeedsReattachLayoutTree());
+  EXPECT_TRUE(grandchild->NeedsReattachLayoutTree());
+  EXPECT_TRUE(parent->ChildNeedsReattachLayoutTree());
+
+  EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsLayoutTreeRebuild());
 }
 
 }  // namespace blink

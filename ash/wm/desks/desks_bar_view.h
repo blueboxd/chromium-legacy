@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 
@@ -153,6 +152,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // If a desk is in a drag & drop cycle.
   bool IsDraggingDesk() const;
 
+  // Called when the desks templates grid is hidden. Transitions the desks bar
+  // view to zero state if necessary.
+  void OnDesksTemplatesGridHidden();
+
   // views::View:
   const char* GetClassName() const override;
   void Layout() override;
@@ -249,6 +252,9 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   void OnDesksTemplatesButtonPressed();
 
+  // Animates the bar from expanded state to zero state. Clears `mini_views_`.
+  void SwitchToZeroState();
+
   // Scrollview callbacks.
   void OnContentsScrolled();
   void OnContentsScrollEnded();
@@ -312,7 +318,7 @@ class ASH_EXPORT DesksBarView : public views::View,
 
   // A circular button which when clicked will open the context menu of the
   // persistent desks bar. Note that this button will only be created when
-  // BentoBar is enabled.
+  // persistent desks bar should be shown.
   PersistentDesksBarVerticalDotsButton* vertical_dots_button_ = nullptr;
 
   // ScrollView callback subscriptions.

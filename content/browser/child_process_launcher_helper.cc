@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
@@ -135,6 +136,8 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
 
   Process process;
   if (BeforeLaunchOnLauncherThread(*files_to_register, &options)) {
+    base::FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
+        command_line(), &options);
     process =
         LaunchProcessOnLauncherThread(options, std::move(files_to_register),
 #if defined(OS_ANDROID)
@@ -169,7 +172,7 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
     if (mojo_named_channel_) {
       DCHECK(!mojo_channel_);
       mojo::OutgoingInvitation::Send(
-          std::move(invitation), process.process.Handle(),
+          std::move(invitation), base::kNullProcessHandle,
           mojo_named_channel_->TakeServerEndpoint(), process_error_callback_);
     } else
 #endif

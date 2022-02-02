@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -25,7 +25,7 @@ TAG_HEADER = """\
 # tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
 #             android-pixel-4 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
-#         fuchsia-board-astro fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]

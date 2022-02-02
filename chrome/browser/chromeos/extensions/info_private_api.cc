@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/devicetype.h"
 #include "ash/public/cpp/stylus_utils.h"
@@ -31,9 +33,7 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/arc/arc_util.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -409,7 +409,7 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
     }
     // TODO(crbug.com/697817): Convert CrosSettings::Get to take a unique_ptr.
     return base::Value::ToUniquePtrValue(
-        ash::CrosSettings::Get()->GetPref(chromeos::kSystemTimezone)->Clone());
+        ash::CrosSettings::Get()->GetPref(ash::kSystemTimezone)->Clone());
   }
 
   if (property_name == kPropertySupportedTimezones) {

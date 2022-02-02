@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <atomic>
 
+#include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/yield_processor.h"
@@ -26,6 +27,7 @@
 #endif
 
 #if defined(OS_APPLE)
+
 #include <os/lock.h>
 
 // os_unfair_lock is available starting with OS X 10.12, and Chromium targets
@@ -96,13 +98,18 @@ class LOCKABLE BASE_EXPORT SpinningMutex {
   ALWAYS_INLINE void Release() UNLOCK_FUNCTION();
   ALWAYS_INLINE bool Try() EXCLUSIVE_TRYLOCK_FUNCTION(true);
   void AssertAcquired() const {}  // Not supported.
+  void Reinit() UNLOCK_FUNCTION();
 
  private:
   void LockSlow() EXCLUSIVE_LOCK_FUNCTION();
 
-  // Same as SpinLock, not scientifically calibrated. Consider lowering later,
-  // as the slow path has better characteristics than SpinLocks's.
-  static constexpr int kSpinCount = 1000;
+  // See below, the latency of YIELD_PROCESSOR can be as high as ~150
+  // cycles. Meanwhile, sleeping costs a few us. Spinning 64 times at 3GHz would
+  // cost 150 * 64 / 3e9 ~= 3.2us.
+  //
+  // This applies to Linux kernels, on x86_64. On ARM we might want to spin
+  // more.
+  static constexpr int kSpinCount = 64;
 
 #if defined(PA_HAS_FAST_MUTEX)
 
@@ -126,14 +133,14 @@ class LOCKABLE BASE_EXPORT SpinningMutex {
 #else  // defined(PA_HAS_FAST_MUTEX)
   std::atomic<bool> lock_{false};
 
-#if defined(OS_APPLE)
+#if defined(OS_APPLE) && !defined(PA_NO_OS_UNFAIR_LOCK_CRBUG_1267256)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
   os_unfair_lock unfair_lock_ = OS_UNFAIR_LOCK_INIT;
 #pragma clang diagnostic pop
 
-#endif
+#endif  // defined(OS_APPLE) && !defined(PA_NO_OS_UNFAIR_LOCK_CRBUG_1267256)
 
   // Spinlock-like, fallback.
   ALWAYS_INLINE bool TrySpinLock();
@@ -154,10 +161,14 @@ ALWAYS_INLINE void SpinningMutex::Acquire() {
     // Note: Per the intel optimization manual
     // (https://software.intel.com/content/dam/develop/public/us/en/documents/64-ia-32-architectures-optimization-manual.pdf),
     // the "pause" instruction is more costly on Skylake Client than on previous
-    // (and subsequent?) architectures. The latency is found to be 141 cycles
-    // there. This is not a big issue here as we don't spin long enough for this
-    // to become a problem, as we spend a maximum of ~141k cycles ~= 47us at
-    // 3GHz in "pause".
+    // architectures. The latency is found to be 141 cycles
+    // there (from ~10 on previous ones, nice 14x).
+    //
+    // According to Agner Fog's instruction tables, the latency is still >100
+    // cycles on Ice Lake, and from other sources, seems to be high as well on
+    // Adler Lake. Separately, it is (from
+    // https://agner.org/optimize/instruction_tables.pdf) also high on AMD Zen 3
+    // (~65). So just assume that it's this way for most x86_64 architectures.
     //
     // Also, loop several times here, following the guidelines in section 2.3.4
     // of the manual, "Pause latency in Skylake Client Microarchitecture".
@@ -165,7 +176,7 @@ ALWAYS_INLINE void SpinningMutex::Acquire() {
       YIELD_PROCESSOR;
       tries++;
     }
-    constexpr int kMaxBackoff = 64;
+    constexpr int kMaxBackoff = 16;
     backoff = std::min(kMaxBackoff, backoff << 1);
   } while (tries < kSpinCount);
 
@@ -267,24 +278,38 @@ ALWAYS_INLINE void SpinningMutex::ReleaseSpinLock() {
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 
 ALWAYS_INLINE bool SpinningMutex::Try() {
+  // ARM64 macOS is macOS 11.x at least, guaranteed to have os_unfair_lock().
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  return os_unfair_lock_trylock(&unfair_lock_);
+#else
   if (LIKELY(os_unfair_lock_trylock))
     return os_unfair_lock_trylock(&unfair_lock_);
 
   return TrySpinLock();
+#endif  // defined(OS_MAC) && defined(ARCH_CPU_ARM64)
 }
 
 ALWAYS_INLINE void SpinningMutex::Release() {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  return os_unfair_lock_unlock(&unfair_lock_);
+#else
   // Always testing trylock(), since the definitions are all or nothing.
   if (LIKELY(os_unfair_lock_trylock))
     return os_unfair_lock_unlock(&unfair_lock_);
 
   return ReleaseSpinLock();
+#endif  // defined(OS_MAC) && defined(ARCH_CPU_ARM64)
 }
 
 ALWAYS_INLINE void SpinningMutex::LockSlow() {
+#if defined(OS_MAC) && defined(ARCH_CPU_ARM64)
+  return os_unfair_lock_lock(&unfair_lock_);
+#else
   if (LIKELY(os_unfair_lock_trylock))
     return os_unfair_lock_lock(&unfair_lock_);
+
   return LockSlowSpinLock();
+#endif  // defined(OS_MAC) && defined(ARCH_CPU_ARM64)
 }
 
 #pragma clang diagnostic pop

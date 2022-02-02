@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/wm/core/transient_window_manager.h"
+#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
-#include "base/macros.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
@@ -69,7 +69,7 @@ class WindowVisibilityObserver : public aura::WindowObserver {
     owned_window_.reset();
   }
  private:
-  Window* observed_window_;
+  raw_ptr<Window> observed_window_;
   std::unique_ptr<Window> owned_window_;
 };
 
@@ -386,7 +386,7 @@ class DestroyedTrackingDelegate : public aura::test::TestWindowDelegate {
 
  private:
   const std::string name_;
-  std::vector<std::string>* results_;
+  raw_ptr<std::vector<std::string>> results_;
 };
 
 }  // namespace

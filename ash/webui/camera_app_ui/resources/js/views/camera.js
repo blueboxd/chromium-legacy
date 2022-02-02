@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {
-  ScreenState,
-} from '/ash/webui/camera_app_ui/camera_app_helper.mojom-webui.js';
-
 import * as animate from '../animation.js';
 import {
   assert,
   assertInstanceof,
-} from '../chrome_util.js';
+} from '../assert.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
   VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -31,6 +27,7 @@ import * as localStorage from '../models/local_storage.js';
 import {ResultSaver} from '../models/result_saver.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
+import {ScreenState} from '../mojo/type.js';
 import * as nav from '../nav.js';
 import * as newFeatureToast from '../new_feature_toast.js';
 // eslint-disable-next-line no-unused-vars
@@ -529,7 +526,8 @@ export class Camera extends View {
     // to take document photo with space key as shortcut. See b/196907822.
     const checkRefocus = () => {
       if (!state.get(state.State.CAMERA_CONFIGURING) && state.get(Mode.SCAN) &&
-          this.scanOptions_.isDocumentModeEanbled()) {
+          this.scanOptions_.isDocumentModeEanbled() &&
+          nav.isTopMostView(this.name)) {
         dom.getAll('button.shutter', HTMLButtonElement)
             .forEach((btn) => btn.offsetParent && btn.focus());
       }
@@ -764,20 +762,8 @@ export class Camera extends View {
     let result = null;
     try {
       await this.prepareReview_(async () => {
-        const doCrop = (blob, corners, rotation) => {
-          // Do rotation by rotating the index in corners array.
-          const rotatedCorns = [...corners];
-          for (const r
-                   of [Rotation.ANGLE_0, Rotation.ANGLE_270, Rotation.ANGLE_180,
-                       Rotation.ANGLE_90]) {
-            if (r === rotation) {
-              break;
-            }
-            const popped = rotatedCorns.pop();
-            rotatedCorns.unshift(popped);
-          }
-          return helper.convertToDocument(blob, rotatedCorns, MimeType.JPEG);
-        };
+        const doCrop = (blob, corners, rotation) =>
+            helper.convertToDocument(blob, corners, rotation, MimeType.JPEG);
         let corners =
             refCorners || getDefaultScanCorners(originImage.resolution);
         let docBlob;
@@ -942,7 +928,9 @@ export class Camera extends View {
   /**
    * @override
    */
-  async handleResultGif({blob, name, resolution, duration}) {
+  async handleResultGif({name, getBlob, resolution, duration}) {
+    nav.open(ViewName.FLASH);
+    const blob = await getBlob();
     const sendEvent = (gifResult) => {
       metrics.sendCaptureEvent({
         recordType: metrics.RecordType.GIF,
@@ -968,6 +956,7 @@ export class Camera extends View {
       );
       const negative = new review.Options(
           new review.Option(I18nString.LABEL_RETAKE, {exitValue: null}));
+      nav.close(ViewName.FLASH);
       result = await this.review_.startReview({positive, negative});
     });
     if (result) {
@@ -1050,7 +1039,7 @@ export class Camera extends View {
       photoRs = await deviceOperator.getPhotoResolutions(deviceId);
     } else {
       resolCandidates = this.modes_.getFakeResolutionCandidates(mode, deviceId);
-      photoRs = resolCandidates;
+      photoRs = resolCandidates.map((c) => c.resolution);
     }
     const maxResolution =
         photoRs.reduce((maxR, r) => r.area > maxR.area ? r : maxR);

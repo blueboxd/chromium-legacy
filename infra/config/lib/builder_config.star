@@ -429,6 +429,7 @@ _ALLOW_LIST = (
     ("ci", "chromeos-arm-generic-rel"),
     ("ci", "linux-bootstrap"),
     ("ci", "linux-bootstrap-tests"),
+    ("ci", "Win x64 Builder (reclient compare)"),
     ("try", "chromeos-arm-generic-rel"),
     ("try", "linux-bootstrap"),
 )

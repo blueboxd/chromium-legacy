@@ -106,6 +106,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/rounded_border_geometry.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_size.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
@@ -663,14 +664,13 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
       old_style->EffectiveZoom() != new_style.EffectiveZoom()) {
     PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
     DCHECK(scrollable_area);
-    // We use getScrollOffset() rather than scrollPosition(), because scroll
+    // We use GetScrollOffset() rather than ScrollPosition(), because scroll
     // offset is the distance from the beginning of flow for the box, which is
     // the dimension we want to preserve.
-    ScrollOffset old_offset = scrollable_area->GetScrollOffset();
-    if (old_offset.width() || old_offset.height()) {
-      ScrollOffset new_offset = old_offset.ScaledBy(new_style.EffectiveZoom() /
-                                                    old_style->EffectiveZoom());
-      scrollable_area->SetScrollOffsetUnconditionally(new_offset);
+    ScrollOffset offset = scrollable_area->GetScrollOffset();
+    if (!offset.IsZero()) {
+      offset.Scale(new_style.EffectiveZoom() / old_style->EffectiveZoom());
+      scrollable_area->SetScrollOffsetUnconditionally(offset);
     }
   }
 
@@ -1263,6 +1263,11 @@ void LayoutBox::UpdateAfterLayout() {
     document.IncLayoutCallsCounterNG();
 }
 
+bool LayoutBox::ShouldUseAutoIntrinsicSize() const {
+  DisplayLockContext* context = GetDisplayLockContext();
+  return context && context->IsAuto() && context->IsLocked();
+}
+
 bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
   NOT_DESTROYED();
   if (!ShouldApplySizeContainment())
@@ -1286,6 +1291,12 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   const absl::optional<StyleIntrinsicLength>& intrinsic_length =
       style.ContainIntrinsicWidth();
   DCHECK(intrinsic_length);
+  if (intrinsic_length->HasAuto() && ShouldUseAutoIntrinsicSize()) {
+    const Element* elem = DynamicTo<Element>(GetNode());
+    const ResizeObserverSize* size = elem ? elem->LastIntrinsicSize() : nullptr;
+    if (size)
+      return ToPhysicalSize(size->size(), StyleRef().GetWritingMode()).width;
+  }
   DCHECK(intrinsic_length->GetLength().IsFixed());
   DCHECK_GE(intrinsic_length->GetLength().Value(), 0.f);
   return LayoutUnit(intrinsic_length->GetLength().Value());
@@ -1298,6 +1309,12 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   const absl::optional<StyleIntrinsicLength>& intrinsic_length =
       style.ContainIntrinsicHeight();
   DCHECK(intrinsic_length);
+  if (intrinsic_length->HasAuto() && ShouldUseAutoIntrinsicSize()) {
+    const Element* elem = DynamicTo<Element>(GetNode());
+    const ResizeObserverSize* size = elem ? elem->LastIntrinsicSize() : nullptr;
+    if (size)
+      return ToPhysicalSize(size->size(), StyleRef().GetWritingMode()).height;
+  }
   DCHECK(intrinsic_length->GetLength().IsFixed());
   DCHECK_GE(intrinsic_length->GetLength().Value(), 0.f);
   return LayoutUnit(intrinsic_length->GetLength().Value());
@@ -1494,7 +1511,7 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
   }
   // The Layer does not yet have the up to date subpixel accumulation
   // so we base the size strictly on the frame rect's location.
-  IntSize old_pixel_snapped_border_rect_size =
+  gfx::Size old_pixel_snapped_border_rect_size =
       PixelSnappedBorderBoxRect().size();
   SetLocation(location);
   // TODO(crbug.com/1020913): This is problematic because this function may be
@@ -1785,7 +1802,7 @@ bool LayoutBox::CanAutoscroll() const {
 // inset by the autoscroll activation threshold), returned offset denotes
 // direction of scrolling.
 PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
-    const FloatPoint& point_in_root_frame) const {
+    const gfx::PointF& point_in_root_frame) const {
   NOT_DESTROYED();
   if (!GetFrame())
     return PhysicalOffset();
@@ -1804,7 +1821,7 @@ PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
   PhysicalRect belt_box =
       View()->GetFrameView()->ConvertToRootFrame(absolute_scrolling_box);
   belt_box.Inflate(LayoutUnit(-kAutoscrollBeltSize));
-  FloatPoint point = point_in_root_frame;
+  gfx::PointF point = point_in_root_frame;
 
   if (point.x() < belt_box.X())
     point.Offset(-kAutoscrollBeltSize, 0);
@@ -1816,7 +1833,7 @@ PhysicalOffset LayoutBox::CalculateAutoscrollDirection(
   else if (point.y() > belt_box.Bottom())
     point.Offset(0, kAutoscrollBeltSize);
 
-  return PhysicalOffset::FromFloatSizeRound(point - point_in_root_frame);
+  return PhysicalOffset::FromVector2dFRound(point - point_in_root_frame);
 }
 
 LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object,
@@ -1905,15 +1922,13 @@ bool LayoutBox::NeedsPreferredWidthsRecalculation() const {
          StyleRef().PaddingEnd().IsPercentOrCalc();
 }
 
-IntSize LayoutBox::OriginAdjustmentForScrollbars() const {
+gfx::Vector2d LayoutBox::OriginAdjustmentForScrollbars() const {
   NOT_DESTROYED();
-  if (CanSkipComputeScrollbars()) {
-    return IntSize();
-  } else {
-    NGPhysicalBoxStrut scrollbars =
-        ComputeScrollbarsInternal(kClampToContentBox);
-    return IntSize(scrollbars.left.ToInt(), scrollbars.top.ToInt());
-  }
+  if (CanSkipComputeScrollbars())
+    return gfx::Vector2d();
+
+  NGPhysicalBoxStrut scrollbars = ComputeScrollbarsInternal(kClampToContentBox);
+  return gfx::Vector2d(scrollbars.left.ToInt(), scrollbars.top.ToInt());
 }
 
 gfx::Point LayoutBox::ScrollOrigin() const {
@@ -1926,7 +1941,7 @@ PhysicalOffset LayoutBox::ScrolledContentOffset() const {
   NOT_DESTROYED();
   DCHECK(IsScrollContainer());
   DCHECK(GetScrollableArea());
-  return PhysicalOffset::FromFloatSizeFloor(
+  return PhysicalOffset::FromVector2dFFloor(
       GetScrollableArea()->GetScrollOffset());
 }
 
@@ -1934,7 +1949,7 @@ gfx::Vector2d LayoutBox::PixelSnappedScrolledContentOffset() const {
   NOT_DESTROYED();
   DCHECK(IsScrollContainer());
   DCHECK(GetScrollableArea());
-  return ToGfxVector2d(GetScrollableArea()->ScrollOffsetInt());
+  return GetScrollableArea()->ScrollOffsetInt();
 }
 
 PhysicalRect LayoutBox::ClippingRect(const PhysicalOffset& location) const {
@@ -1966,14 +1981,14 @@ void LayoutBox::ApplyVisibleOverflowToClipRect(PhysicalRect& clip_rect) const {
   }
 }
 
-FloatPoint LayoutBox::PerspectiveOrigin(const PhysicalSize* size) const {
+gfx::PointF LayoutBox::PerspectiveOrigin(const PhysicalSize* size) const {
   if (!HasTransformRelatedProperty())
-    return FloatPoint();
+    return gfx::PointF();
 
   // Use the |size| parameter instead of |Size()| if present.
-  FloatSize float_size = size ? FloatSize(*size) : FloatSize(Size());
+  gfx::SizeF float_size = size ? gfx::SizeF(*size) : gfx::SizeF(Size());
 
-  return FloatPointForLengthPoint(StyleRef().PerspectiveOrigin(), float_size);
+  return PointForLengthPoint(StyleRef().PerspectiveOrigin(), float_size);
 }
 
 bool LayoutBox::MapVisualRectToContainer(
@@ -2063,7 +2078,7 @@ bool LayoutBox::MapVisualRectToContainer(
   if (has_perspective) {
     // Perspective on the container affects us, so we have to factor it in here.
     DCHECK(container_object->HasLayer());
-    FloatPoint perspective_origin;
+    gfx::PointF perspective_origin;
     if (const auto* container_box = DynamicTo<LayoutBox>(container_object))
       perspective_origin = container_box->PerspectiveOrigin();
 
@@ -3309,9 +3324,6 @@ void LayoutBox::SetCachedLayoutResult(
   DCHECK(!result->PhysicalFragment().BreakToken());
   DCHECK(To<NGPhysicalBoxFragment>(result->PhysicalFragment()).IsOnlyForNode());
 
-  if (!result->GetConstraintSpaceForCaching().ShouldCacheResult())
-    return;
-
   if (result->GetConstraintSpaceForCaching().CacheSlot() ==
       NGCacheSlot::kMeasure) {
     // We don't early return here, when setting the "measure" result we also
@@ -3512,9 +3524,6 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     NGLayoutCacheStatus* out_cache_status) {
   NOT_DESTROYED();
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
-
-  if (!new_space.ShouldCacheResult())
-    return nullptr;
 
   const bool use_layout_cache_slot =
       new_space.CacheSlot() == NGCacheSlot::kLayout &&
@@ -4261,7 +4270,7 @@ bool LayoutBox::ShouldComputeLogicalWidthFromAspectRatio(
   if (StyleRef().AspectRatio().IsAuto())
     return false;
 
-  if (IsGridItem() && HasStretchedLogicalWidth(StretchingMode::Explicit))
+  if (IsGridItem() && HasStretchedLogicalWidth(StretchingMode::kExplicit))
     return false;
 
   if (!HasOverrideLogicalHeight() &&
@@ -4594,7 +4603,7 @@ bool LayoutBox::HasStretchedLogicalWidth(StretchingMode stretchingMode) const {
     // Flexbox Items, which obviously should have a container.
     return false;
   }
-  auto defaultItemPosition = stretchingMode == StretchingMode::Any
+  auto defaultItemPosition = stretchingMode == StretchingMode::kAny
                                  ? cb->SelfAlignmentNormalBehavior(this)
                                  : ItemPosition::kNormal;
   if (cb->IsHorizontalWritingMode() != IsHorizontalWritingMode()) {
@@ -7196,8 +7205,10 @@ PhysicalRect LayoutBox::PhysicalVisualOverflowRectIncludingFilters() const {
   PhysicalRect bounds_rect = PhysicalVisualOverflowRect();
   if (!StyleRef().HasFilter())
     return bounds_rect;
-  FloatRect float_rect(bounds_rect);
-  float_rect.UnionIfNonZero(Layer()->FilterReferenceBox());
+  gfx::RectF float_rect(bounds_rect);
+  gfx::RectF filter_reference_box = Layer()->FilterReferenceBox();
+  if (!filter_reference_box.size().IsZero())
+    float_rect.UnionEvenIfEmpty(filter_reference_box);
   float_rect = Layer()->MapRectForFilter(float_rect);
   return PhysicalRect::EnclosingRect(float_rect);
 }
@@ -8339,7 +8350,7 @@ bool LayoutBox::NeedsScrollNode(
   return GetScrollableArea()->ScrollsOverflow();
 }
 
-void LayoutBox::OverrideTickmarks(Vector<IntRect> tickmarks) {
+void LayoutBox::OverrideTickmarks(Vector<gfx::Rect> tickmarks) {
   NOT_DESTROYED();
   GetScrollableArea()->SetTickmarksOverride(std::move(tickmarks));
   InvalidatePaintForTickmarks();

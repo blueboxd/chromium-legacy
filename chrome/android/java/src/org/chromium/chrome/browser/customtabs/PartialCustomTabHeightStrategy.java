@@ -26,6 +26,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Px;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.view.MotionEventCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -92,14 +93,18 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
     /**
      * Handling touch events for resizing the Window.
      */
-    private class PartialCustomTabHandleStrategy extends GestureDetector.SimpleOnGestureListener
+    @VisibleForTesting
+    /* package */ class PartialCustomTabHandleStrategy
+            extends GestureDetector.SimpleOnGestureListener
             implements CustomTabToolbar.HandleStrategy {
+        private static final int CLOSE_DISTANCE = 300;
         private GestureDetector mGestureDetector;
         private float mLastPosY;
         private float mLastDownPosY;
         private float mMostRecentYDistance;
         private float mInitialY;
         private boolean mSeenFirstMoveOrDown;
+        private Runnable mCloseHandler;
 
         public PartialCustomTabHandleStrategy(Context context) {
             mGestureDetector = new GestureDetector(context, this, ThreadUtils.getUiThreadHandler());
@@ -150,6 +155,10 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
                         if (y - mLastPosY != 0) {
                             mMostRecentYDistance = y - mLastPosY;
                         }
+                        if (mStatus == HeightStatus.INITIAL_HEIGHT
+                                && y - mInitialY > CLOSE_DISTANCE) {
+                            mCloseHandler.run();
+                        }
                     }
                     mLastPosY = y;
                     return true;
@@ -166,6 +175,11 @@ public class PartialCustomTabHeightStrategy extends CustomTabHeightStrategy
                 default:
                     return true;
             }
+        }
+
+        @Override
+        public void setCloseClickHandler(Runnable handler) {
+            mCloseHandler = handler;
         }
 
         @Override

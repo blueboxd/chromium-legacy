@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.util.ColorUtils;
 
@@ -122,8 +123,13 @@ public class TabListSceneLayer extends SceneLayer {
 
             int[] relatedTabIds = getRelatedTabIds(t.getId());
 
-            float toolbarYOffset = browserControls.getTopControlOffset()
-                    + browserControls.getTopControlsMinHeight();
+            float toolbarYOffset = 0;
+            int contentOffset = 0;
+            if (browserControls != null) {
+                toolbarYOffset = browserControls.getTopControlOffset()
+                        + browserControls.getTopControlsMinHeight();
+                contentOffset = browserControls.getContentOffset();
+            }
 
             // TODO(dtrainor, clholgat): remove "* dpToPx" once the native part fully supports dp.
             TabListSceneLayerJni.get().putTabLayer(mNativePtr, TabListSceneLayer.this, t.getId(),
@@ -149,27 +155,19 @@ public class TabListSceneLayer extends SceneLayer {
                     t.getBrightness(), t.showToolbar(), defaultThemeColor,
                     t.getToolbarBackgroundColor(), closeButtonColor, t.anonymizeToolbar(),
                     t.isTitleNeeded(), urlBarBackgroundId, t.getTextBoxBackgroundColor(),
-                    t.getToolbarAlpha(), toolbarYOffset, browserControls.getContentOffset(),
-                    t.getSideBorderScale(), t.insetBorderVertical());
+                    t.getToolbarAlpha(), toolbarYOffset, contentOffset, t.getSideBorderScale(),
+                    t.insetBorderVertical());
         }
         TabListSceneLayerJni.get().finishBuildingFrame(mNativePtr, TabListSceneLayer.this);
     }
 
-    /**
-     * @return The background color of the scene layer.
-     */
+    /** Returns the background color of the scene layer. */
     protected int getTabListBackgroundColor(Context context) {
-        int colorId = R.color.default_bg_color;
-
-        if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(context)) {
-            if (mTabModelSelector != null && mTabModelSelector.isIncognitoSelected()) {
-                colorId = R.color.default_bg_color_dark;
-            } else {
-                colorId = R.color.default_bg_color;
-            }
+        if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(context) && mTabModelSelector != null
+                && mTabModelSelector.isIncognitoSelected()) {
+            return context.getColor(R.color.default_bg_color_dark);
         }
-
-        return ApiCompatibilityUtils.getColor(context.getResources(), colorId);
+        return SemanticColorUtils.getDefaultBgColor(context);
     }
 
     @Override

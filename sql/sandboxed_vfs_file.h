@@ -7,6 +7,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
@@ -75,7 +76,7 @@ class SandboxedVfsFile {
   // One of the SQLite locking mode constants.
   int sqlite_lock_mode_;
   // The SandboxedVfs that created this instance.
-  SandboxedVfs* const vfs_;
+  const raw_ptr<SandboxedVfs> vfs_;
   // Used to identify the file in IPCs to the browser process.
   const base::FilePath file_path_;
 };
@@ -83,6 +84,9 @@ class SandboxedVfsFile {
 // sqlite3_file "subclass" that bridges to a SandboxedVfsFile instance.
 struct SandboxedVfsFileSqliteBridge {
   sqlite3_file sqlite_file;
+  // `sandboxed_vfs_file` is not a raw_ptr<SandboxedVfsFile>, because
+  // reinterpret_cast of uninitialized memory to raw_ptr can cause ref-counting
+  // mismatch.
   SandboxedVfsFile* sandboxed_vfs_file;
 
   static SandboxedVfsFileSqliteBridge& FromSqliteFile(

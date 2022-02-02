@@ -59,11 +59,14 @@ void OnPaymentAppCreated(const JavaRef<jobject>& jcallback,
       payments::JniPaymentApp::Create(env, std::move(payment_app)));
 }
 
-void OnPaymentAppCreationError(const JavaRef<jobject>& jcallback,
-                               const std::string& error_message) {
+void OnPaymentAppCreationError(
+    const JavaRef<jobject>& jcallback,
+    const std::string& error_message,
+    payments::AppCreationFailureReason error_reason) {
   JNIEnv* env = AttachCurrentThread();
   Java_PaymentAppServiceCallback_onPaymentAppCreationError(
-      env, jcallback, ConvertUTF8ToJavaString(env, error_message));
+      env, jcallback, ConvertUTF8ToJavaString(env, error_message),
+      static_cast<jint>(error_reason));
 }
 
 void OnDoneCreatingPaymentApps(const JavaRef<jobject>& jcallback) {
@@ -271,12 +274,7 @@ PaymentAppServiceBridge::CreateInternalAuthenticator() const {
   // displays the top-level origin in its UI before the user can click on the
   // [Verify] button to invoke this authenticator.
   auto* rfh = content::RenderFrameHost::FromID(frame_routing_id_);
-  // Lifetime of the created authenticator is externally managed by the
-  // authenticator factory, but is generally tied to the RenderFrame by
-  // listening for `RenderFrameDeleted()`. Check `IsRenderFrameLive()` as a
-  // safety precaution to ensure that `RenderFrameDeleted()` will be called at
-  // some point.
-  return rfh && rfh->IsActive() && rfh->IsRenderFrameLive()
+  return rfh && rfh->IsActive()
              ? std::make_unique<InternalAuthenticatorAndroid>(rfh)
              : nullptr;
 }
@@ -341,8 +339,9 @@ bool PaymentAppServiceBridge::SkipCreatingNativePaymentApps() const {
 }
 
 void PaymentAppServiceBridge::OnPaymentAppCreationError(
-    const std::string& error_message) {
-  payment_app_creation_error_callback_.Run(error_message);
+    const std::string& error_message,
+    AppCreationFailureReason error_reason) {
+  payment_app_creation_error_callback_.Run(error_message, error_reason);
 }
 
 void PaymentAppServiceBridge::OnDoneCreatingPaymentApps() {

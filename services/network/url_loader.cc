@@ -16,6 +16,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,7 +28,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "base/trace_event/trace_id_helper.h"
 #include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -95,6 +95,7 @@
 #include "url/origin.h"
 
 #if defined(OS_ANDROID)
+#include "net/base/features.h"
 #include "services/network/radio_monitor_android.h"
 #endif
 
@@ -550,9 +551,9 @@ URLLoader::URLLoader(
       allow_http1_for_streaming_upload_(
           request.request_body &&
           request.request_body->AllowHTTP1ForStreamingUpload()),
-      accept_ch_frame_observer_(std::move(accept_ch_frame_observer)),
-      trace_id_(base::trace_event::GetNextGlobalTraceId()) {
-  TRACE_EVENT("loading", "URLLoader::URLLoader", perfetto::Flow(trace_id_));
+      accept_ch_frame_observer_(std::move(accept_ch_frame_observer)) {
+  TRACE_EVENT("loading", "URLLoader::URLLoader",
+              perfetto::Flow::FromPointer(this));
   DCHECK(delete_callback_);
   DCHECK(factory_params_);
 
@@ -584,6 +585,10 @@ URLLoader::URLLoader(
   url_request_->set_site_for_cookies(request.site_for_cookies);
   if (ShouldForceIgnoreSiteForCookies(request))
     url_request_->set_force_ignore_site_for_cookies(true);
+  if (!request.navigation_redirect_chain.empty()) {
+    DCHECK_EQ(request.mode, mojom::RequestMode::kNavigate);
+    url_request_->SetURLChain(request.navigation_redirect_chain);
+  }
   url_request_->SetReferrer(request.referrer.GetAsReferrer().spec());
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
@@ -706,9 +711,8 @@ URLLoader::URLLoader(
   }
 
 #if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kRecordRadioWakeupTrigger)) {
-    RadioMonitorAndroid::GetInstance().MaybeRecordURLLoaderAnnotationId(
-        traffic_annotation);
+  if (base::FeatureList::IsEnabled(net::features::kRecordRadioWakeupTrigger)) {
+    MaybeRecordURLLoaderCreationForWakeupTrigger(request, traffic_annotation);
   }
 #endif
 
@@ -814,9 +818,9 @@ class URLLoader::FileOpenerForUpload {
 
   // The paths of files for upload
   const std::vector<base::FilePath> paths_;
-  URLLoader* const url_loader_;
+  const raw_ptr<URLLoader> url_loader_;
   const int32_t process_id_;
-  mojom::NetworkContextClient* const network_context_client_;
+  const raw_ptr<mojom::NetworkContextClient> network_context_client_;
   SetUpUploadCallback set_up_upload_callback_;
   // The files opened so far.
   std::vector<base::File> opened_files_;
@@ -983,6 +987,8 @@ void URLLoader::ScheduleStart() {
 }
 
 URLLoader::~URLLoader() {
+  TRACE_EVENT("loading", "URLLoader::~URLLoader",
+              perfetto::TerminatingFlow::FromPointer(this));
   RecordBodyReadFromNetBeforePausedIfNeeded();
   if (keepalive_ && keepalive_statistics_recorder_) {
     keepalive_statistics_recorder_->OnLoadFinished(
@@ -1073,23 +1079,32 @@ void URLLoader::ResumeReadingBodyFromNet() {
   }
 }
 
-PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
-    mojom::IPAddressSpace resource_address_space) const {
+// WARNING: This should be kept in sync with similar logic in
+// `network::cors::CorsURLLoader::GetClientSecurityState()`.
+const mojom::ClientSecurityState* URLLoader::GetClientSecurityState() const {
   // Depending on the type of URL request, we source the client security state
   // from either the URLRequest's trusted params (for navigations, which share
   // a factory) or the URLLoaderFactory's params. We prefer the factory params
   // over the request params, as the former always come from the browser
   // process.
-  const mojom::ClientSecurityStatePtr& security_state =
-      factory_params_->client_security_state
-          ? factory_params_->client_security_state
-          : request_client_security_state_;
+  if (factory_params_->client_security_state) {
+    return factory_params_->client_security_state.get();
+  }
+
+  return request_client_security_state_.get();
+}
+
+PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
+    const net::TransportInfo& transport_info) {
+  resource_ip_address_space_ = TransportInfoToIPAddressSpace(transport_info);
+
+  const mojom::ClientSecurityState* security_state = GetClientSecurityState();
 
   // Fully-qualify function name to disambiguate it, otherwise it resolves to
   // `URLLoader::PrivateNetworkAccessCheck()` and fails to compile.
   PrivateNetworkAccessCheckResult result = network::PrivateNetworkAccessCheck(
-      security_state.get(), target_ip_address_space_, options_,
-      resource_address_space);
+      security_state, target_ip_address_space_, options_,
+      resource_ip_address_space_);
 
   bool is_warning = false;
   switch (result) {
@@ -1111,7 +1126,7 @@ PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
   if (auto* devtools_observer = GetDevToolsObserver()) {
     devtools_observer->OnPrivateNetworkRequest(
         devtools_request_id(), url_request_->url(), is_warning,
-        resource_address_space, security_state->Clone());
+        resource_ip_address_space_, security_state->Clone());
   }
 
   return result;
@@ -1127,18 +1142,15 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
 
   // Now that the request endpoint's address has been resolved, check if
   // this request should be blocked per Private Network Access.
-  mojom::IPAddressSpace resource_address_space =
-      IPEndPointToIPAddressSpace(info.endpoint);
-
   absl::optional<mojom::CorsError> cors_error =
       PrivateNetworkAccessCheckResultToCorsError(
-          PrivateNetworkAccessCheck(resource_address_space));
+          PrivateNetworkAccessCheck(info));
   if (cors_error.has_value()) {
     // Remember the CORS error so we can annotate the URLLoaderCompletionStatus
     // with it later, then fail the request with the same net error code as
     // other CORS errors.
     cors_error_status_ = CorsErrorStatus(*cors_error, target_ip_address_space_,
-                                         resource_address_space);
+                                         resource_ip_address_space_);
     return net::ERR_FAILED;
   }
 
@@ -1744,8 +1756,12 @@ void URLLoader::OnBeforeURLRequest() {
     return url_loader_factory_->OnBeforeURLRequest();
 }
 
-net::LoadState URLLoader::GetLoadStateForTesting() const {
+net::LoadState URLLoader::GetLoadState() const {
   return url_request_->GetLoadState().state;
+}
+
+net::UploadProgress URLLoader::GetUploadProgress() const {
+  return url_request_->GetUploadProgress();
 }
 
 int32_t URLLoader::GetProcessId() const {
@@ -1933,7 +1949,7 @@ void URLLoader::DeleteSelf() {
 
 void URLLoader::SendResponseToClient() {
   TRACE_EVENT("loading", "network::URLLoader::SendResponseToClient",
-              perfetto::Flow(trace_id_), "url", url_request_->url());
+              perfetto::Flow::FromPointer(this), "url", url_request_->url());
   DCHECK_EQ(emitted_devtools_raw_request_, emitted_devtools_raw_response_);
   response_->emitted_extra_info = emitted_devtools_raw_request_;
   url_loader_client_.Get()->OnReceiveResponse(std::move(response_));
@@ -2115,8 +2131,7 @@ bool URLLoader::DispatchOnRawResponse() {
   emitted_devtools_raw_response_ = true;
   devtools_observer->OnRawResponse(
       devtools_request_id().value(), url_request_->maybe_stored_cookies(),
-      std::move(header_array), raw_response_headers,
-      IPEndPointToIPAddressSpace(response_info.remote_endpoint),
+      std::move(header_array), raw_response_headers, resource_ip_address_space_,
       response_headers->response_code());
 
   return true;

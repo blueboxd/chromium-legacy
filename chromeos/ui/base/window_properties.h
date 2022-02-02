@@ -34,6 +34,17 @@ extern const ui::ClassProperty<bool>* const kAutoMaximizeXdgShellEnabled;
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<bool>* const kBlockedForAssistantSnapshotKey;
 
+// If true, the window can attach into another window.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const kCanAttachToAnotherWindowKey;
+
+// If true, the window is the target window for the tab-dragged window. The key
+// is used by overview to show a highlight indication to indicate which overview
+// window the dragged tabs will merge into when the user releases the pointer.
+COMPONENT_EXPORT(CHROMEOS_UI_BASE)
+extern const ui::ClassProperty<bool>* const
+    kIsDeferredTabDraggingTargetWindowKey;
+
 // Whether holding esc should exit fullscreen. Used by Borealis and Plugin VM.
 COMPONENT_EXPORT(CHROMEOS_UI_BASE)
 extern const ui::ClassProperty<bool>* const kEscHoldToExitFullscreen;

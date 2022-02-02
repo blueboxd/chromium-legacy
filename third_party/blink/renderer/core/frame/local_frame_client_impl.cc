@@ -249,8 +249,8 @@ function createShadowRootWithin(node) {
 }
 createShadowRootWithin(document.body);
 )";
-    ClassicScript::CreateUnspecifiedScript(
-        ScriptSourceCode(script, ScriptSourceLocationType::kInternal))
+    ClassicScript::CreateUnspecifiedScript(script,
+                                           ScriptSourceLocationType::kInternal)
         ->RunScript(web_frame_->GetFrame()->DomWindow(),
                     ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
   }
@@ -1044,10 +1044,9 @@ void LocalFrameClientImpl::FocusedElementChanged(Element* element) {
 }
 
 void LocalFrameClientImpl::OnMainFrameIntersectionChanged(
-    const IntRect& intersection_rect) {
+    const gfx::Rect& intersection_rect) {
   DCHECK(web_frame_->Client());
-  web_frame_->Client()->OnMainFrameIntersectionChanged(
-      ToGfxRect(intersection_rect));
+  web_frame_->Client()->OnMainFrameIntersectionChanged(intersection_rect);
 }
 
 void LocalFrameClientImpl::OnOverlayPopupAdDetected() {

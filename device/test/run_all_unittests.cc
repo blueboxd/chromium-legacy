@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
@@ -40,7 +39,7 @@ class DeviceTestSuite : public base::TestSuite {
 #if defined(OS_ANDROID)
     ASSERT_TRUE(base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &path));
 #else
-    ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &path));
+    ASSERT_TRUE(base::PathService::Get(base::DIR_ASSETS, &path));
 #endif  // defined(OS_ANDROID)
     base::FilePath bluetooth_test_strings =
         path.Append(FILE_PATH_LITERAL("bluetooth_test_strings.pak"));

@@ -215,6 +215,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.Assistive.MultiWord.InputState"
+    enum="IMEAssistiveTextInputState" expires_after="2022-06-01">
+  <owner>curtismcmullan@google.com</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    This records the state of an assistive feature in relation to a particular
+    input field. The feature could be enabled or disabled for a number of
+    reasons and this metric captures that information. The metric is recorded
+    once when a user focuses on a new input field.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.Assistive.NotAllowed" enum="IMEAssistiveAction"
     expires_after="2022-03-19">
   <owner>jiwan@google.com</owner>
@@ -485,6 +497,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="InputMethod.Handwriting.LanguagePackState"
+    enum="LanguagePackState" expires_after="2022-06-01">
+  <owner>curtismcmullan@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <summary>
+    The state of the requested language pack on initialization of the required
+    handwriting service connection. Recorded once whenever a new handwriting
+    service connection is requested.
+  </summary>
+</histogram>
+
 <histogram name="InputMethod.ID2" enum="InputMethodID2"
     expires_after="2022-04-03">
   <owner>tranbaoduy@chromium.org</owner>
@@ -633,7 +656,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.MultilingualExperiment.Autocorrect.Actions"
-    enum="IMEAutocorrectActions" expires_after="2021-12-31">
+    enum="IMEAutocorrectActions" expires_after="2022-06-30">
   <owner>tranbaoduy@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -643,7 +666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.MultilingualExperiment.Autocorrect.Count"
-    enum="IMETextInputClient" expires_after="2021-12-31">
+    enum="IMETextInputClient" expires_after="2022-06-30">
   <owner>tranbaoduy@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -653,7 +676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.MultilingualExperiment.Autocorrect.Delay"
-    units="ms" expires_after="2021-12-31">
+    units="ms" expires_after="2022-06-30">
   <owner>tranbaoduy@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -664,7 +687,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="InputMethod.MultilingualExperiment.DiacriticalAutocorrect.Actions"
-    enum="IMEAutocorrectActions" expires_after="2021-12-31">
+    enum="IMEAutocorrectActions" expires_after="2022-06-30">
   <owner>tranbaoduy@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>
@@ -674,7 +697,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InputMethod.MultilingualExperiment.NonAutocorrect"
-    enum="IMENonAutocorrectDiacriticStatus" expires_after="2021-12-31">
+    enum="IMENonAutocorrectDiacriticStatus" expires_after="2022-06-30">
   <owner>tranbaoduy@google.com</owner>
   <owner>essential-inputs-team@google.com</owner>
   <summary>

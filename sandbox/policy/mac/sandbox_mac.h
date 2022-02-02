@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "sandbox/policy/export.h"
 
 namespace base {
@@ -38,7 +37,7 @@ SANDBOX_POLICY_EXPORT std::string GetSandboxProfile(
 
 class SANDBOX_POLICY_EXPORT SandboxMac {
  public:
- SandboxMac() = delete;
+  SandboxMac() = delete;
   // Warm up System APIs that empirically need to be accessed before the
   // sandbox is turned on. |sandbox_type| is the type of sandbox to warm up.
   // Valid |sandbox_type| values are defined by the enum SandboxType, or can be

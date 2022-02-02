@@ -98,7 +98,7 @@ bool IsContentInjectionSupported() {
   if (!IsBackForwardCacheEnabled())
     return false;
   static constexpr base::FeatureParam<bool> content_injection_supported(
-      &features::kBackForwardCache, "content_injection_supported", false);
+      &features::kBackForwardCache, "content_injection_supported", true);
   return content_injection_supported.Get();
 }
 
@@ -365,11 +365,10 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
     // The only way this should be null is if there is no RenderWidgetHostView.
     DCHECK(rfh->GetView());
     DCHECK(trigger);
-    trigger->SetRecordContentToVisibleTimeRequest(
-        navigation_start, false /* destination_is_loaded */,
-        false /* show_reason_tab_switching */,
-        false /* show_reason_unoccluded */,
-        true /* show_reason_bfcache_restore */);
+    trigger->UpdateRequest(navigation_start, false /* destination_is_loaded */,
+                           false /* show_reason_tab_switching */,
+                           false /* show_reason_unoccluded */,
+                           true /* show_reason_bfcache_restore */);
   }
 }
 
@@ -591,9 +590,9 @@ void BackForwardCacheImpl::UpdateCanStoreToIncludeCacheControlNoStore(
   }
 
   auto* matching_entry = FindMatchingEntry(render_frame_host->GetPage());
-  // |matching_entry| can be nullptr for tests because
-  // |GetBackForwardCanStoreNowDebugStringForTesting()| can be called after the
-  // entry is destroyed.
+  // |matching_entry| can be nullptr for tests because this can be called from
+  // |CanStorePageNow()|, at which point |rfh| may not have a matching entry
+  // yet.
   if (!matching_entry)
     return;
 
@@ -657,7 +656,7 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
   BackForwardCacheCanStoreDocumentResult result;
 
   // Use the BackForwardCache only for the main frame.
-  if (rfh->GetParent())
+  if (rfh->GetParentOrOuterDocument())
     result.No(BackForwardCacheMetrics::NotRestoredReason::kNotMainFrame);
 
   // If the the delegate doesn't support back forward cache, disable it.
@@ -670,7 +669,7 @@ BackForwardCacheImpl::CanPotentiallyStorePageLater(RenderFrameHostImpl* rfh) {
       rfh->lifecycle_state() ==
       RenderFrameHostImpl::LifecycleStateImpl::kPrerendering;
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_ ||
-      is_prerendering) {
+      is_prerendering || rfh->IsFencedFrameRoot()) {
     result.No(
         BackForwardCacheMetrics::NotRestoredReason::kBackForwardCacheDisabled);
 
@@ -916,7 +915,8 @@ void BackForwardCacheImpl::CheckDynamicBlocklistedFeaturesOnSubtree(
   }
 
   // Do not cache if we have navigations in any of the subframes.
-  if (rfh->GetParent() && rfh->frame_tree_node()->HasNavigation()) {
+  if (rfh->GetParentOrOuterDocument() &&
+      rfh->frame_tree_node()->HasNavigation()) {
     result->No(
         BackForwardCacheMetrics::NotRestoredReason::kSubframeIsNavigating);
   }

@@ -42,6 +42,8 @@ class NotificationDisplayService;
 
 namespace apps {
 
+class PublisherHost;
+
 // An app publisher (in the App Service sense) of extension-backed apps for
 // ChromeOS, including Chrome Apps (platform apps and legacy packaged apps) and
 // hosted apps (including desktop PWAs).
@@ -56,10 +58,7 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
                               public MediaCaptureDevicesDispatcher::Observer,
                               public AppWebContentsData::Client {
  public:
-  ExtensionAppsChromeOs(
-      const mojo::Remote<apps::mojom::AppService>& app_service,
-      Profile* profile,
-      apps::InstanceRegistry* instance_registry);
+  explicit ExtensionAppsChromeOs(AppServiceProxy* proxy);
   ~ExtensionAppsChromeOs() override;
 
   ExtensionAppsChromeOs(const ExtensionAppsChromeOs&) = delete;
@@ -74,7 +73,10 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   void ObserveArc();
 
  private:
-  void Initialize();
+  friend class PublisherHost;
+
+  // ExtensionAppsBase overrides.
+  void Initialize() override;
 
   // apps::mojom::Publisher overrides.
   void LaunchAppWithIntent(const std::string& app_id,
@@ -144,6 +146,8 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
   void SetShowInFields(apps::mojom::AppPtr& app,
                        const extensions::Extension* extension) override;
   bool ShouldShownInLauncher(const extensions::Extension* extension) override;
+  std::unique_ptr<App> CreateApp(const extensions::Extension* extension,
+                                 Readiness readiness) override;
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
                               apps::mojom::Readiness readiness) override;
 
@@ -169,6 +173,13 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
       int feature,
       const std::string& app_id,
       bool is_disabled_mode_changed);
+
+  void LaunchExtension(const std::string& app_id,
+                       int32_t event_flags,
+                       apps::mojom::IntentPtr intent,
+                       apps::mojom::LaunchSource launch_source,
+                       apps::mojom::WindowInfoPtr window_info,
+                       LaunchAppWithIntentCallback callback);
 
   apps::InstanceRegistry* instance_registry_;
   base::ScopedObservation<extensions::AppWindowRegistry,

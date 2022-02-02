@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
@@ -80,6 +79,8 @@ class DemoSession : public session_manager::SessionManagerObserver,
   static constexpr char kSupportedCountries[][3] = {
       "us", "be", "ca", "dk", "fi", "fr", "de", "ie",
       "it", "jp", "lu", "nl", "no", "es", "se", "gb"};
+
+  static constexpr char kCountryNotSelectedId[] = "N/A";
 
   DemoSession(const DemoSession&) = delete;
   DemoSession& operator=(const DemoSession&) = delete;

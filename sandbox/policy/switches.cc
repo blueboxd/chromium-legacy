@@ -51,6 +51,7 @@ const char kMirroringSandbox[] = "mirroring";
 #endif  // OS_MAC
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kHardwareVideoDecodingSandbox[] = "hardware_video_decoding";
 const char kImeSandbox[] = "ime";
 const char kTtsSandbox[] = "tts";
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -106,9 +107,6 @@ const char kAllowThirdPartyModules[] = "allow-third-party-modules";
 
 // Add additional capabilities to the AppContainer sandbox on the GPU process.
 const char kAddGpuAppContainerCaps[] = "add-gpu-appcontainer-caps";
-
-// Disables the sandbox and gives the process elevated privileges.
-const char kNoSandboxAndElevatedPrivileges[] = "no-sandbox-and-elevated";
 
 // Add additional capabilities to the AppContainer sandbox used for XR
 // compositing.

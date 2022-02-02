@@ -44,7 +44,7 @@
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
 #include "third_party/blink/public/mojom/drag/drag.mojom-blink.h"
-#include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
+#include "third_party/blink/renderer/platform/widget/input/widget_base_input_handler.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
@@ -81,7 +82,6 @@ class PointF;
 
 namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
-class FloatPoint;
 class HitTestResult;
 class HTMLPlugInElement;
 class Page;
@@ -188,6 +188,12 @@ class CORE_EXPORT WebFrameWidgetImpl
   void NotifySwapAndPresentationTimeForTesting(
       base::OnceCallback<void(base::TimeTicks)> swap_callback,
       base::OnceCallback<void(base::TimeTicks)> presentation_callback);
+
+  // Process the input event, invoking the callback when complete. This
+  // method will call the callback synchronously.
+  void ProcessInputEventSynchronouslyForTesting(
+      const WebCoalescedInputEvent&,
+      WidgetBaseInputHandler::HandledEventCallback);
 
   // FrameWidget overrides.
   cc::AnimationHost* AnimationHost() const final;
@@ -355,8 +361,8 @@ class CORE_EXPORT WebFrameWidgetImpl
   void SetCursor(const ui::Cursor& cursor) override;
   bool HandlingInputEvent() override;
   void SetHandlingInputEvent(bool handling) override;
-  void ProcessInputEventSynchronouslyForTesting(const WebCoalescedInputEvent&,
-                                                HandledEventCallback) override;
+  void ProcessInputEventSynchronouslyForTesting(
+      const WebCoalescedInputEvent&) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void UpdateTextInputState() override;
@@ -448,7 +454,7 @@ class CORE_EXPORT WebFrameWidgetImpl
   // If use_anchor is true, destination is a point on the screen that will
   // remain fixed for the duration of the animation.
   // If use_anchor is false, destination is the final top-left scroll position.
-  void StartPageScaleAnimation(const gfx::Vector2d& destination,
+  void StartPageScaleAnimation(const gfx::Point& destination,
                                bool use_anchor,
                                float new_page_scale,
                                base::TimeDelta duration);
@@ -773,7 +779,10 @@ class CORE_EXPORT WebFrameWidgetImpl
       const gfx::Rect& rect_in_dips) override;
   void MoveCaret(const gfx::Point& point_in_dips) override;
 #if defined(OS_ANDROID)
-  void SelectWordAroundCaret(SelectWordAroundCaretCallback callback) override;
+  void SelectAroundCaret(mojom::blink::SelectionGranularity granularity,
+                         bool should_show_handle,
+                         bool should_show_context_menu,
+                         SelectAroundCaretCallback callback) override;
 #endif
 
   // PageWidgetEventHandler overrides:
@@ -877,7 +886,7 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Perform a hit test for a point relative to the root frame of the page.
   HitTestResult HitTestResultForRootFramePos(
-      const FloatPoint& pos_in_root_frame);
+      const gfx::PointF& pos_in_root_frame);
 
   // Called during |UpdateVisualProperties| to apply the new size to the widget.
   void ApplyVisualPropertiesSizing(const VisualProperties& visual_properties);

@@ -117,6 +117,9 @@ public class FirstRunIntegrationTest {
     @Rule
     public JniMocker mJniMocker = new JniMocker();
 
+    @Rule
+    public TestRule mCommandLineFlagsRule = CommandLineFlags.getTestRule();
+
     @Mock
     private ExternalAuthUtils mExternalAuthUtilsMock;
     @Mock
@@ -602,6 +605,17 @@ public class FirstRunIntegrationTest {
     @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
     public void testSigninFirstRunPages_WithCctPolicy_SearchPromo() throws Exception {
         runFirstRunPagesTest(new FirstRunPagesTestCase().withCctTosDisabled().withSearchPromo());
+    }
+
+    @Test
+    @MediumTest
+    @CommandLineFlags.Remove({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
+    @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
+    public void testSigninFirstRunPages_WithCctPolicy_SearchPromo_SigninPromo() throws Exception {
+        runFirstRunPagesTest(new FirstRunPagesTestCase()
+                                     .withCctTosDisabled()
+                                     .withSearchPromo()
+                                     .withSigninPromo());
     }
 
     @Test
@@ -1609,7 +1623,7 @@ public class FirstRunIntegrationTest {
         }
 
         @Override
-        public boolean shouldShowDataReductionPage() {
+        public boolean shouldShowDataReductionPage(boolean openAdvancedSyncSettings) {
             return mTestCase.showDataSaverPromo();
         }
 

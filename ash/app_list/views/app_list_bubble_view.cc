@@ -21,6 +21,7 @@
 #include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/metrics_util.h"
@@ -33,6 +34,7 @@
 #include "base/check_op.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
@@ -85,6 +87,16 @@ class SeparatorWithLayer : public views::View {
   }
 };
 
+// Returns the layer bounds to use for the start of the show animation and the
+// end of the hide animation.
+gfx::Rect GetShowHideAnimationBounds(gfx::Rect target_bounds) {
+  const int delta_height = target_bounds.height() / 4;  // 25% of height
+  const int y_offset = 8;
+  return gfx::Rect(
+      target_bounds.x(), target_bounds.y() + delta_height + y_offset,
+      target_bounds.width(), target_bounds.height() - delta_height);
+}
+
 }  // namespace
 
 AppListBubbleView::AppListBubbleView(
@@ -109,6 +121,13 @@ AppListBubbleView::AppListBubbleView(
   a11y_announcer_ = std::make_unique<AppListA11yAnnouncer>(
       AddChildView(std::make_unique<views::View>()));
   InitContentsView(drag_and_drop_host);
+
+  // Add assistant page as a top-level child so it will fill the bubble and
+  // suggestion chips will appear at the bottom of the bubble view.
+  assistant_page_ = AddChildView(std::make_unique<AppListBubbleAssistantPage>(
+      view_delegate_->GetAssistantViewDelegate()));
+  assistant_page_->SetVisible(false);
+
   InitFolderView(drag_and_drop_host);
   // Folder view is laid out manually based on its contents.
   layout->SetChildViewIgnoredByLayout(folder_view_, true);
@@ -142,6 +161,7 @@ void AppListBubbleView::InitContentsView(
   // Show the assistant button until the user types text.
   params.show_close_button_when_active = false;
   params.create_background = false;
+  params.animate_changing_search_icon = false;
   search_box_view_->Init(params);
 
   // The main view has a solid color layer, so the separator needs its own
@@ -159,15 +179,13 @@ void AppListBubbleView::InitContentsView(
   // include empty space below the visible icons.
   layout->SetFlexForView(apps_page_, 1);
 
+  search_page_dialog_controller_ =
+      std::make_unique<SearchResultPageDialogController>(this);
   search_page_ =
       contents->AddChildView(std::make_unique<AppListBubbleSearchPage>(
-          view_delegate_, search_box_view_));
+          view_delegate_, search_page_dialog_controller_.get(),
+          search_box_view_));
   search_page_->SetVisible(false);
-
-  assistant_page_ =
-      contents->AddChildView(std::make_unique<AppListBubbleAssistantPage>(
-          view_delegate_->GetAssistantViewDelegate()));
-  assistant_page_->SetVisible(false);
 }
 
 void AppListBubbleView::InitFolderView(
@@ -209,11 +227,7 @@ void AppListBubbleView::StartShowAnimation() {
 
   // Start by making the layer shorter, pushed down, and transparent.
   const gfx::Rect target_bounds = layer()->GetTargetBounds();
-  const int delta_height = target_bounds.height() / 4;  // 25% of height
-  const int y_offset = 8;
-  layer()->SetBounds(
-      gfx::Rect(target_bounds.x(), target_bounds.y() + delta_height + y_offset,
-                target_bounds.width(), target_bounds.height() - delta_height));
+  layer()->SetBounds(GetShowHideAnimationBounds(target_bounds));
   layer()->SetOpacity(0.f);
 
   // Animate the layer to fully opaque at its target bounds.
@@ -230,6 +244,51 @@ void AppListBubbleView::StartShowAnimation() {
     apps_page_->StartShowAnimation();
 
   // Note: The assistant page handles its own show animation internally.
+}
+
+void AppListBubbleView::StartHideAnimation(
+    base::RepeatingClosure on_animation_ended) {
+  // Ensure any in-progress animations have their cleanup callbacks called.
+  AbortAllAnimations();
+
+  ui::AnimationThroughputReporter reporter(
+      layer()->GetAnimator(),
+      metrics_util::ForSmoothness(base::BindRepeating([](int value) {
+        base::UmaHistogramPercentage(
+            "Apps.ClamshellLauncher.AnimationSmoothness.Close", value);
+      })));
+
+  // Animation spec:
+  //
+  // Y Position: Current → Down 8px
+  // Duration: 100ms
+  // Ease: (0.4, 0, 1, 1).
+  //
+  // Height: 100% → 75%
+  // Duration: 100ms
+  // Ease: (0.4, 0, 1, 1)
+  //
+  // Opacity: 100% → 0%
+  // Duration: 100ms
+  // Ease: Linear
+  const gfx::Rect target_bounds = layer()->GetTargetBounds();
+  const gfx::Rect final_bounds = GetShowHideAnimationBounds(target_bounds);
+
+  if (apps_page_->GetVisible())
+    apps_page_->StartHideAnimation();
+
+  views::AnimationBuilder()
+      .OnEnded(on_animation_ended)
+      .OnAborted(on_animation_ended)
+      .Once()
+      .SetDuration(base::Milliseconds(100))
+      .SetBounds(layer(), final_bounds, gfx::Tween::FAST_OUT_LINEAR_IN)
+      .SetOpacity(layer(), 0.f, gfx::Tween::LINEAR);
+}
+
+void AppListBubbleView::AbortAllAnimations() {
+  apps_page_->AbortAllAnimations();
+  layer()->GetAnimator()->AbortAllAnimations();
 }
 
 bool AppListBubbleView::Back() {
@@ -255,12 +314,16 @@ bool AppListBubbleView::IsShowingEmbeddedAssistantUI() const {
 }
 
 void AppListBubbleView::ShowEmbeddedAssistantUI() {
+  if (IsShowingEmbeddedAssistantUI())
+    return;
+
   // The assistant has its own text input field.
   search_box_view_->SetVisible(false);
   separator_->SetVisible(false);
 
   apps_page_->SetVisible(false);
   search_page_->SetVisible(false);
+  search_page_dialog_controller_->SetEnabled(false);
   assistant_page_->SetVisible(true);
   assistant_page_->RequestFocus();
 }
@@ -321,6 +384,7 @@ void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
   const bool has_search = search_box_view_->HasSearch();
   apps_page_->SetVisible(!has_search);
   search_page_->SetVisible(has_search);
+  search_page_dialog_controller_->SetEnabled(has_search);
   assistant_page_->SetVisible(false);
 
   // Ask the controller to start the search.
@@ -331,7 +395,9 @@ void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
 }
 
 void AppListBubbleView::AssistantButtonPressed() {
-  ShowEmbeddedAssistantUI();
+  // Showing the assistant via the delegate triggers the assistant's visibility
+  // change notification and ensures its initial visual state is correct.
+  view_delegate_->StartAssistant();
 }
 
 void AppListBubbleView::CloseButtonPressed() {

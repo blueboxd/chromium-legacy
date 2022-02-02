@@ -92,15 +92,17 @@ bool GetPacMandatoryFromExtensionPref(const base::DictionaryValue* proxy_config,
     return true;
   }
 
-  bool mandatory_pac = false;
-  if (pac_dict->HasKey(proxy_api_constants::kProxyConfigPacScriptMandatory) &&
-      !pac_dict->GetBoolean(proxy_api_constants::kProxyConfigPacScriptMandatory,
-                            &mandatory_pac)) {
-    LOG(ERROR) << "'pacScript.mandatory' could not be parsed.";
-    *bad_message = true;
-    return false;
+  absl::optional<bool> mandatory_pac;
+  if (pac_dict->HasKey(proxy_api_constants::kProxyConfigPacScriptMandatory)) {
+    mandatory_pac = pac_dict->FindBoolKey(
+        proxy_api_constants::kProxyConfigPacScriptMandatory);
+    if (!mandatory_pac.has_value()) {
+      LOG(ERROR) << "'pacScript.mandatory' could not be parsed.";
+      *bad_message = true;
+      return false;
+    }
   }
-  *out = mandatory_pac;
+  *out = mandatory_pac.value_or(false);
   return true;
 }
 
@@ -279,23 +281,23 @@ bool JoinUrlList(const base::ListValue* list,
                  std::string* error,
                  bool* bad_message) {
   std::string result;
-  for (size_t i = 0; i < list->GetList().size(); ++i) {
+  for (const auto& val : list->GetList()) {
     if (!result.empty())
       result.append(joiner);
 
     // TODO(battre): handle UTF-8 (http://crbug.com/72692).
-    std::u16string entry;
-    if (!list->GetString(i, &entry)) {
+    const std::string* entry = val.GetIfString();
+    if (!entry) {
       LOG(ERROR) << "'rules.bypassList' could not be parsed.";
       *bad_message = true;
       return false;
     }
-    if (!base::IsStringASCII(entry)) {
+    if (!base::IsStringASCII(*entry)) {
       *error = "'rules.bypassList' supports only ASCII URLs "
                "(encode URLs in Punycode format).";
       return false;
     }
-    result.append(base::UTF16ToASCII(entry));
+    result.append(*entry);
   }
   *out = result;
   return true;

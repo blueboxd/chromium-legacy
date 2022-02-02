@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.MathUtils;
+import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.compat.ApiHelperForS;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -43,6 +44,7 @@ import java.util.List;
  *
  * Do not inline to prevent class verification errors on pre-O runtimes.
  */
+@VerifiesOnO
 @TargetApi(Build.VERSION_CODES.O)
 public class PictureInPictureController {
     private static final String TAG = "VideoPersist";
@@ -264,7 +266,8 @@ public class PictureInPictureController {
     public void onEnteredPictureInPictureMode() {
         // Inform the WebContents when we enter and when we leave PiP.
         final WebContents webContents = getWebContents();
-        assert webContents != null;
+        // If we're closing the tab, just stop here.
+        if (webContents == null) return;
 
         webContents.setHasPersistentVideo(true);
 
@@ -428,7 +431,10 @@ public class PictureInPictureController {
         }
 
         mIsAutoEnterAllowed = allowed;
-        mActivity.setPictureInPictureParams(builder.build());
+        try {
+            mActivity.setPictureInPictureParams(builder.build());
+        } catch(RuntimeException e) {
+        }
     }
 
     /**

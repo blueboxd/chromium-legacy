@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "build/chromecast_buildflags.h"
 #include "content/browser/utility_process_host.h"
 #include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -223,6 +223,7 @@ void ServiceProcessHost::Launch(mojo::GenericPendingReceiver receiver,
   }
 }
 
+#if BUILDFLAG(IS_CHROMECAST)
 void LaunchUtilityProcessServiceDeprecated(
     const std::string& service_name,
     const std::u16string& display_name,
@@ -243,5 +244,6 @@ void LaunchUtilityProcessServiceDeprecated(
           },
           std::move(callback)));
 }
+#endif
 
 }  // namespace content

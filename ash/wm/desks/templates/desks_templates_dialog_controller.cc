@@ -4,8 +4,15 @@
 
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/templates/desks_templates_grid_view.h"
+#include "ash/wm/desks/templates/desks_templates_icon_container.h"
+#include "ash/wm/desks/templates/desks_templates_item_view.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "base/bind.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -105,7 +112,7 @@ DesksTemplatesDialogController::DesksTemplatesDialogController() {
 }
 
 DesksTemplatesDialogController::~DesksTemplatesDialogController() {
-  if (dialog_widget_)
+  if (dialog_widget_ && !dialog_widget_->IsClosed())
     dialog_widget_->CloseNow();
 
   DCHECK_EQ(this, g_instance);
@@ -119,8 +126,17 @@ DesksTemplatesDialogController* DesksTemplatesDialogController::Get() {
 }
 
 void DesksTemplatesDialogController::ShowUnsupportedAppsDialog(
-    aura::Window* root_window) {
-  // TODO(crbug.com/1261623): Add a list of unsupported apps icons.
+    aura::Window* root_window,
+    const std::vector<aura::Window*>& unsupported_apps,
+    DesksController::GetDeskTemplateCallback callback,
+    std::unique_ptr<DeskTemplate> desk_template) {
+  // We can only bind `callback` once but the user has three possible paths
+  // (accept, cancel, or close) so store `callback` and `desk_template` for
+  // future usage once we know the user's decision.
+  unsupported_apps_callback_ = std::move(callback);
+  unsupported_apps_template_ = std::move(desk_template);
+
+  DesksTemplatesIconContainer* icon_container = nullptr;
   auto dialog =
       views::Builder<DesksTemplatesDialog>()
           .SetTitleText(IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_TITLE)
@@ -128,12 +144,27 @@ void DesksTemplatesDialogController::ShowUnsupportedAppsDialog(
               IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_CONFIRM_BUTTON)
           .SetDescriptionText(l10n_util::GetStringUTF16(
               IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_DESCRIPTION))
+          .SetCancelCallback(
+              base::BindOnce(&DesksTemplatesDialogController::
+                                 OnUserCanceledUnsupportedAppsDialog,
+                             weak_ptr_factory_.GetWeakPtr()))
+          .SetCloseCallback(
+              base::BindOnce(&DesksTemplatesDialogController::
+                                 OnUserCanceledUnsupportedAppsDialog,
+                             weak_ptr_factory_.GetWeakPtr()))
+          .SetAcceptCallback(
+              base::BindOnce(&DesksTemplatesDialogController::
+                                 OnUserAcceptedUnsupportedAppsDialog,
+                             weak_ptr_factory_.GetWeakPtr()))
           .AddChildren(
               views::Builder<views::Label>()
                   .SetHorizontalAlignment(gfx::ALIGN_LEFT)
                   .SetText(l10n_util::GetStringUTF16(
-                      IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_HEADER)))
+                      IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_HEADER)),
+              views::Builder<DesksTemplatesIconContainer>().CopyAddressTo(
+                  &icon_container))
           .Build();
+  icon_container->PopulateIconContainerFromWindows(unsupported_apps);
   CreateDialogWidget(std::move(dialog), root_window);
 }
 
@@ -153,20 +184,42 @@ void DesksTemplatesDialogController::ShowReplaceDialog(
 
 void DesksTemplatesDialogController::ShowDeleteDialog(
     aura::Window* root_window,
-    const std::u16string& template_name) {
-  auto dialog = views::Builder<DesksTemplatesDialog>()
-                    .SetTitleText(IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_TITLE)
-                    .SetConfirmButtonText(
-                        IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON)
-                    .SetDescriptionText(l10n_util::GetStringFUTF16(
-                        IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_DESCRIPTION,
-                        GetStringWithQuotes(template_name)))
-                    .Build();
+    const std::u16string& template_name,
+    base::OnceClosure on_accept_callback) {
+  auto dialog =
+      views::Builder<DesksTemplatesDialog>()
+          .SetTitleText(IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_TITLE)
+          .SetButtonLabel(
+              ui::DIALOG_BUTTON_OK,
+              l10n_util::GetStringUTF16(
+                  IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON))
+          .SetDescriptionText(l10n_util::GetStringFUTF16(
+              IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_DESCRIPTION,
+              GetStringWithQuotes(template_name)))
+          .SetAcceptCallback(std::move(on_accept_callback))
+          .Build();
+
   CreateDialogWidget(std::move(dialog), root_window);
 }
 
 void DesksTemplatesDialogController::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(dialog_widget_, widget);
+  for (auto& overview_grid :
+       Shell::Get()->overview_controller()->overview_session()->grid_list()) {
+    views::Widget* templates_grid_widget =
+        overview_grid->desks_templates_grid_widget();
+    if (templates_grid_widget) {
+      auto* templates_grid_view = static_cast<DesksTemplatesGridView*>(
+          templates_grid_widget->GetContentsView());
+      for (DesksTemplatesItemView* template_item :
+           templates_grid_view->grid_items()) {
+        // Update the button visibility when a dialog is closed.
+        template_item->UpdateHoverButtonsVisibility(
+            aura::Env::GetInstance()->last_mouse_location(),
+            /*is_touch=*/false);
+      }
+    }
+  }
   dialog_widget_observation_.Reset();
   dialog_widget_ = nullptr;
 }
@@ -185,6 +238,19 @@ void DesksTemplatesDialogController::CreateDialogWidget(
       /*context=*/root_window, /*parent=*/nullptr);
   dialog_widget_->Show();
   dialog_widget_observation_.Observe(dialog_widget_);
+}
+
+void DesksTemplatesDialogController::OnUserAcceptedUnsupportedAppsDialog() {
+  DCHECK(!unsupported_apps_callback_.is_null());
+  DCHECK(unsupported_apps_template_);
+  std::move(unsupported_apps_callback_)
+      .Run(std::move(unsupported_apps_template_));
+}
+
+void DesksTemplatesDialogController::OnUserCanceledUnsupportedAppsDialog() {
+  DCHECK(!unsupported_apps_callback_.is_null());
+  std::move(unsupported_apps_callback_).Run(nullptr);
+  unsupported_apps_template_.reset();
 }
 
 }  // namespace ash

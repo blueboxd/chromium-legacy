@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
@@ -140,7 +139,7 @@ class RtcpParserTest : public ::testing::Test {
 };
 
 TEST_F(RtcpParserTest, BrokenPacketIsIgnored) {
-  const char bad_packet[] = {0, 0, 0, 0};
+  const uint8_t bad_packet[] = {0, 0, 0, 0};
   RtcpParser parser(kLocalSsrc, kRemoteSsrc);
   base::BigEndianReader reader(bad_packet, sizeof(bad_packet));
   EXPECT_FALSE(parser.Parse(&reader));

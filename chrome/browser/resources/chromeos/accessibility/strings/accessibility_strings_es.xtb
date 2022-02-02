@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">Zona de práctica: listas desplegables</translation>
 <translation id="1195238899008218998">Epílogo</translation>
 <translation id="1197088940767939838">Naranja</translation>
+<translation id="1198865190323699001">Gestos táctiles</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">No hay ningún título de nivel 4 posterior</translation>
@@ -389,6 +390,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{corchete de cierre}other{# corchetes de cierre}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{signo de interrogación}other{# signos de interrogación}}</translation>
+<translation id="3505359110822747654">Contraer menús de ChromeVox</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{símbolo de intercalación}other{# símbolos de intercalación}}</translation>
 <translation id="352577523970648069">Un campo de texto editable</translation>
 <translation id="3538907380453898475">listdescr</translation>

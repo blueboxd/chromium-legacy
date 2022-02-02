@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/values.h"
 
@@ -59,15 +58,23 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 // Enables client side detection referrer chain.
 extern const base::Feature kClientSideDetectionReferrerChain;
 
+// Controls the non-blocking scanning UI for Connectors scanning requests. If
+// this is enabled, the downloaded file(s) will be renamed immediately and the
+// scanning will take place without UI when the policy is set to "non-blocking"
+// instead of just showing an "Open Now" button with the blocking UI.
+extern const base::Feature kConnectorsScanningReportOnlyUI;
+
 // Controls whether the delayed warning experiment is enabled.
 extern const base::Feature kDelayedWarnings;
 // True if mouse clicks should undelay the warnings immediately when delayed
 // warnings feature is enabled.
 extern const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks;
 
-// This gates mime type sniffing for DLP file support until the mime type list
-// and implementation are validated experimentally.
-extern const base::Feature kFileAnalysisMimeTypeSniff;
+// Enables collection of signals related to extension activity and uploads
+// of telemetry reports to SB servers.
+extern const base::Feature kExtensionTelemetry;
+// Specifies the upload interval for extension telemetry reports.
+extern const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds;
 
 // Determines the tag to pass to Omaha to get a file type policy.
 extern const base::Feature kFileTypePoliciesTag;

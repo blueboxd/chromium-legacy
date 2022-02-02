@@ -18,10 +18,8 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -41,6 +39,7 @@ void RecordLookupResponseResult(
       "PasswordManager.LeakDetection.LookupSingleLeakResponseResult", result);
 }
 
+constexpr char kAuthHeaderApiKey[] = "x-goog-api-key";
 constexpr char kAuthHeaderBearer[] = "Bearer ";
 constexpr char kPostMethod[] = "POST";
 constexpr char kProtobufContentType[] = "application/x-protobuf";
@@ -66,6 +65,7 @@ LeakDetectionRequest::~LeakDetectionRequest() = default;
 void LeakDetectionRequest::LookupSingleLeak(
     network::mojom::URLLoaderFactory* url_loader_factory,
     const absl::optional<std::string>& access_token,
+    const absl::optional<std::string>& api_key,
     LookupSingleLeakPayload payload,
     LookupSingleLeakCallback callback) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -110,7 +110,7 @@ void LeakDetectionRequest::LookupSingleLeak(
         })");
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = BuildLookupSingleLeakURL();
+  resource_request->url = GURL(kLookupSingleLeakEndpoint);
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = kPostMethod;
@@ -118,6 +118,9 @@ void LeakDetectionRequest::LookupSingleLeak(
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAuthorization,
         base::StrCat({kAuthHeaderBearer, access_token.value()}));
+  }
+  if (api_key.has_value()) {
+    resource_request->headers.SetHeader(kAuthHeaderApiKey, api_key.value());
   }
 
   simple_url_loader_ = network::SimpleURLLoader::Create(
@@ -186,12 +189,6 @@ void LeakDetectionRequest::OnLookupSingleLeakResponse(
       "PasswordManager.LeakDetection.SingleLeakResponsePrefixes",
       single_lookup_response->encrypted_leak_match_prefixes.size());
   std::move(callback).Run(std::move(single_lookup_response), absl::nullopt);
-}
-
-GURL BuildLookupSingleLeakURL() {
-  return net::AppendQueryParameter(
-      GURL(LeakDetectionRequest::kLookupSingleLeakEndpoint), "key",
-      google_apis::GetAPIKey());
 }
 
 }  // namespace password_manager

@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -69,7 +70,7 @@ class BiometricAuthenticatorAndroidTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   // This is owned by the authenticator.
-  MockBiometricAuthenticatorBridge* bridge_ = nullptr;
+  raw_ptr<MockBiometricAuthenticatorBridge> bridge_ = nullptr;
 };
 
 TEST_F(BiometricAuthenticatorAndroidTest, CanAuthenticateCallsBridge) {
@@ -78,11 +79,26 @@ TEST_F(BiometricAuthenticatorAndroidTest, CanAuthenticateCallsBridge) {
   EXPECT_CALL(bridge(), CanAuthenticate)
       .WillOnce(Return(BiometricsAvailability::kAvailable));
   EXPECT_EQ(BiometricsAvailability::kAvailable,
-            authenticator()->CanAuthenticate());
+            authenticator()->CanAuthenticate(
+                device_reauth::BiometricAuthRequester::kAllPasswordsList));
 
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.BiometricAuthPwdFill.CanAuthenticate",
       BiometricsAvailability::kAvailable, 1);
+}
+
+TEST_F(BiometricAuthenticatorAndroidTest,
+       CanAuthenticateDoesNotReecordHistogramForNonPasswordManager) {
+  base::HistogramTester histogram_tester;
+
+  EXPECT_CALL(bridge(), CanAuthenticate)
+      .WillOnce(Return(BiometricsAvailability::kAvailable));
+  EXPECT_EQ(BiometricsAvailability::kAvailable,
+            authenticator()->CanAuthenticate(
+                device_reauth::BiometricAuthRequester::kIncognitoReauthPage));
+
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.BiometricAuthPwdFill.CanAuthenticate", 0);
 }
 
 TEST_F(BiometricAuthenticatorAndroidTest, AuthenticateRecordsRequester) {
@@ -93,6 +109,10 @@ TEST_F(BiometricAuthenticatorAndroidTest, AuthenticateRecordsRequester) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.BiometricAuthPwdFill.AuthRequester",
       BiometricAuthRequester::kAllPasswordsList, 1);
+
+  histogram_tester.ExpectUniqueSample("Android.BiometricAuth.AuthRequester",
+                                      BiometricAuthRequester::kAllPasswordsList,
+                                      1);
 }
 
 TEST_F(BiometricAuthenticatorAndroidTest, DoesntTriggerAuthIfWithin60Seconds) {

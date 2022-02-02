@@ -109,10 +109,9 @@ ProfilePickerSignedInFlowController::~ProfilePickerSignedInFlowController() {
 
   // Record unfinished signed-in profile creation.
   if (!is_finished_) {
-    // TODO(crbug.com/1227699): Schedule the profile for deletion here, it's not
-    // needed any more. This triggers a crash if the browser is shutting down
-    // completely. Figure a way how to delete the profile only if that does not
-    // compete with a shutdown.
+    // Schedule the profile for deletion, it's not needed any more.
+    g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
+        profile_->GetPath());
 
     ProfileMetrics::LogProfileAddSignInFlowOutcome(
         ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedAfterSignIn);
@@ -126,10 +125,9 @@ void ProfilePickerSignedInFlowController::Cancel() {
 
   is_finished_ = true;
 
-  // TODO(crbug.com/1227699): Consider moving this into the destructor so that
-  // unfinished (and unaborted) flows also get the profile deleted right away.
-  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
-      profile_->GetPath(), base::DoNothing());
+  // Schedule the profile for deletion, it's not needed any more.
+  g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
+      profile_->GetPath());
 }
 
 void ProfilePickerSignedInFlowController::FinishAndOpenBrowser(
@@ -186,7 +184,7 @@ void ProfilePickerSignedInFlowController::SwitchToProfileSwitch(
   Cancel();
 
   switch_profile_path_ = profile_path;
-  host_->ShowScreenInSystemContents(
+  host_->ShowScreenInPickerContents(
       GURL(chrome::kChromeUIProfilePickerUrl).Resolve("profile-switch"));
 }
 
@@ -393,7 +391,7 @@ void ProfilePickerSignedInFlowController::FinishAndOpenBrowserImpl(
 void ProfilePickerSignedInFlowController::FinishAndOpenBrowserForSAML() {
   DCHECK(IsInitialized());
   // First, free up `contents()` to be moved to a new browser window.
-  host_->ShowScreenInSystemContents(
+  host_->ShowScreenInPickerContents(
       GURL(url::kAboutBlankURL),
       /*navigation_finished_closure=*/
       base::BindOnce(

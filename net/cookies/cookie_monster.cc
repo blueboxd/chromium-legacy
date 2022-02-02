@@ -47,6 +47,7 @@
 #include <functional>
 #include <numeric>
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -54,7 +55,6 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -138,6 +138,22 @@ void MaybeRunCookieCallback(base::OnceCallback<void(T)> callback,
                             const T& result) {
   if (callback)
     std::move(callback).Run(result);
+}
+
+// Anonymous and Fenced Frame uses a CookiePartitionKey with a nonce. In these
+// contexts, access to unpartitioned cookie is not granted.
+//
+// This returns true if the |list| of key should include unpartitioned cookie in
+// GetCookie...().
+bool IncludeUnpartitionedCookies(const net::CookiePartitionKeychain& list) {
+  if (list.IsEmpty() || list.ContainsAllKeys())
+    return true;
+
+  for (const net::CookiePartitionKey& key : list.PartitionKeys()) {
+    if (!key.nonce())
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -615,8 +631,13 @@ void CookieMonster::GetCookieListWithOptions(
   CookieAccessResultList included_cookies;
   CookieAccessResultList excluded_cookies;
   if (HasCookieableScheme(url)) {
-    std::vector<CanonicalCookie*> cookie_ptrs =
-        FindCookiesForRegistryControlledHost(url);
+    std::vector<CanonicalCookie*> cookie_ptrs;
+    if (IncludeUnpartitionedCookies(cookie_partition_keychain)) {
+      cookie_ptrs = FindCookiesForRegistryControlledHost(url);
+    } else {
+      DCHECK(!cookie_partition_keychain.IsEmpty());
+    }
+
     if (!cookie_partition_keychain.IsEmpty()) {
       if (cookie_partition_keychain.ContainsAllKeys()) {
         for (const auto& it : partitioned_cookies_) {
@@ -1503,15 +1524,6 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
            "insecure scheme";
   }
 
-  // Now that IsSetPermittedInContext() and
-  // MaybeDeleteEquivalentCookieAndUpdateStatus() have had a chance to set
-  // cookie warnings/exclusions, record the downgrade metric.
-  if (access_result.status.ShouldRecordDowngradeMetrics()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Cookie.SameSiteContextDowngradeResponse",
-        access_result.status.GetBreakingDowngradeMetricsEnumValue(source_url));
-  }
-
   if (access_result.status.IsInclude()) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() key: " << key << " cc: " << cc->DebugString();
@@ -1938,7 +1950,9 @@ size_t CookieMonster::GarbageCollectPartitionedCookies(
   size_t num_deleted = 0;
   PartitionedCookieMap::iterator cookie_partition_it =
       partitioned_cookies_.find(cookie_partition_key);
-  DCHECK(cookie_partition_it != partitioned_cookies_.end());
+
+  if (cookie_partition_it == partitioned_cookies_.end())
+    return num_deleted;
 
   if (cookie_partition_it->second->count(key) > kPerPartitionDomainMaxCookies) {
     // TODO(crbug.com/1225444): Log garbage collection for partitioned cookies.

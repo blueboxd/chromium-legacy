@@ -60,9 +60,9 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/settings/cros_settings_names.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/supervised_user_manager.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -277,9 +277,7 @@ std::u16string SupervisedUserService::GetExtensionsLockedMessage() const {
 
 // static
 std::string SupervisedUserService::GetEduCoexistenceLoginUrl() {
-  return base::FeatureList::IsEnabled(supervised_users::kEduCoexistenceFlowV2)
-             ? chrome::kChromeUIEDUCoexistenceLoginURLV2
-             : chrome::kChromeUIEDUCoexistenceLoginURLV1;
+  return chrome::kChromeUIEDUCoexistenceLoginURLV2;
 }
 
 bool SupervisedUserService::IsChild() const {

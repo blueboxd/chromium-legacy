@@ -23,7 +23,7 @@ import resultdb
 SRC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
-def main() -> int:
+def main(argv: List[str]) -> int:
   valid_conds = ' '.join(
       sorted(f'\t{term.name}' for term in conditions.TERMINALS))
 
@@ -50,7 +50,7 @@ def main() -> int:
                       action='store_true',
                       help='cache ResultDB rpc results, useful for testing')
 
-  args = parser.parse_args()
+  args = parser.parse_args(argv[1:])
 
   if args.cache:
     resultdb.CANNED_RESPONSE_FILE = os.path.join(os.path.dirname(__file__),
@@ -86,12 +86,14 @@ def main() -> int:
 def disable_test(test_id: str, cond_strs: List[str]):
   conds = conditions.parse(cond_strs)
 
-  #  If the given ID looks like 'TestSuite.TestName', then add the necessary
-  #  parts to make a matching query for the full ID.
-  if '/' not in test_id and test_id.count('.') == 1:
-    test_id = f'ninja://.*/{test_id}(/.*)?'
+  #  If the given ID starts with "ninja:", then it's a full test ID. If not,
+  #  assume it's a test name, and transform it into a query that will match the
+  #  full ID.
+  if not test_id.startswith('ninja:'):
+    test_id = f'ninja://.*/{extract_name_and_suite(test_id)}(/.*)?'
 
   test_name, filename = resultdb.get_test_metadata(test_id)
+  test_name = extract_name_and_suite(test_name)
 
   # Paths returned from ResultDB look like //foo/bar, where // refers to the
   # root of the chromium/src repo.
@@ -121,6 +123,21 @@ def disable_test(test_id: str, cond_strs: List[str]):
   new_content = disabler(test_name, source_file, conds)
   with open(full_path, 'w') as f:
     f.write(new_content)
+
+
+def extract_name_and_suite(test_name: str) -> str:
+  # Web tests just use the filename as the test name, so don't mess with it.
+  if test_name.endswith('.html'):
+    return test_name
+
+  # GTest Test names always have a suite name and test name, separated by '.'s.
+  # They may also have extra slash-separated parts on the beginning and the end,
+  # for parameterised tests.
+  for part in test_name.split('/'):
+    if '.' in part:
+      return part
+
+  raise errors.UserError(f"Couldn't parse test name: {test_name}")
 
 
 def get_current_commit_hash() -> Optional[str]:
@@ -174,4 +191,4 @@ Checked out chromium/src revision:
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv))

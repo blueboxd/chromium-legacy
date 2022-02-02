@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -69,7 +69,7 @@ ExternalCacheImpl::ExternalCacheImpl(
       content::NotificationService::AllBrowserContextsAndSources());
   kiosk_crx_updates_from_policy_subscription_ =
       CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kKioskCRXManifestUpdateURLIgnored,
+          ash::kKioskCRXManifestUpdateURLIgnored,
           base::BindRepeating(&ExternalCacheImpl::MaybeScheduleNextCacheCheck,
                               weak_ptr_factory_.GetWeakPtr()));
 }
@@ -92,7 +92,7 @@ void ExternalCacheImpl::UpdateExtensionsList(
     // If list of know extensions is empty, don't init cache on disk. It is
     // important shortcut for test to don't wait forever for cache dir
     // initialization that should happen outside of Chrome on real device.
-    cached_extensions_->Clear();
+    cached_extensions_->DictClear();
     UpdateExtensionLoader();
     return;
   }
@@ -259,7 +259,7 @@ void ExternalCacheImpl::CheckCache() {
         url_loader_factory_, this, extensions::GetExternalVerifierFormat());
   }
 
-  cached_extensions_->Clear();
+  cached_extensions_->DictClear();
   for (const auto entry : extensions_->DictItems()) {
     if (!entry.second.is_dict()) {
       LOG(ERROR) << "ExternalCacheImpl found bad entry with type "

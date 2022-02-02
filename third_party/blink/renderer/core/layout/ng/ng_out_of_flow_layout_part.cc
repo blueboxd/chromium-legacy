@@ -197,6 +197,7 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
     return;
 
   wtf_size_t prev_placed_objects_size = placed_objects.size();
+  bool did_get_same_object_count_once = false;
   while (SweepLegacyCandidates(&placed_objects)) {
     container_builder_->SwapOutOfFlowPositionedCandidates(&candidates);
 
@@ -214,8 +215,18 @@ void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
     // any additional objects.
     wtf_size_t placed_objects_size = placed_objects.size();
     if (prev_placed_objects_size == placed_objects_size) {
-      NOTREACHED();
-      break;
+      if (did_get_same_object_count_once || !has_legacy_flex_box_) {
+        NOTREACHED();
+        break;
+      }
+      // If we have an OOF legacy flex container with an (uncontained;
+      // e.g. fixed inside absolute positioned) OOF flex item inside, we'll
+      // allow one additional iteration, even if the object count is the
+      // same. In the first iteration the objects in
+      // LayoutBlock::PositionedObjects() were not in document order, and then
+      // corrected afterwards (before we get here). Only allow this to happen
+      // once, to avoid infinite loops for whatever reason, and good fortune.
+      did_get_same_object_count_once = true;
     }
     prev_placed_objects_size = placed_objects_size;
   }
@@ -238,11 +249,28 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
     return false;
   TrackedLayoutBoxLinkedHashSet* legacy_objects =
       container_block->PositionedObjects();
-  if (!legacy_objects || legacy_objects->size() == placed_objects->size())
-    return false;
+  if (!legacy_objects || legacy_objects->size() == placed_objects->size()) {
+    if (!has_legacy_flex_box_ || performing_extra_legacy_check_)
+      return false;
+    // If there is an OOF legacy flex container, and PositionedObjects() are out
+    // of document order (which is something that can happen in the legacy
+    // engine when there's a fixed-positioned object inside an absolute-
+    // positioned object - and we should just live with that and eventually get
+    // rid of the legacy engine), we'll allow one more pass, in case there's a
+    // fixed-positioend OOF flex item inside an absolutely-positioned OOF flex
+    // container. Because at this point, PositionedObjects() should finally be
+    // in correct document order. Only allow one more additional pass, though,
+    // since we might get stuck in an infinite loop otherwise (for reasons
+    // currently unknown).
+    performing_extra_legacy_check_ = true;
+  }
+  bool candidate_added = false;
   for (LayoutObject* legacy_object : *legacy_objects) {
-    if (placed_objects->Contains(legacy_object))
-      continue;
+    if (placed_objects->Contains(legacy_object)) {
+      if (!performing_extra_legacy_check_ || !legacy_object->NeedsLayout())
+        continue;
+      container_builder_->RemoveOldLegacyOOFFlexItem(*legacy_object);
+    }
 
     // Flex OOF children may have center alignment or similar, and in order
     // to determine their static position correctly need to have a valid
@@ -265,6 +293,13 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
       }
     }
 
+    // If we have a legacy OOF flex container, we'll allow some rocket science
+    // to take place, as an attempt to get things laid out in correct document
+    // order, or we might otherwise leave behind objects (OOF flex items)
+    // needing layout.
+    if (!has_legacy_flex_box_)
+      has_legacy_flex_box_ = layout_box->IsFlexibleBox();
+
     NGLogicalStaticPosition static_position =
         LayoutBoxUtils::ComputeStaticPositionFromLegacy(
             *layout_box,
@@ -280,8 +315,9 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
     container_builder_->AddOutOfFlowLegacyCandidate(
         NGBlockNode(layout_box), static_position,
         DynamicTo<LayoutInline>(css_container));
+    candidate_added = true;
   }
-  return true;
+  return candidate_added;
 }
 
 void NGOutOfFlowLayoutPart::HandleFragmentation() {
@@ -320,26 +356,41 @@ const NGOutOfFlowLayoutPart::ContainingBlockInfo
 NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     const NGLogicalOutOfFlowPositionedNode& candidate) {
   const auto* container_object = container_builder_->GetLayoutObject();
+  const auto& node_style = candidate.Node().Style();
 
   if (container_object->IsLayoutNGGrid()) {
-    absl::optional<LogicalRect> containing_block_rect =
-        NGGridLayoutAlgorithm::ComputeContainingBlockRect(
-            candidate.Node(), container_builder_->Style(),
-            To<LayoutNGGrid>(container_object)->CachedPlacementData(),
-            container_builder_->GridLayoutData(), container_builder_->Borders(),
-            container_builder_->InitialBorderBoxSize(),
-            default_writing_direction_.GetWritingMode(),
-            container_builder_->FragmentsTotalBlockSize());
+    // If the out of flow item has the grid container as a containing block,
+    // then we don't need to go through placement.
+    const bool requires_grid_placement =
+        !node_style.GridColumnStart().IsAuto() ||
+        !node_style.GridColumnEnd().IsAuto() ||
+        !node_style.GridRowStart().IsAuto() ||
+        !node_style.GridRowEnd().IsAuto();
 
-    if (containing_block_rect.has_value())
-      return {default_writing_direction_, *containing_block_rect};
+    if (requires_grid_placement) {
+      const auto& container_style = container_builder_->Style();
+      auto grid_item = NGGridLayoutAlgorithm::InitializeGridItem(
+          candidate.Node(), container_style,
+          default_writing_direction_.GetWritingMode());
+
+      return {default_writing_direction_,
+              NGGridLayoutAlgorithm::ComputeOutOfFlowItemContainingRect(
+                  container_style,
+                  To<LayoutNGGrid>(container_object)->CachedPlacementData(),
+                  container_builder_->GridLayoutData(),
+                  container_builder_->Borders(),
+                  container_builder_->InitialBorderBoxSize(),
+                  container_builder_->FragmentsTotalBlockSize(), &grid_item)};
+    }
   }
+
   if (candidate.inline_container.container) {
     const auto it =
         containing_blocks_map_.find(candidate.inline_container.container);
     DCHECK(it != containing_blocks_map_.end());
     return it->value;
   }
+
   if (candidate.containing_block.fragment) {
     DCHECK(container_builder_->IsBlockFragmentationContextRoot());
 
@@ -379,7 +430,7 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
         .stored_value->value;
   }
 
-  return candidate.Node().Style().GetPosition() == EPosition::kAbsolute
+  return node_style.GetPosition() == EPosition::kAbsolute
              ? default_containing_block_info_for_absolute_
              : default_containing_block_info_for_fixed_;
 }
@@ -1146,7 +1197,8 @@ NGOutOfFlowLayoutPart::NodeInfo NGOutOfFlowLayoutPart::SetupNodeInfo(
     SetupSpaceBuilderForFragmentation(
         *container_builder_->ConstraintSpace(), node,
         /* fragmentainer_offset_delta */ LayoutUnit(), &builder,
-        /* is_new_fc */ true);
+        /* is_new_fc */ true,
+        /* requires_content_before_breaking */ false);
   }
 
   DCHECK(!oof_node.fixedpos_containing_block.fragment ||
@@ -1418,9 +1470,10 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
 
   // As the |block_estimate| is always in the node's writing mode, we build the
   // constraint space in the node's writing mode.
-  NGConstraintSpaceBuilder builder(style.GetWritingMode(),
-                                   style.GetWritingDirection(),
-                                   /* is_new_fc */ true);
+  NGConstraintSpaceBuilder builder(
+      style.GetWritingMode(), style.GetWritingDirection(),
+      /* is_new_fc */ true,
+      /* requires_content_before_breaking */ false);
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(
       container_content_size_in_candidate_writing_mode);
@@ -1428,13 +1481,20 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   if (should_use_fixed_block_size)
     builder.SetIsFixedBlockSize(true);
   if (fragmentainer_constraint_space) {
-    SetupSpaceBuilderForFragmentation(*fragmentainer_constraint_space, node,
-                                      block_offset, &builder,
-                                      /* is_new_fc */ true);
+    // Unlike in-flow elements, OOFs are never pushed to the next fragmentainer
+    // even if there's monolithic content that doesn't fit inside. See
+    // RequiresContentBeforeBreaking(), which we need to call for in-flow
+    // elements. For OOFs we can just pass true unconditionally.
+    bool requires_content_before_breaking = true;
+
+    SetupSpaceBuilderForFragmentation(
+        *fragmentainer_constraint_space, node, block_offset, &builder,
+        /* is_new_fc */ true, requires_content_before_breaking);
   } else if (container_builder_->IsInitialColumnBalancingPass()) {
-    SetupSpaceBuilderForFragmentation(*container_builder_->ConstraintSpace(),
-                                      node, block_offset, &builder,
-                                      /* is_new_fc */ true);
+    SetupSpaceBuilderForFragmentation(
+        *container_builder_->ConstraintSpace(), node, block_offset, &builder,
+        /* is_new_fc */ true,
+        /* requires_content_before_breaking */ false);
   }
   NGConstraintSpace space = builder.ToConstraintSpace();
 

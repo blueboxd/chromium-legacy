@@ -49,7 +49,6 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   ScriptFontFamilyMap sans_serif_font_family_map;
   ScriptFontFamilyMap cursive_font_family_map;
   ScriptFontFamilyMap fantasy_font_family_map;
-  ScriptFontFamilyMap pictograph_font_family_map;
   int default_font_size;
   int default_fixed_font_size;
   int minimum_font_size;
@@ -81,7 +80,6 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   bool data_saver_holdback_web_api_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
-  bool application_cache_enabled;
   bool tabs_to_links;
   bool disable_ipc_flooding_protection;
   bool hyperlink_auditing_enabled;
@@ -98,6 +96,7 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   bool hide_scrollbars;
   bool accelerated_2d_canvas_enabled;
   bool canvas_2d_layers_enabled = false;
+  bool canvas_context_lost_in_background_enabled = false;
   bool new_canvas_2d_api_enabled;
   bool antialiased_2d_canvas_disabled;
   bool antialiased_clips_2d_canvas_enabled;

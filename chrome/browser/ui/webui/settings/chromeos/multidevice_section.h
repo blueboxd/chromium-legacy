@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_SECTION_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_SECTION_H_
 
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/webui/eche_app_ui/eche_app_manager.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -19,11 +22,6 @@ class WebUIDataSource;
 }  // namespace content
 
 namespace chromeos {
-
-namespace phonehub {
-class PhoneHubManager;
-}  // namespace phonehub
-
 namespace settings {
 
 class SearchTagRegistry;
@@ -41,7 +39,8 @@ class MultiDeviceSection
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       phonehub::PhoneHubManager* phone_hub_manager,
       android_sms::AndroidSmsService* android_sms_service,
-      PrefService* pref_service);
+      PrefService* pref_service,
+      ash::eche_app::EcheAppManager* eche_app_manager);
   ~MultiDeviceSection() override;
 
  private:
@@ -73,6 +72,7 @@ class MultiDeviceSection
   android_sms::AndroidSmsService* android_sms_service_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
+  ash::eche_app::EcheAppManager* eche_app_manager_;
 };
 
 }  // namespace settings

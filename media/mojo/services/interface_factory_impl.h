@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -82,9 +82,7 @@ class InterfaceFactoryImpl final
           renderer_extension_receiver) final;
 #endif  // defined(OS_WIN)
 
-  void CreateCdm(const std::string& key_system,
-                 const CdmConfig& cdm_config,
-                 CreateCdmCallback callback) final;
+  void CreateCdm(const CdmConfig& cdm_config, CreateCdmCallback callback) final;
 
   // DeferredDestroy<mojom::InterfaceFactory> implemenation.
   void OnDestroyPending(base::OnceClosure destroy_cb) final;
@@ -146,7 +144,7 @@ class InterfaceFactoryImpl final
 
   mojo::UniqueReceiverSet<mojom::Decryptor> decryptor_receivers_;
 
-  MojoMediaClient* mojo_media_client_;
+  raw_ptr<MojoMediaClient> mojo_media_client_;
   base::OnceClosure destroy_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.

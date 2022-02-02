@@ -47,7 +47,13 @@ using OnFileDeletedCallback =
     base::OnceCallback<void(const base::FilePath& path,
                             bool delete_successful)>;
 
-// Controls starting and ending a Capture Mode session and its behavior.
+// Controls starting and ending a Capture Mode session and its behavior. There
+// are various checks that are run when a capture session start is attempted,
+// and when a capture operation is performed, to make sure they're allowed. For
+// example, checking that policy allows screen capture, and there are no content
+// on the screen restricted by DLP (Data Leak Prevention). In the case of video
+// recording, HDCP is also checked to ensure no protected content is being
+// recorded.
 class ASH_EXPORT CaptureModeController
     : public recording::mojom::RecordingServiceClient,
       public SessionObserver,
@@ -188,6 +194,10 @@ class ASH_EXPORT CaptureModeController
   // content view of the recording overlay widget.
   std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView();
 
+  // Returns true if the given `path` is the root folder of DriveFS, false
+  // otherwise.
+  bool IsRootDriveFsPath(const base::FilePath& path) const;
+
   // recording::mojom::RecordingServiceClient:
   void OnRecordingEnded(recording::mojom::RecordingStatus status,
                         const gfx::ImageSkia& thumbnail) override;
@@ -315,7 +325,7 @@ class ASH_EXPORT CaptureModeController
                         const base::FilePath& file_saved_path);
 
   // Called back when the check for custom folder's availability is done in
-  // `CheckCustomAvailability`, with `available` indicating whether the custom
+  // `CheckFolderAvailability`, with `available` indicating whether the custom
   // folder is available or not.
   void OnCustomFolderAvailabilityChecked(bool available);
 
@@ -387,6 +397,24 @@ class ASH_EXPORT CaptureModeController
   // allowed to be captured.
   void InterruptVideoRecording();
 
+  // Called by the DLP manager when it's checked for any on-screen content
+  // restriction at the time when the capture operation is attempted. `proceed`
+  // will be set to true if the capture operation should continue, false if it
+  // should be aborted.
+  void OnDlpRestrictionCheckedAtPerformingCapture(bool proceed);
+
+  // Called by the DLP manager when it's checked again for any on-screen content
+  // restriction at the time when the video capture 3-second countdown ends.
+  // `proceed` will be set to true if video recording should begin, or false if
+  // it should be aborted.
+  void OnDlpRestrictionCheckedAtCountDownFinished(bool proceed);
+
+  // Bound to a callback that will be called by the DLP manager to let us know
+  // whether a pending session initialization should `proceed` or abort due to
+  // some restricted contents on the screen.
+  void OnDlpRestrictionCheckedAtSessionInit(CaptureModeEntryType entry_type,
+                                            bool proceed);
+
   // At the end of a video recording, the DLP manager is checked to see if there
   // were any restricted content of a warning level type during the recording
   // (warning-level restrictions do not result in interrupting the video
@@ -398,6 +426,11 @@ class ASH_EXPORT CaptureModeController
                                          bool success,
                                          bool in_projector_mode,
                                          bool proceed);
+
+  // Bound to a callback that will be called by DLP manager to let the user know
+  // whether full screen capture on all displays should `proceed` or abort due
+  // to some restricted contents on the screen.
+  void OnDlpRestrictionCheckedAtCaptureScreenshotsOfAllDisplays(bool proceed);
 
   // Gets the corresponding `SaveLocation` enum value on the given `path`.
   CaptureModeSaveToLocation GetSaveToOption(const base::FilePath& path);
@@ -440,6 +473,11 @@ class ASH_EXPORT CaptureModeController
   // determine the message shown to the user in the video preview notification
   // to explain why the recording was ended, and is then reset back to false.
   bool low_disk_space_threshold_reached_ = false;
+
+  // Set to true when we're waiting for a callback from the DLP manager to check
+  // content restrictions that may block capture mode at any of its stages
+  // (initialization or performing the capture).
+  bool pending_dlp_check_ = false;
 
   // Watches events that lead to ending video recording.
   std::unique_ptr<VideoRecordingWatcher> video_recording_watcher_;

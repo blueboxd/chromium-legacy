@@ -10,7 +10,6 @@
 
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
@@ -1273,8 +1272,8 @@ void inspector_function_call_event::Data(
 
 void inspector_paint_image_event::Data(perfetto::TracedValue context,
                                        const LayoutImage& layout_image,
-                                       const FloatRect& src_rect,
-                                       const FloatRect& dest_rect) {
+                                       const gfx::RectF& src_rect,
+                                       const gfx::RectF& dest_rect) {
   auto dict = std::move(context).WriteDictionary();
   SetGeneratingNodeInfo(dict, &layout_image, "nodeId");
   if (const ImageResourceContent* content = layout_image.CachedImage())
@@ -1300,8 +1299,8 @@ void inspector_paint_image_event::Data(perfetto::TracedValue context,
 void inspector_paint_image_event::Data(perfetto::TracedValue context,
                                        Node* node,
                                        const StyleImage& style_image,
-                                       const FloatRect& src_rect,
-                                       const FloatRect& dest_rect) {
+                                       const gfx::RectF& src_rect,
+                                       const gfx::RectF& dest_rect) {
   auto dict = std::move(context).WriteDictionary();
   if (node)
     SetNodeInfo(dict, node, "nodeId", nullptr);

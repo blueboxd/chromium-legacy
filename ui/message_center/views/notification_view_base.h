@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -21,11 +21,13 @@
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/box_layout_view.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace views {
 class BoxLayoutView;
 class Label;
 class LabelButton;
+class LayoutManager;
 class ProgressBar;
 }  // namespace views
 
@@ -54,8 +56,8 @@ class CompactTitleMessageView : public views::View {
   void set_message(const std::u16string& message);
 
  private:
-  views::Label* title_ = nullptr;
-  views::Label* message_ = nullptr;
+  raw_ptr<views::Label> title_ = nullptr;
+  raw_ptr<views::Label> message_ = nullptr;
 };
 
 class LargeImageView : public views::View {
@@ -166,8 +168,11 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Inline settings view contains inline settings.
   views::Builder<views::BoxLayoutView> CreateInlineSettingsBuilder();
 
-  // Actions row contains inline action buttons and inline textfield.
-  std::unique_ptr<views::View> CreateActionsRow();
+  // Actions row contains inline action buttons and inline textfield. Use the
+  // given layout manager for the actions row.
+  std::unique_ptr<views::View> CreateActionsRow(
+      std::unique_ptr<views::LayoutManager> layout_manager =
+          std::make_unique<views::FillLayout>());
 
   // Generate a view to show notification title and other supporting views.
   static std::unique_ptr<views::Label> GenerateTitleView(
@@ -217,6 +222,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // buttons.
   virtual void ActionButtonPressed(size_t index, const ui::Event& event);
 
+  // Whether `notification` is configured to have an inline reply field.
+  bool HasInlineReply(const Notification& notification) const;
+
   NotificationControlButtonsView* control_buttons_view() {
     return control_buttons_view_;
   }
@@ -239,8 +247,12 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
     return image_container_view_;
   }
 
+  views::View* actions_row() { return actions_row_; }
+
   views::View* action_buttons_row() { return action_buttons_row_; }
   const views::View* action_buttons_row() const { return action_buttons_row_; }
+
+  NotificationInputContainer* inline_reply() { return inline_reply_; }
 
   const views::Label* status_view() const { return status_view_; }
   const std::vector<views::View*> item_views() const { return item_views_; }
@@ -256,6 +268,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
 
   // Returns the size of `icon_view_`.
   virtual gfx::Size GetIconViewSize() const = 0;
+
+  // Returns the max width of the large image inside `image_container_view_`.
+  virtual int GetLargeImageViewMaxWidth() const = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameExtension);
@@ -340,7 +355,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Container views directly attached to this view.
   NotificationHeaderView* header_row_ = nullptr;
   views::View* content_row_ = nullptr;
-  views::View* actions_row_ = nullptr;
+  raw_ptr<views::View> actions_row_ = nullptr;
   views::View* settings_row_ = nullptr;
 
   // Containers for left and right side on |content_row_|
@@ -348,16 +363,16 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   views::View* right_content_ = nullptr;
 
   // Views which are dynamically created inside view hierarchy.
-  views::Label* message_view_ = nullptr;
-  views::Label* status_view_ = nullptr;
-  ProportionalImageView* icon_view_ = nullptr;
+  raw_ptr<views::Label> message_view_ = nullptr;
+  raw_ptr<views::Label> status_view_ = nullptr;
+  raw_ptr<ProportionalImageView> icon_view_ = nullptr;
   views::View* image_container_view_ = nullptr;
   std::vector<views::LabelButton*> action_buttons_;
   std::vector<views::View*> item_views_;
-  views::ProgressBar* progress_bar_view_ = nullptr;
-  CompactTitleMessageView* compact_title_message_view_ = nullptr;
-  views::View* action_buttons_row_ = nullptr;
-  NotificationInputContainer* inline_reply_ = nullptr;
+  raw_ptr<views::ProgressBar> progress_bar_view_ = nullptr;
+  raw_ptr<CompactTitleMessageView> compact_title_message_view_ = nullptr;
+  raw_ptr<views::View> action_buttons_row_ = nullptr;
+  raw_ptr<NotificationInputContainer> inline_reply_ = nullptr;
 
   // A map from views::LabelButton's in `action_buttons_` to their associated
   // placeholder strings.

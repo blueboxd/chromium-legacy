@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/tick_clock.h"
@@ -22,12 +22,11 @@
 #include "base/unguessable_token.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "components/viz/common/surfaces/subtree_capture_id.h"
+#include "components/viz/common/surfaces/video_capture_target.h"
 #include "components/viz/service/frame_sinks/video_capture/capturable_frame_sink.h"
 #include "components/viz/service/frame_sinks/video_capture/in_flight_frame_delivery.h"
-#include "components/viz/service/frame_sinks/video_capture/interprocess_frame_pool.h"
 #include "components/viz/service/frame_sinks/video_capture/video_capture_overlay.h"
-#include "components/viz/service/viz_service_export.h"
+#include "components/viz/service/frame_sinks/video_capture/video_frame_pool.h"
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -93,7 +92,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // The currently-requested frame sink for capture. The frame sink manager
   // calls this when it learns of a new CapturableFrameSink to see if the target
   // can be resolved.
-  const FrameSinkId& requested_target() const { return requested_target_; }
+  const absl::optional<VideoCaptureTarget>& target() const { return target_; }
 
   // Sets the resolved target, detaching this capturer from the previous target
   // (if any), and attaching to the new target. This is called by the frame sink
@@ -116,8 +115,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio) final;
   void SetAutoThrottlingEnabled(bool enabled) final;
-  void ChangeTarget(const absl::optional<FrameSinkId>& frame_sink_id,
-                    mojom::SubTargetPtr sub_target) final;
+  void ChangeTarget(const absl::optional<VideoCaptureTarget>& target) final;
   void Start(mojo::PendingRemote<mojom::FrameSinkVideoConsumer> consumer) final;
   void Stop() final;
   void RequestRefreshFrame() final;
@@ -132,16 +130,22 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
       gfx::ColorSpace::CreateREC709();
 
   // The maximum number of frames in-flight in the capture pipeline, reflecting
-  // the storage capacity dedicated for this purpose. Example numbers, for a
-  // frame pool that is fully-allocated with 10 frames of size 1920x1080, using
-  // the I420 pixel format (12 bits per pixel). Then:
+  // the storage capacity dedicated for this purpose. Since the size of the pool
+  // does not align with the number of frames that can be in-flight (the
+  // capturer can artificially keep a marked frame alive, even if it's not
+  // currently in-flight), we will crate a pool with capacity equal to
+  // |kDesignLimitMaxFrames + 1|.
   //
-  //   storage_bytes_for_all_ten_frames = 10 * (1920 * 1080 * 12/8)
-  //     --> ~29.7 MB
+  // Example numbers, for a frame pool that is fully-allocated with 11 frames of
+  // size 1920x1080, using the I420 pixel format (12 bits per pixel). Then:
+  //
+  //   storage_bytes_for_all_frames = 11 * (1920 * 1080 * 12/8)
+  //     --> ~32.63 MB
   //
   // In practice, only 0-3 frames will be in-flight at a time, depending on the
   // content change rate and system performance.
   static constexpr int kDesignLimitMaxFrames = 10;
+  static constexpr int kFramePoolCapacity = kDesignLimitMaxFrames + 1;
 
   // A safe, sustainable maximum number of frames in-flight. In other words,
   // exceeding 60% of the design limit is considered "red line" operation.
@@ -201,14 +205,62 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                          base::TimeTicks event_time,
                          const CompositorFrameMetadata& frame_metadata);
 
+  struct CaptureRequestProperties {
+    CaptureRequestProperties(int64_t capture_frame_number,
+                             OracleFrameNumber oracle_frame_number,
+                             int64_t content_version,
+                             gfx::Rect content_rect,
+                             gfx::Rect capture_rect,
+                             gfx::Rect active_frame_rect,
+                             scoped_refptr<media::VideoFrame> frame,
+                             base::TimeTicks request_time);
+    CaptureRequestProperties();
+    CaptureRequestProperties(const CaptureRequestProperties&);
+    CaptureRequestProperties(CaptureRequestProperties&&);
+    CaptureRequestProperties& operator=(const CaptureRequestProperties&);
+    CaptureRequestProperties& operator=(CaptureRequestProperties&&);
+    ~CaptureRequestProperties();
+
+    // The current capture frame number, starting from zero and incremented
+    // by one for every CopyOutputRequest.
+    int64_t capture_frame_number;
+
+    // The oracle's frame number for this frame. Unlike |capture_frame_number|,
+    // this gets incremented with each call to MaybeCaptureFrame, whether or
+    // not we decide to actually capture a frame. If the pipeline is too full,
+    // the |oracle_frame_number| will increment while the |capture_frame_number|
+    // will not.
+    OracleFrameNumber oracle_frame_number;
+
+    // The current content version of the capturer at time of request. The
+    // content version is incremented whenever the source or a subsection
+    // of the source gets invalidated, and is used to determine which frames
+    // become marked and can be resurrected.
+    int64_t content_version;
+
+    // The actual content size of the copied frame, as a post-scaled size
+    // with an origin at (0, 0).
+    gfx::Rect content_rect;
+
+    // The requested capture region, may be larger or at a different
+    // location than |content_rect| but is also post-scaling and should
+    // be in the same coordinate system.
+    gfx::Rect capture_rect;
+
+    // The size of the entire active frame. If we are not using sub target
+    // capture, should be the same size as the capture rect.
+    gfx::Rect active_frame_rect;
+
+    // The actual frame.
+    scoped_refptr<media::VideoFrame> frame;
+
+    // When the request for capture was made.
+    base::TimeTicks request_time;
+  };
+
   // Extracts the image data from the copy output |result|, populating the
   // |content_rect| region of a [possibly letterboxed] video |frame|.
-  void DidCopyFrame(int64_t capture_frame_number,
-                    OracleFrameNumber oracle_frame_number,
-                    int64_t content_version,
-                    const gfx::Rect& content_rect,
-                    scoped_refptr<media::VideoFrame> frame,
-                    base::TimeTicks request_time,
+  void DidCopyFrame(CaptureRequestProperties properties,
                     std::unique_ptr<CopyOutputResult> result);
 
   // Places the frame in the |delivery_queue_| and calls MaybeDeliverFrame(),
@@ -237,8 +289,34 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   void OnLog(const std::string& message);
 
+  bool ShouldMark(const media::VideoFrame& frame,
+                  int64_t content_version) const;
+
+  // Marks |frame| for resurrection, using |content_version| as its content
+  // version. If |frame| is null, the frame marking will be cleared, in which
+  // case the |content_version| parameter is ignored.
+  void MarkFrame(scoped_refptr<media::VideoFrame> frame,
+                 int64_t content_version = -1);
+
+  // Returns true if currently marked frame can be resurrected. |size| specifies
+  // the desired size of the frame
+  bool CanResurrectFrame(const gfx::Size& size) const;
+
+  scoped_refptr<media::VideoFrame> ResurrectFrame() const {
+    return marked_frame_;
+  }
+
+  // Should be called when the frame that has been delivered to the consumer has
+  // been released by it.
+  void NotifyFrameReleased(scoped_refptr<media::VideoFrame> frame);
+
+  // Returns pipeline utilization. Pipeline utilization is different from pool
+  // utilization, since a marked frame may be returned multiple times w/o
+  // increasing pool utilization, but it would increase pipeline utilization.
+  float GetPipelineUtilization() const;
+
   // Owner/Manager of this instance.
-  FrameSinkVideoCapturerManager* const frame_sink_manager_;
+  const raw_ptr<FrameSinkVideoCapturerManager> frame_sink_manager_;
 
   // Mojo receiver for this instance.
   mojo::Receiver<mojom::FrameSinkVideoCapturer> receiver_{this};
@@ -251,7 +329,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   // Use the default base::TimeTicks clock; but allow unit tests to provide a
   // replacement.
-  const base::TickClock* clock_;
+  raw_ptr<const base::TickClock> clock_;
 
   // Current image format.
   media::VideoPixelFormat pixel_format_ = kDefaultPixelFormat;
@@ -262,17 +340,12 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   const std::unique_ptr<media::VideoCaptureOracle> oracle_;
 
   // The target requested by the client, as provided in the last call to
-  // ChangeTarget().
-  FrameSinkId requested_target_;
-
-  // A specifier that indicates what region of the layer should be captured.
-  // If not valid, then the root render pass of the target frame sink should
-  // be captured.
-  CapturableFrameSink::RegionSpecifier region_specifier_;
+  // ChangeTarget(). May be nullopt if no target is currently set.
+  absl::optional<VideoCaptureTarget> target_;
 
   // The resolved target of video capture, or null if the requested target does
   // not yet exist (or no longer exists).
-  CapturableFrameSink* resolved_target_ = nullptr;
+  raw_ptr<CapturableFrameSink> resolved_target_ = nullptr;
 
   // The current video frame consumer. This is set when Start() is called and
   // cleared when Stop() is called.
@@ -306,7 +379,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
   // Provides a pool of VideoFrames that can be efficiently delivered across
   // processes. The size of this pool is used to limit the maximum number of
   // frames in-flight at any one time.
-  InterprocessFramePool frame_pool_;
+  std::unique_ptr<VideoFramePool> frame_pool_;
 
   // Increased every time the source content changes or a forced refresh is
   // requested.
@@ -314,7 +387,14 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
 
   int64_t content_version_in_marked_frame_ = -1;
 
-  gfx::Size marked_frame_size_;
+  // The frame that is currently marked. Marked frame is the frame that has the
+  // most recent content version (with video overlays already applied), and thus
+  // can be directly returned to the consumer if the current content version
+  // matches the content version in the marked frame.
+  scoped_refptr<media::VideoFrame> marked_frame_ = nullptr;
+
+  // Number of frames that are currently in flight (i.e. in use by consumer).
+  int num_frames_in_flight_ = 0;
 
   // A queue of captured frames pending delivery. This queue is used to re-order
   // frames, if they should happen to be captured out-of-order.

@@ -9,10 +9,10 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/containers/circular_deque.h"
+#include "base/observer_list_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/sent_report_info.h"
-#include "content/common/content_export.h"
+#include "content/browser/attribution_reporting/attribution_storage.h"
+#include "content/browser/attribution_reporting/sent_report.h"
 
 namespace base {
 class Time;
@@ -25,14 +25,13 @@ class Origin;
 namespace content {
 
 class AttributionPolicy;
-class AttributionSessionStorage;
 class StorableTrigger;
 class StorableSource;
 class WebContents;
 
 // Interface that mediates data flow between the network, storage layer, and
 // blink.
-class CONTENT_EXPORT AttributionManager {
+class AttributionManager {
  public:
   // Provides access to a AttributionManager implementation. This layer of
   // abstraction is to allow tests to mock out the AttributionManager without
@@ -47,7 +46,29 @@ class CONTENT_EXPORT AttributionManager {
     // browser context is off the record.
     virtual AttributionManager* GetManager(WebContents* web_contents) const = 0;
   };
+
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+
+    virtual void OnSourcesChanged() {}
+
+    virtual void OnReportsChanged() {}
+
+    virtual void OnSourceDeactivated(
+        const AttributionStorage::DeactivatedSource& source) {}
+
+    virtual void OnReportSent(const SentReport& info) {}
+
+    virtual void OnReportDropped(
+        const AttributionStorage::CreateReportResult& result) {}
+  };
+
   virtual ~AttributionManager() = default;
+
+  virtual void AddObserver(Observer* observer) = 0;
+
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Persists the given |source| to storage. Called when a navigation
   // originating from a source tag finishes.
@@ -65,11 +86,7 @@ class CONTENT_EXPORT AttributionManager {
   // Get all pending reports that are currently stored in this partition. Used
   // for populating WebUI.
   virtual void GetPendingReportsForWebUI(
-      base::OnceCallback<void(std::vector<AttributionReport>)> callback,
-      base::Time max_report_time) = 0;
-
-  virtual const AttributionSessionStorage& GetSessionStorage() const
-      WARN_UNUSED_RESULT = 0;
+      base::OnceCallback<void(std::vector<AttributionReport>)> callback) = 0;
 
   // Sends all pending reports immediately, and runs |done| once they have all
   // been sent.

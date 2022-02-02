@@ -177,6 +177,26 @@ WebAppProto::ApiApprovalState ApiApprovalStateToProto(
   }
 }
 
+OsIntegrationState ProtoToOsIntegrationState(
+    WebAppProto::OsIntegrationState state) {
+  switch (state) {
+    case WebAppProto_OsIntegrationState_ENABLED:
+      return OsIntegrationState::kEnabled;
+    case WebAppProto_OsIntegrationState_DISABLED:
+      return OsIntegrationState::kDisabled;
+  }
+}
+
+WebAppProto::OsIntegrationState OsIntegrationStateToProto(
+    OsIntegrationState state) {
+  switch (state) {
+    case OsIntegrationState::kEnabled:
+      return WebAppProto_OsIntegrationState_ENABLED;
+    case OsIntegrationState::kDisabled:
+      return WebAppProto_OsIntegrationState_DISABLED;
+  }
+}
+
 }  // anonymous namespace
 
 WebAppDatabase::WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory,
@@ -402,14 +422,14 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
-  for (const WebApplicationShortcutsMenuItemInfo& shortcut_info :
+  for (const WebAppShortcutsMenuItemInfo& shortcut_info :
        web_app.shortcuts_menu_item_infos()) {
     WebAppShortcutsMenuItemInfoProto* shortcut_info_proto =
         local_data->add_shortcuts_menu_item_infos();
     shortcut_info_proto->set_name(base::UTF16ToUTF8(shortcut_info.name));
     shortcut_info_proto->set_url(shortcut_info.url.spec());
     for (IconPurpose purpose : kIconPurposes) {
-      for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
+      for (const WebAppShortcutsMenuItemInfo::Icon& icon_info :
            shortcut_info.GetShortcutIconInfosForPurpose(purpose)) {
         sync_pb::WebAppIconInfo* shortcut_icon_info_proto;
         switch (purpose) {
@@ -496,11 +516,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   if (!web_app.manifest_url().is_empty())
     local_data->set_manifest_url(web_app.manifest_url().spec());
 
-  local_data->set_file_handler_permission_blocked(
-      web_app.file_handler_permission_blocked());
-
   local_data->set_file_handler_approval_state(
       ApiApprovalStateToProto(web_app.file_handler_approval_state()));
+
+  local_data->set_file_handler_os_integration_state(
+      OsIntegrationStateToProto(web_app.file_handler_os_integration_state()));
 
   local_data->set_window_controls_overlay_enabled(
       web_app.window_controls_overlay_enabled());
@@ -559,7 +579,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
 
-  WebApp::Sources sources;
+  WebAppSources sources;
   sources[Source::kSystem] = local_data.sources().system();
   sources[Source::kPolicy] = local_data.sources().policy();
   sources[Source::kWebAppStore] = local_data.sources().web_app_store();
@@ -831,10 +851,10 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetShareTarget(std::move(share_target));
   }
 
-  std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
+  std::vector<WebAppShortcutsMenuItemInfo> shortcuts_menu_item_infos;
   for (const auto& shortcut_info_proto :
        local_data.shortcuts_menu_item_infos()) {
-    WebApplicationShortcutsMenuItemInfo shortcut_info;
+    WebAppShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = base::UTF8ToUTF16(shortcut_info_proto.name());
     shortcut_info.url = GURL(shortcut_info_proto.url());
     for (IconPurpose purpose : kIconPurposes) {
@@ -857,9 +877,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
           break;
       }
 
-      std::vector<WebApplicationShortcutsMenuItemInfo::Icon> manifest_icons;
+      std::vector<WebAppShortcutsMenuItemInfo::Icon> manifest_icons;
       for (const auto& icon_info_proto : *shortcut_manifest_icons) {
-        WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
+        WebAppShortcutsMenuItemInfo::Icon shortcut_icon_info;
         shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
         shortcut_icon_info.url = GURL(icon_info_proto.url());
         manifest_icons.emplace_back(std::move(shortcut_icon_info));
@@ -985,14 +1005,15 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     }
     web_app->SetManifestUrl(manifest_url);
   }
-  if (local_data.has_file_handler_permission_blocked()) {
-    web_app->SetFileHandlerPermissionBlocked(
-        local_data.file_handler_permission_blocked());
-  }
 
   if (local_data.has_file_handler_approval_state()) {
     web_app->SetFileHandlerApprovalState(
         ProtoToApiApprovalState(local_data.file_handler_approval_state()));
+  }
+
+  if (local_data.has_file_handler_os_integration_state()) {
+    web_app->SetFileHandlerOsIntegrationState(ProtoToOsIntegrationState(
+        local_data.file_handler_os_integration_state()));
   }
 
   if (local_data.has_window_controls_overlay_enabled()) {

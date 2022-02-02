@@ -54,7 +54,7 @@ String CSSPaintValue::CustomCSSText() const {
     result.Append(variable_data.get()->TokenRange().Serialize());
   }
   result.Append(')');
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 String CSSPaintValue::GetName() const {
@@ -101,7 +101,7 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
     const ImageResourceObserver& client,
     const Document& document,
     const ComputedStyle& style,
-    const FloatSize& target_size) {
+    const gfx::SizeF& target_size) {
   // https://crbug.com/835589: early exit when paint target is associated with
   // a link.
   if (style.InsideLink() != EInsideLink::kNotInsideLink)

@@ -5,7 +5,13 @@
 #ifndef ASH_DRAG_DROP_TOPLEVEL_WINDOW_DRAG_DELEGATE_H_
 #define ASH_DRAG_DROP_TOPLEVEL_WINDOW_DRAG_DELEGATE_H_
 
+#include "ash/drag_drop/drag_drop_capture_delegate.h"
+#include "base/bind.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
+
+namespace aura {
+class Window;
+}
 
 namespace gfx {
 class PointF;
@@ -19,11 +25,11 @@ namespace ash {
 
 // Interface that makes it possible to implement toplevel window drag handling
 // during Drag & Drop sessions.
-class ToplevelWindowDragDelegate {
+class ToplevelWindowDragDelegate : public DragDropCaptureDelegate {
  public:
-  virtual void OnToplevelWindowDragStarted(
-      const gfx::PointF& start_location,
-      ui::mojom::DragEventSource source) = 0;
+  virtual void OnToplevelWindowDragStarted(const gfx::PointF& start_location,
+                                           ui::mojom::DragEventSource source,
+                                           aura::Window* source_window) = 0;
 
   virtual ui::mojom::DragOperation OnToplevelWindowDragDropped() = 0;
 

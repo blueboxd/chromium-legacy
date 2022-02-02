@@ -13,25 +13,6 @@
 
 namespace optimization_guide {
 
-std::string ExecutionStatusToString(ExecutionStatus status) {
-  switch (status) {
-    case ExecutionStatus::kUnknown:
-      return "Unknown";
-    case ExecutionStatus::kSuccess:
-      return "Success";
-    case ExecutionStatus::kPending:
-      return "Pending";
-    case ExecutionStatus::kErrorInternalError:
-      return "ErrorInternalError";
-    case ExecutionStatus::kErrorModelFileNotAvailable:
-      return "ErrorModelFileNotAvailable";
-    case ExecutionStatus::kErrorModelFileNotValid:
-      return "ErrorModelFileNotValid";
-    case ExecutionStatus::kErrorEmptyOrInvalidInput:
-      return "ErrorEmptyOrInvalidInput";
-  }
-}
-
 std::string AnnotationTypeToString(AnnotationType type) {
   switch (type) {
     case AnnotationType::kUnknown:
@@ -76,23 +57,27 @@ BatchAnnotationResult::~BatchAnnotationResult() = default;
 
 std::string BatchAnnotationResult::ToString() const {
   std::string output = "nullopt";
-  if (topics_ || entities_) {
+  if (topics_) {
     std::vector<std::string> all_weighted_strings;
-    for (const WeightedString& ws : (topics_ ? *topics_ : *entities_)) {
+    for (const WeightedString& ws : *topics_) {
       all_weighted_strings.push_back(ws.ToString());
     }
     output = "{" + base::JoinString(all_weighted_strings, ",") + "}";
+  } else if (entities_) {
+    std::vector<std::string> all_entities;
+    for (const ScoredEntityMetadata& md : *entities_) {
+      all_entities.push_back(md.ToString());
+    }
+    output = "{" + base::JoinString(all_entities, ",") + "}";
   } else if (visibility_score_) {
     output = base::NumberToString(*visibility_score_);
   }
   return base::StringPrintf(
       "BatchAnnotationResult{"
       "\"<input with length %zu>\", "
-      "status: %s, "
       "type: %s, "
       "output: %s}",
-      input_.size(), ExecutionStatusToString(status_).c_str(),
-      AnnotationTypeToString(type_).c_str(), output.c_str());
+      input_.size(), AnnotationTypeToString(type_).c_str(), output.c_str());
 }
 
 std::ostream& operator<<(std::ostream& stream,
@@ -104,11 +89,9 @@ std::ostream& operator<<(std::ostream& stream,
 // static
 BatchAnnotationResult BatchAnnotationResult::CreatePageTopicsResult(
     const std::string& input,
-    ExecutionStatus status,
     absl::optional<std::vector<WeightedString>> topics) {
   BatchAnnotationResult result;
   result.input_ = input;
-  result.status_ = status;
   result.topics_ = topics;
   result.type_ = AnnotationType::kPageTopics;
 
@@ -126,19 +109,17 @@ BatchAnnotationResult BatchAnnotationResult::CreatePageTopicsResult(
 //  static
 BatchAnnotationResult BatchAnnotationResult::CreatePageEntitiesResult(
     const std::string& input,
-    ExecutionStatus status,
-    absl::optional<std::vector<WeightedString>> entities) {
+    absl::optional<std::vector<ScoredEntityMetadata>> entities) {
   BatchAnnotationResult result;
   result.input_ = input;
-  result.status_ = status;
   result.entities_ = entities;
   result.type_ = AnnotationType::kPageEntities;
 
   // Always sort the result (if present) by the given score.
   if (result.entities_) {
     std::sort(result.entities_->begin(), result.entities_->end(),
-              [](const WeightedString& a, const WeightedString& b) {
-                return a.weight() < b.weight();
+              [](const ScoredEntityMetadata& a, const ScoredEntityMetadata& b) {
+                return a.score < b.score;
               });
   }
 
@@ -148,11 +129,9 @@ BatchAnnotationResult BatchAnnotationResult::CreatePageEntitiesResult(
 //  static
 BatchAnnotationResult BatchAnnotationResult::CreateContentVisibilityResult(
     const std::string& input,
-    ExecutionStatus status,
     absl::optional<double> visibility_score) {
   BatchAnnotationResult result;
   result.input_ = input;
-  result.status_ = status;
   result.visibility_score_ = visibility_score;
   result.type_ = AnnotationType::kContentVisibility;
   return result;
@@ -160,30 +139,26 @@ BatchAnnotationResult BatchAnnotationResult::CreateContentVisibilityResult(
 
 // static
 BatchAnnotationResult BatchAnnotationResult::CreateEmptyAnnotationsResult(
-    const std::string& input,
-    ExecutionStatus status) {
+    const std::string& input) {
   BatchAnnotationResult result;
   result.input_ = input;
-  result.status_ = status;
   return result;
 }
 
 bool BatchAnnotationResult::operator==(
     const BatchAnnotationResult& other) const {
-  return this->input_ == other.input_ && this->status_ == other.status_ &&
-         this->type_ == other.type_ && this->topics_ == other.topics_ &&
-         this->entities_ == other.entities_ &&
+  return this->input_ == other.input_ && this->type_ == other.type_ &&
+         this->topics_ == other.topics_ && this->entities_ == other.entities_ &&
          this->visibility_score_ == other.visibility_score_;
 }
 
-std::vector<BatchAnnotationResult> CreateEmptyBatchAnnotationResultsWithStatus(
-    const std::vector<std::string>& inputs,
-    ExecutionStatus status) {
+std::vector<BatchAnnotationResult> CreateEmptyBatchAnnotationResults(
+    const std::vector<std::string>& inputs) {
   std::vector<BatchAnnotationResult> results;
   results.reserve(inputs.size());
   for (const std::string& input : inputs) {
     results.emplace_back(
-        BatchAnnotationResult::CreateEmptyAnnotationsResult(input, status));
+        BatchAnnotationResult::CreateEmptyAnnotationsResult(input));
   }
   return results;
 }

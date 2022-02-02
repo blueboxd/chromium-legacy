@@ -235,14 +235,15 @@ ScrollAnimatorCompositorCoordinator::GetCompositorAnimation() const {
   return compositor_animation_.get();
 }
 
-FloatPoint ScrollAnimatorCompositorCoordinator::CompositorOffsetFromBlinkOffset(
+gfx::PointF
+ScrollAnimatorCompositorCoordinator::CompositorOffsetFromBlinkOffset(
     ScrollOffset offset) {
   return GetScrollableArea()->ScrollOffsetToPosition(offset);
 }
 
 ScrollOffset
 ScrollAnimatorCompositorCoordinator::BlinkOffsetFromCompositorOffset(
-    FloatPoint position) {
+    gfx::PointF position) {
   return GetScrollableArea()->ScrollPositionToOffset(position);
 }
 
@@ -269,13 +270,12 @@ void ScrollAnimatorCompositorCoordinator::UpdateImplOnlyCompositorAnimations() {
   if (host && element_id) {
     if (!impl_only_animation_adjustment_.IsZero()) {
       host->scroll_offset_animations().AddAdjustmentUpdate(
-          element_id, gfx::Vector2dF(impl_only_animation_adjustment_.width(),
-                                     impl_only_animation_adjustment_.height()));
+          element_id, gfx::Vector2dF(impl_only_animation_adjustment_));
     }
     if (impl_only_animation_takeover_)
       host->scroll_offset_animations().AddTakeoverUpdate(element_id);
   }
-  impl_only_animation_adjustment_ = IntSize();
+  impl_only_animation_adjustment_ = gfx::Vector2d();
   impl_only_animation_takeover_ = false;
 }
 
@@ -293,21 +293,12 @@ void ScrollAnimatorCompositorCoordinator::ScrollOffsetChanged(
   GetScrollableArea()->ScrollOffsetChanged(clamped_offset, scroll_type);
 }
 
-void ScrollAnimatorCompositorCoordinator::AdjustAnimationAndSetScrollOffset(
-    const ScrollOffset& offset,
-    mojom::blink::ScrollType scroll_type) {
-  // Subclasses should override this and adjust the animation as necessary.
-  ScrollOffsetChanged(offset, scroll_type);
-}
-
 void ScrollAnimatorCompositorCoordinator::AdjustImplOnlyScrollOffsetAnimation(
-    const IntSize& adjustment) {
+    const gfx::Vector2d& adjustment) {
   if (!GetScrollableArea()->ScrollAnimatorEnabled())
     return;
 
-  impl_only_animation_adjustment_.Enlarge(adjustment.width(),
-                                          adjustment.height());
-
+  impl_only_animation_adjustment_ += adjustment;
   GetScrollableArea()->RegisterForAnimation();
 }
 

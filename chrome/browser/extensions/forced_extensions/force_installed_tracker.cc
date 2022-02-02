@@ -20,7 +20,7 @@
 #include "extensions/common/extension_urls.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/arc/arc_prefs.h"
+#include "ash/components/arc/arc_prefs.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace extensions {
@@ -139,7 +139,7 @@ void ForceInstalledTracker::OnForcedExtensionsPrefReady() {
 
   // Listen for extension loads and install failures.
   status_ = kWaitingForExtensionLoads;
-  registry_observation_.Observe(registry_);
+  registry_observation_.Observe(registry_.get());
   collector_observation_.Observe(InstallStageTracker::Get(profile_));
 
   const base::DictionaryValue* value =

@@ -53,13 +53,57 @@ const KEYS = {
   "navigate_ancestor_from_nested"               : "00000000-0000-0000-0000-000000000018",
 
   "window.frameElement"                         : "00000000-0000-0000-0000-000000000019",
+
+  "keyboard.getLayoutMap"                       : "00000000-0000-0000-0000-00000000001A",
+
+  "permission.notification"                     : "00000000-0000-0000-0000-00000000001B",
+
+  "serviceWorker.frameType"                     : "00000000-0000-0000-0000-00000000001C",
+  "serviceWorker.frameType ACK"                 : "00000000-0000-0000-0000-00000000001D",
+
+  "popup_noopener"                              : "00000000-0000-0000-0000-00000000001E",
+  "popup_openee"                                : "00000000-0000-0000-0000-00000000001F",
+
+  "permission.geolocation"                      : "00000000-0000-0000-0000-000000000020",
+
+  "presentation.receiver"                       : "00000000-0000-0000-0000-000000000021",
+
+  "background-sync"                             : "00000000-0000-0000-0000-000000000022",
+
+  "prerender READY"                             : "00000000-0000-0000-0000-000000000023",
+  "prerender LOADED"                            : "00000000-0000-0000-0000-000000000024",
+  "prerender ACTIVATED"                         : "00000000-0000-0000-0000-000000000025",
+
+  "pointer-lock"                                : "00000000-0000-0000-0000-000000000026",
+
+  "referrer.value"                              : "00000000-0000-0000-0000-000000000027",
+  "referrer.value ACK"                          : "00000000-0000-0000-0000-000000000028",
+
+  "bluetooth.requestDevice"                     : "00000000-0000-0000-0000-000000000029",
+
+  "usb.requestDevice"                           : "00000000-0000-0000-0000-00000000002A",
+
+  "navigator.share"                             : "00000000-0000-0000-0000-00000000002B",
+
+  "background-fetch"                            : "00000000-0000-0000-0000-00000000002C",
+
+  "window.outersize"                            : "00000000-0000-0000-0000-00000000002D",
+  "window.innersize"                            : "00000000-0000-0000-0000-00000000002E",
+
+  "fenced_history_length"                       : "00000000-0000-0000-0000-00000000002F",
+  "outer_page_ready_for_next_navigation"        : "00000000-0000-0000-0000-000000000030",
+
+  "embed_coep_require_corp"                     : "00000000-0000-0000-0000-000000000031",
+  "embed_no_coep"                               : "00000000-0000-0000-0000-000000000032",
+
+  "hid.getDevice"                               : "00000000-0000-0000-0000-000000000033",
   // Add keys above this list, incrementing the key UUID in hexadecimal
 }
 
 function attachFencedFrame(url) {
-  assert_not_equals(window.HTMLFencedFrameElement, undefined,
-                    "The HTMLFencedFrameElement should be exposed on the " +
-                    "window object");
+  assert_implements(
+      window.HTMLFencedFrameElement,
+      'The HTMLFencedFrameElement should be exposed on the window object');
 
   const fenced_frame = document.createElement('fencedframe');
   fenced_frame.src = url;
@@ -102,4 +146,26 @@ async function nextValueFromServer(key) {
 async function writeValueToServer(key, value, origin = '') {
   const serverUrl = `${origin}${STORE_URL}?key=${key}&value=${value}`;
   await fetch(serverUrl, {"mode": "no-cors"});
+}
+
+// Simulates a user gesture and calls `callback` when `mouseup` happens.
+function simulateGesture(callback) {
+  // Get or create the target element.
+  let target = document.getElementById('target');
+  if (!target) {
+    target = document.createElement('button');
+    target.textContent = '\u2573';
+    target.id = 'target';
+    document.body.appendChild(target);
+  }
+  target.addEventListener('mouseup', callback);
+
+  requestAnimationFrame(() => {
+    if (eventSender) {
+      eventSender.mouseMoveTo(target.getBoundingClientRect().x,
+                              target.getBoundingClientRect().y);
+      eventSender.mouseDown();
+      eventSender.mouseUp();
+    }
+  });
 }

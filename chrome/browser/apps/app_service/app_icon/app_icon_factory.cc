@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -161,7 +160,7 @@ SkBitmap DecompressToSkBitmap(const unsigned char* data, size_t size) {
   base::AssertLongCPUWorkAllowed();
   SkBitmap decoded;
   bool success = gfx::PNGCodec::Decode(data, size, &decoded);
-  DCHECK(success);
+  LOG_IF(ERROR, !success) << "Failed to decode icon data as PNG";
   return decoded;
 }
 
@@ -414,7 +413,7 @@ gfx::ImageSkia ConvertIconBitmapsToImageSkia(
 
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
-                      std::unique_ptr<IconValue> iv,
+                      IconValuePtr iv,
                       LoadIconCallback callback) {
   scoped_refptr<AppIconLoader> icon_loader =
       base::MakeRefCounted<AppIconLoader>(size_hint_in_dip,

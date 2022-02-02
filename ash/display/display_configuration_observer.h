@@ -9,7 +9,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
 namespace ash {
@@ -28,8 +27,6 @@ class ASH_EXPORT DisplayConfigurationObserver
 
   ~DisplayConfigurationObserver() override;
 
-  bool save_preference() const { return save_preference_; }
-
  protected:
   // WindowTreeHostManager::Observer:
   void OnDisplaysInitialized() override;
@@ -42,8 +39,6 @@ class ASH_EXPORT DisplayConfigurationObserver
  private:
   void StartMirrorMode();
   void EndMirrorMode();
-
-  bool save_preference_ = true;
 
   // True if the device was in mirror mode before siwtching to tablet mode.
   bool was_in_mirror_mode_ = false;

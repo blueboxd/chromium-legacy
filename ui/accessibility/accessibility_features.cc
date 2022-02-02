@@ -117,6 +117,13 @@ bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
       ::features::kMagnifierContinuousMouseFollowingModeSetting);
 }
 
+const base::Feature kDockedMagnifierResizing{"DockedMagnifierResizing",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsDockedMagnifierResizingEnabled() {
+  return base::FeatureList::IsEnabled(::features::kDockedMagnifierResizing);
+}
+
 const base::Feature kExperimentalAccessibilityDictationOffline{
     "ExperimentalAccessibilityDictationOffline",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -139,15 +146,6 @@ const base::Feature kExperimentalAccessibilityDictationCommands{
 bool IsExperimentalAccessibilityDictationCommandsEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityDictationCommands);
-}
-
-const base::Feature kExperimentalAccessibilitySwitchAccessSetupGuide{
-    "ExperimentalAccessibilitySwitchAccessSetupGuide",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsExperimentalAccessibilitySwitchAccessSetupGuideEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilitySwitchAccessSetupGuide);
 }
 
 const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",
@@ -188,5 +186,12 @@ bool IsComputeAXModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kComputeAXMode);
 }
 #endif  // defined(OS_ANDROID)
+
+const base::Feature kReaderModeSidePanel{"ReaderModeSidePanel",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsReaderModeSidePanelEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReaderModeSidePanel);
+}
 
 }  // namespace features

@@ -348,10 +348,10 @@ bool AXLayoutObject::IsLinked() const {
 
 bool AXLayoutObject::IsOffScreen() const {
   DCHECK(layout_object_);
-  IntRect content_rect =
-      PixelSnappedIntRect(layout_object_->VisualRectInDocument());
+  gfx::Rect content_rect =
+      ToPixelSnappedRect(layout_object_->VisualRectInDocument());
   LocalFrameView* view = layout_object_->GetFrame()->View();
-  IntRect view_rect(gfx::Point(), view->Size());
+  gfx::Rect view_rect(gfx::Point(), view->Size());
   view_rect.Intersect(content_rect);
   return view_rect.IsEmpty();
 }
@@ -1173,8 +1173,7 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const gfx::Point& point) const {
   PaintLayer* layer = To<LayoutBox>(layout_object_.Get())->Layer();
   DCHECK(layer);
 
-  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive |
-                         HitTestRequest::kRetargetForInert);
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
   HitTestLocation location(point);
   HitTestResult hit_test_result = HitTestResult(request, location);
   layer->HitTest(location, hit_test_result,
@@ -1754,7 +1753,7 @@ AXObject* AXLayoutObject::AccessibilityImageMapHitTest(
     return nullptr;
 
   for (const auto& child : parent->ChildrenIncludingIgnored()) {
-    if (child->GetBoundsInFrameCoordinates().Contains(point))
+    if (child->GetBoundsInFrameCoordinates().Contains(LayoutPoint(point)))
       return child.Get();
   }
 

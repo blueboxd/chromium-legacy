@@ -4,7 +4,7 @@
 
 import {fakeCalibrationComponents} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
-import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, RmaState, WriteProtectDisableCompleteState} from 'chrome://shimless-rma/shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, ComponentRepairStatus, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, RmadErrorCode, State, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from 'chrome://shimless-rma/shimless_rma_types.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 
@@ -23,7 +23,7 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('GetCurrentStateDefaultRmaNotRequired', () => {
     return service.getCurrentState().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.state, State.kUnknown);
       assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
     });
   });
@@ -31,7 +31,7 @@ export function fakeShimlessRmaServiceTestSuite() {
   test('GetCurrentStateWelcomeOk', () => {
     let states = [
       {
-        state: RmaState.kWelcomeScreen,
+        state: State.kWelcomeScreen,
         canCancel: true,
         canGoBack: false,
         error: RmadErrorCode.kOk
@@ -40,7 +40,7 @@ export function fakeShimlessRmaServiceTestSuite() {
     service.setStates(states);
 
     return service.getCurrentState().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertTrue(state.canCancel);
       assertFalse(state.canGoBack);
       assertEquals(state.error, RmadErrorCode.kOk);
@@ -49,41 +49,41 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('GetCurrentStateWelcomeError', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kMissingComponent},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kMissingComponent},
     ];
     service.setStates(states);
 
     return service.getCurrentState().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kMissingComponent);
     });
   });
 
   test('TransitionPreviousStateWelcomeOk', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     service.beginFinalization().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
     return service.transitionPreviousState().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('TransitionPreviousStateWelcomeTransitionFailed', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.transitionPreviousState().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kTransitionFailed);
     });
   });
@@ -132,150 +132,144 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('UpdateOsSkippedOk', () => {
     let states = [
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.updateOsSkipped().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('UpdateOsSkippedWhenRmaNotRequired', () => {
     return service.updateOsSkipped().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.state, State.kUnknown);
       assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
     });
   });
 
   test('UpdateOsSkippedWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.updateOsSkipped().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('SetSameOwnerOk', () => {
     let states = [
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setSameOwner().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('SetSameOwnerWhenRmaNotRequired', () => {
     return service.setSameOwner().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.state, State.kUnknown);
       assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
     });
   });
 
   test('SetSameOwnerWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setSameOwner().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('SetDifferentOwnerOk', () => {
     let states = [
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setDifferentOwner().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('SetDifferentOwnerWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setDifferentOwner().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('ChooseManuallyDisableWriteProtectOk', () => {
     let states = [
-      {
-        state: RmaState.kChooseWriteProtectDisableMethod,
-        error: RmadErrorCode.kOk
-      },
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kChooseWriteProtectDisableMethod, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.chooseManuallyDisableWriteProtect().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('ChooseManuallyDisableWriteProtectWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.chooseManuallyDisableWriteProtect().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('ChooseRsuDisableWriteProtectOk', () => {
     let states = [
-      {
-        state: RmaState.kChooseWriteProtectDisableMethod,
-        error: RmadErrorCode.kOk
-      },
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kChooseWriteProtectDisableMethod, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.chooseRsuDisableWriteProtect().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('ChooseRsuDisableWriteProtectWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.chooseRsuDisableWriteProtect().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
@@ -296,26 +290,26 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('SetRsuDisableWriteProtectCodeOk', () => {
     let states = [
-      {state: RmaState.kEnterRSUWPDisableCode, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kEnterRSUWPDisableCode, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setRsuDisableWriteProtectCode('ignored').then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('SetRsuDisableWriteProtectCodeWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setRsuDisableWriteProtectCode('ignored').then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
@@ -351,13 +345,13 @@ export function fakeShimlessRmaServiceTestSuite() {
       },
     ];
     let states = [
-      {state: RmaState.kSelectComponents, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kSelectComponents, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setComponentList(components).then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
@@ -370,132 +364,81 @@ export function fakeShimlessRmaServiceTestSuite() {
       },
     ];
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setComponentList(components).then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('ReworkMainboardOk', () => {
     let states = [
-      {state: RmaState.kSelectComponents, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kSelectComponents, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.reworkMainboard().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('ReworkMainboardWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.reworkMainboard().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
-  test('GetWriteProtectDisableCompleteStateDefaultUndefined', () => {
-    return service.getWriteProtectDisableCompleteState().then((res) => {
+  test('GetWriteProtectDisableCompleteActionDefaultUndefined', () => {
+    return service.getWriteProtectDisableCompleteAction().then((res) => {
       assertEquals(undefined, res);
     });
   });
 
-  test('SetGetWriteProtectDisableCompleteStateUpdatesState', () => {
-    service.setGetWriteProtectDisableCompleteState(
-        WriteProtectDisableCompleteState.kCompleteKeepDeviceOpen);
-    return service.getWriteProtectDisableCompleteState().then((res) => {
+  test('SetGetWriteProtectDisableCompleteStateUpdatesAction', () => {
+    service.setGetWriteProtectDisableCompleteAction(
+        WriteProtectDisableCompleteAction.kCompleteKeepDeviceOpen);
+    return service.getWriteProtectDisableCompleteAction().then((res) => {
       assertEquals(
-          WriteProtectDisableCompleteState.kCompleteKeepDeviceOpen, res.state);
+          WriteProtectDisableCompleteAction.kCompleteKeepDeviceOpen,
+          res.action);
     });
   });
 
-  test('ReimageSkippedOk', () => {
+  test('ReimageRoFirmwareUpdateCompleteOk', () => {
     let states = [
-      {state: RmaState.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kUpdateRoFirmware, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
-    return service.reimageSkipped().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
+    return service.roFirmwareUpdateComplete().then((state) => {
+      assertEquals(state.state, State.kUpdateOs);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
-  test('ReimageSkippedWrongStateFails', () => {
+  test('ReimageRoFirmwareUpdateCompleteWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kUpdateOs, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
-    return service.reimageSkipped().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
-      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
-    });
-  });
-
-  test('ReimageFromDownloadOk', () => {
-    let states = [
-      {state: RmaState.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromDownload().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
-      assertEquals(state.error, RmadErrorCode.kOk);
-    });
-  });
-
-  test('ReimageFromDownloadWrongStateFails', () => {
-    let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromDownload().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
-      assertEquals(state.error, RmadErrorCode.kRequestInvalid);
-    });
-  });
-
-  test('ReimageFromUsbOk', () => {
-    let states = [
-      {state: RmaState.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromUsb().then((state) => {
-      assertEquals(state.state, RmaState.kUpdateOs);
-      assertEquals(state.error, RmadErrorCode.kOk);
-    });
-  });
-
-  test('ReimageFromUsbWrongStateFails', () => {
-    let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-    ];
-    service.setStates(states);
-
-    return service.reimageFromUsb().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+    return service.roFirmwareUpdateComplete().then((state) => {
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
@@ -521,10 +464,25 @@ export function fakeShimlessRmaServiceTestSuite() {
   });
 
   test('SetGetSkuListResultUpdatesResult', () => {
-    let skuList = ['skuA', 'skuB', 'skuC'];
+    let skuList = [1, 202, 33];
     service.setGetSkuListResult(skuList);
     return service.getSkuList().then((skus) => {
       assertDeepEquals(skus.skus, skuList);
+    });
+  });
+
+  test('GetWhiteLabelListDefaultUndefined', () => {
+    return service.getWhiteLabelList().then((whiteLabels) => {
+      assertEquals(whiteLabels, undefined);
+    });
+  });
+
+  test('SetGetWhiteLabelListResultUpdatesResult', () => {
+    const whiteLabelList =
+        ['White-label 10', 'White-label 0', 'White-label 9999'];
+    service.setGetWhiteLabelListResult(whiteLabelList);
+    return service.getWhiteLabelList().then((whiteLabels) => {
+      assertDeepEquals(whiteLabels.whiteLabels, whiteLabelList);
     });
   });
 
@@ -570,23 +528,37 @@ export function fakeShimlessRmaServiceTestSuite() {
     });
   });
 
+  test('GetOriginalWhiteLabelDefaultUndefined', () => {
+    return service.getOriginalWhiteLabel().then((whiteLabel) => {
+      assertEquals(whiteLabel, undefined);
+    });
+  });
+
+  test('SetGetOriginalRegionResultUpdatesResult', () => {
+    const expected_whiteLabel = 1;
+    service.setGetOriginalWhiteLabelResult(expected_whiteLabel);
+    return service.getOriginalWhiteLabel().then((whiteLabel) => {
+      assertEquals(whiteLabel.whiteLabelIndex, expected_whiteLabel);
+    });
+  });
+
   test('SetDeviceInformationOk', () => {
     let states = [
-      {state: RmaState.kUpdateDeviceInformation, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kUpdateDeviceInformation, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.setDeviceInformation('serial number', 1, 2).then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('GetCalibrationComponentList', () => {
     let states = [
-      {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kCheckCalibration, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
     let expectedCalibrationComponents = [
@@ -612,8 +584,8 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('GetCalibrationInstructions', () => {
     let states = [
-      {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kCheckCalibration, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
     service.setGetCalibrationSetupInstructionsResult(
@@ -630,8 +602,8 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('StartCalibrationOk', () => {
     let states = [
-      {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kCheckCalibration, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
     service.setGetCalibrationSetupInstructionsResult(
@@ -639,52 +611,52 @@ export function fakeShimlessRmaServiceTestSuite() {
             .kCalibrationInstructionPlaceBaseOnFlatSurface);
 
     return service.startCalibration(fakeCalibrationComponents).then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('RunCalibrationStepOk', () => {
     let states = [
-      {state: RmaState.kSetupCalibration, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kSetupCalibration, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.runCalibrationStep().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('ContinueCalibrationOk', () => {
     let states = [
-      {state: RmaState.kRunCalibration, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kRunCalibration, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.continueCalibration().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('CalibrationCompleteOk', () => {
     let states = [
-      {state: RmaState.kRunCalibration, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kRunCalibration, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.calibrationComplete().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('GetLog', () => {
-    let states = [{state: RmaState.kRepairComplete, error: RmadErrorCode.kOk}];
+    let states = [{state: State.kRepairComplete, error: RmadErrorCode.kOk}];
     service.setStates(states);
     const expectedLog = 'fake log';
     service.setGetLogResult(expectedLog);
@@ -695,99 +667,99 @@ export function fakeShimlessRmaServiceTestSuite() {
 
   test('EndRmaAndRebootOk', () => {
     let states = [
-      {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kRepairComplete, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.endRmaAndReboot().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('EndRmaAndRebootWhenRmaNotRequired', () => {
     return service.endRmaAndReboot().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.state, State.kUnknown);
       assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
     });
   });
 
   test('EndRmaAndRebootWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.endRmaAndReboot().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('EndRmaAndShutdownOk', () => {
     let states = [
-      {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kRepairComplete, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.endRmaAndShutdown().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('EndRmaAndShutdownWhenRmaNotRequired', () => {
     return service.endRmaAndShutdown().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.state, State.kUnknown);
       assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
     });
   });
 
   test('EndRmaAndShutdownWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.endRmaAndShutdown().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
 
   test('EndRmaAndCutoffBatteryOk', () => {
     let states = [
-      {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kRepairComplete, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.endRmaAndCutoffBattery().then((state) => {
-      assertEquals(state.state, RmaState.kChooseDestination);
+      assertEquals(state.state, State.kChooseDestination);
       assertEquals(state.error, RmadErrorCode.kOk);
     });
   });
 
   test('EndRmaAndCutoffBatteryWhenRmaNotRequired', () => {
     return service.endRmaAndCutoffBattery().then((state) => {
-      assertEquals(state.state, RmaState.kUnknown);
+      assertEquals(state.state, State.kUnknown);
       assertEquals(state.error, RmadErrorCode.kRmaNotRequired);
     });
   });
 
   test('EndRmaAndCutoffBatteryWrongStateFails', () => {
     let states = [
-      {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-      {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
+      {state: State.kWelcomeScreen, error: RmadErrorCode.kOk},
+      {state: State.kChooseDestination, error: RmadErrorCode.kOk},
     ];
     service.setStates(states);
 
     return service.endRmaAndCutoffBattery().then((state) => {
-      assertEquals(state.state, RmaState.kWelcomeScreen);
+      assertEquals(state.state, State.kWelcomeScreen);
       assertEquals(state.error, RmadErrorCode.kRequestInvalid);
     });
   });
@@ -823,6 +795,24 @@ export function fakeShimlessRmaServiceTestSuite() {
     service.observeOsUpdateProgress(osUpdateObserver);
     return service.triggerOsUpdateObserver(
         OsUpdateOperation.kDownloading, 0.75, 0);
+  });
+
+  test('ObserveRoFirmwareUpdate', () => {
+    /** @type {!UpdateRoFirmwareObserverRemote} */
+    const roFirmwareUpdateObserver =
+        /** @type {!UpdateRoFirmwareObserverRemote} */ ({
+          /**
+           * Implements
+           * UpdateRoFirmwareObserver.onUpdateRoFirmwareStatusChanged()
+           * @param {!UpdateRoFirmwareStatus} status
+           */
+          onUpdateRoFirmwareStatusChanged(status) {
+            assertEquals(UpdateRoFirmwareStatus.kDownloading, status);
+          }
+        });
+    service.observeRoFirmwareUpdateProgress(roFirmwareUpdateObserver);
+    return service.triggerUpdateRoFirmwareObserver(
+        UpdateRoFirmwareStatus.kDownloading, 0);
   });
 
   test('ObserveCalibrationUpdated', () => {

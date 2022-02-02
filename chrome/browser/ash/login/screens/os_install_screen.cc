@@ -19,8 +19,6 @@ constexpr const char kUserActionErrorSendFeedbackClicked[] =
     "os-install-error-send-feedback";
 constexpr const char kUserActionErrorShutdownClicked[] =
     "os-install-error-shutdown";
-constexpr const char kUserActionSuccessRestartClicked[] =
-    "os-install-success-restart";
 
 constexpr const base::TimeDelta kTimeTillShutdownOnSuccess = base::Seconds(60);
 constexpr const base::TimeDelta kCountdownDelta = base::Milliseconds(10);
@@ -51,7 +49,6 @@ void OsInstallScreen::ShowImpl() {
   if (!view_)
     return;
 
-  view_->SetIsBrandedBuild(context()->is_branded_build);
   view_->Show();
 }
 
@@ -67,8 +64,6 @@ void OsInstallScreen::OnUserAction(const std::string& action_id) {
         LoginAcceleratorAction::kShowFeedback);
   } else if (action_id == kUserActionErrorShutdownClicked) {
     Shutdown();
-  } else if (action_id == kUserActionSuccessRestartClicked) {
-    Restart();
   } else {
     BaseScreen::OnUserAction(action_id);
   }
@@ -102,8 +97,8 @@ void OsInstallScreen::RunAutoShutdownCountdown() {
 }
 
 void OsInstallScreen::UpdateCountdownString() {
-  auto time_left = (shutdown_time_ - tick_clock_->NowTicks()).InSeconds();
-  if (time_left <= 0) {
+  base::TimeDelta time_left = shutdown_time_ - tick_clock_->NowTicks();
+  if (!time_left.is_positive()) {
     shutdown_countdown_->Stop();
     shutdown_countdown_.reset();
     Shutdown();
@@ -114,11 +109,6 @@ void OsInstallScreen::UpdateCountdownString() {
 void OsInstallScreen::Shutdown() {
   chromeos::PowerManagerClient::Get()->RequestShutdown(
       power_manager::REQUEST_SHUTDOWN_FOR_USER, "OS install shut down");
-}
-
-void OsInstallScreen::Restart() {
-  chromeos::PowerManagerClient::Get()->RequestRestart(
-      power_manager::REQUEST_RESTART_FOR_USER, "OS install restart");
 }
 
 }  // namespace ash

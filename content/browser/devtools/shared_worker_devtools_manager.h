@@ -9,7 +9,6 @@
 
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -22,7 +21,7 @@ class SharedWorkerHost;
 
 // Manages WorkerDevToolsAgentHost's for Shared Workers.
 // This class lives on UI thread.
-class CONTENT_EXPORT SharedWorkerDevToolsManager {
+class SharedWorkerDevToolsManager {
  public:
   // Returns the SharedWorkerDevToolsManager singleton.
   static SharedWorkerDevToolsManager* GetInstance();

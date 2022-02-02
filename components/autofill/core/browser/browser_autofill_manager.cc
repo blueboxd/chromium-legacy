@@ -28,7 +28,6 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -52,7 +51,6 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
@@ -67,7 +65,8 @@
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/metrics/form_events.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/form_events/form_events.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -395,7 +394,6 @@ BrowserAutofillManager::FillingContext::FillingContext(
     const std::u16string* optional_cvc)
     : filled_field_id(field.global_id()),
       filled_field_signature(field.GetFieldSignature()),
-      filled_field_unique_name(field.unique_name()),
       filled_origin(field.origin),
       original_fill_time(AutofillTickClock::NowTicks()) {
   DCHECK(absl::holds_alternative<const CreditCard*>(profile_or_credit_card) ||
@@ -1438,6 +1436,8 @@ void BrowserAutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
   if (!form_structure)
     return;
 
+  driver()->SendAutofillTypePredictionsToRenderer({form_structure});
+
   if (ShouldTriggerRefill(*form_structure))
     TriggerRefill(form);
 }
@@ -1605,8 +1605,7 @@ void BrowserAutofillManager::Reset() {
   credit_card_action_ = mojom::RendererFormDataAction::kPreview;
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
-  filling_context_by_global_id_.clear();
-  filling_context_by_unique_name_.clear();
+  filling_context_.clear();
 }
 
 bool BrowserAutofillManager::RefreshDataModels() {
@@ -1722,6 +1721,14 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
     if (form_structure->field(i)->section != autofill_field->section) {
       buffer << Tr{} << field_number << "Skipped: not part of filled section";
+      continue;
+    }
+
+    // Do not override prefilled field values.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillPreventOverridingPrefilledValues) &&
+        !form_structure->field(i)->value.empty()) {
+      buffer << Tr{} << field_number << "Skipped: value is prefilled";
       continue;
     }
 
@@ -1944,9 +1951,9 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
       if (profile) {
         const std::u16string phone_home_city_and_number =
             profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale_);
-        suggestion.value =
-            FieldFiller::GetPhoneNumberValue(autofill_field, suggestion.value,
-                                             phone_home_city_and_number, field);
+        suggestion.value = FieldFiller::GetPhoneNumberValueForInput(
+            autofill_field, suggestion.value, phone_home_city_and_number,
+            field);
       }
     }
   }
@@ -2401,36 +2408,21 @@ void BrowserAutofillManager::FillFieldWithValue(
   }
 }
 
-// TODO(crbug/896689): Remove code duplication once experiment is finished.
 void BrowserAutofillManager::SetFillingContext(
     const FormStructure& form,
     std::unique_ptr<FillingContext> context) {
-  if (base::FeatureList::IsEnabled(features::kAutofillRefillWithRendererIds)) {
-    filling_context_by_global_id_[form.global_id()] = std::move(context);
-  } else {
-    filling_context_by_unique_name_[form.GetIdentifierForRefill()] =
-        std::move(context);
-  }
+  filling_context_[form.global_id()] = std::move(context);
 }
 
-// TODO(crbug/896689): Remove code duplication once experiment is finished.
 BrowserAutofillManager::FillingContext*
 BrowserAutofillManager::GetFillingContext(const FormStructure& form) {
-  if (base::FeatureList::IsEnabled(features::kAutofillRefillWithRendererIds)) {
-    auto it = filling_context_by_global_id_.find(form.global_id());
-    return it != filling_context_by_global_id_.end() ? it->second.get()
-                                                     : nullptr;
-  } else {
-    auto it =
-        filling_context_by_unique_name_.find(form.GetIdentifierForRefill());
-    return it != filling_context_by_unique_name_.end() ? it->second.get()
-                                                       : nullptr;
-  }
+  auto it = filling_context_.find(form.global_id());
+  return it != filling_context_.end() ? it->second.get() : nullptr;
 }
 
 bool BrowserAutofillManager::ShouldTriggerRefill(
     const FormStructure& form_structure) {
-  // Should not refill if a form with the same FormGlobalId has not been
+  // Should not refill if a form with the same FormGlobalId that has not been
   // filled before.
   FillingContext* filling_context = GetFillingContext(form_structure);
   if (filling_context == nullptr)
@@ -2457,17 +2449,10 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
   if (!form_structure)
     return;
 
-  DCHECK(form_structure);
-
   address_form_event_logger_->OnDidRefill(sync_state_, *form_structure);
 
   FillingContext* filling_context = GetFillingContext(*form_structure);
-
-  // Since GetIdentifierForRefill() is not stable across dynamic changes,
-  // |filling_context_by_unique_name_| may not contain the element anymore.
-  // TODO(crbug/896689): Can be replaced with DCHECK once experiment is over.
-  if (filling_context == nullptr)
-    return;
+  DCHECK(filling_context);
 
   // The refill attempt can happen from different paths, some of which happen
   // after waiting for a while. Therefore, although this condition has been
@@ -2484,13 +2469,7 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
   // TODO(crbug/896689): Clean up after feature launch.
   AutofillField* autofill_field = nullptr;
   for (const std::unique_ptr<AutofillField>& field : *form_structure) {
-    // TODO(crbug/896689): Clean up once experiment is over.
-    if (((base::FeatureList::IsEnabled(
-              features::kAutofillRefillWithRendererIds) &&
-          field->global_id() == filling_context->filled_field_id) ||
-         (!base::FeatureList::IsEnabled(
-              features::kAutofillRefillWithRendererIds) &&
-          field->unique_name() == filling_context->filled_field_unique_name)) &&
+    if (field->global_id() == filling_context->filled_field_id &&
         field->origin == filling_context->filled_origin) {
       autofill_field = field.get();
       break;
@@ -2499,8 +2478,7 @@ void BrowserAutofillManager::TriggerRefill(const FormData& form) {
 
   // If the field was deleted, look for one with a matching signature. Prefer
   // visible and newer fields over invisible or older ones.
-  if (base::FeatureList::IsEnabled(features::kAutofillRefillWithRendererIds) &&
-      autofill_field == nullptr) {
+  if (autofill_field == nullptr) {
     auto is_better = [](const AutofillField& f, const AutofillField& g) {
       return std::forward_as_tuple(f.IsVisible(),
                                    f.unique_renderer_id.value()) >

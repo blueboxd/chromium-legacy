@@ -40,7 +40,7 @@ void UpdateAppRegistryCache(Profile* profile,
                             bool pause) {
   std::vector<apps::mojom::AppPtr> apps;
   apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kExtension;
+  app->app_type = apps::mojom::AppType::kChromeApp;
   app->app_id = app_id;
 
   if (block)
@@ -57,7 +57,7 @@ void UpdateAppRegistryCache(Profile* profile,
 
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
-      .OnApps(std::move(apps), apps::mojom::AppType::kExtension,
+      .OnApps(std::move(apps), apps::mojom::AppType::kChromeApp,
               false /* should_notify_initialized */);
 }
 
@@ -188,6 +188,7 @@ IN_PROC_BROWSER_TEST_P(AppServiceSystemWebAppItemBrowserTest, Activate) {
                              EmptyAccountId());
   AppServiceAppItem app_item(profile, /*model_updater=*/nullptr,
                              /*sync_item=*/nullptr, app_update);
+  app_item.SetChromePosition(app_item.CalculateDefaultPositionForTest());
 
   app_item.PerformActivate(ui::EF_NONE);
 

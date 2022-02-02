@@ -69,7 +69,8 @@ void VizCompositorThreadRunnerWebView::InitFrameSinkManagerOnViz() {
   server_shared_bitmap_manager_ =
       std::make_unique<viz::ServerSharedBitmapManager>();
   frame_sink_manager_ = std::make_unique<viz::FrameSinkManagerImpl>(
-      server_shared_bitmap_manager_.get());
+      viz::FrameSinkManagerImpl::InitParams(
+          server_shared_bitmap_manager_.get()));
 }
 
 viz::FrameSinkManagerImpl*
@@ -116,7 +117,7 @@ void VizCompositorThreadRunnerWebView::CreateFrameSinkManager(
     viz::mojom::FrameSinkManagerParamsPtr params,
     gpu::CommandBufferTaskExecutor* task_executor,
     viz::GpuServiceImpl* gpu_service,
-    gfx::RenderingPipeline* gpu_pipeline) {
+    viz::HintSessionFactory* hint_session_factory) {
   viz_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(

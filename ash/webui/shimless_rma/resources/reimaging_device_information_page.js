@@ -8,7 +8,8 @@ import './icons.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
@@ -18,7 +19,18 @@ import {ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js'
  * 'reimaging-device-information-page' allows the user to update important
  * device information if necessary.
  */
-export class ReimagingDeviceInformationPageElement extends PolymerElement {
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const ReimagingDeviceInformationPageBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
+
+/** @polymer */
+export class ReimagingDeviceInformationPage extends
+    ReimagingDeviceInformationPageBase {
   static get is() {
     return 'reimaging-device-information-page';
   }
@@ -135,9 +147,13 @@ export class ReimagingDeviceInformationPageElement extends PolymerElement {
         .then((result) => {
           this.regions_ = result.regions;
           this.regionIndex_ = this.originalRegionIndex_;
-          // TODO(gavindodd) This does not work. Find a way to bind the list.
-          this.shadowRoot.querySelector('#regionSelect').selectedIndex =
-              this.regionIndex_;
+
+          // Need to wait for the select options to render before setting the
+          // selected index.
+          afterNextRender(this, () => {
+            this.shadowRoot.querySelector('#regionSelect').selectedIndex =
+                this.regionIndex_;
+          });
         });
   }
 
@@ -151,9 +167,13 @@ export class ReimagingDeviceInformationPageElement extends PolymerElement {
         .then((result) => {
           this.skus_ = result.skus;
           this.skuIndex_ = this.originalSkuIndex_;
-          // TODO(gavindodd) This does not work. Find a way to bind the list.
-          this.shadowRoot.querySelector('#skuSelect').selectedIndex =
-              this.skuIndex_;
+
+          // Need to wait for the select options to render before setting the
+          // selected index.
+          afterNextRender(this, () => {
+            this.shadowRoot.querySelector('#skuSelect').selectedIndex =
+                this.skuIndex_;
+          });
         });
   }
 
@@ -213,5 +233,4 @@ export class ReimagingDeviceInformationPageElement extends PolymerElement {
 }
 
 customElements.define(
-    ReimagingDeviceInformationPageElement.is,
-    ReimagingDeviceInformationPageElement);
+    ReimagingDeviceInformationPage.is, ReimagingDeviceInformationPage);

@@ -31,7 +31,7 @@ class TestPrintingContextDelegate : public PrintingContext::Delegate {
 
 class TestPrintingContext : public PrintingContext {
  public:
-  explicit TestPrintingContext(Delegate* delegate);
+  TestPrintingContext(Delegate* delegate, bool skip_system_calls);
   TestPrintingContext(const TestPrintingContext&) = delete;
   TestPrintingContext& operator=(const TestPrintingContext&) = delete;
   ~TestPrintingContext() override;
@@ -43,6 +43,11 @@ class TestPrintingContext : public PrintingContext {
   void SetDeviceSettings(const std::string& device_name,
                          std::unique_ptr<PrintSettings> settings);
 
+  // Enables tests to fail with an access-denied error.
+  void SetNewDocumentBlockedByPermissions() {
+    new_document_blocked_by_permissions_ = true;
+  }
+
   // PrintingContext overrides:
   void AskUserForSettings(int max_pages,
                           bool has_selection,
@@ -50,12 +55,18 @@ class TestPrintingContext : public PrintingContext {
                           PrintSettingsCallback callback) override;
   mojom::ResultCode UseDefaultSettings() override;
   gfx::Size GetPdfPaperSizeDeviceUnits() override;
-  mojom::ResultCode UpdatePrinterSettings(bool external_preview,
-                                          bool show_system_dialog,
-                                          int page_count) override;
+  mojom::ResultCode UpdatePrinterSettings(
+      const PrinterSettings& printer_settings) override;
   mojom::ResultCode NewDocument(const std::u16string& document_name) override;
   mojom::ResultCode NewPage() override;
+#if defined(OS_WIN)
+  mojom::ResultCode RenderPage(const PrintedPage& page,
+                               const PageSetup& page_setup) override;
+#endif
   mojom::ResultCode PageDone() override;
+  mojom::ResultCode PrintDocument(const MetafilePlayer& metafile,
+                                  const PrintSettings& settings,
+                                  uint32_t num_pages) override;
   mojom::ResultCode DocumentDone() override;
   void Cancel() override;
   void ReleaseContext() override;
@@ -67,6 +78,7 @@ class TestPrintingContext : public PrintingContext {
 
  private:
   base::flat_map<std::string, std::unique_ptr<PrintSettings>> device_settings_;
+  bool new_document_blocked_by_permissions_ = false;
 };
 
 }  // namespace printing

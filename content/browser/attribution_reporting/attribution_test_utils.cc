@@ -16,7 +16,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
-#include "content/browser/attribution_reporting/storable_trigger.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -27,6 +26,7 @@ using AttributionAllowedStatus =
     ::content::RateLimitTable::AttributionAllowedStatus;
 using CreateReportStatus =
     ::content::AttributionStorage::CreateReportResult::Status;
+using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
@@ -38,54 +38,23 @@ const int64_t kExpiryTime = 30;
 
 }  // namespace
 
-bool AttributionDisallowingContentBrowserClient::
-    IsConversionMeasurementOperationAllowed(
-        content::BrowserContext* browser_context,
-        ConversionMeasurementOperation operation,
-        const url::Origin* impression_origin,
-        const url::Origin* conversion_origin,
-        const url::Origin* reporting_origin) {
-  return false;
+MockAttributionReportingContentBrowserClient::
+    MockAttributionReportingContentBrowserClient() = default;
+
+MockAttributionReportingContentBrowserClient::
+    ~MockAttributionReportingContentBrowserClient() = default;
+
+MockAttributionHost::MockAttributionHost(WebContents* web_contents)
+    : AttributionHost(web_contents) {
+  SetReceiverImplForTesting(this);
 }
 
-ConfigurableAttributionTestBrowserClient::
-    ConfigurableAttributionTestBrowserClient() = default;
-ConfigurableAttributionTestBrowserClient::
-    ~ConfigurableAttributionTestBrowserClient() = default;
-
-bool ConfigurableAttributionTestBrowserClient::
-    IsConversionMeasurementOperationAllowed(
-        content::BrowserContext* browser_context,
-        ConversionMeasurementOperation operation,
-        const url::Origin* impression_origin,
-        const url::Origin* conversion_origin,
-        const url::Origin* reporting_origin) {
-  if (!!blocked_impression_origin_ != !!impression_origin ||
-      !!blocked_conversion_origin_ != !!conversion_origin ||
-      !!blocked_reporting_origin_ != !!reporting_origin) {
-    return true;
-  }
-
-  // Allow the operation if any rule doesn't match.
-  if ((impression_origin &&
-       *blocked_impression_origin_ != *impression_origin) ||
-      (conversion_origin &&
-       *blocked_conversion_origin_ != *conversion_origin) ||
-      (reporting_origin && *blocked_reporting_origin_ != *reporting_origin)) {
-    return true;
-  }
-
-  return false;
+MockAttributionHost::~MockAttributionHost() {
+  SetReceiverImplForTesting(nullptr);
 }
 
-void ConfigurableAttributionTestBrowserClient::
-    BlockConversionMeasurementInContext(
-        absl::optional<url::Origin> impression_origin,
-        absl::optional<url::Origin> conversion_origin,
-        absl::optional<url::Origin> reporting_origin) {
-  blocked_impression_origin_ = impression_origin;
-  blocked_conversion_origin_ = conversion_origin;
-  blocked_reporting_origin_ = reporting_origin;
+base::GUID DefaultExternalReportID() {
+  return base::GUID::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e");
 }
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
@@ -135,96 +104,66 @@ ConfigurableStorageDelegate::GetDeleteExpiredRateLimitsFrequency() const {
   return delete_expired_rate_limits_frequency_;
 }
 
+base::GUID ConfigurableStorageDelegate::NewReportID() const {
+  return DefaultExternalReportID();
+}
+
 AttributionManager* TestManagerProvider::GetManager(
     WebContents* web_contents) const {
   return manager_;
 }
 
-TestAttributionManager::TestAttributionManager() = default;
+MockAttributionManager::MockAttributionManager() = default;
 
-TestAttributionManager::~TestAttributionManager() = default;
+MockAttributionManager::~MockAttributionManager() = default;
 
-void TestAttributionManager::HandleSource(StorableSource source) {
-  num_sources_++;
-  last_impression_source_type_ = source.source_type();
-  last_impression_origin_ = source.impression_origin();
-  last_attribution_source_priority_ = source.priority();
-  last_impression_time_ = source.impression_time();
+void MockAttributionManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void TestAttributionManager::HandleTrigger(StorableTrigger trigger) {
-  num_triggers_++;
-
-  last_conversion_destination_ = trigger.conversion_destination();
+void MockAttributionManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
-void TestAttributionManager::GetActiveSourcesForWebUI(
-    base::OnceCallback<void(std::vector<StorableSource>)> callback) {
-  std::move(callback).Run(sources_);
-}
-
-void TestAttributionManager::GetPendingReportsForWebUI(
-    base::OnceCallback<void(std::vector<AttributionReport>)> callback,
-    base::Time max_report_time) {
-  std::move(callback).Run(reports_);
-}
-
-const AttributionSessionStorage& TestAttributionManager::GetSessionStorage()
-    const {
-  return session_storage_;
-}
-
-void TestAttributionManager::SendReportsForWebUI(base::OnceClosure done) {
-  reports_.clear();
-  std::move(done).Run();
-}
-
-AttributionSessionStorage& TestAttributionManager::GetSessionStorage() {
-  return session_storage_;
-}
-
-const AttributionPolicy& TestAttributionManager::GetAttributionPolicy() const {
+const AttributionPolicy& MockAttributionManager::GetAttributionPolicy() const {
   return policy_;
 }
 
-void TestAttributionManager::ClearData(
-    base::Time delete_begin,
-    base::Time delete_end,
-    base::RepeatingCallback<bool(const url::Origin&)> filter,
-    base::OnceClosure done) {
-  sources_.clear();
-  reports_.clear();
-  session_storage_.Reset();
-  std::move(done).Run();
+void MockAttributionManager::NotifySourcesChanged() {
+  for (Observer& observer : observers_)
+    observer.OnSourcesChanged();
 }
 
-void TestAttributionManager::SetActiveSourcesForWebUI(
-    std::vector<StorableSource> sources) {
-  sources_ = std::move(sources);
+void MockAttributionManager::NotifyReportsChanged() {
+  for (Observer& observer : observers_)
+    observer.OnReportsChanged();
 }
 
-void TestAttributionManager::SetReportsForWebUI(
-    std::vector<AttributionReport> reports) {
-  reports_ = std::move(reports);
+void MockAttributionManager::NotifySourceDeactivated(
+    const DeactivatedSource& source) {
+  for (Observer& observer : observers_)
+    observer.OnSourceDeactivated(source);
 }
 
-void TestAttributionManager::Reset() {
-  num_sources_ = 0u;
-  num_triggers_ = 0u;
+void MockAttributionManager::NotifyReportSent(const SentReport& info) {
+  for (Observer& observer : observers_)
+    observer.OnReportSent(info);
+}
+
+void MockAttributionManager::NotifyReportDropped(
+    const AttributionStorage::CreateReportResult& result) {
+  for (Observer& observer : observers_)
+    observer.OnReportDropped(result);
 }
 
 // Builds an impression with default values. This is done as a builder because
 // all values needed to be provided at construction time.
 SourceBuilder::SourceBuilder(base::Time time)
-    : source_event_id_(123),
-      impression_time_(time),
+    : impression_time_(time),
       expiry_(base::Milliseconds(kExpiryTime)),
       impression_origin_(url::Origin::Create(GURL(kDefaultImpressionOrigin))),
       conversion_origin_(url::Origin::Create(GURL(kDefaultTriggerOrigin))),
-      reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))),
-      source_type_(StorableSource::SourceType::kNavigation),
-      priority_(0),
-      attribution_logic_(StorableSource::AttributionLogic::kTruthfully) {}
+      reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
 
 SourceBuilder::~SourceBuilder() = default;
 
@@ -341,8 +280,52 @@ StorableTrigger TriggerBuilder::Build() const {
                          priority_, dedup_key_);
 }
 
+ReportBuilder::ReportBuilder(StorableSource source)
+    : source_(std::move(source)),
+      external_report_id_(DefaultExternalReportID()) {}
+
+ReportBuilder::~ReportBuilder() = default;
+
+ReportBuilder& ReportBuilder::SetTriggerData(uint64_t trigger_data) {
+  trigger_data_ = trigger_data;
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetConversionTime(base::Time time) {
+  conversion_time_ = time;
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetReportTime(base::Time time) {
+  report_time_ = time;
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetPriority(int64_t priority) {
+  priority_ = priority;
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetExternalReportId(
+    base::GUID external_report_id) {
+  external_report_id_ = std::move(external_report_id);
+  return *this;
+}
+
+ReportBuilder& ReportBuilder::SetReportId(
+    absl::optional<AttributionReport::Id> id) {
+  report_id_ = id;
+  return *this;
+}
+
+AttributionReport ReportBuilder::Build() const {
+  return AttributionReport(source_, trigger_data_, conversion_time_,
+                           report_time_, priority_, external_report_id_,
+                           report_id_);
+}
+
 // Custom comparator for `StorableSource` that does not take impression IDs
-// or dedup keys into account.
+// into account.
 bool operator==(const StorableSource& a, const StorableSource& b) {
   const auto tie = [](const StorableSource& impression) {
     return std::make_tuple(
@@ -350,7 +333,7 @@ bool operator==(const StorableSource& a, const StorableSource& b) {
         impression.conversion_origin(), impression.reporting_origin(),
         impression.impression_time(), impression.expiry_time(),
         impression.source_type(), impression.priority(),
-        impression.attribution_logic());
+        impression.attribution_logic(), impression.dedup_keys());
   };
   return tie(a) == tie(b);
 }
@@ -362,15 +345,23 @@ bool operator==(const AttributionReport& a, const AttributionReport& b) {
   const auto tie = [](const AttributionReport& conversion) {
     return std::make_tuple(conversion.impression, conversion.trigger_data,
                            conversion.conversion_time, conversion.report_time,
-                           conversion.priority,
+                           conversion.priority, conversion.external_report_id,
                            conversion.failed_send_attempts);
   };
   return tie(a) == tie(b);
 }
 
-bool operator==(const SentReportInfo& a, const SentReportInfo& b) {
-  const auto tie = [](const SentReportInfo& info) {
+bool operator==(const SentReport& a, const SentReport& b) {
+  const auto tie = [](const SentReport& info) {
     return std::make_tuple(info.report, info.status, info.http_response_code);
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
+  const auto tie = [](const DeactivatedSource& deactivated_source) {
+    return std::make_tuple(deactivated_source.source,
+                           deactivated_source.reason);
   };
   return tie(a) == tie(b);
 }
@@ -403,6 +394,18 @@ std::ostream& operator<<(std::ostream& out, CreateReportStatus status) {
       break;
     case CreateReportStatus::kDroppedForNoise:
       out << "kDroppedForNoise";
+      break;
+  }
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason) {
+  switch (reason) {
+    case DeactivatedSource::Reason::kReplacedByNewerSource:
+      out << "kReplacedByNewerSource";
+      break;
+    case DeactivatedSource::Reason::kReachedAttributionLimit:
+      out << "kReachedAttributionLimit";
       break;
   }
   return out;
@@ -474,7 +477,9 @@ std::ostream& operator<<(std::ostream& out, const StorableSource& impression) {
       << ",impression_time=" << impression.impression_time()
       << ",expiry_time=" << impression.expiry_time()
       << ",source_type=" << impression.source_type()
-      << ",priority=" << impression.priority() << ",impression_id="
+      << ",priority=" << impression.priority()
+      << ",attribution_logic=" << impression.attribution_logic()
+      << ",impression_id="
       << (impression.impression_id()
               ? base::NumberToString(**impression.impression_id())
               : "null")
@@ -494,40 +499,48 @@ std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
              << ",trigger_data=" << report.trigger_data
              << ",conversion_time=" << report.conversion_time
              << ",report_time=" << report.report_time
-             << ",priority=" << report.priority << ",conversion_id="
+             << ",priority=" << report.priority
+             << ",external_report_id=" << report.external_report_id
+             << ",conversion_id="
              << (report.conversion_id
                      ? base::NumberToString(**report.conversion_id)
                      : "null")
              << ",failed_send_attempts=" << report.failed_send_attempts << "}";
 }
 
-std::ostream& operator<<(std::ostream& out, SentReportInfo::Status status) {
+std::ostream& operator<<(std::ostream& out, SentReport::Status status) {
   switch (status) {
-    case SentReportInfo::Status::kSent:
+    case SentReport::Status::kSent:
       out << "kSent";
       break;
-    case SentReportInfo::Status::kTransientFailure:
+    case SentReport::Status::kTransientFailure:
       out << "kTransientFailure";
       break;
-    case SentReportInfo::Status::kFailure:
+    case SentReport::Status::kFailure:
       out << "kFailure";
       break;
-    case SentReportInfo::Status::kDropped:
+    case SentReport::Status::kDropped:
       out << "kDropped";
       break;
-    case SentReportInfo::Status::kOffline:
+    case SentReport::Status::kOffline:
       out << "kOffline";
       break;
-    case SentReportInfo::Status::kRemovedFromQueue:
+    case SentReport::Status::kRemovedFromQueue:
       out << "kRemovedFromQueue";
       break;
   }
   return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const SentReportInfo& info) {
+std::ostream& operator<<(std::ostream& out, const SentReport& info) {
   return out << "{report=" << info.report << ",status=" << info.status
              << ",http_response_code=" << info.http_response_code << "}";
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const DeactivatedSource& deactivated_source) {
+  return out << "{source=" << deactivated_source.source
+             << ",reason=" << deactivated_source.reason << "}";
 }
 
 std::vector<AttributionReport> GetAttributionsToReportForTesting(

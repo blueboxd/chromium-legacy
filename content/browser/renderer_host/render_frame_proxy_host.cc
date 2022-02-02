@@ -13,6 +13,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/contains.h"
 #include "base/hash/hash.h"
+#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
@@ -27,6 +28,7 @@
 #include "content/browser/renderer_host/ipc_utils.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
@@ -224,6 +226,11 @@ bool RenderFrameProxyHost::Send(IPC::Message* msg) {
 
 bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   return false;
+}
+
+std::string RenderFrameProxyHost::ToDebugString() {
+  return "RFPH:" +
+         GetRenderViewHost()->GetDelegate()->GetCreatorLocation().ToString();
 }
 
 bool RenderFrameProxyHost::InitRenderFrameProxy() {

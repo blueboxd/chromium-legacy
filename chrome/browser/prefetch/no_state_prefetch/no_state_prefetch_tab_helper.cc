@@ -15,7 +15,8 @@ namespace prerender {
 
 NoStatePrefetchTabHelper::NoStatePrefetchTabHelper(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<NoStatePrefetchTabHelper>(*web_contents) {}
 
 NoStatePrefetchTabHelper::~NoStatePrefetchTabHelper() = default;
 
@@ -34,7 +35,7 @@ void NoStatePrefetchTabHelper::DidFinishNavigation(
           web_contents()->GetBrowserContext());
   if (!no_state_prefetch_manager)
     return;
-  if (no_state_prefetch_manager->IsWebContentsPrerendering(web_contents()))
+  if (no_state_prefetch_manager->IsWebContentsPrefetching(web_contents()))
     return;
   no_state_prefetch_manager->RecordNavigation(navigation_handle->GetURL());
 }

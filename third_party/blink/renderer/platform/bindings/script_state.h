@@ -12,10 +12,11 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_cross_origin_callback_info.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -226,7 +227,7 @@ class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
   // use |reference_from_v8_context_| to represent this strong reference.  The
   // lifetime of |reference_from_v8_context_| and the internal field must match
   // exactly.
-  SelfKeepAlive<ScriptState> reference_from_v8_context_;
+  SelfKeepAlive<ScriptState> reference_from_v8_context_{this};
 
   // Serves as a unique ID for this context, which can be used to name the
   // context in browser/renderer communications.

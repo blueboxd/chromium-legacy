@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "jingle/notifier/base/xmpp_connection.h"
 #include "jingle/notifier/communicator/connection_settings.h"
 #include "jingle/notifier/communicator/login_settings.h"
@@ -59,6 +59,9 @@ class SingleLoginAttempt : public XmppConnection::Delegate {
   // Does not take ownership of |delegate|, which must not be NULL.
   SingleLoginAttempt(const LoginSettings& login_settings, Delegate* delegate);
 
+  SingleLoginAttempt(const SingleLoginAttempt&) = delete;
+  SingleLoginAttempt& operator=(const SingleLoginAttempt&) = delete;
+
   ~SingleLoginAttempt() override;
 
   // XmppConnection::Delegate implementation.
@@ -71,12 +74,10 @@ class SingleLoginAttempt : public XmppConnection::Delegate {
   void TryConnect(const ConnectionSettings& new_settings);
 
   const LoginSettings login_settings_;
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
   const ConnectionSettingsList settings_list_;
   ConnectionSettingsList::const_iterator current_settings_;
   std::unique_ptr<XmppConnection> xmpp_connection_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleLoginAttempt);
 };
 
 }  // namespace notifier

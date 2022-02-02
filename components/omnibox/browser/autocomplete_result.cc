@@ -112,11 +112,17 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 
 // static
 size_t AutocompleteResult::GetDynamicMaxMatches() {
+#if defined(OS_ANDROID)
+  constexpr const int kDynamicMaxMatchesLimit = 15;
+#else  // !defined(OS_ANDROID)
+  constexpr const int kDynamicMaxMatchesLimit = 10;
+#endif
   if (!base::FeatureList::IsEnabled(omnibox::kDynamicMaxAutocomplete))
     return AutocompleteResult::GetMaxMatches();
   return base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kDynamicMaxAutocomplete,
-      OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam, 10);
+      OmniboxFieldTrial::kDynamicMaxAutocompleteIncreasedLimitParam,
+      kDynamicMaxMatchesLimit);
 }
 
 AutocompleteResult::AutocompleteResult() {
@@ -968,7 +974,12 @@ void AutocompleteResult::MaybeCullTailSuggestions(
   // as a default match (and that's a non-tail suggestion).
   // 1) above.
   if (default_tail != matches->end() && default_non_tail == matches->end()) {
+    // TODO(thakis): Remove this branch once CFI builds use C++17.
+#if __cplusplus >= 201703L
+    base::EraseIf(*matches, std::not_fn(is_tail));
+#else
     base::EraseIf(*matches, std::not1(is_tail));
+#endif
     return;
   }
   // 2) above.

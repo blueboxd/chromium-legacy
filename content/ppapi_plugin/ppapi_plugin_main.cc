@@ -15,7 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
@@ -41,7 +40,7 @@
 #include "ui/gfx/win/direct_write.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 #include "base/files/file_util.h"
 #endif
 
@@ -68,8 +67,8 @@ void* g_target_services = nullptr;
 namespace content {
 
 // Main function for starting the PPAPI plugin process.
-int PpapiPluginMain(const MainFunctionParams& parameters) {
-  const base::CommandLine& command_line = parameters.command_line;
+int PpapiPluginMain(MainFunctionParams parameters) {
+  const base::CommandLine& command_line = *parameters.command_line;
 
 #if defined(OS_WIN)
   // https://crbug.com/1139752 Premature unload of shell32 caused process to
@@ -118,7 +117,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
         icu::TimeZone::createTimeZone(icu::UnicodeString(time_zone.c_str())));
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
   // Specifies $HOME explicitly because some plugins rely on $HOME but
   // no other part of Chrome OS uses that.  See crbug.com/335290.
   base::FilePath homedir;
@@ -146,7 +145,7 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
   ChildProcess ppapi_process;
   base::RunLoop run_loop;
   ppapi_process.set_main_thread(
-      new PpapiThread(run_loop.QuitClosure(), parameters.command_line));
+      new PpapiThread(run_loop.QuitClosure(), command_line));
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MAC)
   // Startup tracing is usually enabled earlier, but if we forked from a zygote,

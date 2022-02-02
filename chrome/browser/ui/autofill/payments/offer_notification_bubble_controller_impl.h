@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_OFFER_NOTIFICATION_BUBBLE_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PAYMENTS_OFFER_NOTIFICATION_BUBBLE_CONTROLLER_IMPL_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/commerce/coupons/coupon_service.h"
 #include "chrome/browser/commerce/coupons/coupon_service_observer.h"
@@ -92,9 +92,14 @@ class OfferNotificationBubbleControllerImpl
   // Reset offer-related variables and hide all offer-related UIs.
   void ClearCurrentOffer();
 
+  // The timestamp that the bubble has been shown. Used to check if the bubble
+  // has been shown for longer than
+  // kAutofillBubbleSurviveNavigationTime (5 seconds).
+  base::Time bubble_shown_timestamp_;
+
   // The Autofill offer being displayed as a bubble. Set when the bubble is
   // requested to be shown via ShowOfferNotificationIfApplicable(~).
-  const AutofillOfferData* offer_;
+  raw_ptr<const AutofillOfferData> offer_;
 
   // Denotes whether the bubble is shown due to user gesture. If this is true,
   // it means the bubble is a reshown bubble.
@@ -115,9 +120,9 @@ class OfferNotificationBubbleControllerImpl
   std::vector<GURL> origins_to_display_bubble_;
 
   // Used to update coupon last display timestamp.
-  CouponService* coupon_service_;
+  raw_ptr<CouponService> coupon_service_;
 
-  ObserverForTest* observer_for_testing_ = nullptr;
+  raw_ptr<ObserverForTest> observer_for_testing_ = nullptr;
 
   base::ScopedObservation<CouponService, CouponServiceObserver>
       coupon_service_observation_{this};

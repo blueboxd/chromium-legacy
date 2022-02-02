@@ -8,6 +8,7 @@ import 'chrome://resources/mojo/skia/public/mojom/bitmap.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import '/app-management/file_path.mojom-lite.js';
 import '/app-management/image.mojom-lite.js';
+import '/app-management/safe_base_name.mojom-lite.js';
 import '/app-management/types.mojom-lite.js';
 import '/app-management/app_management.mojom-lite.js';
 
@@ -74,7 +75,7 @@ export class BrowserProxy {
             'pjkljhegncpnkkknowihdijeoejaedia',
             {
               title: 'Chrome App',
-              type: AppType.kExtension,
+              type: AppType.kChromeApp,
               description: 'A Chrome App installed from the Chrome Web Store.',
             },
             ),
@@ -89,7 +90,7 @@ export class BrowserProxy {
             'pjkljhegncpnkkknbcohdijeoejaedia',
             {
               title: 'Chrome App, OEM installed',
-              type: AppType.kExtension,
+              type: AppType.kChromeApp,
               description: 'A Chrome App installed by an OEM.',
               installReason: InstallReason.kOem,
             },

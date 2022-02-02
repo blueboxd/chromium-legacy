@@ -89,6 +89,13 @@ class MockInputApi(object):
         continue
       yield file
 
+  def RightHandSideLines(self, source_file_filter=None):
+    affected_files = self.AffectedSourceFiles(source_file_filter)
+    for af in affected_files:
+      lines = af.ChangedContents()
+      for line in lines:
+        yield (af, line[0], line[1])
+
   def AffectedSourceFiles(self, file_filter=None):
     return self.AffectedFiles(file_filter=file_filter)
 
@@ -101,7 +108,7 @@ class MockInputApi(object):
         raise TypeError('files_to_check should be an iterable of strings')
       for pattern in files_to_check:
         compiled_pattern = re.compile(pattern)
-        if compiled_pattern.search(local_path):
+        if compiled_pattern.match(local_path):
           found_in_files_to_check = True
           break
     if files_to_skip:
@@ -109,7 +116,7 @@ class MockInputApi(object):
         raise TypeError('files_to_skip should be an iterable of strings')
       for pattern in files_to_skip:
         compiled_pattern = re.compile(pattern)
-        if compiled_pattern.search(local_path):
+        if compiled_pattern.match(local_path):
           return False
     return found_in_files_to_check
 
@@ -169,7 +176,7 @@ class MockOutputApi(object):
     self.more_cc = []
 
   def AppendCC(self, more_cc):
-    self.more_cc.extend(more_cc)
+    self.more_cc.append(more_cc)
 
 
 class MockFile(object):

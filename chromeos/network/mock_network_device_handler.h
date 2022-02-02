@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -73,8 +72,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
                     base::OnceClosure callback,
                     network_handler::ErrorCallback error_callback));
 
-  MOCK_METHOD2(SetCellularAllowRoaming,
-               void(bool allow_roaming, bool policy_allow_roaming));
+  MOCK_METHOD1(SetCellularPolicyAllowRoaming, void(bool policy_allow_roaming));
 
   MOCK_METHOD1(SetMACAddressRandomizationEnabled, void(bool enabled));
 

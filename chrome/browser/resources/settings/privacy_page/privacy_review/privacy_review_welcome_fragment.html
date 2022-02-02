@@ -10,7 +10,7 @@
     flex: 1;
     flex-direction: column;
     justify-content: space-between;
-    padding: var(--cr-section-padding) 120px;
+    padding: 36px 120px var(--cr-section-padding) 120px;
     text-align: center;
   }
 
@@ -22,8 +22,12 @@
   }
 </style>
 <div class="main-content">
-  <img aria-hidden="true"
-      src="chrome://settings/images/privacy_review_promo_banner.svg">
+  <picture>
+    <source
+        srcset="./images/privacy_review/promo_banner_dark.svg"
+        media="(prefers-color-scheme: dark)">
+    <img alt="" src="./images/privacy_review/promo_banner.svg">
+  </picture>
   <div class="headline">$i18n{privacyReviewWelcomeCardHeader}</div>
   <div class="cr-secondary-text">$i18n{privacyReviewWelcomeCardSubHeader}</div>
 </div>

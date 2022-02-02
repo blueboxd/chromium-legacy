@@ -62,6 +62,7 @@ bool IsUnsandboxedSandboxType(Sandbox sandbox_type) {
     case Sandbox::kNaClLoader:
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    case Sandbox::kHardwareVideoDecoding:
     case Sandbox::kIme:
     case Sandbox::kTts:
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -90,11 +91,6 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
         command_line->AppendSwitch(switches::kNoSandbox);
       }
       break;
-#if defined(OS_WIN)
-    case Sandbox::kNoSandboxAndElevatedPrivileges:
-      command_line->AppendSwitch(switches::kNoSandboxAndElevatedPrivileges);
-      break;
-#endif
     case Sandbox::kRenderer:
       DCHECK(command_line->GetSwitchValueASCII(switches::kProcessType) ==
              switches::kRendererProcess);
@@ -128,6 +124,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case Sandbox::kVideoCapture:
 #endif
 #if defined(OS_WIN)
+    case Sandbox::kNoSandboxAndElevatedPrivileges:
     case Sandbox::kXrCompositing:
     case Sandbox::kPdfConversion:
     case Sandbox::kIconReader:
@@ -135,6 +132,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case Sandbox::kWindowsSystemProxyResolver:
 #endif  // defined(OS_WIN)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    case Sandbox::kHardwareVideoDecoding:
     case Sandbox::kIme:
     case Sandbox::kTts:
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
@@ -167,11 +165,6 @@ sandbox::mojom::Sandbox SandboxTypeFromCommandLine(
     const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kNoSandbox))
     return Sandbox::kNoSandbox;
-
-#if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kNoSandboxAndElevatedPrivileges))
-    return Sandbox::kNoSandboxAndElevatedPrivileges;
-#endif
 
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
@@ -233,6 +226,10 @@ std::string StringFromUtilitySandboxType(Sandbox sandbox_type) {
   switch (sandbox_type) {
     case Sandbox::kNoSandbox:
       return switches::kNoneSandbox;
+#if defined(OS_WIN)
+    case Sandbox::kNoSandboxAndElevatedPrivileges:
+      return switches::kNoneSandboxAndElevatedPrivileges;
+#endif  // defined(OS_WIN)
     case Sandbox::kNetwork:
       return switches::kNetworkSandbox;
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -276,6 +273,8 @@ std::string StringFromUtilitySandboxType(Sandbox sandbox_type) {
       return switches::kMirroringSandbox;
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    case Sandbox::kHardwareVideoDecoding:
+      return switches::kHardwareVideoDecodingSandbox;
     case Sandbox::kIme:
       return switches::kImeSandbox;
     case Sandbox::kTts:
@@ -288,9 +287,6 @@ std::string StringFromUtilitySandboxType(Sandbox sandbox_type) {
       // The following are not utility processes so should not occur.
     case Sandbox::kRenderer:
     case Sandbox::kGpu:
-#if defined(OS_WIN)
-    case Sandbox::kNoSandboxAndElevatedPrivileges:
-#endif  // defined(OS_WIN)
 #if defined(OS_MAC)
     case Sandbox::kNaClLoader:
 #endif  // defined(OS_MAC)
@@ -361,6 +357,8 @@ sandbox::mojom::Sandbox UtilitySandboxTypeFromString(
     return Sandbox::kVideoCapture;
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (sandbox_string == switches::kHardwareVideoDecodingSandbox)
+    return Sandbox::kHardwareVideoDecoding;
   if (sandbox_string == switches::kImeSandbox)
     return Sandbox::kIme;
   if (sandbox_string == switches::kTtsSandbox)

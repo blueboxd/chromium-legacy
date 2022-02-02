@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/extensions/telemetry/api/base_telemetry_extension_browser_test.h"
+#include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test.h"
@@ -34,9 +36,12 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionBrowserTest,
   // Must outlive the extension.
   extensions::TestExtensionDir test_dir_receiver;
   test_dir_receiver.WriteManifest(
-      GetManifestFile(GetParam().public_key, GetParam().matches_origin));
+      GetManifestFile(extension_info_params().public_key,
+                      extension_info_params().matches_origin));
   test_dir_receiver.WriteFile(FILE_PATH_LITERAL("options.html"), "");
-  test_dir_receiver.WriteFile("sw.js", base::StringPrintf(R"(
+  test_dir_receiver.WriteFile(
+      "sw.js",
+      base::StringPrintf(R"(
         chrome.test.runTests([
           function runtimeOnMessageExternal() {
             chrome.runtime.onMessageExternal.addListener(
@@ -48,7 +53,8 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionBrowserTest,
             chrome.test.sendMessage('ready');
           }
         ]);
-      )", GetParam().pwa_page_url.c_str()));
+      )",
+                         extension_info_params().pwa_page_url.c_str()));
 
   // Load and run the extenion (chromeos_system_extension).
   const extensions::Extension* receiver =
@@ -66,7 +72,7 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionBrowserTest,
   // Note: |pwa_page_rfh_| is the RenderFrameHost for |kPwaPageUrlString| page.
   const auto script = base::StringPrintf(
       "window.chrome.runtime.sendMessage('%s', 'ping', (result) => {});",
-      GetParam().extension_id.c_str());
+      extension_info_params().extension_id.c_str());
   pwa_page_rfh_->ExecuteJavaScriptForTests(base::ASCIIToUTF16(script),
                                            base::NullCallback());
 
@@ -85,7 +91,8 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionBrowserTest,
   // Must outlive the extension.
   extensions::TestExtensionDir test_dir;
   test_dir.WriteManifest(
-      GetManifestFile(GetParam().public_key, GetParam().matches_origin));
+      GetManifestFile(extension_info_params().public_key,
+                      extension_info_params().matches_origin));
   test_dir.WriteFile(FILE_PATH_LITERAL("options.html"),
                      "<script>chrome.test.sendMessage('done')</script>");
   test_dir.WriteFile("sw.js", "chrome.test.sendMessage('ready');");
@@ -111,10 +118,64 @@ IN_PROC_BROWSER_TEST_P(TelemetryExtensionBrowserTest,
   EXPECT_EQ("done", listener.message());
 }
 
+// Tests that the extension's PWA origin is overridden in tests using the
+// command line switch |kTelemetryExtensionPwaOriginOverrideForTesting|. The
+// test also makes sure the command line switch is copied across processes.
+IN_PROC_BROWSER_TEST_P(TelemetryExtensionBrowserTest,
+                       CanOverridePwaOriginForTesting) {
+  constexpr char kPwaOriginOverride[] = "*://pwa.website.com/*";
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      chromeos::switches::kTelemetryExtensionPwaOriginOverrideForTesting,
+      kPwaOriginOverride);
+
+  // Make sure the PWA origin is overridden.
+  const auto extension_info =
+      GetChromeOSExtensionInfoForId(extension_info_params().extension_id);
+  EXPECT_EQ(kPwaOriginOverride, extension_info.pwa_origin);
+
+  // Open the PWA page url to bypass IsPwaUiOpen() check.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("http://pwa.website.com")));
+
+  // Start listening on the extension.
+  ExtensionTestMessageListener listener(/*will_reply=*/false);
+
+  // Must outlive the extension.
+  extensions::TestExtensionDir test_dir_receiver;
+  test_dir_receiver.WriteManifest(
+      GetManifestFile(extension_info_params().public_key, kPwaOriginOverride));
+  test_dir_receiver.WriteFile(FILE_PATH_LITERAL("options.html"), "");
+  test_dir_receiver.WriteFile("sw.js", R"(
+    chrome.test.runTests([
+      // Choose a candidate API function that doesn't require any setup.
+      async function runBatteryHealthRoutine() {
+        const response =
+          await chrome.os.diagnostics.runBatteryHealthRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.sendMessage('ready');
+      }
+    ]);
+  )");
+
+  // Load and run the extenion (chromeos_system_extension). If the extension has
+  // been installed and run, then the command line switch must have been copied
+  // across processes.
+  const extensions::Extension* receiver =
+      LoadExtension(test_dir_receiver.UnpackedPath());
+  ASSERT_TRUE(receiver);
+
+  // Make sure the sw.js was being run.
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  EXPECT_EQ("ready", listener.message());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     TelemetryExtensionBrowserTest,
-    testing::ValuesIn(
-        BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams));
+    testing::Combine(
+        testing::Bool(),
+        testing::ValuesIn(
+            BaseTelemetryExtensionBrowserTest::kAllExtensionInfoTestParams)));
 
 }  // namespace chromeos

@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -1068,7 +1069,10 @@ class TextureLayerChangeInvisibleMailboxTest
         break;
       case 4:
         // Layer should have been updated.
-        EXPECT_EQ(2, prepare_called_);
+        // It's not sufficient to check if |prepare_called_| is 2. It's possible
+        // for BeginMainFrame and hence PrepareTransferableResource to run twice
+        // before DidReceiveCompositorFrameAck due to pipelining.
+        EXPECT_GE(prepare_called_, 2);
         // So the old resource should have been returned already.
         EXPECT_EQ(1, resource_returned_);
         texture_layer_->ClearClient();
@@ -1354,8 +1358,8 @@ class SoftwareLayerTreeHostClient : public StubLayerTreeHostClient {
   FakeLayerTreeFrameSink* frame_sink() const { return frame_sink_; }
 
  private:
-  FakeLayerTreeFrameSink* frame_sink_ = nullptr;
-  LayerTreeHost* host_ = nullptr;
+  raw_ptr<FakeLayerTreeFrameSink> frame_sink_ = nullptr;
+  raw_ptr<LayerTreeHost> host_ = nullptr;
 };
 
 class SoftwareTextureLayerTest : public LayerTreeTest {
@@ -1408,7 +1412,7 @@ class SoftwareTextureLayerTest : public LayerTreeTest {
   scoped_refptr<Layer> root_;
   scoped_refptr<SolidColorLayer> solid_color_layer_;
   scoped_refptr<TextureLayer> texture_layer_;
-  TestLayerTreeFrameSink* frame_sink_ = nullptr;
+  raw_ptr<TestLayerTreeFrameSink> frame_sink_ = nullptr;
   int num_frame_sinks_created_ = 0;
 };
 
@@ -1884,7 +1888,7 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
   scoped_refptr<CrossThreadSharedBitmap> bitmap_;
   // Keeps a pointer value of the first frame sink, which will be removed
   // from the host and destroyed.
-  void* first_frame_sink_;
+  raw_ptr<void> first_frame_sink_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerLoseFrameSinkTest);

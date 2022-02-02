@@ -10,13 +10,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/enrollment_certificate_uploader.h"
-// TODO(https://crbug.com/1164001): forward declare AttestationFlow
-// after //chromeos/attestation is moved to ash.
-#include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/dbus/constants/attestation_constants.h"
 
 namespace policy {
@@ -26,16 +22,13 @@ class CloudPolicyClient;
 namespace ash {
 namespace attestation {
 
+class AttestationFlow;
+
 // A class which uploads enterprise enrollment certificates.
 class EnrollmentCertificateUploaderImpl : public EnrollmentCertificateUploader {
  public:
   explicit EnrollmentCertificateUploaderImpl(
       policy::CloudPolicyClient* policy_client);
-
-  // A constructor which allows custom AttestationFlow implementations. Useful
-  // for testing.
-  EnrollmentCertificateUploaderImpl(policy::CloudPolicyClient* policy_client,
-                                    AttestationFlow* attestation_flow);
 
   EnrollmentCertificateUploaderImpl(const EnrollmentCertificateUploaderImpl&) =
       delete;
@@ -44,11 +37,17 @@ class EnrollmentCertificateUploaderImpl : public EnrollmentCertificateUploader {
 
   ~EnrollmentCertificateUploaderImpl() override;
 
-  // Sets the retry limit in number of tries; useful in testing.
+  // Sets the retry limit in number of tries; useful for testing.
   void set_retry_limit_for_testing(int limit) { retry_limit_ = limit; }
-  // Sets the retry delay; useful in testing.
+
+  // Sets the retry delay; useful for testing.
   void set_retry_delay_for_testing(base::TimeDelta retry_delay) {
     retry_delay_ = retry_delay;
+  }
+
+  // Sets a custom AttestationFlow implementation; useful for testing.
+  void set_attestation_flow_for_testing(AttestationFlow* attestation_flow) {
+    attestation_flow_ = attestation_flow;
   }
 
   // Obtains a fresh enrollment certificate and uploads it. If certificate has
@@ -94,7 +93,7 @@ class EnrollmentCertificateUploaderImpl : public EnrollmentCertificateUploader {
   void RunCallbacks(Status status);
 
   policy::CloudPolicyClient* policy_client_;
-  AttestationFlow* attestation_flow_;
+  AttestationFlow* attestation_flow_ = nullptr;
   std::unique_ptr<AttestationFlow> default_attestation_flow_;
   // Callbacks to run when a certificate is uploaded (or we fail to).
   std::queue<UploadCallback> callbacks_;

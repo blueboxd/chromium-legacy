@@ -19,13 +19,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/backend/print_backend.h"
@@ -52,9 +51,6 @@
 #include "chrome/browser/printing/print_backend_service_manager.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "components/device_event_log/device_event_log.h"
-#endif
-
-#if defined(OS_WIN) || BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "printing/printing_features.h"
 #endif
 
@@ -111,30 +107,27 @@ std::string PrintingContextDelegate::GetAppLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
-void NotificationCallback(PrintJob* print_job,
-                          JobEventDetails::Type detail_type,
-                          int job_id,
-                          PrintedDocument* document) {
-  auto details =
-      base::MakeRefCounted<JobEventDetails>(detail_type, job_id, document);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_EVENT,
-      content::Source<PrintJob>(print_job),
-      content::Details<JobEventDetails>(details.get()));
+bool ShouldPrintingContextSkipSystemCalls() {
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  return features::kEnableOopPrintDriversJobPrint.Get();
+#else
+  return false;
+#endif
+}
+
+void DocDoneNotificationCallback(PrintJob* print_job,
+                                 int job_id,
+                                 PrintedDocument* document) {
+  print_job->OnDocDone(job_id, document);
+}
+
+void FailedNotificationCallback(PrintJob* print_job) {
+  print_job->OnFailed();
 }
 
 #if defined(OS_WIN)
-void PageNotificationCallback(PrintJob* print_job,
-                              JobEventDetails::Type detail_type,
-                              int job_id,
-                              PrintedDocument* document,
-                              PrintedPage* page) {
-  auto details = base::MakeRefCounted<JobEventDetails>(detail_type, job_id,
-                                                       document, page);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PRINT_JOB_EVENT,
-      content::Source<PrintJob>(print_job),
-      content::Details<JobEventDetails>(details.get()));
+void PageNotificationCallback(PrintJob* print_job, PrintedPage* page) {
+  print_job->OnPageDone(page);
 }
 #endif
 
@@ -145,7 +138,8 @@ PrintJobWorker::PrintJobWorker(int render_process_id, int render_frame_id)
           std::make_unique<PrintingContextDelegate>(render_process_id,
                                                     render_frame_id)),
       printing_context_(
-          PrintingContext::Create(printing_context_delegate_.get())),
+          PrintingContext::Create(printing_context_delegate_.get(),
+                                  ShouldPrintingContextSkipSystemCalls())),
       thread_("Printing_Worker") {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
@@ -161,33 +155,6 @@ PrintJobWorker::~PrintJobWorker() {
   }
   Stop();
 }
-
-#if BUILDFLAG(ENABLE_OOP_PRINTING)
-
-void PrintJobWorker::OnDidUpdatePrintSettings(
-    const std::string& device_name,
-    SettingsCallback callback,
-    mojom::PrintSettingsResultPtr print_settings) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  mojom::ResultCode result;
-  if (print_settings->is_result_code()) {
-    result = print_settings->get_result_code();
-    DCHECK_NE(result, mojom::ResultCode::kSuccess);
-    PRINTER_LOG(ERROR) << "Failure to update print settings for " << device_name
-                       << " - error " << result;
-
-    // TODO(crbug.com/809738)  Fill in support for handling of access-denied
-    // result code.
-  } else {
-    VLOG(1) << "Update print settings from service complete for "
-            << device_name;
-    result = mojom::ResultCode::kSuccess;
-    printing_context_->ApplyPrintSettings(print_settings->get_settings());
-  }
-  GetSettingsDone(std::move(callback), result);
-}
-
-#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
 void PrintJobWorker::SetPrintJob(PrintJob* print_job) {
   DCHECK_EQ(page_number_, PageNumber::npos());
@@ -248,29 +215,6 @@ void PrintJobWorker::SetSettingsFromPOD(
 void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
                                          SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-#if BUILDFLAG(ENABLE_OOP_PRINTING)
-  if (features::kEnableOopPrintDriversJobPrint.Get()) {
-    // Don't use as a const reference, since that reference into `new_settings`
-    // isn't safe after TakeDict() destroys the internal dictionary for it.
-    std::string device_name = *new_settings.FindStringKey(kSettingDeviceName);
-
-    VLOG(1) << "Updating print settings via service for " << device_name;
-    PrintBackendServiceManager& service_mgr =
-        PrintBackendServiceManager::GetInstance();
-
-    // Safe to use base::Unretained(this) since the callback owns `this`, and
-    // `service_mgr` is a global instance which never exits and simply wraps
-    // `callback` so that it is still called should the service terminate
-    // unexpectedly.
-    service_mgr.UpdatePrintSettings(
-        device_name, std::move(new_settings).TakeDict(),
-        base::BindOnce(&PrintJobWorker::OnDidUpdatePrintSettings,
-                       base::Unretained(this), device_name,
-                       std::move(callback)));
-    return;
-  }
-#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
   std::unique_ptr<crash_keys::ScopedPrinterInfo> crash_key;
   mojom::PrinterType type = static_cast<mojom::PrinterType>(
@@ -386,30 +330,46 @@ void PrintJobWorker::UseDefaultSettings(SettingsCallback callback) {
   GetSettingsDone(std::move(callback), result);
 }
 
-void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
+bool PrintJobWorker::StartPrintingSanityCheck(
+    const PrintedDocument* new_document) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   if (page_number_ != PageNumber::npos()) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   if (!document_) {
     NOTREACHED();
-    return;
+    return false;
   }
 
   if (document_.get() != new_document) {
     NOTREACHED();
-    return;
+    return false;
   }
+
+  return true;
+}
+
+std::u16string PrintJobWorker::GetDocumentName(
+    const PrintedDocument* new_document) const {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   std::u16string document_name = SimplifyDocumentTitle(document_->name());
   if (document_name.empty()) {
     document_name = SimplifyDocumentTitle(
         l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
   }
-  mojom::ResultCode result = printing_context_->NewDocument(document_name);
+  return document_name;
+}
+
+void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
+  if (!StartPrintingSanityCheck(new_document))
+    return;
+
+  mojom::ResultCode result =
+      printing_context_->NewDocument(GetDocumentName(new_document));
   if (result != mojom::ResultCode::kSuccess) {
     OnFailure();
     return;
@@ -546,10 +506,9 @@ void PrintJobWorker::OnDocumentDone() {
   }
 
   print_job_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&NotificationCallback, base::RetainedRef(print_job_),
-                     JobEventDetails::DOC_DONE, job_id,
-                     base::RetainedRef(document_)));
+      FROM_HERE, base::BindOnce(&DocDoneNotificationCallback,
+                                base::RetainedRef(print_job_.get()), job_id,
+                                base::RetainedRef(document_)));
 
   // Makes sure the variables are reinitialized.
   document_ = nullptr;
@@ -567,7 +526,11 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
   }
 
   // Actual printing.
-  document_->RenderPrintedPage(*page, printing_context_->context());
+  if (document_->RenderPrintedPage(*page, printing_context_.get()) !=
+      mojom::ResultCode::kSuccess) {
+    OnFailure();
+    return;
+  }
 
   // Postprocess.
   if (printing_context_->PageDone() != mojom::ResultCode::kSuccess) {
@@ -577,18 +540,22 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
 
   // Signal everyone that the page is printed.
   DCHECK(print_job_);
-  print_job_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PageNotificationCallback, base::RetainedRef(print_job_),
-                     JobEventDetails::PAGE_DONE, printing_context_->job_id(),
-                     base::RetainedRef(document_), base::RetainedRef(page)));
+  print_job_->PostTask(FROM_HERE,
+                       base::BindOnce(&PageNotificationCallback,
+                                      base::RetainedRef(print_job_.get()),
+                                      base::RetainedRef(page)));
 }
 #endif  // defined(OS_WIN)
 
 void PrintJobWorker::SpoolJob() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (!document_->RenderPrintedDocument(printing_context_.get()))
+  mojom::ResultCode result =
+      document_->RenderPrintedDocument(printing_context_.get());
+  if (result != mojom::ResultCode::kSuccess) {
+    PRINTER_LOG(ERROR) << "Failure to render printed document - error "
+                       << result;
     OnFailure();
+  }
 }
 
 void PrintJobWorker::OnFailure() {
@@ -596,12 +563,11 @@ void PrintJobWorker::OnFailure() {
   DCHECK(print_job_);
 
   // We may loose our last reference by broadcasting the FAILED event.
-  scoped_refptr<PrintJob> handle(print_job_);
+  scoped_refptr<PrintJob> handle(print_job_.get());
 
-  print_job_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&NotificationCallback, base::RetainedRef(print_job_),
-                     JobEventDetails::FAILED, 0, base::RetainedRef(document_)));
+  print_job_->PostTask(FROM_HERE,
+                       base::BindOnce(&FailedNotificationCallback,
+                                      base::RetainedRef(print_job_.get())));
   Cancel();
 
   // Makes sure the variables are reinitialized.

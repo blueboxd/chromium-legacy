@@ -7,11 +7,11 @@
 #include <inttypes.h>
 #include <cstdint>
 
-#include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/debug_utils.h"
+#include "content/public/browser/disallow_activation_reason.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
 namespace content {
@@ -441,6 +441,16 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToDisallowActivation(
   disallow_activation_reasons_.insert(reason);
 }
 
+void BackForwardCacheCanStoreDocumentResult::NoDueToAXEvents(
+    const std::vector<ui::AXEvent>& events) {
+  for (auto& event : events) {
+    ax_events_.insert(event.event_type);
+  }
+  AddNotStoredReason(
+      BackForwardCacheMetrics::NotRestoredReason::kIgnoreEventAndEvict);
+  disallow_activation_reasons_.insert(DisallowActivationReasonId::kAXEvent);
+}
+
 void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
     const BackForwardCacheCanStoreDocumentResult& other) {
   not_stored_reasons_.PutAll(other.not_stored_reasons_);
@@ -453,6 +463,9 @@ void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
     browsing_instance_swap_result_ = other.browsing_instance_swap_result_;
   for (const auto reason : other.disallow_activation_reasons()) {
     disallow_activation_reasons_.insert(reason);
+  }
+  for (const auto event : other.ax_events()) {
+    ax_events_.insert(event);
   }
 }
 

@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/policy/invalidation/affiliated_invalidation_service_provider.h"
@@ -70,9 +69,9 @@ class AffiliatedInvalidationServiceProviderImpl
   // one registered consumer.
   void FindConnectedInvalidationService();
 
-  // Choose |invalidation_service| as the shared invalidation service and notify
-  // consumers.
-  void SetInvalidationService(
+  // Choose |invalidation_service| as the |current_invalidation_service_| and
+  // notify consumers.
+  void SetCurrentInvalidationService(
       invalidation::InvalidationService* invalidation_service);
 
   // Destroy the device-global invalidation service, if any.
@@ -111,7 +110,7 @@ class AffiliatedInvalidationServiceProviderImpl
   // The invalidation service currently used by consumers. nullptr if there are
   // no registered consumers or no connected invalidation service is available
   // for use.
-  invalidation::InvalidationService* invalidation_service_;
+  invalidation::InvalidationService* current_invalidation_service_;
 
   base::ObserverList<Consumer, true>::Unchecked consumers_;
   int consumer_count_;

@@ -116,7 +116,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
@@ -3528,7 +3528,17 @@ void HTMLMediaElement::SourceWasAdded(HTMLSourceElement* source) {
   SetShouldDelayLoadEvent(true);
 
   // 24. Set the networkState back to NETWORK_LOADING.
-  SetNetworkState(kNetworkLoading);
+  // Changing the network state might trigger media controls to add new nodes
+  // to the DOM which is forbidden while source is being inserted into this
+  // node. This is a problem as ContainerNode::NotifyNodeInsertedInternal,
+  // which is always indirectly triggering this function, prohibits event
+  // dispatch and adding new nodes will run
+  // blink::DispatchChildInsertionEvents.
+  //
+  // We still need to update the media controls. This will be done after
+  // load_timer_ fires a new event - which is setup in ScheduleNextSourceChild
+  // below so skipping that step here should be OK.
+  SetNetworkState(kNetworkLoading, false /* update_media_controls */);
 
   // 25. Jump back to the find next candidate step above.
   next_child_node_to_consider_ = source;
@@ -4359,12 +4369,13 @@ void HTMLMediaElement::CreatePlaceholderTracksIfNecessary() {
   }
 }
 
-void HTMLMediaElement::SetNetworkState(NetworkState state) {
+void HTMLMediaElement::SetNetworkState(NetworkState state,
+                                       bool update_media_controls) {
   if (network_state_ == state)
     return;
 
   network_state_ = state;
-  if (GetMediaControls())
+  if (update_media_controls && GetMediaControls())
     GetMediaControls()->NetworkStateChanged();
 }
 
@@ -4628,21 +4639,6 @@ void HTMLMediaElement::DidUseAudioServiceChange(bool uses_audio_service) {
 void HTMLMediaElement::DidPlayerSizeChange(const gfx::Size& size) {
   for (auto& observer : media_player_observer_remote_set_->Value())
     observer->OnMediaSizeChanged(size);
-}
-
-void HTMLMediaElement::DidBufferUnderflow() {
-  for (auto& observer : media_player_observer_remote_set_->Value())
-    observer->OnBufferUnderflow();
-}
-
-void HTMLMediaElement::DidSeek() {
-  // Send the seek updates to the browser process only once per second.
-  if (last_seek_update_time_.is_null() ||
-      (base::TimeTicks::Now() - last_seek_update_time_ >= base::Seconds(1))) {
-    last_seek_update_time_ = base::TimeTicks::Now();
-    for (auto& observer : media_player_observer_remote_set_->Value())
-      observer->OnSeek();
-  }
 }
 
 media::mojom::blink::MediaPlayerHost&

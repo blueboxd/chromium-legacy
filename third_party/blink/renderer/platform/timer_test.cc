@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -61,12 +62,12 @@ class TimerTest : public testing::Test {
   // fire.
   bool TimeTillNextDelayedTask(base::TimeDelta* time) const {
     base::sequence_manager::LazyNow lazy_now(platform_->NowTicks());
-    base::TimeTicks next_task_time = platform_->GetMainThreadScheduler()
-                                         ->GetActiveTimeDomain()
-                                         ->GetNextDelayedTaskTime(&lazy_now);
-    if (next_task_time.is_max())
+    auto wake_up = platform_->GetMainThreadScheduler()
+                       ->GetSchedulerHelperForTesting()
+                       ->GetNextWakeUp();
+    if (!wake_up)
       return false;
-    *time = next_task_time - lazy_now.Now();
+    *time = wake_up->time - lazy_now.Now();
     return true;
   }
 
@@ -615,7 +616,7 @@ TEST_F(TimerTest, DestructOnHeapTimer) {
 
   owner = nullptr;
   ThreadState::Current()->CollectAllGarbageForTesting(
-      BlinkGC::kNoHeapPointersOnStack);
+      ThreadState::StackState::kNoHeapPointers);
   EXPECT_TRUE(record->OwnerIsDestructed());
 
   EXPECT_FALSE(record->TimerHasFired());

@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -38,6 +38,10 @@ class CopyOrMoveOperationDelegate::CopyOrMoveImpl {
   virtual ~CopyOrMoveImpl() = default;
   virtual void Run(CopyOrMoveOperationDelegate::StatusCallback callback) = 0;
   virtual void Cancel() = 0;
+
+  // Force any file copy to result in an error. This affects copies or
+  // cross-filesystem moves.
+  void ForceCopyErrorForTest() { force_error_for_test_ = true; }
 
  protected:
   CopyOrMoveImpl(
@@ -78,6 +82,19 @@ class CopyOrMoveOperationDelegate::CopyOrMoveImpl {
             FileSystemOperation::CopyOrMoveProgressType::kError, src_url_,
             dest_url_, 0);
       }
+    }
+
+    if (options_.Has(FileSystemOperation::CopyOrMoveOption::
+                         kRemovePartiallyCopiedFilesOnError) &&
+        error != base::File::FILE_OK &&
+        error != base::File::FILE_ERROR_NOT_A_FILE) {
+      // On error, remove the destination file.
+      operation_runner_->Remove(
+          dest_url_, /*recursive=*/false,
+          base::BindOnce(&CopyOrMoveImpl::DidRemoveDestOnError,
+                         weak_factory_.GetWeakPtr(), error,
+                         std::move(callback)));
+      return;
     }
 
     // The callback should be called in case of copy or error. The callback is
@@ -124,14 +141,32 @@ class CopyOrMoveOperationDelegate::CopyOrMoveImpl {
     std::move(callback).Run(error);
   }
 
-  FileSystemOperationRunner* const operation_runner_;
+  void DidRemoveDestOnError(
+      base::File::Error prior_error,
+      CopyOrMoveOperationDelegate::StatusCallback callback,
+      base::File::Error error) {
+    if (error != base::File::FILE_OK) {
+      VLOG(1) << "Error removing destination file after copy error or "
+                 "cancellation: "
+              << error;
+    }
+    // The callback is null if the operation type is OPERATION_MOVE (implemented
+    // as copy + delete) and no error occurred.
+    if (!callback.is_null()) {
+      std::move(callback).Run(prior_error);
+    }
+  }
+
+  const raw_ptr<FileSystemOperationRunner> operation_runner_;
   const CopyOrMoveOperationDelegate::OperationType operation_type_;
   const FileSystemURL src_url_;
   const FileSystemURL dest_url_;
   const CopyOrMoveOperationDelegate::CopyOrMoveOptionSet options_;
+  bool force_error_for_test_ = false;
 
  private:
   const FileSystemOperation::CopyOrMoveProgressCallback progress_callback_;
+  base::WeakPtrFactory<CopyOrMoveImpl> weak_factory_{this};
 };
 
 namespace {
@@ -154,6 +189,11 @@ class CopyOrMoveOnSameFileSystemImpl
                        dest_url,
                        options,
                        progress_callback) {}
+
+  CopyOrMoveOnSameFileSystemImpl(const CopyOrMoveOnSameFileSystemImpl&) =
+      delete;
+  CopyOrMoveOnSameFileSystemImpl& operator=(
+      const CopyOrMoveOnSameFileSystemImpl&) = delete;
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     if (operation_type_ == CopyOrMoveOperationDelegate::OPERATION_MOVE) {
@@ -180,7 +220,6 @@ class CopyOrMoveOnSameFileSystemImpl
 
  private:
   base::WeakPtrFactory<CopyOrMoveOnSameFileSystemImpl> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(CopyOrMoveOnSameFileSystemImpl);
 };
 
 // Specifically for cross file system copy/move operation, this class creates
@@ -207,6 +246,9 @@ class SnapshotCopyOrMoveImpl
 
         validator_factory_(validator_factory),
         cancel_requested_(false) {}
+
+  SnapshotCopyOrMoveImpl(const SnapshotCopyOrMoveImpl&) = delete;
+  SnapshotCopyOrMoveImpl& operator=(const SnapshotCopyOrMoveImpl&) = delete;
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     OnCopyOrMoveFileProgress(0);
@@ -326,6 +368,9 @@ class SnapshotCopyOrMoveImpl
   void RunAfterPostWriteValidation(
       CopyOrMoveOperationDelegate::StatusCallback callback,
       base::File::Error error) {
+    if (force_error_for_test_) {
+      error = base::File::FILE_ERROR_FAILED;
+    }
     if (cancel_requested_) {
       DidEndCopy(std::move(callback), base::File::FILE_ERROR_ABORT);
       return;
@@ -433,11 +478,10 @@ class SnapshotCopyOrMoveImpl
     std::move(callback).Run(error);
   }
 
-  CopyOrMoveFileValidatorFactory* validator_factory_;
+  raw_ptr<CopyOrMoveFileValidatorFactory> validator_factory_;
   std::unique_ptr<CopyOrMoveFileValidator> validator_;
   bool cancel_requested_;
   base::WeakPtrFactory<SnapshotCopyOrMoveImpl> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(SnapshotCopyOrMoveImpl);
 };
 
 // The size of buffer for StreamCopyHelper.
@@ -473,6 +517,9 @@ class StreamCopyOrMoveImpl
         reader_(std::move(reader)),
         writer_(std::move(writer)),
         cancel_requested_(false) {}
+
+  StreamCopyOrMoveImpl(const StreamCopyOrMoveImpl&) = delete;
+  StreamCopyOrMoveImpl& operator=(const StreamCopyOrMoveImpl&) = delete;
 
   void Run(CopyOrMoveOperationDelegate::StatusCallback callback) override {
     // Reader can be created even if the entry does not exist or the entry is
@@ -607,6 +654,9 @@ class StreamCopyOrMoveImpl
 
     NotifyOnModifyFile(dest_url_);
     NotifyOnEndUpdate(dest_url_);
+    if (force_error_for_test_) {
+      error = base::File::FILE_ERROR_FAILED;
+    }
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -668,7 +718,6 @@ class StreamCopyOrMoveImpl
   std::unique_ptr<CopyOrMoveOperationDelegate::StreamCopyHelper> copy_helper_;
   bool cancel_requested_;
   base::WeakPtrFactory<StreamCopyOrMoveImpl> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(StreamCopyOrMoveImpl);
 };
 
 }  // namespace
@@ -925,9 +974,11 @@ void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
   }
 
   // Register the running task.
-
   CopyOrMoveImpl* impl_ptr = impl.get();
   running_copy_set_[impl_ptr] = std::move(impl);
+  if (src_url == error_url_for_test_) {
+    impl_ptr->ForceCopyErrorForTest();  // IN-TEST
+  }
   impl_ptr->Run(base::BindOnce(&CopyOrMoveOperationDelegate::DidCopyOrMoveFile,
                                weak_factory_.GetWeakPtr(), std::move(callback),
                                impl_ptr));

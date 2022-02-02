@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALL_FRICTION_DIALOG_VIEW_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
@@ -41,20 +43,18 @@ class ExtensionInstallFrictionDialogView
 
   // Returns the parent web contents for the dialog. Returns nullptr if the web
   // contents have been destroyed.
-  content::WebContents* parent_web_contents() { return parent_web_contents_; }
+  content::WebContents* parent_web_contents() {
+    return parent_web_contents_.get();
+  }
 
   void ClickLearnMoreLinkForTesting();
 
  private:
-  class WebContentsDestructionObserver;
-
   std::unique_ptr<views::StyledLabel> CreateWarningLabel();
   void OnLearnMoreLinkClicked();
 
-  Profile* profile_ = nullptr;
-  content::WebContents* parent_web_contents_ = nullptr;
-  std::unique_ptr<WebContentsDestructionObserver>
-      web_contents_destruction_observer_;
+  raw_ptr<Profile> profile_ = nullptr;
+  base::WeakPtr<content::WebContents> parent_web_contents_;
   base::OnceCallback<void(bool)> callback_;
 
   bool accepted_ = false;

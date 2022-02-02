@@ -24,7 +24,6 @@
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -371,6 +370,10 @@ void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
 
 void ScopedOverviewTransformWindow::SetClipping(
     const ClippingData& clipping_data) {
+  // No need to clip `window_` if it is about to be destroyed.
+  if (window_->is_destroying())
+    return;
+
   gfx::SizeF size;
   switch (clipping_data.first) {
     case ClippingType::kEnter:

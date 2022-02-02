@@ -21,7 +21,6 @@
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "ui/aura/window_observer.h"
@@ -370,6 +369,14 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // next and previous widgets for a11y purposes. Needs to be updated when an
   // overview item is added or removed.
   void UpdateAccessibilityFocus();
+
+  // Called when a window is activated or deactivated and the desks templates
+  // feature is enabled. Returns true if we should keep overview open. Overview
+  // should be kept open if |gained_active| or |lost_active| is a desks
+  // templates dialog.
+  bool ShouldKeepOverviewOpenForDesksTemplatesDialog(
+      aura::Window* gained_active,
+      aura::Window* lost_active);
 
   // Weak pointer to the overview delegate which will be called when a selection
   // is made.

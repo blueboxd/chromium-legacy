@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/ukm/ukm_recorder_impl.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -49,7 +48,6 @@ class TestUkmRecorder : public UkmRecorderImpl {
   ~TestUkmRecorder() override;
 
   bool ShouldRestrictToWhitelistedSourceIds() const override;
-  bool ShouldRestrictToWhitelistedEntries() const override;
 
   void AddEntry(mojom::UkmEntryPtr entry) override;
 

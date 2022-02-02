@@ -1263,7 +1263,7 @@ bool PDFiumEngine::OnLeftMouseDown(const blink::WebMouseEvent& event) {
 
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // FORM_OnLButton*() will trigger a callback to
-      // OnFocusedAnnotationUpdated() which will call SetFieldFocus().
+      // OnFocusedAnnotationUpdated(), which will call SetFieldFocus().
       // Destroy SelectionChangeInvalidator object before SetFieldFocus()
       // changes plugin's focus to be `FocusFieldType::kText`. This way, regular
       // text selection can be cleared when a user clicks into a form text area
@@ -2184,12 +2184,14 @@ std::string PDFiumEngine::GetSelectedText() {
 
   std::u16string result;
   for (size_t i = 0; i < selection_.size(); ++i) {
-    static constexpr char16_t kNewLineChar = L'\n';
     std::u16string current_selection_text = selection_[i].GetText();
     if (i != 0) {
       if (selection_[i - 1].page_index() > selection_[i].page_index())
         std::swap(current_selection_text, result);
-      result.push_back(kNewLineChar);
+#if defined(OS_WIN)
+      result.push_back(L'\r');
+#endif
+      result.push_back(L'\n');
     }
     result.append(current_selection_text);
   }
@@ -3164,7 +3166,8 @@ bool PDFiumEngine::ContinuePaint(int progressive_index, SkBitmap& image_data) {
     gfx::Rect dirty = progressive_paints_[progressive_index].rect();
     GetPDFiumRect(page_index, dirty, &start_x, &start_y, &size_x, &size_y);
 
-    ScopedFPDFBitmap new_bitmap = CreateBitmap(dirty, image_data);
+    bool has_alpha = !!FPDFPage_HasTransparency(page);
+    ScopedFPDFBitmap new_bitmap = CreateBitmap(dirty, has_alpha, image_data);
     FPDFBitmap_FillRect(new_bitmap.get(), start_x, start_y, size_x, size_y,
                         0xFFFFFFFF);
     rv = FPDF_RenderPageBitmap_Start(
@@ -3358,7 +3361,7 @@ void PDFiumEngine::PaintUnavailablePage(int page_index,
   int size_x;
   int size_y;
   GetPDFiumRect(page_index, dirty, &start_x, &start_y, &size_x, &size_y);
-  ScopedFPDFBitmap bitmap(CreateBitmap(dirty, image_data));
+  ScopedFPDFBitmap bitmap(CreateBitmap(dirty, /*has_alpha=*/false, image_data));
   FPDFBitmap_FillRect(bitmap.get(), start_x, start_y, size_x, size_y,
                       kPendingPageColor);
 
@@ -3377,14 +3380,16 @@ int PDFiumEngine::GetProgressiveIndex(int page_index) const {
 }
 
 ScopedFPDFBitmap PDFiumEngine::CreateBitmap(const gfx::Rect& rect,
+                                            bool has_alpha,
                                             SkBitmap& image_data) const {
   void* region;
   int stride;
   GetRegion(rect.origin(), image_data, region, stride);
   if (!region)
     return nullptr;
-  return ScopedFPDFBitmap(FPDFBitmap_CreateEx(rect.width(), rect.height(),
-                                              FPDFBitmap_BGRx, region, stride));
+  int format = has_alpha ? FPDFBitmap_BGRA : FPDFBitmap_BGRx;
+  return ScopedFPDFBitmap(
+      FPDFBitmap_CreateEx(rect.width(), rect.height(), format, region, stride));
 }
 
 void PDFiumEngine::GetPDFiumRect(int page_index,
@@ -3803,9 +3808,8 @@ void PDFiumEngine::SetFieldFocus(PDFEngine::FocusFieldType type) {
   // observer is notified of the change in selection. When `focus_field_type_`
   // is set to `FocusFieldType::kText`, this is the Renderer. After it flips,
   // the MimeHandler is notified.
-  if (focus_field_type_ == FocusFieldType::kText) {
+  if (focus_field_type_ == FocusFieldType::kText)
     client_->SetSelectedText("");
-  }
 
   client_->FormFieldFocusChange(type);
   focus_field_type_ = type;
@@ -4278,7 +4282,7 @@ void PDFiumEngine::SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot,
 void PDFiumEngine::RequestThumbnail(int page_index,
                                     float device_pixel_ratio,
                                     SendThumbnailCallback send_callback) {
-  CHECK(PageIndexInBounds(page_index));
+  DCHECK(PageIndexInBounds(page_index));
 
   // Thumbnails cannot be generated in the middle of a progressive paint of a
   // page. Generate the thumbnail immediately only if the page is not currently

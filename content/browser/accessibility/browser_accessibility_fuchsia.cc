@@ -8,6 +8,7 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_fuchsia.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/platform/fuchsia/accessibility_bridge_fuchsia_registry.h"
 
 namespace content {
 
@@ -19,6 +20,16 @@ BrowserAccessibilityFuchsia::BrowserAccessibilityFuchsia(
     ui::AXNode* node)
     : BrowserAccessibility(manager, node) {}
 
+ui::AccessibilityBridgeFuchsia*
+BrowserAccessibilityFuchsia::GetAccessibilityBridge() const {
+  auto* accessibility_bridge_registry =
+      ui::AccessibilityBridgeFuchsiaRegistry::GetInstance();
+  DCHECK(accessibility_bridge_registry);
+
+  return accessibility_bridge_registry->GetAccessibilityBridge(
+      manager()->ax_tree_id());
+}
+
 // static
 std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(
     BrowserAccessibilityManager* manager,
@@ -27,19 +38,26 @@ std::unique_ptr<BrowserAccessibility> BrowserAccessibility::Create(
 }
 
 BrowserAccessibilityFuchsia::~BrowserAccessibilityFuchsia() {
-  // TODO(fxb.dev/82820): Request deletion from accessibility bridge.
+  DeleteNode();
+}
+
+uint32_t BrowserAccessibilityFuchsia::GetFuchsiaNodeID() const {
+  return static_cast<uint32_t>(GetUniqueId());
 }
 
 fuchsia::accessibility::semantics::Node
 BrowserAccessibilityFuchsia::ToFuchsiaNodeData() const {
   fuchsia::accessibility::semantics::Node fuchsia_node_data;
 
+  fuchsia_node_data.set_node_id(GetFuchsiaNodeID());
   fuchsia_node_data.set_role(GetFuchsiaRole());
   fuchsia_node_data.set_states(GetFuchsiaStates());
   fuchsia_node_data.set_attributes(GetFuchsiaAttributes());
   fuchsia_node_data.set_actions(GetFuchsiaActions());
   fuchsia_node_data.set_location(GetFuchsiaLocation());
   fuchsia_node_data.set_node_to_container_transform(GetFuchsiaTransform());
+  fuchsia_node_data.set_container_id(GetOffsetContainerOrRootNodeID());
+  fuchsia_node_data.set_child_ids(GetFuchsiaChildIDs());
 
   return fuchsia_node_data;
 }
@@ -47,18 +65,35 @@ BrowserAccessibilityFuchsia::ToFuchsiaNodeData() const {
 void BrowserAccessibilityFuchsia::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
 
-  // TODO(fxb.dev/82820): Add code path for a node to notify fuchsia that
-  // its data has changed.
+  // Declare this node as the fuchsia tree root if it's the root of the main
+  // frame's tree.
+  if (manager()->IsRootTree() && manager()->GetRoot() == this) {
+    ui::AccessibilityBridgeFuchsia* accessibility_bridge =
+        GetAccessibilityBridge();
+    if (accessibility_bridge)
+      accessibility_bridge->SetRootID(GetUniqueId());
+  }
+
+  UpdateNode();
 }
 
 void BrowserAccessibilityFuchsia::OnLocationChanged() {
-  // TODO(fxb.dev/82822): Add code path for a node to notify fuchsia that
-  // its location has changed.
+  UpdateNode();
 }
 
 BrowserAccessibilityFuchsia* ToBrowserAccessibilityFuchsia(
     BrowserAccessibility* obj) {
   return static_cast<BrowserAccessibilityFuchsia*>(obj);
+}
+
+std::vector<uint32_t> BrowserAccessibilityFuchsia::GetFuchsiaChildIDs() const {
+  std::vector<uint32_t> child_ids;
+  for (const BrowserAccessibility& child : PlatformChildren()) {
+    child_ids.push_back(static_cast<const BrowserAccessibilityFuchsia&>(child)
+                            .GetFuchsiaNodeID());
+  }
+
+  return child_ids;
 }
 
 std::vector<fuchsia::accessibility::semantics::Action>
@@ -311,6 +346,34 @@ fuchsia::ui::gfx::mat4 BrowserAccessibilityFuchsia::GetFuchsiaTransform()
   fuchsia::ui::gfx::Matrix4Value fuchsia_transform =
       scenic::NewMatrix4Value(mat);
   return fuchsia_transform.value;
+}
+
+uint32_t BrowserAccessibilityFuchsia::GetOffsetContainerOrRootNodeID() const {
+  int offset_container_id = GetData().relative_bounds.offset_container_id;
+
+  BrowserAccessibility* offset_container =
+      offset_container_id == -1 ? manager()->GetRoot()
+                                : manager()->GetFromID(offset_container_id);
+
+  BrowserAccessibilityFuchsia* fuchsia_container =
+      ToBrowserAccessibilityFuchsia(offset_container);
+  DCHECK(fuchsia_container);
+
+  return fuchsia_container->GetFuchsiaNodeID();
+}
+
+void BrowserAccessibilityFuchsia::UpdateNode() {
+  if (!GetAccessibilityBridge())
+    return;
+
+  GetAccessibilityBridge()->UpdateNode(ToFuchsiaNodeData());
+}
+
+void BrowserAccessibilityFuchsia::DeleteNode() {
+  if (!GetAccessibilityBridge())
+    return;
+
+  GetAccessibilityBridge()->DeleteNode(GetFuchsiaNodeID());
 }
 
 }  // namespace content

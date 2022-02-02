@@ -19,10 +19,12 @@
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/test/button_test_api.h"
@@ -188,6 +190,10 @@ class MediaItemUIDeviceSelectorViewTest : public ChromeViewsTestBase {
     return base::UTF16ToUTF8(static_cast<views::LabelButton*>(view)->GetText());
   }
 
+  views::View* GetDeviceEntryViewsContainer() {
+    return view_->device_entry_views_container_;
+  }
+
   std::unique_ptr<MediaItemUIDeviceSelectorView> CreateDeviceSelectorView(
       MockMediaItemUIDeviceSelectorDelegate* delegate,
       std::unique_ptr<MockCastDialogController> controller =
@@ -203,6 +209,12 @@ class MediaItemUIDeviceSelectorViewTest : public ChromeViewsTestBase {
     return device_selector_view;
   }
 
+  void CallOnModelUpdated(const std::string& sink_id,
+                          media_router::MediaCastMode cast_mode) {
+    auto cast_connected_sink = CreateMediaSink(UIMediaSinkState::CONNECTED);
+    view_->OnModelUpdated(CreateModelWithSinks({cast_connected_sink}));
+  }
+
   std::unique_ptr<MediaItemUIDeviceSelectorView> view_;
   base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList feature_list_;
@@ -215,9 +227,9 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, DeviceButtonsCreated) {
   view_ = CreateDeviceSelectorView(&delegate);
   view_->OnModelUpdated(CreateModelWithSinks({CreateMediaSink()}));
 
-  ASSERT_TRUE(view_->device_entry_views_container_ != nullptr);
+  ASSERT_TRUE(GetDeviceEntryViewsContainer() != nullptr);
 
-  auto container_children = view_->device_entry_views_container_->children();
+  auto container_children = GetDeviceEntryViewsContainer()->children();
   ASSERT_EQ(container_children.size(), 4u);
 
   EXPECT_EQ(EntryLabelText(container_children.at(0)), "Speaker");
@@ -226,19 +238,22 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, DeviceButtonsCreated) {
   EXPECT_EQ(EntryLabelText(container_children.at(3)), kSinkFriendlyName);
 }
 
-TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandButtonOrLabelCreated) {
+TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandButtonAndLabelCreated) {
   NiceMock<MockMediaItemUIDeviceSelectorDelegate> delegate;
   AddAudioDevices(delegate);
   view_ = CreateDeviceSelectorView(&delegate);
-  EXPECT_TRUE(view_->expand_button_);
-  EXPECT_FALSE(view_->expand_label_);
+  EXPECT_EQ(view_->GetExpandDeviceSelectorLabelForTesting()->GetText(),
+            l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_LABEL));
+  EXPECT_TRUE(view_->GetDropdownButtonForTesting());
 
   view_ = CreateDeviceSelectorView(
       &delegate, std::make_unique<NiceMock<MockCastDialogController>>(), "1",
       true,
       global_media_controls::GlobalMediaControlsEntryPoint::kPresentation);
-  EXPECT_TRUE(view_->expand_label_);
-  EXPECT_FALSE(view_->expand_button_);
+  EXPECT_EQ(view_->GetExpandDeviceSelectorLabelForTesting()->GetText(),
+            l10n_util::GetStringUTF16(
+                IDS_GLOBAL_MEDIA_CONTROLS_DEVICES_LABEL_WITH_COLON));
+  EXPECT_FALSE(view_->GetDropdownButtonForTesting());
 }
 
 TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandButtonOpensEntryContainer) {
@@ -246,10 +261,10 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandButtonOpensEntryContainer) {
   AddAudioDevices(delegate);
   view_ = CreateDeviceSelectorView(&delegate);
 
-  ASSERT_TRUE(view_->expand_button_);
-  EXPECT_FALSE(view_->device_entry_views_container_->GetVisible());
-  SimulateButtonClick(view_->GetExpandButtonForTesting());
-  EXPECT_TRUE(view_->device_entry_views_container_->GetVisible());
+  ASSERT_TRUE(view_->GetDropdownButtonForTesting());
+  EXPECT_FALSE(view_->GetDeviceEntryViewVisibilityForTesting());
+  SimulateButtonClick(view_->GetDropdownButtonForTesting());
+  EXPECT_TRUE(view_->GetDeviceEntryViewVisibilityForTesting());
 }
 
 TEST_F(MediaItemUIDeviceSelectorViewTest, DeviceEntryContainerVisibility) {
@@ -259,7 +274,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, DeviceEntryContainerVisibility) {
   // The device entry container should be collapsed if the media dialog is
   // opened from the toolbar or Chrome OS system tray.
   view_ = CreateDeviceSelectorView(&delegate);
-  EXPECT_FALSE(view_->device_entry_views_container_->GetVisible());
+  EXPECT_FALSE(view_->GetDeviceEntryViewVisibilityForTesting());
 
   // The device entry container should be expanded if the media dialog is opened
   // for a presentation request.
@@ -267,7 +282,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, DeviceEntryContainerVisibility) {
       &delegate, std::make_unique<NiceMock<MockCastDialogController>>(), "1",
       /* has_audio_output */ true,
       global_media_controls::GlobalMediaControlsEntryPoint::kPresentation);
-  EXPECT_TRUE(view_->device_entry_views_container_->GetVisible());
+  EXPECT_TRUE(view_->GetDeviceEntryViewVisibilityForTesting());
 }
 
 TEST_F(MediaItemUIDeviceSelectorViewTest,
@@ -282,7 +297,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest,
   EXPECT_CALL(delegate, OnAudioSinkChosen(kItemId, "2")).Times(1);
   EXPECT_CALL(delegate, OnAudioSinkChosen(kItemId, "3")).Times(1);
 
-  for (views::View* child : view_->device_entry_views_container_->children()) {
+  for (views::View* child : GetDeviceEntryViewsContainer()->children()) {
     SimulateButtonClick(child);
   }
 }
@@ -298,7 +313,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CastDeviceButtonClickStartsCasting) {
       CreateModelWithSinks({CreateMediaSink(UIMediaSinkState::CONNECTING),
                             CreateMediaSink(UIMediaSinkState::DISCONNECTING)}));
   EXPECT_CALL(*cast_controller_ptr, StartCasting(_, _)).Times(0);
-  for (views::View* child : view_->device_entry_views_container_->children()) {
+  for (views::View* child : GetDeviceEntryViewsContainer()->children()) {
     SimulateButtonClick(child);
   }
 
@@ -311,7 +326,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CastDeviceButtonClickStartsCasting) {
   EXPECT_CALL(*cast_controller_ptr,
               StartCasting(_, media_router::MediaCastMode::PRESENTATION))
       .Times(2);
-  for (views::View* child : view_->device_entry_views_container_->children()) {
+  for (views::View* child : GetDeviceEntryViewsContainer()->children()) {
     SimulateButtonClick(child);
   }
 
@@ -326,7 +341,31 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CastDeviceButtonClickStartsCasting) {
                                "sinkId1", "description", true, true);
   view_->OnModelUpdated(CreateModelWithSinks({dial_connected_sink}));
   EXPECT_CALL(*cast_controller_ptr, StopCasting("routeId1"));
-  for (views::View* child : view_->device_entry_views_container_->children()) {
+  for (views::View* child : GetDeviceEntryViewsContainer()->children()) {
+    SimulateButtonClick(child);
+  }
+}
+
+TEST_F(MediaItemUIDeviceSelectorViewTest,
+       StartCastingTriggersAnotherSinkUpdate) {
+  NiceMock<MockMediaItemUIDeviceSelectorDelegate> delegate;
+  auto cast_controller = std::make_unique<NiceMock<MockCastDialogController>>();
+  auto* cast_controller_ptr = cast_controller.get();
+  view_ = CreateDeviceSelectorView(&delegate, std::move(cast_controller));
+
+  view_->OnModelUpdated(CreateModelWithSinks({CreateMediaSink()}));
+  EXPECT_CALL(*cast_controller_ptr,
+              StartCasting(_, media_router::MediaCastMode::PRESENTATION));
+  // CastDialogController::StartCasting() should create a new route, which
+  // triggers the MediaRouterUI to broadcast a sink update. As a result
+  // MediaItemUIDeviceSelectorView::OnModelUpdated() should be called before
+  // StartCasting() returns. This test verifies that the second the second call
+  // to OnModelUpdated() does not cause UaF error in
+  // RecordStartCastingMetrics().
+  ON_CALL(*cast_controller_ptr, StartCasting(_, _))
+      .WillByDefault(
+          Invoke(this, &MediaItemUIDeviceSelectorViewTest::CallOnModelUpdated));
+  for (views::View* child : GetDeviceEntryViewsContainer()->children()) {
     SimulateButtonClick(child);
   }
 }
@@ -339,7 +378,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CurrentAudioDeviceHighlighted) {
   view_ = CreateDeviceSelectorView(
       &delegate, std::make_unique<NiceMock<MockCastDialogController>>(), "3");
 
-  auto* first_entry = view_->device_entry_views_container_->children().front();
+  auto* first_entry = GetDeviceEntryViewsContainer()->children().front();
   EXPECT_EQ(EntryLabelText(first_entry), "Earbuds");
   EXPECT_TRUE(IsHighlighted(first_entry));
 }
@@ -350,7 +389,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, AudioDeviceHighlightedOnChange) {
   AddAudioDevices(delegate);
   view_ = CreateDeviceSelectorView(&delegate);
 
-  auto& container_children = view_->device_entry_views_container_->children();
+  auto& container_children = GetDeviceEntryViewsContainer()->children();
 
   // There should be only one highlighted button. It should be the first button.
   // It's text should be "Speaker"
@@ -385,7 +424,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, AudioDeviceButtonsChange) {
   provider->RunUICallback();
 
   {
-    auto& container_children = view_->device_entry_views_container_->children();
+    auto& container_children = GetDeviceEntryViewsContainer()->children();
     EXPECT_EQ(container_children.size(), 1u);
     ASSERT_FALSE(container_children.empty());
     EXPECT_EQ(EntryLabelText(container_children.front()), "Monitor");
@@ -400,7 +439,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, AudioDeviceButtonsChange) {
   provider->RunUICallback();
 
   {
-    auto& container_children = view_->device_entry_views_container_->children();
+    auto& container_children = GetDeviceEntryViewsContainer()->children();
     EXPECT_EQ(container_children.size(), 3u);
     ASSERT_FALSE(container_children.empty());
 
@@ -484,7 +523,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CastDeviceButtonClickClearsIssue) {
   view_->OnModelUpdated(CreateModelWithSinks({sink}));
   EXPECT_CALL(*cast_controller_ptr, StartCasting(_, _)).Times(0);
   EXPECT_CALL(*cast_controller_ptr, ClearIssue(issue.id()));
-  for (views::View* child : view_->device_entry_views_container_->children()) {
+  for (views::View* child : GetDeviceEntryViewsContainer()->children()) {
     SimulateButtonClick(child);
   }
 }

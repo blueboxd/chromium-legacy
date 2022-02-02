@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -19,7 +18,7 @@ namespace net {
 class NSSCertDatabase;
 }
 
-namespace chromeos {
+namespace ash {
 
 // Initializes a global NSSCertDatabase for the system token and stores it in a
 // global SystemTokenCertDbStorage instance which can be used by all ChromeOS
@@ -47,17 +46,17 @@ class SystemTokenCertDBInitializer : public TpmManagerClient::Observer {
   // TpmManagerClient::Observer overrides.
   void OnOwnershipTaken() override;
 
-  // Sets if the software fallback for system slot is allowed; useful for
+  // Sets if the software fallback for NSS slots are allowed; useful for
   // testing.
-  void set_is_system_slot_software_fallback_allowed(bool is_allowed) {
-    is_system_slot_software_fallback_allowed_ = is_allowed;
+  void set_is_nss_slots_software_fallback_allowed_for_testing(bool is_allowed) {
+    is_nss_slots_software_fallback_allowed_ = is_allowed;
   }
 
  private:
   // Called once the cryptohome service is available.
   void OnCryptohomeAvailable(bool available);
 
-  // Verifies the value of the build flag system_slot_software_fallback and
+  // Verifies the value of the build flag nss_slots_software_fallback and
   // decides the initialization flow based on that.
   void CheckTpm();
 
@@ -88,8 +87,8 @@ class SystemTokenCertDBInitializer : public TpmManagerClient::Observer {
   // state. Will be adapted after each attempt.
   base::TimeDelta tpm_request_delay_;
 
-  // The flag that determines if the system slot can use software fallback.
-  bool is_system_slot_software_fallback_allowed_;
+  // The flag that determines if the NSS slots can use software fallback.
+  bool is_nss_slots_software_fallback_allowed_;
 
   // Global NSSCertDatabase which sees the system token.
   std::unique_ptr<net::NSSCertDatabase> system_token_cert_database_;
@@ -99,12 +98,6 @@ class SystemTokenCertDBInitializer : public TpmManagerClient::Observer {
   base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_{this};
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::SystemTokenCertDBInitializer;
-}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_SYSTEM_TOKEN_CERT_DB_INITIALIZER_H_

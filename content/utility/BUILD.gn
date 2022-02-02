@@ -5,6 +5,7 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//device/vr/buildflags/buildflags.gni")
+import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//printing/buildflags/buildflags.gni")
 
@@ -81,10 +82,16 @@ source_set("utility") {
 
   if (is_chromeos_ash) {
     deps += [
+      "//ash/services/ime:sandbox_hook",
       "//chromeos/assistant:buildflags",
-      "//chromeos/services/ime:sandbox_hook",
       "//chromeos/services/tts:sandbox_hook",
+      "//gpu/config",
+      "//media/gpu/sandbox",
+      "//third_party/angle:angle_gpu_info_util",
     ]
+    if (use_vaapi || use_v4l2_codec) {
+      deps += [ "//ash/components/arc/video_accelerator" ]
+    }
   }
 
   if (is_chromeos_ash && is_chrome_branded) {

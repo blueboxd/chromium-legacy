@@ -553,9 +553,9 @@ TEST_F(CrossOriginEmbedderPolicyReporterTest, StoragePartitionInvalidated) {
   const GURL kContextUrl("https://example.com/path");
   const auto kNetworkIsolationKey = net::NetworkIsolationKey::CreateTransient();
   const auto kReportingSource = base::UnguessableToken::Create();
-  CrossOriginEmbedderPolicyReporter reporter(
-      GetStoragePartition(), kContextUrl, "e1", "e2",
-      kReportingSource, kNetworkIsolationKey);
+  CrossOriginEmbedderPolicyReporter reporter(GetStoragePartition(), kContextUrl,
+                                             "e1", "e2", kReportingSource,
+                                             kNetworkIsolationKey);
 
   InvalidateWeakPtrs();
 

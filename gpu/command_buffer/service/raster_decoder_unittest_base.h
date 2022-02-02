@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
@@ -104,27 +105,17 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
 
   template <typename T>
   T GetSharedMemoryAs() {
-    return reinterpret_cast<T>(shared_memory_address_);
+    return reinterpret_cast<T>(shared_memory_address_.get());
   }
 
   template <typename T>
   T GetSharedMemoryAsWithOffset(uint32_t offset) {
-    void* ptr = reinterpret_cast<int8_t*>(shared_memory_address_) + offset;
+    void* ptr =
+        reinterpret_cast<int8_t*>(shared_memory_address_.get()) + offset;
     return reinterpret_cast<T>(ptr);
   }
 
-  void SetBucketData(uint32_t bucket_id, const void* data, uint32_t data_size);
-  void SetBucketAsCString(uint32_t bucket_id, const char* str);
-  // If we want a valid bucket, just set |count_in_header| as |count|,
-  // and set |str_end| as 0.
-  void SetBucketAsCStrings(uint32_t bucket_id,
-                           GLsizei count,
-                           const char** str,
-                           GLsizei count_in_header,
-                           char str_end);
-
   void AddExpectationsForGetCapabilities();
-  void AddExpectationsForRestoreAttribState(GLuint attrib);
 
   struct InitState {
     InitState();
@@ -153,12 +144,6 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   typedef gles2::TestHelper::AttribInfo AttribInfo;
   typedef gles2::TestHelper::UniformInfo UniformInfo;
 
-  gpu::Mailbox CreateFakeTexture(GLuint service_id,
-                                 viz::ResourceFormat resource_format,
-                                 GLsizei width,
-                                 GLsizei height,
-                                 bool cleared);
-
   // Note that the error is returned as GLint instead of GLenum.
   // This is because there is a mismatch in the types of GLenum and
   // the error values GL_NO_ERROR, GL_INVALID_ENUM, etc. GLenum is
@@ -167,46 +152,20 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   // EXPECT_EQ that expect both types to be the same.
   GLint GetGLError();
 
-  void SetScopedTextureBinderExpectations(GLenum target);
-
-  void SetupClearTextureExpectations(GLuint service_id,
-                                     GLuint old_service_id,
-                                     GLenum bind_target,
-                                     GLenum target,
-                                     GLint level,
-                                     GLenum format,
-                                     GLenum type,
-                                     GLint xoffset,
-                                     GLint yoffset,
-                                     GLsizei width,
-                                     GLsizei height,
-                                     GLuint bound_pixel_unpack_buffer);
-
   GLvoid* BufferOffset(unsigned i) { return reinterpret_cast<GLvoid*>(i); }
 
   SharedImageManager* shared_image_manager() { return &shared_image_manager_; }
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }
 
  protected:
-  static const GLint kMaxTextureSize = 2048;
-  static const GLint kNumTextureUnits = 8;
-  static const GLint kNumVertexAttribs = 16;
-
-  static const GLuint kServiceBufferId = 301;
-  static const GLuint kServiceTextureId = 304;
-  static const GLuint kServiceVertexArrayId = 310;
-
   static const size_t kSharedBufferSize = 2048;
   static const uint32_t kSharedMemoryOffset = 132;
   static const int32_t kInvalidSharedMemoryId =
       FakeCommandBufferServiceBase::kTransferBufferBaseId - 1;
   static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
-  static const uint32_t kInitialResult = 0xBDBDBDBDu;
   static const uint8_t kInitialMemoryValue = 0xBDu;
 
   static const uint32_t kNewClientId = 501;
-  static const uint32_t kNewServiceId = 502;
-  static const uint32_t kInvalidClientId = 601;
 
   // Use StrictMock to make 100% sure we know how GL will be called.
   std::unique_ptr<::testing::StrictMock<::gl::MockGLInterface>> gl_;
@@ -217,12 +176,10 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   gles2::TraceOutputter outputter_;
   std::unique_ptr<RasterDecoder> decoder_;
 
-  gpu::Mailbox client_texture_mailbox_;
-
   int32_t shared_memory_id_;
   uint32_t shared_memory_offset_;
-  void* shared_memory_address_;
-  void* shared_memory_base_;
+  raw_ptr<void> shared_memory_address_;
+  raw_ptr<void> shared_memory_base_;
 
   uint32_t immediate_buffer_[64];
 
@@ -233,10 +190,9 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   GpuPreferences gpu_preferences_;
   SharedImageManager shared_image_manager_;
   MemoryTypeTracker memory_tracker_;
-  std::vector<std::unique_ptr<SharedImageRepresentationFactoryRef>>
-      shared_images_;
   base::test::SingleThreadTaskEnvironment task_environment_;
-  gles2::MockCopyTextureResourceManager* copy_texture_manager_;  // not owned
+  raw_ptr<gles2::MockCopyTextureResourceManager>
+      copy_texture_manager_;  // not owned
 };
 
 class RasterDecoderManualInitTest : public RasterDecoderTestBase {

@@ -27,6 +27,8 @@
 
   .button-icon {
     flex-grow: 1;
+    height: 40px;
+    width: 40px;
   }
 
   #diagnosticsIconDiv {
@@ -46,10 +48,9 @@
 </style>
 
 <base-page orientation="column">
-  <!-- TODO(joonbug): Update text for i18n -->
   <div slot="header">
     <h1>[[i18n('repairCompletedTitleText')]]</h1>
-    <p>Your repair was successful. You can exit or take some additional actions.</h2>
+    <div>[[i18n('repairCompletedDescriptionText')]]</div>
   </div>
   <div slot="body">
     <cr-button id="diagnosticsButton" class="button-card"
@@ -59,68 +60,83 @@
       </div>
       <div class="button-text">
         <div class="button-label">
-          <span>Run Diagnostics</span>
+          <span>[[i18n('repairCompletedDiagnosticsButtonText')]]</span>
         </div>
         <div class="button-description">
-          Confirm everything's in the right place and view the diagnostic report
+          [[i18n('repairCompletedDiagnosticsDescriptionText')]]
         </div>
       </div>
     </cr-button>
     <cr-button id="rmaLogButton" class="button-card"
       on-click="onRmaLogButtonClick_">
-      <iron-icon icon="shimless-icon24:check-circle" class="button-icon"
+      <iron-icon icon="shimless-icon:rma-log" class="button-icon"
           hidden="[[!checked]]">
       </iron-icon>
       <div class="button-text">
         <div class="button-label">
-          <span>See RMA Logs</span>
+          <span>[[i18n('repairCompletedLogsButtonText')]]</span>
         </div>
         <div class="button-description">
-          See what's been fixed
+          [[i18n('repairCompletedLogsDescriptionText')]]
         </div>
       </div>
     </cr-button>
+    <!-- TODO(gavindodd): Add UI cues that button is disabled. -->
     <cr-button id="batteryCutButton" class="button-card"
-      on-click="onBatteryCutButtonClick_">
-      <iron-icon icon="shimless-icon24:check-circle" class="button-icon"
+      on-click="onBatteryCutButtonClick_" disabled$="[[pluggedIn_]]">
+      <iron-icon icon="shimless-icon:battery-cutoff" class="button-icon"
           hidden="[[!checked]]">
       </iron-icon>
       <div class="button-text">
         <div class="button-label">
-          <span>Battery Cutoff</span>
+          <span>[[i18n('repairCompletedShutoffButtonText')]]</span>
         </div>
         <div class="button-description">
-          Perform battery cutoff for devices being shipped or stored
+          [[i18n('repairCompletedShutoffDescriptionText')]]
+        </div>
+        <div class="button-description" hidden="[[!pluggedIn_]]">
+          [[i18n('repairCompletedShutoffInstructionsText')]]
         </div>
       </div>
     </cr-button>
   </div>
 </base-page>
 
-<!-- TODO(joonbug): Update for i18n -->
 <cr-dialog id="logsDialog" close-text="close">
   <div slot="title">
-    RMA Logs
+    [[i18n('rmaLogsTitleText')]]
   </div>
   <div slot="body">
     <div class="log">[[log_]]</div>
   </div>
   <div slot="footer">
-    <cr-button id="closeLogDialogButton" on-click="onCancelClick_">Cancel</cr-button>
-    <cr-button id="rmaLogButton" on-click="onRmaLogButtonClick_">Save to ...</cr-button>
+    <cr-button id="closeLogDialogButton" on-click="onCancelClick_">
+      [[i18n('rmaLogsCancelButtonText')]]
+    </cr-button>
+    <cr-button id="rmaLogButton" on-click="onRmaLogButtonClick_">
+      [[i18n('rmaLogsSaveToUsbButtonText')]]
+    </cr-button>
   </div>
 </cr-dialog>
 
-<!-- TODO(joonbug): Update for i18n -->
+<!-- TODO(gavindodd): Confirm we need this. The cutoff button is guarded by
+     a check for power cable state so it could immediately shut down. -->
 <cr-dialog id="batteryCutDialog" close-text="close">
   <div slot="title">
-    Unplug your cord to cut off battery
+    [[i18n('batteryShutoffTitleText')]]
   </div>
   <div slot="body">
-    Shut down your device to complete battery cut off
+    <div>
+      [[batteryCutInstructions_(pluggedIn_)]]
+    </div>
   </div>
   <div slot="footer">
-    <cr-button id="closeBatteryDialogButton" on-click="onCancelClick_">Cancel</cr-button>
-    <cr-button id="shutdownButton" on-click="onShutdownClick_">Shut down</cr-button>
+    <cr-button id="closeBatteryDialogButton" on-click="onCancelClick_">
+      [[i18n('batteryShutoffCancelButtonText')]]
+    </cr-button>
+    <cr-button id="shutdownButton" on-click="onShutdownClick_"
+      disabled$="[[pluggedIn_]]">
+      [[i18n('batteryShutoffShutdownButtonText')]]
+    </cr-button>
   </div>
 </cr-dialog>

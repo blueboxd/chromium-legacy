@@ -16,7 +16,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -39,7 +38,6 @@ class SerialPolicyAllowedPorts;
 class StartupData;
 class StatusTray;
 class SystemNetworkContextManager;
-class WatchDogThread;
 class WebRtcLogUploader;
 
 #if !defined(OS_ANDROID)
@@ -165,9 +163,6 @@ class BrowserProcess {
   // Returns a NetworkQualityTracker that can be used to subscribe for
   // network quality change events.
   virtual network::NetworkQualityTracker* network_quality_tracker() = 0;
-
-  // Returns the thread that is used for health check of all browser threads.
-  virtual WatchDogThread* watchdog_thread() = 0;
 
   // Starts and manages the policy system.
   virtual policy::ChromeBrowserPolicyConnector* browser_policy_connector() = 0;

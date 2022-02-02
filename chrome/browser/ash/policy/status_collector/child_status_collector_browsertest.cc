@@ -10,9 +10,10 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/timezone_settings.h"
 #include "base/bind.h"
 #include "base/environment.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "chrome/browser/ash/child_accounts/child_user_service.h"
 #include "chrome/browser/ash/child_accounts/child_user_service_factory.h"
@@ -48,8 +50,6 @@
 #include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/update_engine/fake_update_engine_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -237,9 +237,9 @@ class ChildStatusCollectorTest : public testing::Test {
 
     // Disable network reporting since it requires additional setup.
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        chromeos::kReportDeviceNetworkConfiguration, false);
+        ash::kReportDeviceNetworkConfiguration, false);
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
-        chromeos::kReportDeviceNetworkStatus, false);
+        ash::kReportDeviceNetworkStatus, false);
 
     // Mock clock in task environment is set to Unix Epoch, advance it to avoid
     // using times from before Unix Epoch in some tests.
@@ -319,14 +319,14 @@ class ChildStatusCollectorTest : public testing::Test {
     app_registry->OnAppInstalled(app_id);
 
     // Window instance is irrelevant for tests here.
-    auto instance_key = apps::Instance::InstanceKey::ForWindowBasedApp(nullptr);
-    app_registry->OnAppActive(app_id, instance_key, Time::Now());
+    auto instance_id = base::UnguessableToken::Create();
+    app_registry->OnAppActive(app_id, instance_id, Time::Now());
     if (should_run_tasks) {
       task_environment_.FastForwardBy(duration);
     } else {
       task_environment_.AdvanceClock(duration);
     }
-    app_registry->OnAppInactive(app_id, instance_key, Time::Now());
+    app_registry->OnAppInactive(app_id, instance_id, Time::Now());
   }
 
   virtual void RestartStatusCollector(
@@ -476,9 +476,8 @@ TEST_F(ChildStatusCollectorTest, ReportingPartialVersionInfo) {
 }
 
 TEST_F(ChildStatusCollectorTest, TimeZoneReporting) {
-  const std::string timezone =
-      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                            ->GetCurrentTimezoneID());
+  const std::string timezone = base::UTF16ToUTF8(
+      ash::system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
 
   GetStatus();
 
@@ -706,7 +705,7 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivity) {
 
   // Report activity for two different apps.
   const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const ash::app_time::AppId app2(apps::mojom::AppType::kExtension, "app2");
+  const ash::app_time::AppId app2(apps::mojom::AppType::kChromeApp, "app2");
   const Time start_time = Time::Now();
   const base::TimeDelta app1_interval = base::Minutes(1);
   const base::TimeDelta app2_interval = base::Minutes(2);
@@ -763,7 +762,7 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityNoReport) {
   status_collector_->OnSubmittedSuccessfully();
 
   const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const ash::app_time::AppId app2(apps::mojom::AppType::kExtension, "app2");
+  const ash::app_time::AppId app2(apps::mojom::AppType::kChromeApp, "app2");
   const base::TimeDelta app1_interval = base::Minutes(1);
   const base::TimeDelta app2_interval = base::Minutes(2);
 
@@ -809,7 +808,7 @@ TEST_F(ChildStatusCollectorTest, ReportingAppActivityMetrics) {
 
   // Report activity for two different apps.
   const ash::app_time::AppId app1(apps::mojom::AppType::kWeb, "app1");
-  const ash::app_time::AppId app2(apps::mojom::AppType::kExtension, "app2");
+  const ash::app_time::AppId app2(apps::mojom::AppType::kChromeApp, "app2");
   const base::TimeDelta app1_interval = base::Seconds(1);
   const base::TimeDelta app2_interval = base::Seconds(2);
   SimulateAppActivity(app1, app1_interval);

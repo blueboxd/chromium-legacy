@@ -12,7 +12,7 @@
 # tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
 #             android-pixel-4 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
-#         fuchsia-board-astro fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -429,6 +429,7 @@ crbug.com/1086687 [ chromeos chromeos-board-kevin ] Pixel_PrecisionRoundedCorner
 
 # Flaky hang.
 crbug.com/1218288 [ fuchsia-board-astro ] Pixel_PrecisionRoundedCorner [ Failure ]
+crbug.com/1218288 [ fuchsia-board-sherlock ] Pixel_PrecisionRoundedCorner [ Failure ]
 crbug.com/1136875 [ fuchsia-board-qemu-x64 ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 
 # Still fails on Nexus 5 after all other Pixel_CanvasLowLatency* pass.
@@ -453,9 +454,7 @@ crbug.com/1200504 [ chromeos chromeos-board-kevin ] Pixel_OffscreenCanvasWebGLPa
 # Flakily crashes on Lacros-like Linux configuration.
 crbug.com/1209344 [ linux display-server-wayland intel skia-renderer-gl ] Pixel_Video_Context_Loss_VP9 [ RetryOnFailure ]
 crbug.com/1209344 [ linux display-server-wayland intel skia-renderer-gl ] Pixel_Video_MP4 [ RetryOnFailure ]
-
-# WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
-crbug.com/1245704 [ mac ] Pixel_WebGPUToDataURL [ Failure ]
+crbug.com/1271184 [ linux display-server-wayland intel skia-renderer-gl ] Pixel_Video_Context_Loss_MP4 [ RetryOnFailure ]
 
 # WebGPU pixel tests fail on Win10+SkiaRenderer+Dawn.
 crbug.com/1213920 [ win10 skia-renderer-dawn ] Pixel_WebGPU* [ Failure ]
@@ -471,6 +470,31 @@ crbug.com/1221258 [ android ] Pixel_OffscreenCanvas2DResizeOnWorker [ Failure ]
 
 # Pixel tests are flakily asserting in GPU process on SkiaRenderer/Vulkan
 crbug.com/1230743 [ linux skia-renderer-vulkan ] Pixel_* [ RetryOnFailure ]
+
+# WebGPU pixel tests flakily hang in the metal shader compiler on Mac.
+crbug.com/1268120 [ mac ] Pixel_WebGPUToDataURL [ Failure ]
+
+# NVIDIA Quadro P400 GPU has problem to generate correct rendering results.
+crbug.com/1238570 [ win nvidia-0x1cb3 ] Pixel_WebGPUImportVideoFrame [ Failure ]
+
+# Failures on Sherlock
+# Pixel_BackgroundImage causes a crash on Swarming. Skipping so that we have a signal for other tests.
+crbug.com/1268144 [ fuchsia fuchsia-board-sherlock skia-renderer-vulkan ] Pixel_BackgroundImage [ Skip ]
+
+# Pixel_WebGPUImportVideoFrame hangs on Windows FYI bots
+crbug.com/1274796 [ win nvidia-0x2184 ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1274796 [ win intel-0x5912 ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1274796 [ win amd-0x7340 ] Pixel_WebGPUImportVideoFrame [ Failure ]
+
+# Pixel_Video_Media_Stream_Incompatible_Stride flakes on NVIDIA Linux SkiaRenderer GL
+crbug.com/1213542 [ linux nvidia-0x1cb3 skia-renderer-gl ] Pixel_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
+
+# OffscreenCanvas pixel tests flaky crashes on ChromeOS Kevin
+crbug.com/1275741 [ chromeos chromeos-board-kevin skia-renderer-gl ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]
+crbug.com/1275741 [ chromeos chromeos-board-kevin skia-renderer-gl ] Pixel_OffscreenCanvasIBRCWebGLMain [ RetryOnFailure ]
+
+# Flaky on Pixel 4 Android WebView
+crbug.com/1276605 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_OffscreenCanvasTransferToImageBitmap [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

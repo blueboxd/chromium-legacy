@@ -28,7 +28,9 @@ struct WebUIAttributionReport {
     kPending,
     kDroppedDueToLowPriority,
     kDroppedForNoise,
+    kProhibitedByBrowserPolicy,
     kSent,
+    kNetworkError,
   };
 
   Status status;
@@ -49,7 +51,36 @@ struct WebUIAttributionSource {
   SourceType source_type;
   int64 priority;
   array<int64> dedup_keys;
-  bool reportable;
+
+  enum Attributability {
+    kAttributable,
+    // The source was dropped due to `StorableSource::AttributionLogic::kNever`.
+    kNoised,
+    kReplacedByNewerSource,
+    kReachedAttributionLimit,
+  };
+  Attributability attributability;
+};
+
+// Observer for events relevant to the attribution internals WebUI.
+interface AttributionInternalsObserver {
+  // Called when the sources in storage changed, indicating that the observer
+  // should call `AttributionInternalsHandler::GetActiveSources()`.
+  OnSourcesChanged();
+
+  // Called when the reports in storage changed, indicating that the observer
+  // should call `AttributionInternalsHandler::GetReports()`.
+  OnReportsChanged();
+
+  // Called when a source is deactivated.
+  OnSourceDeactivated(WebUIAttributionSource source);
+
+  // Called when a report is sent, regardless of success.
+  OnReportSent(WebUIAttributionReport report);
+
+  // Called when a report is dropped from storage or prevented from being
+  // created in the first place.
+  OnReportDropped(WebUIAttributionReport report);
 };
 
 // Mojo interface for the attribution internals WebUI to communicate with the
@@ -76,4 +107,7 @@ interface AttributionInternalsHandler {
   // Deletes all persisted data for the attribution reporting API, returning when the
   // operation has been completed.
   ClearStorage() => ();
+
+  // Registers an observer to be notified of attribution reporting events.
+  AddObserver(pending_remote<AttributionInternalsObserver> observer) => (bool success);
 };

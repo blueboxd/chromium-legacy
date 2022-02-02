@@ -5,7 +5,7 @@
 #ifndef UI_AURA_TEST_WINDOW_EVENT_DISPATCHER_TEST_API_H_
 #define UI_AURA_TEST_WINDOW_EVENT_DISPATCHER_TEST_API_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace aura {
 
@@ -28,7 +28,7 @@ class WindowEventDispatcherTestApi {
   void WaitUntilPointerMovesDispatched();
 
  private:
-  WindowEventDispatcher* dispatcher_;
+  raw_ptr<WindowEventDispatcher> dispatcher_;
 };
 
 }  // namespace test

@@ -12,6 +12,10 @@
 #include "base/time/time.h"
 #include "components/app_restore/restore_data.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace ash {
 
 // Indicates where a desk template originated from.
@@ -40,6 +44,12 @@ class ASH_PUBLIC_EXPORT DeskTemplate {
   DeskTemplate(const DeskTemplate&) = delete;
   DeskTemplate& operator=(const DeskTemplate&) = delete;
   ~DeskTemplate();
+
+  // Returns whether desk templates support the `window`'s app type.
+  static bool IsAppTypeSupported(aura::Window* window);
+
+  // A special value to use as an icon identifier for an incognito window.
+  static constexpr char kIncognitoWindowIdentifier[] = "incognito_window";
 
   base::GUID uuid() const { return uuid_; }
   DeskTemplateSource source() const { return source_; }

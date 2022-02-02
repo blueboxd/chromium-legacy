@@ -499,8 +499,8 @@ enum class BackForwardNavigationType {
                     rendererInitiated:NO];
 
   if (self.navigationManagerImpl->IsRestoreSessionInProgress()) {
-    if (self.navigationManagerImpl->RestoreSessionFromCache(navigationURL)) {
-      // Return early if the session was restored from cache.
+    if (self.navigationManagerImpl->RestoreNativeSession(navigationURL)) {
+      // Return early if the session was restored via native API.
       return;
     }
     [self.delegate
@@ -521,6 +521,9 @@ enum class BackForwardNavigationType {
       web::GetWebClient()->IsAppSpecificURL(virtualURL)) {
     // file:// URL navigations are allowed for app-specific URLs, which
     // already have elevated privileges.
+    // TODO(crbug.com/1267899): Remove this #if once Xcode 13 is required for
+    // building iOS-related code.
+#if defined(__IPHONE_15_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_15_0
     if (@available(iOS 15, *)) {
       navigation = [self.webView loadFileRequest:request
                          allowingReadAccessToURL:request.URL];
@@ -529,6 +532,11 @@ enum class BackForwardNavigationType {
       navigation = [self.webView loadFileURL:navigationNSURL
                      allowingReadAccessToURL:navigationNSURL];
     }
+#else
+    NSURL* navigationNSURL = net::NSURLWithGURL(navigationURL);
+    navigation = [self.webView loadFileURL:navigationNSURL
+                   allowingReadAccessToURL:navigationNSURL];
+#endif
   } else {
     navigation = [self.webView loadRequest:request];
   }

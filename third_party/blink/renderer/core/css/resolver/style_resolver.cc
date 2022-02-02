@@ -102,7 +102,7 @@
 #include "third_party/blink/renderer/core/style/style_initial_data.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -232,7 +232,7 @@ String ComputeBaseComputedStyleDiff(const ComputedStyle* base_computed_style,
     builder.Append(" ");
   }
 
-  return builder.ToString();
+  return builder.ReleaseString();
 #else
   return g_null_atom;
 #endif  // DCHECK_IS_ON()
@@ -526,7 +526,7 @@ static void MatchVTTRules(const Element& element,
         style_sheet_index++;
       }
     }
-    collector.SortAndTransferMatchedRules();
+    collector.SortAndTransferMatchedRules(true /* is_vtt_embedded_style */);
   }
 }
 
@@ -1070,6 +1070,8 @@ void StyleResolver::ApplyBaseStyle(
       state.Style()->SetDependsOnContainerQueries(true);
     if (collector.MatchedResult().DependsOnViewportContainerQueries())
       state.Style()->SetHasViewportUnits(true);
+    if (collector.MatchedResult().DependsOnRemContainerQueries())
+      state.Style()->SetHasRemUnits();
     if (collector.MatchedResult().ConditionallyAffectsAnimations())
       state.SetCanAffectAnimations();
 
@@ -1213,6 +1215,9 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
   if (initial_data)
     initial_style->SetInitialData(std::move(initial_data));
 
+  if (frame && frame->IsInert())
+    initial_style->SetIsForcedInert();
+
   return initial_style;
 }
 
@@ -1244,9 +1249,8 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
   MatchResult match_result;
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
-  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+  ElementRuleCollector collector(state.ElementContext(),
+                                 StyleRecalcContext::FromAncestors(*element),
                                  selector_filter_, match_result, state.Style(),
                                  EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
@@ -1261,9 +1265,8 @@ StyleResolver::CascadedValuesForElement(Element* element, PseudoId pseudo_id) {
   state.SetStyle(CreateComputedStyle());
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
-  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+  ElementRuleCollector collector(state.ElementContext(),
+                                 StyleRecalcContext::FromAncestors(*element),
                                  selector_filter_, cascade.MutableMatchResult(),
                                  state.Style(), EInsideLink::kNotInsideLink);
   collector.SetPseudoElementStyleRequest(StyleRequest(pseudo_id, nullptr));
@@ -1277,7 +1280,8 @@ Element* StyleResolver::FindContainerForElement(
     Element* element,
     const AtomicString& container_name) {
   auto context = StyleRecalcContext::FromAncestors(*element);
-  return ContainerQueryEvaluator::FindContainer(context, container_name);
+  return ContainerQueryEvaluator::FindContainer(
+      context, ContainerSelector(container_name));
 }
 
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
@@ -1499,14 +1503,16 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
                                     matched_property_cache_inherited_hit, 1);
 
       EInsideLink link_status = state.Style()->InsideLink();
+      bool ancestors_affected_by_has = state.Style()->AncestorsAffectedByHas();
       // If the cache item parent style has identical inherited properties to
       // the current parent style then the resulting style will be identical
       // too. We copy the inherited properties over from the cache and are done.
       state.Style()->InheritFrom(*cached_matched_properties->computed_style);
 
-      // Unfortunately the link status is treated like an inherited property. We
-      // need to explicitly restore it.
+      // Unfortunately the link status and 'ancestors affected by has' are
+      // treated like an inherited property. We need to explicitly restore it.
       state.Style()->SetInsideLink(link_status);
+      state.Style()->SetAncestorsAffectedByHas(ancestors_affected_by_has);
 
       is_inherited_cache_hit = true;
     }
@@ -1541,10 +1547,6 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
 }
 
 bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
-  // TODO(crbug.com/1180159): @container and transitions properly.
-  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-    return false;
-
   ElementAnimations* element_animations = GetElementAnimations(state);
   if (!element_animations || !element_animations->IsAnimationStyleChange())
     return false;
@@ -1622,7 +1624,6 @@ FilterOperations StyleResolver::ComputeFilterOperations(
   scoped_refptr<ComputedStyle> parent = CreateComputedStyle();
   parent->SetFont(font);
 
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
   StyleResolverState state(GetDocument(), *element, StyleRecalcContext(),
                            StyleRequest(parent.get()));
 
@@ -1639,8 +1640,8 @@ FilterOperations StyleResolver::ComputeFilterOperations(
 scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(
     Element& element,
     ActiveInterpolationsMap& interpolations) {
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
+  StyleRecalcContext style_recalc_context =
+      StyleRecalcContext::FromAncestors(element);
   StyleRequest style_request;
   StyleResolverState state(GetDocument(), element, style_recalc_context,
                            style_request);
@@ -1716,10 +1717,8 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   if (!watched_selectors_rule_set)
     return;
 
-  // TODO(crbug.com/1145970): Use actual StyleRecalcContext.
-  StyleRecalcContext style_recalc_context;
   MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
+  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
                                  selector_filter_, match_result, state.Style(),
                                  state.Style()->InsideLink());
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
@@ -1808,18 +1807,7 @@ StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
     const ComputedStyle& layout_parent_style) {
   if (parent_style.InheritedEqual(layout_parent_style))
     return nullptr;
-  scoped_refptr<ComputedStyle> text_style =
-      CreateAnonymousStyleWithDisplay(parent_style, EDisplay::kInline);
-  // If the parent with display:contents has its own text-decoration,
-  // remove it from AppliedTextDecorations.
-  wtf_size_t parent_decorations = parent_style.AppliedTextDecorations().size();
-  if (parent_decorations >
-      layout_parent_style.AppliedTextDecorations().size()) {
-    text_style->ClearAppliedTextDecorations();
-    if (parent_decorations > 1u)
-      text_style->RestoreParentTextDecorations(layout_parent_style);
-  }
-  return text_style;
+  return CreateAnonymousStyleWithDisplay(parent_style, EDisplay::kInline);
 }
 
 #define PROPAGATE_FROM(source, getter, setter, initial) \

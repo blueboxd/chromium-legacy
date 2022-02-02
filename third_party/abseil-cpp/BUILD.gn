@@ -7,6 +7,7 @@
 # without these options will be part of the same program.
 
 import("//build/config/c++/c++.gni")
+import("//build/config/nacl/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build_overrides/build.gni")
@@ -15,6 +16,9 @@ import("//third_party/abseil-cpp/absl.gni")
 config("absl_component_build") {
   defines = [ "ABSL_CONSUME_DLL" ]
 }
+
+assert(!is_nacl || is_nacl_saigo,
+       "base must not be built in most nacl toolchains")
 
 component("absl") {
   public_deps = [ ":absl_component_deps" ]
@@ -142,7 +146,7 @@ config("absl_default_cflags_cc") {
       "-Wno-sign-conversion",
       "-Wstring-conversion",
     ]
-    if (!is_nacl && !use_xcode_clang) {
+    if (!is_nacl) {
       cflags_cc += [ "-Wbitfield-enum-conversion" ]
     }
   }
@@ -180,6 +184,7 @@ if (build_with_chromium) {
         "absl/base:config_test",
         "absl/cleanup:cleanup_test",
         "absl/container:inlined_vector_test",
+        "absl/container:node_slot_policy_test",
         "absl/container:sample_element_size_test",
         "absl/hash:low_level_hash_test",
         "absl/memory:memory_test",
@@ -188,11 +193,12 @@ if (build_with_chromium) {
         "absl/profiling:periodic_sampler_test",
         "absl/status:statusor_test",
         "absl/strings:ascii_test",
-        "absl/strings:cord_internal_test",
         "absl/strings:cord_rep_btree_navigator_test",
         "absl/strings:cord_rep_btree_reader_test",
         "absl/strings:cord_rep_btree_test",
+        "absl/strings:cord_rep_concat_test",
         "absl/strings:cord_rep_consume_test",
+        "absl/strings:cord_rep_crc_test",
         "absl/strings:cordz_functions_test",
         "absl/strings:cordz_info_statistics_test",
         "absl/strings:cordz_info_test",

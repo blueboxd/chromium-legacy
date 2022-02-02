@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "ui/aura/native_window_occlusion_tracker_win.h"
 
 #include <winuser.h>
@@ -9,7 +10,6 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -120,7 +120,7 @@ class MockWindowObserver : public WindowObserver {
   }
 
  private:
-  Window* window_;
+  raw_ptr<Window> window_;
   Window::OcclusionState expectation_ = Window::OcclusionState::UNKNOWN;
   base::OnceClosure quit_closure_;
 };

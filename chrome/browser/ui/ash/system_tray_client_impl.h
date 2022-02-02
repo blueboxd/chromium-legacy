@@ -7,7 +7,6 @@
 
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/public/cpp/update_types.h"
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/ash/system/system_clock_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
@@ -43,7 +42,7 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   // Specifies if notification is recommended or required by administrator and
   // triggers the notification to be shown with the given body and title.
   // Only applies to OS updates.
-  void SetRelaunchNotificationState(
+  virtual void SetRelaunchNotificationState(
       const ash::RelaunchNotificationState& relaunch_notification_state);
 
   // Resets update state to hide notification.
@@ -94,6 +93,10 @@ class SystemTrayClientImpl : public ash::SystemTrayClient,
   void ShowMultiDeviceSetup() override;
   void RequestRestartForUpdate() override;
   void SetLocaleAndExit(const std::string& locale_iso_code) override;
+
+ protected:
+  // Used by mocks in tests.
+  explicit SystemTrayClientImpl(SystemTrayClientImpl* mock_instance);
 
  private:
   // Observes profile changed and profile's policy changed.

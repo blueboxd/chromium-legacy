@@ -9,16 +9,16 @@
 #include "chrome/browser/lacros/metrics_reporting_observer.h"
 #include "chrome/browser/lacros/prefs_ash_observer.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/lacros/lacros_dbus_helper.h"
+#include "chromeos/lacros/dbus/lacros_dbus_helper.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/common/result_codes.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 ChromeBrowserMainPartsLacros::ChromeBrowserMainPartsLacros(
-    const content::MainFunctionParams& parameters,
+    content::MainFunctionParams parameters,
     StartupData* startup_data)
-    : ChromeBrowserMainPartsLinux(parameters, startup_data) {}
+    : ChromeBrowserMainPartsLinux(std::move(parameters), startup_data) {}
 
 ChromeBrowserMainPartsLacros::~ChromeBrowserMainPartsLacros() = default;
 

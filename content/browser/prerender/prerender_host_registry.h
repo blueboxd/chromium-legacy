@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_PRERENDER_PRERENDER_HOST_REGISTRY_H_
 #define CONTENT_BROWSER_PRERENDER_PRERENDER_HOST_REGISTRY_H_
 
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -69,7 +70,7 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // Creates and starts a host. Returns the root frame tree node id of the
   // prerendered page, which can be used as the id of the host.
   int CreateAndStartHost(const PrerenderAttributes& attributes,
-                         WebContents* web_contents);
+                         WebContents& web_contents);
 
   // Cancels the host registered for `frame_tree_node_id`. The host is
   // immediately removed from the map of non-reserved or reserved hosts but
@@ -144,6 +145,13 @@ class CONTENT_EXPORT PrerenderHostRegistry {
   // DCHECK when `reserved_prerender_host_by_frame_tree_node_id_` is not empty.
   // This will cancel all hosts in `prerender_host_by_frame_tree_node_id_`.
   void CancelAllHostsForTesting();
+
+  // Gets the trigger type from the reserved PrerenderHost.
+  PrerenderTriggerType GetPrerenderTriggerType(int frame_tree_node_id);
+  // Gets the embedder histogram suffix from the reserved PrerenderHost. Only
+  // used for metrics.
+  const std::string& GetPrerenderEmbedderHistogramSuffix(
+      int frame_tree_node_id);
 
   base::WeakPtr<PrerenderHostRegistry> GetWeakPtr();
 

@@ -31,6 +31,7 @@
 #include "device/bluetooth/bluez/bluetooth_pairing_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_admin_policy_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_battery_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
@@ -43,11 +44,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "device/bluetooth/bluetooth_low_energy_scan_filter.h"
 #include "device/bluetooth/bluetooth_low_energy_scan_session.h"
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
@@ -55,7 +56,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/data_decoder/public/mojom/ble_scan_parser.mojom.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -73,7 +74,7 @@ using ::device::TestBluetoothAdapterObserver;
 using ::testing::_;
 using ::testing::StrictMock;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Background scanning filter values.
 constexpr int16_t kBackgroundScanningDeviceFoundRSSIThreshold = -80;
 constexpr int16_t kBackgroundScanningDeviceLostRSSIThreshold = -100;
@@ -108,7 +109,7 @@ GetAdvertisementMonitorApplicationManger() {
                  ->GetBluetoothAdvertisementMonitorManagerClient())
       ->application_provider();
 }
-#endif  // #if BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void ScheduleAsynchronousCancelPairing(BluetoothDevice* device) {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -147,7 +148,7 @@ int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
   return -1;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 class FakeBleScanParserImpl : public data_decoder::mojom::BleScanParser {
  public:
   FakeBleScanParserImpl() = default;
@@ -163,7 +164,7 @@ class FakeBleScanParserImpl : public data_decoder::mojom::BleScanParser {
     std::move(callback).Run(nullptr);
   }
 };
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 class FakeBluetoothProfileServiceProviderDelegate
     : public bluez::BluetoothProfileServiceProvider::Delegate {
@@ -185,7 +186,7 @@ class FakeBluetoothProfileServiceProviderDelegate
   void Cancel() override {}
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 class FakeBluetoothLowEnergyScanSessionDelegate
     : public device::BluetoothLowEnergyScanSession::Delegate {
  public:
@@ -255,18 +256,19 @@ class FakeBluetoothLowEnergyScanSessionDelegate
   base::WeakPtrFactory<FakeBluetoothLowEnergyScanSessionDelegate>
       weak_ptr_factory_{this};
 };
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }  // namespace
 
 class BluetoothBlueZTest : public testing::Test {
  public:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   BluetoothBlueZTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{ash::features::kBluetoothAdvertisementMonitoring},
+        /*enabled_features=*/{chromeos::features::
+                                  kBluetoothAdvertisementMonitoring},
         /*disabled_features=*/{});
   }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS
   static const char kGapUuid[];
   static const char kGattUuid[];
   static const char kPnpUuid[];
@@ -280,6 +282,9 @@ class BluetoothBlueZTest : public testing::Test {
         std::make_unique<bluez::FakeBluetoothAdapterClient>();
     fake_bluetooth_adapter_client->SetSimulationIntervalMs(10);
 
+    auto fake_bluetooth_admin_policy_client =
+        std::make_unique<bluez::FakeBluetoothAdminPolicyClient>();
+
     auto fake_bluetooth_battery_client =
         std::make_unique<bluez::FakeBluetoothBatteryClient>();
 
@@ -289,6 +294,8 @@ class BluetoothBlueZTest : public testing::Test {
     fake_bluetooth_device_client->set_delay_start_discovery(true);
 
     fake_bluetooth_adapter_client_ = fake_bluetooth_adapter_client.get();
+    fake_bluetooth_admin_policy_client_ =
+        fake_bluetooth_admin_policy_client.get();
     fake_bluetooth_battery_client_ = fake_bluetooth_battery_client.get();
     fake_bluetooth_device_client_ = fake_bluetooth_device_client.get();
 
@@ -297,6 +304,8 @@ class BluetoothBlueZTest : public testing::Test {
     // implementations.
     dbus_setter->SetBluetoothAdapterClient(
         std::move(fake_bluetooth_adapter_client));
+    dbus_setter->SetBluetoothAdminPolicyClient(
+        std::move(fake_bluetooth_admin_policy_client));
     dbus_setter->SetBluetoothBatteryClient(
         std::move(fake_bluetooth_battery_client));
     dbus_setter->SetBluetoothDeviceClient(
@@ -308,7 +317,7 @@ class BluetoothBlueZTest : public testing::Test {
     dbus_setter->SetBluetoothGattServiceClient(
         std::make_unique<bluez::FakeBluetoothGattServiceClient>());
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     device::BluetoothAdapterFactory::SetBleScanParserCallback(
         base::BindLambdaForTesting([&]() {
           mojo::PendingRemote<data_decoder::mojom::BleScanParser>
@@ -318,7 +327,7 @@ class BluetoothBlueZTest : public testing::Test {
               ble_scan_parser.InitWithNewPipeAndPassReceiver());
           return ble_scan_parser;
         }));
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
     callback_count_ = 0;
     error_callback_count_ = 0;
@@ -326,10 +335,10 @@ class BluetoothBlueZTest : public testing::Test {
   }
 
   void TearDown() override {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     device::BluetoothAdapterFactory::SetBleScanParserCallback(
         base::NullCallback());
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
     discovery_sessions_.clear();
     adapter_.reset();
@@ -476,6 +485,7 @@ class BluetoothBlueZTest : public testing::Test {
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
+  bluez::FakeBluetoothAdminPolicyClient* fake_bluetooth_admin_policy_client_;
   bluez::FakeBluetoothBatteryClient* fake_bluetooth_battery_client_;
   bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
   scoped_refptr<BluetoothAdapter> adapter_;
@@ -485,7 +495,7 @@ class BluetoothBlueZTest : public testing::Test {
   std::string last_client_error_;
   std::vector<std::unique_ptr<BluetoothDiscoverySession>> discovery_sessions_;
   BluetoothAdapterProfileBlueZ* adapter_profile_;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   base::HistogramTester histogram_tester_;
 #endif
 
@@ -496,7 +506,7 @@ class BluetoothBlueZTest : public testing::Test {
     if (base::RunLoop::IsRunningOnCurrentThread())
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   base::test::ScopedFeatureList scoped_feature_list_;
 #endif
 };
@@ -2520,7 +2530,7 @@ TEST_F(BluetoothBlueZTest, ForgetDevice) {
   EXPECT_EQ(1, observer.device_removed_count());
   EXPECT_EQ(address, observer.last_device_address());
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   histogram_tester_.ExpectBucketCount("Bluetooth.ChromeOS.Forget.Result",
                                       device::ForgetResult::kSuccess, 1);
 #endif
@@ -2763,13 +2773,13 @@ TEST_F(BluetoothBlueZTest, DisconnectDevice) {
   BluetoothDevice* device = adapter_->GetDevice(
       bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   bluez::FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
           bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
   properties->type.ReplaceValue(BluetoothDeviceClient::kTypeBredr);
   properties->type.set_valid(true);
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   ASSERT_TRUE(device != nullptr);
   ASSERT_TRUE(device->IsPaired());
@@ -2801,13 +2811,13 @@ TEST_F(BluetoothBlueZTest, DisconnectDevice) {
 
   EXPECT_FALSE(device->IsConnected());
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   histogram_tester_.ExpectBucketCount("Bluetooth.ChromeOS.Disconnect.Result",
                                       device::DisconnectResult::kSuccess, 1);
   histogram_tester_.ExpectBucketCount(
       "Bluetooth.ChromeOS.Disconnect.Result.Classic",
       device::DisconnectResult::kSuccess, 1);
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 TEST_F(BluetoothBlueZTest, DisconnectUnconnectedDevice) {
@@ -4653,6 +4663,71 @@ TEST_F(BluetoothBlueZTest, SetConnectionLatency) {
   EXPECT_EQ(2, error_callback_count_);
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(BluetoothBlueZTest, AdminPolicyEvents) {
+  // Simulate the addition, removal, and change of admin policy.
+  GetAdapter();
+
+  // Create a device that will have related admin policy events with.
+  dbus::ObjectPath device_path =
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath);
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      device_path);
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  EXPECT_TRUE(device);
+  // A new device is not blocked by policy.
+  EXPECT_FALSE(device->IsBlockedByPolicy());
+
+  // Create an admin policy, check that the device policy is updated.
+  fake_bluetooth_admin_policy_client_->CreateAdminPolicy(
+      device_path,
+      /*is_blocked_by_policy=*/true);
+  EXPECT_TRUE(device->IsBlockedByPolicy());
+
+  // Change the admin policy, check that the device policy is updated.
+  fake_bluetooth_admin_policy_client_->ChangeAdminPolicy(
+      device_path,
+      /*is_blocked_by_policy=*/false);
+  EXPECT_FALSE(device->IsBlockedByPolicy());
+
+  // Change the admin policy again, check that the device policy is updated.
+  fake_bluetooth_admin_policy_client_->ChangeAdminPolicy(
+      device_path,
+      /*is_blocked_by_policy=*/true);
+  EXPECT_TRUE(device->IsBlockedByPolicy());
+
+  // Remove the admin policy. The device policy should be set back to default
+  // (false).
+  fake_bluetooth_admin_policy_client_->RemoveAdminPolicy(device_path);
+  EXPECT_FALSE(device->IsBlockedByPolicy());
+}
+
+TEST_F(BluetoothBlueZTest, AdminPolicyInitBeforeDevice) {
+  // Simulate the admin policy being added before the device is added.
+  GetAdapter();
+
+  dbus::ObjectPath device_path =
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath);
+
+  // Create an admin policy.
+  fake_bluetooth_admin_policy_client_->CreateAdminPolicy(
+      device_path,
+      /*is_blocked_by_policy=*/true);
+
+  // Create the associated device.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      device_path);
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  EXPECT_TRUE(device);
+  // The new device should contain the admin policy.
+  EXPECT_TRUE(device->IsBlockedByPolicy());
+}
+#endif
+
 TEST_F(BluetoothBlueZTest, BatteryEvents) {
   // Simulate the addition, removal, and change of Battery objects.
   GetAdapter();
@@ -4758,7 +4833,7 @@ TEST_F(BluetoothBlueZTest, DeviceUUIDsCombinedFromServiceAndAdvertisement) {
                              uuidLaterAdv, uuidLaterServ, uuidLaterBoth,
                              uuidAlwaysAdv, uuidAlwaysServ, uuidAlwaysBoth));
 }
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(BluetoothBlueZTest, StartLowEnergyScanSessionAdapterPresent) {
   GetAdapter();
 
@@ -5029,6 +5104,6 @@ TEST_F(BluetoothBlueZTest, LowEnergyScanSession_HardwareOffloadingSupported) {
             BluetoothAdapter::LowEnergyScanSessionHardwareOffloadingStatus::
                 kUndetermined);
 }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace bluez

@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_handler.h"
@@ -73,8 +72,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
                  base::OnceClosure callback,
                  network_handler::ErrorCallback error_callback) override;
 
-  void SetCellularAllowRoaming(bool allow_roaming,
-                               bool policy_allow_roaming) override;
+  void SetCellularPolicyAllowRoaming(bool policy_allow_roaming) override;
 
   void SetMACAddressRandomizationEnabled(bool enabled) override;
 
@@ -103,8 +101,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void Init(NetworkStateHandler* network_state_handler);
 
-  // Applies the current value of |cellular_allow_roaming_| and
-  // |cellular_policy_allow_roaming_| to all existing cellular devices of Shill.
+  // Applies the current value of |cellular_policy_allow_roaming_| to all
+  // existing cellular devices of Shill.
   void ApplyCellularAllowRoamingToShill();
 
   // Applies the current value of |mac_addr_randomization_enabled_| to wifi
@@ -172,7 +170,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   const DeviceState* GetWifiDeviceState();
 
   NetworkStateHandler* network_state_handler_ = nullptr;
-  bool cellular_allow_roaming_ = false;
   bool cellular_policy_allow_roaming_ = true;
   WifiFeatureSupport mac_addr_randomization_supported_ =
       WifiFeatureSupport::NOT_REQUESTED;

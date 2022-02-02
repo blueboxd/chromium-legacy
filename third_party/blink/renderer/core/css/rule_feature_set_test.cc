@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -33,6 +33,13 @@ class RuleFeatureSetTest : public testing::Test {
     document_->AppendChild(html);
 
     document_->body()->setInnerHTML("<b><i></i></b>");
+  }
+
+  Vector<MediaQueryExp> ExpressionsFrom(const MediaQuery& query) {
+    Vector<MediaQueryExp> expressions;
+    if (query.ExpNode())
+      query.ExpNode()->CollectExpressions(expressions);
+    return expressions;
   }
 
   RuleFeatureSet::SelectorPreMatch CollectFeatures(
@@ -1373,7 +1380,7 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
     RuleFeatureSet set2;
     RuleFeatureSet set3;
     for (const auto& query : min_width1->QueryVector()) {
-      for (const auto& expresssion : query->Expressions()) {
+      for (const auto& expresssion : ExpressionsFrom(*query)) {
         set1.ViewportDependentMediaQueryResults().push_back(
             MediaQueryResult(expresssion, true));
         set2.ViewportDependentMediaQueryResults().push_back(
@@ -1390,7 +1397,7 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
   {
     RuleFeatureSet set1;
     for (const auto& query : min_width1->QueryVector()) {
-      for (const auto& expresssion : query->Expressions()) {
+      for (const auto& expresssion : ExpressionsFrom(*query)) {
         set1.ViewportDependentMediaQueryResults().push_back(
             MediaQueryResult(expresssion, true));
       }
@@ -1398,7 +1405,7 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
 
     RuleFeatureSet set2;
     for (const auto& query : min_width2->QueryVector()) {
-      for (const auto& expresssion : query->Expressions()) {
+      for (const auto& expresssion : ExpressionsFrom(*query)) {
         set1.ViewportDependentMediaQueryResults().push_back(
             MediaQueryResult(expresssion, true));
       }
@@ -1412,7 +1419,7 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
     RuleFeatureSet set2;
     RuleFeatureSet set3;
     for (const auto& query : min_resolution1->QueryVector()) {
-      for (const auto& expresssion : query->Expressions()) {
+      for (const auto& expresssion : ExpressionsFrom(*query)) {
         set1.DeviceDependentMediaQueryResults().push_back(
             MediaQueryResult(expresssion, true));
         set2.DeviceDependentMediaQueryResults().push_back(
@@ -1429,7 +1436,7 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
   {
     RuleFeatureSet set1;
     for (const auto& query : min_resolution1->QueryVector()) {
-      for (const auto& expresssion : query->Expressions()) {
+      for (const auto& expresssion : ExpressionsFrom(*query)) {
         set1.DeviceDependentMediaQueryResults().push_back(
             MediaQueryResult(expresssion, true));
       }
@@ -1437,7 +1444,7 @@ TEST_F(RuleFeatureSetTest, MediaQueryResultListEquality) {
 
     RuleFeatureSet set2;
     for (const auto& query : min_resolution2->QueryVector()) {
-      for (const auto& expresssion : query->Expressions()) {
+      for (const auto& expresssion : ExpressionsFrom(*query)) {
         set2.DeviceDependentMediaQueryResults().push_back(
             MediaQueryResult(expresssion, true));
       }

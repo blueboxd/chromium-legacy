@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
@@ -35,6 +36,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -2489,7 +2491,7 @@ class CodeCacheHostInterceptor
   // These can be held as raw pointers since we use the
   // RenderFrameHostObserver interface to clear them before they are
   // destroyed.
-  CodeCacheHostImpl* code_cache_host_impl_;
+  raw_ptr<CodeCacheHostImpl> code_cache_host_impl_;
 };
 
 class CacheStorageControlForBadOrigin
@@ -3312,9 +3314,9 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
           running_info.render_process_id);
   if (base::FeatureList::IsEnabled(features::kPlzServiceWorker)) {
     EXPECT_EQ(IsServiceWorkerCrossOriginIsolated(),
-              process_lock.web_exposed_isolation_info().is_isolated());
+              process_lock.GetWebExposedIsolationInfo().is_isolated());
   } else {
-    EXPECT_FALSE(process_lock.web_exposed_isolation_info().is_isolated());
+    EXPECT_FALSE(process_lock.GetWebExposedIsolationInfo().is_isolated());
   }
 }
 
@@ -3370,7 +3372,7 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerCrossOriginIsolatedBrowserTest,
       ChildProcessSecurityPolicyImpl::GetInstance()->GetProcessLock(
           running_info.render_process_id);
   EXPECT_EQ(IsServiceWorkerCrossOriginIsolated(),
-            process_lock.web_exposed_isolation_info().is_isolated());
+            process_lock.GetWebExposedIsolationInfo().is_isolated());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

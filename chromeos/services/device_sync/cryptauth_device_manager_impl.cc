@@ -299,21 +299,21 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
 void AddBeaconSeedsToExternalDevice(
     const base::ListValue& beacon_seeds,
     cryptauth::ExternalDeviceInfo* external_device) {
-  for (size_t i = 0; i < beacon_seeds.GetList().size(); i++) {
-    const base::DictionaryValue* seed_dictionary = nullptr;
-    if (!beacon_seeds.GetDictionary(i, &seed_dictionary)) {
+  for (const base::Value& seed_dictionary : beacon_seeds.GetList()) {
+    if (!seed_dictionary.is_dict()) {
       PA_LOG(WARNING) << "Unable to retrieve BeaconSeed dictionary; "
                       << "skipping.";
       continue;
     }
 
-    std::string seed_data_b64, start_time_millis_str, end_time_millis_str;
-    if (!seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedData,
-                                    &seed_data_b64) ||
-        !seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedStartMs,
-                                    &start_time_millis_str) ||
-        !seed_dictionary->GetString(kExternalDeviceKeyBeaconSeedEndMs,
-                                    &end_time_millis_str)) {
+    const std::string* seed_data_b64 =
+        seed_dictionary.FindStringKey(kExternalDeviceKeyBeaconSeedData);
+    const std::string* start_time_millis_str =
+        seed_dictionary.FindStringKey(kExternalDeviceKeyBeaconSeedStartMs);
+    const std::string* end_time_millis_str =
+        seed_dictionary.FindStringKey(kExternalDeviceKeyBeaconSeedEndMs);
+
+    if (!seed_data_b64 || !start_time_millis_str || !end_time_millis_str) {
       PA_LOG(WARNING) << "Unable to deserialize BeaconSeed due to missing "
                       << "data; skipping.";
       continue;
@@ -321,7 +321,7 @@ void AddBeaconSeedsToExternalDevice(
 
     // Seed data is returned as raw data, not in Base64 encoding.
     std::string seed_data;
-    if (!base::Base64UrlDecode(seed_data_b64,
+    if (!base::Base64UrlDecode(*seed_data_b64,
                                base::Base64UrlDecodePolicy::REQUIRE_PADDING,
                                &seed_data)) {
       PA_LOG(WARNING) << "Decoding seed data failed.";
@@ -329,8 +329,8 @@ void AddBeaconSeedsToExternalDevice(
     }
 
     int64_t start_time_millis, end_time_millis;
-    if (!base::StringToInt64(start_time_millis_str, &start_time_millis) ||
-        !base::StringToInt64(end_time_millis_str, &end_time_millis)) {
+    if (!base::StringToInt64(*start_time_millis_str, &start_time_millis) ||
+        !base::StringToInt64(*end_time_millis_str, &end_time_millis)) {
       PA_LOG(WARNING) << "Unable to convert stored timestamp to int64_t: "
                       << start_time_millis_str << " or " << end_time_millis_str;
       continue;
@@ -458,9 +458,10 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
 
   // TODO(crbug.com/848477): Migrate |unlockable| into
   // |supported_software_features|.
-  bool unlockable;
-  if (dictionary.GetBoolean(kExternalDeviceKeyUnlockable, &unlockable))
-    external_device->set_unlockable(unlockable);
+  absl::optional<bool> unlockable =
+      dictionary.FindBoolKey(kExternalDeviceKeyUnlockable);
+  if (unlockable.has_value())
+    external_device->set_unlockable(unlockable.value());
 
   std::string last_update_time_millis_str;
   if (dictionary.GetString(kExternalDeviceKeyLastUpdateTimeMillis,
@@ -486,13 +487,15 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   if (dictionary.GetList(kExternalDeviceKeyBeaconSeeds, &beacon_seeds))
     AddBeaconSeedsToExternalDevice(*beacon_seeds, external_device);
 
-  bool arc_plus_plus;
-  if (dictionary.GetBoolean(kExternalDeviceKeyArcPlusPlus, &arc_plus_plus))
-    external_device->set_arc_plus_plus(arc_plus_plus);
+  absl::optional<bool> arc_plus_plus =
+      dictionary.FindBoolKey(kExternalDeviceKeyArcPlusPlus);
+  if (arc_plus_plus.has_value())
+    external_device->set_arc_plus_plus(arc_plus_plus.value());
 
-  bool pixel_phone;
-  if (dictionary.GetBoolean(kExternalDeviceKeyPixelPhone, &pixel_phone))
-    external_device->set_pixel_phone(pixel_phone);
+  absl::optional<bool> pixel_phone =
+      dictionary.FindBoolKey(kExternalDeviceKeyPixelPhone);
+  if (pixel_phone.has_value())
+    external_device->set_pixel_phone(pixel_phone.value());
 
   std::string no_pii_device_name_b64;
   if (dictionary.GetString(kExternalDeviceKeyNoPiiDeviceName,
@@ -505,18 +508,17 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
     }
   }
 
-  bool unlock_key = false;
-  dictionary.GetBoolean(kExternalDeviceKeyUnlockKey, &unlock_key);
-  bool mobile_hotspot_supported = false;
-  dictionary.GetBoolean(kExternalDeviceKeyMobileHotspotSupported,
-                        &mobile_hotspot_supported);
+  absl::optional<bool> unlock_key =
+      dictionary.FindBoolKey(kExternalDeviceKeyUnlockKey);
+  absl::optional<bool> mobile_hotspot_supported =
+      dictionary.FindBoolKey(kExternalDeviceKeyMobileHotspotSupported);
 
   const base::DictionaryValue* software_features_dictionary;
   if (dictionary.GetDictionary(kDictionaryKeySoftwareFeatures,
                                &software_features_dictionary)) {
-    AddSoftwareFeaturesToExternalDevice(*software_features_dictionary,
-                                        external_device, unlock_key,
-                                        mobile_hotspot_supported);
+    AddSoftwareFeaturesToExternalDevice(
+        *software_features_dictionary, external_device,
+        unlock_key.value_or(false), mobile_hotspot_supported.value_or(false));
   }
 
   return true;

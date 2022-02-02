@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/modules/quota/quota_utils.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -62,9 +62,6 @@ void QueryStorageUsageAndQuotaCallback(
   // exposing obsoleted/proprietary storage systems, but also report when
   // those systems are in use.
   StorageUsageDetails* details = StorageUsageDetails::Create();
-  if (usage_breakdown->appcache) {
-    details->setApplicationCache(usage_breakdown->appcache);
-  }
   if (usage_breakdown->indexedDatabase) {
     details->setIndexedDB(usage_breakdown->indexedDatabase);
   }

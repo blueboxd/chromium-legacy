@@ -183,6 +183,14 @@ void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
   EXPECT_EQ("[OK]", result);
 }
 
+void LoadLegacyFilesInFrontend(DevToolsWindow* window) {
+  std::string result;
+  WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      wc, "uiTests.setupLegacyFilesForTest();", &result));
+  EXPECT_EQ("[OK]", result);
+}
+
 template <typename... T>
 void DispatchOnTestSuite(DevToolsWindow* window,
                          const char* method,
@@ -198,6 +206,7 @@ void DispatchOnTestSuite(DevToolsWindow* window,
       "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
       &result));
   ASSERT_EQ("function", result) << "DevTools front-end is broken.";
+  LoadLegacyFilesInFrontend(window);
   DispatchOnTestSuiteSkipCheck(window, method, args...);
 }
 
@@ -2045,7 +2054,8 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsTest, InspectSharedWorker) {
 }
 
 // Flaky on multiple platforms. See http://crbug.com/1263230
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
 #else
 #define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
@@ -2423,13 +2433,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, TestRawHeadersWithRedirectAndHSTS) {
 }
 
 // Tests that OpenInNewTab filters URLs.
-// TODO(https://crbug.com/1127051): Flaky on Windows.
-#if defined(OS_WIN)
-#define MAYBE_TestOpenInNewTabFilter DISABLED_TestOpenInNewTabFilter
-#else
-#define MAYBE_TestOpenInNewTabFilter TestOpenInNewTabFilter
-#endif
-IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestOpenInNewTabFilter) {
+IN_PROC_BROWSER_TEST_F(DevToolsTest, TestOpenInNewTabFilter) {
   OpenDevToolsWindow(kDebuggerTestPage, false);
   DevToolsUIBindings::Delegate* bindings_delegate_ =
       static_cast<DevToolsUIBindings::Delegate*>(window_);
@@ -2486,6 +2490,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, LoadNetworkResourceForFrontend) {
       browser(), embedded_test_server()->GetURL("/hello.html")));
   window_ =
       DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), false);
+  LoadLegacyFilesInFrontend(window_);
   RunTestMethod("testLoadResourceForFrontend", url.spec().c_str(),
                 file_url.c_str());
   DevToolsWindowTesting::CloseDevToolsWindowSync(window_);
@@ -2514,12 +2519,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
 IN_PROC_BROWSER_TEST_F(DevToolsTest, NewWindowFromBrowserContext) {
   window_ = DevToolsWindowTesting::OpenDiscoveryDevToolsWindowSync(
       browser()->profile());
+  LoadLegacyFilesInFrontend(window_);
   RunTestMethod("testNewWindowFromBrowserContext");
   DevToolsWindowTesting::CloseDevToolsWindowSync(window_);
 }
 
-// TODO(1266640): fix the test upstream and re-ebable.
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsTest, DISABLED_InspectElement) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsTest, InspectElement) {
   GURL url(embedded_test_server()->GetURL("a.com", "/devtools/oopif.html"));
   GURL iframe_url(
       embedded_test_server()->GetURL("b.com", "/devtools/oopif_frame.html"));
@@ -2851,6 +2856,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsFetchTest, FetchFromDevToolsSchemeIsProhibited) {
 IN_PROC_BROWSER_TEST_F(DevToolsTest, HostBindingsSyncIntegration) {
   // Smoke test to make sure that `registerPreference` works from JavaScript.
   OpenDevToolsWindow("about:blank", true);
+  LoadLegacyFilesInFrontend(window_);
 
   WebContents* wc = DevToolsWindowTesting::Get(window_)->main_web_contents();
   ASSERT_TRUE(content::ExecJs(
@@ -2878,6 +2884,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, HostBindingsSyncIntegration) {
             "unsynced value");
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsTest, NoJavascriptUrlOnDevtools) {
+  // As per crbug/1115460 one could use javascript: url as a homepage URL and then trigger homepage
+  // navigation (e.g. via keyboard shortcut) to execute in the context of the privileged devtools
+  // frontend.
+  OpenDevToolsWindow("about:blank", true);
+
+  WebContents* wc = DevToolsWindowTesting::Get(window_)->main_web_contents();
+  wc->GetController().LoadURL(GURL("javascript:window.xss=true"),
+                              content::Referrer(), ui::PAGE_TRANSITION_TYPED,
+                              std::string());
+  EXPECT_EQ(false, content::EvalJs(wc, "!!window.xss"));
+}
+
 class DevToolsSyncTest : public SyncTest {
  public:
   DevToolsSyncTest() : SyncTest(SyncTest::SINGLE_CLIENT) {}
@@ -2891,6 +2910,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSyncTest, GetSyncInformation) {
   DevToolsWindow* window = DevToolsWindowTesting::OpenDevToolsWindowSync(
       browser()->tab_strip_model()->GetActiveWebContents(), GetProfile(0),
       true);
+  LoadLegacyFilesInFrontend(window);
 
   WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
   const auto result = content::EvalJs(wc, content::JsReplace(R"(
@@ -2904,4 +2924,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSyncTest, GetSyncInformation) {
   EXPECT_TRUE(*result.value.FindBoolKey("isSyncActive"));
   EXPECT_TRUE(*result.value.FindBoolKey("arePreferencesSynced"));
   EXPECT_EQ(*result.value.FindStringKey("accountEmail"), "user@gmail.com");
+}
+
+// Regression test for https://crbug.com/1270184.
+// TODO(https://crbug.com/1277018): Fix flakyness. Test is disabled for now.
+IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_NoCrashFor1270184) {
+  OpenDevToolsWindow("/devtools/regress-crbug-1270184.html", true);
 }

@@ -166,6 +166,9 @@ if (is_chromeos_ash || is_chromeos_lacros) {
       # For caller-callee instrumentation version which needs frame pointers to
       # get the caller address.
       use_call_graph
+} else if (is_fuchsia) {
+  # Fuchsia on arm64 could use shadow call stack for unwinding.
+  enable_frame_pointers = current_cpu != "arm64"
 } else {
   # Explicitly ask for frame pointers, otherwise:
   # * Stacks may be missing for sanitizer and profiling builds.
@@ -201,6 +204,9 @@ can_unwind_with_cfi_table = is_android && !is_component_build &&
 enable_arm_cfi_table = is_android && !is_component_build && current_cpu == "arm"
 
 declare_args() {
+  # Set to true to use the android unwinder V2 implementation.
+  use_android_unwinder_v2 = false
+
   # If this running on a GPU FYI bot.
   # TODO(https://crbug.com/1233871): Remove this again.
   is_gpu_fyi_bot = false
@@ -213,8 +219,7 @@ declare_args() {
   # lld doesn't support).
   # The default linker everywhere else.
   use_lld = is_clang && !(is_ios && is_cronet_build) &&
-            !(is_mac && is_gpu_fyi_bot) && !use_xcode_clang &&
-            current_os != "zos"
+            !(is_mac && is_gpu_fyi_bot) && current_os != "zos"
 }
 
 declare_args() {

@@ -6,6 +6,8 @@
 
 #include <unordered_map>
 
+#include "base/memory/raw_ptr.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
@@ -103,8 +105,7 @@ Provider base_provider_fuchsia = {PathProviderFuchsia, &base_provider,
                                   true};
 #endif
 
-#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID) && \
-    !defined(OS_FUCHSIA)
+#if defined(OS_POSIX) && !defined(OS_APPLE) && !defined(OS_ANDROID)
 Provider base_provider_posix = {
   PathProviderPosix,
   &base_provider,
@@ -121,7 +122,7 @@ struct PathData {
   Lock lock;
   PathMap cache;        // Cache mappings from path key to path value.
   PathMap overrides;    // Track path overrides.
-  Provider* providers;  // Linked list of path service providers.
+  raw_ptr<Provider> providers;  // Linked list of path service providers.
   bool cache_disabled;  // Don't use cache if true;
 
   PathData() : cache_disabled(false) {

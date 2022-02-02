@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -36,6 +37,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
@@ -211,10 +213,15 @@ class PasswordStoreConsumerVerifier
     return password_entries_;
   }
 
+  base::WeakPtr<password_manager::PasswordStoreConsumer> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<password_manager::PasswordForm>>
       password_entries_;
+  base::WeakPtrFactory<PasswordStoreConsumerVerifier> weak_ptr_factory_{this};
 };
 
 base::FilePath GetFirstNonSigninNonLockScreenAppProfile(
@@ -686,16 +693,29 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, EphemeralProfile) {
   EXPECT_EQ(1U, browser_list->size());
   EXPECT_EQ(initial_profile_count, storage.GetNumberOfProfiles());
 
+// The following check is flaky on Windows.
+// TODO(https://crbug.com/1191455): re-enable this check when the profile
+// directory deletion works more reliably on Windows.
+#if !defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kDestroyProfileOnBrowserClose)) {
     // Check that NukeProfileFromDisk() works correctly.
     base::ScopedAllowBlockingForTesting allow_blocking;
-    base::Time start = base::Time::Now();
-    while (base::PathExists(path_profile2) &&
-           base::Time::Now() - start < TestTimeouts::action_timeout()) {
-      base::RunLoop().RunUntilIdle();
-    }
+    base::FilePathWatcher watcher;
+    base::RunLoop run_loop;
+    ASSERT_TRUE(watcher.Watch(
+        path_profile2, base::FilePathWatcher::Type::kNonRecursive,
+        base::BindLambdaForTesting([&run_loop, &path_profile2](
+                                       const base::FilePath& path, bool error) {
+          if (path != path_profile2)
+            return;
+          EXPECT_FALSE(error);
+          if (!base::PathExists(path))
+            run_loop.Quit();
+        })));
+    run_loop.Run();
     EXPECT_FALSE(base::PathExists(path_profile2));
   }
+#endif  // !defined(OS_WIN)
 }
 
 // The test makes sense on those platforms where the keychain exists.
@@ -720,7 +740,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeletePasswords) {
 
   password_store->AddLogin(form);
   PasswordStoreConsumerVerifier verify_add;
-  password_store->GetAutofillableLogins(&verify_add);
+  password_store->GetAutofillableLogins(verify_add.GetWeakPtr());
   verify_add.Wait();
   EXPECT_EQ(1u, verify_add.GetPasswords().size());
 
@@ -732,7 +752,7 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeletePasswords) {
   run_loop.Run();
 
   PasswordStoreConsumerVerifier verify_delete;
-  password_store->GetAutofillableLogins(&verify_delete);
+  password_store->GetAutofillableLogins(verify_delete.GetWeakPtr());
   verify_delete.Wait();
   EXPECT_EQ(0u, verify_delete.GetPasswords().size());
 }
@@ -808,11 +828,34 @@ const base::FilePath::CharType kNonAsciiProfileDir[] =
 
 class ProfileManagerNonAsciiBrowserTest : public ProfileManagerBrowserTestBase {
  protected:
+  ProfileManagerNonAsciiBrowserTest() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    create_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterCreateServicesCallbackForTesting(
+                base::BindRepeating(&ProfileManagerNonAsciiBrowserTest::
+                                        OnWillCreateBrowserContextServices,
+                                    base::Unretained(this)));
+#endif
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ProfileManagerBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchNative(switches::kProfileDirectory,
                                      kNonAsciiProfileDir);
   }
+
+ private:
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On Lacros, the `IdentityManager` expects that there is always a "Default"
+  // profile. Use the identity test environment to bypass this requirement.
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    IdentityTestEnvironmentProfileAdaptor::
+        SetIdentityTestEnvironmentFactoriesOnBrowserContext(context);
+  }
+
+  base::CallbackListSubscription create_services_subscription_;
+#endif
 };
 
 IN_PROC_BROWSER_TEST_F(ProfileManagerNonAsciiBrowserTest,

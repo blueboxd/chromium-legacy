@@ -27,6 +27,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
@@ -50,6 +51,10 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+
+namespace gfx {
+class Vector2dF;
+}
 
 namespace blink {
 
@@ -75,9 +80,9 @@ class ElementIntersectionObserverData;
 class ElementRareData;
 class ExceptionState;
 class FloatQuad;
-class FloatSize;
 class FocusOptions;
 class GetInnerHTMLOptions;
+class HTMLFieldSetElement;
 class HTMLTemplateElement;
 class Image;
 class InputDeviceCapabilities;
@@ -88,6 +93,7 @@ class PointerLockOptions;
 class PseudoElement;
 class ResizeObservation;
 class ResizeObserver;
+class ResizeObserverSize;
 class ScrollIntoViewOptions;
 class ScrollToOptions;
 class ShadowRoot;
@@ -106,7 +112,7 @@ enum class DocumentUpdateReason;
 
 struct FocusParams;
 
-using ScrollOffset = FloatSize;
+using ScrollOffset = gfx::Vector2dF;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -337,13 +343,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void scrollTo(const ScrollToOptions*);
   LayoutBox* GetLayoutBoxForScrolling() const override;
 
-  IntRect BoundsInViewport() const;
+  gfx::Rect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the visual
   // viewport's rectangle in the visual viewport's coordinate space.
   // Applies ancestors' frames' clipping, but does not (yet) apply (overflow)
   // element clipping (crbug.com/889840).
-  IntRect VisibleBoundsInVisualViewport() const;
-  Vector<IntRect> OutlineRectsInVisualViewport(
+  gfx::Rect VisibleBoundsInVisualViewport() const;
+  Vector<gfx::Rect> OutlineRectsInVisualViewport(
       DocumentUpdateReason reason = DocumentUpdateReason::kUnknown) const;
 
   DOMRectList* getClientRects();
@@ -990,6 +996,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ContainerQueryData* GetContainerQueryData() const;
   void SetContainerQueryEvaluator(ContainerQueryEvaluator*);
   ContainerQueryEvaluator* GetContainerQueryEvaluator() const;
+  bool SkippedContainerStyleRecalc() const;
 
   virtual void SetActive(bool active);
   virtual void SetHovered(bool hovered);
@@ -1008,6 +1015,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // For undo stack cleanup
   bool HasUndoStack() const;
   void SetHasUndoStack(bool);
+
+  // For font-related style invalidation.
+  void SetScrollbarPseudoElementStylesDependOnFontMetrics(bool);
+
+  void SaveIntrinsicSize(ResizeObserverSize* size);
+  const ResizeObserverSize* LastIntrinsicSize() const;
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -1095,6 +1108,11 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void AdjustForceLegacyLayout(const ComputedStyle*,
                                bool* should_force_legacy_layout);
 
+  // Reattach layout tree for all children but not the element itself. This is
+  // only used for reattaching fieldset children when the fieldset is a query
+  // container for size container queries.
+  void ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>);
+
  private:
   friend class AXObject;
 
@@ -1170,12 +1188,40 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
     kAttachLayoutTree,
   };
 
+  void UpdateFirstLetterPseudoElement(StyleUpdatePhase,
+                                      const StyleRecalcContext&);
+
+  // Creates a StyleRecalcContext and invokes the method above. Only use this
+  // when there is no StyleRecalcContext available.
   void UpdateFirstLetterPseudoElement(StyleUpdatePhase);
 
   inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId,
                                                     const StyleRecalcContext&);
   void AttachPseudoElement(PseudoId, AttachContext&);
   void DetachPseudoElement(PseudoId, bool performing_reattach);
+
+  void AttachPrecedingPseudoElements(AttachContext& context) {
+    AttachPseudoElement(kPseudoIdMarker, context);
+    AttachPseudoElement(kPseudoIdBefore, context);
+  }
+
+  void AttachSucceedingPseudoElements(AttachContext& context) {
+    AttachPseudoElement(kPseudoIdAfter, context);
+    AttachPseudoElement(kPseudoIdBackdrop, context);
+    UpdateFirstLetterPseudoElement(StyleUpdatePhase::kAttachLayoutTree);
+    AttachPseudoElement(kPseudoIdFirstLetter, context);
+  }
+
+  void DetachPrecedingPseudoElements(bool performing_reattach) {
+    DetachPseudoElement(kPseudoIdMarker, performing_reattach);
+    DetachPseudoElement(kPseudoIdBefore, performing_reattach);
+  }
+
+  void DetachSucceedingPseudoElements(bool performing_reattach) {
+    DetachPseudoElement(kPseudoIdAfter, performing_reattach);
+    DetachPseudoElement(kPseudoIdBackdrop, performing_reattach);
+    DetachPseudoElement(kPseudoIdFirstLetter, performing_reattach);
+  }
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 

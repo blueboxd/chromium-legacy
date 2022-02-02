@@ -25,8 +25,8 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/check.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -67,6 +67,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/layout/fill_layout.h"
@@ -321,7 +322,9 @@ int shell_id = 0;
 
 void ShowSnapPreview(aura::Window* window,
                      chromeos::SnapDirection snap_direction) {
-  chromeos::SnapController::Get()->ShowSnapPreview(window, snap_direction);
+  chromeos::SnapController::Get()->ShowSnapPreview(
+      window, snap_direction,
+      /*allow_haptic_feedback=*/false);
 }
 
 void CommitSnap(aura::Window* window, chromeos::SnapDirection snap_direction) {
@@ -655,7 +658,9 @@ void ShellSurfaceBase::SetGeometry(const gfx::Rect& geometry) {
     DLOG(WARNING) << "Surface geometry must be non-empty";
     return;
   }
-
+  if (!widget_) {
+    initial_size_ = gfx::Size(geometry.width(), geometry.height());
+  }
   pending_geometry_ = geometry;
 }
 
@@ -1280,6 +1285,15 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   window->AddObserver(this);
   ash::WindowState* window_state = ash::WindowState::Get(window);
   InitializeWindowState(window_state);
+  // TODO(1261321): correct the initial origin once lacros can communicate
+  // it instead of centering.
+  if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+    gfx::Rect screen_size = display::Screen::GetScreen()
+                                ->GetDisplayNearestWindow(window)
+                                .work_area();
+    screen_size.ClampToCenteredSize(initial_size_);
+    window_state->SetRestoreBoundsInParent(screen_size);
+  }
 
   SetShellUseImmersiveForFullscreen(window, immersive_implied_by_fullscreen_);
 
@@ -1463,7 +1477,12 @@ gfx::Rect ShellSurfaceBase::GetVisibleBounds() const {
   if (geometry_.IsEmpty()) {
     gfx::Size size;
     if (root_surface()) {
-      size = root_surface()->content_size();
+      float int_part;
+      DCHECK(std::modf(root_surface()->content_size().width(), &int_part) ==
+                 0.0f &&
+             std::modf(root_surface()->content_size().height(), &int_part) ==
+                 0.0f);
+      size = gfx::ToCeiledSize(root_surface()->content_size());
       if (client_submits_surfaces_in_pixel_coordinates()) {
         float dsf = host_window()->layer()->device_scale_factor();
         size = gfx::ScaleToRoundedSize(size, 1.0f / dsf);

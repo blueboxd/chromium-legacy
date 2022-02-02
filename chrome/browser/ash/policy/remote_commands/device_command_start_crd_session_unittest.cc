@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/test_future.h"
@@ -292,7 +291,7 @@ class DeviceCommandStartCrdSessionJobTest : public ash::DeviceSettingsTestBase {
                    GenerateCommandProto(
                        kUniqueID, base::TimeTicks::Now() - test_start_time_,
                        idleness_cutoff_, acked_user_presence_),
-                   nullptr);
+                   em::SignedData());
 
     if (oauth_token_)
       job().SetOAuthTokenForTest(oauth_token_.value());

@@ -6,6 +6,7 @@
 
 #include "ash/capture_mode/capture_mode_feature_pod_controller.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/projector/projector_controller_impl.h"
@@ -14,6 +15,7 @@
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf_party_feature_pod_controller.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/accessibility_feature_pod_controller.h"
 #include "ash/system/accessibility/unified_accessibility_detailed_view_controller.h"
@@ -63,8 +65,10 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/cxx17_backports.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "components/prefs/pref_service.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/compositor.h"
@@ -94,13 +98,17 @@ void ReportCollapseAnimationSmoothness(int smoothness) {
 }
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
-    UnifiedSystemTrayModel* model,
+    scoped_refptr<UnifiedSystemTrayModel> model,
     UnifiedSystemTrayBubble* bubble,
     views::View* owner_view)
     : views::AnimationDelegateViews(owner_view),
       model_(model),
       bubble_(bubble),
+      active_user_prefs_(
+          Shell::Get()->session_controller()->GetLastActiveUserPrefService()),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
+  LoadIsExpandedPref();
+
   animation_->Reset(model_->IsExpandedOnOpen() ? 1.0 : 0.0);
   animation_->SetSlideDuration(
       base::Milliseconds(kSystemMenuCollapseExpandAnimationDurationMs));
@@ -119,7 +127,24 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
                         model_->IsExpandedOnOpen());
 }
 
-UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
+UnifiedSystemTrayController::~UnifiedSystemTrayController() {
+  if (active_user_prefs_) {
+    active_user_prefs_->SetBoolean(prefs::kSystemTrayExpanded,
+                                   model_->IsExpandedOnOpen());
+  }
+}
+
+// static
+void UnifiedSystemTrayController::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kSystemTrayExpanded,
+                                /*default_value=*/true);
+}
+
+void UnifiedSystemTrayController::OnActiveUserPrefServiceChanged(
+    PrefService* prefs) {
+  active_user_prefs_ = prefs;
+}
 
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
@@ -202,7 +227,7 @@ void UnifiedSystemTrayController::ToggleExpanded() {
                             TOGGLE_EXPANDED_TYPE_BY_BUTTON,
                             TOGGLE_EXPANDED_TYPE_COUNT);
   if (IsExpanded()) {
-    StartAnimation(false /*expand*/);
+    StartAnimation(/*expand=*/false);
     // Expand message center when quick settings is collapsed.
     if (bubble_)
       bubble_->ExpandMessageCenter();
@@ -212,7 +237,7 @@ void UnifiedSystemTrayController::ToggleExpanded() {
     if (IsMessageCenterCollapseRequired()) {
       bubble_->CollapseMessageCenter();
     }
-    StartAnimation(true /*expand*/);
+    StartAnimation(/*expand=*/true);
   }
 }
 
@@ -454,6 +479,16 @@ void UnifiedSystemTrayController::OnMediaControlsViewClicked() {
   ShowMediaControlsDetailedView();
 }
 
+void UnifiedSystemTrayController::LoadIsExpandedPref() {
+  if (active_user_prefs_ &&
+      active_user_prefs_->HasPrefPath(prefs::kSystemTrayExpanded)) {
+    model_->set_expanded_on_open(
+        active_user_prefs_->GetBoolean(prefs::kSystemTrayExpanded)
+            ? UnifiedSystemTrayModel::StateOnOpen::EXPANDED
+            : UnifiedSystemTrayModel::StateOnOpen::COLLAPSED);
+  }
+}
+
 void UnifiedSystemTrayController::InitFeaturePods() {
   if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
     AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
@@ -484,6 +519,8 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
   if (features::IsDarkLightModeEnabled())
     AddFeaturePodItem(std::make_unique<DarkModeFeaturePodController>(this));
+  if (base::FeatureList::IsEnabled(features::kShelfParty))
+    AddFeaturePodItem(std::make_unique<ShelfPartyFeaturePodController>());
 
   // If you want to add a new feature pod item, add here.
 

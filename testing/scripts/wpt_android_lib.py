@@ -21,8 +21,6 @@ BUILD_ANDROID = os.path.join(SRC_DIR, 'build', 'android')
 BLINK_TOOLS_DIR = os.path.join(
     SRC_DIR, 'third_party', 'blink', 'tools')
 CATAPULT_DIR = os.path.join(SRC_DIR, 'third_party', 'catapult')
-DEFAULT_WPT = os.path.join(
-    SRC_DIR, 'third_party', 'wpt_tools', 'wpt', 'wpt')
 PYUTILS = os.path.join(CATAPULT_DIR, 'common', 'py_utils')
 TOMBSTONE_PARSER = os.path.join(SRC_DIR, 'build', 'android', 'tombstones.py')
 
@@ -69,11 +67,11 @@ class PassThroughArgs(argparse.Action):
 
 class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
 
-  def __init__(self, device):
+  def __init__(self, devices):
     self.pass_through_wpt_args = []
     self.pass_through_binary_args = []
     self._metadata_dir = None
-    self._device = device
+    self._devices = devices
     super(WPTAndroidAdapter, self).__init__()
     # Arguments from add_extra_argumentsparse were added so
     # its safe to parse the arguments and set self._options
@@ -89,7 +87,7 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     self.maybe_set_default_isolated_script_test_output()
 
     # Here we add all of the arguments required to run WPT tests on Android.
-    rest_args.extend([self.options.wpt_path])
+    rest_args.extend([self.wpt_binary])
 
     # By default, WPT will treat unexpected passes as errors, so we disable
     # that to be consistent with Chromium CI.
@@ -103,7 +101,6 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     rest_args.extend(['run',
       '--tests=' + wpt_common.EXTERNAL_WPT_TESTS_DIR,
       '--test-type=' + self.options.test_type,
-      '--device-serial', self._device.serial,
       '--webdriver-binary',
       self.options.webdriver_binary,
       '--symbols-path',
@@ -124,6 +121,10 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       '--binary-arg=--force-fieldtrial-params=DownloadServiceStudy.Enabled:'
       'start_up_delay_ms/0',
     ])
+
+    for device in self._devices:
+      rest_args.extend(['--device-serial', device.serial])
+
     # if metadata was created then add the metadata directory
     # to the list of wpt arguments
     if self._metadata_dir:
@@ -216,10 +217,6 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
     parser.add_argument('--webdriver-binary', required=True,
                         help='Path of the webdriver binary.  It needs to have'
                         ' the same major version as the apk.')
-    parser.add_argument('--wpt-path', default=DEFAULT_WPT,
-                        help='Controls the path of the WPT runner to use'
-                        ' (therefore tests).  Defaults the revision rolled into'
-                        ' Chromium.')
     parser.add_argument('--additional-expectations',
                         action='append', default=[],
                         help='Paths to additional test expectations files.')
@@ -287,11 +284,11 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
   @contextlib.contextmanager
   def _install_apks(self):
     install_weblayer_shell_as_needed = _maybe_install_user_apk(
-        self._device, self.options.weblayer_shell, self.WEBLAYER_SHELL_PKG)
+        self._devices, self.options.weblayer_shell, self.WEBLAYER_SHELL_PKG)
     install_weblayer_support_as_needed = _maybe_install_user_apk(
-        self._device, self.options.weblayer_support, self.WEBLAYER_SUPPORT_PKG)
+        self._devices, self.options.weblayer_support, self.WEBLAYER_SUPPORT_PKG)
     install_webview_provider_as_needed = _maybe_install_webview_provider(
-        self._device, self.options.webview_provider)
+        self._devices, self.options.webview_provider)
 
     with install_weblayer_shell_as_needed,   \
          install_weblayer_support_as_needed, \
@@ -320,8 +317,8 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
 
 class WPTWebviewAdapter(WPTAndroidAdapter):
 
-  def __init__(self, device):
-    super(WPTWebviewAdapter, self).__init__(device)
+  def __init__(self, devices):
+    super(WPTWebviewAdapter, self).__init__(devices)
     if self.options.system_webview_shell is not None:
       self.system_webview_shell_pkg = apk_helper.GetPackageName(
           self.options.system_webview_shell)
@@ -331,10 +328,10 @@ class WPTWebviewAdapter(WPTAndroidAdapter):
   @contextlib.contextmanager
   def _install_apks(self):
     install_shell_as_needed = _maybe_install_user_apk(
-        self._device, self.options.system_webview_shell,
+        self._devices, self.options.system_webview_shell,
         self.system_webview_shell_pkg)
     install_webview_provider_as_needed = _maybe_install_webview_provider(
-        self._device, self.options.webview_provider)
+        self._devices, self.options.webview_provider)
     with install_shell_as_needed, install_webview_provider_as_needed:
       yield
 
@@ -364,7 +361,7 @@ class WPTClankAdapter(WPTAndroidAdapter):
   @contextlib.contextmanager
   def _install_apks(self):
     install_clank_as_needed = _maybe_install_user_apk(
-        self._device, self.options.chrome_apk)
+        self._devices, self.options.chrome_apk)
     with install_clank_as_needed:
       yield
 
@@ -410,40 +407,59 @@ def add_emulator_args(parser):
       action='store_true',
       default=False,
       help='Enable graphical window display on the emulator.')
-
+  parser.add_argument(
+      '-j', '--processes', dest='processes',
+      type=int,
+      default=1,
+      help='Number of emulator to run.')
 
 @contextlib.contextmanager
 def get_device(args):
-  instance = None
+  with get_devices(args) as devices:
+    yield None if not devices else devices[0]
+
+@contextlib.contextmanager
+def get_devices(args):
+  instances = []
   try:
     if args.avd_config:
       avd_config = avd.AvdConfig(args.avd_config)
       logger.warning('Install emulator from ' + args.avd_config)
       avd_config.Install()
-      instance = avd_config.CreateInstance()
-      instance.Start(writable_system=True, window=args.emulator_window)
-      device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted()
+      for _ in range(max(args.processes, 1)):
+        instance = avd_config.CreateInstance()
+        instance.Start(writable_system=True, window=args.emulator_window)
+        device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted()
+        instances.append(instance)
 
     #TODO(weizhong): when choose device, make sure abi matches with target
     devices = device_utils.DeviceUtils.HealthyDevices()
     if devices:
-      yield devices[0]
+      yield devices
     else:
       yield
   finally:
-    if instance:
+    for instance in instances:
       instance.Stop()
 
 
-def _maybe_install_webview_provider(device, apk):
+def _maybe_install_webview_provider(devices, apk):
   if apk:
     logger.info('Will install WebView apk at ' + apk)
-    return webview_app.UseWebViewProvider(device, apk)
+
+    @contextlib.contextmanager
+    def use_webview_provider(devices, apk):
+      with contextlib.ExitStack() as stack:
+        for device in devices:
+          stack.enter_context(webview_app.UseWebViewProvider(device, apk))
+        yield
+
+    return use_webview_provider(devices, apk)
   else:
     return _no_op()
 
 
-def _maybe_install_user_apk(device, apk, expected_pkg=None):
+def _maybe_install_user_apk(devices, apk, expected_pkg=None):
   """contextmanager to install apk on device.
 
   Args:
@@ -459,7 +475,7 @@ def _maybe_install_user_apk(device, apk, expected_pkg=None):
     if expected_pkg and pkg != expected_pkg:
       raise ValueError('{} has incorrect package name: {}, expected {}.'.format(
           apk, pkg, expected_pkg))
-    install_as_needed = _app_installed(device, apk, pkg)
+    install_as_needed = _app_installed(devices, apk, pkg)
     logger.info('Will install ' + pkg + ' at ' + apk)
   else:
     install_as_needed = _no_op()
@@ -467,12 +483,14 @@ def _maybe_install_user_apk(device, apk, expected_pkg=None):
 
 
 @contextlib.contextmanager
-def _app_installed(device, apk, pkg):
-  device.Install(apk)
+def _app_installed(devices, apk, pkg):
+  for device in devices:
+    device.Install(apk)
   try:
     yield
   finally:
-    device.Uninstall(pkg)
+    for device in devices:
+      device.Uninstall(pkg)
 
 
 # Dummy contextmanager to simplify multiple optional managers.

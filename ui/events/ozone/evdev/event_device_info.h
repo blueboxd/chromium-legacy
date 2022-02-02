@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 
@@ -234,6 +233,6 @@ class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
   InputDeviceType device_type_ = InputDeviceType::INPUT_DEVICE_UNKNOWN;
 };
 
-}  // namspace ui
+}  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_EVENT_DEVICE_INFO_H_

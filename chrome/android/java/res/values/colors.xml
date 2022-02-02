@@ -26,7 +26,7 @@
 
     <!-- Data Saver Colors -->
     <color name="data_reduction_compressed_color">#E1E1E1</color>
-    <color name="data_reduction_original_color">@color/default_control_color_active</color>
+    <macro name="data_reduction_original_color">@macro/default_control_color_active</macro>
     <color name="data_reduction_chart_background_color">@color/default_bg_color_secondary</color>
 
     <!-- Compositor Tab Title Colors -->
@@ -35,8 +35,8 @@
 
     <!-- Account Signin Colors -->
     <!-- As in dimens.xml, signin uses values from the First Run Experience -->
-    <color name="signin_head_background">@color/default_bg_color</color>
-    <color name="signin_body_background">@color/default_bg_color</color>
+    <macro name="signin_head_background">@macro/default_bg_color</macro>
+    <macro name="signin_body_background">@macro/default_bg_color</macro>
     <color name="signin_header_animation_background">@color/modern_grey_50</color>
     <color name="signin_header_animation_line_light">#E8E9EB</color>
     <color name="signin_header_animation_line_dark">#BDC0C5</color>
@@ -44,18 +44,13 @@
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg_incognito">@color/default_bg_color_dark</color>
-    <color name="suggestions_modern_bg">@color/default_bg_color</color>
     <color name="google_logo_tint">@android:color/transparent</color>
 
     <!-- Incognito NTP Colors. -->
     <color name="incognito_emphasis">@android:color/white</color>
 
     <!-- Overlay Panel colors -->
-    <color name="overlay_panel_bar_background_color">@color/default_bg_color</color>
-    <color name="overlay_panel_separator_line_color">@color/divider_line_bg_color</color>
-
-    <!-- Contextual Search colors -->
-    <color name="contextual_search_promo_background_color">@color/default_bg_color_elev_0</color>
+    <macro name="overlay_panel_bar_background_color">@macro/default_bg_color</macro>
 
     <!-- Find in Page colors -->
     <color name="find_in_page_query_white_color">@android:color/white</color>
@@ -69,7 +64,7 @@
 
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">@color/black_alpha_11</color>
-    <color name="bookmark_widget_background">@color/default_bg_color</color>
+    <color name="bookmark_widget_background">@color/default_bg_color_baseline</color>
 
     <!-- History Navigation UI colors -->
     <color name="navigation_bubble_background_color">@color/default_bg_color_elev_2</color>

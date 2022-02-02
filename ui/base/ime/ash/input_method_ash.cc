@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/i18n/char_iterator.h"
+#include "base/ignore_result.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/icu/icu_utf.h"
@@ -305,7 +306,17 @@ void InputMethodAsh::OnFocus() {
   ui::IMEBridge* bridge = ui::IMEBridge::Get();
   if (bridge) {
     bridge->SetInputContextHandler(this);
-    bridge->MaybeSwitchEngine();
+  }
+}
+
+void InputMethodAsh::OnTouch(ui::EventPointerType pointerType) {
+  TextInputClient* client = GetTextInputClient();
+  if (!client || !IsTextInputClientFocused(client)) {
+    return;
+  }
+  ui::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    engine->OnTouch(pointerType);
   }
 }
 

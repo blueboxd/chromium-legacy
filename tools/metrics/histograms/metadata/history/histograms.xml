@@ -396,7 +396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.FinalState"
-    units="HistoryClustersFinalState" expires_after="M101">
+    units="HistoryClustersFinalState" expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -408,7 +408,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.InitialState"
-    units="HistoryClustersInitialState" expires_after="M101">
+    units="HistoryClustersInitialState" expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -420,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.LinksOpened" units="links opened"
-    expires_after="M101">
+    expires_after="2022-05-15">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -431,7 +431,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Actions.NumQueries"
-    units="number queries made" expires_after="M101">
+    units="number queries made" expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -443,7 +443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupLatency" units="ms"
-    expires_after="M101">
+    expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -456,7 +456,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.BatchEntityLookupSize" units="count"
-    expires_after="M101">
+    expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -485,8 +485,8 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="History.Clusters.Backend.GetClusterLatency" units="ms"
-    expires_after="M101">
+<histogram name="History.Clusters.Backend.GetClustersLatency" units="ms"
+    expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -497,8 +497,70 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.Clusters.Backend.KeywordCache.AllKeywordPhraseCount"
+    units="count" expires_after="M101">
+  <owner>manukh@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the number of keyword phrases stored in the primary cache.
+
+    Each cluster can have multiple keyword phrases; each phrase consists of 1 or
+    more words.
+
+    Logged each time the primary cache is refreshed, i.e. on omnibox key stroke
+    limited to at most once every 2 hours, though clearing history items will
+    reset the cache timer.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.KeywordCache.AllKeywordsCount"
+    units="count" expires_after="M101">
+  <owner>manukh@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the number of keywords stored in the primary cache.
+
+    Each cluster can have multiple keyword phrases; each phrase consists of 1 or
+    more words.
+
+    Logged each time the primary cache is refreshed, i.e. on omnibox key stroke
+    limited to at most once every 2 hours, though clearing history items will
+    reset the cache timer.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordPhraseCount"
+    units="count" expires_after="M101">
+  <owner>manukh@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the number of keywords stored in the short cache.
+
+    Each cluster can have multiple keyword phrases; each phrase consists of 1 or
+    more words.
+
+    Logged each time the short cache is refreshed, i.e. on omnibox key stroke if
+    the primary cache is not stale and limited to at most once every 10 seconds.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.KeywordCache.ShortKeywordsCount"
+    units="count" expires_after="M101">
+  <owner>manukh@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the number of keyword phrases stored in the short cache.
+
+    Each cluster can have multiple keyword phrases; each phrase consists of 1 or
+    more words.
+
+    Logged each time the short cache is refreshed, i.e. on omnibox key stroke if
+    the primary cache is not stale and limited to at most once every 10 seconds.
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.Backend.NumClustersReturned"
-    units="number clusters returned" expires_after="M101">
+    units="number clusters returned" expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -527,7 +589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.NumVisitsToCluster"
-    units="number visits" expires_after="M101">
+    units="number visits" expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -539,7 +601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.PercentClustersFilteredByQuery"
-    units="percent clusters filtered" expires_after="M101">
+    units="percent clusters filtered" expires_after="2022-05-15">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -549,8 +611,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.Clusters.ProcessClustersDuration" units="ms"
+    expires_after="2022-05-22">
+  <owner>olivierli@chromium.org</owner>
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    This histogram records the total time taken to convert and process visits in
+    in all history cluster available. This is recorded once after the
+    conversion, deduplication and sorting of the clusters. This is recorded
+    using the highest precision clock possible. Like most time measurements this
+    will not have the same behavior regarding system sleep on all platforms. See
+    bit.ly/chrome-clocks-and-sleep for more details. Since the measurement is
+    taken after the operation is over it will be missing if the operation never
+    completes. This can happen if the user or the system shuts down chrome
+    because of the unresponsiveness. A decidely imperfect strategy to evaluate
+    how often this happens is to compare total counts with another histogram
+    that is recorded before the operation starts
+    (&quot;History.Clusters.Backend.GetClusterLatency&quot;). Such analysis has
+    to be conducted with care. Consult with Metrics team if curious.
+  </summary>
+</histogram>
+
 <histogram name="History.Clusters.ServiceLatency" units="ms"
-    expires_after="M101">
+    expires_after="2022-05-15">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-memories@google.com</owner>
   <summary>
@@ -1043,7 +1126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyURLCount" units="urls"
-    expires_after="2022-04-04">
+    expires_after="2022-06-05">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -1189,7 +1272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.VisitTableCount" units="visits"
-    expires_after="2022-04-04">
+    expires_after="2022-06-05">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

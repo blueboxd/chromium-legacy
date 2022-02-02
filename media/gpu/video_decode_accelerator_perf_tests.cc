@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_player/frame_renderer_dummy.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
@@ -28,10 +29,11 @@ namespace {
 // documentation under docs/media/gpu/video_decoder_perf_test_usage.md when
 // making changes here.
 constexpr const char* usage_msg =
-    "usage: video_decode_accelerator_perf_tests\n"
-    "           [-v=<level>] [--vmodule=<config>] [--output_folder]\n"
-    "           ([--use-legacy]|[--use_vd]|[--use_vd_vda]) [--gtest_help]\n"
-    "           [--help] [<video path>] [<video metadata path>]\n";
+    R"(usage: video_decode_accelerator_perf_tests
+           [-v=<level>] [--vmodule=<config>] [--output_folder]
+           ([--use-legacy]|[--use_vd]|[--use_vd_vda]) [--linear_output]
+           [--gtest_help] [--help] [<video path>] [<video metadata path>]
+)";
 
 // Video decoder perf tests help message.
 constexpr const char* help_msg =
@@ -55,6 +57,11 @@ constexpr const char* help_msg =
     "                       wrapper that translates to the VDA interface,\n"
     "                       used to test interaction with older components\n"
     "                       expecting the VDA interface.\n"
+    "  --linear_output      use linear buffers as the final output of the\n"
+    "                       decoder which may require the use of an image\n"
+    "                       processor internally. This flag only works in\n"
+    "                       conjunction with --use_vd_vda.\n"
+    "                       Disabled by default.\n"
     "  --gtest_help         display the gtest help and exit.\n"
     "  --help               display this help and exit.\n";
 
@@ -323,6 +330,7 @@ class VideoDecoderTest : public ::testing::Test {
     // Use the new VD-based video decoders if requested.
     VideoDecoderClientConfig config;
     config.implementation = g_env->GetDecoderImplementation();
+    config.linear_output = g_env->ShouldOutputLinearBuffers();
 
     auto video_player = VideoPlayer::Create(
         config, g_env->GetGpuMemoryBufferFactory(), std::move(frame_renderer),
@@ -385,9 +393,12 @@ TEST_F(VideoDecoderTest,
 
 // The minimal number of concurrent decoders we expect to be supported on
 // platforms.
-#if defined(ARCH_CPU_X86_FAMILY)
-  constexpr size_t kMinSupportedConcurrentDecoders = 25;
-#elif defined(ARCH_CPU_ARM_FAMILY)
+#if defined(USE_VAAPI)
+  constexpr size_t kMinSupportedConcurrentDecoders =
+      VaapiVideoDecoder::kMaxNumOfInstances;
+#elif defined(USE_V4L2_CODEC)
+  constexpr size_t kMinSupportedConcurrentDecoders = 10;
+#else
   constexpr size_t kMinSupportedConcurrentDecoders = 10;
 #endif
 
@@ -439,6 +450,7 @@ int main(int argc, char** argv) {
   bool use_legacy = false;
   bool use_vd = false;
   bool use_vd_vda = false;
+  bool linear_output = false;
   media::test::DecoderImplementation implementation =
       media::test::DecoderImplementation::kVD;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
@@ -460,6 +472,8 @@ int main(int argc, char** argv) {
     } else if (it->first == "use_vd_vda") {
       use_vd_vda = true;
       implementation = media::test::DecoderImplementation::kVDVDA;
+    } else if (it->first == "linear_output") {
+      linear_output = true;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -482,6 +496,12 @@ int main(int argc, char** argv) {
               << media::test::usage_msg;
     return EXIT_FAILURE;
   }
+  if (linear_output && !use_vd_vda) {
+    std::cout << "--linear_output must be used with the VDVDA (--use_vd_vda)\n"
+                 "implementation.\n"
+              << media::test::usage_msg;
+    return EXIT_FAILURE;
+  }
 
   testing::InitGoogleTest(&argc, argv);
 
@@ -494,8 +514,7 @@ int main(int argc, char** argv) {
       media::test::VideoPlayerTestEnvironment::Create(
           video_path, video_metadata_path, /*validator_type=*/
           media::test::VideoPlayerTestEnvironment::ValidatorType::kNone,
-          implementation,
-          base::FilePath(output_folder));
+          implementation, linear_output, base::FilePath(output_folder));
   if (!test_environment)
     return EXIT_FAILURE;
 

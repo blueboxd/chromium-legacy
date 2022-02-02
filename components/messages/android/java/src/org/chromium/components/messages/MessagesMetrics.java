@@ -127,6 +127,10 @@ public class MessagesMetrics {
                 return "InstallableAmbientBadge";
             case MessageIdentifier.AUTO_DARK_WEB_CONTENTS:
                 return "AutoDarkWebContents";
+            case MessageIdentifier.TAILORED_SECURITY_ENABLED:
+                return "TailoredSecurityEnabled";
+            case MessageIdentifier.VR_SERVICES_UPGRADE:
+                return "VrServicesUpgrade";
             default:
                 return "Unknown";
         }

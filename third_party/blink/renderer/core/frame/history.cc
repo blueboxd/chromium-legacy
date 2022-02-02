@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -61,6 +61,13 @@ unsigned History::length(ExceptionState& exception_state) const {
         "fully active");
     return 0;
   }
+
+  // TODO(crbug.com/1277593): Remove this condition when Fenced Frames
+  // transition to MPArch completely
+  if (DomWindow()->GetFrame()->IsInFencedFrameTree()) {
+    return 1;
+  }
+
   return DomWindow()->GetFrame()->Client()->BackForwardLength();
 }
 

@@ -91,15 +91,6 @@ static ContinuationMap& GetContinuationMap() {
   return *map;
 }
 
-void LayoutBoxModelObject::ContentChanged(ContentChangeType change_type) {
-  NOT_DESTROYED();
-  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (!HasLayer())
-    return;
-
-  Layer()->ContentChanged(change_type);
-}
-
 LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
     : LayoutObject(node) {}
 
@@ -169,14 +160,7 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
        IsStackingContext() != IsStackingContext(new_style)) &&
       // ObjectPaintInvalidator requires this.
       IsRooted()) {
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
-    } else {
-      // We need to invalidate based on the current compositing status.
-      DisableCompositingQueryAsserts compositing_disabler;
-      ObjectPaintInvalidator(*this)
-          .InvalidatePaintIncludingNonCompositingDescendants();
-    }
+    ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
   }
 
   LayoutObject::StyleWillChange(diff, new_style);
@@ -294,6 +278,18 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   }
 
   if (Layer()) {
+    // The previous CompositingContainer chain was marked for repaint via
+    // |LayoutBoxModelObject::StyleWillChange| but changes to stacking can
+    // change the compositing container so we need to ensure the new
+    // CompositingContainer is also marked for repaint.
+    if (old_style &&
+        (IsStacked() != IsStacked(*old_style) ||
+         IsStackingContext() != IsStackingContext(*old_style)) &&
+        // ObjectPaintInvalidator requires this.
+        IsRooted()) {
+      ObjectPaintInvalidator(*this).SlowSetPaintingLayerNeedsRepaint();
+    }
+
     Layer()->StyleDidChange(diff, old_style);
     if (had_layer && Layer()->IsSelfPaintingLayer() != layer_was_self_painting)
       SetChildNeedsLayout();
@@ -1089,7 +1085,7 @@ PhysicalOffset LayoutBoxModelObject::StickyPositionOffset() const {
   // The sticky offset is physical, so we can just return the delta computed in
   // absolute coords (though it may be wrong with transforms).
   PhysicalRect constraining_rect = ComputeStickyConstrainingRect();
-  FloatPoint scroll_position =
+  gfx::PointF scroll_position =
       ancestor_scroll_container_layer->GetScrollableArea()->ScrollPosition();
   constraining_rect.Move(PhysicalOffset(LayoutUnit(scroll_position.x()),
                                         LayoutUnit(scroll_position.y())));
@@ -1415,6 +1411,11 @@ bool LayoutBoxModelObject::BackgroundTransfersToView(
   if (GetNode() != GetDocument().FirstBodyElement())
     return false;
 
+  if (RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled()) {
+    return !document_element_style->ShouldApplyAnyContainment(
+               *document_element) &&
+           !StyleRef().ShouldApplyAnyContainment(*To<Element>(GetNode()));
+  }
   return true;
 }
 

@@ -29,7 +29,6 @@
 
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -269,37 +268,11 @@ gfx::Point AffineTransform::MapPoint(const gfx::Point& point) const {
   return gfx::Point(static_cast<int>(lround(x2)), static_cast<int>(lround(y2)));
 }
 
-FloatPoint AffineTransform::MapPoint(const FloatPoint& point) const {
-  double x2, y2;
-  Map(point.x(), point.y(), x2, y2);
-
-  return FloatPoint(ClampTo<float>(x2), ClampTo<float>(y2));
-}
-
 gfx::PointF AffineTransform::MapPoint(const gfx::PointF& point) const {
   double x2, y2;
   Map(point.x(), point.y(), x2, y2);
 
   return gfx::PointF(ClampTo<float>(x2), ClampTo<float>(y2));
-}
-
-IntSize AffineTransform::MapSize(const IntSize& size) const {
-  double width2 = size.width() * XScale();
-  double height2 = size.height() * YScale();
-
-  return IntSize(static_cast<int>(lround(width2)),
-                 static_cast<int>(lround(height2)));
-}
-
-FloatSize AffineTransform::MapSize(const FloatSize& size) const {
-  double width2 = size.width() * XScale();
-  double height2 = size.height() * YScale();
-
-  return FloatSize(ClampTo<float>(width2), ClampTo<float>(height2));
-}
-
-IntRect AffineTransform::MapRect(const IntRect& rect) const {
-  return EnclosingIntRect(MapRect(FloatRect(rect)));
 }
 
 gfx::Rect AffineTransform::MapRect(const gfx::Rect& rect) const {

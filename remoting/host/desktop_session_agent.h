@@ -13,7 +13,6 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -134,6 +133,10 @@ class DesktopSessionAgent
 
   // mojom::DesktopSessionControl implementation.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
+  void InjectKeyEvent(const protocol::KeyEvent& event) override;
+  void InjectMouseEvent(const protocol::MouseEvent& event) override;
+  void InjectTextEvent(const protocol::TextEvent& event) override;
+  void InjectTouchEvent(const protocol::TouchEvent& event) override;
   void SetUpUrlForwarder() override;
 
   // Creates desktop integration components and a connected IPC channel to be
@@ -170,10 +173,6 @@ class DesktopSessionAgent
   void OnSelectSource(int id);
 
   // Handles event executor requests from the client.
-  void OnInjectKeyEvent(const std::string& serialized_event);
-  void OnInjectTextEvent(const std::string& serialized_event);
-  void OnInjectMouseEvent(const std::string& serialized_event);
-  void OnInjectTouchEvent(const std::string& serialized_event);
   void OnExecuteActionRequestEvent(const protocol::ActionRequest& request);
 
   // Handles keyboard layout changes.

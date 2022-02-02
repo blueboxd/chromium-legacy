@@ -6,15 +6,19 @@
 
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
+#include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
+#include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -41,7 +45,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync/base/pref_names.h"
@@ -60,9 +63,11 @@
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
-using backdrop_wallpaper_handlers::SurpriseMeImageFetcher;
 using chromeos::ProfileHelper;
 using extension_misc::kWallpaperManagerId;
+using file_manager::VolumeManager;
+using session_manager::SessionManager;
+using wallpaper_handlers::BackdropSurpriseMeImageFetcher;
 
 namespace {
 
@@ -212,17 +217,21 @@ WallpaperControllerClientImpl::WallpaperControllerClientImpl() {
   local_state_ = g_browser_process->local_state();
   show_user_names_on_signin_subscription_ =
       ash::CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kAccountsPrefShowUserNamesOnSignIn,
+          ash::kAccountsPrefShowUserNamesOnSignIn,
           base::BindRepeating(
               &WallpaperControllerClientImpl::ShowWallpaperOnLoginScreen,
               weak_factory_.GetWeakPtr()));
 
   DCHECK(!g_wallpaper_controller_client_instance);
   g_wallpaper_controller_client_instance = this;
+
+  SessionManager* session_manager = SessionManager::Get();
+  // SessionManager might not exist in unit tests.
+  if (session_manager)
+    session_observation_.Observe(session_manager);
 }
 
 WallpaperControllerClientImpl::~WallpaperControllerClientImpl() {
-  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   wallpaper_controller_->SetClient(nullptr);
   weak_factory_.InvalidateWeakPtrs();
   DCHECK_EQ(this, g_wallpaper_controller_client_instance);
@@ -237,7 +246,6 @@ void WallpaperControllerClientImpl::Init() {
           &WallpaperControllerClientImpl::DeviceWallpaperImageFilePathChanged,
           weak_factory_.GetWeakPtr()));
   wallpaper_controller_ = ash::WallpaperController::Get();
-  user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   InitController();
 }
@@ -279,7 +287,7 @@ void WallpaperControllerClientImpl::SetInitialWallpaper() {
   }
 
   // Show a white wallpaper during OOBE.
-  if (session_manager::SessionManager::Get()->session_state() ==
+  if (SessionManager::Get()->session_state() ==
       session_manager::SessionState::OOBE) {
     SkBitmap bitmap;
     bitmap.allocN32Pixels(1, 1);
@@ -521,10 +529,9 @@ void WallpaperControllerClientImpl::GetFilesId(
 bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
     const AccountId& account_id) const {
   Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
-  // Profile isn't created yet. We shouldn't try syncing.
-  // This can happen on new user login.
   if (!profile)
     return false;
+
   syncer::SyncService* sync_service =
       SyncServiceFactory::GetForProfile(profile);
   if (!sync_service)
@@ -540,24 +547,32 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
              syncer::UserSelectableType::kThemes);
 }
 
-void WallpaperControllerClientImpl::ActiveUserChanged(
-    user_manager::User* active_user) {
-  volume_manager_observation_.Reset();
-  active_user->AddProfileCreatedObserver(
-      base::BindOnce(&WallpaperControllerClientImpl::OnProfileCreated,
-                     weak_factory_.GetWeakPtr(), active_user));
-}
-
 void WallpaperControllerClientImpl::OnVolumeMounted(
     chromeos::MountError error_code,
     const file_manager::Volume& volume) {
+  if (error_code != chromeos::MOUNT_ERROR_NONE) {
+    return;
+  }
   if (volume.type() != file_manager::VolumeType::VOLUME_TYPE_GOOGLE_DRIVE) {
     return;
   }
-  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
-  if (user) {
-    wallpaper_controller_->SyncLocalAndRemotePrefs(user->GetAccountId());
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  CHECK(profile);
+  VolumeManager* volume_manager = VolumeManager::Get(profile);
+  // Volume ID is based on the mount path, which for drive is based on the
+  // account_id.
+  if (!volume_manager->FindVolumeById(volume.volume_id())) {
+    return;
   }
+  user_manager::User* user = user_manager::UserManager::Get()->GetActiveUser();
+  CHECK(user);
+  wallpaper_controller_->SyncLocalAndRemotePrefs(user->GetAccountId());
+}
+
+void WallpaperControllerClientImpl::OnUserProfileLoaded(
+    const AccountId& account_id) {
+  wallpaper_controller_->SyncLocalAndRemotePrefs(account_id);
+  ObserveVolumeManagerForAccountId(account_id);
 }
 
 void WallpaperControllerClientImpl::MigrateCollectionIdFromValueStoreForTesting(
@@ -613,6 +628,7 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   DCHECK(profile);
   if (ash::features::IsWallpaperWebUIEnabled()) {
     web_app::SystemAppLaunchParams params;
+    params.url = GURL(ash::kChromeUIPersonalizationAppWallpaperSubpageURL);
     params.launch_source = apps::mojom::LaunchSource::kFromShelf;
     web_app::LaunchSystemWebAppAsync(
         profile, web_app::SystemAppType::PERSONALIZATION, params);
@@ -686,17 +702,30 @@ void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp(
 void WallpaperControllerClientImpl::FetchDailyRefreshWallpaper(
     const std::string& collection_id,
     DailyWallpaperUrlFetchedCallback callback) {
-  surprise_me_image_fetcher_ = std::make_unique<SurpriseMeImageFetcher>(
+  surprise_me_image_fetcher_ = std::make_unique<BackdropSurpriseMeImageFetcher>(
       collection_id, /*resume_token=*/std::string());
   surprise_me_image_fetcher_->Start(
       base::BindOnce(&WallpaperControllerClientImpl::OnDailyImageInfoFetched,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void WallpaperControllerClientImpl::FetchImagesForCollection(
+    const std::string& collection_id,
+    FetchImagesForCollectionCallback callback) {
+  DCHECK(!images_info_fetcher_);
+  images_info_fetcher_ =
+      std::make_unique<wallpaper_handlers::BackdropImageInfoFetcher>(
+          collection_id);
+
+  images_info_fetcher_->Start(
+      base::BindOnce(&WallpaperControllerClientImpl::OnFetchImagesForCollection,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bool WallpaperControllerClientImpl::ShouldShowUserNamesOnLogin() const {
   bool show_user_names = true;
-  ash::CrosSettings::Get()->GetBoolean(
-      chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_user_names);
+  ash::CrosSettings::Get()->GetBoolean(ash::kAccountsPrefShowUserNamesOnSignIn,
+                                       &show_user_names);
   return show_user_names;
 }
 
@@ -731,27 +760,28 @@ void WallpaperControllerClientImpl::OnDailyImageInfoFetched(
     bool success,
     const backdrop::Image& image,
     const std::string& next_resume_token) {
-  if (success) {
-    std::move(callback).Run(image.asset_id(), image.image_url());
-  } else {
-    std::move(callback).Run(absl::nullopt, std::string());
-  }
+  std::move(callback).Run(success, std::move(image));
   surprise_me_image_fetcher_.reset();
 }
 
-void WallpaperControllerClientImpl::OnProfileCreated(user_manager::User* user) {
-  if (!user->is_active())
-    return;
-
-  ObserveVolumeManagerForActiveUser(user);
-  wallpaper_controller_->SyncLocalAndRemotePrefs(user->GetAccountId());
+void WallpaperControllerClientImpl::OnFetchImagesForCollection(
+    FetchImagesForCollectionCallback callback,
+    bool success,
+    const std::string& collection_id,
+    const std::vector<backdrop::Image>& images) {
+  std::move(callback).Run(success, std::move(images));
+  images_info_fetcher_.reset();
 }
 
-void WallpaperControllerClientImpl::ObserveVolumeManagerForActiveUser(
-    user_manager::User* user) {
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
-  DCHECK(profile);
+void WallpaperControllerClientImpl::ObserveVolumeManagerForAccountId(
+    const AccountId& account_id) {
+  Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
+  CHECK(profile);
+  volume_manager_observation_.AddObservation(VolumeManager::Get(profile));
+}
 
-  volume_manager_observation_.Observe(
-      file_manager::VolumeManager::Get(profile));
+void WallpaperControllerClientImpl::RecordWallpaperSourceUMA(
+    const ash::WallpaperType type) {
+  base::UmaHistogramEnumeration("Ash.Wallpaper.Source2", type,
+                                ash::WallpaperType::kCount);
 }

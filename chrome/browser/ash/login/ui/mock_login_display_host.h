@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/login_accelerators.h"
-#include "base/macros.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
@@ -109,6 +108,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
               (final));
   MOCK_METHOD(WizardContext*, GetWizardContextForTesting, (), (final));
   MOCK_METHOD(WizardContext*, GetWizardContext, (), (override));
+  MOCK_METHOD(bool, IsWebUIStarted, (), (const final));
 };
 
 }  // namespace ash

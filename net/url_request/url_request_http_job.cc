@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_version_info.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -138,33 +137,6 @@ void LogTrustAnchor(const net::HashValueVector& spki_hashes) {
   base::UmaHistogramSparse("Net.Certificate.TrustAnchor.Request", id);
 }
 
-// Records per-request histograms relating to Certificate Transparency
-// compliance.
-void RecordCTHistograms(const net::SSLInfo& ssl_info) {
-  if (ssl_info.ct_policy_compliance ==
-      net::ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE) {
-    return;
-  }
-  if (!ssl_info.is_issued_by_known_root)
-    return;
-
-  // Connections with major errors other than CERTIFICATE_TRANSPARENCY_REQUIRED
-  // would have failed anyway, so do not record these histograms for such
-  // requests.
-  net::CertStatus other_errors =
-      ssl_info.cert_status &
-      ~net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED;
-  if (net::IsCertStatusError(other_errors))
-    return;
-
-  // Record the CT compliance of each request, to give a picture of the
-  // percentage of overall requests that are CT-compliant.
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.CertificateTransparency.RequestComplianceStatus",
-      ssl_info.ct_policy_compliance,
-      net::ct::CTPolicyCompliance::CT_POLICY_COUNT);
-}
-
 net::CookieOptions CreateCookieOptions(
     net::CookieOptions::SameSiteCookieContext same_site_context,
     const net::SamePartyContext& same_party_context,
@@ -269,6 +241,7 @@ URLRequestHttpJob::URLRequestHttpJob(
     throttling_entry_ = manager->RegisterRequestUrl(request->url());
 
   ResetTimer();
+  ComputeCookiePartitionKey();
 }
 
 URLRequestHttpJob::~URLRequestHttpJob() {
@@ -312,7 +285,7 @@ void URLRequestHttpJob::Start() {
 
   // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
   // going to send previously saved cookies.
-  request_info_.privacy_mode = privacy_mode();
+  request_info_.privacy_mode = request_->privacy_mode();
 
   // Strip Referer from request_info_.extra_headers to prevent, e.g., plugins
   // from overriding headers that are controlled using other means. Otherwise a
@@ -623,13 +596,9 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
             request_site, request_->isolation_info(), delegate,
             request_->force_ignore_top_frame_party_for_cookies()));
 
-    absl::optional<CookiePartitionKey> cookie_partition_key =
-        CookiePartitionKey::FromNetworkIsolationKey(
-            request_->isolation_info().network_isolation_key());
-
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
-        CookiePartitionKeychain::FromOptional(cookie_partition_key),
+        CookiePartitionKeychain::FromOptional(cookie_partition_key_),
         base::BindOnce(&URLRequestHttpJob::SetCookieHeaderAndStart,
                        weak_factory_.GetWeakPtr(), options));
   } else {
@@ -763,10 +732,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           request_->url(), request_->site_for_cookies())) {
     force_ignore_site_for_cookies = true;
   }
-  bool is_main_frame_navigation =
-      IsolationInfo::RequestType::kMainFrame ==
-          request_->isolation_info().request_type() ||
-      request_->force_main_frame_for_same_site_cookies();
+  bool is_main_frame_navigation = IsolationInfo::RequestType::kMainFrame ==
+                                  request_->isolation_info().request_type();
   CookieOptions::SameSiteCookieContext same_site_context =
       net::cookie_util::ComputeSameSiteContextForResponse(
           request_->url_chain(), request_->site_for_cookies(),
@@ -811,9 +778,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
-        net::CookiePartitionKey::FromNetworkIsolationKey(
-            request_->isolation_info().network_isolation_key()),
-        &returned_status);
+        cookie_partition_key_, &returned_status);
 
     absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
     if (returned_status.IsInclude()) {
@@ -945,8 +910,6 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     if (!IsCertificateError(result)) {
       LogTrustAnchor(ssl_info.public_key_hashes);
     }
-
-    RecordCTHistograms(ssl_info);
   }
 
   if (transaction_ && transaction_->GetResponseInfo()) {
@@ -1646,6 +1609,17 @@ void URLRequestHttpJob::NotifyURLRequestDestroyed() {
       request()->context()->network_quality_estimator();
   if (network_quality_estimator)
     network_quality_estimator->NotifyURLRequestDestroyed(*request());
+}
+
+void URLRequestHttpJob::ComputeCookiePartitionKey() {
+  const CookieStore* cookie_store = request_->context()->cookie_store();
+  if (!cookie_store) {
+    cookie_partition_key_ = absl::nullopt;
+    return;
+  }
+  cookie_partition_key_ = CookieAccessDelegate::CreateCookiePartitionKey(
+      cookie_store->cookie_access_delegate(),
+      request_->isolation_info().network_isolation_key());
 }
 
 }  // namespace net

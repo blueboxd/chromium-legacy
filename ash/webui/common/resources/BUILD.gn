@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
@@ -9,11 +10,14 @@ import("//tools/grit/repack.gni")
 import("//tools/polymer/html_to_js.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
+assert(is_chromeos_ash)
+
 preprocessed_dir = "preprocessed"
 preprocessed_gen_manifest = "preprocessed_gen_manifest.json"
 
 polymer_element_files = [
   "keyboard_diagram.js",
+  "keyboard_icons.js",
   "keyboard_key.js",
   "navigation_icons.js",
   "navigation_selector.js",
@@ -41,6 +45,7 @@ js_type_check("closure_compile_module") {
     ":fake_method_resolver",
     ":fake_observables",
     ":keyboard_diagram",
+    ":keyboard_icons",
     ":keyboard_key",
     ":navigation_selector",
     ":navigation_view_panel",
@@ -58,12 +63,20 @@ js_library("fake_method_resolver") {
 
 js_library("keyboard_diagram") {
   deps = [
+    ":keyboard_key",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("keyboard_icons") {
+  deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
 js_library("keyboard_key") {
   deps = [
+    ":keyboard_icons",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }

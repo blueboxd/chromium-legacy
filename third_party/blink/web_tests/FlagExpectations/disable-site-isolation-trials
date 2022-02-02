@@ -30,6 +30,7 @@ virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-ke
 
 # OOPIF tests need site isolation
 http/tests/inspector-protocol/target/target-setAutoAttach-oopif-multisession.js [ Skip ]
+http/tests/inspector-protocol/target/target-setAutoAttach-oopif-multisession-existing.js [ Skip ]
 http/tests/inspector-protocol/target/target-setAutoAttach-oopif-multisession-wait.js [ Skip ]
 http/tests/inspector-protocol/conversion/impression-insecure-main-frame-with-iframe.js [ Skip ]
 http/tests/inspector-protocol/target/auto-attach-sub-sub-frame.js [ Skip ]
@@ -41,3 +42,8 @@ crbug.com/1209223 http/tests/inspector-protocol/fetch/mime-type-sniffing.js [ Fa
 # Fix to unblock wpt-importer
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-multi-globals.sub.html [ Failure ]
 crbug.com/1209223 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/javascript-url-security-check-same-origin-domain.sub.html [ Failure ]
+
+# ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/resource-timing/entries-for-network-errors.sub.https.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/resource-timing/entries-for-network-errors.sub.https.html [ Timeout ]
+crbug.com/626703 wpt_internal/webid/get-argument-validation.https.html [ Timeout ]

@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/unguessable_token.h"
@@ -77,8 +76,10 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
     kUnknown,
   };
 
-  // Return whether GPU encoding/decoding is enabled.
-  virtual bool IsGpuVideoAcceleratorEnabled() = 0;
+  // Return whether GPU decoding is enabled.
+  virtual bool IsGpuVideoDecodeAcceleratorEnabled() = 0;
+  // Return whether GPU encoding is enabled.
+  virtual bool IsGpuVideoEncodeAcceleratorEnabled() = 0;
 
   // Return the channel token, or an empty token if the channel is unusable.
   // |cb| could be called re-entrantly. This function is not thread safe.

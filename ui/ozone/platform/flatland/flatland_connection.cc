@@ -14,10 +14,14 @@
 
 namespace ui {
 
-FlatlandConnection::FlatlandConnection(
-    const std::string& debug_name,
-    fidl::InterfaceHandle<fuchsia::ui::composition::Flatland> flatland)
-    : flatland_(flatland.Bind()) {
+FlatlandConnection::FlatlandConnection(const std::string& debug_name) {
+  zx_status_t status =
+      base::ComponentContextForProcess()
+          ->svc()
+          ->Connect<fuchsia::ui::composition::Flatland>(flatland_.NewRequest());
+  if (status != ZX_OK) {
+    ZX_LOG(FATAL, status) << "Failed to connect to Flatland";
+  }
   flatland_->SetDebugName(debug_name);
   flatland_.events().OnError =
       fit::bind_member(this, &FlatlandConnection::OnError);
@@ -28,21 +32,6 @@ FlatlandConnection::FlatlandConnection(
 }
 
 FlatlandConnection::~FlatlandConnection() = default;
-
-// static
-fidl::InterfaceHandle<fuchsia::ui::composition::Flatland>
-FlatlandConnection::ConnectToFlatland() {
-  fidl::InterfaceHandle<fuchsia::ui::composition::Flatland> flatland;
-  zx_status_t status =
-      base::ComponentContextForProcess()
-          ->svc()
-          ->Connect<fuchsia::ui::composition::Flatland>(flatland.NewRequest());
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "Failed to connect to Flatland";
-    return nullptr;
-  }
-  return flatland;
-}
 
 void FlatlandConnection::Present() {
   fuchsia::ui::composition::PresentArgs present_args;
@@ -58,8 +47,10 @@ void FlatlandConnection::Present(
     OnFramePresentedCallback callback) {
   // TODO(crbug.com/1230150): Consider making a more advanced present loop where
   // Presents are accumulated until OnNextFrameBegin().
-  if (present_credits_ == 0)
+  if (present_credits_ == 0) {
+    present_after_receiving_credits_ = true;
     return;
+  }
   --present_credits_;
 
   // In Flatland, release fences apply to the content of the previous present.
@@ -80,6 +71,10 @@ void FlatlandConnection::OnError(
 void FlatlandConnection::OnNextFrameBegin(
     fuchsia::ui::composition::OnNextFrameBeginValues values) {
   present_credits_ += values.additional_present_credits();
+  if (present_credits_ && present_after_receiving_credits_) {
+    Present();
+    present_after_receiving_credits_ = false;
+  }
 }
 
 void FlatlandConnection::OnFramePresented(

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -71,14 +72,15 @@ class ReopenTabInProductHelpTest : public BrowserWithTestWindowTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::SimpleTestTickClock clock_;
 
-  MockFeaturePromoController* mock_promo_controller_ = nullptr;
+  raw_ptr<MockFeaturePromoController> mock_promo_controller_ = nullptr;
 };
 
 TEST_F(ReopenTabInProductHelpTest, TriggersIPH) {
   ReopenTabInProductHelp reopen_tab_iph(profile(), clock());
 
-  EXPECT_CALL(*mock_promo_controller(),
-              MaybeShowPromo(Ref(feature_engagement::kIPHReopenTabFeature), _))
+  EXPECT_CALL(
+      *mock_promo_controller(),
+      MaybeShowPromo(Ref(feature_engagement::kIPHReopenTabFeature), _, _))
       .Times(1)
       .WillOnce(Return(true));
 

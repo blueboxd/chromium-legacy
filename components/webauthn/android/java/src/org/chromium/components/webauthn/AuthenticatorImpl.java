@@ -87,7 +87,7 @@ public class AuthenticatorImpl implements Authenticator {
 
     @Override
     public void makeCredential(
-            PublicKeyCredentialCreationOptions options, MakeCredentialResponse callback) {
+            PublicKeyCredentialCreationOptions options, MakeCredential_Response callback) {
         if (mIsOperationPending) {
             callback.call(AuthenticatorStatus.PENDING_REQUEST, null);
             return;
@@ -110,7 +110,7 @@ public class AuthenticatorImpl implements Authenticator {
 
     @Override
     public void getAssertion(
-            PublicKeyCredentialRequestOptions options, GetAssertionResponse callback) {
+            PublicKeyCredentialRequestOptions options, GetAssertion_Response callback) {
         if (mIsOperationPending) {
             callback.call(AuthenticatorStatus.PENDING_REQUEST, null);
             return;
@@ -133,8 +133,8 @@ public class AuthenticatorImpl implements Authenticator {
     @Override
     @TargetApi(Build.VERSION_CODES.N)
     public void isUserVerifyingPlatformAuthenticatorAvailable(
-            final IsUserVerifyingPlatformAuthenticatorAvailableResponse callback) {
-        IsUserVerifyingPlatformAuthenticatorAvailableResponse decoratedCallback = (isUvpaa) -> {
+            final IsUserVerifyingPlatformAuthenticatorAvailable_Response callback) {
+        IsUserVerifyingPlatformAuthenticatorAvailable_Response decoratedCallback = (isUvpaa) -> {
             RecordHistogram.recordBooleanHistogram(
                     "WebAuthentication.IsUVPlatformAuthenticatorAvailable2", isUvpaa);
             callback.call(isUvpaa);

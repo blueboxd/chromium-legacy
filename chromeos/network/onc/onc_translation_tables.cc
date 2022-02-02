@@ -401,6 +401,7 @@ const StringTranslationEntry kNetworkTechnologyTable[] = {
     {::onc::cellular::kTechnologyLteAdvanced,
      shill::kNetworkTechnologyLteAdvanced},
     {::onc::cellular::kTechnologyUmts, shill::kNetworkTechnologyUmts},
+    {::onc::cellular::kTechnology5gNr, shill::kNetworkTechnology5gNr},
     {nullptr}};
 
 const StringTranslationEntry kRoamingStateTable[] = {
@@ -422,7 +423,6 @@ const StringTranslationEntry kOpenVpnCompressionAlgorithmTable[] = {
 const FieldTranslationEntry kCellularDeviceTable[] = {
     // This field is converted during translation, see onc_translator_*.
     // { ::onc::cellular::kAPNList, shill::kCellularApnListProperty},
-    {::onc::cellular::kAllowRoaming, shill::kCellularAllowRoamingProperty},
     {::onc::cellular::kESN, shill::kEsnProperty},
     {::onc::cellular::kFamily, shill::kTechnologyFamilyProperty},
     {::onc::cellular::kFirmwareRevision, shill::kFirmwareRevisionProperty},

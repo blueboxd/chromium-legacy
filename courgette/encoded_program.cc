@@ -15,6 +15,7 @@
 
 #include "base/environment.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -137,6 +138,9 @@ class InstructionStoreReceptor : public InstructionReceptor {
     CHECK(encoded_);
   }
 
+  InstructionStoreReceptor(const InstructionStoreReceptor&) = delete;
+  InstructionStoreReceptor& operator=(const InstructionStoreReceptor&) = delete;
+
   CheckBool EmitPeRelocs() override {
     return encoded_->AddPeMakeRelocs(exe_type_);
   }
@@ -162,9 +166,7 @@ class InstructionStoreReceptor : public InstructionReceptor {
 
  private:
   ExecutableType exe_type_;
-  EncodedProgram* encoded_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstructionStoreReceptor);
+  raw_ptr<EncodedProgram> encoded_;
 };
 
 }  // namespace

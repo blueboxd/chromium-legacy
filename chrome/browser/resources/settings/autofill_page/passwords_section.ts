@@ -56,6 +56,7 @@ import {MergePasswordsStoreCopiesMixin} from './merge_passwords_store_copies_mix
 import {MultiStoreExceptionEntry} from './multi_store_exception_entry.js';
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordCheckMixin} from './password_check_mixin.js';
+import {AddCredentialFromSettingsUserInteractions} from './password_edit_dialog.js';
 import {PasswordCheckReferrer, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
 
@@ -80,7 +81,7 @@ interface RepeaterEvent extends CustomEvent {
   };
 }
 
-interface PasswordsSectionElement {
+export interface PasswordsSectionElement {
   $: {
     exportImportMenu: CrActionMenuElement,
     passwordsListHandler: PasswordsListHandlerElement,
@@ -91,7 +92,7 @@ const PasswordsSectionElementBase = MergePasswordsStoreCopiesMixin(
     PrefsMixin(GlobalScrollTargetMixin(MergeExceptionsStoreCopiesMixin(
         WebUIListenerMixin(I18nMixin(PasswordCheckMixin(PolymerElement)))))));
 
-class PasswordsSectionElement extends PasswordsSectionElementBase {
+export class PasswordsSectionElement extends PasswordsSectionElementBase {
   static get is() {
     return 'passwords-section';
   }
@@ -259,9 +260,9 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
 
       showAddPasswordButton_: {
         type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('addPasswordsInSettingsEnabled');
-        }
+        computed: 'computeShowAddPasswordButton_(' +
+            'prefs.credentials_enable_service.enforcement, ' +
+            'prefs.credentials_enable_service.value)',
       },
     };
   }
@@ -412,6 +413,14 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
     this.passwordManager_.removeAccountStorageOptInStateListener(
         assert(this.setIsOptedInForAccountStorageListener_!));
     this.setIsOptedInForAccountStorageListener_ = null;
+  }
+
+  private computeShowAddPasswordButton_(): boolean {
+    return loadTimeData.getBoolean('addPasswordsInSettingsEnabled') &&
+        // Don't show add button if password manager is disabled by policy.
+        !(this.prefs.credentials_enable_service.enforcement ===
+              chrome.settingsPrivate.Enforcement.ENFORCED &&
+          !this.prefs.credentials_enable_service.value);
   }
 
   private computeSignedIn_(): boolean {
@@ -607,12 +616,20 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
   }
 
   private onAddPasswordTap_() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'AddCredentialFromSettingsUserInteractions',
+        AddCredentialFromSettingsUserInteractions.Add_Dialog_Opened,
+        AddCredentialFromSettingsUserInteractions.COUNT);
     this.showAddPasswordDialog_ = true;
     this.activeDialogAnchorStack_.push(
         this.shadowRoot!.querySelector('#addPasswordButton')!);
   }
 
   private onAddPasswordDialogClosed_() {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'AddCredentialFromSettingsUserInteractions',
+        AddCredentialFromSettingsUserInteractions.Add_Dialog_Closed,
+        AddCredentialFromSettingsUserInteractions.COUNT);
     this.showAddPasswordDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()!));
   }
@@ -681,6 +698,12 @@ class PasswordsSectionElement extends PasswordsSectionElementBase {
         }
       }));
     }, 0);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'passwords-section': PasswordsSectionElement;
   }
 }
 

@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
@@ -83,6 +82,9 @@ class CrashesDOMHandler : public web::WebUIIOSMessageHandler {
   // Asynchronously fetches the list of crashes. Called from JS.
   void HandleRequestCrashes(const base::ListValue* args);
 
+  // Asynchronously requests a user triggered upload. Called from JS.
+  void HandleRequestSingleCrashUpload(base::Value::ConstListView args);
+
   // Sends the recent crashes list JS.
   void UpdateUI();
 
@@ -107,6 +109,10 @@ void CrashesDOMHandler::RegisterMessages() {
       crash_reporter::kCrashesUIRequestCrashList,
       base::BindRepeating(&CrashesDOMHandler::HandleRequestCrashes,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      crash_reporter::kCrashesUIRequestSingleCrashUpload,
+      base::BindRepeating(&CrashesDOMHandler::HandleRequestSingleCrashUpload,
+                          base::Unretained(this)));
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
@@ -119,6 +125,17 @@ void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
     upload_list_->Load(base::BindOnce(&CrashesDOMHandler::OnUploadListAvailable,
                                       base::Unretained(this)));
   }
+}
+
+void CrashesDOMHandler::HandleRequestSingleCrashUpload(
+    base::Value::ConstListView args) {
+  DCHECK(crash_reporter::IsCrashpadRunning());
+  if (!IOSChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+    return;
+  }
+
+  std::string local_id = args[0].GetString();
+  upload_list_->RequestSingleUploadAsync(local_id);
 }
 
 void CrashesDOMHandler::OnUploadListAvailable() {

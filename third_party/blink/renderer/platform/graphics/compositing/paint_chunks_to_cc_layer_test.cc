@@ -20,10 +20,12 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 void PrintTo(const Vector<cc::PaintOpType>& ops, std::ostream* os) {
   *os << "[";
@@ -47,7 +49,7 @@ void PrintTo(const cc::PaintRecord& record, std::ostream* os) {
 
 void PrintTo(const SkRect& rect, std::ostream* os) {
   *os << (cc::PaintOp::IsUnsetRect(rect) ? "(unset)"
-                                         : blink::FloatRect(rect).ToString());
+                                         : gfx::SkRectToRectF(rect).ToString());
 }
 
 namespace blink {
@@ -139,7 +141,7 @@ class PaintRecordMatcher
     const auto* clip_op =                                     \
         (op_buffer).GetOpAtForTesting<cc::ClipRectOp>(index); \
     ASSERT_NE(nullptr, clip_op);                              \
-    EXPECT_EQ(SkRect(r), clip_op->rect);                      \
+    EXPECT_EQ(gfx::RectFToSkRect(r), clip_op->rect);          \
   } while (false)
 
 #define EXPECT_ROUNDED_CLIP(r, op_buffer, index)               \
@@ -797,20 +799,17 @@ TEST_P(PaintChunksToCcLayerTest, CombineClipsAcrossTransform) {
            cc::PaintOpType::Restore,     // </c3 non_identity>
            cc::PaintOpType::Restore}));  // </c1+c2>
 
-  EXPECT_CLIP(FloatRect(50, 50, 50, 50), *output, 1);
+  EXPECT_CLIP(gfx::RectF(50, 50, 50, 50), *output, 1);
   EXPECT_TRANSFORM_MATRIX(non_identity->Matrix(), *output, 3);
-  EXPECT_CLIP(FloatRect(1, 2, 3, 4), *output, 4);
+  EXPECT_CLIP(gfx::RectF(1, 2, 3, 4), *output, 4);
   EXPECT_TRANSFORM_MATRIX(non_invertible->Matrix(), *output, 6);
-  EXPECT_CLIP(FloatRect(5, 6, 7, 8), *output, 7);
+  EXPECT_CLIP(gfx::RectF(5, 6, 7, 8), *output, 7);
 }
 
 TEST_P(PaintChunksToCcLayerTest, CombineClipsWithRoundedRects) {
   FloatRoundedRect clip_rect(0, 0, 100, 100);
-  FloatSize corner(5, 5);
-  FloatRoundedRect big_rounded_clip_rect(FloatRect(0, 0, 200, 200), corner,
-                                         corner, corner, corner);
-  FloatRoundedRect small_rounded_clip_rect(FloatRect(0, 0, 100, 100), corner,
-                                           corner, corner, corner);
+  FloatRoundedRect big_rounded_clip_rect(gfx::RectF(0, 0, 200, 200), 5);
+  FloatRoundedRect small_rounded_clip_rect(gfx::RectF(0, 0, 100, 100), 5);
 
   auto c1 = CreateClip(c0(), t0(), clip_rect);
   auto c2 = CreateClip(*c1, t0(), small_rounded_clip_rect);
@@ -1178,73 +1177,6 @@ TEST_P(PaintChunksToCcLayerTest, EffectUndoesNoopClip) {
               }));
 }
 
-// These tests are testing error recovery path that are only used in
-// release builds. A DCHECK'd build will trap instead.
-#if !DCHECK_IS_ON()
-TEST_P(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipFailSafe) {
-  ScopedCompositeAfterPaintForTest cap_disabler(false);
-  // This test verifies the fail-safe path correctly recovers from a malformed
-  // chunk that escaped its layer's clip.
-  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
-  auto c1 = CreateClip(c0(), t0(), clip_rect);
-
-  TestChunks chunks;
-  chunks.AddChunk(t0(), c0(), e0());
-  chunks.AddChunk(t0(), *c1, e0());
-
-  sk_sp<PaintRecord> output =
-      PaintChunksToCcLayer::Convert(
-          chunks.Build(), PropertyTreeState(t0(), *c1, e0()), gfx::Vector2dF(),
-          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
-          ->ReleaseAsRecord();
-  // We don't care about the exact output as long as it didn't crash.
-}
-
-TEST_P(PaintChunksToCcLayerTest, SPv1ChunkEscapeEffectClipFailSafe) {
-  ScopedCompositeAfterPaintForTest cap_disabler(false);
-  // This test verifies the fail-safe path correctly recovers from a malformed
-  // chunk that escaped its effect's clip.
-  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
-  auto c1 = CreateClip(c0(), t0(), clip_rect);
-  CompositorFilterOperations filter;
-  filter.AppendBlurFilter(5);
-  auto e1 = CreateFilterEffect(e0(), t0(), c1.get(), std::move(filter));
-
-  TestChunks chunks;
-  chunks.AddChunk(t0(), *c1, *e1);
-  chunks.AddChunk(t0(), c0(), *e1);
-  chunks.AddChunk(t0(), *c1, *e1);
-
-  sk_sp<PaintRecord> output =
-      PaintChunksToCcLayer::Convert(
-          chunks.Build(), PropertyTreeState::Root(), gfx::Vector2dF(),
-          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
-          ->ReleaseAsRecord();
-  // We don't care about the exact output as long as it didn't crash.
-}
-
-TEST_P(PaintChunksToCcLayerTest, SPv1ChunkEscapeLayerClipDoubleFault) {
-  ScopedCompositeAfterPaintForTest cap_disabler(false);
-  // This test verifies the fail-safe path correctly recovers from a series of
-  // malformed chunks that escaped their layer's clip.
-  FloatRoundedRect clip_rect(0.f, 0.f, 1.f, 1.f);
-  auto c1 = CreateClip(c0(), t0(), clip_rect);
-  auto c2 = CreateClip(c0(), t0(), clip_rect);
-  auto c3 = CreateClip(c0(), t0(), clip_rect);
-
-  TestChunks chunks;
-  chunks.AddChunk(t0(), *c2, e0());
-  chunks.AddChunk(t0(), *c3, e0());
-
-  sk_sp<PaintRecord> output =
-      PaintChunksToCcLayer::Convert(
-          chunks.Build(), PropertyTreeState(t0(), *c1, e0()), gfx::Vector2dF(),
-          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
-          ->ReleaseAsRecord();
-  // We don't care about the exact output as long as it didn't crash.
-}
-#endif
-
 TEST_P(PaintChunksToCcLayerTest, NoopEffectDoesNotEmitItems) {
   auto e1 = CreateOpacityEffect(e0(), 0.5f);
   auto noop_e2 = EffectPaintPropertyNodeAlias::Create(*e1);
@@ -1326,16 +1258,16 @@ TEST_P(PaintChunksToCcLayerTest, EmptyChunkRect) {
   EXPECT_EFFECT_BOUNDS(0, 0, 0, 0, *output, 0);
 }
 
-static sk_sp<cc::PaintFilter> MakeFilter(FloatRect bounds) {
-  PaintFilter::CropRect rect(bounds);
+static sk_sp<cc::PaintFilter> MakeFilter(gfx::RectF bounds) {
+  PaintFilter::CropRect rect(gfx::RectFToSkRect(bounds));
   return sk_make_sp<ColorFilterPaintFilter>(
       SkColorFilters::Blend(SK_ColorBLUE, SkBlendMode::kSrc), nullptr, &rect);
 }
 
 TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnEmptyChunk) {
   CompositorFilterOperations filter;
-  filter.AppendReferenceFilter(MakeFilter(FloatRect(12, 26, 93, 84)));
-  filter.SetReferenceBox(FloatRect(11, 22, 33, 44));
+  filter.AppendReferenceFilter(MakeFilter(gfx::RectF(12, 26, 93, 84)));
+  filter.SetReferenceBox(gfx::RectF(11, 22, 33, 44));
   ASSERT_TRUE(filter.HasReferenceFilter());
   auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter);
   TestChunks chunks;
@@ -1365,8 +1297,8 @@ TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnEmptyChunk) {
 
 TEST_P(PaintChunksToCcLayerTest, ReferenceFilterOnChunkWithDrawingDisplayItem) {
   CompositorFilterOperations filter;
-  filter.AppendReferenceFilter(MakeFilter(FloatRect(7, 16, 93, 84)));
-  filter.SetReferenceBox(FloatRect(11, 22, 33, 44));
+  filter.AppendReferenceFilter(MakeFilter(gfx::RectF(7, 16, 93, 84)));
+  filter.SetReferenceBox(gfx::RectF(11, 22, 33, 44));
   ASSERT_TRUE(filter.HasReferenceFilter());
   auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter);
   TestChunks chunks;

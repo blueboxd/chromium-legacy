@@ -10,14 +10,14 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "remoting/host/action_executor.h"
+#include "remoting/host/base/screen_controls.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/fake_mouse_cursor_monitor.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/screen_controls.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 
 namespace remoting {
@@ -59,11 +59,11 @@ class FakeInputInjector : public InputInjector {
  private:
   friend class FakeDesktopEnvironment;
 
-  std::vector<protocol::KeyEvent>* key_events_ = nullptr;
-  std::vector<protocol::TextEvent>* text_events_ = nullptr;
-  std::vector<protocol::MouseEvent>* mouse_events_ = nullptr;
-  std::vector<protocol::TouchEvent>* touch_events_ = nullptr;
-  std::vector<protocol::ClipboardEvent>* clipboard_events_ = nullptr;
+  raw_ptr<std::vector<protocol::KeyEvent>> key_events_ = nullptr;
+  raw_ptr<std::vector<protocol::TextEvent>> text_events_ = nullptr;
+  raw_ptr<std::vector<protocol::MouseEvent>> mouse_events_ = nullptr;
+  raw_ptr<std::vector<protocol::TouchEvent>> touch_events_ = nullptr;
+  raw_ptr<std::vector<protocol::ClipboardEvent>> clipboard_events_ = nullptr;
 
   base::WeakPtrFactory<FakeInputInjector> weak_factory_{this};
 };
@@ -155,6 +155,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   // DesktopEnvironmentFactory implementation.
   std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<ClientSessionEvents> client_session_events,
       const DesktopEnvironmentOptions& options) override;
   bool SupportsAudioCapture() const override;
 

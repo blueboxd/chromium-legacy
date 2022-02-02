@@ -2,35 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {
-  CameraAppDeviceProvider,
-  CameraAppDeviceProviderRemote,  // eslint-disable-line no-unused-vars
-  CameraAppDeviceRemote,          // eslint-disable-line no-unused-vars
-  CameraEventObserverCallbackRouter,
-  CaptureIntent,  // eslint-disable-line no-unused-vars
-  DocumentCornersObserverCallbackRouter,
-  Effect,  // eslint-disable-line no-unused-vars
-  GetCameraAppDeviceStatus,
-  ReprocessResultListenerCallbackRouter,
-  ResultMetadataObserverCallbackRouter,
-  StreamType,  // eslint-disable-line no-unused-vars
-} from '/media/capture/video/chromeos/mojom/camera_app.mojom-webui.js';
-import {
-  CameraFacing,
-} from '/media/capture/video/chromeos/mojom/camera_common.mojom-webui.js';
-import {
-  CameraMetadata,       // eslint-disable-line no-unused-vars
-  CameraMetadataEntry,  // eslint-disable-line no-unused-vars
-  EntryType,
-} from '/media/capture/video/chromeos/mojom/camera_metadata.mojom-webui.js';
-import {
-  AndroidInfoSupportedHardwareLevel,
-  CameraMetadataTag,
-} from
-    '/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-webui.js';
-
+import {assert, assertNotReached} from '../assert.js';
 import {AsyncJobQueue} from '../async_job_queue.js';
-import {assert, assertNotReached} from '../chrome_util.js';
 import {reportError} from '../error.js';
 import {Point} from '../geometry.js';
 import {
@@ -44,6 +17,25 @@ import {
 } from '../type.js';
 import {WaitableEvent} from '../waitable_event.js';
 
+import {
+  AndroidInfoSupportedHardwareLevel,
+  CameraAppDeviceProvider,
+  CameraAppDeviceProviderRemote,  // eslint-disable-line no-unused-vars
+  CameraAppDeviceRemote,          // eslint-disable-line no-unused-vars
+  CameraEventObserverCallbackRouter,
+  CameraFacing,
+  CameraMetadata,       // eslint-disable-line no-unused-vars
+  CameraMetadataEntry,  // eslint-disable-line no-unused-vars
+  CameraMetadataTag,
+  CaptureIntent,  // eslint-disable-line no-unused-vars
+  DocumentCornersObserverCallbackRouter,
+  Effect,  // eslint-disable-line no-unused-vars
+  EntryType,
+  GetCameraAppDeviceStatus,
+  ReprocessResultListenerCallbackRouter,
+  ResultMetadataObserverCallbackRouter,
+  StreamType,  // eslint-disable-line no-unused-vars
+} from './type.js';
 import {
   closeEndpoint,
   MojoEndpoint,  // eslint-disable-line no-unused-vars
@@ -689,10 +681,7 @@ export class DeviceOperator {
   /**
    * Creates a new instance of DeviceOperator if it is not set. Returns the
    *     exist instance.
-   * TODO(b/172340451): Use force casting rather than template for the type
-   *     checking of Proxy after switching to TypeScript.
-   * @return {!Promise<?T>} The singleton instance.
-   * @template T
+   * @return {!Promise<!DeviceOperator>} The singleton instance.
    */
   static async getInstance() {
     await readyEvent.wait();
@@ -713,7 +702,7 @@ export class DeviceOperator {
         return target[property];
       },
     };
-    return /** @type {!T} */ (new Proxy(instance, deviceOperatorWrapper));
+    return new Proxy(instance, deviceOperatorWrapper);
   }
 
   /**

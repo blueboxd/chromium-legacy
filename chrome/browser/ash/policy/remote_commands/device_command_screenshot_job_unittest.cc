@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -91,8 +90,7 @@ MockUploadJob::MockUploadJob(const GURL& upload_url,
       delegate_(delegate),
       error_code_(std::move(error_code)) {}
 
-MockUploadJob::~MockUploadJob() {
-}
+MockUploadJob::~MockUploadJob() {}
 
 void MockUploadJob::AddDataSegment(
     const std::string& name,
@@ -160,8 +158,7 @@ MockScreenshotDelegate::MockScreenshotDelegate(
     : upload_job_error_code_(std::move(upload_job_error_code)),
       screenshot_allowed_(screenshot_allowed) {}
 
-MockScreenshotDelegate::~MockScreenshotDelegate() {
-}
+MockScreenshotDelegate::~MockScreenshotDelegate() {}
 
 bool MockScreenshotDelegate::IsScreenshotAllowed() {
   return screenshot_allowed_;
@@ -220,8 +217,7 @@ class DeviceCommandScreenshotTest : public ChromeAshTestBase {
 };
 
 DeviceCommandScreenshotTest::DeviceCommandScreenshotTest()
-    : task_runner_(new base::TestMockTimeTaskRunner()) {
-}
+    : task_runner_(new base::TestMockTimeTaskRunner()) {}
 
 void DeviceCommandScreenshotTest::SetUp() {
   ChromeAshTestBase::SetUp();
@@ -237,7 +233,7 @@ void DeviceCommandScreenshotTest::InitializeScreenshotJob(
       base::TimeTicks::Now(),
       GenerateScreenshotCommandProto(
           unique_id, base::TimeTicks::Now() - issued_time, upload_url),
-      nullptr));
+      em::SignedData()));
   EXPECT_EQ(unique_id, job->unique_id());
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
 }

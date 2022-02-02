@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/sharesheet/sharesheet_metrics.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/native_widget_types.h"
@@ -141,7 +143,7 @@ class SharesheetService : public KeyedService {
                     std::vector<TargetInfo> targets,
                     size_t index,
                     SharesheetServiceIconLoaderCallback callback,
-                    apps::mojom::IconValuePtr icon_value);
+                    apps::IconValuePtr icon_value);
 
   void OnAppIconsLoaded(base::WeakPtr<content::WebContents> web_contents,
                         apps::mojom::IntentPtr intent,
@@ -168,9 +170,9 @@ class SharesheetService : public KeyedService {
   // Makes |intent| related UMA recordings.
   void RecordShareDataMetrics(const apps::mojom::IntentPtr& intent);
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   std::unique_ptr<ShareActionCache> share_action_cache_;
-  apps::AppServiceProxy* app_service_proxy_;
+  raw_ptr<apps::AppServiceProxy> app_service_proxy_;
 
   // Record of all active SharesheetServiceDelegators. These can be retrieved
   // by ShareActions and used as SharesheetControllers to make bubble changes.

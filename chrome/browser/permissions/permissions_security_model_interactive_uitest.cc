@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -14,11 +13,9 @@
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/embedder_support/switches.h"
-#include "components/permissions/features.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -158,20 +155,9 @@ constexpr char kRequestCamera[] = R"(
 // Tests of permissions behavior for an inheritance and embedding of an origin.
 // Test fixtures are run with and without the `PermissionsRevisedOriginHandling`
 // flag.
-class PermissionsSecurityModelInteractiveUITest
-    : public InProcessBrowserTest,
-      public ::testing::WithParamInterface<bool> {
+class PermissionsSecurityModelInteractiveUITest : public InProcessBrowserTest {
  public:
   PermissionsSecurityModelInteractiveUITest() {
-    std::vector<base::Feature> enabled_features, disabled_features;
-    enabled_features.push_back(features::kUserMediaCaptureOnFocus);
-    if (GetParam()) {
-      enabled_features.push_back(permissions::features::kRevisedOriginHandling);
-    } else {
-      disabled_features.push_back(
-          permissions::features::kRevisedOriginHandling);
-    }
-    feature_list_.InitWithFeatures(enabled_features, disabled_features);
     geolocation_overrider_ =
         std::make_unique<device::ScopedGeolocationOverrider>(0, 0);
   }
@@ -200,8 +186,6 @@ class PermissionsSecurityModelInteractiveUITest
     return popup_contents;
   }
 
-  bool IsRevisedOriginHandlingEnabled() { return GetParam(); }
-
   void VerifyPermission(content::WebContents* opener_or_embedder_contents,
                         content::RenderFrameHost* test_rfh,
                         const std::string& request_permission_script,
@@ -213,10 +197,6 @@ class PermissionsSecurityModelInteractiveUITest
         content::EvalJs(opener_rfh, check_permission_script).value.GetBool());
     ASSERT_FALSE(
         content::EvalJs(test_rfh, check_permission_script).value.GetBool());
-
-    const bool contents_is_embedder =
-        content::WebContents::FromRenderFrameHost(test_rfh) ==
-        opener_or_embedder_contents;
 
     permissions::PermissionRequestManager* manager =
         permissions::PermissionRequestManager::FromWebContents(
@@ -247,24 +227,16 @@ class PermissionsSecurityModelInteractiveUITest
     EXPECT_TRUE(
         content::EvalJs(opener_rfh, check_permission_script).value.GetBool());
 
-    // If `test_rfh` is not a descendant of `opener_or_embedder_contents`,
-    // in other words if `test_rfh` was created via `Window.open()`,
-    // permissions are propagated from an opener WebContents only if
-    // `RevisedOriginHandlingEnabled` is enabled.
-    const bool expect_granted =
-        IsRevisedOriginHandlingEnabled() || contents_is_embedder;
-
     // Verify permissions on the test RFH.
     {
-      EXPECT_EQ(
-          expect_granted,
+      EXPECT_TRUE(
           content::EvalJs(test_rfh, check_permission_script).value.GetBool());
     }
 
     // Request permission on the test RFH.
     test_rfh->GetView()->Focus();
     ASSERT_TRUE(test_rfh->GetView()->HasFocus());
-    EXPECT_EQ(expect_granted ? "granted" : "denied",
+    EXPECT_EQ("granted",
               content::EvalJs(test_rfh, request_permission_script,
                               is_notification
                                   ? content::EXECUTE_SCRIPT_DEFAULT_OPTIONS
@@ -273,6 +245,42 @@ class PermissionsSecurityModelInteractiveUITest
 
     // There should not be the 2nd prompt.
     EXPECT_EQ(1, bubble_factory->TotalRequestCount());
+  }
+
+  // getUserMedia requires focus. It should be verified only on a popup window.
+  void VerifyPopupWindowGetUserMedia(content::WebContents* opener_contents,
+                                     content::WebContents* popup_contents) {
+    content::RenderFrameHost* opener_rfh = opener_contents->GetMainFrame();
+    content::RenderFrameHost* popup_rfh = popup_contents->GetMainFrame();
+
+    ASSERT_FALSE(content::EvalJs(opener_rfh, kCheckCamera).value.GetBool());
+    ASSERT_FALSE(content::EvalJs(popup_rfh, kCheckCamera).value.GetBool());
+
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(popup_contents);
+    std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+        std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+    // Enable auto-accept of a permission request.
+    bubble_factory->set_response_type(
+        permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+    // Move the web contents to the foreground.
+    popup_rfh->GetView()->Focus();
+    ASSERT_TRUE(popup_rfh->GetView()->HasFocus());
+    // Request permission on the popup RenderFrameHost.
+    EXPECT_EQ("granted",
+              content::EvalJs(popup_rfh, kRequestCamera,
+                              content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+                  .ExtractString());
+    EXPECT_EQ(1, bubble_factory->TotalRequestCount());
+
+    // Disable auto-accept of a permission request.
+    bubble_factory->set_response_type(
+        permissions::PermissionRequestManager::AutoResponseType::NONE);
+
+    EXPECT_TRUE(content::EvalJs(popup_rfh, kCheckCamera).value.GetBool());
+    EXPECT_TRUE(content::EvalJs(opener_rfh, kCheckCamera).value.GetBool());
   }
 
   void VerifyPermissionsExceptGetUserMedia(
@@ -317,15 +325,10 @@ class PermissionsSecurityModelInteractiveUITest
   }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         PermissionsSecurityModelInteractiveUITest,
-                         ::testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        EmbedIframeAboutBlank) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/iframe_about_blank.html"));
@@ -348,7 +351,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
                    kCheckCamera);
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        WindowOpenAboutBlank) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -361,14 +364,13 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
       OpenPopup(browser(), GURL("about:blank"));
   ASSERT_TRUE(popup_contents);
 
-  // TODO(crbug.com/1242047): Add back the camera access tests when they are
-  // no longer flaky on Linux.
   VerifyPermissionsExceptGetUserMedia(opener_contents,
                                       popup_contents->GetMainFrame());
+  VerifyPopupWindowGetUserMedia(opener_contents, popup_contents);
 }
 
 // `about:srcdoc` supports only embedder WebContents, hence no test for opener.
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        EmbedIframeSrcDoc) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/iframe_srcdoc.html"));
@@ -390,7 +392,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
                    kCheckCamera);
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        EmbedIframeBlob) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/iframe_blob.html"));
@@ -413,17 +415,8 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
                    kCheckCamera);
 }
 
-// TODO(crbug.com/1242047): Add back the camera access tests when they are
-// no longer flaky on Linux.
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        WindowOpenBlob) {
-  if (GetParam()) {
-    // Blob iframe on an opener contents does not work if
-    // `kRevisedOriginHandling` feature enabled.
-    // TODO(crbug.com/698985): Remove when the bug is fixed.
-    return;
-  }
-
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
   content::RenderFrameHost* main_rfh =
@@ -441,9 +434,10 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
 
   VerifyPermissionsExceptGetUserMedia(opener_contents,
                                       blob_popup_contents->GetMainFrame());
+  VerifyPopupWindowGetUserMedia(opener_contents, blob_popup_contents);
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        EmbedIframeFileSystem) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -465,7 +459,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
 }
 
 // Renderer navigation for "filesystem:" is not allowed.
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        WindowOpenFileSystemRendererNavigationNotAllowed) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -485,15 +479,8 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
   EXPECT_EQ("", popup_iframe->GetLastCommittedURL().scheme());
 }
 
-// TODO(crbug.com/1242046): Add back the camera access tests when they are
-// no longer flaky on Linux and Mac.
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        WindowOpenFileSystemBrowserNavigation) {
-  if (!GetParam()) {
-    // Filesystem iframe on an opener contents does not work if
-    // `kRevisedOriginHandling` feature disabled.
-    return;
-  }
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
   content::RenderFrameHost* main_rfh =
@@ -520,9 +507,11 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
   EXPECT_TRUE(popup_rfh->GetLastCommittedURL().SchemeIsFileSystem());
 
   VerifyPermissionsExceptGetUserMedia(opener_contents, popup_rfh);
+  VerifyPopupWindowGetUserMedia(
+      opener_contents, content::WebContents::FromRenderFrameHost(popup_rfh));
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        TopIframeFile) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -558,7 +547,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
 }
 
 // Permissions granted for a file should not leak to another file.
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        PermissionDoesNotLeakToAnotherFile) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL url(embedded_test_server()->GetURL("/empty.html"));
@@ -605,7 +594,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
   VerifyPermissionsForFile(main_rfh, /*expect_granted*/ false);
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        UniversalAccessFromFileUrls) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -676,7 +665,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
 
 // Verifies that permissions are not supported for file:/// with changed URL to
 // `about:blank`.
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        UniversalAccessFromFileUrlsAboutBlank) {
   content::WebContents* embedder_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -714,7 +703,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
   VerifyPermissionsForFile(main_rfh, /*expect_granted*/ false);
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        PermissionRequestOnNtpUseDseOrigin) {
   content::WebContents* embedder_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -773,7 +762,7 @@ IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
                   .value.GetBool());
 }
 
-IN_PROC_BROWSER_TEST_P(PermissionsSecurityModelInteractiveUITest,
+IN_PROC_BROWSER_TEST_F(PermissionsSecurityModelInteractiveUITest,
                        MicActivityIndicatorOnNtpUseDseOrigin) {
   content::WebContents* embedder_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

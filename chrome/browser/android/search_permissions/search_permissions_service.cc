@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -92,10 +93,10 @@ class SearchEngineDelegateImpl
   void OnTemplateURLServiceChanged() override { dse_changed_callback_.Run(); }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Will be null in unittests.
-  TemplateURLService* template_url_service_;
+  raw_ptr<TemplateURLService> template_url_service_;
 
   base::RepeatingClosure dse_changed_callback_;
 };
@@ -176,15 +177,8 @@ SearchPermissionsService::SearchPermissionsService(Profile* profile)
 bool SearchPermissionsService::IsPermissionControlledByDSE(
     ContentSettingsType type,
     const url::Origin& requesting_origin) {
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kRevertDSEAutomaticPermissions)) {
+  if (!IsDSEAutograntEnabled(type))
     return false;
-  }
-
-  if (type != ContentSettingsType::GEOLOCATION &&
-      type != ContentSettingsType::NOTIFICATIONS) {
-    return false;
-  }
 
   if (requesting_origin.scheme() != url::kHttpsScheme)
     return false;
@@ -198,6 +192,16 @@ bool SearchPermissionsService::IsPermissionControlledByDSE(
 bool SearchPermissionsService::IsDseOrigin(const url::Origin& origin) {
   return origin.scheme() == url::kHttpsScheme &&
          origin.IsSameOriginWith(delegate_->GetDSEOrigin());
+}
+
+bool SearchPermissionsService::IsDSEAutograntEnabled(ContentSettingsType type) {
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kRevertDSEAutomaticPermissions)) {
+    return false;
+  }
+
+  return type == ContentSettingsType::GEOLOCATION ||
+         type == ContentSettingsType::NOTIFICATIONS;
 }
 
 void SearchPermissionsService::ResetDSEPermission(ContentSettingsType type) {
@@ -407,8 +411,8 @@ void SearchPermissionsService::InitializeSettingsIfNeeded() {
 
       // If the user's content setting is being overridden by the DSE setting,
       // we migrate the DSE setting to be stored in the user's content setting.
-      bool dse_setting = false;
-      dict->GetBoolean(kDSESettingKeyDeprecated, &dse_setting);
+      bool dse_setting =
+          dict->FindBoolPath(kDSESettingKeyDeprecated).value_or(false);
       if (dse_geolocation_setting == CONTENT_SETTING_ASK) {
         dse_geolocation_setting =
             dse_setting ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;

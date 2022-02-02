@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
@@ -165,7 +165,7 @@ class SharedWorkerHostTest : public testing::Test {
   BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   MockRenderProcessHostFactory mock_render_process_host_factory_;
-  MockRenderProcessHost* mock_render_process_host_;
+  raw_ptr<MockRenderProcessHost> mock_render_process_host_;
 
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<SiteInstanceImpl> site_instance_;
@@ -350,12 +350,20 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
   EXPECT_FALSE(host);
 }
 
-TEST_F(SharedWorkerHostTest, CreateNetworkFactoryParamsForSubresources) {
-  // Enable COEPForSharedWorker, since CreateNetworkFactoryParamsForSubresources
-  // does more logic in that case.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(blink::features::kCOEPForSharedWorker);
+// Enable COEPForSharedWorker, since CreateNetworkFactoryParamsForSubresources
+// does more logic in that case.
+class SharedWorkerHostTestWithCOEPEnabled : public SharedWorkerHostTest {
+ public:
+  SharedWorkerHostTestWithCOEPEnabled() = default;
+  ~SharedWorkerHostTestWithCOEPEnabled() override = default;
 
+ private:
+  base::test::ScopedFeatureList feature_list{
+      /*enable_feature=*/blink::features::kCOEPForSharedWorker};
+};
+
+TEST_F(SharedWorkerHostTestWithCOEPEnabled,
+       CreateNetworkFactoryParamsForSubresources) {
   base::WeakPtr<SharedWorkerHost> host = CreateHost();
 
   // Start the worker.
@@ -371,13 +379,8 @@ TEST_F(SharedWorkerHostTest, CreateNetworkFactoryParamsForSubresources) {
   EXPECT_FALSE(params->isolation_info.nonce().has_value());
 }
 
-TEST_F(SharedWorkerHostTest,
+TEST_F(SharedWorkerHostTestWithCOEPEnabled,
        CreateNetworkFactoryParamsForSubresourcesWithNonce) {
-  // Enable COEPForSharedWorker, since CreateNetworkFactoryParamsForSubresources
-  // does more logic in that case.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(blink::features::kCOEPForSharedWorker);
-
   base::UnguessableToken nonce = base::UnguessableToken::Create();
   SharedWorkerInstance instance(
       kWorkerUrl, blink::mojom::ScriptType::kClassic,

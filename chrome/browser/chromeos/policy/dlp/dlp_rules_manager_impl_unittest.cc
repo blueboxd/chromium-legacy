@@ -5,11 +5,14 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -47,7 +50,7 @@ constexpr char kMailPattern[] = "mail.google.com";
 class MockDlpRulesManager : public DlpRulesManagerImpl {
  public:
   explicit MockDlpRulesManager(PrefService* local_state)
-      : DlpRulesManagerImpl(local_state, /* dm_token_value= */ "") {}
+      : DlpRulesManagerImpl(local_state) {}
 };
 
 }  // namespace
@@ -64,6 +67,7 @@ class DlpRulesManagerImplTest : public testing::Test {
                                     std::move(rules_list));
   }
 
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState testing_local_state_;
   MockDlpRulesManager dlp_rules_manager_;
   base::HistogramTester histogram_tester_;
@@ -631,11 +635,11 @@ TEST_F(DlpRulesManagerImplTest, WarnPriority) {
   EXPECT_EQ(dst_pattern, kMailPattern);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(DlpRulesManagerImplTest, FilesRestriction_DlpClientNotified) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       features::kDataLeakPreventionFilesRestriction);
-  content::BrowserTaskEnvironment task_environment;
   chromeos::DlpClient::InitializeFake();
 
   EXPECT_EQ(0, chromeos::DlpClient::Get()
@@ -665,9 +669,9 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_DlpClientNotified) {
                    ->GetSetDlpFilesPolicyCount());
   chromeos::DlpClient::Shutdown();
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(DlpRulesManagerImplTest, FilesRestriction_FeatureNotEnabled) {
-  content::BrowserTaskEnvironment task_environment;
   chromeos::DlpClient::InitializeFake();
 
   EXPECT_EQ(0, chromeos::DlpClient::Get()
@@ -841,6 +845,43 @@ TEST_F(DlpRulesManagerImplTest, ReportPriority) {
             dlp_rules_manager_.IsRestricted(
                 GURL(base::StrCat({kHttpsPrefix, kSalesforcePattern})),
                 DlpRulesManager::Restriction::kScreenShare));
+}
+
+TEST_F(DlpRulesManagerImplTest, GetDisallowedFileTransfers) {
+  base::Value rules(base::Value::Type::LIST);
+
+  base::Value src_urls_1(base::Value::Type::LIST);
+  src_urls_1.Append(kDrivePattern);
+  src_urls_1.Append(kCompanyPattern);
+
+  base::Value dst_urls_1(base::Value::Type::LIST);
+  dst_urls_1.Append(kWildCardMatching);
+
+  base::Value restrictions_1(base::Value::Type::LIST);
+  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
+      dlp::kFilesRestriction, dlp::kBlockLevel));
+
+  rules.Append(dlp_test_util::CreateRule(
+      "Block files", "Block files of work urls", std::move(src_urls_1),
+      std::move(dst_urls_1),
+      /*dst_components=*/base::Value(base::Value::Type::LIST),
+      std::move(restrictions_1)));
+
+  UpdatePolicyPref(std::move(rules));
+
+  uint64_t inode_1 = 12345;
+  uint64_t inode_2 = 67890;
+  uint64_t inode_3 = 13679;
+  std::vector<DlpRulesManager::FileMetadata> transferred_files;
+  transferred_files.push_back({inode_1, kCompanyUrl});
+  transferred_files.push_back(
+      {inode_2, base::StrCat({kHttpsPrefix, kDrivePattern})});
+  transferred_files.push_back({inode_3, kGoogleUrl});
+
+  std::vector<uint64_t> expected_output = {inode_1, inode_2};
+
+  EXPECT_EQ(expected_output, dlp_rules_manager_.GetDisallowedFileTransfers(
+                                 transferred_files, GURL(kExampleUrl)));
 }
 
 }  // namespace policy

@@ -199,12 +199,6 @@ const base::Feature kTurnOffStreamingMediaCachingAlways{
 const base::Feature kSchemefulSameSite{"SchemefulSameSite",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kReportPoorConnectivity{"ReportPoorConnectivity",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPreemptiveMobileNetworkActivation{
-    "PreemptiveMobileNetworkActivation", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kLimitOpenUDPSockets{"LimitOpenUDPSockets",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -259,6 +253,12 @@ const base::Feature kPartitionedCookies{"PartitionedCookies",
 
 const base::Feature kExtraCookieValidityChecks{
     "ExtraCookieValidityChecks", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kFirstPartySetsV2ComponentFormat{
+    "FirstPartySetsV2ComponentFormat", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRecordRadioWakeupTrigger{
+    "RecordRadioWakeupTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace net

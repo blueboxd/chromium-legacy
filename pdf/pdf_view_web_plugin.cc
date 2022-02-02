@@ -16,6 +16,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/string_search.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
@@ -249,7 +250,7 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
   blink::WebPluginContainer* Container() override { return container_; }
 
  private:
-  blink::WebPluginContainer* const container_;
+  const raw_ptr<blink::WebPluginContainer> container_;
 };
 
 }  // namespace
@@ -272,7 +273,11 @@ PdfViewWebPlugin::PdfViewWebPlugin(
       pdf_service_remote_(std::move(pdf_service_remote)),
       initial_params_(params),
       pdf_accessibility_data_handler_(
-          client_->CreateAccessibilityDataHandler(this)) {}
+          client_->CreateAccessibilityDataHandler(this)) {
+  auto* service = GetPdfService();
+  if (service)
+    service->SetListener(listener_receiver_.BindNewPipeAndPassRemote());
+}
 
 PdfViewWebPlugin::~PdfViewWebPlugin() = default;
 
@@ -673,7 +678,7 @@ void PdfViewWebPlugin::NotifySelectedFindResultChanged(int current_find_index) {
 }
 
 void PdfViewWebPlugin::CaretChanged(const gfx::Rect& caret_rect) {
-  caret_rect_ = gfx::ScaleToEnclosingRectSafe(
+  caret_rect_ = gfx::ScaleToEnclosingRect(
       caret_rect + available_area().OffsetFromOrigin(), device_to_css_scale_);
 }
 
@@ -738,6 +743,19 @@ void PdfViewWebPlugin::ScheduleTaskOnMainThread(const base::Location& from_here,
                                                 base::TimeDelta delay) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       from_here, base::BindOnce(std::move(callback), result), delay);
+}
+
+void PdfViewWebPlugin::SetCaretPosition(const gfx::PointF& position) {
+  PdfViewPluginBase::SetCaretPosition(position);
+}
+
+void PdfViewWebPlugin::MoveRangeSelectionExtent(const gfx::PointF& extent) {
+  PdfViewPluginBase::MoveRangeSelectionExtent(extent);
+}
+
+void PdfViewWebPlugin::SetSelectionBounds(const gfx::PointF& base,
+                                          const gfx::PointF& extent) {
+  PdfViewPluginBase::SetSelectionBounds(base, extent);
 }
 
 bool PdfViewWebPlugin::IsValid() const {
@@ -849,11 +867,11 @@ void PdfViewWebPlugin::SetFormTextFieldInFocus(bool in_focus) {
   container_wrapper_->UpdateTextInputState();
 }
 
-void PdfViewWebPlugin::SetAccessibilityDocInfo(
-    const AccessibilityDocInfo& doc_info) {
+void PdfViewWebPlugin::SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityDocInfo,
-                                weak_factory_.GetWeakPtr(), doc_info));
+      FROM_HERE,
+      base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityDocInfo,
+                     weak_factory_.GetWeakPtr(), std::move(doc_info)));
 }
 
 void PdfViewWebPlugin::SetAccessibilityPageInfo(
@@ -869,11 +887,11 @@ void PdfViewWebPlugin::SetAccessibilityPageInfo(
 }
 
 void PdfViewWebPlugin::SetAccessibilityViewportInfo(
-    const AccessibilityViewportInfo& viewport_info) {
+    AccessibilityViewportInfo viewport_info) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&PdfViewWebPlugin::OnSetAccessibilityViewportInfo,
-                     weak_factory_.GetWeakPtr(), viewport_info));
+                     weak_factory_.GetWeakPtr(), std::move(viewport_info)));
 }
 
 void PdfViewWebPlugin::NotifyFindResultsChanged(int total, bool final_result) {
@@ -971,7 +989,7 @@ void PdfViewWebPlugin::OnViewportChanged(
   // `plugin_rect_in_css_pixel` needs to be converted to device pixels before
   // getting passed into PdfViewPluginBase::UpdateGeometryOnPluginRectChanged().
   UpdateGeometryOnPluginRectChanged(
-      gfx::ScaleToEnclosingRectSafe(
+      gfx::ScaleToEnclosingRect(
           plugin_rect_in_css_pixel,
           client_->IsUseZoomForDSFEnabled() ? 1.0f : new_device_scale),
       new_device_scale);

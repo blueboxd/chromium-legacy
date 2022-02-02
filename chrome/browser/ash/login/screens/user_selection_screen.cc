@@ -9,10 +9,13 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/proximity_auth/screenlock_bridge.h"
+#include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/login_types.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -27,7 +30,7 @@
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
-#include "chrome/browser/ash/login/quick_unlock/fingerprint_storage.h"
+#include "chrome/browser/ash/login/quick_unlock/fingerprint_utils.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/ash/login/reauth_stats.h"
@@ -45,16 +48,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
@@ -123,39 +122,6 @@ std::unique_ptr<base::ListValue> GetPublicSessionLocales(
   return available_locales;
 }
 
-// Determines the initial fingerprint state for the given user.
-FingerprintState GetInitialFingerprintState(const user_manager::User* user) {
-  // User must be logged in.
-  if (!user->is_logged_in())
-    return FingerprintState::UNAVAILABLE;
-
-  // Quick unlock storage must be available.
-  quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      quick_unlock::QuickUnlockFactory::GetForUser(user);
-  if (!quick_unlock_storage)
-    return FingerprintState::UNAVAILABLE;
-
-  // Fingerprint is not registered for this account.
-  if (!quick_unlock_storage->fingerprint_storage()->HasRecord())
-    return FingerprintState::UNAVAILABLE;
-
-  // Fingerprint unlock attempts should not be exceeded, as the lock screen has
-  // not been displayed yet.
-  DCHECK(
-      !quick_unlock_storage->fingerprint_storage()->ExceededUnlockAttempts());
-
-  // It has been too long since the last authentication.
-  if (!quick_unlock_storage->HasStrongAuth())
-    return FingerprintState::DISABLED_FROM_TIMEOUT;
-
-  // Auth is available.
-  if (quick_unlock_storage->IsFingerprintAuthenticationAvailable())
-    return FingerprintState::AVAILABLE_DEFAULT;
-
-  // Default to unavailabe.
-  return FingerprintState::UNAVAILABLE;
-}
-
 // Returns true if dircrypto migration check should be performed.
 // TODO(achuith): Get rid of this function altogether.
 bool ShouldCheckNeedDircryptoMigration() {
@@ -171,8 +137,7 @@ bool IsUserAllowedForARC(const AccountId& account_id) {
 
 AccountId GetOwnerAccountId() {
   std::string owner_email;
-  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
-                                           &owner_email);
+  CrosSettings::Get()->GetString(kDeviceOwner, &owner_email);
   const AccountId owner = user_manager::known_user::GetAccountId(
       owner_email, std::string() /* id */, AccountType::UNKNOWN);
   return owner;
@@ -918,7 +883,8 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     user_info.is_signed_in = user->is_logged_in();
     user_info.is_device_owner = is_owner;
     user_info.can_remove = CanRemoveUser(user);
-    user_info.fingerprint_state = GetInitialFingerprintState(user);
+    user_info.fingerprint_state =
+        quick_unlock::GetFingerprintStateForUser(user);
     user_info.show_pin_pad_for_password = false;
     if (user_manager::known_user::GetIsEnterpriseManaged(
             user->GetAccountId()) &&
@@ -932,9 +898,8 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
             gaia::ExtractDomainName(user->display_email());
       }
     }
-    chromeos::CrosSettings::Get()->GetBoolean(
-        chromeos::kDeviceShowNumericKeyboardForPassword,
-        &user_info.show_pin_pad_for_password);
+    CrosSettings::Get()->GetBoolean(kDeviceShowNumericKeyboardForPassword,
+                                    &user_info.show_pin_pad_for_password);
     user_manager::known_user::GetBooleanPref(
         user->GetAccountId(), prefs::kLoginDisplayPasswordButtonEnabled,
         &user_info.show_display_password_button);

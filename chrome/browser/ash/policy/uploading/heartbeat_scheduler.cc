@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -191,13 +190,13 @@ HeartbeatScheduler::HeartbeatScheduler(
 
   heartbeat_frequency_subscription_ =
       ash::CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kHeartbeatFrequency,
+          ash::kHeartbeatFrequency,
           base::BindRepeating(&HeartbeatScheduler::RefreshHeartbeatSettings,
                               base::Unretained(this)));
 
   heartbeat_enabled_subscription_ =
       ash::CrosSettings::Get()->AddSettingsObserver(
-          chromeos::kHeartbeatEnabled,
+          ash::kHeartbeatEnabled,
           base::BindRepeating(&HeartbeatScheduler::RefreshHeartbeatSettings,
                               base::Unretained(this)));
 
@@ -215,7 +214,7 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
   // If trusted values are not available, register this function to be called
   // back when they are available.
   ash::CrosSettings* settings = ash::CrosSettings::Get();
-  if (chromeos::CrosSettingsProvider::TRUSTED !=
+  if (ash::CrosSettingsProvider::TRUSTED !=
       settings->PrepareTrustedValues(
           base::BindOnce(&HeartbeatScheduler::RefreshHeartbeatSettings,
                          weak_factory_.GetWeakPtr()))) {
@@ -226,7 +225,7 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
   // value because CrosSettings can become untrusted at arbitrary times and we
   // want to use the last trusted value).
   int frequency;
-  if (settings->GetInteger(chromeos::kHeartbeatFrequency, &frequency)) {
+  if (settings->GetInteger(ash::kHeartbeatFrequency, &frequency)) {
     heartbeat_interval_ =
         EnsureValidHeartbeatInterval(base::Milliseconds(frequency));
   }
@@ -235,7 +234,7 @@ void HeartbeatScheduler::RefreshHeartbeatSettings() {
                                     heartbeat_interval_.InMilliseconds());
 
   bool enabled;
-  if (settings->GetBoolean(chromeos::kHeartbeatEnabled, &enabled))
+  if (settings->GetBoolean(ash::kHeartbeatEnabled, &enabled))
     heartbeat_enabled_ = enabled;
 
   if (!heartbeat_enabled_) {

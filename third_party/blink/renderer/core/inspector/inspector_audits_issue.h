@@ -47,6 +47,11 @@ enum class AttributionReportingIssueType {
   kInvalidAttributionData,
   kAttributionSourceUntrustworthyOrigin,
   kAttributionUntrustworthyOrigin,
+  kInvalidAttributionSourceExpiry,
+  kInvalidAttributionSourcePriority,
+  kInvalidEventSourceTriggerData,
+  kInvalidTriggerPriority,
+  kInvalidTriggerDedupKey,
 };
 
 enum class SharedArrayBufferIssueType {

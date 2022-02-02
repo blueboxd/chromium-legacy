@@ -17,13 +17,6 @@ namespace switches {
 
 namespace {
 
-// Controls CrOS GaiaId migration for tests ("" is default).
-const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
-
-// Value for kTestCrosGaiaIdMigration indicating that migration is started (i.e.
-// all stored user keys will be converted to GaiaId)
-const char kTestCrosGaiaIdMigrationStarted[] = "started";
-
 // Max and min number of seconds that must pass between showing user contextual
 // nudges when override switch is set.
 constexpr base::TimeDelta kAshContextualNudgesMinInterval = base::Seconds(0);
@@ -284,14 +277,9 @@ const char kChildWallpaperSmall[] = "child-wallpaper-small";
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
-// Control regions data load ("" is default).
-const char kCrosRegionsMode[] = "cros-regions-mode";
-
-// "Hide" value for kCrosRegionsMode (VPD values are hidden).
-const char kCrosRegionsModeHide[] = "hide";
-
-// "Override" value for kCrosRegionsMode (region's data is read first).
-const char kCrosRegionsModeOverride[] = "override";
+// Overrides the url for fetching a reauth request token for Cryptohome recovery
+// flow.
+const char kCryptohomeRecoveryReauthUrl[] = "cryptohome-recovery-reauth-url";
 
 // Controls if AuthSession API should be used when interacting with cryptohomed.
 const char kCryptohomeUseAuthSession[] = "cryptohome-use-authsession";
@@ -321,9 +309,8 @@ const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 // Time in seconds before a derelict machines starts demo mode.
 const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 
-// Prevents any CPU restrictions being set on the ARC container. Only meant to
-// be used by tests as some tests may time out if the ARC container is
-// throttled.
+// Prevents any CPU restrictions being set on ARC[VM]. Only meant to be used by
+// tests as some tests may time out if the ARC container is throttled.
 const char kDisableArcCpuRestriction[] = "disable-arc-cpu-restriction";
 
 // Disables android user data wipe on opt out.
@@ -350,8 +337,17 @@ const char kDisableGaiaServices[] = "disable-gaia-services";
 const char kDisableHIDDetectionOnOOBEForTesting[] =
     "disable-hid-detection-on-oobe";
 
+// Disables the Lacros keep alive for testing.
+const char kDisableLacrosKeepAliveForTesting[] = "disable-lacros-keep-alive";
+
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[] = "disable-login-animations";
+
+// If Lacros is set to the primary web browser, on session login, it is
+// automatically launched. This disables the feature, i.e., if this flag is
+// set, even if lacros is the primary web browser, it won't automatically
+// launch on session login. This is for testing purpose, specifically for Tast.
+const char kDisableLoginLacrosOpening[] = "disable-login-lacros-opening";
 
 // Disables requests for an enterprise machine certificate during attestation.
 const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
@@ -552,11 +548,6 @@ const char kFormFactor[] = "form-factor";
 // Sets the throttle fps for compositor frame submission.
 const char kFrameThrottleFps[] = "frame-throttle-fps";
 
-// A reauth request token that will be passed in the Gaia embedded sign-in URL.
-// The token will be obtained by a client-server request in the future, but in
-// this temporary prototype we're configuring it manually.
-const char kGaiaReauthRequestToken[] = "gaia-reauth-request-token";
-
 // Indicates that the browser is in "browse without sign-in" (Guest session)
 // mode. Should completely disable extensions, sync and bookmarks.
 const char kGuestSession[] = "bwsi";
@@ -726,6 +717,9 @@ const char kPublicAccountsSamlAclUrl[] = "public-accounts-saml-acl-url";
 // "/usr/share/chromeos-assets/regulatory_labels/".
 const char kRegulatoryLabelDir[] = "regulatory-label-dir";
 
+// Indicates that reven UI strings and features should be shown.
+const char kRevenBranding[] = "reven-branding";
+
 // The rlz ping delay (in seconds) that overwrites the default value.
 const char kRlzPingDelay[] = "rlz-ping-delay";
 
@@ -836,17 +830,12 @@ bool IsAuthSessionCryptohomeEnabled() {
       kCryptohomeUseAuthSession);
 }
 
-bool IsGaiaIdMigrationStarted() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(kTestCrosGaiaIdMigration))
-    return false;
-
-  return command_line->GetSwitchValueASCII(kTestCrosGaiaIdMigration) ==
-         kTestCrosGaiaIdMigrationStarted;
-}
-
 bool IsCellularFirstDevice() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kCellularFirst);
+}
+
+bool IsRevenBranding() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kRevenBranding);
 }
 
 bool IsSigninFrameClientCertsEnabled() {

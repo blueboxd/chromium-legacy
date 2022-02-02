@@ -5,24 +5,30 @@
 #ifndef ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_ITEM_VIEW_H_
 #define ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_ITEM_VIEW_H_
 
+#include "ash/ash_export.h"
+#include "ash/wm/overview/overview_highlightable_view.h"
 #include "base/guid.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace views {
 class Label;
-class Textfield;
 }  // namespace views
 
 namespace ash {
 
-class DesksTemplatesDeleteButton;
+class CloseButton;
 class DesksTemplatesIconContainer;
+class DesksTemplatesNameView;
 class DeskTemplate;
+class PillButton;
 
 // A view that represents each individual template item in the desks templates
 // grid.
-class DesksTemplatesItemView : public views::Button {
+class ASH_EXPORT DesksTemplatesItemView : public views::Button,
+                                          public views::ViewTargeterDelegate,
+                                          public OverviewHighlightableView {
  public:
   METADATA_HEADER(DesksTemplatesItemView);
 
@@ -31,29 +37,44 @@ class DesksTemplatesItemView : public views::Button {
   DesksTemplatesItemView& operator=(const DesksTemplatesItemView&) = delete;
   ~DesksTemplatesItemView() override;
 
-  // Updates the visibility state of the delete button depending on whether this
-  // view is mouse hovered, or if switch access is enabled.
-  void UpdateDeleteButtonVisibility();
+  DesksTemplatesNameView* name_view() const { return name_view_; }
+
+  // Updates the visibility state of the delete and launch buttons depending on
+  // the current mouse or touch event location, or if switch access is enabled.
+  void UpdateHoverButtonsVisibility(const gfx::Point& screen_location,
+                                    bool is_touch);
 
   // views::View:
   void Layout() override;
+  void OnThemeChanged() override;
+
+  // views::ViewTargeterDelegate:
+  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
  private:
   friend class DesksTemplatesItemViewTestApi;
 
+  void OnDeleteTemplate();
   void OnDeleteButtonPressed();
 
   void OnGridItemPressed();
 
+  // OverviewHighlightableView:
+  views::View* GetView() override;
+  void MaybeActivateHighlightedView() override;
+  void MaybeCloseHighlightedView() override;
+  void MaybeSwapHighlightedView(bool right) override;
+  void OnViewHighlighted() override;
+  void OnViewUnhighlighted() override;
+
   // Owned by the views hierarchy.
-  views::Textfield* name_view_ = nullptr;
+  DesksTemplatesNameView* name_view_ = nullptr;
   views::Label* time_view_ = nullptr;
   DesksTemplatesIconContainer* icon_container_view_ = nullptr;
-  DesksTemplatesDeleteButton* delete_button_ = nullptr;
-
-  // We force showing the delete button when `this` is long pressed or tapped
-  // using touch gestures.
-  bool force_show_delete_button_ = false;
+  CloseButton* delete_button_ = nullptr;
+  PillButton* launch_button_ = nullptr;
+  // Container used for holding all the views that appear on hover.
+  views::View* hover_container_ = nullptr;
 
   // The desk template's unique identifier.
   const base::GUID uuid_;

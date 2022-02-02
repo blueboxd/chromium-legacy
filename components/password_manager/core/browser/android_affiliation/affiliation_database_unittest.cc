@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "sql/test/scoped_error_expecter.h"
@@ -373,6 +372,27 @@ TEST_F(AffiliationDatabaseTest, InitializeFromVersion2) {
                                                         affiliations[2]);
   EXPECT_EQ(TestEquivalenceClass3().facets[0].branding_info,
             affiliations[2].facets[0].branding_info);
+}
+
+TEST_F(AffiliationDatabaseTest, ClearUnusedCache) {
+  ASSERT_NO_FATAL_FAILURE(StoreInitialTestData());
+
+  OpenDatabase();
+
+  std::vector<AffiliatedFacetsWithUpdateTime> affiliations;
+  db().GetAllAffiliationsAndBranding(&affiliations);
+  ASSERT_EQ(3u, affiliations.size());
+
+  db().RemoveMissingFacetURI({FacetURI::FromCanonicalSpec(kTestFacetURI1),
+                              FacetURI::FromCanonicalSpec(kTestFacetURI4)});
+
+  db().GetAllAffiliationsAndBranding(&affiliations);
+  ASSERT_EQ(2u, affiliations.size());
+
+  ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass1(),
+                                                        affiliations[0]);
+  ExpectEquivalenceClassesIncludingBrandingInfoAreEqual(TestEquivalenceClass2(),
+                                                        affiliations[1]);
 }
 
 }  // namespace password_manager

@@ -62,11 +62,11 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
   void EnableRecording(bool extensions);
   void DisableRecording();
 
-  // Disables sampling for testing purposes.
-  void DisableSamplingForTesting() override;
+  // Controls sampling for testing purposes. Sampling is 1-in-N (N==rate).
+  void SetSamplingForTesting(int rate) override;
 
-  // True if sampling is enabled.
-  bool IsSamplingEnabled() const;
+  // True if sampling has been configured.
+  bool IsSamplingConfigured() const;
 
   // Deletes all stored recordings.
   void Purge();
@@ -113,8 +113,7 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
   // Like above but uses a passed |sampling_rate| instead of internal config.
   bool IsSampledIn(int64_t source_id, uint64_t event_id, int sampling_rate);
 
-  // Cache the list of whitelisted entries from the field trial parameter.
-  void StoreWhitelistedEntries();
+  void InitDecodeMap();
 
   // Writes recordings into a report proto, and clears recordings.
   void StoreRecordingsInReport(Report* report);
@@ -149,8 +148,6 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
 
   virtual bool ShouldRestrictToWhitelistedSourceIds() const;
 
-  virtual bool ShouldRestrictToWhitelistedEntries() const;
-
  private:
   friend ::metrics::UkmBrowserTestBase;
   friend ::ukm::debug::UkmDebugDataExtractor;
@@ -168,8 +165,8 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
     double value_square_sum = 0.0;
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
-    uint64_t dropped_due_to_whitelist = 0;
     uint64_t dropped_due_to_filter = 0;
+    uint64_t dropped_due_to_unconfigured = 0;
   };
 
   struct EventAggregate {
@@ -180,8 +177,8 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
     uint64_t total_count = 0;
     uint64_t dropped_due_to_limits = 0;
     uint64_t dropped_due_to_sampling = 0;
-    uint64_t dropped_due_to_whitelist = 0;
     uint64_t dropped_due_to_filter = 0;
+    uint64_t dropped_due_to_unconfigured = 0;
   };
 
   using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;
@@ -211,8 +208,8 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
   // Indicates whether recording continuity has been broken since last report.
   bool recording_is_continuous_ = true;
 
-  // Indicates if sampling has been enabled.
-  bool sampling_enabled_ = true;
+  // Indicates if sampling has been forced for testing.
+  bool sampling_forced_for_testing_ = false;
 
   // A pseudo-random number used as the base for sampling choices. This
   // allows consistent "is sampled in" results for a given source and event
@@ -227,9 +224,6 @@ class COMPONENT_EXPORT(UKM_RECORDER) UkmRecorderImpl : public UkmRecorder {
 
   // Map from hashes to entry and metric names.
   ukm::builders::DecodeMap decode_map_;
-
-  // Whitelisted Entry hashes, only the ones in this set will be recorded.
-  std::set<uint64_t> whitelisted_entry_hashes_;
 
   // Sampling configurations, loaded from a field-trial.
   int default_sampling_rate_ = -1;  // -1 == not yet loaded

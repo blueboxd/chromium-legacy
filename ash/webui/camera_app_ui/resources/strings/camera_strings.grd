@@ -165,7 +165,7 @@
         Print
       </message>
       <message desc="Label for the gallery button." name="IDS_GALLERY_BUTTON">
-        Go to gallery
+        Go to Gallery
       </message>
       <message desc="Error message shown when saving/adding a image or video to the file system failed." name="IDS_ERROR_MSG_SAVE_FILE_FAILED">
         Unable to save the file
@@ -546,6 +546,45 @@ If your feedback is about image or video quality, please attach a sample photo o
       </message>
       <message desc="Label for button for finishing select document crop area." name="IDS_LABEL_CROP_DONE">
         Done
+      </message>
+      <message desc="Label for the top-left corner of document area" name="IDS_LABEL_DOCUMENT_TOP_LEFT_CORNER">
+        Document top-left corner
+      </message>
+      <message desc="Label for the bottom-left corner of document area" name="IDS_LABEL_DOCUMENT_BOTTOM_LEFT_CORNER">
+        Document bottom-left corner
+      </message>
+      <message desc="Label for the bottom-right corner of document area" name="IDS_LABEL_DOCUMENT_BOTTOM_RIGHT_CORNER">
+        Document bottom-right corner
+      </message>
+      <message desc="Label for the top-right corner of document area" name="IDS_LABEL_DOCUMENT_TOP_RIGHT_CORNER">
+        Document top-right corner
+      </message>
+      <message desc="Description read by screen reader for moving document corner with arrow key" name="IDS_DOCUMENT_CORNER_MOVE_DESC">
+        Move corner position with arrow keys
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in top direction" name="IDS_MOVING_IN_TOP_DIRECTION">
+        Moving in top direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in bottom direction" name="IDS_MOVING_IN_BOTTOM_DIRECTION">
+        Moving in bottom direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in left direction" name="IDS_MOVING_IN_LEFT_DIRECTION">
+        Moving in left direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in right direction" name="IDS_MOVING_IN_RIGHT_DIRECTION">
+        Moving in right direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in top-left direction" name="IDS_MOVING_IN_TOP_LEFT_DIRECTION">
+        Moving in top-left direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in top-right direction" name="IDS_MOVING_IN_TOP_RIGHT_DIRECTION">
+        Moving in top-right direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in bottom-left direction" name="IDS_MOVING_IN_BOTTOM_LEFT_DIRECTION">
+        Moving in bottom-left direction
+      </message>
+      <message desc="Message read by screen reader that document corner is moving in bottom-right direction" name="IDS_MOVING_IN_BOTTOM_RIGHT_DIRECTION">
+        Moving in bottom-right direction
       </message>
       <message desc="Label for button for rotating document 90 degrees in clockwise direction" name="IDS_ROTATE_CLOCKWISE_BUTTON">
         Rotate 90 degrees clockwise

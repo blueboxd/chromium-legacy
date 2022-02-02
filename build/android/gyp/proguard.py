@@ -186,7 +186,7 @@ def _ParseOptions():
   return options
 
 
-class _SplitContext(object):
+class _SplitContext:
   def __init__(self, name, output_path, input_jars, work_dir, parent_name=None):
     self.name = name
     self.parent_name = parent_name
@@ -375,12 +375,12 @@ def _OptimizeWithR8(options,
                               print_stdout=print_stdout,
                               stderr_filter=stderr_filter,
                               fail_on_output=options.warnings_as_errors)
-    except build_utils.CalledProcessError:
+    except build_utils.CalledProcessError as e:
       # Python will print the original exception as well.
       raise Exception(
           'R8 failed. Please see '
           'https://chromium.googlesource.com/chromium/src/+/HEAD/build/'
-          'android/docs/java_optimization.md#Debugging-common-failures')
+          'android/docs/java_optimization.md#Debugging-common-failures') from e
 
     base_has_imported_lib = False
     if options.desugar_jdk_libs_json:
@@ -472,12 +472,6 @@ def _CheckForMissingSymbols(r8_path, dex_files, classpath, warnings_as_errors,
 
         # Found in: com/facebook/fbui/textlayoutbuilder/StaticLayoutHelper
         'android.text.StaticLayout.<init>',
-
-        # Reflection is used to access some of these and they are allowed to be
-        # missing. See proguard.txt in androidx_window_window/window*.aar. See
-        # https://crbug.com/1039050 for usages of this library.
-        'androidx.window.extensions.',
-        'androidx.window.sidecar.',
 
         # Explicictly guarded by try (NoClassDefFoundError) in Flogger's
         # PlatformProvider.
@@ -601,6 +595,22 @@ def _CreateDynamicConfig(options):
   if options.apply_mapping:
     ret.append("-applymapping '%s'" % options.apply_mapping)
 
+  _min_api = int(options.min_api) if options.min_api else 0
+  for api_level, version_code in _API_LEVEL_VERSION_CODE:
+    annotation_name = 'org.chromium.base.annotations.VerifiesOn' + version_code
+    if api_level > _min_api:
+      ret.append('-keep @interface %s' % annotation_name)
+      ret.append("""\
+-if @%s class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
+}""" % annotation_name)
+      ret.append("""\
+-keepclassmembers,allowobfuscation class ** {
+  @%s <methods>;
+}""" % annotation_name)
   return '\n'.join(ret)
 
 
@@ -636,7 +646,11 @@ def main():
   options = _ParseOptions()
 
   logging.debug('Preparing configs')
-  proguard_configs = options.proguard_configs
+  # Temporarily skip failing proguard config until r8 is rolled: b/206957373
+  proguard_configs = [
+      cfg for cfg in options.proguard_configs if not cfg.endswith(
+          'java_com_google_privacy_one_psl_annotation_proguard.pgcfg')
+  ]
 
   # ProGuard configs that are derived from flags.
   dynamic_config_data = _CreateDynamicConfig(options)

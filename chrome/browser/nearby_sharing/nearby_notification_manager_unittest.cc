@@ -409,6 +409,7 @@ TEST_F(NearbyNotificationManagerTest, ShowProgress_ShowsNotification) {
   EXPECT_TRUE(notification.icon().IsEmpty());
   EXPECT_EQ(GURL(), notification.origin_url());
   EXPECT_TRUE(notification.never_timeout());
+  EXPECT_TRUE(notification.pinned());
   EXPECT_FALSE(notification.renotify());
   EXPECT_EQ(&kNearbyShareIcon, &notification.vector_small_image());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_NEARBY_NOTIFICATION_SOURCE),
@@ -1461,7 +1462,7 @@ class NearbyFilesHoldingSpaceTest : public testing::Test {
  public:
   NearbyFilesHoldingSpaceTest()
       : session_controller_(std::make_unique<TestSessionController>()),
-        user_manager_(new ash::FakeChromeUserManager) {
+        user_manager_(std::make_unique<ash::FakeChromeUserManager>()) {
     scoped_feature_list_.InitAndEnableFeature(features::kNearbySharing);
 
     holding_space_controller_ = std::make_unique<ash::HoldingSpaceController>();
@@ -1498,7 +1499,7 @@ class NearbyFilesHoldingSpaceTest : public testing::Test {
   std::unique_ptr<NearbyNotificationManager> manager_;
   std::unique_ptr<TestSessionController> session_controller_;
   std::unique_ptr<ash::HoldingSpaceController> holding_space_controller_;
-  ash::FakeChromeUserManager* user_manager_;
+  std::unique_ptr<ash::FakeChromeUserManager> user_manager_;
 };
 
 TEST_F(NearbyFilesHoldingSpaceTest, ShowSuccess_Files) {

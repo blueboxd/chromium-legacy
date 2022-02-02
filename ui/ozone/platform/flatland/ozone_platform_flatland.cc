@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
@@ -18,13 +17,13 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/cursor/cursor_factory.h"
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/common/bitmap_cursor_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/flatland/flatland_gpu_host.h"
 #include "ui/ozone/platform/flatland/flatland_gpu_service.h"
@@ -96,6 +95,17 @@ class OzonePlatformFlatland : public OzonePlatform,
       PlatformWindowInitProperties properties) override {
     BindInMainProcessIfNecessary();
 
+    if (!properties.view_creation_token.value) {
+      ::fuchsia::ui::views::ViewportCreationToken parent_token;
+      ::fuchsia::ui::views::ViewCreationToken child_token;
+      auto status =
+          zx::channel::create(0, &parent_token.value, &child_token.value);
+      CHECK_EQ(ZX_OK, status) << "zx_channel_create";
+      properties.view_creation_token = std::move(child_token);
+      properties.view_ref_pair = scenic::ViewRefPair::New();
+      ::ui::fuchsia::GetFlatlandViewPresenter().Run(std::move(parent_token));
+    }
+
     // TODO(crbug.com/1230150): Add a hook for the RootPresenter equivalent of
     // Flatland to ui::fuchsia::InitializeViewTokenAndPresentView() create a
     // window.
@@ -108,7 +118,7 @@ class OzonePlatformFlatland : public OzonePlatform,
     static base::NoDestructor<OzonePlatform::PlatformProperties> properties;
     static bool initialised = false;
     if (!initialised) {
-      properties->needs_view_token = true;
+      properties->needs_view_token = false;
       properties->message_pump_type_for_gpu = base::MessagePumpType::IO;
       properties->supports_vulkan_swap_chain = true;
 
@@ -148,7 +158,7 @@ class OzonePlatformFlatland : public OzonePlatform,
     window_manager_ = std::make_unique<FlatlandWindowManager>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
-    cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<BitmapCursorFactory>();
 
     flatland_gpu_host_ =
         std::make_unique<FlatlandGpuHost>(window_manager_.get());

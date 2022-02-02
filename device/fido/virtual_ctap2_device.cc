@@ -1037,11 +1037,11 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
 
   for (const auto& excluded_credential : request.exclude_list) {
     if (0 < config_.max_credential_id_length &&
-        config_.max_credential_id_length < excluded_credential.id().size()) {
+        config_.max_credential_id_length < excluded_credential.id.size()) {
       return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
     }
     const RegistrationData* found =
-        FindRegistrationData(excluded_credential.id(), rp_id_hash);
+        FindRegistrationData(excluded_credential.id, rp_id_hash);
     if (found) {
       if (found->protection == device::CredProtect::kUVRequired &&
           !user_verified) {
@@ -1175,6 +1175,11 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
       return CtapDeviceResponseCode::kCtap2ErrUnsupportedExtension;
     }
     extensions_map.emplace(kExtensionCredBlob, true);
+  }
+
+  if (request.min_pin_length_requested) {
+    extensions_map.emplace(kExtensionMinPINLength,
+                           static_cast<int>(mutable_state()->min_pin_length));
   }
 
   if (config_.add_extra_extension) {
@@ -1340,14 +1345,14 @@ absl::optional<CtapDeviceResponseCode> VirtualCtap2Device::OnGetAssertion(
 
   for (const auto& allowed_credential : request.allow_list) {
     if (0 < config_.max_credential_id_length &&
-        config_.max_credential_id_length < allowed_credential.id().size()) {
+        config_.max_credential_id_length < allowed_credential.id.size()) {
       return CtapDeviceResponseCode::kCtap2ErrLimitExceeded;
     }
     RegistrationData* registration =
-        FindRegistrationData(allowed_credential.id(), rp_id_hash);
+        FindRegistrationData(allowed_credential.id, rp_id_hash);
     if (registration &&
         !(registration->is_u2f && config_.ignore_u2f_credentials)) {
-      found_registrations.emplace_back(allowed_credential.id(), registration);
+      found_registrations.emplace_back(allowed_credential.id, registration);
       break;
     }
   }
@@ -2107,11 +2112,10 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       if (!credential_id) {
         return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
       }
-      if (!base::Contains(mutable_state()->registrations,
-                          credential_id->id())) {
+      if (!base::Contains(mutable_state()->registrations, credential_id->id)) {
         return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
       }
-      mutable_state()->registrations.erase(credential_id->id());
+      mutable_state()->registrations.erase(credential_id->id);
       *response = {};
       return CtapDeviceResponseCode::kSuccess;
     }
@@ -2150,8 +2154,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
       if (!credential_id) {
         return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
       }
-      if (!base::Contains(mutable_state()->registrations,
-                          credential_id->id())) {
+      if (!base::Contains(mutable_state()->registrations, credential_id->id)) {
         return CtapDeviceResponseCode::kCtap2ErrNoCredentials;
       }
 
@@ -2167,7 +2170,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnCredentialManagement(
         return CtapDeviceResponseCode::kCtap2ErrCBORUnexpectedType;
       }
 
-      mutable_state()->registrations[credential_id->id()].user = new_user;
+      mutable_state()->registrations[credential_id->id].user = new_user;
       *response = {};
       return CtapDeviceResponseCode::kSuccess;
     }

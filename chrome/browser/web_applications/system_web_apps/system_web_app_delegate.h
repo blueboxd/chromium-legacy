@@ -9,7 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -21,6 +23,8 @@ class Browser;
 class Profile;
 
 namespace web_app {
+
+class WebAppProvider;
 
 using OriginTrialsMap = std::map<url::Origin, std::vector<std::string>>;
 
@@ -76,10 +80,10 @@ class SystemWebAppDelegate {
   virtual gfx::Size GetMinimumWindowSize() const;
 
   // If set, we allow only a single window for this app.
-  virtual bool ShouldBeSingleWindow() const;
+  virtual bool ShouldReuseExistingWindow() const;
 
   // If true, adds a "New Window" option to App's shelf context menu.
-  // ShouldBeSingleWindow() should return false at the same time.
+  // ShouldReuseExistingWindow() should return false at the same time.
   virtual bool ShouldShowNewWindowMenuOption() const;
 
   // If true, when the app is launched through the File Handling Web API, we
@@ -89,7 +93,9 @@ class SystemWebAppDelegate {
   // Map from origin to enabled origin trial names for this app. For example,
   // "chrome://sample-web-app/" to ["Frobulate"]. If set, we will enable the
   // given origin trials when the corresponding origin is loaded in the app.
-  const OriginTrialsMap& GetEnabledOriginTrials() const;
+  const OriginTrialsMap& GetEnabledOriginTrials() const {
+    return origin_trials_map_;
+  }
 
   // Resource Ids for additional search terms.
   virtual std::vector<int> GetAdditionalSearchTerms() const;
@@ -147,11 +153,33 @@ class SystemWebAppDelegate {
   virtual bool HasTitlebarTerminalSelectNewTabButton() const;
 #endif
 
+  // Control the launch of an SWA. The default takes into account single vs.
+  // multiple windows, make sure multiple windows don't open directly above
+  // each other, and a few other niceties. Overriding this will require some
+  // knowledge of browser window and launch internals, so hopefully you'll never
+  // have to roll your own here.
+  //
+  // If a browser is returned, app launch will continue. If false is returned,
+  // it's assumed that this method has cleaned up after itself, and launch is
+  // aborted.
+  //
+  // This is implemented in
+  // chrome/browser/ui/web_applications/system_web_app_delegate_ui_impl.cc.
+  virtual Browser* LaunchAndNavigateSystemWebApp(
+      Profile* profile,
+      WebAppProvider* provider,
+      const GURL& url,
+      const apps::AppLaunchParams& params) const;
+
+  // Whether |url| which is outside the normal Navigation Scope should be
+  // considered part of this System App.
+  virtual bool IsUrlInSystemAppScope(const GURL& url) const;
+
  protected:
   SystemAppType type_;
   std::string internal_name_;
   GURL install_url_;
-  const Profile* profile_;
+  raw_ptr<const Profile> profile_;
   OriginTrialsMap origin_trials_map_;
 };
 

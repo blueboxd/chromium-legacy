@@ -18,8 +18,9 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -223,7 +225,7 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   scoped_refptr<const Extension> extension_;
   Debuggee debuggee_;
@@ -588,15 +590,24 @@ ExtensionFunction::ResponseAction DebuggerAttachFunction::Run() {
         FormatErrorMessage(debugger_api_constants::kAlreadyAttachedError)));
   }
 
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   auto host = std::make_unique<ExtensionDevToolsClientHost>(
-      Profile::FromBrowserContext(browser_context()), agent_host_.get(),
-      extension(), debuggee_);
+      profile, agent_host_.get(), extension(), debuggee_);
 
   if (!host->Attach()) {
     return RespondNow(Error(debugger_api_constants::kRestrictedError));
   }
 
   host.release();  // An attached client host manages its own lifetime.
+
+  if (!(Manifest::IsPolicyLocation(extension()->location()) ||
+        Manifest::IsComponentLocation(extension()->location()))) {
+    bool is_developer_mode =
+        profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+    base::UmaHistogramBoolean("Extensions.Debugger.UserIsInDeveloperMode",
+                              is_developer_mode);
+  }
+
   return RespondNow(NoArguments());
 }
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/scoped_path_override.h"
 #include "base/values.h"
@@ -143,13 +142,19 @@ TEST_F(FirstRunTest, GetFirstRunSentinelCreationTime_NotCreated) {
 #else
 #define MAYBE_InitialPrefsUsedIfReadable InitialPrefsUsedIfReadable
 #endif
-
+  
 TEST_F(FirstRunTest, MAYBE_InitialPrefsUsedIfReadable) {
   base::ScopedPathOverride override(base::DIR_EXE, GetTestDataPath("initial"));
   std::unique_ptr<installer::InitialPreferences> prefs =
       first_run::LoadInitialPrefs();
+#if defined(OS_FUCHSIA)
+  // Initial preferences are not supported on Fuchsia and will thus return a
+  // null result.
+  ASSERT_FALSE(prefs);
+#else
   ASSERT_TRUE(prefs);
   EXPECT_EQ(prefs->GetFirstRunTabs()[0], "https://www.chromium.org/initial");
+#endif
 }
 
 #if defined(OS_MAC)
@@ -164,8 +169,15 @@ TEST_F(FirstRunTest, MAYBE_LegacyInitialPrefsUsedIfNewFileIsNotPresent) {
   base::ScopedPathOverride override(base::DIR_EXE, GetTestDataPath("legacy"));
   std::unique_ptr<installer::InitialPreferences> prefs =
       first_run::LoadInitialPrefs();
+
+#if defined(OS_FUCHSIA)
+  // Initial preferences are not supported on Fuchsia and will thus return a
+  // null result.
+  ASSERT_FALSE(prefs);
+#else
   ASSERT_TRUE(prefs);
   EXPECT_EQ(prefs->GetFirstRunTabs()[0], "https://www.chromium.org/legacy");
+#endif
 }
 
 }  // namespace first_run

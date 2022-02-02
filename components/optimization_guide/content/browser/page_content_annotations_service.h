@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/lru_cache.h"
 #include "base/hash/hash.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +23,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/optimization_guide/content/browser/page_content_annotator.h"
 #include "components/optimization_guide/core/entity_metadata_provider.h"
+#include "components/optimization_guide/core/model_info.h"
 #include "components/optimization_guide/core/page_content_annotations_common.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "url/gurl.h"
@@ -70,22 +72,24 @@ class PageContentAnnotationsService : public KeyedService,
 
   // This is the main entry point for page content annotations by external
   // callers.
-  //
-  // TODO(crbug/1249632): Flesh out description more as implementation
-  // progresses and we see what is most important to write here.
   void BatchAnnotate(BatchAnnotationCallback callback,
                      const std::vector<std::string>& inputs,
                      AnnotationType annotation_type);
 
   // Overrides the PageContentAnnotator for testing. See
   // test_page_content_annotator.h for an implementation designed for testing.
-  void OverridePageContentAnnotatorForTesting(
-      std::unique_ptr<PageContentAnnotator> annotator);
+  void OverridePageContentAnnotatorForTesting(PageContentAnnotator* annotator);
 
-  // Returns the version of the page topics model that is currently being used
-  // to annotate page content. Will return |absl::nullopt| if no model is being
-  // used to annotate page topics for received page content.
-  absl::optional<int64_t> GetPageTopicsModelVersion() const;
+  // Returns the model info for the given annotation type, if the model file is
+  // available.
+  absl::optional<ModelInfo> GetModelInfoForType(AnnotationType type) const;
+
+  // Runs |callback| with true when the model that powers |BatchAnnotate| for
+  // the given annotation type is ready to execute. If the model is ready now,
+  // the callback is run immediately. If the model file will never be available,
+  // the callback is run with false.
+  void NotifyWhenModelAvailable(AnnotationType type,
+                                base::OnceCallback<void(bool)> callback);
 
   // EntityMetadataProvider:
   void GetMetadataForEntityId(
@@ -103,12 +107,10 @@ class PageContentAnnotationsService : public KeyedService,
   std::unique_ptr<PageContentAnnotationsModelManager> model_manager_;
 #endif
 
-  // TODO(crbug/1249632): This will take the place of |model_manager_| where
-  // |PageContentAnnotationsModelManager| implements the virtual interface.
-  //
-  // The annotator to use for requests to |BatchAnnotate|. Override-able for
-  // testing.
-  std::unique_ptr<PageContentAnnotator> annotator_;
+  // The annotator to use for requests to |BatchAnnotate|. In prod, this is
+  // simply |model_manager_.get()| but is set as a separate pointer here in
+  // order to be override-able for testing.
+  raw_ptr<PageContentAnnotator> annotator_;
 
   // Requests to annotate |text|, which is associated with |web_contents|.
   //
@@ -156,7 +158,7 @@ class PageContentAnnotationsService : public KeyedService,
 
   // The history service to write content annotations to. Not owned. Guaranteed
   // to outlive |this|.
-  history::HistoryService* history_service_;
+  raw_ptr<history::HistoryService> history_service_;
   // The task tracker to keep track of tasks to query |history_service|.
   base::CancelableTaskTracker history_service_task_tracker_;
   // The client of continuous_search::mojom::SearchResultExtractor interface

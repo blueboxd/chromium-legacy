@@ -9,10 +9,12 @@
          themes.xml. -->
     <style name="Theme.BrowserUI" parent="Base.Theme.BrowserUI">
         <!-- Control styles -->
-        <item name="switchStyle">@style/SwitchMaterialStyle</item>
+        <item name="checkboxStyle">@style/Widget.BrowserUI.CheckBox</item>
+        <item name="radioButtonStyle">@style/Widget.BrowserUI.RadioButton</item>
+        <item name="switchStyle">@style/Widget.BrowserUI.Switch</item>
 
         <!-- Window Properties -->
-        <item name="android:windowBackground">@color/default_bg_color</item>
+        <item name="android:windowBackground">@macro/default_bg_color</item>
 
         <!-- Status bar color -->
         <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
@@ -36,12 +38,7 @@
 
         <!-- This is for keeping the current TextInputLayout style.
              TODO(crbug.com/1206024): Remove or update once the design for the app is updated. -->
-        <item name="textInputStyle">@style/TextInputStyle</item>
-        <!-- Overrides to keep the current styling for the widgets after migrating to the
-             MaterialComponents theme.
-             TODO(crbug.com/1165077): Remove these when the widgets are being migrated. -->
-        <item name="radioButtonStyle">@style/Widget.AppCompat.CompoundButton.RadioButton</item>
-        <item name="checkboxStyle">@style/Widget.AppCompat.CompoundButton.CheckBox</item>
+        <item name="textInputStyle">@style/Widget.BrowserUI.TextInputLayout</item>
     </style>
 
     <style name="Theme.BrowserUI.DayNight" />
@@ -70,7 +67,24 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
-    <style name="TextInputStyle" parent="Widget.Design.TextInputLayout">
+    <!-- Control styles -->
+    <style name="Widget.BrowserUI.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/selection_control_button_tint</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+    </style>
+    <style name="Widget.BrowserUI.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
+        <item name="buttonTint">@color/selection_control_button_tint</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+    </style>
+    <style name="Widget.BrowserUI.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="thumbTint">@color/switch_thumb_tint</item>
+        <item name="trackTint">@color/switch_track_tint</item>
+        <item name="trackTintMode">src_in</item>
+    </style>
+    <!-- TextInputLayout style -->
+    <style name="Widget.BrowserUI.TextInputLayout" parent="Widget.Design.TextInputLayout">
         <item name="errorTextAppearance">@style/TextAppearance.ErrorCaption</item>
     </style>
 
@@ -94,6 +108,7 @@
 
     <!-- TODO(https://crbug.com/1242702): Rename to ThemeOverlay.Chromium.AlertDialog. -->
     <!-- AlertDialog styles -->
+    <!-- This should be kept in sync with |Theme.BrowserUI.AlertDialog.NoActionBar|. -->
     <style name="Base.Theme.Chromium.AlertDialog"
         parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <item name="android:textColorPrimary">@macro/default_text_color</item>
@@ -102,11 +117,7 @@
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
 
         <!--  Overriding AppCompat values -->
-        <item name="colorAccent">@color/default_control_color_active</item>
-        <item name="colorControlActivated">@color/default_control_color_active</item>
-        <item name="colorControlNormal">@color/control_normal_color</item>
         <item name="colorControlHighlight">@color/control_highlight_color</item>
-        <item name="colorPrimary">@color/default_control_color_active</item>
         <item name="spinnerStyle">@style/SpinnerStyle</item>
 
         <!-- Depending on if the support library or framework is inflating the
@@ -117,7 +128,6 @@
         <item name="android:buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
         <item name="buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
     </style>
-
     <style name="Theme.Chromium.AlertDialog" parent="Base.Theme.Chromium.AlertDialog" />
 
     <style name="Theme.Chromium.AlertDialog.NoActionBar">
@@ -165,13 +175,6 @@
         <item name="android:popupElevation" tools:targetApi="21">0dp</item>
     </style>
 
-    <!-- Switch styling -->
-    <style name="SwitchMaterialStyle" parent="Widget.MaterialComponents.CompoundButton.Switch">
-        <item name="thumbTint">@color/switch_thumb_tint</item>
-        <item name="trackTint">@color/switch_track_tint</item>
-        <item name="trackTintMode">src_in</item>
-    </style>
-
     <!-- Switch styling for dark theme -->
     <!-- TODO(sinansahin): See if we can pass the baseline dark theme to the incognito NTP instead.
          -->
@@ -181,7 +184,7 @@
         <item name="colorSwitchThumbNormalNonDynamic">@color/baseline_neutral_100</item>
         <item name="colorSwitchTrackNormalNonDynamic">@color/baseline_neutral_variant_400</item>
         <item name="colorControlHighlight">@color/default_control_color_highlight_dark</item>
-        <item name="switchStyle">@style/SwitchMaterialStyle</item>
+        <item name="switchStyle">@style/Widget.BrowserUI.Switch</item>
     </style>
 
     <!-- Styling for an app menu item row. -->
@@ -201,7 +204,7 @@
         <item name="titleTextAppearance">@style/TextAppearance.Headline.Primary</item>
         <item name="titleTextColor">@macro/default_text_color</item>
         <item name="windowActionBarOverlay">true</item>
-        <item name="android:background">@color/default_bg_color</item>
+        <item name="android:background">@macro/default_bg_color</item>
     </style>
 
     <!-- Text styles -->

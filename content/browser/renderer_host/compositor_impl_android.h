@@ -10,8 +10,7 @@
 #include <memory>
 
 #include "base/cancelable_callback.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
@@ -134,7 +133,7 @@ class CONTENT_EXPORT CompositorImpl
   void RequestNewLayerTreeFrameSink() override;
   void DidInitializeLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
-  void WillCommit(cc::CommitState*) override {}
+  void WillCommit(const cc::CommitState&) override {}
   void DidCommit(base::TimeTicks, base::TimeTicks) override;
   void DidCommitAndDrawFrame() override {}
   void DidReceiveCompositorFrameAck() override;
@@ -172,6 +171,8 @@ class CONTENT_EXPORT CompositorImpl
   void OnUpdateRefreshRate(float refresh_rate) override;
   void OnUpdateSupportedRefreshRates(
       const std::vector<float>& supported_refresh_rates) override;
+  std::unique_ptr<ui::CompositorLock> GetCompositorLock(
+      base::TimeDelta timeout) override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
@@ -238,11 +239,11 @@ class CONTENT_EXPORT CompositorImpl
   gfx::Size size_;
   bool requires_alpha_channel_ = false;
 
-  ANativeWindow* window_;
+  raw_ptr<ANativeWindow> window_;
   gpu::SurfaceHandle surface_handle_;
   std::unique_ptr<ScopedCachedBackBuffer> cached_back_buffer_;
 
-  CompositorClient* client_;
+  raw_ptr<CompositorClient> client_;
 
   gfx::NativeWindow root_window_ = nullptr;
 
@@ -286,6 +287,8 @@ class CONTENT_EXPORT CompositorImpl
   // Listen to display density change events and update painted device scale
   // factor accordingly.
   display::ScopedDisplayObserver display_observer_{this};
+
+  ui::CompositorLockManager lock_manager_;
 
   base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 };

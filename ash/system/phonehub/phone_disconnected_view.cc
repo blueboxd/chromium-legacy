@@ -6,18 +6,18 @@
 
 #include <memory>
 
+#include "ash/components/phonehub/connection_scheduler.h"
+#include "ash/components/phonehub/url_constants.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/button_style.h"
+#include "ash/style/pill_button.h"
 #include "ash/system/phonehub/phone_hub_interstitial_view.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
 #include "ash/system/phonehub/phone_hub_view_ids.h"
 #include "ash/system/phonehub/ui_constants.h"
 #include "base/bind.h"
-#include "chromeos/components/phonehub/connection_scheduler.h"
-#include "chromeos/components/phonehub/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -29,7 +29,7 @@ using phone_hub_metrics::InterstitialScreenEvent;
 using phone_hub_metrics::Screen;
 
 PhoneDisconnectedView::PhoneDisconnectedView(
-    chromeos::phonehub::ConnectionScheduler* connection_scheduler)
+    phonehub::ConnectionScheduler* connection_scheduler)
     : connection_scheduler_(connection_scheduler) {
   SetID(PhoneHubViewID::kDisconnectedView);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -51,11 +51,10 @@ PhoneDisconnectedView::PhoneDisconnectedView(
       base::BindRepeating(
           &PhoneDisconnectedView::ButtonPressed, base::Unretained(this),
           InterstitialScreenEvent::kLearnMore,
-          base::BindRepeating(
-              &NewWindowDelegate::OpenUrl,
-              base::Unretained(NewWindowDelegate::GetInstance()),
-              GURL(chromeos::phonehub::kPhoneHubLearnMoreLink),
-              /*from_user_interaction=*/true)),
+          base::BindRepeating(&NewWindowDelegate::OpenUrl,
+                              base::Unretained(NewWindowDelegate::GetPrimary()),
+                              GURL(phonehub::kPhoneHubLearnMoreLink),
+                              /*from_user_interaction=*/true)),
       l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_LEARN_MORE_BUTTON),
       PillButton::Type::kIconlessFloating, /*icon=*/nullptr);
@@ -67,7 +66,7 @@ PhoneDisconnectedView::PhoneDisconnectedView(
           &PhoneDisconnectedView::ButtonPressed, base::Unretained(this),
           InterstitialScreenEvent::kConfirm,
           base::BindRepeating(
-              &chromeos::phonehub::ConnectionScheduler::ScheduleConnectionNow,
+              &phonehub::ConnectionScheduler::ScheduleConnectionNow,
               base::Unretained(connection_scheduler_))),
       l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_REFRESH_BUTTON),

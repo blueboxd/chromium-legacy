@@ -31,7 +31,7 @@
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/optimization_target_model_observer.h"
 #include "components/optimization_guide/core/prediction_model.h"
-#include "components/optimization_guide/core/prediction_model_fetcher.h"
+#include "components/optimization_guide/core/prediction_model_fetcher_impl.h"
 #include "components/optimization_guide/core/proto_database_provider_test_base.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -201,17 +201,17 @@ void RunGetModelsCallback(
   std::move(callback).Run(absl::nullopt);
 }
 
-// A mock class implementation of PredictionModelFetcher.
-class TestPredictionModelFetcher : public PredictionModelFetcher {
+// A mock class implementation of PredictionModelFetcherImpl.
+class TestPredictionModelFetcher : public PredictionModelFetcherImpl {
  public:
   TestPredictionModelFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const GURL& optimization_guide_service_get_models_url,
       network::NetworkConnectionTracker* network_connection_tracker,
       PredictionModelFetcherEndState fetch_state)
-      : PredictionModelFetcher(url_loader_factory,
-                               optimization_guide_service_get_models_url,
-                               network_connection_tracker),
+      : PredictionModelFetcherImpl(url_loader_factory,
+                                   optimization_guide_service_get_models_url,
+                                   network_connection_tracker),
         fetch_state_(fetch_state) {}
 
   bool FetchOptimizationGuideServiceModels(
@@ -431,7 +431,7 @@ class TestOptimizationGuideStore : public OptimizationGuideStore {
 class TestPredictionManager : public PredictionManager {
  public:
   TestPredictionManager(
-      base::WeakPtr<OptimizationGuideStore> model_and_features_store,
+      OptimizationGuideStore* model_and_features_store,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefService* pref_service,
       Profile* profile)
@@ -507,7 +507,7 @@ class PredictionManagerTestBase : public ProtoDatabaseProviderTestBase {
 
     model_and_features_store_ = CreateModelAndHostModelFeaturesStore();
     prediction_manager_ = std::make_unique<TestPredictionManager>(
-        model_and_features_store_->AsWeakPtr(), url_loader_factory_,
+        model_and_features_store_.get(), url_loader_factory_,
         pref_service_.get(), &testing_profile_);
     prediction_manager_->SetClockForTesting(task_environment_.GetMockClock());
   }
@@ -563,10 +563,8 @@ class PredictionManagerTestBase : public ProtoDatabaseProviderTestBase {
   }
 
   TestOptimizationGuideStore* models_and_features_store() const {
-    base::WeakPtr<OptimizationGuideStore> store =
-        prediction_manager()->model_and_features_store();
-    DCHECK(store);
-    return static_cast<TestOptimizationGuideStore*>(store.get());
+    return static_cast<TestOptimizationGuideStore*>(
+        prediction_manager()->model_and_features_store());
   }
 
   base::FilePath temp_dir() const { return temp_dir_.GetPath(); }

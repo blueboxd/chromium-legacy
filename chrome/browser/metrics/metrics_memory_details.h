@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_METRICS_METRICS_MEMORY_DETAILS_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/memory_details.h"
 
@@ -30,7 +29,7 @@ class MetricsMemoryDetails : public MemoryDetails {
   // Updates the global histograms for tracking memory usage.
   void UpdateHistograms();
 
-  void UpdateSiteIsolationMetrics();
+  void UpdateSiteIsolationMetrics(size_t live_process_count);
 
   base::OnceClosure callback_;
 };

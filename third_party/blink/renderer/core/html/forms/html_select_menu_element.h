@@ -27,9 +27,13 @@ class CORE_EXPORT HTMLSelectMenuElement final
  public:
   explicit HTMLSelectMenuElement(Document&);
 
-  String value();
+  String value() const;
   void setValue(const String&, bool send_events = false);
   bool open() const;
+
+  // For ValidityState
+  String validationMessage() const override;
+  bool ValueMissing() const override;
 
   void Trace(Visitor*) const override;
 
@@ -39,6 +43,11 @@ class CORE_EXPORT HTMLSelectMenuElement final
   // and is registered as a part of that HTMLSelectMenuElement,
   // returns that HTMLSelectMenuElement. Else returns null.
   static HTMLSelectMenuElement* OwnerSelectMenu(Node* node);
+
+  // For use in the implementation of HTMLOptionElement.
+  void OptionSelectionStateChanged(HTMLOptionElement*, bool option_is_selected);
+  void OptionElementChildrenChanged(const HTMLOptionElement& option);
+  void OptionElementValueChanged(const HTMLOptionElement& option);
 
   PartType AssignedPartType(Node* node) const;
 
@@ -50,14 +59,15 @@ class CORE_EXPORT HTMLSelectMenuElement final
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
   void OpenListbox();
   void CloseListbox();
-  void UpdatePartElements();
 
   HTMLOptionElement* FirstOptionPart() const;
   Element* FirstValidButtonPart() const;
   Element* FirstValidListboxPart() const;
   Element* FirstValidSelectedValuePart() const;
-  void EnsureSelectedOptionIsValid();
-  Element* SelectedOption();
+  void EnsureButtonPartIsValid();
+  void EnsureSelectedValuePartIsValid();
+  void EnsureListboxPartIsValid();
+  HTMLOptionElement* SelectedOption() const;
   void SetSelectedOption(HTMLOptionElement* selected_option);
   void SelectNextOption();
   void SelectPreviousOption();
@@ -82,6 +92,9 @@ class CORE_EXPORT HTMLSelectMenuElement final
 
   void SetButtonPart(Element* new_button_part);
   void SetListboxPart(HTMLPopupElement* new_listbox_part);
+
+  bool IsRequiredFormControl() const override;
+  bool IsOptionalFormControl() const override;
 
   // HTMLFormControlElementWithState overrides:
   const AtomicString& FormControlType() const override;

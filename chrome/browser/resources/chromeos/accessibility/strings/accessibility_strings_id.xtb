@@ -389,6 +389,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{kurung siku tutup}other{# kurung siku tutup}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{tanda tanya}other{# tanda tanya}}</translation>
+<translation id="3505359110822747654">Menu ChromeVox diciutkan</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{tanda caret}other{# tanda caret}}</translation>
 <translation id="352577523970648069">Kolom teks yang dapat diedit</translation>
 <translation id="3538907380453898475">dscrplst</translation>
@@ -624,7 +625,7 @@
 <translation id="5302089807023311274">Referensi bibliografi</translation>
 <translation id="530391007967514163">Coba lewati judul untuk menuju teks di bawahnya.</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, tab</translation>
-<translation id="5308380583665731573">Hubungkan</translation>
+<translation id="5308380583665731573">Sambungkan</translation>
 <translation id="5310788376443009632">dihapus:</translation>
 <translation id="5316825363044614340">pindah ke baris berikutnya</translation>
 <translation id="5320727453979144100">Mode lekat diaktifkan</translation>

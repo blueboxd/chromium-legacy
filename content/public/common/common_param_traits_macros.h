@@ -9,6 +9,7 @@
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_MACROS_H_
 
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo_param_traits.h"
@@ -17,6 +18,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/security/security_style.h"
+#include "third_party/blink/public/common/user_agent/user_agent_brand_version_type.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-shared.h"
@@ -44,7 +46,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ReferrerPolicy,
                           network::mojom::ReferrerPolicy::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ScrollRestorationType,
                           blink::mojom::ScrollRestorationType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::SecurityStyle, blink::SecurityStyle::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionStatus,
                           blink::mojom::PermissionStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(WindowOpenDisposition,
@@ -77,11 +78,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
 
 IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentBrandVersion)
   IPC_STRUCT_TRAITS_MEMBER(brand)
-  IPC_STRUCT_TRAITS_MEMBER(major_version)
+  IPC_STRUCT_TRAITS_MEMBER(version)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
   IPC_STRUCT_TRAITS_MEMBER(brand_version_list)
+  IPC_STRUCT_TRAITS_MEMBER(brand_full_version_list)
   IPC_STRUCT_TRAITS_MEMBER(full_version)
   IPC_STRUCT_TRAITS_MEMBER(platform)
   IPC_STRUCT_TRAITS_MEMBER(platform_version)
@@ -90,6 +92,9 @@ IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentMetadata)
   IPC_STRUCT_TRAITS_MEMBER(mobile)
   IPC_STRUCT_TRAITS_MEMBER(bitness)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(blink::UserAgentBrandVersionType,
+                          blink::UserAgentBrandVersionType::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::UserAgentOverride)
   IPC_STRUCT_TRAITS_MEMBER(ua_string_override)

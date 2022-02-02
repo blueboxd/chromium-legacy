@@ -4,7 +4,8 @@
 
 module ash.camera_app.mojom;
 
-import "components/arc/mojom/camera_intent.mojom";
+import "ash/components/arc/mojom/camera_intent.mojom";
+import "chromeos/services/machine_learning/public/mojom/document_scanner_param_types.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Interface for monitoring tablet mode state of device. The state is detected
@@ -144,8 +145,7 @@ interface CameraAppHelper {
       => (bool has_external_screen);
 
   // Opens the file in Downloads folder by its |name| in gallery. It is only
-  // usable for SWA version. For platform app version, we use Chrome
-  // FileManagerPrivate API.
+  // usable for SWA version.
   OpenFileInGallery(string name);
 
   // Opens the chrome feedback dialog and show |placeholder| in the description
@@ -187,12 +187,14 @@ interface CameraAppHelper {
       => (array<gfx.mojom.PointF> corners);
 
   // Does the post processing for document given by its |jpeg_data|, document
-  // |corners|, and convert the result to the desired |output_format|. The input
-  // |corners| should be the ones based on the image with corrected orientation.
-  // And it is guaranteed that the output |doc_data| will have none or corrected
+  // |corners|, clockwise rotate in |rotation| degrees and convert the result
+  // to the desired |output_format|. The input |corners| should be the ones
+  // based on the image with corrected orientation.  And it is guaranteed that
+  // the output |doc_data| will have none or corrected
   // orientation.
   ConvertToDocument(array<uint8> jpeg_data,
                     array<gfx.mojom.PointF, 4> corners,
+                    chromeos.machine_learning.mojom.Rotation rotation,
                     DocumentOutputFormat output_format)
       => (array<uint8> doc_data);
 

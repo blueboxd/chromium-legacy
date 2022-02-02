@@ -10,8 +10,8 @@
 #include "chrome/browser/extensions/api/enterprise_reporting_private/enterprise_reporting_private_api.h"
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/signals/signals_common.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
@@ -140,11 +140,9 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
   EXPECT_EQ(1u, function->GetResultList()->GetList().size());
   EXPECT_TRUE(function->GetError().empty());
 
-  const base::Value* single_result = nullptr;
-  EXPECT_TRUE(function->GetResultList()->Get(0, &single_result));
-  ASSERT_TRUE(single_result);
-  ASSERT_TRUE(single_result->is_blob());
-  EXPECT_EQ(base::Value::BlobStorage(), single_result->GetBlob());
+  const base::Value& single_result = function->GetResultList()->GetList()[0];
+  ASSERT_TRUE(single_result.is_blob());
+  EXPECT_EQ(base::Value::BlobStorage(), single_result.GetBlob());
 }
 
 TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
@@ -193,13 +191,12 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   extension_function_test_utils::RunFunction(get_function.get(),
                                              std::move(values), browser(),
                                              extensions::api_test_utils::NONE);
-  const base::Value* single_result = nullptr;
   ASSERT_TRUE(get_function->GetResultList());
-  EXPECT_TRUE(get_function->GetResultList()->Get(0, &single_result));
+  const base::Value& single_result =
+      get_function->GetResultList()->GetList()[0];
   EXPECT_TRUE(get_function->GetError().empty());
-  ASSERT_TRUE(single_result);
-  ASSERT_TRUE(single_result->is_blob());
-  EXPECT_EQ(base::Value::BlobStorage({1, 2, 3}), single_result->GetBlob());
+  ASSERT_TRUE(single_result.is_blob());
+  EXPECT_EQ(base::Value::BlobStorage({1, 2, 3}), single_result.GetBlob());
 
   // Clear the data and check that it is gone.
   auto set_function2 =
@@ -224,10 +221,10 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   EXPECT_EQ(1u, get_function2->GetResultList()->GetList().size());
   EXPECT_TRUE(get_function2->GetError().empty());
 
-  EXPECT_TRUE(get_function2->GetResultList()->Get(0, &single_result));
-  ASSERT_TRUE(single_result);
-  ASSERT_TRUE(single_result->is_blob());
-  EXPECT_EQ(base::Value::BlobStorage(), single_result->GetBlob());
+  const base::Value& single_result2 =
+      get_function2->GetResultList()->GetList()[0];
+  ASSERT_TRUE(single_result2.is_blob());
+  EXPECT_EQ(base::Value::BlobStorage(), single_result2.GetBlob());
 }
 
 // TODO(pastarmovj): Remove once implementation for the other platform exists.
@@ -339,6 +336,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfo) {
   // Verify a stub implementation.
   EXPECT_EQ("stubOS", info.os_name);
   EXPECT_EQ("0.0.0.0", info.os_version);
+  EXPECT_EQ("security patch level", info.security_patch_level);
   EXPECT_EQ("midnightshift", info.device_host_name);
   EXPECT_EQ("topshot", info.device_model);
   EXPECT_EQ("twirlchange", info.serial_number);
@@ -364,6 +362,7 @@ TEST_F(EnterpriseReportingPrivateGetDeviceInfoTest, GetDeviceInfoConversion) {
           device_info_fetcher->Fetch());
   EXPECT_EQ("stubOS", info.os_name);
   EXPECT_EQ("0.0.0.0", info.os_version);
+  EXPECT_EQ("security patch level", info.security_patch_level);
   EXPECT_EQ("midnightshift", info.device_host_name);
   EXPECT_EQ("topshot", info.device_model);
   EXPECT_EQ("twirlchange", info.serial_number);

@@ -89,7 +89,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
         SiteInstance::Create(web_contents.GetBrowserContext());
     frame_tree_->Init(site_instance.get(),
                       /*renderer_initiated_creation=*/false,
-                      /*main_frame_name=*/"");
+                      /*main_frame_name=*/"", /*opener=*/nullptr);
 
     const auto& site_info =
         static_cast<SiteInstanceImpl*>(site_instance.get())->GetSiteInfo();
@@ -126,7 +126,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
   // distinguish between the different FrameTrees.
 
   void DidStartLoading(FrameTreeNode* frame_tree_node,
-                       bool to_different_document) override {}
+                       bool should_show_loading_ui) override {}
 
   void DidStopLoading() override {
     if (on_wait_loading_finished_) {
@@ -146,6 +146,7 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
     // the invalid ID here.
     return FrameTreeNode::kFrameTreeNodeInvalidId;
   }
+  bool IsPortal() override { return false; }
 
   // NavigationControllerDelegate
   void NotifyNavigationStateChanged(InvalidateTypes changed_flags) override {}
@@ -303,11 +304,10 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
 };
 
 PrerenderHost::PrerenderHost(const PrerenderAttributes& attributes,
-                             WebContents* web_contents)
+                             WebContents& web_contents)
     : attributes_(attributes) {
   DCHECK(blink::features::IsPrerender2Enabled());
-  DCHECK(web_contents);
-  CreatePageHolder(*static_cast<WebContentsImpl*>(web_contents));
+  CreatePageHolder(*static_cast<WebContentsImpl*>(&web_contents));
 }
 
 PrerenderHost::~PrerenderHost() {
@@ -337,6 +337,8 @@ bool PrerenderHost::StartPrerendering() {
   load_url_params.initiator_origin = attributes_.initiator_origin;
   load_url_params.initiator_process_id = attributes_.initiator_process_id;
   load_url_params.initiator_frame_token = attributes_.initiator_frame_token;
+  load_url_params.transition_type =
+      ui::PageTransitionFromInt(attributes_.transition_type);
 
   // Just use the referrer from attributes, as NoStatePrefetch does.
   // TODO(crbug.com/1176054): For cross-origin prerender, follow the spec steps
@@ -646,16 +648,7 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return false;
   }
 
-  // The initial navigation value is set to 0 as this is the default for
-  // LoadURLParams.
-  // TODO(crbug.com/1234291): update this check when omnibox prerendering is
-  // implemented
-  DCHECK(ui::PageTransitionCoreTypeIs(
-      ui::PageTransitionFromInt(common_params_->transition),
-      ui::PAGE_TRANSITION_FIRST));
-  if (!ui::PageTransitionCoreTypeIs(
-          ui::PageTransitionFromInt(potential_activation.transition),
-          ui::PageTransitionFromInt(common_params_->transition))) {
+  if (potential_activation.transition != common_params_->transition) {
     return false;
   }
 

@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -46,7 +46,7 @@ class BrowserActivationWaiter : public BrowserListObserver {
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
 
-  const Browser* const browser_;
+  const raw_ptr<const Browser> browser_;
   bool observed_ = false;
   base::RunLoop run_loop_;
 };
@@ -71,7 +71,7 @@ class BrowserDeactivationWaiter : public BrowserListObserver {
   // BrowserListObserver:
   void OnBrowserNoLongerActive(Browser* browser) override;
 
-  const Browser* const browser_;
+  const raw_ptr<const Browser> browser_;
   bool observed_ = false;
   base::RunLoop run_loop_;
 };
@@ -84,6 +84,7 @@ bool BringBrowserWindowToFront(const Browser* browser) WARN_UNUSED_RESULT;
 bool IsViewFocused(const Browser* browser, ViewID vid);
 
 // Simulates a mouse click on a View in the browser.
+void ClickOnView(views::View* view);
 void ClickOnView(const Browser* browser, ViewID vid);
 
 // Makes focus shift to the given View without clicking it.

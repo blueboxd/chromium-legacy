@@ -8,17 +8,6 @@
     <!-- The top or bottom inset of a drawable. -->
     <attr name="verticalInset" format="reference|dimension"/>
 
-    <!-- Material roles currently only used in downstream. Define them here
-         so public builds do not complain the attribute is not found. Removal
-         tracked in https://crbug.com/1216204. -->
-    <attr name="colorOnPrimaryContainer" format="color"/>
-    <attr name="colorOnSurfaceVariant" format="color"/>
-    <attr name="colorOnSurfaceInverse" format="color"/>
-    <attr name="elevationOverlayAccentColor" format="color"/>
-    <attr name="colorPrimaryContainer" format="color"/>
-    <attr name="colorSurfaceVariant" format="color"/>
-    <attr name="colorOutline" format="color"/>
-
     <!-- Used in SwitchMaterial tint lists because the color roles are different in light and dark
          themes. -->
     <attr name="colorSwitchTrackNormal" format="color"/>
@@ -34,15 +23,10 @@
     <!-- Used in SwitchMaterial thumb tint list for the disabled state. -->
     <attr name="colorFixedOnSurfaceAlpha38OverSurface" format="color"/>
 
-    <!-- Semantic names that will support dynamic colors but not yet. -->
-    <attr name="default_bg_color" format="color"/>
-    <attr name="divider_line_bg_color" format="color"/>
-
     <!-- Splintered semantic names that support dynamic colors. -->
     <attr name="default_bg_color_dynamic" format="color"/>
     <attr name="divider_line_bg_color_dynamic" format="color"/>
 
-    <attr name="default_icon_color" format="color" />
     <attr name="default_icon_color_inverse" format="color" />
     <attr name="default_icon_color_secondary" format="color" />
     <attr name="default_icon_color_disabled" format="color" />

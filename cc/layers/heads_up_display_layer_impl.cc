@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -165,7 +166,7 @@ class HudGpuBacking : public ResourcePool::GpuBacking {
     pmd->AddOwnershipEdge(buffer_dump_guid, tracing_guid, importance);
   }
 
-  gpu::SharedImageInterface* shared_image_interface = nullptr;
+  raw_ptr<gpu::SharedImageInterface> shared_image_interface = nullptr;
 };
 
 class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
@@ -183,7 +184,7 @@ class HudSoftwareBacking : public ResourcePool::SoftwareBacking {
                                          shared_mapping.guid(), importance);
   }
 
-  LayerTreeFrameSink* layer_tree_frame_sink;
+  raw_ptr<LayerTreeFrameSink> layer_tree_frame_sink;
   base::WritableSharedMemoryMapping shared_mapping;
 };
 
@@ -632,7 +633,7 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
   TRACE_EVENT0("cc", "DrawHudContents");
   canvas->clear(SkColorSetARGB(0, 0, 0, 0));
   canvas->save();
-  canvas->scale(internal_contents_scale_, internal_contents_scale_);
+  canvas->scale(internal_contents_scale_);
 
   if (debug_state.ShowDebugRects()) {
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
@@ -645,6 +646,11 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
     canvas->restore();
     return;
   }
+
+  // Our output should be in layout space, but all of the draw commands for the
+  // HUD overlays here are in dips. Scale the canvas to account for this
+  // difference.
+  canvas->scale(layer_tree_impl()->painted_device_scale_factor());
 
   SkRect area = SkRect::MakeXYWH(0, 0, 0, 0);
 
@@ -662,13 +668,13 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
 
   // For the web vital and smoothness HUD on the top right corner, if the width
   // of the screen is smaller than the default width of the HUD, scale it down.
-  if (bounds().width() < metrics_sizes.kWidth) {
-    double scale_to_bounds = static_cast<double>(bounds().width()) /
+  if (bounds_width_in_dips() < metrics_sizes.kWidth) {
+    double scale_to_bounds = static_cast<double>(bounds_width_in_dips()) /
                              static_cast<double>(metrics_sizes.kWidth);
     canvas->scale(scale_to_bounds, scale_to_bounds);
   }
   SkRect metrics_area = SkRect::MakeXYWH(
-      std::max<SkScalar>(0, bounds().width() - metrics_sizes.kWidth), 0,
+      std::max<SkScalar>(0, bounds_width_in_dips() - metrics_sizes.kWidth), 0,
       metrics_sizes.kWidth, 0);
   if (debug_state.show_web_vital_metrics) {
     metrics_area = DrawWebVitalMetrics(

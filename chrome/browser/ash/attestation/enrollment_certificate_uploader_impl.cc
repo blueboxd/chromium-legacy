@@ -7,6 +7,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/attestation/attestation_flow.h"
+#include "ash/components/attestation/attestation_flow_adaptive.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/location.h"
@@ -14,8 +16,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
 #include "chrome/browser/ash/attestation/certificate_util.h"
-#include "chromeos/attestation/attestation_flow.h"
-#include "chromeos/attestation/attestation_flow_adaptive.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/account_id/account_id.h"
@@ -56,14 +56,7 @@ namespace attestation {
 
 EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
     policy::CloudPolicyClient* policy_client)
-    : EnrollmentCertificateUploaderImpl(policy_client,
-                                        nullptr /* attestation_flow */) {}
-
-EnrollmentCertificateUploaderImpl::EnrollmentCertificateUploaderImpl(
-    policy::CloudPolicyClient* policy_client,
-    AttestationFlow* attestation_flow)
     : policy_client_(policy_client),
-      attestation_flow_(attestation_flow),
       retry_limit_(kRetryLimit),
       retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

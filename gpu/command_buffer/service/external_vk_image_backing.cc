@@ -181,7 +181,8 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
                                VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                                VK_IMAGE_USAGE_TRANSFER_DST_BIT;
   if (usage & kUsageNeedsColorAttachment) {
-    vk_usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    vk_usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
     if (format == viz::ETC1) {
       DLOG(ERROR) << "ETC1 format cannot be used as color attachment.";
       return nullptr;
@@ -224,6 +225,9 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
   if (!pixel_data.empty()) {
     size_t stride = BitsPerPixel(format) / 8 * size.width();
     backing->WritePixelsWithData(pixel_data, stride);
+
+    // Mark the backing as cleared.
+    backing->SetCleared();
   }
 
   return backing;
@@ -648,12 +652,16 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     DCHECK(memory_object);
     // If ANGLE_memory_object_flags is supported, use that to communicate the
     // exact create and usage flags the image was created with.
+    //
+    // Currently, no extension structs are appended to VkImageCreateInfo::pNext
+    // when creating the image, so communicate that information to ANGLE.  This
+    // makes sure that ANGLE recreates the VkImage identically to Chromium.
     DCHECK(image_->usage() != 0);
     GLuint internal_format = viz::TextureStorageFormat(format());
     if (UseMinimalUsageFlags(context_state())) {
       api->glTexStorageMemFlags2DANGLEFn(
           GL_TEXTURE_2D, 1, internal_format, size().width(), size().height(),
-          memory_object->id(), 0, image_->flags(), image_->usage());
+          memory_object->id(), 0, image_->flags(), image_->usage(), nullptr);
     } else {
       api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
                                   size().width(), size().height(),
@@ -909,7 +917,7 @@ bool ExternalVkImageBacking::ReadPixelsWithCallback(
   VkBufferCreateInfo buffer_create_info = {
       .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
       .size = data_size,
-      .usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+      .usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
       .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
   };
 

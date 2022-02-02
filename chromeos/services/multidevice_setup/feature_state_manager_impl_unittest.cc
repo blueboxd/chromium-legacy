@@ -9,14 +9,13 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/containers/contains.h"
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_feature_state_manager.h"
+#include "chromeos/services/multidevice_setup/fake_global_state_feature_manager.h"
 #include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
-#include "chromeos/services/multidevice_setup/fake_wifi_sync_feature_manager.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_pairing_state_tracker.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -122,14 +121,25 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
         std::make_unique<FakeAndroidSmsPairingStateTracker>();
     fake_android_sms_pairing_state_tracker_->SetPairingComplete(true);
 
-    fake_wifi_sync_feature_manager_ =
-        std::make_unique<FakeWifiSyncFeatureManager>();
+    fake_global_state_feature_managers_.emplace(
+        mojom::Feature::kPhoneHubCameraRoll,
+        std::make_unique<FakeGlobalStateFeatureManager>());
+    fake_global_state_feature_managers_.emplace(
+        mojom::Feature::kWifiSync,
+        std::make_unique<FakeGlobalStateFeatureManager>());
 
     manager_ = FeatureStateManagerImpl::Factory::Create(
         test_pref_service_.get(), fake_host_status_provider_.get(),
         fake_device_sync_client_.get(),
         fake_android_sms_pairing_state_tracker_.get(),
-        fake_wifi_sync_feature_manager_.get(), is_secondary_user);
+        {{mojom::Feature::kPhoneHubCameraRoll,
+          fake_global_state_feature_managers_
+              .at(mojom::Feature::kPhoneHubCameraRoll)
+              .get()},
+         {mojom::Feature::kWifiSync,
+          fake_global_state_feature_managers_.at(mojom::Feature::kWifiSync)
+              .get()}},
+        is_secondary_user);
 
     fake_observer_ = std::make_unique<FakeFeatureStateManagerObserver>();
     manager_->AddObserver(fake_observer_.get());
@@ -248,8 +258,11 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
   }
 
   FeatureStateManager* manager() { return manager_.get(); }
-  FakeWifiSyncFeatureManager* wifi_sync_manager() {
-    return fake_wifi_sync_feature_manager_.get();
+
+  base::flat_map<mojom::Feature,
+                 std::unique_ptr<FakeGlobalStateFeatureManager>>&
+  global_state_feature_managers() {
+    return fake_global_state_feature_managers_;
   }
 
  private:
@@ -264,7 +277,8 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<FakeAndroidSmsPairingStateTracker>
       fake_android_sms_pairing_state_tracker_;
-  std::unique_ptr<FakeWifiSyncFeatureManager> fake_wifi_sync_feature_manager_;
+  base::flat_map<mojom::Feature, std::unique_ptr<FakeGlobalStateFeatureManager>>
+      fake_global_state_feature_managers_;
 
   std::unique_ptr<FakeFeatureStateManagerObserver> fake_observer_;
 
@@ -715,14 +729,10 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, PhoneHubForSecondaryUsers) {
 }
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, PhoneHub) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kPhoneHubCameraRoll);
-
   SetupFeatureStateManager();
 
   const std::vector<mojom::Feature> kAllPhoneHubFeatures{
-      mojom::Feature::kPhoneHub, mojom::Feature::kPhoneHubCameraRoll,
-      mojom::Feature::kPhoneHubNotifications,
+      mojom::Feature::kPhoneHub, mojom::Feature::kPhoneHubNotifications,
       mojom::Feature::kPhoneHubTaskContinuation};
 
   for (const auto& phone_hub_feature : kAllPhoneHubFeatures)
@@ -749,7 +759,6 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, PhoneHub) {
   // Likewise, the Phone Hub notifications enabled pref is disabled by default
   // to ensure the phone grants access.
   test_pref_service()->SetBoolean(kPhoneHubEnabledPrefName, true);
-  test_pref_service()->SetBoolean(kPhoneHubCameraRollEnabledPrefName, true);
   test_pref_service()->SetBoolean(kPhoneHubNotificationsEnabledPrefName, true);
   SetSoftwareFeatureState(false /* use_local_device */,
                           multidevice::SoftwareFeature::kPhoneHubHost,
@@ -785,8 +794,6 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, PhoneHub) {
                      mojom::Feature::kPhoneHubNotifications);
   VerifyFeatureState(mojom::FeatureState::kUnavailableTopLevelFeatureDisabled,
                      mojom::Feature::kPhoneHubTaskContinuation);
-  VerifyFeatureState(mojom::FeatureState::kUnavailableTopLevelFeatureDisabled,
-                     mojom::Feature::kPhoneHubCameraRoll);
   VerifyFeatureStateChange(7u /* expected_index */, mojom::Feature::kPhoneHub,
                            mojom::FeatureState::kDisabledByUser);
 
@@ -807,37 +814,103 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, PhoneHub) {
                            mojom::FeatureState::kProhibitedByPolicy);
 }
 
-TEST_F(MultiDeviceSetupFeatureStateManagerImplTest,
-       PhoneHubWithCameraRollFeatureDisabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(ash::features::kPhoneHubCameraRoll);
-  const std::vector<mojom::Feature> kAllPhoneHubFeatures{
-      mojom::Feature::kPhoneHub, mojom::Feature::kPhoneHubCameraRoll,
-      mojom::Feature::kPhoneHubNotifications,
-      mojom::Feature::kPhoneHubTaskContinuation};
-
+TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, CameraRoll) {
   SetupFeatureStateManager();
+  // Set the initial global state to disabled, so that the camera roll feature
+  // state will be |kDisabledByUser| when it becomes supported on both the host
+  // and client devices.
+  global_state_feature_managers()[mojom::Feature::kPhoneHubCameraRoll]
+      ->SetIsFeatureEnabled(false);
+  TryAllUnverifiedHostStatesAndVerifyFeatureState(
+      mojom::Feature::kPhoneHubCameraRoll);
+
   SetVerifiedHost();
+  VerifyFeatureState(mojom::FeatureState::kNotSupportedByChromebook,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
   SetSoftwareFeatureState(true /* use_local_device */,
                           multidevice::SoftwareFeature::kPhoneHubClient,
                           multidevice::SoftwareFeatureState::kSupported);
-  test_pref_service()->SetBoolean(kPhoneHubEnabledPrefName, true);
-  test_pref_service()->SetBoolean(kPhoneHubCameraRollEnabledPrefName, true);
-  test_pref_service()->SetBoolean(kPhoneHubNotificationsEnabledPrefName, true);
+  SetSoftwareFeatureState(
+      true /* use_local_device */,
+      multidevice::SoftwareFeature::kPhoneHubCameraRollClient,
+      multidevice::SoftwareFeatureState::kSupported);
+  VerifyFeatureState(mojom::FeatureState::kNotSupportedByPhone,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
   SetSoftwareFeatureState(false /* use_local_device */,
                           multidevice::SoftwareFeature::kPhoneHubHost,
                           multidevice::SoftwareFeatureState::kEnabled);
-  for (const auto& phone_hub_feature : kAllPhoneHubFeatures) {
-    if (phone_hub_feature == mojom::Feature::kPhoneHubCameraRoll) {
-      VerifyFeatureState(mojom::FeatureState::kNotSupportedByChromebook,
-                         phone_hub_feature);
-    }
-  }
+  VerifyFeatureState(mojom::FeatureState::kNotSupportedByPhone,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // Camera Roll is considered disabled if it host is supported but disabled.
+  SetSoftwareFeatureState(false /* use_local_device */,
+                          multidevice::SoftwareFeature::kPhoneHubCameraRollHost,
+                          multidevice::SoftwareFeatureState::kSupported);
+  VerifyFeatureState(mojom::FeatureState::kDisabledByUser,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // Camera Roll does not automatically enable with Phone Hub.
+  test_pref_service()->SetBoolean(kPhoneHubEnabledPrefName, true);
+  VerifyFeatureState(mojom::FeatureState::kDisabledByUser,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // The GlobalStateFeatureManager should be updated when the host state changes
+  // to |kEnabled|. It will then update the feature state to |kEnabledByUser|.
+  global_state_feature_managers()[mojom::Feature::kPhoneHubCameraRoll]
+      ->SetIsFeatureEnabled(true);
+  SetSoftwareFeatureState(false /* use_local_device */,
+                          multidevice::SoftwareFeature::kPhoneHubCameraRollHost,
+                          multidevice::SoftwareFeatureState::kEnabled);
+  VerifyFeatureState(mojom::FeatureState::kEnabledByUser,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // Simulate user toggling the camera roll state, and verify that the
+  // GlobalStateFeatureManager was updated accordingly.
+  manager()->SetFeatureEnabledState(mojom::Feature::kPhoneHubCameraRoll, false);
+  VerifyFeatureState(mojom::FeatureState::kDisabledByUser,
+                     mojom::Feature::kPhoneHubCameraRoll);
+  EXPECT_FALSE(
+      global_state_feature_managers()[mojom::Feature::kPhoneHubCameraRoll]
+          ->IsFeatureEnabled());
+
+  manager()->SetFeatureEnabledState(mojom::Feature::kPhoneHubCameraRoll, true);
+  VerifyFeatureState(mojom::FeatureState::kEnabledByUser,
+                     mojom::Feature::kPhoneHubCameraRoll);
+  EXPECT_TRUE(
+      global_state_feature_managers()[mojom::Feature::kPhoneHubCameraRoll]
+          ->IsFeatureEnabled());
+
+  // Camera Roll is automatically disabled when Phone Hub is disabled
+  test_pref_service()->SetBoolean(kPhoneHubEnabledPrefName, false);
+  VerifyFeatureState(mojom::FeatureState::kUnavailableTopLevelFeatureDisabled,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // Camera Roll restores its previous state when Phone Hub is enabled
+  test_pref_service()->SetBoolean(kPhoneHubEnabledPrefName, true);
+  VerifyFeatureState(mojom::FeatureState::kEnabledByUser,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // Prohibiting Camera Roll does not prohibit Phone Hub
+  test_pref_service()->SetBoolean(kPhoneHubCameraRollAllowedPrefName, false);
+  VerifyFeatureState(mojom::FeatureState::kProhibitedByPolicy,
+                     mojom::Feature::kPhoneHubCameraRoll);
+
+  // Prohibiting Phone Hub does prohibit Camera Roll
+  test_pref_service()->SetBoolean(kPhoneHubCameraRollAllowedPrefName, true);
+  test_pref_service()->SetBoolean(kPhoneHubAllowedPrefName, false);
+  VerifyFeatureState(mojom::FeatureState::kProhibitedByPolicy,
+                     mojom::Feature::kPhoneHubCameraRoll);
 }
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, WifiSync) {
   SetupFeatureStateManager();
-
+  // Set the initial global state to disabled, so that the wifi sync feature
+  // state will be |kDisabledByUser| when it becomes supported on both the host
+  // and client devices.
+  global_state_feature_managers()[mojom::Feature::kWifiSync]
+      ->SetIsFeatureEnabled(false);
   TryAllUnverifiedHostStatesAndVerifyFeatureState(mojom::Feature::kWifiSync);
 
   SetVerifiedHost();
@@ -847,32 +920,40 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, WifiSync) {
   SetSoftwareFeatureState(true /* use_local_device */,
                           multidevice::SoftwareFeature::kWifiSyncClient,
                           multidevice::SoftwareFeatureState::kSupported);
-  wifi_sync_manager()->SetIsWifiSyncEnabled(true);
   VerifyFeatureState(mojom::FeatureState::kDisabledByUser,
                      mojom::Feature::kWifiSync);
   VerifyFeatureStateChange(1u /* expected_index */, mojom::Feature::kWifiSync,
                            mojom::FeatureState::kDisabledByUser);
 
+  // The GlobalStateFeatureManager should be updated when the host state changes
+  // to |kEnabled|. It will then update the feature state to |kEnabledByUser|.
+  global_state_feature_managers()[mojom::Feature::kWifiSync]
+      ->SetIsFeatureEnabled(true);
   SetSoftwareFeatureState(false /* use_local_device */,
                           multidevice::SoftwareFeature::kWifiSyncHost,
                           multidevice::SoftwareFeatureState::kEnabled);
-  wifi_sync_manager()->SetIsWifiSyncEnabled(false);
   VerifyFeatureState(mojom::FeatureState::kEnabledByUser,
                      mojom::Feature::kWifiSync);
   VerifyFeatureStateChange(2u /* expected_index */, mojom::Feature::kWifiSync,
                            mojom::FeatureState::kEnabledByUser);
 
+  // Simulate user toggling the wifi sync state, and verify that the
+  // GlobalStateFeatureManager was updated accordingly.
   manager()->SetFeatureEnabledState(mojom::Feature::kWifiSync, false);
   VerifyFeatureState(mojom::FeatureState::kDisabledByUser,
                      mojom::Feature::kWifiSync);
   VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kWifiSync,
                            mojom::FeatureState::kDisabledByUser);
+  EXPECT_FALSE(global_state_feature_managers()[mojom::Feature::kWifiSync]
+                   ->IsFeatureEnabled());
 
   manager()->SetFeatureEnabledState(mojom::Feature::kWifiSync, true);
   VerifyFeatureState(mojom::FeatureState::kEnabledByUser,
                      mojom::Feature::kWifiSync);
   VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kWifiSync,
                            mojom::FeatureState::kEnabledByUser);
+  EXPECT_TRUE(global_state_feature_managers()[mojom::Feature::kWifiSync]
+                  ->IsFeatureEnabled());
 
   MakeBetterTogetherSuiteDisabledByUser();
   VerifyFeatureState(mojom::FeatureState::kUnavailableSuiteDisabled,

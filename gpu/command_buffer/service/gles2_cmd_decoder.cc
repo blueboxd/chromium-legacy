@@ -31,6 +31,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/hash/legacy_hash.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -121,10 +122,6 @@
 // Note that this must be included after gl_bindings.h to avoid conflicts.
 #include <OpenGL/CGLIOSurface.h>
 #endif  // OS_MAC
-
-#if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"  // nogncheck
-#endif
 
 // Note: this undefs far and near so include this after other Windows headers.
 #include "third_party/angle/src/image_util/loadimage.h"
@@ -299,7 +296,7 @@ class ScopedGLErrorSuppressor {
   ~ScopedGLErrorSuppressor();
  private:
   const char* function_name_;
-  ErrorState* error_state_;
+  raw_ptr<ErrorState> error_state_;
 };
 
 // Temporarily changes a decoder's bound texture and restore it when this
@@ -318,8 +315,8 @@ class ScopedTextureBinder {
   ~ScopedTextureBinder();
 
  private:
-  ContextState* state_;
-  ErrorState* error_state_;
+  raw_ptr<ContextState> state_;
+  raw_ptr<ErrorState> error_state_;
   GLenum target_;
 };
 
@@ -337,8 +334,8 @@ class ScopedRenderBufferBinder {
   ~ScopedRenderBufferBinder();
 
  private:
-  ContextState* state_;
-  ErrorState* error_state_;
+  raw_ptr<ContextState> state_;
+  raw_ptr<ErrorState> error_state_;
 };
 
 // Temporarily changes a decoder's bound frame buffer and restore it when this
@@ -353,7 +350,7 @@ class ScopedFramebufferBinder {
   ~ScopedFramebufferBinder();
 
  private:
-  GLES2DecoderImpl* decoder_;
+  raw_ptr<GLES2DecoderImpl> decoder_;
 };
 
 // Temporarily changes a decoder's bound frame buffer to a resolved version of
@@ -374,7 +371,7 @@ class ScopedResolvedFramebufferBinder {
   ~ScopedResolvedFramebufferBinder();
 
  private:
-  GLES2DecoderImpl* decoder_;
+  raw_ptr<GLES2DecoderImpl> decoder_;
   bool resolve_and_bind_;
 };
 
@@ -397,7 +394,7 @@ class ScopedFramebufferCopyBinder {
   ~ScopedFramebufferCopyBinder();
 
  private:
-  GLES2DecoderImpl* decoder_;
+  raw_ptr<GLES2DecoderImpl> decoder_;
   std::unique_ptr<ScopedFramebufferBinder> framebuffer_binder_;
   GLuint temp_texture_;
   GLuint temp_framebuffer_;
@@ -415,7 +412,7 @@ class ScopedPixelUnpackState {
   ~ScopedPixelUnpackState();
 
  private:
-  ContextState* state_;
+  raw_ptr<ContextState> state_;
 };
 
 // Encapsulates an OpenGL texture.
@@ -473,7 +470,7 @@ class BackTexture {
   MemoryTypeTracker memory_tracker_;
   size_t bytes_allocated_;
   gfx::Size size_;
-  GLES2DecoderImpl* decoder_;
+  raw_ptr<GLES2DecoderImpl> decoder_;
 
   scoped_refptr<TextureRef> texture_ref_;
 
@@ -513,7 +510,7 @@ class BackRenderbuffer {
   gl::GLApi* api() const;
 
  private:
-  GLES2DecoderImpl* decoder_;
+  raw_ptr<GLES2DecoderImpl> decoder_;
   MemoryTypeTracker memory_tracker_;
   size_t bytes_allocated_;
   GLuint id_;
@@ -557,7 +554,7 @@ class BackFramebuffer {
   gl::GLApi* api() const;
 
  private:
-  GLES2DecoderImpl* decoder_;
+  raw_ptr<GLES2DecoderImpl> decoder_;
   GLuint id_;
 };
 
@@ -886,7 +883,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
     void LoseContext() { has_context_ = false; }
 
    private:
-    GLES2DecoderImpl* decoder_ = nullptr;
+    raw_ptr<GLES2DecoderImpl> decoder_ = nullptr;
     bool success_ = false;
     bool has_context_ = true;
   };
@@ -2230,13 +2227,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                     GLenum textarget,
                                     GLuint texture_unit);
 
-  void DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
-                                            GLuint dest_id,
-                                            GLint x,
-                                            GLint y,
-                                            GLsizei width,
-                                            GLsizei height);
-
   void DoWindowRectanglesEXT(GLenum mode, GLsizei n, const volatile GLint* box);
 
   void DoSetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
@@ -2435,8 +2425,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
                             GLsizei height,
                             GLboolean unpack_flip_y,
                             GLboolean unpack_premultiply_alpha,
-                            GLboolean unpack_unmultiply_alpha,
-                            GLboolean dither);
+                            GLboolean unpack_unmultiply_alpha);
 
   void RenderWarning(const char* filename, int line, const std::string& msg);
   void PerformanceWarning(
@@ -2750,7 +2739,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   scoped_refptr<ShaderTranslatorInterface> fragment_translator_;
 
   // Cached from ContextGroup
-  const Validators* validators_;
+  raw_ptr<const Validators> validators_;
   scoped_refptr<FeatureInfo> feature_info_;
 
   int frame_number_;
@@ -3266,8 +3255,7 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
     // buffer queue and is as a result guaranteed to work on all devices.
     // TODO(reveman): Define this format in one place instead of having to
     // duplicate BGRX_8888.
-    if (features::IsUsingOzonePlatform())
-      buffer_format = gfx::BufferFormat::BGRX_8888;
+    buffer_format = gfx::BufferFormat::BGRX_8888;
 #endif
   }
   scoped_refptr<gl::GLImage> image =
@@ -4391,8 +4379,6 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().chromium_texture_storage_image;
   caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
-  caps.unpremultiply_and_dither_copy =
-      feature_info_->feature_flags().unpremultiply_and_dither_copy;
   caps.separate_stencil_ref_mask_writemask =
       feature_info_->feature_flags().separate_stencil_ref_mask_writemask;
   caps.chromium_nonblocking_readback =
@@ -9919,7 +9905,7 @@ void GLES2DecoderImpl::DoSetEnableDCLayersCHROMIUM(GLboolean enable) {
   }
   if (!supports_dc_layers_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glSetEnableDCLayersCHROMIUM",
-                       "surface doesn't support SetDrawRectangle");
+                       "surface doesn't support SetEnableDCLayers");
     return;
   }
   if (!surface_->SetEnableDCLayers(!!enable)) {
@@ -17177,7 +17163,8 @@ error::Error GLES2DecoderImpl::HandleEnableFeatureCHROMIUM(
     // the conformance tests pass and given that there is lots of real work that
     // needs to be done it seems like refactoring for one to one of those
     // methods is a very low priority.
-    const_cast<Validators*>(validators_)->vertex_attrib_type.AddValue(GL_FIXED);
+    const_cast<Validators*>(validators_.get())
+        ->vertex_attrib_type.AddValue(GL_FIXED);
   } else {
     return error::kNoError;
   }
@@ -18318,15 +18305,14 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       GetFeatureInfo(), source_target, source_level, source_internal_format,
       source_type, dest_binding_target, dest_level, internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, false /* dither */);
+      unpack_unmultiply_alpha == GL_TRUE);
 
   copy_texture_chromium_->DoCopyTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
       dest_level, internal_format, source_width, source_height,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, false /* dither */, method,
-      copy_tex_image_blit_.get());
+      unpack_unmultiply_alpha == GL_TRUE, method, copy_tex_image_blit_.get());
 }
 
 void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
@@ -18343,8 +18329,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
                                             GLsizei height,
                                             GLboolean unpack_flip_y,
                                             GLboolean unpack_premultiply_alpha,
-                                            GLboolean unpack_unmultiply_alpha,
-                                            GLboolean dither) {
+                                            GLboolean unpack_unmultiply_alpha) {
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
 
@@ -18511,8 +18496,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
       (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
   // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexSubImage.
   if (image && dest_internal_format == source_internal_format &&
-      dest_level == 0 && !unpack_flip_y && !unpack_premultiply_alpha_change &&
-      !dither) {
+      dest_level == 0 && !unpack_flip_y && !unpack_premultiply_alpha_change) {
     ScopedTextureBinder binder(&state_, error_state_.get(),
                                dest_texture->service_id(), dest_binding_target);
     if (image->CopyTexSubImage(dest_target, gfx::Point(xoffset, yoffset),
@@ -18527,7 +18511,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
       GetFeatureInfo(), source_target, source_level, source_internal_format,
       source_type, dest_binding_target, dest_level, dest_internal_format,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, dither == GL_TRUE);
+      unpack_unmultiply_alpha == GL_TRUE);
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   // glDrawArrays is faster than glCopyTexSubImage2D on IA Mesa driver,
   // although opposite in Android.
@@ -18553,8 +18537,7 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
       dest_level, dest_internal_format, xoffset, yoffset, x, y, width, height,
       dest_width, dest_height, source_width, source_height,
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-      unpack_unmultiply_alpha == GL_TRUE, dither == GL_TRUE, method,
-      copy_tex_image_blit_.get());
+      unpack_unmultiply_alpha == GL_TRUE, method, copy_tex_image_blit_.get());
 }
 
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
@@ -18577,7 +18560,7 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
   CopySubTextureHelper(kFunctionName, source_id, source_level, dest_target,
                        dest_id, dest_level, xoffset, yoffset, x, y, width,
                        height, unpack_flip_y, unpack_premultiply_alpha,
-                       unpack_unmultiply_alpha, GL_FALSE /* dither */);
+                       unpack_unmultiply_alpha);
 }
 
 bool GLES2DecoderImpl::InitializeCopyTexImageBlitter(
@@ -19824,7 +19807,7 @@ void GLES2DecoderImpl::DoFlushMappedBufferRange(
   }
   char* client_data = reinterpret_cast<char*>(mapped_range->GetShmPointer());
   DCHECK(client_data);
-  char* gpu_data = reinterpret_cast<char*>(mapped_range->pointer);
+  char* gpu_data = reinterpret_cast<char*>(mapped_range->pointer.get());
   DCHECK(gpu_data);
   memcpy(gpu_data + offset, client_data + offset, size);
   if (buffer->shadowed()) {
@@ -20136,72 +20119,6 @@ void GLES2DecoderImpl::DoWindowRectanglesEXT(GLenum mode,
   state_.UpdateWindowRectangles();
 }
 
-void GLES2DecoderImpl::DoUnpremultiplyAndDitherCopyCHROMIUM(GLuint source_id,
-                                                            GLuint dest_id,
-                                                            GLint x,
-                                                            GLint y,
-                                                            GLsizei width,
-                                                            GLsizei height) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoUnpremultiplyAndDitherCopyCHROMIUM");
-  static const char kFunctionName[] = "glUnpremultiplyAndDitherCopyCHROMIUM";
-
-  // Do basic validation of our params. Because we don't rely on the caller to
-  // provide the targets / formats of src / dst, we read them here before
-  // forwarding to CopySubTextureHelper. This extension always deals with level
-  // 0.
-  const GLint kLevel = 0;
-
-  TextureRef* source_texture_ref = GetTexture(source_id);
-  TextureRef* dest_texture_ref = GetTexture(dest_id);
-  if (!source_texture_ref || !dest_texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName, "unknown texture id");
-    return;
-  }
-
-  Texture* source_texture = source_texture_ref->texture();
-  GLenum source_target = source_texture->target();
-  Texture* dest_texture = dest_texture_ref->texture();
-  GLenum dest_target = dest_texture->target();
-  if ((source_target != GL_TEXTURE_2D &&
-       source_target != GL_TEXTURE_RECTANGLE_ARB &&
-       source_target != GL_TEXTURE_EXTERNAL_OES) ||
-      (dest_target != GL_TEXTURE_2D &&
-       dest_target != GL_TEXTURE_RECTANGLE_ARB)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, kFunctionName,
-                       "invalid texture target");
-    return;
-  }
-
-  GLenum source_type = 0;
-  GLenum source_internal_format = 0;
-  source_texture->GetLevelType(source_target, kLevel, &source_type,
-                               &source_internal_format);
-
-  GLenum dest_type = 0;
-  GLenum dest_internal_format = 0;
-  dest_texture->GetLevelType(dest_target, kLevel, &dest_type,
-                             &dest_internal_format);
-  GLenum format =
-      TextureManager::ExtractFormatFromStorageFormat(dest_internal_format);
-
-  if (format != GL_BGRA && format != GL_RGBA) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "invalid format");
-    return;
-  }
-
-  if (dest_type != GL_UNSIGNED_SHORT_4_4_4_4) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
-                       "invalid destination type");
-    return;
-  }
-
-  CopySubTextureHelper(
-      kFunctionName, source_id, kLevel, dest_target, dest_id, kLevel, x, y, x,
-      y, width, height, GL_FALSE /* unpack_flip_y */,
-      GL_FALSE /* unpack_premultiply_alpha */,
-      GL_TRUE /* unpack_unmultiply_alpha */, GL_TRUE /* dither */);
-}
-
 std::unique_ptr<AbstractTexture> GLES2DecoderImpl::CreateAbstractTexture(
     GLenum target,
     GLenum internal_format,
@@ -20319,7 +20236,6 @@ error::Error GLES2DecoderImpl::HandleSetActiveURLCHROMIUM(
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
-#include "base/macros.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_autogen.h"
 

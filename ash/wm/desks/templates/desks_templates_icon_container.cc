@@ -5,12 +5,20 @@
 #include "ash/wm/desks/templates/desks_templates_icon_container.h"
 
 #include "ash/public/cpp/desk_template.h"
+#include "ash/public/cpp/desks_templates_delegate.h"
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/templates/desks_templates_icon_view.h"
 #include "base/containers/contains.h"
 #include "components/app_restore/app_launch_info.h"
+#include "extensions/common/constants.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_provider.h"
 #include "ui/views/background.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -26,7 +34,6 @@ struct IconInfo {
   int count;
 };
 
-// TODO(chinsenj): Revisit how we determine the sorting order.
 // Given a map from unique icon identifiers to their count, returns an ordered
 // vector of the unique icon identifiers (app ids/urls) and their number of
 // occurrences.
@@ -48,6 +55,62 @@ std::vector<std::pair<std::string, int>> SortIconIdentifiers(
             });
 
   return identifiers_with_count;
+}
+
+// Inserts an `IconInfo` struct into `out_identifier_info` if no entry exists
+// for `identifier`. If an entry exists for `identifier`, updates its values.
+void InsertIdentifierInfo(
+    const std::string& identifier,
+    int activation_index,
+    std::map<std::string, IconInfo>* out_identifier_info) {
+  // A single app/site can have multiple windows so count their occurrences and
+  // use the smallest activation index for sorting purposes.
+  if (!base::Contains(*out_identifier_info, identifier)) {
+    (*out_identifier_info)[identifier] = {activation_index, /*count=*/1};
+  } else {
+    ++(*out_identifier_info)[identifier].count;
+    (*out_identifier_info)[identifier].activation_index = std::min(
+        (*out_identifier_info)[identifier].activation_index, activation_index);
+  }
+}
+
+// Iterates through `launch_list`, inserting `IconInfo` structs into
+// `out_identifier_info` for each tab and app.
+void InsertIdentifierInfoFromLaunchList(
+    const std::string& app_id,
+    const app_restore::RestoreData::LaunchList& launch_list,
+    std::map<std::string, IconInfo>* out_identifier_info) {
+  // We want to group active tabs and apps ahead of inactive tabs so offsets
+  // inactive tabs activation index by `kInactiveTabOffset`. In almost every use
+  // case, there should be no more than `kInactiveTabOffset` number of tabs +
+  // apps on a desk.
+  constexpr int kInactiveTabOffset = 10000;
+
+  for (auto& restore_data : launch_list) {
+    // If `restore_data` is a SWA then it will have a valid url for its active
+    // tab. However, in this case we want to display the SWA's icon via its app
+    // id so to determine whether `restore_data` is an SWA we need to check
+    // whether it's a browser.
+    const bool is_browser =
+        app_id == extension_misc::kChromeAppId &&
+        (!restore_data.second->app_type_browser.has_value() ||
+         !restore_data.second->app_type_browser.value());
+    const int activation_index = restore_data.second->activation_index.value();
+    const int active_tab_index =
+        restore_data.second->active_tab_index.value_or(-1);
+    if (restore_data.second->urls.has_value() && is_browser) {
+      const auto& urls = restore_data.second->urls.value();
+      for (int i = 0; i < static_cast<int>(urls.size()); ++i) {
+        InsertIdentifierInfo(urls[i].spec(),
+                             active_tab_index == i
+                                 ? activation_index
+                                 : kInactiveTabOffset + activation_index,
+                             out_identifier_info);
+      }
+    } else {
+      InsertIdentifierInfo(app_id, activation_index, out_identifier_info);
+    }
+  }
 }
 
 }  // namespace
@@ -73,30 +136,42 @@ void DesksTemplatesIconContainer::PopulateIconContainerFromTemplate(
   std::map<std::string, IconInfo> identifier_info;
   for (auto& app_id_to_launch_list_entry :
        restore_data->app_id_to_launch_list()) {
-    for (auto& restore_data : app_id_to_launch_list_entry.second) {
-      const std::string& identifier =
-          restore_data.second->urls.has_value()
-              ? restore_data.second->urls
-                    .value()[restore_data.second->active_tab_index.value()]
-                    .spec()
-              : app_id_to_launch_list_entry.first;
-      const int activation_index =
-          restore_data.second->activation_index.value();
-
-      // A single app can have multiple windows so count their occurrences and
-      // use the smallest activation index for sorting purposes.
-      if (!base::Contains(identifier_info, identifier)) {
-        identifier_info[identifier] = {activation_index,
-                                       /*count=*/1};
-      } else {
-        ++identifier_info[identifier].count;
-        identifier_info[identifier].activation_index = std::min(
-            identifier_info[identifier].activation_index, activation_index);
-      }
-    }
+    InsertIdentifierInfoFromLaunchList(app_id_to_launch_list_entry.first,
+                                       app_id_to_launch_list_entry.second,
+                                       &identifier_info);
   }
 
-  SetIcons(SortIconIdentifiers(identifier_info));
+  CreateIconViewsFromIconIdentifiers(SortIconIdentifiers(identifier_info));
+}
+
+void DesksTemplatesIconContainer::PopulateIconContainerFromWindows(
+    const std::vector<aura::Window*>& windows) {
+  DCHECK(!windows.empty());
+
+  // Iterate through `windows`, counting the occurrences of each unique icon and
+  // storing their lowest activation index.
+  std::map<std::string, IconInfo> identifier_info;
+  auto* delegate = Shell::Get()->desks_templates_delegate();
+  for (size_t i = 0; i < windows.size(); ++i) {
+    auto* window = windows[i];
+
+    // If `window` is an incognito window, we want to display the incognito icon
+    // instead of its favicons so denote it using
+    // `DeskTemplate::kIncognitoWindowIdentifier`.
+    const bool is_incognito_window = delegate->IsIncognitoWindow(window);
+    const std::string app_id =
+        is_incognito_window
+            ? DeskTemplate::kIncognitoWindowIdentifier
+            : ShelfID::Deserialize(window->GetProperty(kShelfIDKey)).app_id;
+    if (is_incognito_window && !incognito_window_color_provider_) {
+      incognito_window_color_provider_ =
+          views::Widget::GetWidgetForNativeWindow(window)->GetColorProvider();
+    }
+
+    InsertIdentifierInfo(app_id, i, &identifier_info);
+  }
+
+  CreateIconViewsFromIconIdentifiers(SortIconIdentifiers(identifier_info));
 }
 
 void DesksTemplatesIconContainer::Layout() {
@@ -134,7 +209,7 @@ void DesksTemplatesIconContainer::Layout() {
   }
 }
 
-void DesksTemplatesIconContainer::SetIcons(
+void DesksTemplatesIconContainer::CreateIconViewsFromIconIdentifiers(
     const std::vector<std::pair<std::string, int>>& identifiers_and_counts) {
   DCHECK(icon_views_.empty());
 
@@ -150,8 +225,8 @@ void DesksTemplatesIconContainer::SetIcons(
                                      kControlBackgroundColorInactive),
                              DesksTemplatesIconView::kIconSize / 2))
                          .Build());
-    icon_view->SetIconAndCount(identifiers_and_counts[i].first,
-                               identifiers_and_counts[i].second);
+    icon_view->SetIconIdentifierAndCount(identifiers_and_counts[i].first,
+                                         identifiers_and_counts[i].second);
     icon_views_.push_back(icon_view);
   }
 
@@ -166,7 +241,7 @@ void DesksTemplatesIconContainer::SetIcons(
                                    kControlBackgroundColorInactive),
                            DesksTemplatesIconView::kIconSize / 2))
                        .Build());
-  overflow_icon_view->SetIconAndCount(
+  overflow_icon_view->SetIconIdentifierAndCount(
       std::string(), identifiers_and_counts.size() - num_added_icons);
   icon_views_.push_back(overflow_icon_view);
 }

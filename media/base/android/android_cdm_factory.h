@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/media_drm_bridge_factory.h"
 #include "media/base/cdm_factory.h"
@@ -32,8 +31,7 @@ class MEDIA_EXPORT AndroidCdmFactory final : public CdmFactory {
   ~AndroidCdmFactory() override;
 
   // CdmFactory implementation.
-  void Create(const std::string& key_system,
-              const CdmConfig& cdm_config,
+  void Create(const CdmConfig& cdm_config,
               const SessionMessageCB& session_message_cb,
               const SessionClosedCB& session_closed_cb,
               const SessionKeysChangeCB& session_keys_change_cb,

@@ -17,7 +17,9 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -32,6 +34,10 @@ class TemplateURLService;
 namespace optimization_guide {
 class EntityMetadataProvider;
 }  // namespace optimization_guide
+
+namespace site_engagement {
+class SiteEngagementScoreProvider;
+}  // namespace site_engagement
 
 namespace history_clusters {
 
@@ -78,16 +84,23 @@ class HistoryClustersService : public KeyedService {
   // In that case, HistoryClustersService will never instantiate a clustering
   // backend that requires it, such as the RemoteClusteringBackend.
   HistoryClustersService(
+      const std::string& application_locale,
       history::HistoryService* history_service,
       TemplateURLService* template_url_service,
       optimization_guide::EntityMetadataProvider* entity_metadata_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      site_engagement::SiteEngagementScoreProvider* engagement_score_provider);
   HistoryClustersService(const HistoryClustersService&) = delete;
   HistoryClustersService& operator=(const HistoryClustersService&) = delete;
   ~HistoryClustersService() override;
 
   // KeyedService:
   void Shutdown() override;
+
+  // Returns true if the Journeys feature is enabled for the current application
+  // locale. This is a cached wrapper of `IsJourneysEnabled()` within features.h
+  // that's already evaluated against the g_browser_process application locale.
+  bool IsJourneysEnabled() const { return is_journeys_enabled_; }
 
   // Used to add and remove observers.
   void AddObserver(Observer* obs);
@@ -147,9 +160,9 @@ class HistoryClustersService : public KeyedService {
 
   // Converts the vector of history::Cluster types to history_clusters::Cluster
   // by collapsing all the duplicate visits into the canonical visits, thereby
-  // "unflattening" the output of the backend. Exposed for testing.
-  std::vector<Cluster> CollapseDuplicateVisits(
-      const std::vector<history::Cluster>& raw_clusters) const;
+  // "unflattening" the output of the backend. Public for testing purposes.
+  static std::vector<Cluster> CollapseDuplicateVisits(
+      const std::vector<history::Cluster>& raw_clusters);
 
   // Clears `all_keywords_cache_` and cancels any pending tasks to populate it.
   void ClearKeywordCache();
@@ -164,6 +177,7 @@ class HistoryClustersService : public KeyedService {
   void PopulateClusterKeywordCache(
       base::Time begin_time,
       std::unique_ptr<std::set<std::u16string>> keyword_accumulator,
+      query_parser::QueryWordVector* cache,
       QueryClustersResult result);
 
   // Internally used callback for `QueryClusters()`.
@@ -172,20 +186,35 @@ class HistoryClustersService : public KeyedService {
                           std::vector<history::AnnotatedVisit> annotated_visits,
                           base::Time continuation_end_time) const;
 
-  // Internally used callback for `OnGotHistoryVisits()`.
-  void OnGotClusters(const std::string& query,
-                     base::Time continuation_end_time,
-                     base::TimeTicks cluster_start_time,
-                     QueryClustersCallback callback,
-                     const std::vector<history::Cluster>& clusters) const;
+  // Runs on UI thread. Internally used callback for `OnGotHistoryVisits()`.
+  void OnGotRawClusters(const std::string& query,
+                        base::Time continuation_end_time,
+                        base::TimeTicks cluster_start_time,
+                        QueryClustersCallback callback,
+                        std::vector<history::Cluster> clusters) const;
+
+  // Runs on `post_processing_task_runner_`, posted by `OnGotRawClusters()`.
+  static QueryClustersResult PostProcessClusters(
+      const std::string& query,
+      base::Time continuation_end_time,
+      std::vector<history::Cluster> clusters);
+
+  // Runs on UI thread. Used as the 'reply' part from `PostProcessClusters()`.
+  void OnProcessedClusters(base::ElapsedTimer post_processing_timer,
+                           size_t clusters_from_backend_count,
+                           QueryClustersCallback callback,
+                           QueryClustersResult result) const;
+
+  // True if the Journeys feature is enabled for the application locale.
+  const bool is_journeys_enabled_;
+
+  // Non-owning pointer, but never nullptr.
+  history::HistoryService* const history_service_;
 
   // `VisitContextAnnotations`s are constructed stepwise; they're initially
   // placed in `incomplete_visit_context_annotations_` and saved to the history
   // database once completed (if persistence is enabled).
   IncompleteVisitMap incomplete_visit_context_annotations_;
-
-  // Non-owning pointer, but never nullptr.
-  history::HistoryService* const history_service_;
 
   // The backend used for clustering. This can be nullptr.
   std::unique_ptr<ClusteringBackend> backend_;
@@ -196,12 +225,29 @@ class HistoryClustersService : public KeyedService {
   // TODO(tommycli): Make a smarter mechanism for regenerating the cache.
   query_parser::QueryWordVector all_keywords_cache_;
   base::Time all_keywords_cache_timestamp_;
+
+  // Like above, but will represent the clusters newer than
+  // `all_keywords_cache_timestamp_` I.e., this will contain up to 2 hours of
+  // clusters. This can be up to 10 seconds stale. We use a separate cache that
+  // can repeatedly be cleared and recreated instead of incrementally adding
+  // keywords to `all_keywords_cache_` because doing the latter might:
+  //  1) Give a different set of keywords since cluster keywords aren't
+  //     necessarily a union of the individual visits' keywords.
+  //  2) Exclude keywords since keywords of size-1 clusters are not cached.
+  // TODO(manukh) This is a "band aid" fix to missing keywords for recent
+  //  visits.
+  query_parser::QueryWordVector short_keyword_cache_;
+  base::Time short_keyword_cache_timestamp_;
+
   base::CancelableTaskTracker cache_query_task_tracker_;
 
   // A list of observers for this service.
   base::ObserverList<Observer> observers_;
 
   VisitDeletionObserver visit_deletion_observer_;
+
+  // A task runner to run all the post-processing tasks on.
+  scoped_refptr<base::SequencedTaskRunner> post_processing_task_runner_;
 
   // Weak pointers issued from this factory never get invalidated before the
   // service is destroyed.

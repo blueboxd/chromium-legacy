@@ -136,9 +136,9 @@ component("gtk") {
       "x/gtk_ui_platform_x11.h",
     ]
     deps += [
+      "//ui/base/x",
       "//ui/events/platform/x11",
       "//ui/gfx/x",
-      "//ui/platform_window/x11",
     ]
   }
 
@@ -150,7 +150,5 @@ component("gtk") {
   }
 
   # TODO: This should be removed.
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
+  deps += [ "//ui/ozone" ]
 }

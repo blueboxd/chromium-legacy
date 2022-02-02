@@ -12,11 +12,13 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/debugger/viz_debugger.h"
+#include "components/viz/service/performance_hint/hint_session.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/gpu_init.h"
@@ -25,7 +27,6 @@
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "skia/ext/legacy_display_globals.h"
-#include "ui/gfx/rendering_pipeline.h"
 
 namespace {
 
@@ -88,15 +89,6 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
         viz_compositor_thread_runner_->task_runner());
   }
 
-  if (features::IsAdpfEnabled()) {
-    gpu_pipeline_ = gfx::RenderingPipeline::CreateGpu();
-    gpu_pipeline_->AddSequenceManagerThread(
-        viz_compositor_thread_runner_->thread_id(),
-        viz_compositor_thread_runner_->task_runner());
-    gpu_pipeline_->AddSequenceManagerThread(
-        base::PlatformThread::CurrentId(), base::ThreadTaskRunnerHandle::Get());
-  }
-
   if (!gpu_init_->gpu_info().in_process_gpu && dependencies_.ukm_recorder) {
     // NOTE: If the GPU is running in the browser process, we can use the
     // browser's UKMRecorder.
@@ -111,6 +103,41 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_init_->gpu_feature_info_for_hardware_gpu(),
       gpu_init_->gpu_extra_info(), gpu_init_->vulkan_implementation(),
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
+
+  {
+    // Gather the thread IDs of viz, display GPU, and IO for performance hint.
+    // These are the viz threads that are on the critical path of all frames.
+    base::flat_set<base::PlatformThreadId> gpu_process_thread_ids;
+
+    CompositorGpuThread* compositor_gpu_thread =
+        gpu_service_->compositor_gpu_thread();
+    gpu_process_thread_ids.insert(compositor_gpu_thread
+                                      ? compositor_gpu_thread->GetThreadId()
+                                      : base::PlatformThread::CurrentId());
+    gpu_process_thread_ids.insert(viz_compositor_thread_runner_->thread_id());
+
+    base::WaitableEvent event;
+    base::PlatformThreadId io_thread_id = base::kInvalidThreadId;
+    io_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](base::PlatformThreadId* io_thread_id,
+                          base::WaitableEvent* event) {
+                         *io_thread_id = base::PlatformThread::CurrentId();
+                         event->Signal();
+                       },
+                       &io_thread_id, &event));
+    event.Wait();
+    gpu_process_thread_ids.insert(io_thread_id);
+
+    // Written this way so finch only considers the experiment active on device
+    // which supports hint session.
+    auto hint_session_factory =
+        HintSessionFactory::Create(std::move(gpu_process_thread_ids));
+    if (hint_session_factory && features::IsAdpfEnabled()) {
+      hint_session_factory_ = std::move(hint_session_factory);
+    }
+  }
+
   VizDebugger::GetInstance();
 }
 
@@ -212,6 +239,13 @@ void VizMainImpl::CreateInfoCollectionGpuService(
 }
 #endif
 
+#if defined(OS_ANDROID)
+void VizMainImpl::SetHostProcessId(int32_t pid) {
+  if (gpu_service_)
+    gpu_service_->SetHostProcessId(pid);
+}
+#endif
+
 void VizMainImpl::CreateFrameSinkManager(
     mojom::FrameSinkManagerParamsPtr params) {
   DCHECK(viz_compositor_thread_runner_);
@@ -258,7 +292,7 @@ void VizMainImpl::CreateFrameSinkManagerInternal(
 
   viz_compositor_thread_runner_->CreateFrameSinkManager(
       std::move(params), task_executor_.get(), gpu_service_.get(),
-      gpu_pipeline_.get());
+      hint_session_factory_.get());
 }
 
 #if BUILDFLAG(USE_VIZ_DEBUGGER)

@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
@@ -114,6 +113,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
   const gfx::PointF& event_location_in_gesture_target() {
     return event_location_in_gesture_target_;
   }
+  bool in_gesture_drag() { return in_gesture_drag_; }
 
   // Returns true if there is a drag in progress.
   bool is_drag_in_progress() const { return window_resizer_.get() != nullptr; }

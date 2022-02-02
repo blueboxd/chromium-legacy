@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_CORRUPTED_EXTENSION_REINSTALLER_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "extensions/common/extension_id.h"
@@ -37,6 +38,10 @@ class CorruptedExtensionReinstaller {
   // Notifies this reinstaller about an extension corruption.
   void NotifyExtensionDisabledDueToCorruption();
 
+  // Called when ExtensionSystem is shutting down. Cancels already-scheduled
+  // attempts, if any, for a smoother shutdown.
+  void Shutdown();
+
   // For tests, overrides the default action to take to initiate reinstalls.
   static void set_reinstall_action_for_test(ReinstallCallback* action);
 
@@ -45,7 +50,7 @@ class CorruptedExtensionReinstaller {
   base::TimeDelta GetNextFireDelay();
   void ScheduleNextReinstallAttempt();
 
-  content::BrowserContext* const context_ = nullptr;
+  const raw_ptr<content::BrowserContext> context_ = nullptr;
   net::BackoffEntry backoff_entry_;
   // Whether or not there is a pending PostTask to Fire().
   bool scheduled_fire_pending_ = false;

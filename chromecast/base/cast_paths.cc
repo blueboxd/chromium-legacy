@@ -5,7 +5,6 @@
 #include "chromecast/base/cast_paths.h"
 
 #include "base/base_paths.h"
-#include "base/base_paths_fuchsia.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -13,6 +12,10 @@
 #include "build/build_config.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "third_party/widevine/cdm/buildflags.h"
+
+#if defined(OS_FUCHSIA)
+#include "base/fuchsia/file_utils.h"
+#endif
 
 #if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
@@ -25,8 +28,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_CAST_HOME: {
 #if defined(OS_FUCHSIA)
       // On Fuchsia, use the component's local /data directory.
-      base::FilePath home;
-      CHECK(base::PathService::Get(base::DIR_APP_DATA, &home));
+      base::FilePath home(base::kPersistedDataDirectoryPath);
 #else
       base::FilePath home = base::GetHomeDir();
 #endif
@@ -86,10 +88,24 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_BUNDLED_WIDEVINE_CDM: {
       base::FilePath base_dir;
       CHECK(base::PathService::Get(base::DIR_MODULE, &base_dir));
+#if !BUILDFLAG(IS_CAST_DESKTOP_BUILD)
+      base_dir = base_dir.AppendASCII("lib");
+#endif
       *result = base_dir.AppendASCII(kWidevineCdmBaseDirectory);
       return true;
     }
 #endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM)
+    case FILE_CAST_SERVICE_CONFIG: {
+      base::FilePath data_dir;
+#if defined(OS_ANDROID)
+      CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_dir));
+      *result = data_dir.Append("cast_service.conf");
+#else
+      CHECK(base::PathService::Get(DIR_CAST_HOME, &data_dir));
+      *result = data_dir.Append(".cast_service.conf");
+#endif  // defined(OS_ANDROID)
+      return true;
+    }
   }
   return false;
 }

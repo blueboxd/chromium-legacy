@@ -183,9 +183,9 @@ export function getUserActionHistogramNameForAppType_(appType) {
   switch (appType) {
     case AppType.kArc:
       return 'AppManagement.AppDetailViews.ArcApp';
-    case AppType.kExtension:
+    case AppType.kChromeApp:
     case AppType.kStandaloneBrowser:
-    case AppType.kStandaloneBrowserExtension:
+    case AppType.kStandaloneBrowserChromeApp:
       // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
       // Lacros-hosted chrome-apps.
       return 'AppManagement.AppDetailViews.ChromeApp';

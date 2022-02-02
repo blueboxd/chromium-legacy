@@ -22,7 +22,6 @@
 #include "services/device/public/cpp/geolocation/geoposition.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
-#include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "ui/display/mojom/screen_orientation.mojom.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 
@@ -130,13 +129,7 @@ Response EmulationHandler::SetIdleOverride(bool is_user_active,
                                            bool is_screen_unlocked) {
   if (!host_)
     return Response::InternalError();
-  blink::mojom::UserIdleState user_state =
-      is_user_active ? blink::mojom::UserIdleState::kActive
-                     : blink::mojom::UserIdleState::kIdle;
-  blink::mojom::ScreenIdleState screen_idle_state =
-      is_screen_unlocked ? blink::mojom::ScreenIdleState::kUnlocked
-                         : blink::mojom::ScreenIdleState::kLocked;
-  host_->GetIdleManager()->SetIdleOverride(user_state, screen_idle_state);
+  host_->GetIdleManager()->SetIdleOverride(is_user_active, is_screen_unlocked);
   return Response::Success();
 }
 
@@ -147,8 +140,9 @@ Response EmulationHandler::ClearIdleOverride() {
   return Response::Success();
 }
 
-Response EmulationHandler::SetGeolocationOverride(
-    Maybe<double> latitude, Maybe<double> longitude, Maybe<double> accuracy) {
+Response EmulationHandler::SetGeolocationOverride(Maybe<double> latitude,
+                                                  Maybe<double> longitude,
+                                                  Maybe<double> accuracy) {
   if (!host_)
     return Response::InternalError();
 
@@ -257,8 +251,8 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   int orientationAngle = 0;
   if (screen_orientation.isJust()) {
     Emulation::ScreenOrientation* orientation = screen_orientation.fromJust();
-    orientationType = WebScreenOrientationTypeFromString(
-        orientation->GetType());
+    orientationType =
+        WebScreenOrientationTypeFromString(orientation->GetType());
     if (orientationType == display::mojom::ScreenOrientation::kUndefined)
       return Response::InvalidParams("Invalid screen orientation type value");
     orientationAngle = orientation->GetAngle();
@@ -439,13 +433,31 @@ Response EmulationHandler::SetUserAgentOverride(
 
       if (!ValidateClientHintString(bv->GetVersion()))
         return Response::InvalidParams("Invalid brand version string");
-      out_bv.major_version = bv->GetVersion();
+      out_bv.version = bv->GetVersion();
 
       new_ua_metadata.brand_version_list.push_back(std::move(out_bv));
     }
   } else {
     new_ua_metadata.brand_version_list =
         std::move(default_ua_metadata.brand_version_list);
+  }
+
+  if (ua_metadata->HasFullVersionList()) {
+    for (const auto& bv : *ua_metadata->GetFullVersionList(nullptr)) {
+      blink::UserAgentBrandVersion out_bv;
+      if (!ValidateClientHintString(bv->GetBrand()))
+        return Response::InvalidParams("Invalid brand string");
+      out_bv.brand = bv->GetBrand();
+
+      if (!ValidateClientHintString(bv->GetVersion()))
+        return Response::InvalidParams("Invalid brand version string");
+      out_bv.version = bv->GetVersion();
+
+      new_ua_metadata.brand_full_version_list.push_back(std::move(out_bv));
+    }
+  } else {
+    new_ua_metadata.brand_full_version_list =
+        std::move(default_ua_metadata.brand_full_version_list);
   }
 
   if (ua_metadata->HasFullVersion()) {

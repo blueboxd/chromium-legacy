@@ -214,6 +214,8 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
 
   metadata.brand_version_list.emplace_back("content_shell",
                                            CONTENT_SHELL_MAJOR_VERSION);
+  metadata.brand_full_version_list.emplace_back("content_shell",
+                                                CONTENT_SHELL_VERSION);
   metadata.full_version = CONTENT_SHELL_VERSION;
   metadata.platform = "Unknown";
   metadata.architecture = BuildCpuInfo();
@@ -248,8 +250,9 @@ ShellContentBrowserClient::~ShellContentBrowserClient() {
 
 std::unique_ptr<BrowserMainParts>
 ShellContentBrowserClient::CreateBrowserMainParts(
-    const MainFunctionParams& parameters) {
-  auto browser_main_parts = std::make_unique<ShellBrowserMainParts>(parameters);
+    MainFunctionParams parameters) {
+  auto browser_main_parts =
+      std::make_unique<ShellBrowserMainParts>(std::move(parameters));
 
   shell_browser_main_parts_ = browser_main_parts.get();
 
@@ -356,7 +359,7 @@ base::OnceClosure ShellContentBrowserClient::SelectClientCertificate(
 }
 
 SpeechRecognitionManagerDelegate*
-    ShellContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
+ShellContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new ShellSpeechRecognitionManagerDelegate();
 }
 
@@ -544,7 +547,7 @@ ShellBrowserContext* ShellContentBrowserClient::browser_context() {
 }
 
 ShellBrowserContext*
-    ShellContentBrowserClient::off_the_record_browser_context() {
+ShellContentBrowserClient::off_the_record_browser_context() {
   return shell_browser_main_parts_->off_the_record_browser_context();
 }
 

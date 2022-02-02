@@ -9,10 +9,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
-#include "content/common/content_export.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
@@ -24,7 +22,7 @@ namespace content {
 
 class RendererPpapiHost;
 
-class CONTENT_EXPORT PepperAudioEncoderHost
+class PepperAudioEncoderHost
     : public ppapi::host::ResourceHost,
       public ppapi::MediaStreamBufferManager::Delegate {
  public:

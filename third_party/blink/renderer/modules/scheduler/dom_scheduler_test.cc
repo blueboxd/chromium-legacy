@@ -6,7 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -14,6 +13,7 @@
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 namespace blink {
@@ -30,8 +30,8 @@ class DOMSchedulerTest : public PageTestBase {
   }
 
   void ExecuteScript(const char* script) {
-    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(script))
-        ->RunScript(GetFrame().DomWindow());
+    ClassicScript::CreateUnspecifiedScript(script)->RunScript(
+        GetFrame().DomWindow());
   }
 
   wtf_size_t GetTrackedSignalCount() const {

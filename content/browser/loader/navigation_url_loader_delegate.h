@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -77,8 +76,7 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
   // |navigation_data| is passed to the NavigationHandle.
   // |subresource_loader_params| is used in the network service only for passing
   // necessary info to create a custom subresource loader in the renderer
-  // process if the navigated context is controlled by a request interceptor
-  // like AppCache or ServiceWorker.
+  // process if the navigated context is controlled by a request interceptor.
   //
   // |is_download| is true if the request must be downloaded, if it isn't
   // disallowed.

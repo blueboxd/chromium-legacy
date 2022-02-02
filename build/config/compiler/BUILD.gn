@@ -182,11 +182,6 @@ declare_args() {
 }
 
 declare_args() {
-  # C++11 may not be an option if Android test infrastructure is used.
-  use_cxx11_on_android = use_cxx11
-}
-
-declare_args() {
   # Set to true to use icf, Identical Code Folding.
   #
   # icf=all is broken in older golds, see
@@ -297,6 +292,7 @@ config("compiler") {
   configs += [
     # See the definitions below.
     ":clang_revision",
+    ":rustc_revision",
     ":compiler_cpu_abi",
     ":compiler_codegen",
 #   ":compiler_deterministic",
@@ -494,8 +490,7 @@ config("compiler") {
     #}
   }
 
-  # TODO(crbug.com/1253924): Enable on apple/lld for arm64 too once it works.
-  if (use_icf && (!is_apple || (use_lld && current_cpu != "arm64"))) {
+  if (use_icf && (!is_apple || use_lld)) {
     ldflags += [ "-Wl,--icf=all" ]
   }
 
@@ -539,7 +534,7 @@ config("compiler") {
     ldflags += [ "-Wl,-z,keep-text-section-prefix" ]
   }
 
-  if (is_clang && !is_nacl && !use_xcode_clang && current_os != "zos") {
+  if (is_clang && !is_nacl && current_os != "zos") {
     cflags += [ "-fcrash-diagnostics-dir=" + clang_diagnostic_dir ]
 
     # TODO(hans): Remove this once Clang generates better optimized debug info
@@ -555,18 +550,19 @@ config("compiler") {
         ldflags += [ "-Wl,-mllvm,-instcombine-lower-dbg-declare=0" ]
       }
     }
+
+    # TODO(crbug.com/1235145): Investigate why/if this should be needed.
+    if (is_win) {
+      cflags += [ "/clang:-ffp-contract=off" ]
+    } else {
+      cflags += [ "-ffp-contract=off" ]
+    }
   }
 
   # C11/C++11 compiler flags setup.
   # ---------------------------
   if (is_linux || is_chromeos || is_android || (is_nacl && is_clang) ||
       current_os == "aix") {
-    if (target_os == "android") {
-      cxx11_override = use_cxx11_on_android
-    } else {
-      cxx11_override = use_cxx11
-    }
-
     if (is_clang) {
       standard_prefix = "c"
 
@@ -590,46 +586,57 @@ config("compiler") {
     }
 
     cflags_c += [ "-std=${standard_prefix}11" ]
-    if (cxx11_override) {
-      # Override Chromium's default for projects that wish to stay on C++11.
-      cflags_cc += [ "-std=${standard_prefix}++11" ]
-    } else {
-      cflags_cc += [ "-std=${standard_prefix}++14" ]
-    }
-  } else if (!is_win && !is_nacl) {
-    if (target_os == "android") {
-      cxx11_override = use_cxx11_on_android
-    } else {
-      cxx11_override = use_cxx11
-    }
 
+    # TODO(https://crbug.com/1273966): Use C++17 with is_cfi and is_linux once
+    # CFI works with -std=c++17.
+    if ((is_nacl && !is_nacl_saigo) || is_cfi || is_linux) {
+      # This is for the pnacl_newlib toolchain. It's only used to build
+      # a few independent ppapi test files that don't pull in any other
+      # dependencies.
+      cflags_cc += [ "-std=${standard_prefix}++14" ]
+      if (is_clang) {
+        cflags_cc += [ "-fno-trigraphs" ]
+      }
+    } else {
+      cflags_cc += [ "-std=${standard_prefix}++17" ]
+    }
+  } else if (is_win) {
+    cflags_cc += [ "/std:c++17" ]
+  } else if (!is_nacl) {
     # TODO(mcgrathr) - the NaCl GCC toolchain doesn't support either gnu11/gnu++11
     # or c11/c++11; we technically don't need this toolchain any more, but there
     # are still a few buildbots using it, so until those are turned off
     # we need the !is_nacl clause and the (is_nacl && is_clang) clause, above.
     cflags_c += [ "-std=c11" ]
-    if (cxx11_override) {
-      cflags_cc += [ "-std=c++11" ]
-    } else {
-      cflags_cc += [ "-std=c++14" ]
-    }
+    cflags_cc += [ "-std=c++17" ]
   }
 
-  # C++17 removes trigraph support, so preemptively disable trigraphs. This is
-  # especially useful given the collision with ecmascript's logical assignment
-  # operators: https://github.com/tc39/proposal-logical-assignment
   if (is_clang && current_os != "zos") {
-    # clang-cl disables trigraphs by default
-    if (!is_win) {
-      # The gnu variants of C++11 and C++14 already disable trigraph support,
-      # but when building with clang, we use -std=c++11 / -std=c++14, which
-      # enables trigraph support: override that here.
-      cflags_cc += [ "-fno-trigraphs" ]
-    }
-
-    # Don't warn that trigraphs are ignored, since trigraphs are disabled
-    # anyway.
+    # C++17 removes trigraph support, but clang still warns that it ignores
+    # them when seeing them.  Don't.
     cflags_cc += [ "-Wno-trigraphs" ]
+  }
+
+  # Before C++17, an `alignas(N)` type would be N-aligned on the stack,
+  # but heap allocation would just return something aligned to whatever the
+  # default allocator happens to return. Starting with C++17, operator new
+  # called on aligned types with N > __STDCPP_DEFAULT_NEW_ALIGNMENT__ will
+  # call a special overload that hands in the desired alignment, and that will
+  # honor the alignas even for memory on the heap.
+  # However, that requires that operator new overload to exist. At least on
+  # macOS and iOS, they are in libc++abi, and system libc++abi has them as of
+  # "macOS 10.12, iOS 10.0" (https://reviews.llvm.org/D112921#3128089).
+  # However, we do statically link libc++abi, so maybe just explicitly passing
+  # -faligned-allocation is enough to make things work.
+  # For now, explicitly disable this feature though to keep the C++14 aligned
+  # allocation behavior (and do that on all platforms so that we have
+  # consistent behavior across platforms), to make the change more incremental.
+  if (!is_nacl || is_nacl_saigo) {
+    if (is_win) {
+      cflags_cc += [ "/Zc:alignedNew-" ]
+    } else {
+      cflags_cc += [ "-fno-aligned-new" ]
+    }
   }
 
   if (is_mac) {
@@ -781,8 +788,8 @@ config("compiler") {
   # https://crbug.com/847724).
   # TODO(crbug/1052397): Remove is_chromeos_lacros once lacros-chrome switches
   # to target_os="chromeos".
-  if (is_clang && !is_nacl && target_os != "chromeos" && !use_xcode_clang &&
-      !is_chromeos_lacros && (is_win || use_custom_libcxx)) {
+  if (is_clang && !is_nacl && target_os != "chromeos" && !is_chromeos_lacros &&
+      (is_win || use_custom_libcxx)) {
     cflags += [ "-fcomplete-member-pointers" ]
   }
 
@@ -1150,33 +1157,6 @@ config("compiler_cpu_abi") {
         ]
         ldflags += [ "-mips64r2" ]
       }
-    } else if (current_cpu == "pnacl" && is_nacl_nonsfi) {
-      if (target_cpu == "x86" || target_cpu == "x64") {
-        cflags += [
-          "-arch",
-          "x86-32-nonsfi",
-          "--pnacl-bias=x86-32-nonsfi",
-          "--target=i686-unknown-nacl",
-        ]
-        ldflags += [
-          "-arch",
-          "x86-32-nonsfi",
-          "--target=i686-unknown-nacl",
-        ]
-      } else if (target_cpu == "arm") {
-        cflags += [
-          "-arch",
-          "arm-nonsfi",
-          "-mfloat-abi=hard",
-          "--pnacl-bias=arm-nonsfi",
-          "--target=armv7-unknown-nacl-gnueabihf",
-        ]
-        ldflags += [
-          "-arch",
-          "arm-nonsfi",
-          "--target=armv7-unknown-nacl-gnueabihf",
-        ]
-      }
     } else if (current_cpu == "ppc64") {
       if (current_os == "aix") {
         cflags += [ "-maix64" ]
@@ -1293,7 +1273,7 @@ config("compiler_deterministic") {
   # Tells the compiler not to use absolute paths when passing the default
   # paths to the tools it invokes. We don't want this because we don't
   # really need it and it can mess up the goma cache entries.
-  if (is_clang && !is_nacl) {
+  if (is_clang && (!is_nacl || is_nacl_saigo)) {
     cflags += [ "-no-canonical-prefixes" ]
 
     # Same for links: Let the compiler driver invoke the linker
@@ -1326,6 +1306,21 @@ config("clang_revision") {
     # and build system rebuild things when their commandline changes). Nothing
     # should ever read this define.
     defines = [ "CR_CLANG_REVISION=\"$clang_revision\"" ]
+  }
+}
+
+config("rustc_revision") {
+  if (enable_rust && defined(rustc_version)) {
+    # Similar to the above config, this is here so that all files get
+    # recompiled after a rustc roll. Nothing should ever read this cfg.
+    # $rustc_version is a gn arg set within //build/config/rust.gni
+    # so that users using a custom Rust toolchain can override it.
+    # Its accuracy is checked in //build/rust/std:find_stdlib, which
+    # most of our Rust targets depend upon.
+    rustflags = [
+      "--cfg",
+      "rustc_version=\"$rustc_version\"",
+    ]
   }
 }
 
@@ -1508,8 +1503,6 @@ config("default_warnings") {
       "-Wno-logical-op-parentheses",
     ]
 
-    # use_xcode_clang only refers to the iOS toolchain, host binaries use
-    # chromium's clang always.
     if (!is_nacl || is_nacl_saigo) {
       if (is_win) {
         # TODO(thakis): https://crbug.com/617318
@@ -1520,35 +1513,31 @@ config("default_warnings") {
         cflags += [ "-Wno-null-pointer-subtraction" ]
       }
 
-      if (current_toolchain == host_toolchain || !use_xcode_clang) {
-        # Flags Xcode 9.2 (Clang clang-900.0.39.2) does not recognize.
-        cflags += [
-          "-Wenum-compare-conditional",
+      cflags += [
+        "-Wenum-compare-conditional",
 
-          # An ABI compat warning we don't care about, https://crbug.com/1102157
-          # TODO(thakis): Push this to the (few) targets that need it,
-          # instead of having a global flag.
-          "-Wno-psabi",
+        # An ABI compat warning we don't care about, https://crbug.com/1102157
+        # TODO(thakis): Push this to the (few) targets that need it,
+        # instead of having a global flag.
+        "-Wno-psabi",
 
-          # Ignore warnings about MSVC optimization pragmas.
-          # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
-          "-Wno-ignored-pragma-optimize",
-        ]
+        # Ignore warnings about MSVC optimization pragmas.
+        # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
+        "-Wno-ignored-pragma-optimize",
+      ]
 
-        if (is_chromeos ||
-            default_toolchain == "//build/toolchain/cros:target") {
-          # TODO(https://crbug.com/1016945): Re-enable once ChromeOS toolchain is up to date
-          cflags += [ "-Wno-builtin-assume-aligned-alignment" ]
-        }
+      if (is_chromeos || default_toolchain == "//build/toolchain/cros:target") {
+        # TODO(https://crbug.com/1016945): Re-enable once ChromeOS toolchain is up to date
+        cflags += [ "-Wno-builtin-assume-aligned-alignment" ]
+      }
 
-        if (is_fuchsia) {
-          # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
-          cflags += [ "-Wno-deprecated-copy" ]
-        }
+      if (is_fuchsia) {
+        # TODO(https://bugs.chromium.org/p/fuchsia/issues/detail?id=77383)
+        cflags += [ "-Wno-deprecated-copy" ]
+      }
 
-        if (enable_wmax_tokens) {
-          cflags += [ "-Wmax-tokens" ]
-        }
+      if (enable_wmax_tokens) {
+        cflags += [ "-Wmax-tokens" ]
       }
     }
   }
@@ -1619,12 +1608,12 @@ config("chromium_code") {
 
     # TODO(thakis): Enable this more often, https://crbug.com/346399
     # use_libfuzzer: https://crbug.com/1063180
-    if (!is_nacl && !use_libfuzzer) {
+    if ((!is_nacl || is_nacl_saigo) && !use_libfuzzer) {
 #     cflags += [ "-Wunreachable-code-aggressive" ]
     }
 
     # Thread safety analysis is broken under nacl: https://crbug.com/982423.
-    if (!is_nacl) {
+    if (!is_nacl || is_nacl_saigo) {
       cflags += [
         # Thread safety analysis. See base/thread_annotations.h and
         # https://clang.llvm.org/docs/ThreadSafetyAnalysis.html
@@ -1645,7 +1634,10 @@ config("chromium_code") {
     }
   }
 
-  configs = [ ":default_warnings" ]
+  configs = [
+    ":default_warnings",
+    ":noshadowing",
+  ]
 }
 
 config("no_chromium_code") {
@@ -1685,7 +1677,7 @@ config("no_chromium_code") {
       # third-party libraries.
       "-Wno-c++11-narrowing",
     ]
-    if (!is_nacl && (current_toolchain == host_toolchain || !use_xcode_clang)) {
+    if (!is_nacl) {
       cflags += [
         # Disabled for similar reasons as -Wunused-variable.
         "-Wno-unused-but-set-variable",
@@ -1695,6 +1687,38 @@ config("no_chromium_code") {
       ]
     }
   }
+
+  # Rust warnings to ignore in third party dependencies. This list is
+  # built from those warnings which are currently in our various Rust
+  # third party dependencies, but aren't serious (they're largely
+  # stylistic).
+  # An alternative policy would be to suppress all warnings in third
+  # party Rust code using "--cap-lints allow". This is what cargo does
+  # for code outside your own crate, so is worth considering if it
+  # turns out that maintaining this list is onerous.
+  # (https://doc.rust-lang.org/rustc/lints/levels.html#capping-lints)
+  rustflags = [
+    "-A",
+    "unused_parens",
+    "-A",
+    "bare_trait_objects",
+    "-A",
+    "non_fmt_panics",
+    "-A",
+    "redundant_semicolons",
+    "-A",
+    "unused_parens",
+    "-A",
+    "anonymous_parameters",
+    "-A",
+    "bare_trait_objects",
+    "-A",
+    "deprecated",
+    "-A",
+    "non_camel_case_types",
+    "-A",
+    "unused_imports",
+  ]
 
   configs = [ ":default_warnings" ]
 }
@@ -1706,7 +1730,7 @@ config("no_chromium_code") {
 config("noshadowing") {
   # This flag has to be disabled for nacl because the nacl compiler is too
   # strict about shadowing.
-  if (is_clang && !is_nacl) {
+  if (is_clang && (!is_nacl || is_nacl_saigo)) {
     cflags = [ "-Wshadow" ]
   }
 }
@@ -1922,7 +1946,7 @@ if (is_win) {
       "-fdata-sections",
       "-ffunction-sections",
     ]
-    if (!is_nacl && is_clang) {
+    if ((!is_nacl || is_nacl_saigo) && is_clang) {
       # We don't care about unique section names, this makes object files a bit
       # smaller.
       common_optimize_on_cflags += [ "-fno-unique-section-names" ]
@@ -1976,10 +2000,8 @@ config("optimize") {
       # optimization level will be decided based on the profiling data.
       cflags = [ "/O2" ] + common_optimize_on_cflags + [ "/Oi" ]
     }
-  } else if (optimize_for_size && !is_nacl) {
+  } else if (optimize_for_size) {
     # Favor size over speed.
-    # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
-    # guard above.
     if (is_clang) {
       cflags = [ "-Oz" ] + common_optimize_on_cflags
     } else {
@@ -2271,19 +2293,18 @@ config("symbols") {
       cflags += [ "-g2" ]
     }
 
-    # Since only one of the build options -gdwarf-aranges and -fembed-bitcode
-    # can be specified, -gdwarf-aranges is not given under the condition that
-    # -fembed-bitcode is specified.
-    if (!(is_ios && use_xcode_clang && enable_ios_bitcode)) {
-      if (!is_nacl && is_clang && !is_tsan && !is_asan) {
-        # gcc generates dwarf-aranges by default on -g1 and -g2. On clang it has
-        # to be manually enabled.
-        #
-        # It is skipped in tsan and asan because enabling it causes some
-        # formatting changes in the output which would require fixing bunches
-        # of expectation regexps.
-        cflags += [ "-gdwarf-aranges" ]
-      }
+    if (!is_nacl && is_clang && !is_tsan && !is_asan &&
+        !(is_ios && enable_ios_bitcode)) {
+      # gcc generates dwarf-aranges by default on -g1 and -g2. On clang it has
+      # to be manually enabled.
+      #
+      # It is skipped in tsan and asan because enabling it causes some
+      # formatting changes in the output which would require fixing bunches
+      # of expectation regexps.
+      #
+      # It is skipped when generating bitcode is enabled as -gdwars-aranges
+      # is incompatible with -fembed-bitcode/-fembed-bitcode-marker.
+      cflags += [ "-gdwarf-aranges" ]
     }
 
     if (is_apple) {
@@ -2326,7 +2347,7 @@ config("symbols") {
     }
   }
 
-  if (is_clang && !is_nacl && !use_xcode_clang && current_os != "zos") {
+  if (is_clang && (!is_nacl || is_nacl_saigo) && current_os != "zos") {
     if (is_apple) {
       # TODO(https://crbug.com/1050118): Investigate missing debug info on mac.
       # Make sure we don't use constructor homing on mac.
@@ -2393,11 +2414,10 @@ config("minimal_symbols") {
       cflags += [ "-g1" ]
     }
 
-    if (!(is_ios && use_xcode_clang && enable_ios_bitcode)) {
-      if (!is_nacl && is_clang && !is_tsan && !is_asan) {
-        # See comment for -gdwarf-aranges in config("symbols").
-        cflags += [ "-gdwarf-aranges" ]
-      }
+    if (!is_nacl && is_clang && !is_tsan && !is_asan &&
+        !(is_ios && enable_ios_bitcode)) {
+      # See comment for -gdwarf-aranges in config("symbols").
+      cflags += [ "-gdwarf-aranges" ]
     }
 
     ldflags = []

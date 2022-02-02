@@ -5,7 +5,6 @@
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_chromeos_version_info.h"
 #include "chrome/browser/ash/login/login_wizard.h"
@@ -56,15 +55,17 @@ class HIDDetectionScreenChromeboxTest : public OobeBaseTest {
   ~HIDDetectionScreenChromeboxTest() override = default;
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(WizardController::default_controller());
+    if (HIDDetectionScreen::CanShowScreen()) {
+      ASSERT_TRUE(WizardController::default_controller());
 
-    hid_detection_screen_ = static_cast<HIDDetectionScreen*>(
-        WizardController::default_controller()->GetScreen(
-            HIDDetectionView::kScreenId));
-    ASSERT_TRUE(hid_detection_screen_);
-    ASSERT_TRUE(hid_detection_screen_->view_);
+      hid_detection_screen_ = static_cast<HIDDetectionScreen*>(
+          WizardController::default_controller()->GetScreen(
+              HIDDetectionView::kScreenId));
+      ASSERT_TRUE(hid_detection_screen_);
+      ASSERT_TRUE(hid_detection_screen_->view_);
 
-    hid_detection_screen()->SetAdapterInitialPoweredForTesting(false);
+      hid_detection_screen()->SetAdapterInitialPoweredForTesting(false);
+    }
     OobeBaseTest::SetUpOnMainThread();
   }
 
@@ -286,7 +287,8 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenDisabledAfterRestartTest,
   OobeScreenWaiter(chromeos::WelcomeView::kScreenId).Wait();
 
   EXPECT_TRUE(StartupUtils::IsHIDDetectionScreenDisabledForTests());
-  EXPECT_EQ(GetExitResult(), HIDDetectionScreen::Result::SKIPPED_FOR_TESTS);
+  EXPECT_FALSE(WizardController::default_controller()->HasScreen(
+      HIDDetectionView::kScreenId));
 }
 
 IN_PROC_BROWSER_TEST_F(HIDDetectionScreenDisabledAfterRestartTest,
@@ -294,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(HIDDetectionScreenDisabledAfterRestartTest,
   OobeScreenWaiter(chromeos::WelcomeView::kScreenId).Wait();
   // The pref should persist restart.
   EXPECT_TRUE(StartupUtils::IsHIDDetectionScreenDisabledForTests());
-  EXPECT_EQ(GetExitResult(), HIDDetectionScreen::Result::SKIPPED_FOR_TESTS);
+  EXPECT_FALSE(WizardController::default_controller()->HasScreen(
+      HIDDetectionView::kScreenId));
 }
 
 class HIDDetectionScreenChromebookTest : public OobeBaseTest {

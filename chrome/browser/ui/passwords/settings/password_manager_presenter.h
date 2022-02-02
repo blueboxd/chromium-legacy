@@ -14,7 +14,8 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
@@ -167,6 +168,8 @@ class PasswordManagerPresenter
       std::vector<std::unique_ptr<password_manager::PasswordForm>> results)
       override;
 
+  void CancelAllRequests();
+
   // Sets the password and exception list of the UI view.
   void SetPasswordList();
   void SetPasswordExceptionList();
@@ -185,10 +188,12 @@ class PasswordManagerPresenter
   BooleanPrefMember show_passwords_;
 
   // UI view that owns this presenter.
-  PasswordUIView* password_view_;
+  raw_ptr<PasswordUIView> password_view_;
 
   // Contains the helpers currently executing moving tasks.
   MovePasswordToAccountStoreHelperList move_to_account_helpers_;
+
+  base::WeakPtrFactory<PasswordManagerPresenter> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_SETTINGS_PASSWORD_MANAGER_PRESENTER_H_

@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
@@ -141,7 +141,7 @@ class DirectOutputSurface : public viz::OutputSurface {
     client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 
-  viz::OutputSurfaceClient* client_ = nullptr;
+  raw_ptr<viz::OutputSurfaceClient> client_ = nullptr;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_{this};
 };
 
@@ -366,8 +366,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   }
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source.get(), compositor->task_runner().get(),
-      display_output_surface->capabilities().max_frames_pending,
-      display_output_surface->capabilities().max_frames_pending_120hz);
+      display_output_surface->capabilities().pending_swap_params,
+      /*hint_session_factory=*/nullptr);
 
   data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, &debug_settings_,

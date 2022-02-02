@@ -15,14 +15,12 @@
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 enum class AppListConfigType;
-class AppListControllerImpl;
 class AppListItemList;
 class AppListItemListTest;
 class AppListItemObserver;
@@ -32,13 +30,9 @@ class AppListModel;
 // and action to be executed when the AppListItemView is activated.
 class APP_LIST_MODEL_EXPORT AppListItem {
  public:
-  using AppListItemMetadata = ash::AppListItemMetadata;
-
   explicit AppListItem(const std::string& id);
-
   AppListItem(const AppListItem&) = delete;
   AppListItem& operator=(const AppListItem&) = delete;
-
   virtual ~AppListItem();
 
   void SetIcon(AppListConfigType config_type, const gfx::ImageSkia& icon);
@@ -93,6 +87,10 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // a folder), or nullptr if the item was not found or this is not a container.
   virtual AppListItem* FindChildItem(const std::string& id);
 
+  // Returns the child item at the provided index in the child item list.
+  // Returns nullptr for non-folder items.
+  virtual AppListItem* GetChildItemAt(size_t index);
+
   // Returns the number of child items if it has any (e.g. is a folder) or 0.
   virtual size_t ChildItemCount() const;
 
@@ -112,11 +110,16 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   SkColor notification_badge_color() const { return metadata_->badge_color; }
 
+  bool is_new_install() const { return metadata_->is_new_install; }
+
+  // Sets the `is_new_install` metadata field and notifies observers.
+  void SetIsNewInstall(bool is_new_install);
+
+  AppStatus app_status() const { return metadata_->app_status; }
+
   void UpdateNotificationBadgeForTesting(bool has_badge) {
     UpdateNotificationBadge(has_badge);
   }
-
-  AppStatus app_status() const { return metadata_->app_status; }
 
   void UpdateAppStatusForTesting(AppStatus app_status) {
     metadata_->app_status = app_status;
@@ -126,7 +129,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   // Subclasses also have mutable access to the metadata ptr.
   AppListItemMetadata* metadata() { return metadata_.get(); }
 
-  friend class AppListControllerImpl;
+  friend class AppListBadgeController;
   friend class AppListItemList;
   friend class AppListItemListTest;
   friend class AppListModel;

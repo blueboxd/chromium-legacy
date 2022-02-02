@@ -8,15 +8,12 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace infobars {
 class ContentInfoBarManager;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace permissions {
@@ -68,10 +65,6 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
-  // Returns true if we should show the permission request as a mini-infobar.
-  static bool ShouldShowMiniInfobar(content::WebContents* web_contents,
-                                    ContentSettingsType type);
-
  private:
   GroupedPermissionInfoBarDelegate(
       const base::WeakPtr<permissions::PermissionPromptAndroid>&
@@ -87,7 +80,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
   base::WeakPtr<permissions::PermissionPromptAndroid> permission_prompt_;
-  infobars::ContentInfoBarManager* infobar_manager_;
+  raw_ptr<infobars::ContentInfoBarManager> infobar_manager_;
   bool details_expanded_;
 };
 

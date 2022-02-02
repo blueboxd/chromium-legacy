@@ -11,7 +11,6 @@
 #include "base/check.h"
 #include "base/cxx17_backports.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -21,7 +20,7 @@
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/events/event.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -224,4 +223,4 @@ void SessionLengthLimiter::UpdateLimit() {
                 &SessionLengthLimiter::Delegate::StopSession);
 }
 
-}  // namespace chromeos
+}  // namespace ash

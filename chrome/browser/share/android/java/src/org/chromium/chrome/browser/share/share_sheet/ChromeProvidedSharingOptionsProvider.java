@@ -9,6 +9,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
@@ -23,6 +25,7 @@ import org.chromium.chrome.browser.content_creation.reactions.LightweightReactio
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ChromeShareExtras.DetailedContentType;
 import org.chromium.chrome.browser.share.SaveBitmapDelegate;
 import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinator.LinkGeneration;
 import org.chromium.chrome.browser.share.long_screenshots.LongScreenshotsCoordinator;
@@ -131,6 +134,7 @@ public class ChromeProvidedSharingOptionsProvider {
     private static class FirstPartyOption {
         final Collection<Integer> mContentTypes;
         final Collection<Integer> mContentTypesToDisableFor;
+        final Collection<Integer> mDetailedContentTypesToDisableFor;
         final PropertyModel mPropertyModel;
         final boolean mDisableForMultiWindow;
 
@@ -141,13 +145,17 @@ public class ChromeProvidedSharingOptionsProvider {
          * @param model Property model for the first party option.
          * @param contentTypes Content types to trigger for.
          * @param contentTypesToDisableFor Content types to disable for.
+         * @param detailedContentTypesToDisableFor {@link DetailedContentType}s to disable for.
          * @param disableForMultiWindow If the feature should be disabled if in multi-window mode.
          */
         FirstPartyOption(PropertyModel model, Collection<Integer> contentTypes,
-                Collection<Integer> contentTypesToDisableFor, boolean disableForMultiWindow) {
+                Collection<Integer> contentTypesToDisableFor,
+                Collection<Integer> detailedContentTypesToDisableFor,
+                boolean disableForMultiWindow) {
             mPropertyModel = model;
             mContentTypes = contentTypes;
             mContentTypesToDisableFor = contentTypesToDisableFor;
+            mDetailedContentTypesToDisableFor = detailedContentTypesToDisableFor;
             mDisableForMultiWindow = disableForMultiWindow;
         }
     }
@@ -160,6 +168,7 @@ public class ChromeProvidedSharingOptionsProvider {
         private Callback<View> mOnClickCallback;
         private boolean mDisableForMultiWindow;
         private Integer[] mContentTypesToDisableFor;
+        private Integer[] mDetailedContentTypesToDisableFor;
         private final Integer[] mContentTypesInBuilder;
         private boolean mShowNewBadge;
         private boolean mHideBottomSheetContentOnTap = true;
@@ -167,6 +176,7 @@ public class ChromeProvidedSharingOptionsProvider {
         FirstPartyOptionBuilder(Integer... contentTypes) {
             mContentTypesInBuilder = contentTypes;
             mContentTypesToDisableFor = new Integer[] {};
+            mDetailedContentTypesToDisableFor = new Integer[] {};
         }
 
         FirstPartyOptionBuilder setIcon(int icon, int iconLabel) {
@@ -192,6 +202,12 @@ public class ChromeProvidedSharingOptionsProvider {
 
         FirstPartyOptionBuilder setContentTypesToDisableFor(Integer... contentTypesToDisableFor) {
             mContentTypesToDisableFor = contentTypesToDisableFor;
+            return this;
+        }
+
+        FirstPartyOptionBuilder setDetailedContentTypesToDisableFor(
+                Integer... detailedContentTypesToDisableFor) {
+            mDetailedContentTypesToDisableFor = detailedContentTypesToDisableFor;
             return this;
         }
 
@@ -226,7 +242,8 @@ public class ChromeProvidedSharingOptionsProvider {
                         callTargetChosenCallback();
                     }, mShowNewBadge);
             return new FirstPartyOption(model, Arrays.asList(mContentTypesInBuilder),
-                    Arrays.asList(mContentTypesToDisableFor), mDisableForMultiWindow);
+                    Arrays.asList(mContentTypesToDisableFor),
+                    Arrays.asList(mDetailedContentTypesToDisableFor), mDisableForMultiWindow);
         }
     }
 
@@ -235,15 +252,19 @@ public class ChromeProvidedSharingOptionsProvider {
      * contentTypes} being shared.
      *
      * @param contentTypes a {@link Set} of {@link ContentType}.
+     * @param detailedContentType the {@link DetailedContentType} being shared.
      * @param isMultiWindow if in multi-window mode.
      * @return a list of {@link PropertyModel}s.
      */
-    List<PropertyModel> getPropertyModels(Set<Integer> contentTypes, boolean isMultiWindow) {
+    List<PropertyModel> getPropertyModels(Set<Integer> contentTypes,
+            @DetailedContentType int detailedContentType, boolean isMultiWindow) {
         List<PropertyModel> propertyModels = new ArrayList<>();
         for (FirstPartyOption firstPartyOption : mOrderedFirstPartyOptions) {
             if (!Collections.disjoint(contentTypes, firstPartyOption.mContentTypes)
                     && Collections.disjoint(
                             contentTypes, firstPartyOption.mContentTypesToDisableFor)
+                    && !firstPartyOption.mDetailedContentTypesToDisableFor.contains(
+                            detailedContentType)
                     && !(isMultiWindow && firstPartyOption.mDisableForMultiWindow)) {
                 propertyModels.add(firstPartyOption.mPropertyModel);
             }
@@ -262,11 +283,13 @@ public class ChromeProvidedSharingOptionsProvider {
             mOrderedFirstPartyOptions.add(createWebNotesStylizeFirstPartyOption());
         }
         mOrderedFirstPartyOptions.add(createScreenshotFirstPartyOption());
+        // TODO(crbug.com/1250871): Long Screenshots on by default; supported on Android 7.0+.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT)
-                || enableAllUpcomingSharingFeatures) {
+                && Build.VERSION.SDK_INT >= VERSION_CODES.N) {
             mOrderedFirstPartyOptions.add(createLongScreenshotsFirstPartyOption());
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.LIGHTWEIGHT_REACTIONS)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.LIGHTWEIGHT_REACTIONS)
+                || enableAllUpcomingSharingFeatures) {
             mOrderedFirstPartyOptions.add(createLightweightReactionsFirstPartyOption());
         }
         mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
@@ -467,6 +490,7 @@ public class ChromeProvidedSharingOptionsProvider {
         return new FirstPartyOptionBuilder(ContentType.IMAGE, ContentType.IMAGE_AND_LINK)
                 .setIcon(R.drawable.save_to_device, R.string.sharing_save_image)
                 .setFeatureNameForMetrics("SharingHubAndroid.SaveImageSelected")
+                .setDetailedContentTypesToDisableFor(DetailedContentType.LIGHTWEIGHT_REACTION)
                 .setOnClickCallback((view) -> {
                     if (mShareParams.getFileUris().isEmpty()) return;
 

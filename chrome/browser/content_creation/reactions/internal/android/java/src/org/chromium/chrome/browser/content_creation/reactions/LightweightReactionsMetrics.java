@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.content_creation.reactions;
 
 import android.content.ComponentName;
+import android.content.res.Configuration;
 
 import androidx.annotation.IntDef;
 
@@ -39,6 +40,14 @@ public final class LightweightReactionsMetrics {
         int NUM_ENTRIES = 2;
     }
 
+    // Constants used to log the device orientation changes.
+    @IntDef({DeviceOrientation.LANDSCAPE, DeviceOrientation.PORTRAIT})
+    private @interface DeviceOrientation {
+        int LANDSCAPE = 0;
+        int PORTRAIT = 1;
+        int NUM_ENTRIES = 2;
+    }
+
     // The min and max values for the duration histograms, in ms. 10 ms is the minimum supported
     // value.
     private static final long DURATION_HISTOGRAM_MIN_TIME = 10;
@@ -63,7 +72,8 @@ public final class LightweightReactionsMetrics {
     public static void recordAssetsFetched(boolean success, long fetchDuration) {
         RecordHistogram.recordBooleanHistogram("LightweightReactions.AssetsFetchSuccess", success);
         RecordHistogram.recordMediumTimesHistogram(
-                "LightweightReactions.AssetsFetchDuration", fetchDuration);
+                "LightweightReactions.AssetsFetchDuration." + (success ? "Success" : "Failure"),
+                fetchDuration);
     }
 
     /**
@@ -190,6 +200,18 @@ public final class LightweightReactionsMetrics {
             RecordHistogram.recordCount100Histogram(
                     "LightweightReactions.Editing.TappedCancel.NumberOfMove", nbMove);
         }
+    }
+
+    /**
+     * Records that a device orientation change happened during Lightweight Reactions scene editing.
+     *
+     * @param newOrientation The new orientation, taken from a {@link Configuration} object.
+     */
+    public static void recordOrientationChange(int newOrientation) {
+        RecordHistogram.recordEnumeratedHistogram("LightweightReactions.OrientationChange",
+                newOrientation == Configuration.ORIENTATION_PORTRAIT ? DeviceOrientation.PORTRAIT
+                                                                     : DeviceOrientation.LANDSCAPE,
+                DeviceOrientation.NUM_ENTRIES);
     }
 
     /**

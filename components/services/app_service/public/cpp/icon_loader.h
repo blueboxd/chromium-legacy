@@ -9,9 +9,11 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
 
@@ -50,11 +52,35 @@ class IconLoader {
   IconLoader();
   virtual ~IconLoader();
 
-  // Looks up the IconKey for the given app ID.
-  virtual apps::mojom::IconKeyPtr GetIconKey(const std::string& app_id) = 0;
+  // Looks up the IconKey for the given app ID. Return a fake icon key as the
+  // default implementation to simplify the sub class implementation in test
+  // code.
+  virtual absl::optional<IconKey> GetIconKey(const std::string& app_id);
 
   // This can return nullptr, meaning that the IconLoader does not track when
   // the icon is no longer actively used by the caller.
+  virtual std::unique_ptr<Releaser> LoadIconFromIconKey(
+      AppType app_type,
+      const std::string& app_id,
+      const IconKey& icon_key,
+      IconType icon_type,
+      int32_t size_hint_in_dip,
+      bool allow_placeholder_icon,
+      apps::LoadIconCallback callback) = 0;
+
+  // Convenience method that calls "LoadIconFromIconKey(app_type, app_id,
+  // GetIconKey(app_id), etc)".
+  std::unique_ptr<Releaser> LoadIcon(AppType app_type,
+                                     const std::string& app_id,
+                                     const IconType& icon_type,
+                                     int32_t size_hint_in_dip,
+                                     bool allow_placeholder_icon,
+                                     apps::LoadIconCallback callback);
+
+  // This can return nullptr, meaning that the IconLoader does not track when
+  // the icon is no longer actively used by the caller.
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   virtual std::unique_ptr<Releaser> LoadIconFromIconKey(
       apps::mojom::AppType app_type,
       const std::string& app_id,
@@ -66,6 +92,8 @@ class IconLoader {
 
   // Convenience method that calls "LoadIconFromIconKey(app_type, app_id,
   // GetIconKey(app_id), etc)".
+  // TODO(crbug.com/1253250): Will be removed soon. Please use the non mojom
+  // interface.
   std::unique_ptr<Releaser> LoadIcon(
       apps::mojom::AppType app_type,
       const std::string& app_id,
@@ -84,21 +112,21 @@ class IconLoader {
   // callers, are expected to refer to a Key.
   class Key {
    public:
-    apps::mojom::AppType app_type_;
+    AppType app_type_;
     std::string app_id_;
-    // apps::mojom::IconKey fields.
+    // IconKey fields.
     uint64_t timeline_;
     int32_t resource_id_;
     uint32_t icon_effects_;
     // Other fields.
-    apps::mojom::IconType icon_type_;
+    IconType icon_type_;
     int32_t size_hint_in_dip_;
     bool allow_placeholder_icon_;
 
-    Key(apps::mojom::AppType app_type,
+    Key(AppType app_type,
         const std::string& app_id,
-        const apps::mojom::IconKeyPtr& icon_key,
-        apps::mojom::IconType icon_type,
+        const IconKey& icon_key,
+        IconType icon_type,
         int32_t size_hint_in_dip,
         bool allow_placeholder_icon);
 

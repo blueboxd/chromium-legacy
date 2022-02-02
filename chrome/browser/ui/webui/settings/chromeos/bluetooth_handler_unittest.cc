@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/bluetooth_handler.h"
 
-#include "base/macros.h"
 #include "content/public/test/test_web_ui.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -45,7 +44,7 @@ class BluetoothHandlerTest : public testing::Test {
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
     mock_device_ =
         std::make_unique<testing::NiceMock<device::MockBluetoothDevice>>(
-            /*adapter=*/nullptr, /*bluetooth_class=*/0,
+            mock_adapter_.get(), /*bluetooth_class=*/0,
             /*name=*/"Bluetooth 2.0 Mouse", kDeviceAddress, /*paired=*/false,
             /*connected=*/false);
     EXPECT_CALL(*mock_adapter_, GetDevice(testing::_))
@@ -72,8 +71,7 @@ class BluetoothHandlerTest : public testing::Test {
 };
 
 TEST_F(BluetoothHandlerTest, GetIsDeviceBlockedByPolicy) {
-  EXPECT_CALL(*mock_device_, IsBlockedByPolicy())
-      .WillOnce(testing::Return(true));
+  mock_device_->SetIsBlockedByPolicy(true);
 
   size_t call_data_count_before_call = test_web_ui()->call_data().size();
 

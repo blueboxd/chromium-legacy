@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/scoped_observation.h"
@@ -21,7 +22,6 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -242,10 +242,10 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
     DCHECK(content_area_);
     DCHECK(omnibox_);
 
-    view_observations_.AddObservation(content_area_);
-    view_observations_.AddObservation(omnibox_);
+    view_observations_.AddObservation(content_area_.get());
+    view_observations_.AddObservation(omnibox_.get());
 #if defined(OS_WIN)
-    view_observations_.AddObservation(top_container_);
+    view_observations_.AddObservation(top_container_.get());
 #endif  // defined(OS_WIN)
 
     content_area_->GetWidget()->GetNativeView()->AddPreTargetHandler(this);
@@ -337,9 +337,9 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler,
 
  private:
   CloseCallback close_callback_;
-  views::View* top_container_;
-  views::View* content_area_;
-  views::View* omnibox_;
+  raw_ptr<views::View> top_container_;
+  raw_ptr<views::View> content_area_;
+  raw_ptr<views::View> omnibox_;
 
   bool enabled_ = false;
 
@@ -434,8 +434,8 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
   }
 
  private:
-  WebUITabStripContainerView* const container_;
-  views::View* const drag_handle_;
+  const raw_ptr<WebUITabStripContainerView> container_;
+  const raw_ptr<views::View> drag_handle_;
 
   bool drag_in_progress_ = false;
 };
@@ -466,8 +466,8 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   animation_.Reset(0.0);
 
   DCHECK(tab_contents_container);
-  view_observations_.AddObservation(tab_contents_container_);
-  view_observations_.AddObservation(top_container_);
+  view_observations_.AddObservation(tab_contents_container_.get());
+  view_observations_.AddObservation(top_container_.get());
 
   // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
   // default unless explicitly hidden. The WebContents need to be set to hidden
@@ -572,7 +572,7 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateNewTabButton() {
       base::BindRepeating(&WebUITabStripContainerView::NewTabButtonPressed,
                           base::Unretained(this)));
   new_tab_button_ = new_tab_button.get();
-  view_observations_.AddObservation(new_tab_button_);
+  view_observations_.AddObservation(new_tab_button_.get());
   return new_tab_button;
 }
 
@@ -826,7 +826,7 @@ void WebUITabStripContainerView::ShowEditDialogForGroupAtPoint(
   rect.set_origin(point);
   editor_bubble_widget_ = TabGroupEditorBubbleView::Show(
       browser_view_->browser(), group, nullptr, rect, this);
-  scoped_widget_observation_.Observe(editor_bubble_widget_);
+  scoped_widget_observation_.Observe(editor_bubble_widget_.get());
 }
 
 void WebUITabStripContainerView::HideEditDialogForGroup() {
@@ -960,8 +960,6 @@ void WebUITabStripContainerView::PrimaryMainFrameRenderProcessGone(
 void WebUITabStripContainerView::InitializeWebView() {
   DCHECK(web_view_);
   web_view_->LoadInitialURL(GURL(chrome::kChromeUITabStripURL));
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      web_view_->web_contents());
   task_manager::WebContentsTags::CreateForTabContents(
       web_view_->web_contents());
 

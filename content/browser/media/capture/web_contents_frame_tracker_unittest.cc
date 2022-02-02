@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/media/capture/web_contents_frame_tracker.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
@@ -74,7 +75,7 @@ class MockCaptureDevice : public WebContentsVideoCaptureDevice,
  public:
   using WebContentsVideoCaptureDevice::AsWeakPtr;
   MOCK_METHOD1(OnTargetChanged,
-               void(const FrameSinkVideoCaptureDevice::VideoCaptureTarget&));
+               void(const absl::optional<viz::VideoCaptureTarget>&));
   MOCK_METHOD0(OnTargetPermanentlyLost, void());
 };
 
@@ -174,7 +175,7 @@ class WebContentsFrameTrackerTest : public RenderViewHostTestHarness {
   std::unique_ptr<WebContentsFrameTracker> tracker_;
 
   // Save because the pointed-to location should not change during testing.
-  SimpleContext* raw_context_;
+  raw_ptr<SimpleContext> raw_context_;
 };
 
 TEST_F(WebContentsFrameTrackerTest, CalculatesPreferredSizeClampsToView) {
@@ -315,11 +316,12 @@ TEST_F(WebContentsFrameTrackerTest, NotifiesOfLostTargets) {
 // test the observer callbacks here.
 TEST_F(WebContentsFrameTrackerTest, NotifiesOfTargetChanges) {
   const viz::FrameSinkId kNewId(42, 1337);
-  EXPECT_CALL(*device(),
-              OnTargetChanged(FrameSinkVideoCaptureDevice::VideoCaptureTarget(
-                  kNewId, viz::SubtreeCaptureId(), /*crop_id=*/base::Token())))
-      .Times(1);
   SetFrameSinkId(kNewId);
+  EXPECT_CALL(
+      *device(),
+      OnTargetChanged(absl::make_optional<viz::VideoCaptureTarget>(kNewId)))
+      .Times(1);
+
   // The tracker doesn't actually use the frame host information, just
   // posts a possible target change.
   tracker()->RenderFrameHostChanged(nullptr, nullptr);
@@ -341,8 +343,8 @@ TEST_F(WebContentsFrameTrackerTest,
 
   // Expect OnTargetChanged() to be invoked once with the crop-ID.
   EXPECT_CALL(*device(),
-              OnTargetChanged(FrameSinkVideoCaptureDevice::VideoCaptureTarget(
-                  kInitSinkId, viz::SubtreeCaptureId(), kCropId)))
+              OnTargetChanged(absl::make_optional<viz::VideoCaptureTarget>(
+                  kInitSinkId, kCropId)))
       .Times(1);
 
   tracker()->Crop(kCropId, std::move(callback));

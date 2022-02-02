@@ -30,10 +30,17 @@ bool UserEnabledUploading() {
       boolForKey:base::SysUTF8ToNSString(kCrashReportsUploadingEnabledKey)];
 }
 
-bool CanCrashpadStart() {
-  static bool can_crashpad_start = [app_group::GetGroupUserDefaults()
+void SetUserEnabledUploading(bool enabled) {
+  [app_group::GetGroupUserDefaults()
+      setBool:enabled ? YES : NO
+       forKey:base::SysUTF8ToNSString(
+                  common::kCrashReportsUploadingEnabledKey)];
+}
+
+bool CanUseCrashpad() {
+  static bool can_use_crashpad = [app_group::GetGroupUserDefaults()
       boolForKey:base::SysUTF8ToNSString(kCrashpadStartOnNextRun)];
-  return can_crashpad_start;
+  return can_use_crashpad;
 }
 
 base::FilePath CrashpadDumpLocation() {

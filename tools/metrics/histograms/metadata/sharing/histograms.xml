@@ -144,6 +144,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sharing.DesktopScreenshot.Action"
+    enum="SharingDesktopScreenshotAction" expires_after="M105">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    Logged when actions are taken in the sharing desktop screenshot image
+    editing feature.
+  </summary>
+</histogram>
+
 <histogram name="Sharing.DeviceInfoAvailable" enum="BooleanAvailable"
     expires_after="M87">
   <obsolete>
@@ -461,7 +471,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendAckMessageResult" enum="SharingSendMessageResult"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
 <!-- Name completed by histogram_suffixes name="SharingChannelType",
      name="SharingDevicePlatform" and name="SharingMessage" -->
 
@@ -474,7 +484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendMessageResult" enum="SharingSendMessageResult"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
 <!-- Name completed by histogram_suffixes SharingChannelType,
     SharingDevicePlatform, SharingMessage, and SharingPulseInterval. -->
 
@@ -674,6 +684,7 @@ chromium-metrics-reviews@google.com.
     <variant name="Gif"/>
     <variant name="HighlightedText"/>
     <variant name="Image"/>
+    <variant name="LightweightReaction"/>
     <variant name="NotSpecified"/>
     <variant name="Screenshot"/>
     <variant name="Webnotes"/>

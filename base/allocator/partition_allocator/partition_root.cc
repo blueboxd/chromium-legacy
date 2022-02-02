@@ -69,37 +69,47 @@ void BeforeForkInParent() NO_THREAD_SAFETY_ANALYSIS {
   internal::ThreadCacheRegistry::GetLock().Lock();
 }
 
-void ReleaseLocks() NO_THREAD_SAFETY_ANALYSIS {
+template <typename T>
+void UnlockOrReinit(T& lock, bool in_child) NO_THREAD_SAFETY_ANALYSIS {
+  // Only re-init the locks in the child process, in the parent can unlock
+  // normally.
+  if (in_child)
+    lock.Reinit();
+  else
+    lock.Unlock();
+}
+
+void ReleaseLocks(bool in_child) NO_THREAD_SAFETY_ANALYSIS {
   // In reverse order, even though there are no lock ordering dependencies.
-  internal::ThreadCacheRegistry::GetLock().Unlock();
+  UnlockOrReinit(internal::ThreadCacheRegistry::GetLock(), in_child);
 
   if (auto* nonquarantinable_root =
           internal::NonQuarantinableAllocator::Instance().root())
-    nonquarantinable_root->lock_.Unlock();
+    UnlockOrReinit(nonquarantinable_root->lock_, in_child);
 
   if (auto* nonscannable_root =
           internal::NonScannableAllocator::Instance().root())
-    nonscannable_root->lock_.Unlock();
+    UnlockOrReinit(nonscannable_root->lock_, in_child);
 
   auto* regular_root = internal::PartitionAllocMalloc::Allocator();
 
   auto* aligned_root = internal::PartitionAllocMalloc::AlignedAllocator();
   if (aligned_root != regular_root)
-    aligned_root->lock_.Unlock();
+    UnlockOrReinit(aligned_root->lock_, in_child);
 
   auto* original_root = internal::PartitionAllocMalloc::OriginalAllocator();
   if (original_root)
-    original_root->lock_.Unlock();
+    UnlockOrReinit(original_root->lock_, in_child);
 
-  regular_root->lock_.Unlock();
+  UnlockOrReinit(regular_root->lock_, in_child);
 }
 
 void AfterForkInParent() {
-  ReleaseLocks();
+  ReleaseLocks(/* in_child = */ false);
 }
 
 void AfterForkInChild() {
-  ReleaseLocks();
+  ReleaseLocks(/* in_child = */ true);
   // Unsafe, as noted in the name. This is fine here however, since at this
   // point there is only one thread, this one (unless another post-fork()
   // handler created a thread, but it would have needed to allocate, which would
@@ -225,7 +235,7 @@ static size_t PartitionPurgeSlotSpan(
       internal::SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(slot_span));
   // First, walk the freelist for this slot span and make a bitmap of which
   // slots are not in use.
-  for (internal::PartitionFreelistEntry* entry = slot_span->freelist_head;
+  for (internal::PartitionFreelistEntry* entry = slot_span->get_freelist_head();
        entry;
        /**/) {
     size_t slot_index =
@@ -447,8 +457,8 @@ static void PartitionDumpBucketStats(
 }
 
 #if DCHECK_IS_ON()
-void DCheckIfManagedByPartitionAllocBRPPool(void* ptr) {
-  PA_DCHECK(IsManagedByPartitionAllocBRPPool(ptr));
+void DCheckIfManagedByPartitionAllocBRPPool(uintptr_t address) {
+  PA_DCHECK(IsManagedByPartitionAllocBRPPool(address));
 }
 #endif
 
@@ -713,7 +723,8 @@ void PartitionRoot<thread_safe>::ConfigureLazyCommit(bool enabled) {
                 char* slot_span_start = reinterpret_cast<char*>(
                     SlotSpan::ToSlotSpanStartPtr(slot_span));
                 RecommitSystemPagesForData(
-                    slot_span_start + already_committed_size,
+                    reinterpret_cast<uintptr_t>(slot_span_start +
+                                                already_committed_size),
                     size_to_commit - already_committed_size,
                     PageUpdatePermissions);
               }
@@ -730,7 +741,8 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
     internal::SlotSpanMetadata<thread_safe>* slot_span,
     size_t requested_size) {
   PA_DCHECK(slot_span->bucket->is_direct_mapped());
-  PA_DCHECK(internal::IsManagedByDirectMap(slot_span));
+  PA_DCHECK(
+      internal::IsManagedByDirectMap(reinterpret_cast<uintptr_t>(slot_span)));
 
   size_t raw_size = AdjustSizeForExtrasAdd(requested_size);
   auto* extent = DirectMapExtent::FromSlotSpan(slot_span);
@@ -768,16 +780,16 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
   size_t current_slot_size = slot_span->bucket->slot_size;
   char* slot_start =
       static_cast<char*>(SlotSpan::ToSlotSpanStartPtr(slot_span));
+  uintptr_t slot_start_as_uintptr = reinterpret_cast<uintptr_t>(slot_start);
   // This is the available part of the reservation up to which the new
   // allocation can grow.
   size_t available_reservation_size =
       current_reservation_size - extent->padding_for_alignment -
       PartitionRoot<thread_safe>::GetDirectMapMetadataAndGuardPagesSize();
 #if DCHECK_IS_ON()
-  char* reservation_start = reinterpret_cast<char*>(
-      reinterpret_cast<uintptr_t>(slot_start) & kSuperPageBaseMask);
+  uintptr_t reservation_start = slot_start_as_uintptr & kSuperPageBaseMask;
   PA_DCHECK(internal::IsReservationStart(reservation_start));
-  PA_DCHECK(slot_start + available_reservation_size ==
+  PA_DCHECK(slot_start_as_uintptr + available_reservation_size ==
             reservation_start + current_reservation_size -
                 GetDirectMapMetadataAndGuardPagesSize() + PartitionPageSize());
 #endif
@@ -788,15 +800,15 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
   } else if (new_slot_size < current_slot_size) {
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_slot_size - new_slot_size;
-    DecommitSystemPagesForData(slot_start + new_slot_size, decommit_size,
-                               PageUpdatePermissions);
+    DecommitSystemPagesForData(slot_start_as_uintptr + new_slot_size,
+                               decommit_size, PageUpdatePermissions);
     // Since the decommited system pages are still reserved, we don't need to
     // change the entries for decommitted pages in the reservation offset table.
   } else if (new_slot_size <= available_reservation_size) {
     // Grow within the actually reserved address space. Just need to make the
     // pages accessible again.
     size_t recommit_slot_size_growth = new_slot_size - current_slot_size;
-    RecommitSystemPagesForData(slot_start + current_slot_size,
+    RecommitSystemPagesForData(slot_start_as_uintptr + current_slot_size,
                                recommit_slot_size_growth,
                                PageUpdatePermissions);
     // The recommited system pages had been already reserved and all the
@@ -813,8 +825,12 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
     return false;
   }
 
+  total_size_of_allocated_bytes -= slot_span->bucket->slot_size;
   slot_span->SetRawSize(raw_size);
   slot_span->bucket->slot_size = new_slot_size;
+  total_size_of_allocated_bytes += slot_span->bucket->slot_size;
+  max_size_of_allocated_bytes =
+      std::max(max_size_of_allocated_bytes, total_size_of_allocated_bytes);
 
 #if DCHECK_IS_ON()
   // Write a new trailing cookie.
@@ -834,7 +850,8 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
     void* ptr,
     SlotSpan* slot_span,
     size_t new_size) {
-  PA_DCHECK(internal::IsManagedByNormalBuckets(ptr));
+  PA_DCHECK(
+      internal::IsManagedByNormalBuckets(reinterpret_cast<uintptr_t>(ptr)));
 
   // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
   // new size is a significant percentage smaller. We could do the same if we

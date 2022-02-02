@@ -410,8 +410,8 @@ suite('SearchEnginePageTests', function() {
     assertTrue(!!radioGroup);
     assertFalse(radioGroup.hidden);
 
-    const radioButtons = page.shadowRoot!.querySelectorAll<HTMLButtonElement>(
-        'controlled-radio-button')!;
+    const radioButtons =
+        page.shadowRoot!.querySelectorAll('controlled-radio-button')!;
     assertEquals(2, radioButtons.length);
     assertEquals('true', radioButtons.item(0)!.name);
     assertEquals('false', radioButtons.item(1)!.name);

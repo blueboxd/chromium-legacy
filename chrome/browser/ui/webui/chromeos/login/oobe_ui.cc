@@ -19,7 +19,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
@@ -63,6 +62,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/guest_tos_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/hardware_data_collection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/parental_handoff_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/pin_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
@@ -420,6 +421,11 @@ void OobeUI::ConfigureOobeDisplay() {
 
     AddScreenHandler(
         std::make_unique<EulaScreenHandler>(js_calls_container_.get()));
+
+    if (ash::features::IsOobeQuickStartEnabled()) {
+      AddScreenHandler(
+          std::make_unique<QuickStartScreenHandler>(js_calls_container_.get()));
+    }
   }
 
   AddScreenHandler(
@@ -563,6 +569,9 @@ void OobeUI::ConfigureOobeDisplay() {
     AddScreenHandler(
         std::make_unique<OsTrialScreenHandler>(js_calls_container_.get()));
   }
+
+  AddScreenHandler(std::make_unique<HWDataCollectionScreenHandler>(
+      js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<ConsolidatedConsentScreenHandler>(
       js_calls_container_.get()));

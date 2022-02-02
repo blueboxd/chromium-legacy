@@ -6,7 +6,6 @@
 
 #include <tuple>
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -289,7 +288,7 @@ class WebContentsVideoCaptureDeviceBrowserTestAura
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kApplyNativeOcclusionToCompositor,
         {{features::kApplyNativeOcclusionToCompositorType,
-          features::kApplyNativeOcclusionToCompositorTypeApplyAndEvict}});
+          features::kApplyNativeOcclusionToCompositorTypeRelease}});
 
     WebContentsVideoCaptureDeviceBrowserTest::SetUp();
   }

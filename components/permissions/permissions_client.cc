@@ -148,6 +148,16 @@ infobars::InfoBar* PermissionsClient::MaybeCreateInfoBar(
   return nullptr;
 }
 
+#if defined(OS_ANDROID)
+std::unique_ptr<PermissionsClient::PermissionMessageDelegate>
+PermissionsClient::MaybeCreateMessageUI(
+    content::WebContents* web_contents,
+    ContentSettingsType type,
+    base::WeakPtr<PermissionPromptAndroid> prompt) {
+  return nullptr;
+}
+#endif
+
 void PermissionsClient::RepromptForAndroidPermissions(
     content::WebContents* web_contents,
     const std::vector<ContentSettingsType>& content_settings_types,

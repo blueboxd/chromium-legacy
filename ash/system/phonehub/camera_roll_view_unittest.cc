@@ -4,16 +4,31 @@
 
 #include "ash/system/phonehub/camera_roll_view.h"
 
+#include "ash/components/phonehub/camera_roll_item.h"
+#include "ash/components/phonehub/fake_camera_roll_manager.h"
+#include "ash/components/phonehub/fake_user_action_recorder.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/components/phonehub/camera_roll_item.h"
-#include "chromeos/components/phonehub/fake_camera_roll_manager.h"
-#include "chromeos/components/phonehub/fake_user_action_recorder.h"
+#include "camera_roll_view.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/compositor/property_change_reason.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/compositor/test/test_layer_animation_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/view.h"
 
 namespace ash {
+
+class CameraRollViewForTest : public CameraRollView {
+ public:
+  CameraRollViewForTest(phonehub::CameraRollManager* camera_roll_manager,
+                        phonehub::UserActionRecorder* user_action_recorder)
+      : CameraRollView(camera_roll_manager, user_action_recorder) {
+    should_disable_annimator_timer_for_test_ = true;
+  }
+  ~CameraRollViewForTest() override = default;
+};
 
 class CameraRollViewTest : public AshTestBase {
  public:
@@ -32,30 +47,29 @@ class CameraRollViewTest : public AshTestBase {
     return camera_roll_view_.get();
   }
 
-  chromeos::phonehub::FakeCameraRollManager* fake_camera_roll_manager() {
+  phonehub::FakeCameraRollManager* fake_camera_roll_manager() {
     return fake_camera_roll_manager_.get();
   }
 
   void PresetCameraRollOptInState(bool has_been_dismissed,
                                   bool can_be_enabled) {
     fake_camera_roll_manager_ =
-        std::make_unique<chromeos::phonehub::FakeCameraRollManager>();
+        std::make_unique<phonehub::FakeCameraRollManager>();
     if (has_been_dismissed) {
       fake_camera_roll_manager_->OnCameraRollOnboardingUiDismissed();
     }
     fake_camera_roll_manager_->SetIsCameraRollAvailableToBeEnabled(
         can_be_enabled);
     fake_user_action_recorder_ =
-        std::make_unique<chromeos::phonehub::FakeUserActionRecorder>();
-    camera_roll_view_ = std::make_unique<CameraRollView>(
+        std::make_unique<phonehub::FakeUserActionRecorder>();
+    camera_roll_view_ = std::make_unique<CameraRollViewForTest>(
         fake_camera_roll_manager_.get(), fake_user_action_recorder_.get());
   }
 
-  const std::vector<chromeos::phonehub::CameraRollItem> CreateFakeItems(
-      int num) {
-    std::vector<chromeos::phonehub::CameraRollItem> items;
+  const std::vector<phonehub::CameraRollItem> CreateFakeItems(int num) {
+    std::vector<phonehub::CameraRollItem> items;
     for (int i = num; i > 0; --i) {
-      chromeos::phonehub::proto::CameraRollItemMetadata metadata;
+      phonehub::proto::CameraRollItemMetadata metadata;
       metadata.set_key(base::NumberToString(i));
       metadata.set_mime_type("image/jpeg");
       metadata.set_last_modified_millis(1577865600 + i);
@@ -82,10 +96,8 @@ class CameraRollViewTest : public AshTestBase {
 
  private:
   std::unique_ptr<CameraRollView> camera_roll_view_;
-  std::unique_ptr<chromeos::phonehub::FakeUserActionRecorder>
-      fake_user_action_recorder_;
-  std::unique_ptr<chromeos::phonehub::FakeCameraRollManager>
-      fake_camera_roll_manager_;
+  std::unique_ptr<phonehub::FakeUserActionRecorder> fake_user_action_recorder_;
+  std::unique_ptr<phonehub::FakeCameraRollManager> fake_camera_roll_manager_;
 };
 
 TEST_F(CameraRollViewTest, DisplayOptInView) {
@@ -108,6 +120,22 @@ TEST_F(CameraRollViewTest, OptInAlready) {
   EXPECT_TRUE(camera_roll_view()->GetVisible());
   EXPECT_FALSE(camera_roll_view()->opt_in_view_->GetVisible());
   EXPECT_TRUE(camera_roll_view()->items_view_->GetVisible());
+}
+
+TEST_F(CameraRollViewTest, RightAfterOptIn) {
+  PresetCameraRollOptInState(/*has_been_dismissed=*/false,
+                             /*can_be_enabled=*/false);
+  fake_camera_roll_manager()->EnableCameraRollFeatureInSystemSetting();
+
+  EXPECT_TRUE(camera_roll_view()->GetVisible());
+  EXPECT_FALSE(camera_roll_view()->opt_in_view_->GetVisible());
+  EXPECT_TRUE(camera_roll_view()->items_view_->GetVisible());
+  // There should be 4 camera roll item placeholder.
+  size_t expected_placeholder_seize = 4;
+  EXPECT_EQ(GetItemsView()->children().size(), expected_placeholder_seize);
+  size_t expected_item_size = 0;
+  EXPECT_EQ(fake_camera_roll_manager()->current_items().size(),
+            expected_item_size);
 }
 
 TEST_F(CameraRollViewTest, OptInAndDismissed) {

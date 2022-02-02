@@ -163,9 +163,6 @@ RenderProcessImpl::RenderProcessImpl()
   SetV8FlagIfNotFeature(features::kWebAssemblySimd,
                         "--no-experimental-wasm-simd");
 
-  SetV8FlagIfFeature(blink::features::kTopLevelAwait,
-                     "--harmony-top-level-await");
-
   SetV8FlagIfFeature(blink::features::kJSONModules,
                      "--harmony-import-assertions");
 
@@ -239,6 +236,9 @@ RenderProcessImpl::RenderProcessImpl()
 
   SetV8FlagIfFeature(features::kWebAssemblyTiering, "--wasm-tier-up");
   SetV8FlagIfNotFeature(features::kWebAssemblyTiering, "--no-wasm-tier-up");
+
+  SetV8FlagIfFeature(features::kWebAssemblyDynamicTiering,
+                     "--wasm-dynamic-tiering");
 
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(ARCH_CPU_X86_64)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {

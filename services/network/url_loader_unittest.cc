@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "stdint.h"
 
 #include <limits>
@@ -18,7 +19,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
@@ -112,6 +112,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/radio_utils.h"
+#include "net/android/radio_activity_tracker.h"
 #include "services/network/radio_monitor_android.h"
 #endif
 
@@ -133,7 +134,7 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
     std::unique_ptr<URLLoader>* url_loader) {
   return base::BindOnce(
       [](base::RunLoop* run_loop, std::unique_ptr<URLLoader>* url_loader,
-         mojom::URLLoader* url_loader_ptr) {
+         URLLoader* url_loader_ptr) {
         DCHECK_EQ(url_loader->get(), url_loader_ptr);
         url_loader->reset();
         run_loop->Quit();
@@ -146,7 +147,7 @@ URLLoader::DeleteCallback DeleteLoaderCallback(
 // this method, as URLLoaders don't expect to be alive after they invoke their
 // delete callback.
 URLLoader::DeleteCallback NeverInvokedDeleteLoaderCallback() {
-  return base::BindOnce([](mojom::URLLoader* /* loader*/) { NOTREACHED(); });
+  return base::BindOnce([](URLLoader* /* loader*/) { NOTREACHED(); });
 }
 
 constexpr char kBodyReadFromNetBeforePausedHistogram[] =
@@ -385,7 +386,7 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
  private:
   void StartAsync() { NotifyHeadersComplete(); }
 
-  scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
+  raw_ptr<scoped_refptr<net::IOBuffer>> simulated_cache_dest_;
   bool use_text_plain_;
   base::WeakPtrFactory<URLRequestSimulatedCacheJob> weak_factory_{this};
 };
@@ -409,7 +410,7 @@ class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
   }
 
  private:
-  scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
+  raw_ptr<scoped_refptr<net::IOBuffer>> simulated_cache_dest_;
   bool use_text_plain_;
 };
 
@@ -588,7 +589,7 @@ class URLLoaderTest : public testing::Test {
 
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAcceptCHFrame,
-                              features::kRecordRadioWakeupTrigger},
+                              net::features::kRecordRadioWakeupTrigger},
         /*disabled_features=*/{});
   }
   ~URLLoaderTest() override {
@@ -1014,7 +1015,7 @@ class URLLoaderTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<net::ScopedDefaultHostResolverProc> mock_host_resolver_;
-  net::TestNetworkDelegate*
+  raw_ptr<net::TestNetworkDelegate>
       unowned_test_network_delegate_;  // owned by |context_|
   std::unique_ptr<net::URLRequestContext> context_;
   ResourceScheduler resource_scheduler_;
@@ -1031,7 +1032,7 @@ class URLLoaderTest : public testing::Test {
   bool expect_redirect_ = false;
   mojom::ClientSecurityStatePtr factory_client_security_state_;
   mojom::ClientSecurityStatePtr request_client_security_state_;
-  MockDevToolsObserver* devtools_observer_ = nullptr;
+  raw_ptr<MockDevToolsObserver> devtools_observer_ = nullptr;
   scoped_refptr<ResourceRequestBody> request_body_;
   net::HttpRequestHeaders additional_headers_;
   mojom::IPAddressSpace target_ip_address_space_ =
@@ -1047,7 +1048,7 @@ class URLLoaderTest : public testing::Test {
 
   const cors::OriginAccessList kEmptyOriginAccessList;
 
-  MockAcceptCHFrameObserver* accept_ch_frame_observer_ = nullptr;
+  raw_ptr<MockAcceptCHFrameObserver> accept_ch_frame_observer_ = nullptr;
 };
 
 class URLLoaderMockSocketTest : public URLLoaderTest {
@@ -1669,6 +1670,9 @@ struct URLLoaderFakeTransportInfoTestParams {
   // The address space of the endpoint serving the request.
   mojom::IPAddressSpace endpoint_address_space;
 
+  // The type of transport to set in `TransportInfo`.
+  net::TransportType transport_type;
+
   // The expected request result.
   int expected_result;
 };
@@ -1678,6 +1682,8 @@ std::ostream& operator<<(std::ostream& out,
                          const URLLoaderFakeTransportInfoTestParams& params) {
   return out << "{ client_address_space: " << params.client_address_space
              << ", endpoint_address_space: " << params.endpoint_address_space
+             << ", transport_type: "
+             << net::TransportTypeToString(params.transport_type)
              << ", expected_result: "
              << net::ErrorToString(params.expected_result) << " }";
 }
@@ -1706,9 +1712,10 @@ class URLLoaderFakeTransportInfoTest
   }
 
   // Returns a transport info with an endpoint in the given IP address space.
-  static net::TransportInfo FakeTransportInfo(mojom::IPAddressSpace space) {
-    return net::TransportInfo(net::TransportType::kDirect, FakeEndpoint(space),
-                              "");
+  static net::TransportInfo FakeTransportInfo(
+      const URLLoaderFakeTransportInfoTestParams& params) {
+    return net::TransportInfo(params.transport_type,
+                              FakeEndpoint(params.endpoint_address_space), "");
   }
 };
 
@@ -1727,7 +1734,7 @@ TEST_P(URLLoaderFakeTransportInfoTest, PrivateNetworkRequestLoadsCorrectly) {
 
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, std::make_unique<FakeTransportInfoInterceptor>(
-               FakeTransportInfo(params.endpoint_address_space)));
+               FakeTransportInfo(params)));
 
   // Despite its name, IsError(OK) asserts that the matched value is OK.
   EXPECT_THAT(Load(url), IsError(params.expected_result));
@@ -1745,84 +1752,125 @@ constexpr URLLoaderFakeTransportInfoTestParams
         {
             mojom::IPAddressSpace::kUnknown,
             mojom::IPAddressSpace::kUnknown,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kUnknown,
             mojom::IPAddressSpace::kPublic,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kUnknown,
             mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kDirect,
             net::ERR_FAILED,
         },
         {
             mojom::IPAddressSpace::kUnknown,
             mojom::IPAddressSpace::kLocal,
+            net::TransportType::kDirect,
             net::ERR_FAILED,
         },
         // Client: kPublic
         {
             mojom::IPAddressSpace::kPublic,
             mojom::IPAddressSpace::kUnknown,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kPublic,
             mojom::IPAddressSpace::kPublic,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kPublic,
             mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kDirect,
             net::ERR_FAILED,
         },
         {
             mojom::IPAddressSpace::kPublic,
             mojom::IPAddressSpace::kLocal,
+            net::TransportType::kDirect,
             net::ERR_FAILED,
         },
         // Client: kPrivate
         {
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kUnknown,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kPublic,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kLocal,
+            net::TransportType::kDirect,
             net::ERR_FAILED,
         },
         // Client: kLocal
         {
             mojom::IPAddressSpace::kLocal,
             mojom::IPAddressSpace::kUnknown,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kLocal,
             mojom::IPAddressSpace::kPublic,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kLocal,
             mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kDirect,
             net::OK,
         },
         {
             mojom::IPAddressSpace::kLocal,
             mojom::IPAddressSpace::kLocal,
+            net::TransportType::kDirect,
+            net::OK,
+        },
+        // TransportType: kProxied
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kProxied,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kProxied,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kPrivate,
+            net::TransportType::kProxied,
+            net::OK,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kProxied,
             net::OK,
         },
 };
@@ -3634,8 +3682,7 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   for (const auto& pair : loaders) {
     URLLoader* loader = pair.first.get();
     ASSERT_NE(loader, nullptr);
-    EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_RESPONSE,
-              loader->GetLoadStateForTesting());
+    EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_RESPONSE, loader->GetLoadState());
   }
 
   mojo::PendingRemote<mojom::URLLoader> loader_remote;
@@ -3656,15 +3703,14 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   base::RunLoop().RunUntilIdle();
 
   // Make sure that the ResourceScheduler throttles this request.
-  EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_DELEGATE,
-            loader->GetLoadStateForTesting());
+  EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_DELEGATE, loader->GetLoadState());
 
   loader->SetPriority(net::HIGHEST, 0 /* intra_priority_value */);
   base::RunLoop().RunUntilIdle();
 
   // Make sure that the ResourceScheduler stops throtting.
   EXPECT_EQ(net::LOAD_STATE_WAITING_FOR_AVAILABLE_SOCKET,
-            loader->GetLoadStateForTesting());
+            loader->GetLoadState());
 }
 
 // This tests that case where a read pipe is closed while there's a post task to
@@ -3951,7 +3997,7 @@ class ClientCertAuthObserver : public TestURLLoaderNetworkObserver {
   std::string provider_name_;
   std::vector<uint16_t> algorithm_preferences_;
   int on_certificate_requested_counter_ = 0;
-  mojo::Remote<mojom::URLLoader>* url_loader_remote_ = nullptr;
+  raw_ptr<mojo::Remote<mojom::URLLoader>> url_loader_remote_ = nullptr;
 };
 
 TEST_F(URLLoaderTest, SetAuth) {
@@ -6298,7 +6344,7 @@ class MockTrustTokenRequestHelper : public TrustTokenRequestHelper {
 
   SyncOrAsync operation_synchrony_;
 
-  bool* begin_done_flag_;
+  raw_ptr<bool> begin_done_flag_;
 };
 
 class NoopTrustTokenKeyCommitmentGetter : public TrustTokenKeyCommitmentGetter {
@@ -7282,43 +7328,78 @@ TEST_F(URLLoaderFakeTransportInfoTest, AcceptCHFrameIgnoreMalformed) {
 
 #if defined(OS_ANDROID)
 
+namespace {
+
+void CheckRadioWakeupTriggerHistograms(base::HistogramTester& histograms,
+                                       size_t expected_count) {
+  histograms.ExpectTotalCount(
+      kUmaNamePossibleWakeupTriggerURLLoaderRequestDestination, expected_count);
+  histograms.ExpectTotalCount(
+      kUmaNamePossibleWakeupTriggerURLLoaderRequestPriority, expected_count);
+  histograms.ExpectTotalCount(
+      kUmaNamePossibleWakeupTriggerURLLoaderRequestIsPrefetch, expected_count);
+  histograms.ExpectTotalCount(
+      kUmaNamePossibleWakeupTriggerURLLoaderAnnotationId, expected_count);
+}
+
+}  // namespace
+
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_Record) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kCell);
 
   LoadAndCompareFile("simple_page.html");
 
-  histograms.ExpectTotalCount(kUmaNamePossibleWakeupTriggerURLLoader, 1);
+  CheckRadioWakeupTriggerHistograms(histograms, /*expected_count=*/1);
 }
 
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioTypeIsNotCell) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kWifi);
 
   LoadAndCompareFile("simple_page.html");
 
-  histograms.ExpectTotalCount(kUmaNamePossibleWakeupTriggerURLLoader, 0);
+  CheckRadioWakeupTriggerHistograms(histograms, /*expected_count=*/0);
 }
 
 TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_RadioActivityIsNotDormant) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kInOut);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kInOut);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kCell);
 
   LoadAndCompareFile("simple_page.html");
 
-  histograms.ExpectTotalCount(kUmaNamePossibleWakeupTriggerURLLoader, 0);
+  CheckRadioWakeupTriggerHistograms(histograms, /*expected_count=*/0);
+}
+
+TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_IntervalTooShort) {
+  base::HistogramTester histograms;
+
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
+      base::android::RadioConnectionType::kCell);
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideLastCheckTimeForTesting(base::TimeTicks::Now());
+
+  LoadAndCompareFile("simple_page.html");
+
+  CheckRadioWakeupTriggerHistograms(histograms, /*expected_count=*/0);
 }
 
 #endif  // defined(OS_ANDROID)

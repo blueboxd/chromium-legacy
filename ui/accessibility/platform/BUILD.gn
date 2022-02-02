@@ -34,9 +34,11 @@ source_set("platform") {
     # Used by by browser_accessibility_state_impl.cc.
     "ax_platform_node.cc",
     "ax_platform_node.h",
+    "ax_platform_node_delegate.cc",
     "ax_platform_node_delegate.h",
 
     # Used by browser_accessibility.cc.
+    "ax_platform_tree_manager.h",
     "ax_unique_id.cc",
     "ax_unique_id.h",
 
@@ -69,6 +71,7 @@ source_set("platform") {
     "inspect/ax_inspect_scenario.h",
     "inspect/ax_inspect_utils.cc",
     "inspect/ax_inspect_utils.h",
+    "inspect/ax_optional.h",
     "inspect/ax_property_node.cc",
     "inspect/ax_property_node.h",
     "inspect/ax_script_instruction.cc",
@@ -90,8 +93,6 @@ source_set("platform") {
       "fuchsia/accessibility_bridge_fuchsia.h",
       "fuchsia/accessibility_bridge_fuchsia_registry.cc",
       "fuchsia/accessibility_bridge_fuchsia_registry.h",
-      "fuchsia/fuchsia_types.cc",
-      "fuchsia/fuchsia_types.h",
     ]
 
     public_deps +=
@@ -149,8 +150,12 @@ source_set("platform") {
         "ax_platform_node_mac.h",
         "ax_platform_node_mac.mm",
         "ax_private_attributes_mac.h",
+        "ax_private_roles_mac.h",
         "ax_private_webkit_constants_mac.h",
         "ax_private_webkit_constants_mac.mm",
+        "inspect/ax_inspect_utils_mac.h",
+        "inspect/ax_inspect_utils_mac.mm",
+        "inspect/ax_tree_indexer_mac.h",
       ]
 
       frameworks = [

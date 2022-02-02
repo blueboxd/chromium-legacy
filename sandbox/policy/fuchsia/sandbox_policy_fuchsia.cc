@@ -25,7 +25,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/base_paths_fuchsia.h"
+#include "base/base_paths.h"
 #include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
@@ -263,8 +263,8 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   ZX_CHECK(status == ZX_OK, status) << "zx_job_create";
   options->job_handle = job_.get();
 
-  // Only allow ambient VMO mark-as-executable capability to be granted
-  // to processes that which need to JIT (i.e. do not run V8/WASM).
+  // Only allow the ambient VMO mark-as-executable capability to be granted
+  // to processes that need to JIT (i.e. run V8/WASM).
   zx_policy_basic_v2_t ambient_mark_vmo_exec{
       ZX_POL_AMBIENT_MARK_VMO_EXEC,
 

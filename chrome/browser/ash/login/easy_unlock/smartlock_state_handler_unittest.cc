@@ -10,8 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/components/proximity_auth/proximity_auth_pref_manager.h"
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/public/cpp/smartlock_state.h"
-#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,8 +20,6 @@
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -225,18 +224,18 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   // Whether the custom icon's tooltip should be autoshown. If the icon is not
   // set, or it doesn't have a tooltip, returns false.
   bool IsCustomIconTooltipAutoshown() const {
-    bool result = false;
-    if (last_custom_icon_)
-      last_custom_icon_->GetBoolean("tooltip.autoshow", &result);
-    return result;
+    if (!last_custom_icon_)
+      return false;
+
+    return last_custom_icon_->FindBoolPath("tooltip.autoshow").value_or(false);
   }
 
   // Whether the custom icon is set and if has hardlock capability enabed.
   bool CustomIconHardlocksOnClick() const {
-    bool result = false;
-    if (last_custom_icon_)
-      last_custom_icon_->GetBoolean("hardlockOnClick", &result);
-    return result;
+    if (!last_custom_icon_)
+      return false;
+
+    return last_custom_icon_->FindBoolKey("hardlockOnClick").value_or(false);
   }
 
  private:

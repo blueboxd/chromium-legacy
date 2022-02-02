@@ -106,6 +106,7 @@ source_set("base") {
     "callback_registry.h",
     "cdm_callback_promise.cc",
     "cdm_callback_promise.h",
+    "cdm_config.cc",
     "cdm_config.h",
     "cdm_context.cc",
     "cdm_context.h",
@@ -292,7 +293,6 @@ source_set("base") {
     "subsample_entry.h",
     "supported_types.cc",
     "supported_types.h",
-    "supported_types.h",
     "supported_video_decoder_config.cc",
     "supported_video_decoder_config.h",
     "svc_scalability_mode.cc",
@@ -439,6 +439,10 @@ source_set("base") {
     public_deps += [
       "//media/base/win:dcomp_texture_wrapper",
       "//media/base/win:mf_cdm_proxy",
+    ]
+    sources += [
+      "win/mf_feature_checks.cc",
+      "win/mf_feature_checks.h",
     ]
   }
 

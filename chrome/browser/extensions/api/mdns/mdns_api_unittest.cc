@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -132,9 +133,8 @@ class EventServiceListSizeMatcher
     }
     const base::ListValue* services = nullptr;
     {
-      const base::Value* out;
-      e.event_args->Get(0, &out);
-      services = static_cast<const base::ListValue*>(out);
+      const base::Value& out = e.event_args->GetList()[0];
+      services = static_cast<const base::ListValue*>(&out);
     }
     if (!services) {
       *listener << "event's service list argument is not a ListValue";
@@ -265,7 +265,7 @@ class MDnsAPIDiscoveryTest : public MDnsAPITest {
   }
 
  protected:
-  MockedMDnsAPI* mdns_api_;
+  raw_ptr<MockedMDnsAPI> mdns_api_;
 };
 
 TEST_F(MDnsAPIDiscoveryTest, ServiceListenersAddedAndRemoved) {

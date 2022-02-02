@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "base/containers/ring_buffer.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/frame_sorter.h"
 #include "cc/metrics/ukm_smoothness_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cc {
+struct FrameInfo;
 class TotalFrameCounter;
 
 // This class maintains a counter for produced/dropped frames, and can be used
@@ -34,6 +36,7 @@ class CC_EXPORT DroppedFrameCounter {
    public:
     void AddPercentDroppedFrame(double percent_dropped_frame, size_t count = 1);
     uint32_t GetPercentDroppedFramePercentile(double percentile) const;
+    double GetPercentDroppedFrameVariance() const;
     std::vector<double> GetPercentDroppedFrameBuckets() const;
     void Clear();
     std::ostream& Dump(std::ostream& stream) const;
@@ -74,7 +77,7 @@ class CC_EXPORT DroppedFrameCounter {
   void ReportFramesForUI();
 
   void OnBeginFrame(const viz::BeginFrameArgs& args, bool is_scroll_active);
-  void OnEndFrame(const viz::BeginFrameArgs& args, bool is_dropped);
+  void OnEndFrame(const viz::BeginFrameArgs& args, const FrameInfo& frame_info);
   void SetUkmSmoothnessDestination(UkmSmoothnessDataShared* smoothness_data);
   void OnFcpReceived();
 
@@ -120,12 +123,21 @@ class CC_EXPORT DroppedFrameCounter {
     return sliding_window_histogram_.GetPercentDroppedFramePercentile(0.95);
   }
 
+  uint32_t SlidingWindowMedianPercentDropped() const {
+    return sliding_window_histogram_.GetPercentDroppedFramePercentile(0.5);
+  }
+
+  double SlidingWindowPercentDroppedVariance() const {
+    return sliding_window_histogram_.GetPercentDroppedFrameVariance();
+  }
+
   const SlidingWindowHistogram* GetSlidingWindowHistogram() const {
     return &sliding_window_histogram_;
   }
 
  private:
-  void NotifyFrameResult(const viz::BeginFrameArgs& args, bool is_dropped);
+  void NotifyFrameResult(const viz::BeginFrameArgs& args,
+                         const FrameInfo& frame_info);
   base::TimeDelta ComputeCurrentWindowSize() const;
 
   void PopSlidingWindow();
@@ -152,9 +164,9 @@ class CC_EXPORT DroppedFrameCounter {
   absl::optional<double> sliding_window_max_percent_dropped_After_5_sec_;
   base::TimeTicks time_fcp_received_;
   base::TimeDelta time_max_delta_;
-  UkmSmoothnessDataShared* ukm_smoothness_data_ = nullptr;
+  raw_ptr<UkmSmoothnessDataShared> ukm_smoothness_data_ = nullptr;
   FrameSorter frame_sorter_;
-  TotalFrameCounter* total_counter_ = nullptr;
+  raw_ptr<TotalFrameCounter> total_counter_ = nullptr;
 
   struct {
     double max_window = 0;

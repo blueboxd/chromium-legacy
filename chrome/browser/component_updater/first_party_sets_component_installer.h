@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -30,7 +31,7 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   // |on_sets_ready| will be called on the UI thread when the sets are ready. It
   // is exposed here for testing.
   explicit FirstPartySetsComponentInstallerPolicy(
-      base::RepeatingCallback<void(const std::string&)> on_sets_ready);
+      base::RepeatingCallback<void(base::File)> on_sets_ready);
   ~FirstPartySetsComponentInstallerPolicy() override;
 
   FirstPartySetsComponentInstallerPolicy(
@@ -41,12 +42,13 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   // Calls the callback with the current First-Party Sets data, if the data
   // exists and can be read.
   static void ReconfigureAfterNetworkRestart(
-      const base::RepeatingCallback<void(const std::string&)>&);
+      base::OnceCallback<void(base::File)>);
 
   // Resets static state. Should only be used to clear state during testing.
   static void ResetForTesting();
 
   static const char kDogfoodInstallerAttributeName[];
+  static const char kV2FormatOptIn[];
 
   // Seeds a component at `install_dir` with the given `contents`. Only to be
   // used in testing.
@@ -54,6 +56,8 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
                                        base::StringPiece contents);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FirstPartySetsComponentInstallerTest,
+                           NonexistentFile_OnComponentReady);
   FRIEND_TEST_ALL_PREFIXES(FirstPartySetsComponentInstallerTest,
                            LoadsSets_OnComponentReady);
   FRIEND_TEST_ALL_PREFIXES(FirstPartySetsComponentInstallerTest,
@@ -68,6 +72,8 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
                            GetInstallerAttributes_NonDogfooder);
   FRIEND_TEST_ALL_PREFIXES(FirstPartySetsComponentInstallerTest,
                            GetInstallerAttributes_Dogfooder);
+  FRIEND_TEST_ALL_PREFIXES(FirstPartySetsComponentInstallerTest,
+                           GetInstallerAttributes_V2OptOut);
 
   // The following methods override ComponentInstallerPolicy.
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
@@ -92,7 +98,7 @@ class FirstPartySetsComponentInstallerPolicy : public ComponentInstallerPolicy {
 
   static base::FilePath GetInstalledPath(const base::FilePath& base);
 
-  base::RepeatingCallback<void(const std::string&)> on_sets_ready_;
+  base::RepeatingCallback<void(base::File)> on_sets_ready_;
 };
 
 // Call once during startup to make the component update service aware of

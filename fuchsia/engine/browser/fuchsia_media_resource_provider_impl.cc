@@ -32,13 +32,6 @@ FuchsiaMediaResourceProviderImpl::FuchsiaMediaResourceProviderImpl(
 
 FuchsiaMediaResourceProviderImpl::~FuchsiaMediaResourceProviderImpl() = default;
 
-void FuchsiaMediaResourceProviderImpl::ShouldUseAudioConsumer(
-    ShouldUseAudioConsumerCallback callback) {
-  auto* frame_impl = FrameImpl::FromRenderFrameHost(render_frame_host());
-  DCHECK(frame_impl);
-  std::move(callback).Run(frame_impl->media_session_id().has_value());
-}
-
 void FuchsiaMediaResourceProviderImpl::CreateAudioConsumer(
     fidl::InterfaceRequest<fuchsia::media::AudioConsumer> request) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -54,14 +47,7 @@ void FuchsiaMediaResourceProviderImpl::CreateAudioConsumer(
                      ->Connect<fuchsia::media::SessionAudioConsumerFactory>();
   auto* frame_impl = FrameImpl::FromRenderFrameHost(render_frame_host());
   DCHECK(frame_impl);
-
-  if (!frame_impl->media_session_id().has_value()) {
-    LOG(WARNING) << "Renderer tried creating AudioConsumer for a Frame without "
-                    "media_session_id().";
-    return;
-  }
-
-  factory->CreateAudioConsumer(frame_impl->media_session_id().value(),
+  factory->CreateAudioConsumer(frame_impl->media_session_id(),
                                std::move(request));
 }
 

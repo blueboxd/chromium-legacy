@@ -8,17 +8,15 @@
 #include <memory>
 
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/threading/simple_thread.h"
 #include "content/browser/sandbox_ipc_linux.h"
-#include "content/common/content_export.h"
 
 namespace content {
 
 // This is a singleton object which handles sandbox requests from the
 // sandboxed processes.
-class CONTENT_EXPORT SandboxHostLinux {
+class SandboxHostLinux {
  public:
   // Returns the singleton instance.
   static SandboxHostLinux* GetInstance();

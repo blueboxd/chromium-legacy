@@ -264,7 +264,7 @@ void LoginScreenClientImpl::ShowParentAccessHelpApp() {
 void LoginScreenClientImpl::ShowLockScreenNotificationSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(),
-      chromeos::settings::mojom::kSecurityAndSignInSubpagePath);
+      chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2);
 }
 
 void LoginScreenClientImpl::OnFocusLeavingSystemTray(bool reverse) {
@@ -342,9 +342,8 @@ void LoginScreenClientImpl::SetPublicSessionKeyboardLayout(
     dictionary->GetString("title", &title);
     input_method_item.title = title;
 
-    bool selected;
-    dictionary->GetBoolean("selected", &selected);
-    input_method_item.selected = selected;
+    input_method_item.selected =
+        dictionary->FindBoolKey("selected").value_or(false);
     result.push_back(std::move(input_method_item));
   }
   ash::LoginScreen::Get()->GetModel()->SetPublicSessionKeyboardLayouts(

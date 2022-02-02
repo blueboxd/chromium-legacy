@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
@@ -219,6 +218,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
           .Wait());
   ASSERT_TRUE(GetSyncService(1)->GetUserSettings()->SetDecryptionPassphrase(
       "passphrase"));
+  // Make sure that re-encryption happens before opening the tab (otherwise race
+  // condition may occur when second client attempts to re-encrypt data, while
+  // first client attempts to commit local changes).
+  ASSERT_TRUE(AwaitQuiescence());
 
   EXPECT_TRUE(OpenTab(0, GURL(kURL1)));
   EXPECT_TRUE(WaitForForeignSessionsToSync(0, 1));

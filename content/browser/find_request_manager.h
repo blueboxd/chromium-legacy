@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/containers/queue.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/stop_find_action.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -32,7 +32,7 @@ class WebContentsImpl;
 // results from each frame, and facilitates active match traversal. It is
 // instantiated once per top-level WebContents, and is owned by that
 // WebContents.
-class CONTENT_EXPORT FindRequestManager {
+class FindRequestManager {
  public:
   explicit FindRequestManager(WebContentsImpl* web_contents);
 
@@ -121,6 +121,8 @@ class CONTENT_EXPORT FindRequestManager {
   }
 
  private:
+  friend class FindRequestManagerFencedFrameTest;
+
   // An invalid ID. This value is invalid for any render process ID, render
   // frame ID, find request ID, or find match rects version number.
   static const int kInvalidId;
@@ -190,7 +192,7 @@ class CONTENT_EXPORT FindRequestManager {
 
   // Returns whether |rfh| is in the set of frames being searched in the current
   // find session.
-  bool CheckFrame(RenderFrameHost* rfh) const;
+  CONTENT_EXPORT bool CheckFrame(RenderFrameHost* rfh) const;
 
   // Computes and updates |active_match_ordinal_| based on |active_frame_| and
   // |relative_active_match_ordinal_|.
@@ -233,7 +235,7 @@ class CONTENT_EXPORT FindRequestManager {
     float nearest_distance = FLT_MAX;
 
     // The frame containing the nearest result found so far.
-    RenderFrameHostImpl* nearest_frame = nullptr;
+    raw_ptr<RenderFrameHostImpl> nearest_frame = nullptr;
 
     // Nearest find result replies are still pending for these frames.
     std::unordered_set<RenderFrameHost*> pending_replies;
@@ -292,7 +294,7 @@ class CONTENT_EXPORT FindRequestManager {
   // The WebContents that owns this FindRequestManager. This also defines the
   // scope of all find sessions. Only frames in |contents_| and any inner
   // WebContentses within it will be searched.
-  WebContentsImpl* const contents_;
+  const raw_ptr<WebContentsImpl> contents_;
 
   // The request ID of the initial find request in the current find-in-page
   // session, which uniquely identifies this session. Request IDs are included
@@ -312,7 +314,7 @@ class CONTENT_EXPORT FindRequestManager {
 
   // The frame (if any) that is still expected to reply to the last pending
   // "find next" request.
-  RenderFrameHost* pending_find_next_reply_ = nullptr;
+  raw_ptr<RenderFrameHost> pending_find_next_reply_ = nullptr;
 
   // Indicates whether an update to the active match ordinal is expected. Once
   // set, |pending_active_match_ordinal_| will not reset until an update to the
@@ -332,7 +334,7 @@ class CONTENT_EXPORT FindRequestManager {
   int number_of_matches_ = 0;
 
   // The frame containing the active match, if one exists, or nullptr otherwise.
-  RenderFrameHostImpl* active_frame_ = nullptr;
+  raw_ptr<RenderFrameHostImpl> active_frame_ = nullptr;
 
   // The active match ordinal relative to the matches found in its own frame.
   int relative_active_match_ordinal_ = 0;

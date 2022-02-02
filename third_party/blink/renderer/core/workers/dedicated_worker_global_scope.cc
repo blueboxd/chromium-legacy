@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/worker_main_script_load_parameters.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
@@ -46,12 +47,14 @@
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
+#include "third_party/blink/renderer/platform/back_forward_cache_buffer_limit_tracker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -195,6 +198,14 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
 }
 
 DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
+
+void DedicatedWorkerGlobalScope::Dispose() {
+  BackForwardCacheBufferLimitTracker::Get()
+      .DidRemoveFrameOrWorkerFromBackForwardCache(
+          total_bytes_buffered_while_in_back_forward_cache_);
+  total_bytes_buffered_while_in_back_forward_cache_ = 0;
+  WorkerGlobalScope::Dispose();
+}
 
 const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kDedicatedWorkerGlobalScope;
@@ -465,11 +476,67 @@ DedicatedWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()
   return static_cast<DedicatedWorkerThread*>(GetThread())->WorkerObjectProxy();
 }
 
+void DedicatedWorkerGlobalScope::UpdateBackForwardCacheDisablingFeatures(
+    uint64_t features_mask) {
+  // `back_forward_cache_controller_host_` might not be bound when non-
+  // PlzDedicatedWorker is used. Non-PlzDedicatedWorker will be removed in near
+  // future.
+  // TODO(hajimehoshi): Remove this 'if' branch after non-PlzDedicatedWorker is
+  // removed.
+  if (!back_forward_cache_controller_host_.is_bound()) {
+    return;
+  }
+
+  back_forward_cache_controller_host_
+      ->DidChangeBackForwardCacheDisablingFeatures(features_mask);
+}
+
 void DedicatedWorkerGlobalScope::Trace(Visitor* visitor) const {
   visitor->Trace(dedicated_worker_host_);
   visitor->Trace(back_forward_cache_controller_host_);
   visitor->Trace(animation_frame_provider_);
+  visitor->Trace(dedicated_workers_);
   WorkerGlobalScope::Trace(visitor);
+}
+
+void DedicatedWorkerGlobalScope::EvictFromBackForwardCache(
+    mojom::blink::RendererEvictionReason reason) {
+  if (!base::FeatureList::IsEnabled(
+          features::kBackForwardCacheDedicatedWorker)) {
+    return;
+  }
+  if (!back_forward_cache_controller_host_.is_bound()) {
+    return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("BackForwardCache.Eviction.Renderer", reason);
+  back_forward_cache_controller_host_->EvictFromBackForwardCache(reason);
+}
+
+void DedicatedWorkerGlobalScope::DidBufferLoadWhileInBackForwardCache(
+    size_t num_bytes) {
+  total_bytes_buffered_while_in_back_forward_cache_ += num_bytes;
+  BackForwardCacheBufferLimitTracker::Get().DidBufferBytes(num_bytes);
+}
+
+void DedicatedWorkerGlobalScope::SetIsInBackForwardCache(
+    bool is_in_back_forward_cache) {
+  WorkerGlobalScope::SetIsInBackForwardCache(is_in_back_forward_cache);
+  if (!is_in_back_forward_cache) {
+    BackForwardCacheBufferLimitTracker::Get()
+        .DidRemoveFrameOrWorkerFromBackForwardCache(
+            total_bytes_buffered_while_in_back_forward_cache_);
+    total_bytes_buffered_while_in_back_forward_cache_ = 0;
+  }
+}
+
+void DedicatedWorkerGlobalScope::AddDedicatedWorker(
+    DedicatedWorker* dedicated_worker) {
+  dedicated_workers_.insert(dedicated_worker);
+}
+
+void DedicatedWorkerGlobalScope::RemoveDedicatedWorker(
+    DedicatedWorker* dedicated_worker) {
+  dedicated_workers_.erase(dedicated_worker);
 }
 
 }  // namespace blink

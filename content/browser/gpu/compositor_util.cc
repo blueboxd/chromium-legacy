@@ -20,7 +20,6 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/features.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -40,6 +39,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/common/switches.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_switches.h"
 
 namespace content {
@@ -221,6 +221,8 @@ const GpuFeatureData GetGpuFeatureData(
      !features::IsUsingSkiaRenderer(), DisableInfo::NotProblem(), false},
     {"raw_draw", gpu::kGpuFeatureStatusEnabled, !features::IsUsingRawDraw(),
      DisableInfo::NotProblem(), false},
+    {"direct_rendering_display_compositor", gpu::kGpuFeatureStatusEnabled,
+     !features::IsDrDcEnabled(), DisableInfo::NotProblem(), false},
   };
   DCHECK(index < base::size(kGpuFeatureData));
   *eof = (index == base::size(kGpuFeatureData) - 1);
@@ -255,6 +257,7 @@ base::Value GetFeatureStatusImpl(GpuFeatureInfoType type) {
     // Features undergoing a finch controlled roll out.
     if (gpu_feature_data.name == "skia_renderer" ||
         gpu_feature_data.name == "raw_draw" ||
+        gpu_feature_data.name == "direct_rendering_display_compositor" ||
         gpu_feature_data.name == "viz_hit_test_surface_layer") {
       status = (gpu_feature_data.disabled ? "disabled_off_ok" : "enabled_on");
     } else if (gpu_feature_data.disabled || gpu_access_blocked ||
@@ -405,7 +408,7 @@ int NumberOfRendererRasterThreads() {
   int num_processors = base::SysInfo::NumberOfProcessors();
 
 #if defined(OS_ANDROID) || \
-    (BUILDFLAG(IS_CHROMEOS_ASH) && defined(ARCH_CPU_ARM_FAMILY))
+    (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))
   // Android and ChromeOS ARM devices may report 6 to 8 CPUs for big.LITTLE
   // configurations. Limit the number of raster threads based on maximum of
   // 4 big cores.
@@ -455,6 +458,11 @@ bool IsPartialRasterEnabled() {
 }
 
 bool IsGpuMemoryBufferCompositorResourcesEnabled() {
+  // To use Raw Draw, the Raw Draw shared image backing should be used, so
+  // not use GPU memory buffer shared image backings for compositor resources.
+  if (features::IsUsingRawDraw()) {
+    return false;
+  }
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(

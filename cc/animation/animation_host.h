@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -17,6 +18,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
@@ -68,6 +70,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   scoped_refptr<ElementAnimations> GetElementAnimationsForElementId(
       ElementId element_id) const;
 
+  gfx::PointF GetScrollOffsetForAnimation(ElementId element_id) const;
+
   // Parent LayerTreeHost or LayerTreeHostImpl.
   MutatorHostClient* mutator_host_client() { return mutator_host_client_; }
   const MutatorHostClient* mutator_host_client() const {
@@ -98,7 +102,8 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
 
-  void PushPropertiesTo(MutatorHost* host_impl) override;
+  void PushPropertiesTo(MutatorHost* host_impl,
+                        const PropertyTrees& property_trees) override;
 
   void SetScrollAnimationDurationForTesting(base::TimeDelta duration) override;
   bool NeedsTickAnimations() const override;
@@ -159,22 +164,21 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   void ImplOnlyAutoScrollAnimationCreate(
       ElementId element_id,
-      const gfx::Vector2dF& target_offset,
-      const gfx::Vector2dF& current_offset,
+      const gfx::PointF& target_offset,
+      const gfx::PointF& current_offset,
       float autoscroll_velocity,
       base::TimeDelta animation_start_offset) override;
 
   void ImplOnlyScrollAnimationCreate(
       ElementId element_id,
-      const gfx::Vector2dF& target_offset,
-      const gfx::Vector2dF& current_offset,
+      const gfx::PointF& target_offset,
+      const gfx::PointF& current_offset,
       base::TimeDelta delayed_by,
       base::TimeDelta animation_start_offset) override;
-  bool ImplOnlyScrollAnimationUpdateTarget(
-      const gfx::Vector2dF& scroll_delta,
-      const gfx::Vector2dF& max_scroll_offset,
-      base::TimeTicks frame_monotonic_time,
-      base::TimeDelta delayed_by) override;
+  bool ImplOnlyScrollAnimationUpdateTarget(const gfx::Vector2dF& scroll_delta,
+                                           const gfx::PointF& max_scroll_offset,
+                                           base::TimeTicks frame_monotonic_time,
+                                           base::TimeDelta delayed_by) override;
 
   void ScrollAnimationAbort() override;
 
@@ -255,7 +259,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
       std::unordered_map<int, scoped_refptr<AnimationTimeline>>;
   IdToTimelineMap id_to_timeline_map_;
 
-  MutatorHostClient* mutator_host_client_;
+  raw_ptr<MutatorHostClient> mutator_host_client_;
+
+  // This is only non-null within the call scope of PushPropertiesTo().
+  const PropertyTrees* property_trees_ = nullptr;
 
   // Exactly one of scroll_offset_animations_ and scroll_offset_animations_impl_
   // will be non-null for a given AnimationHost instance (the former if

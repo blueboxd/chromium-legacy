@@ -26,7 +26,7 @@
 
 #include "base/clang_profiling_buildflags.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -153,7 +153,9 @@ BPF_TEST_C(BaselinePolicy, ForkArmEperm, BaselinePolicy) {
 BPF_TEST_C(BaselinePolicy, SystemEperm, BaselinePolicy) {
   errno = 0;
   int ret_val = system("echo SHOULD NEVER RUN");
-  BPF_ASSERT_EQ(-1, ret_val);
+  // glibc >= 2.33 changed the ret code: 127 is now expected on bits 15-8
+  // previously it was simply -1, so check for not zero
+  BPF_ASSERT_NE(0, ret_val);
   BPF_ASSERT_EQ(EPERM, errno);
 }
 

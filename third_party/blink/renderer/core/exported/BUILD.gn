@@ -19,8 +19,6 @@ static_library("test_support") {
 }
 
 blink_core_sources("exported") {
-  configs += [ "//build/config/compiler:noshadowing" ]
-
   sources = [
     "web_array_buffer.cc",
     "web_array_buffer_converter.cc",
@@ -75,7 +73,6 @@ blink_core_sources("exported") {
     "web_scoped_page_pauser.cc",
     "web_scoped_window_focus_allowed_indicator.cc",
     "web_script_controller.cc",
-    "web_script_source.cc",
     "web_searchable_form_data.cc",
     "web_security_policy.cc",
     "web_select_element.cc",
@@ -101,7 +98,7 @@ blink_core_sources("exported") {
     "//build:chromeos_buildflags",
     "//third_party/blink/renderer/core:core_generated",
     "//third_party/blink/renderer/core/probe",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 

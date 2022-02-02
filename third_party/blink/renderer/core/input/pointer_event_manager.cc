@@ -364,12 +364,11 @@ void PointerEventManager::AdjustTouchPointerEvent(
 
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kTouchEvent | HitTestRequest::kReadOnly |
-      HitTestRequest::kActive | HitTestRequest::kListBased |
-      HitTestRequest::kRetargetForInert;
+      HitTestRequest::kActive | HitTestRequest::kListBased;
   LocalFrame& root_frame = frame_->LocalFrameRoot();
   // TODO(szager): Shouldn't this be PositionInScreen() ?
-  PhysicalOffset hit_test_point = PhysicalOffset::FromFloatPointRound(
-      FloatPoint(pointer_event.PositionInWidget()));
+  PhysicalOffset hit_test_point =
+      PhysicalOffset::FromPointFRound(pointer_event.PositionInWidget());
   hit_test_point -= PhysicalOffset(hit_rect_size * 0.5f);
   HitTestLocation location(PhysicalRect(hit_test_point, hit_rect_size));
   HitTestResult hit_test_result =
@@ -383,8 +382,7 @@ void PointerEventManager::AdjustTouchPointerEvent(
     pointer_event.SetPositionInWidget(adjusted_point.x(), adjusted_point.y());
 
   frame_->GetEventHandler().CacheTouchAdjustmentResult(
-      pointer_event.unique_touch_event_id,
-      FloatPoint(pointer_event.PositionInWidget()));
+      pointer_event.unique_touch_event_id, pointer_event.PositionInWidget());
 }
 
 bool PointerEventManager::ShouldFilterEvent(PointerEvent* pointer_event) {
@@ -422,12 +420,11 @@ PointerEventManager::ComputePointerEventTarget(
   // before firing the event.
   if (web_pointer_event.GetType() == WebInputEvent::Type::kPointerDown ||
       !pending_pointer_capture_target_.Contains(pointer_id)) {
-    HitTestRequest::HitTestRequestType hit_type =
-        HitTestRequest::kTouchEvent | HitTestRequest::kReadOnly |
-        HitTestRequest::kActive | HitTestRequest::kRetargetForInert;
+    HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
+                                                  HitTestRequest::kReadOnly |
+                                                  HitTestRequest::kActive;
     HitTestLocation location(frame_->View()->ConvertFromRootFrame(
-        PhysicalOffset::FromFloatPointRound(
-            FloatPoint(web_pointer_event.PositionInWidget()))));
+        PhysicalOffset::FromPointFRound(web_pointer_event.PositionInWidget())));
     HitTestResult hit_test_tesult =
         frame_->GetEventHandler().HitTestResultAtLocation(location, hit_type);
     Element* target = hit_test_tesult.InnerElement();
@@ -712,7 +709,7 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
         WebInputEvent::Modifiers::kRelativeMotionEvent)) {
     // Fetch the last_mouse_position for creating MouseEvent before
     // pointer_event_factory updates it.
-    FloatPoint last_mouse_position =
+    gfx::PointF last_mouse_position =
         pointer_event_factory_.GetLastPointerPosition(
             PointerEventFactory::kMouseId, event, event.GetType());
 
@@ -726,8 +723,8 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
     return result;
   }
   pointer_event_factory_.SetLastPosition(
-      pointer_event_factory_.GetPointerEventId(event),
-      FloatPoint(event.PositionInScreen()), event.GetType());
+      pointer_event_factory_.GetPointerEventId(event), event.PositionInScreen(),
+      event.GetType());
 
   return WebInputEventResult::kHandledSuppressed;
 }
@@ -753,7 +750,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
 
   // Fetch the last_mouse_position for creating MouseEvent before
   // pointer_event_factory updates it.
-  FloatPoint last_mouse_position =
+  gfx::PointF last_mouse_position =
       pointer_event_factory_.GetLastPointerPosition(
           pointer_event_factory_.GetPointerEventId(mouse_event), mouse_event,
           event_type);
@@ -861,8 +858,7 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
       // test to find the new target.
       if (pointer_capture_target_.find(pointer_event->pointerId()) !=
           pointer_capture_target_.end()) {
-        HitTestRequest::HitTestRequestType hit_type =
-            HitTestRequest::kRelease | HitTestRequest::kRetargetForInert;
+        HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kRelease;
         HitTestRequest request(hit_type);
         MouseEventWithHitTestResults mev =
             event_handling_util::PerformMouseEventHitTest(frame_, request,
@@ -1113,9 +1109,9 @@ void PointerEventManager::SetLastPointerPositionForFrameBoundary(
     pointer_event_factory_.RemoveLastPosition(pointer_id);
   } else if (!last_target || new_target->GetDocument().GetFrame() !=
                                  last_target->GetDocument().GetFrame()) {
-    pointer_event_factory_.SetLastPosition(
-        pointer_id, FloatPoint(web_pointer_event.PositionInScreen()),
-        web_pointer_event.GetType());
+    pointer_event_factory_.SetLastPosition(pointer_id,
+                                           web_pointer_event.PositionInScreen(),
+                                           web_pointer_event.GetType());
   }
 }
 

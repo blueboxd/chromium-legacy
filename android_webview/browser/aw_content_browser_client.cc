@@ -301,7 +301,7 @@ AwBrowserContext* AwContentBrowserClient::InitBrowserContext() {
 
 std::unique_ptr<content::BrowserMainParts>
 AwContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters) {
+    content::MainFunctionParams /*parameters*/) {
   return std::make_unique<AwBrowserMainParts>(this);
 }
 
@@ -877,6 +877,13 @@ void AwContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
             aw_browser_context->GetPath(),
             aw_browser_context->GetSharedCorsOriginAccessList()));
   }
+}
+
+bool AwContentBrowserClient::ShouldAllowNoLongerUsedProcessToExit() {
+  // TODO(crbug.com/1268454): Add Android WebView support for allowing a
+  // renderer process to exit when only non-live RenderFrameHosts remain,
+  // without consulting the app's OnRenderProcessGone crash handlers.
+  return false;
 }
 
 bool AwContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {

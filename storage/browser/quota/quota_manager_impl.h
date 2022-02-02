@@ -18,9 +18,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/containers/contains.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
@@ -331,9 +329,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // bucket. Used by the Storage Bucket API for bucket deletion. If no bucket is
   // found, it will return QuotaStatusCode::kOk since it has no bucket data to
   // delete.
-  void FindAndDeleteBucketData(const blink::StorageKey& storage_key,
-                               const std::string& bucket_name,
-                               StatusCallback callback);
+  virtual void FindAndDeleteBucketData(const blink::StorageKey& storage_key,
+                                       const std::string& bucket_name,
+                                       StatusCallback callback);
 
   // Instructs each QuotaClient to remove possible traces of deleted
   // data on the disk.
@@ -547,12 +545,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void GetLRUBucket(blink::mojom::StorageType type, GetBucketCallback callback);
 
   void DidGetPersistentHostQuota(const std::string& host,
-                                 const int64_t* quota,
-                                 bool success);
+                                 QuotaErrorOr<int64_t> result);
   void DidSetPersistentHostQuota(const std::string& host,
                                  QuotaCallback callback,
                                  const int64_t* new_quota,
-                                 bool success);
+                                 QuotaError error);
   void DidGetLRUBucket(QuotaErrorOr<BucketLocator> result);
   void GetQuotaSettings(QuotaSettingsCallback callback);
   void DidGetSettings(absl::optional<QuotaSettings> settings);
@@ -562,6 +559,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
       const std::tuple<int64_t, int64_t>& total_and_available);
 
   void DidDatabaseWork(bool success);
+  void OnComplete(QuotaError result);
 
   void DidGetBucket(base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback,
                     QuotaErrorOr<BucketInfo> result);
@@ -606,6 +604,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void PostTaskAndReplyWithResultForDBThread(
       base::OnceCallback<QuotaErrorOr<ValueType>(QuotaDatabase*)> task,
       base::OnceCallback<void(QuotaErrorOr<ValueType>)> reply,
+      const base::Location& from_here = base::Location::Current());
+
+  void PostTaskAndReplyWithResultForDBThread(
+      base::OnceCallback<QuotaError(QuotaDatabase*)> task,
+      base::OnceCallback<void(QuotaError)> reply,
       const base::Location& from_here = base::Location::Current());
 
   static std::tuple<int64_t, int64_t> CallGetVolumeInfo(

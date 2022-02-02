@@ -14,7 +14,6 @@
 #include "ash/components/drivefs/drivefs_host.h"
 #include "ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -141,6 +140,9 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void LocateFilesByItemIds(
       const std::vector<std::string>& item_ids,
       drivefs::mojom::DriveFs::LocateFilesByItemIdsCallback callback) override;
+
+  void GetQuotaUsage(
+      drivefs::mojom::DriveFs::GetQuotaUsageCallback callback) override;
 
   const base::FilePath mount_path_;
   int64_t next_stable_id_ = 1;

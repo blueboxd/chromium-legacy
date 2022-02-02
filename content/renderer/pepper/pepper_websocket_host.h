@@ -10,9 +10,7 @@
 #include <memory>
 #include <queue>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/common/content_export.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/resource_message_params.h"
@@ -23,9 +21,8 @@ namespace content {
 
 class RendererPpapiHost;
 
-class CONTENT_EXPORT PepperWebSocketHost
-    : public ppapi::host::ResourceHost,
-      public ::blink::WebPepperSocketClient {
+class PepperWebSocketHost : public ppapi::host::ResourceHost,
+                            public ::blink::WebPepperSocketClient {
  public:
   explicit PepperWebSocketHost(RendererPpapiHost* host,
                                PP_Instance instance,

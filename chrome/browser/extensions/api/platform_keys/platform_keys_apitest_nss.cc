@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_service.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
-#include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/net/nss_service.h"
+#include "chrome/browser/net/nss_service_factory.h"
 #include "chrome/browser/platform_keys/extension_key_permissions_service.h"
 #include "chrome/browser/platform_keys/extension_key_permissions_service_factory.h"
 #include "chrome/browser/platform_keys/extension_platform_keys_service.h"
@@ -77,10 +77,10 @@ class PlatformKeysTest : public PlatformKeysTestBase {
 
     {
       base::RunLoop loop;
-      GetNSSCertDatabaseForProfile(
-          profile(),
-          base::BindOnce(&PlatformKeysTest::SetupTestCerts,
-                         base::Unretained(this), loop.QuitClosure()));
+      NssServiceFactory::GetForContext(profile())
+          ->UnsafelyGetNSSCertDatabaseForTesting(
+              base::BindOnce(&PlatformKeysTest::SetupTestCerts,
+                             base::Unretained(this), loop.QuitClosure()));
       loop.Run();
     }
 

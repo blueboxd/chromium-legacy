@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -116,7 +117,7 @@ void OnAppIconsLoaded(content::WebContents* web_contents,
       /*show_stay_in_chrome=*/true,
       /*show_remember_selection=*/true,
       base::BindOnce(&OnIntentPickerClosedChromeOs, web_contents,
-                     ui_auto_display_service, url));
+                     ui_auto_display_service, PickerShowState::kPopOut, url));
 }
 
 }  // namespace
@@ -127,6 +128,10 @@ void MaybeShowIntentPickerBubble(content::NavigationHandle* navigation_handle,
                           PickerShowState::kOmnibox) {
     return;
   }
+
+  IntentHandlingMetrics::RecordIntentPickerIconEvent(
+      IntentHandlingMetrics::IntentPickerIconEvent::kAutoPopOut);
+
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   IntentPickerAutoDisplayService* ui_auto_display_service =
       IntentPickerAutoDisplayService::Get(
@@ -150,6 +155,7 @@ bool ContainsOnlyPwasAndMacApps(const std::vector<IntentPickerAppInfo>& apps) {
 void OnIntentPickerClosedChromeOs(
     content::WebContents* web_contents,
     IntentPickerAutoDisplayService* ui_auto_display_service,
+    PickerShowState show_state,
     const GURL& url,
     const std::string& launch_name,
     PickerEntryType entry_type,
@@ -216,13 +222,9 @@ void OnIntentPickerClosedChromeOs(
       CloseOrGoBack(web_contents);
     }
   }
-  IntentHandlingMetrics::PickerAction action =
-      IntentHandlingMetrics::GetPickerAction(entry_type, close_reason,
-                                             should_persist);
-  IntentHandlingMetrics::Platform platform =
-      IntentHandlingMetrics::GetDestinationPlatform(launch_name, action);
-  IntentHandlingMetrics::RecordIntentPickerMetrics(
-      Source::kHttpOrHttps, should_persist, action, platform);
+
+  IntentHandlingMetrics::RecordIntentPickerMetrics(entry_type, close_reason,
+                                                   should_persist, show_state);
 }
 
 }  // namespace apps

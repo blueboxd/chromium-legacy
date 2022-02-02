@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,20 +67,25 @@ class StatsReportingControllerTest : public testing::Test {
   }
 
   void ExpectThatPendingValueIs(bool expected) {
-    bool pending = false;
-    EXPECT_TRUE(StatsReportingController::Get()->GetPendingValue(&pending));
-    EXPECT_EQ(expected, pending);
+    absl::optional<base::Value> pending =
+        StatsReportingController::Get()->GetPendingValue();
+    EXPECT_TRUE(pending.has_value());
+    EXPECT_TRUE(pending->is_bool());
+    EXPECT_EQ(expected, pending->GetBool());
   }
 
   void ExpectThatPendingValueIsNotSet() {
-    bool pending = false;
-    EXPECT_FALSE(StatsReportingController::Get()->GetPendingValue(&pending));
+    absl::optional<base::Value> pending =
+        StatsReportingController::Get()->GetPendingValue();
+    EXPECT_FALSE(pending.has_value());
   }
 
   void ExpectThatSignedStoredValueIs(bool expected) {
-    bool stored = false;
-    EXPECT_TRUE(StatsReportingController::Get()->GetSignedStoredValue(&stored));
-    EXPECT_EQ(expected, stored);
+    absl::optional<base::Value> stored =
+        StatsReportingController::Get()->GetSignedStoredValue();
+    EXPECT_TRUE(stored.has_value());
+    EXPECT_TRUE(stored->is_bool());
+    EXPECT_EQ(expected, stored->GetBool());
   }
 
   void OnNotifiedOfChange() {

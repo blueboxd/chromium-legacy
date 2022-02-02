@@ -9,7 +9,6 @@
 
 #include "base/allocator/buildflags.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/media_switches.h"
@@ -53,22 +52,8 @@ class MediaInitializer {
   MediaInitializer(const MediaInitializer&) = delete;
   MediaInitializer& operator=(const MediaInitializer&) = delete;
 
-#if defined(OS_ANDROID)
-  void enable_platform_decoder_support() {
-    has_platform_decoder_support_ = true;
-  }
-
-  bool has_platform_decoder_support() const {
-    return has_platform_decoder_support_;
-  }
-#endif  // defined(OS_ANDROID)
-
  private:
   ~MediaInitializer() = delete;
-
-#if defined(OS_ANDROID)
-  bool has_platform_decoder_support_ = false;
-#endif  // defined(OS_ANDROID)
 };
 
 static MediaInitializer* GetMediaInstance() {
@@ -90,15 +75,5 @@ void InitializeMediaLibraryInSandbox(int64_t libyuv_cpu_flags,
 #endif
   GetMediaInstance();
 }
-
-#if defined(OS_ANDROID)
-void EnablePlatformDecoderSupport() {
-  GetMediaInstance()->enable_platform_decoder_support();
-}
-
-bool HasPlatformDecoderSupport() {
-  return GetMediaInstance()->has_platform_decoder_support();
-}
-#endif  // defined(OS_ANDROID)
 
 }  // namespace media

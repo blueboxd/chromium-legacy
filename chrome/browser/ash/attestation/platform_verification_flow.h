@@ -10,13 +10,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-// TODO(https://crbug.com/1164001): forward declare AttestationFlow
-// after //chromeos/attestation is moved to ash.
-#include "chromeos/attestation/attestation_flow.h"
 // TODO(https://crbug.com/1164001): forward declare AttestationClient
 // before ChromeOS source migration.
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -38,6 +34,7 @@ class User;
 namespace ash {
 namespace attestation {
 
+class AttestationFlow;
 class PlatformVerificationFlowTest;
 
 // This class allows platform verification for the content protection use case.

@@ -11,7 +11,6 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -49,6 +48,9 @@ bool ContainsBucket(const std::set<BucketLocator>& buckets,
 class MockQuotaManagerTest : public testing::Test {
  public:
   MockQuotaManagerTest() : deletion_callback_count_(0) {}
+
+  MockQuotaManagerTest(const MockQuotaManagerTest&) = delete;
+  MockQuotaManagerTest& operator=(const MockQuotaManagerTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -154,8 +156,6 @@ class MockQuotaManagerTest : public testing::Test {
   StorageType type_;
 
   base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerTest);
 };
 
 TEST_F(MockQuotaManagerTest, GetOrCreateBucket) {

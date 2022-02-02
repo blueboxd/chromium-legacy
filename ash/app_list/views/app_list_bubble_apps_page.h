@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 namespace views {
 class Separator;
@@ -29,9 +30,9 @@ class AppListFolderController;
 class AppListViewDelegate;
 class ContinueSectionView;
 class RecentAppsView;
-class ScopedScrollViewGradientDisabler;
 class ScrollableAppsGridView;
 class ScrollViewGradientHelper;
+class AppListReorderUndoContainerView;
 
 // The default page for the app list bubble / clamshell launcher. Contains a
 // scroll view with:
@@ -39,6 +40,7 @@ class ScrollViewGradientHelper;
 // - Grid of all apps
 // Does not include the search box, which is owned by a parent view.
 class ASH_EXPORT AppListBubbleAppsPage : public views::View,
+                                         public views::ViewObserver,
                                          public AppListModelProvider::Observer,
                                          public RecentAppsView::Delegate,
                                          public AppsGridViewFocusDelegate {
@@ -54,10 +56,6 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   AppListBubbleAppsPage& operator=(const AppListBubbleAppsPage&) = delete;
   ~AppListBubbleAppsPage() override;
 
-  // Disables all children so they cannot be focused, allowing the open folder
-  // view to handle focus.
-  void DisableFocusForShowingActiveFolder(bool disabled);
-
   // Starts the launcher show animation.
   void StartShowAnimation();
 
@@ -66,9 +64,28 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   // animates back to its original position. Public for testing.
   void SlideViewIntoPosition(views::View* view, int vertical_offset);
 
+  // Starts the launcher hide animation. None of the child views animate, but
+  // this disables the scroll view gradient mask to improve performance.
+  void StartHideAnimation();
+
+  // Aborts all layer animations, which invokes their cleanup callbacks.
+  void AbortAllAnimations();
+
+  // Disables all children so they cannot be focused, allowing the open folder
+  // view to handle focus.
+  void DisableFocusForShowingActiveFolder(bool disabled);
+
+  // Called when the app list temporary sort order changes. If `new_order` is
+  // null, the temporary sort order is cleared.
+  void OnTemporarySortOrderChanged(
+      const absl::optional<AppListSortOrder>& new_order);
+
   // views::View:
   void Layout() override;
-  void ChildVisibilityChanged(views::View* child) override;
+
+  // view::ViewObserver:
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               views::View* starting_view) override;
 
   // AppListModelProvider::Observer:
   void OnActiveAppListModelsChanged(AppListModel* model,
@@ -88,6 +105,9 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
 
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
   views::Separator* separator_for_test() { return separator_; }
+  AppListReorderUndoContainerView* reorder_undo_container_for_test() {
+    return reorder_undo_container_;
+  }
 
  private:
   friend class AppListTestHelper;
@@ -112,14 +132,11 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;
   views::Separator* separator_ = nullptr;
+  AppListReorderUndoContainerView* reorder_undo_container_ = nullptr;
   ScrollableAppsGridView* scrollable_apps_grid_view_ = nullptr;
 
   // Adds fade in/out gradients to `scroll_view_`.
   std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;
-
-  // Disables the gradient on `scroll_view_` during animations to improve
-  // performance. Must be destroyed before `gradient_helper_`.
-  std::unique_ptr<ScopedScrollViewGradientDisabler> gradient_disabler_;
 
   base::WeakPtrFactory<AppListBubbleAppsPage> weak_factory_{this};
 };

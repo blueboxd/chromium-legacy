@@ -4,11 +4,11 @@
 
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 
+#include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/components/phonehub/screen_lock_manager.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/check.h"
-#include "chromeos/components/phonehub/phone_hub_manager.h"
-#include "chromeos/components/phonehub/screen_lock_manager.h"
 
 namespace ash {
 namespace eche_app {
@@ -39,10 +39,23 @@ LaunchAppHelper::LaunchAppHelper(
 
 LaunchAppHelper::~LaunchAppHelper() = default;
 
-bool LaunchAppHelper::IsAppLaunchAllowed() const {
+LaunchAppHelper::AppLaunchProhibitedReason
+LaunchAppHelper::checkAppLaunchProhibitedReason(FeatureStatus status) const {
+  if (status == FeatureStatus::kNotEnabledByPhone) {
+    return LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByPhone;
+  }
+
+  if (IsScreenLockRequired()) {
+    return LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByScreenLock;
+  }
+
+  return LaunchAppHelper::AppLaunchProhibitedReason::kNotProhibited;
+}
+
+bool LaunchAppHelper::IsScreenLockRequired() const {
   const bool enable_phone_screen_lock =
       phone_hub_manager_->GetScreenLockManager()->GetLockStatus() ==
-      chromeos::phonehub::ScreenLockManager::LockStatus::kLockedOn;
+      phonehub::ScreenLockManager::LockStatus::kLockedOn;
   auto* session_controller = ash::Shell::Get()->session_controller();
   const bool enable_cros_screen_lock =
       session_controller->CanLockScreen() &&
@@ -50,7 +63,7 @@ bool LaunchAppHelper::IsAppLaunchAllowed() const {
   // We should ask users to enable screen lock if they enabled screen lock on
   // their phone but didn't enable yet on CrOS.
   const bool should_lock = enable_phone_screen_lock && !enable_cros_screen_lock;
-  return !should_lock;
+  return should_lock;
 }
 
 void LaunchAppHelper::ShowNotification(

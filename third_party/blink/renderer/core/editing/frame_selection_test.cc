@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -65,6 +66,22 @@ class FrameSelectionTest : public EditingTestBase {
 
   // Returns if a word is is selected.
   bool SelectWordAroundPosition(const Position&);
+
+  // Places the caret on the |text| at |selection_index|.
+  void ResetAndPlaceCaret(Text* text, int selection_index) {
+    Selection().SetSelectionAndEndTyping(
+        SelectionInDOMTree::Builder()
+            .Collapse(Position(text, selection_index))
+            .Build());
+  }
+
+  // Returns whether a context menu is being displayed.
+  bool HasContextMenu() {
+    return GetDocument()
+        .GetPage()
+        ->GetContextMenuController()
+        .ContextMenuNodeForFrame(GetDocument().GetFrame());
+  }
 
   void MoveRangeSelectionInternal(const Position& base,
                                   const Position& extent,
@@ -139,7 +156,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   {
     // To force layout in next updateLayout calling, widen view.
     LocalFrameView& frame_view = GetDummyPageHolder().GetFrameView();
-    IntRect frame_rect = frame_view.FrameRect();
+    gfx::Rect frame_rect = frame_view.FrameRect();
     frame_rect.set_width(frame_rect.width() + 1);
     frame_rect.set_height(frame_rect.height() + 1);
     GetDummyPageHolder().GetFrameView().SetFrameRect(frame_rect);
@@ -187,6 +204,160 @@ TEST_F(FrameSelectionTest, SelectWordAroundCaret2) {
   Node* const baz = GetDocument().body()->firstChild()->lastChild();
   EXPECT_TRUE(SelectWordAroundPosition(Position(baz, 2)));
   EXPECT_EQ_SELECTED_TEXT("baz");
+}
+
+TEST_F(FrameSelectionTest, SelectAroundCaret_Sentence) {
+  Text* text = AppendTextNode(
+      "This is the first sentence. This is the second sentence. This is the "
+      "last sentence.");
+  UpdateAllLifecyclePhasesForTest();
+
+  // This is the first sentence. Th|is is the second sentence. This is the last
+  // sentence.
+  ResetAndPlaceCaret(text, 30);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_EQ_SELECTED_TEXT("This is the second sentence.");
+
+  // This is the first sentence|. This is the second sentence. This is the last
+  // sentence.
+  ResetAndPlaceCaret(text, 26);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_EQ_SELECTED_TEXT("This is the first sentence.");
+
+  // This is the first sentence.| This is the second sentence. This is the last
+  // sentence.
+  ResetAndPlaceCaret(text, 27);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_EQ_SELECTED_TEXT(
+      "This is the first sentence. This is the second sentence.");
+
+  // This is the first sentence. |This is the second sentence. This is the last
+  // sentence.
+  ResetAndPlaceCaret(text, 28);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_EQ_SELECTED_TEXT(
+      "This is the first sentence. This is the second sentence.");
+
+  // This is the first sentence. T|his is the second sentence. This is the last
+  // sentence.
+  ResetAndPlaceCaret(text, 29);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_EQ_SELECTED_TEXT("This is the second sentence.");
+}
+
+TEST_F(FrameSelectionTest, SelectAroundCaret_ShouldShowHandle) {
+  Text* text = AppendTextNode("This is a sentence.");
+  int selection_index = 12;  // This is a se|ntence.
+  UpdateAllLifecyclePhasesForTest();
+
+  // Test that handles are never visible if the the handle_visibility param is
+  // set to not visible, regardless of the other params.
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_FALSE(Selection().IsHandleVisible());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kWord, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_FALSE(Selection().IsHandleVisible());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(TextGranularity::kSentence,
+                                            HandleVisibility::kNotVisible,
+                                            ContextMenuVisibility::kVisible));
+  EXPECT_FALSE(Selection().IsHandleVisible());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(TextGranularity::kWord,
+                                            HandleVisibility::kNotVisible,
+                                            ContextMenuVisibility::kVisible));
+  EXPECT_FALSE(Selection().IsHandleVisible());
+
+  // Make sure handles are always visible when the handle_visiblity param is
+  // set to visible, regardless of the other parameters.
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_TRUE(Selection().IsHandleVisible());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kWord, HandleVisibility::kVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_TRUE(Selection().IsHandleVisible());
+}
+
+TEST_F(FrameSelectionTest, SelectAroundCaret_ShouldShowContextMenu) {
+  Text* text = AppendTextNode("This is a sentence.");
+  int selection_index = 12;  // This is a se|ntence.
+  UpdateAllLifecyclePhasesForTest();
+
+  // Test that the context menu is never visible if the context_menu_visibility
+  // param is set to not visible, regardless of the other params.
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_FALSE(HasContextMenu());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kSentence, HandleVisibility::kVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_FALSE(HasContextMenu());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kWord, HandleVisibility::kNotVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_FALSE(HasContextMenu());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(
+      TextGranularity::kWord, HandleVisibility::kVisible,
+      ContextMenuVisibility::kNotVisible));
+  EXPECT_FALSE(HasContextMenu());
+
+  // Make sure the context menu is always visible when the
+  // context_menu_visibility param is set to visible, regardless of the other
+  // parameters.
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(TextGranularity::kSentence,
+                                            HandleVisibility::kNotVisible,
+                                            ContextMenuVisibility::kVisible));
+  EXPECT_TRUE(HasContextMenu());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(TextGranularity::kSentence,
+                                            HandleVisibility::kVisible,
+                                            ContextMenuVisibility::kVisible));
+  EXPECT_TRUE(HasContextMenu());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(TextGranularity::kWord,
+                                            HandleVisibility::kNotVisible,
+                                            ContextMenuVisibility::kVisible));
+  EXPECT_TRUE(HasContextMenu());
+
+  ResetAndPlaceCaret(text, selection_index);
+  EXPECT_TRUE(Selection().SelectAroundCaret(TextGranularity::kWord,
+                                            HandleVisibility::kVisible,
+                                            ContextMenuVisibility::kVisible));
+  EXPECT_TRUE(HasContextMenu());
 }
 
 TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {
@@ -608,7 +779,7 @@ TEST_F(FrameSelectionTest, FocusingButtonHidesRangeInDisabledTextControl) {
   // We use a double click to create the selection [Berlin].
   // FrameSelection::SelectAll (= textarea.select() in JavaScript) would have
   // been shorter, but currently that doesn't work on a *disabled* text control.
-  const IntRect elem_bounds = textarea->BoundsInViewport();
+  const gfx::Rect elem_bounds = textarea->BoundsInViewport();
   WebMouseEvent double_click(WebMouseEvent::Type::kMouseDown, 0,
                              WebInputEvent::GetStaticTimeStampForTests());
   double_click.SetPositionInWidget(elem_bounds.x(), elem_bounds.y());

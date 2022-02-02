@@ -20,10 +20,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
-#include <sys/sendfile.h>
-#endif
-
 #include "base/base_switches.h"
 #include "base/bits.h"
 #include "base/command_line.h"
@@ -57,6 +53,10 @@
 #include "base/mac/foundation_util.h"
 #endif
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#include <sys/sendfile.h>
+#endif
+
 #if defined(OS_ANDROID)
 #include "base/android/content_uri_utils.h"
 #include "base/os_compat_android.h"
@@ -76,7 +76,6 @@ namespace base {
 
 namespace {
 
-#if !defined(OS_NACL_NONSFI)
 // Helper for VerifyPathControlledByUser.
 bool VerifySpecificPathControlledByUser(const FilePath& path,
                                         uid_t owner_uid,
@@ -314,7 +313,6 @@ bool DoDeleteFile(const FilePath& path, bool recursive) {
   }
   return success;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 #if !defined(OS_APPLE)
 // Appends |mode_char| to |mode| before the optional character set encoding; see
@@ -331,7 +329,6 @@ std::string AppendModeCharacter(StringPiece mode, char mode_char) {
 
 }  // namespace
 
-#if !defined(OS_NACL_NONSFI)
 FilePath MakeAbsoluteFilePath(const FilePath& input) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   char full_path[PATH_MAX];
@@ -370,7 +367,6 @@ bool CopyDirectoryExcl(const FilePath& from_path,
                        bool recursive) {
   return DoCopyDirectory(from_path, to_path, recursive, true);
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool CreatePipe(ScopedFD* read_fd, ScopedFD* write_fd, bool non_blocking) {
   int fds[2];
@@ -418,15 +414,11 @@ bool SetNonBlocking(int fd) {
 }
 
 bool SetCloseOnExec(int fd) {
-#if defined(OS_NACL_NONSFI)
-  const int flags = 0;
-#else
   const int flags = fcntl(fd, F_GETFD);
   if (flags == -1)
     return false;
   if (flags & FD_CLOEXEC)
     return true;
-#endif  // defined(OS_NACL_NONSFI)
   if (HANDLE_EINTR(fcntl(fd, F_SETFD, flags | FD_CLOEXEC)) == -1)
     return false;
   return true;
@@ -442,19 +434,15 @@ bool PathExists(const FilePath& path) {
   return access(path.value().c_str(), F_OK) == 0;
 }
 
-#if !defined(OS_NACL_NONSFI)
 bool PathIsReadable(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   return access(path.value().c_str(), R_OK) == 0;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
-#if !defined(OS_NACL_NONSFI)
 bool PathIsWritable(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   return access(path.value().c_str(), W_OK) == 0;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 bool DirectoryExists(const FilePath& path) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
@@ -475,8 +463,6 @@ bool ReadFromFD(int fd, char* buffer, size_t bytes) {
   }
   return total_read == bytes;
 }
-
-#if !defined(OS_NACL_NONSFI)
 
 ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& directory,
                                               FilePath* path) {
@@ -814,7 +800,6 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   results->FromStat(file_info);
   return true;
 }
-#endif  // !defined(OS_NACL_NONSFI)
 
 FILE* OpenFile(const FilePath& filename, const char* mode) {
   // 'e' is unconditionally added below, so be sure there is not one already
@@ -846,9 +831,10 @@ FILE* OpenFile(const FilePath& filename, const char* mode) {
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
 FILE* FileToFILE(File file, const char* mode) {
-  FILE* stream = fdopen(file.GetPlatformFile(), mode);
-  if (stream)
-    file.TakePlatformFile();
+  PlatformFile unowned = file.GetPlatformFile();
+  FILE* stream = fdopen(file.TakePlatformFile(), mode);
+  if (!stream)
+    ScopedFD to_be_closed(unowned);
   return stream;
 }
 
@@ -981,8 +967,6 @@ bool AllocateFileRegion(File* file, int64_t offset, size_t size) {
 
   return true;
 }
-
-#if !defined(OS_NACL_NONSFI)
 
 bool AppendToFile(const FilePath& filename, span<const uint8_t> data) {
   ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
@@ -1238,8 +1222,26 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
 bool CopyFileContentsWithSendfile(File& infile,
                                   File& outfile,
                                   bool& retry_slow) {
-  int64_t file_size = infile.GetLength();
-  if (file_size < 0) {
+  DCHECK(infile.IsValid());
+  stat_wrapper_t in_file_info;
+  retry_slow = false;
+
+  if (base::File::Fstat(infile.GetPlatformFile(), &in_file_info)) {
+    return false;
+  }
+
+  int64_t file_size = in_file_info.st_size;
+  if (file_size == 0) {
+    // Non-regular files can return a file size of 0, things such as pipes,
+    // sockets, etc. Additionally, kernel seq_files(most procfs files) will also
+    // return 0 while still reporting as a regular file. Unfortunately, in some
+    // of these situations there are easy ways to detect them, in others there
+    // are not. No extra syscalls are needed if it's not a regular file.
+    //
+    // Because any attempt to detect it would likely require another syscall,
+    // let's just fall back to a slow copy which will invoke a single read(2) to
+    // determine if the file has contents or if it's really a zero length file.
+    retry_slow = true;
     return false;
   }
 
@@ -1270,8 +1272,6 @@ bool CopyFileContentsWithSendfile(File& infile,
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 }  // namespace internal
-
-#endif  // !defined(OS_NACL_NONSFI)
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_AIX)
 BASE_EXPORT bool IsPathExecutable(const FilePath& path) {

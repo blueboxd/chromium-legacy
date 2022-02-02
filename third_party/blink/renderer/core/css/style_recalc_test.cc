@@ -17,6 +17,17 @@ namespace blink {
 
 class StyleRecalcTest : public PageTestBase {};
 
+class StyleRecalcTestCQ : public StyleRecalcTest,
+                          private ScopedCSSContainerQueriesForTest,
+                          private ScopedCSSContainerSkipStyleRecalcForTest,
+                          private ScopedLayoutNGForTest {
+ public:
+  StyleRecalcTestCQ()
+      : ScopedCSSContainerQueriesForTest(true),
+        ScopedCSSContainerSkipStyleRecalcForTest(true),
+        ScopedLayoutNGForTest(true) {}
+};
+
 TEST_F(StyleRecalcTest, SuppressRecalc) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -39,10 +50,7 @@ TEST_F(StyleRecalcTest, SuppressRecalc) {
                   .ShouldRecalcStyleFor(*element));
 }
 
-TEST_F(StyleRecalcTest, SkipStyleRecalcForContainer) {
-  ScopedCSSContainerQueriesForTest scoped_cq(true);
-  ScopedCSSContainerSkipStyleRecalcForTest scoped_skip(true);
-
+TEST_F(StyleRecalcTestCQ, SkipStyleRecalcForContainer) {
   UpdateAllLifecyclePhasesForTest();
 
   ASSERT_TRUE(GetDocument().body());
@@ -51,12 +59,12 @@ TEST_F(StyleRecalcTest, SkipStyleRecalcForContainer) {
     <style>
       #outer { width: 300px; }
       #outer.narrow { width: 200px; }
-      #container { contain: inline-size layout style; }
+      #container { container-type: inline-size; }
       #container.narrow { width: 100px; }
-      @container (max-width: 200px) {
+      @container size(max-width: 200px) {
         #affected { color: red; }
       }
-      @container (max-width: 100px) {
+      @container size(max-width: 100px) {
         #affected { color: green; }
       }
       .flip { color: pink; }
@@ -172,6 +180,74 @@ TEST_F(StyleRecalcTest, SkipStyleRecalcForContainer) {
   EXPECT_EQ(Color(0x00, 0x80, 0x00),
             affected->ComputedStyleRef().VisitedDependentColor(
                 GetCSSPropertyColor()));
+}
+
+TEST_F(StyleRecalcTestCQ, SkipStyleRecalcForContainerCleanSubtree) {
+  UpdateAllLifecyclePhasesForTest();
+
+  ASSERT_TRUE(GetDocument().body());
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #container { container-type: inline-size; }
+      #container.narrow { width: 100px; }
+      @container size(max-width: 100px) {
+        #affected { color: green; }
+      }
+    </style>
+    <div id="container">
+      <span id="affected"></span>
+    </div>
+  )HTML",
+                                     ASSERT_NO_EXCEPTION);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_TRUE(container);
+  container->classList().Add("narrow");
+  GetDocument().UpdateStyleAndLayoutTreeForThisDocument();
+
+  ASSERT_TRUE(container->GetContainerQueryData());
+  EXPECT_FALSE(container->GetContainerQueryData()->SkippedStyleRecalc());
+}
+
+TEST_F(StyleRecalcTestCQ, SkipAttachLayoutTreeForContainer) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #container { container-type: inline-size; }
+      #container.narrow {
+        width: 100px;
+        display: inline-block;
+        color: pink; /* Make sure there's a recalc to skip. */
+      }
+      @container size(max-width: 100px) {
+        #affected { color: green; }
+      }
+    </style>
+    <div id="container">
+      <span id="affected"></span>
+    </div>
+  )HTML",
+                                     ASSERT_NO_EXCEPTION);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* container = GetDocument().getElementById("container");
+  Element* affected = GetDocument().getElementById("affected");
+  ASSERT_TRUE(container);
+  ASSERT_TRUE(affected);
+  EXPECT_TRUE(container->GetLayoutObject());
+  EXPECT_TRUE(affected->GetLayoutObject());
+
+  container->classList().Add("narrow");
+  GetDocument().UpdateStyleAndLayoutTreeForThisDocument();
+
+  ASSERT_TRUE(container->GetContainerQueryData());
+  EXPECT_TRUE(container->GetContainerQueryData()->SkippedStyleRecalc());
+
+  EXPECT_TRUE(container->GetLayoutObject());
+  EXPECT_FALSE(affected->GetLayoutObject());
 }
 
 }  // namespace blink

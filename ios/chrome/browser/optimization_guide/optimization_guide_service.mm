@@ -67,8 +67,7 @@ OptimizationGuideService::OptimizationGuideService(
           : nullptr;
 
   hints_manager_ = std::make_unique<optimization_guide::IOSChromeHintsManager>(
-      browser_state, chrome_browser_state->GetPrefs(),
-      hint_store_ ? hint_store_->AsWeakPtr() : nullptr,
+      browser_state, chrome_browser_state->GetPrefs(), hint_store_.get(),
       top_host_provider_.get(), tab_url_provider_.get(),
       browser_state->GetSharedURLLoaderFactory(),
       GetApplicationContext()->GetNetworkConnectionTracker());

@@ -82,30 +82,41 @@ TEST_F(FontCacheAndroidTest, LocaleSpecificTypeface) {
   EXPECT_NE(serif_ja_typeface.get(), standard_ja_typeface.get());
 }
 
+// Check non-CJK locales do not create locale-specific typeface.
+// TODO(crbug.com/1233315 crbug.com/1237860): Locale-specific serif is supported
+// only for CJK until these issues were fixed.
+TEST_F(FontCacheAndroidTest, LocaleSpecificTypefaceOnlyForCJK) {
+  EXPECT_EQ(CreateSerifTypeface(LayoutLocale::Get("en")), nullptr);
+  // We can't test CJK locales return non-nullptr because not all devices on all
+  // versions of Android have CJK serif fonts.
+}
+
 TEST(FontCacheAndroid, GenericFamilyNameForScript) {
   FontDescription english;
   english.SetLocale(LayoutLocale::Get("en"));
   FontDescription chinese;
   chinese.SetLocale(LayoutLocale::Get("zh"));
 
+  AtomicString fallback = "MyGenericFamilyNameFallback";
+
   font_family_names::Init();
   // For non-CJK, getGenericFamilyNameForScript should return the given
-  // familyName.
-  EXPECT_EQ(font_family_names::kWebkitStandard,
+  // generic_family_name_fallback except monospace.
+  EXPECT_EQ(fallback,
             FontCache::GetGenericFamilyNameForScript(
-                font_family_names::kWebkitStandard, english));
+                font_family_names::kWebkitStandard, fallback, english));
   EXPECT_EQ(font_family_names::kMonospace,
             FontCache::GetGenericFamilyNameForScript(
-                font_family_names::kMonospace, english));
+                font_family_names::kMonospace, fallback, english));
 
   // For CJK, getGenericFamilyNameForScript should return CJK fonts except
   // monospace.
-  EXPECT_NE(font_family_names::kWebkitStandard,
+  EXPECT_NE(fallback,
             FontCache::GetGenericFamilyNameForScript(
-                font_family_names::kWebkitStandard, chinese));
+                font_family_names::kWebkitStandard, fallback, chinese));
   EXPECT_EQ(font_family_names::kMonospace,
             FontCache::GetGenericFamilyNameForScript(
-                font_family_names::kMonospace, chinese));
+                font_family_names::kMonospace, fallback, chinese));
 }
 
 }  // namespace blink

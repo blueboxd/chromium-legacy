@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 
 namespace blink {
@@ -106,6 +106,14 @@ ScriptPromise PointerLockController::RequestPointerLock(
         "Blocked pointer lock on an element because the element's frame is "
         "sandboxed and the 'allow-pointer-lock' permission is not set.",
         "");
+    return promise;
+  }
+
+  if (window->GetFrame()->IsInFencedFrameTree()) {
+    EnqueueEvent(event_type_names::kPointerlockerror, target);
+    exception_state.ThrowSecurityError(
+        "Blocked pointer lock on an element because the element is contained "
+        "in a fence frame tree");
     return promise;
   }
 
@@ -369,8 +377,8 @@ void PointerLockController::DispatchLockedMouseEvent(
 }
 
 void PointerLockController::GetPointerLockPosition(
-    FloatPoint* lock_position,
-    FloatPoint* lock_screen_position) {
+    gfx::PointF* lock_position,
+    gfx::PointF* lock_screen_position) {
   if (element_ && !lock_pending_) {
     DCHECK(lock_position);
     DCHECK(lock_screen_position);

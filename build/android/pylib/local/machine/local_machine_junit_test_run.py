@@ -44,9 +44,6 @@ _MIN_CLASSES_PER_SHARD = 8
 
 
 class LocalMachineJunitTestRun(test_run.TestRun):
-  def __init__(self, env, test_instance):
-    super(LocalMachineJunitTestRun, self).__init__(env, test_instance)
-
   #override
   def TestPackage(self):
     return self._test_instance.suite
@@ -270,7 +267,8 @@ def PrintProcessesStdout(procs):
 
 
 def _GetTestClasses(file_path):
-  test_jar_paths = subprocess.check_output([file_path, '--print-classpath'])
+  test_jar_paths = subprocess.check_output([file_path,
+                                            '--print-classpath']).decode()
   test_jar_paths = test_jar_paths.split(':')
 
   test_classes = []

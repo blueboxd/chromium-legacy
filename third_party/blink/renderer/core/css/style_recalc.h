@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -91,11 +92,11 @@ class CORE_EXPORT StyleRecalcChange {
   StyleRecalcChange SuppressRecalc() const {
     return {propagate_, static_cast<Flags>(flags_ | kSuppressRecalc)};
   }
-  StyleRecalcChange WithRecalcContainerFlags(StyleRecalcChange& from) {
+  StyleRecalcChange WithRecalcContainerFlags(StyleRecalcChange& from) const {
     return {propagate_,
             static_cast<Flags>(flags_ | (from.flags_ & kRecalcContainerFlags))};
   }
-  StyleRecalcChange Combine(const StyleRecalcChange& other) {
+  StyleRecalcChange Combine(const StyleRecalcChange& other) const {
     return {std::max(propagate_, other.propagate_),
             static_cast<Flags>(flags_ | other.flags_)};
   }
@@ -111,6 +112,8 @@ class CORE_EXPORT StyleRecalcChange {
   bool ShouldRecalcStyleFor(const Node&) const;
   bool ShouldUpdatePseudoElement(const PseudoElement&) const;
   bool IsSuppressed() const { return flags_ & kSuppressRecalc; }
+
+  String ToString() const;
 
  private:
   StyleRecalcChange(Propagate propagate, Flags flags)
@@ -140,6 +143,11 @@ class StyleRecalcContext {
   // Using the ancestor chain, build a StyleRecalcContext suitable for
   // resolving the style of the given Element.
   static StyleRecalcContext FromAncestors(Element&);
+
+  // If the passed in StyleRecalcContext is nullptr, build a StyleRecalcContext
+  // suitable for resolving the style for child elements of the passed in
+  // element. Otherwise return the passed in context as a value.
+  static StyleRecalcContext FromInclusiveAncestors(Element&);
 
   // Set to the nearest container (for container queries), if any.
   // This is used to evaluate container queries in ElementRuleCollector.

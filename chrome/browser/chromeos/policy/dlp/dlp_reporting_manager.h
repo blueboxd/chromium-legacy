@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/task/sequenced_task_runner.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "components/reporting/client/report_queue.h"
 #include "components/reporting/util/status.h"
@@ -29,6 +31,17 @@ DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
                                     DlpRulesManager::Component dst_component,
                                     DlpRulesManager::Restriction restriction,
                                     DlpRulesManager::Level level);
+// TODO(jkopanski): Using template parameter pack enforces including
+//  "dlp_policy_event.pb.h" in the header file. Check after implementing
+//  reporting for clipboard if this template patter is needed or move all
+//  functions to a separate header.
+template <typename... Args>
+DlpPolicyEvent CreateDlpPolicyWarningProceededEvent(Args... args) {
+  // TODO(jkopanski): Add level as the last argument.
+  auto event = CreateDlpPolicyEvent(args...);
+  event.set_mode(DlpPolicyEvent_Mode_WARN_PROCEED);
+  return event;
+}
 
 // DlpReportingManger controls the coordination and setup towards the reporting
 // pipeline so that other areas of the DLP functionality don't need to know
@@ -58,18 +71,24 @@ class DlpReportingManager {
                    DlpRulesManager::Component dst_component,
                    DlpRulesManager::Restriction restriction,
                    DlpRulesManager::Level level);
-  void ReportWarningProceededEvent(const std::string& src_pattern,
-                                   DlpRulesManager::Restriction restriction);
-
-  ReportQueueSetterCallback GetReportQueueSetter();
+  template <typename... Args>
+  void ReportWarningProceededEvent(Args... args) {
+    ReportEvent(CreateDlpPolicyWarningProceededEvent(args...));
+  }
 
   size_t events_reported() const { return events_reported_; }
 
+  // Test hook for overriding the default report queue used for reporting
+  // purposes.
+  //
+  // TODO(b/202746926): Ideally, the report queue should be overridden at
+  // |DlpReportingManager| instantiation, but since a lot of test scenarios
+  // follow deferred mock setup we defer refactoring this part for later.
+  void SetReportQueueForTest(
+      std::unique_ptr<::reporting::ReportQueue, base::OnTaskRunnerDeleter>
+          report_queue);
+
  private:
-  friend class DlpReportingManagerTestHelper;
-
-  void SetReportQueue(std::unique_ptr<reporting::ReportQueue> report_queue);
-
   void OnEventEnqueued(reporting::Status status);
 
   void ReportEvent(DlpPolicyEvent event);
@@ -77,7 +96,8 @@ class DlpReportingManager {
   // Counter for the number of events reported from login.
   size_t events_reported_ = 0;
 
-  std::unique_ptr<reporting::ReportQueue> report_queue_;
+  std::unique_ptr<::reporting::ReportQueue, base::OnTaskRunnerDeleter>
+      report_queue_;
 
   base::WeakPtrFactory<DlpReportingManager> weak_factory_{this};
 };

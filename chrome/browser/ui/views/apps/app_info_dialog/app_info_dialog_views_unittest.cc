@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -72,7 +72,7 @@ class AppInfoDialogTestApi {
   }
 
  private:
-  AppInfoDialog* dialog_;
+  raw_ptr<AppInfoDialog> dialog_;
 };
 
 }  // namespace test
@@ -96,8 +96,14 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Sets up a fake user manager over |BrowserWithTestWindowTest| user
+    // manager.
+    arc_test_ = std::make_unique<ArcAppTest>();
+    arc_test_->SetUp(extension_environment_.profile());
+
     shelf_model_ = std::make_unique<ash::ShelfModel>();
     chrome_shelf_item_factory_ = std::make_unique<ChromeShelfItemFactory>();
+    shelf_model_->SetShelfItemFactory(chrome_shelf_item_factory_.get());
     chrome_shelf_controller_ = std::make_unique<ChromeShelfController>(
         extension_environment_.profile(), shelf_model_.get(),
         chrome_shelf_item_factory_.get());
@@ -107,7 +113,6 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
         std::make_unique<ShelfControllerHelper>(
             extension_environment_.profile()));
     chrome_shelf_controller_->Init();
-    arc_test_.SetUp(extension_environment_.profile());
 #endif
     extension_ = extension_environment_.MakePackagedApp(kTestExtensionId, true);
     chrome_app_ = extension_environment_.MakePackagedApp(
@@ -119,9 +124,12 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     extension_ = nullptr;
     chrome_app_ = nullptr;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    arc_test_.TearDown();
     chrome_shelf_controller_.reset();
     shelf_model_.reset();
+    if (arc_test_) {
+      arc_test_->TearDown();
+      arc_test_.reset();
+    }
 #endif
 
     // The Browser class had dependencies on LocalState, which is owned by
@@ -187,8 +195,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   }
 
  protected:
-  views::Widget* widget_ = nullptr;
-  AppInfoDialog* dialog_ = nullptr;  // Owned by |widget_|'s views hierarchy.
+  raw_ptr<views::Widget> widget_ = nullptr;
+  raw_ptr<AppInfoDialog> dialog_ =
+      nullptr;  // Owned by |widget_|'s views hierarchy.
   scoped_refptr<const extensions::Extension> extension_;
   scoped_refptr<const extensions::Extension> chrome_app_;
   extensions::TestExtensionEnvironment extension_environment_{
@@ -198,7 +207,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   std::unique_ptr<ash::ShelfModel> shelf_model_;
   std::unique_ptr<ChromeShelfItemFactory> chrome_shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> chrome_shelf_controller_;
-  ArcAppTest arc_test_;
+  std::unique_ptr<ArcAppTest> arc_test_;
 #endif
 };
 
@@ -236,15 +245,20 @@ TEST_F(AppInfoDialogViewsTest, DestroyedProfileClosesDialog) {
   browser_window->Close();
   browser_window.reset();
 
+  // The following serves two purposes:
+  // it ensures the Widget close is being triggered by the DeleteProfile() call
+  // rather than the code above. And prevents a race condition while tearing
+  // down arc_test user_manager.
+  base::RunLoop().RunUntilIdle();
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Avoid a race condition when tearing down arc_test_ and deleting the user
+  // manager.
   chrome_shelf_controller_.reset();
   shelf_model_.reset();
-  arc_test_.TearDown();
+  arc_test_->TearDown();
+  arc_test_.reset();
 #endif
-
-  // The following does nothing: it just ensures the Widget close is being
-  // triggered by the DeleteProfile() call rather than the code above.
-  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(widget_);
   EXPECT_FALSE(widget_->IsClosed());

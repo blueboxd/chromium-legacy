@@ -9,7 +9,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -271,15 +270,19 @@ class AutofillCapturedSitesInteractiveTest
     // First, automation should focus on the frame containg the autofill form.
     // Doing so ensures that Chrome scrolls the element into view if the
     // element is off the page.
+    test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
+                                     autofill_wait_for_action_interval);
     if (!captured_sites_test_utils::TestRecipeReplayer::PlaceFocusOnElement(
-            target_element_xpath, iframe_path, frame))
+            target_element_xpath, iframe_path, frame)) {
       return false;
+    }
 
     gfx::Rect rect;
     if (!captured_sites_test_utils::TestRecipeReplayer::
             GetBoundingRectOfTargetElement(target_element_xpath, iframe_path,
-                                           frame, &rect))
+                                           frame, &rect)) {
       return false;
+    }
 
     test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
                                      autofill_wait_for_action_interval);

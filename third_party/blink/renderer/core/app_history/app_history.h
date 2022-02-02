@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -47,13 +47,16 @@ class CORE_EXPORT AppHistory final : public EventTargetWithInlineData,
  public:
   static const char kSupplementName[];
   static AppHistory* appHistory(LocalDOMWindow&);
+  // Unconditionally creates AppHistory, even if the RuntimeEnabledFeatures is
+  // disabled.
+  static AppHistory* From(LocalDOMWindow&);
   explicit AppHistory(LocalDOMWindow&);
   ~AppHistory() final = default;
 
   void InitializeForNewWindow(HistoryItem& current,
                               WebFrameLoadType,
                               CommitReason,
-                              AppHistory& previous,
+                              AppHistory* previous,
                               const WebVector<WebHistoryItem>& back_entries,
                               const WebVector<WebHistoryItem>& forward_entries);
   void UpdateForNavigation(HistoryItem&, WebFrameLoadType);

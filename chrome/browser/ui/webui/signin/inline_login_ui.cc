@@ -12,7 +12,6 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
@@ -39,7 +38,6 @@
 #include "ash/constants/ash_pref_names.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/supervised_user/supervised_user_features/supervised_user_features.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/edu_account_login_handler_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/edu_coexistence/edu_coexistence_login_handler_chromeos.h"
@@ -113,7 +111,7 @@ void AddEduStrings(content::WebUIDataSource* source,
 
 content::WebUIDataSource* CreateWebUIDataSource(Profile* profile) {
   content::WebUIDataSource* source =
-        content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kGaiaAuthHostResources, kGaiaAuthHostResourcesSize),
@@ -292,20 +290,11 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
           base::BindRepeating(&WebDialogUIBase::CloseDialog,
                               weak_factory_.GetWeakPtr(), nullptr /* args */)));
   if (profile->IsChild()) {
-    if (!base::FeatureList::IsEnabled(
-            ::supervised_users::kEduCoexistenceFlowV2)) {
-      web_ui->AddMessageHandler(
-          std::make_unique<chromeos::EduAccountLoginHandler>(
-              base::BindRepeating(&WebDialogUIBase::CloseDialog,
-                                  weak_factory_.GetWeakPtr(),
-                                  nullptr /* args */)));
-    } else {
-      web_ui->AddMessageHandler(
-          std::make_unique<chromeos::EduCoexistenceLoginHandler>(
-              base::BindRepeating(&WebDialogUIBase::CloseDialog,
-                                  weak_factory_.GetWeakPtr(),
-                                  nullptr /* args */)));
-    }
+    web_ui->AddMessageHandler(
+        std::make_unique<chromeos::EduCoexistenceLoginHandler>(
+            base::BindRepeating(&WebDialogUIBase::CloseDialog,
+                                weak_factory_.GetWeakPtr(),
+                                nullptr /* args */)));
   }
 
 #else
@@ -315,11 +304,6 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui) : WebDialogUI(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   content::WebContents* contents = web_ui->GetWebContents();
-  // Required for intercepting extension function calls when the page is loaded
-  // in a bubble (not a full tab, thus tab helpers are not registered
-  // automatically).
-  extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
-      contents);
   extensions::TabHelper::CreateForWebContents(contents);
   // Ensure that the login UI has a tab ID, which will allow the GAIA auth
   // extension's background script to tell it apart from iframes injected by

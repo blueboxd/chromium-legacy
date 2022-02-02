@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_GPU_GPU_FEATURE_CHECKER_IMPL_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/gpu_feature_checker.h"
@@ -14,8 +13,8 @@
 
 namespace content {
 
-class CONTENT_EXPORT GpuFeatureCheckerImpl : public GpuFeatureChecker,
-                                             public GpuDataManagerObserver {
+class GpuFeatureCheckerImpl : public GpuFeatureChecker,
+                              public GpuDataManagerObserver {
  public:
   GpuFeatureCheckerImpl(gpu::GpuFeatureType feature,
                         FeatureAvailableCallback callback);

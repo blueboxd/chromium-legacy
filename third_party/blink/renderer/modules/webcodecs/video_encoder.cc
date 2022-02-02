@@ -13,7 +13,6 @@
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
@@ -40,9 +39,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_avc_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk_metadata.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_svc_output_metadata.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_color_space_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_config.h"
@@ -107,7 +108,7 @@ bool IsAcceleratedConfigurationSupported(
     media::VideoCodecProfile profile,
     const media::VideoEncoder::Options& options,
     media::GpuVideoAcceleratorFactories* gpu_factories) {
-  if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled())
+  if (!gpu_factories || !gpu_factories->IsGpuVideoEncodeAcceleratorEnabled())
     return false;
 
   auto supported_profiles =
@@ -639,6 +640,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
     // TODO(crbug.com/1195433): Once support for alpha channel encoding is
     // implemented, |force_opaque| must be set based on the VideoEncoderConfig.
     const bool can_use_gmb =
+        !disable_accelerated_frame_pool_ &&
         CanUseGpuMemoryBufferReadback(frame->format(), /*force_opaque=*/true);
     if (can_use_gmb && !accelerated_frame_pool_) {
       if (auto wrapper = SharedGpuContext::ContextProviderWrapper()) {
@@ -711,35 +713,35 @@ void VideoEncoder::ProcessEncode(Request* request) {
         return;
       }
 
-      // Error occurred, fall through to error handling below.
+      // Error occurred, fall through to normal readback path below.
       blocking_request_in_progress_ = false;
-      frame.reset();
+      disable_accelerated_frame_pool_ = true;
+      accelerated_frame_pool_.reset();
+    }
+
+    auto wrapper = SharedGpuContext::ContextProviderWrapper();
+    scoped_refptr<viz::RasterContextProvider> raster_provider;
+    if (wrapper && wrapper->ContextProvider())
+      raster_provider = wrapper->ContextProvider()->RasterContextProvider();
+    if (raster_provider) {
+      auto* ri = raster_provider->RasterInterface();
+      auto* gr_context = raster_provider->GrContext();
+
+      frame = ReadbackTextureBackedFrameToMemorySync(*frame, ri, gr_context,
+                                                     &readback_frame_pool_);
     } else {
-      auto wrapper = SharedGpuContext::ContextProviderWrapper();
-      scoped_refptr<viz::RasterContextProvider> raster_provider;
-      if (wrapper && wrapper->ContextProvider())
-        raster_provider = wrapper->ContextProvider()->RasterContextProvider();
-      if (raster_provider) {
-        auto* ri = raster_provider->RasterInterface();
-        auto* gr_context = raster_provider->GrContext();
-
-        frame = ReadbackTextureBackedFrameToMemorySync(*frame, ri, gr_context,
-                                                       &readback_frame_pool_);
-      } else {
-        frame.reset();
-      }
+      frame.reset();
     }
+  }
 
-    if (!frame) {
-      auto status = media::Status(media::StatusCode::kEncoderFailedEncode,
-                                  "Can't readback frame textures.");
-      callback_runner_->PostTask(
-          FROM_HERE,
-          ConvertToBaseOnceCallback(CrossThreadBindOnce(
-              done_callback, WrapCrossThreadWeakPersistent(this),
-              WrapCrossThreadPersistent(request), std::move(status))));
-      return;
-    }
+  if (!frame) {
+    auto status = media::Status(media::StatusCode::kEncoderFailedEncode,
+                                "Can't readback frame textures.");
+    callback_runner_->PostTask(
+        FROM_HERE, ConvertToBaseOnceCallback(CrossThreadBindOnce(
+                       done_callback, WrapCrossThreadWeakPersistent(this),
+                       WrapCrossThreadPersistent(request), std::move(status))));
+    return;
   }
 
   // Currently underlying encoders can't handle alpha channel, so let's
@@ -872,8 +874,12 @@ void VideoEncoder::CallOutputCallback(
   auto* chunk = MakeGarbageCollected<EncodedVideoChunk>(std::move(buffer));
 
   auto* metadata = EncodedVideoChunkMetadata::Create();
-  if (active_config->options.scalability_mode.has_value())
+  if (active_config->options.scalability_mode.has_value()) {
+    auto* svc_metadata = SvcOutputMetadata::Create();
+    svc_metadata->setTemporalLayerId(output.temporal_id);
+    metadata->setSvc(svc_metadata);
     metadata->setTemporalLayerId(output.temporal_id);
+  }
 
   // TODO(https://crbug.com/1241448): All encoders should output color space.
   // For now, fallback to 601 since that is correct most often.
@@ -886,8 +892,12 @@ void VideoEncoder::CallOutputCallback(
     first_output_after_configure_ = false;
 
     if (output_color_space != last_output_color_space_) {
+// TODO(crbug.com/1241448): Make Android obey the contract below. For now
+// Android VEA only _eventually_ gives a key frame when color space changes.
+#if !defined(OS_ANDROID)
       DCHECK(output.key_frame) << "Encoders should generate a keyframe when "
                                << "changing color space";
+#endif
       last_output_color_space_ = output_color_space;
     }
 
@@ -1022,7 +1032,11 @@ ScriptPromise VideoEncoder::isConfigSupported(ScriptState* script_state,
     auto* support = VideoEncoderSupport::Create();
     support->setConfig(config_copy);
     support->setSupported(false);
-    return ScriptPromise::Cast(script_state, ToV8(support, script_state));
+
+    return ScriptPromise::Cast(
+        script_state,
+        ToV8Traits<VideoEncoderSupport>::ToV8(script_state, support)
+            .ToLocalChecked());
   }
 
   // Create promises for resolving hardware and software encoding support and

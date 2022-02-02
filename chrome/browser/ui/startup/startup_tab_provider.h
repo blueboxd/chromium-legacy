@@ -7,9 +7,11 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -18,7 +20,6 @@ struct SessionStartupPref;
 
 namespace base {
 class CommandLine;
-class FilePath;
 }  // namespace base
 
 // Provides the sets of tabs to be shown at startup for given sets of policy.
@@ -41,9 +42,10 @@ class StartupTabProvider {
 #if defined(OS_WIN)
   // Returns a "welcome back" tab to be shown if requested for a specific
   // launch.
-  virtual StartupTabs GetWelcomeBackTabs(Profile* profile,
-                                         StartupBrowserCreator* browser_creator,
-                                         bool process_startup) const = 0;
+  virtual StartupTabs GetWelcomeBackTabs(
+      Profile* profile,
+      StartupBrowserCreator* browser_creator,
+      chrome::startup::IsProcessStartup process_startup) const = 0;
 #endif  // defined(OS_WIN)
 
   // Checks for the presence of a trigger indicating the need to offer a Profile
@@ -74,6 +76,17 @@ class StartupTabProvider {
   virtual StartupTabs GetCommandLineTabs(const base::CommandLine& command_line,
                                          const base::FilePath& cur_dir,
                                          Profile* profile) const = 0;
+
+  // Indicates whether the command line arguments includes tabs to be opened on
+  // startup.
+  //
+  // A `CommandLineTabsPresent::kUnknown` value means that we are not able to
+  // fully parse some arguments, the definitive result can be obtained by
+  // calling `GetCommandLineTabs()` and passing a `Profile`.
+  virtual CommandLineTabsPresent HasCommandLineTabs(
+      const base::CommandLine& command_line,
+      const base::FilePath& cur_dir) const = 0;
+
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Returns the URLs given via the crosapi BrowserInitParams with
   // kOpenWindowWithUrls action.
@@ -93,7 +106,7 @@ class StartupTabProviderImpl : public StartupTabProvider {
     bool has_seen_welcome_page = false;
     bool is_signin_allowed = false;
     bool is_signed_in = false;
-    bool is_supervised_user = false;
+    bool is_child_account = false;
     bool is_force_signin_enabled = false;
   };
 
@@ -179,9 +192,10 @@ class StartupTabProviderImpl : public StartupTabProvider {
   StartupTabs GetOnboardingTabs(Profile* profile) const override;
 
 #if defined(OS_WIN)
-  StartupTabs GetWelcomeBackTabs(Profile* profile,
-                                 StartupBrowserCreator* browser_creator,
-                                 bool process_startup) const override;
+  StartupTabs GetWelcomeBackTabs(
+      Profile* profile,
+      StartupBrowserCreator* browser_creator,
+      chrome::startup::IsProcessStartup process_startup) const override;
 #endif  // defined(OS_WIN)
 
   StartupTabs GetDistributionFirstRunTabs(
@@ -198,6 +212,9 @@ class StartupTabProviderImpl : public StartupTabProvider {
   StartupTabs GetCommandLineTabs(const base::CommandLine& command_line,
                                  const base::FilePath& cur_dir,
                                  Profile* profile) const override;
+  CommandLineTabsPresent HasCommandLineTabs(
+      const base::CommandLine& command_line,
+      const base::FilePath& cur_dir) const override;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   StartupTabs GetCrosapiTabs() const override;
@@ -206,6 +223,26 @@ class StartupTabProviderImpl : public StartupTabProvider {
 #if !defined(OS_ANDROID)
   StartupTabs GetNewFeaturesTabs(bool whats_new_enabled) const override;
 #endif  // !defined(OS_ANDROID)
+
+ private:
+  struct ParsedCommandLineTabArg {
+    // Indicates whether a tab URL could be parsed from the argument.
+    CommandLineTabsPresent tab_parsed = CommandLineTabsPresent::kUnknown;
+
+    // URL for the tab to be created from this argument, will be populated when
+    // `tab_parsed` is `CommandLineTabsPresent::kYes`.
+    GURL tab_url;
+  };
+
+  // Parses a command line argument to extract a `ParsedCommandLineTabArg`
+  //
+  // Note that it is possible that we detect that a tab can be created, but
+  // can't parse the URL. In that case we return an empty one. `maybe_profile`
+  // should be provided for better accuracy in the parsing.
+  static ParsedCommandLineTabArg ParseTabFromCommandLineArg(
+      base::FilePath::StringPieceType arg,
+      const base::FilePath& cur_dir,
+      Profile* maybe_profile);
 };
 
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_TAB_PROVIDER_H_

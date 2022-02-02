@@ -74,6 +74,8 @@ class AppListClientImpl
 
   // ash::AppListClient:
   void OnAppListControllerDestroyed() override;
+  void StartZeroStateSearch(base::OnceClosure on_done,
+                            base::TimeDelta timeout) override;
   void StartSearch(const std::u16string& trimmed_query) override;
   void OpenSearchResult(int profile_id,
                         const std::string& result_id,
@@ -95,6 +97,7 @@ class AppListClientImpl
                     int event_flags) override;
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
+                           bool add_sort_options,
                            GetContextMenuModelCallback callback) override;
   void OnAppListVisibilityWillChange(bool visible) override;
   void OnAppListVisibilityChanged(bool visible) override;
@@ -109,9 +112,6 @@ class AppListClientImpl
       int position_index) override;
   ash::AppListNotifier* GetNotifier() override;
   void LoadIcon(int profile_id, const std::string& app_id) override;
-  void OnAppListSortRequested(int profile_id,
-                              ash::AppListSortOrder order) override;
-  void OnAppListSortRevertRequested(int profile_id) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(user_manager::User* active_user) override;

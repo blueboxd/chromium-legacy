@@ -34,15 +34,15 @@
         "port_name": "mac-mac10.15",
         "specifiers": ["Mac10.15", "Release"]
     },
-    "Mac11.0 Tests": {
-        "master": "chromium.fyi",
-        "port_name": "mac-mac11",
-        "specifiers": ["Mac11", "Release"]
-    },
     "Mac11 Tests (dbg)": {
         "master": "chromium.mac",
         "port_name": "mac-mac11",
         "specifiers": ["Mac11", "Debug"]
+    },
+    "Mac11.0 Tests": {
+        "master": "chromium.fyi",
+        "port_name": "mac-mac11",
+        "specifiers": ["Mac11", "Release"]
     },
     "mac-arm64-rel-tests": {
         "master": "chromium.fyi",
@@ -165,15 +165,6 @@
         "port_name": "linux-trusty",
         "specifiers": ["Trusty", "Release"],
         "flag_specific": "disable-layout-ng",
-        "step_name": "blink_web_tests (with patch)",
-        "is_try_builder": true,
-        "is_cq_builder":true
-    },
-    "linux_layout_tests_composite_after_paint": {
-        "master": "tryserver.chromium.linux",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"],
-        "flag_specific": "composite-after-paint",
         "step_name": "blink_web_tests (with patch)",
         "is_try_builder": true,
         "is_cq_builder":true

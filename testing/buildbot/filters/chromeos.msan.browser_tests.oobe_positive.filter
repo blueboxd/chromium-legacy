@@ -49,7 +49,10 @@ DemoSetupArcSupportedTest.*
 DemoSetupArcUnsupportedTest.*
 DemoSetupFRETest.*
 DemoSetupProgressStepsTest.*
+DemoSetupRegionCodeNotExistTest.*
 DemoSetupTestBase.*
+DemoSetupVariantCountryCodeRegionTest.*
+DemoSetupVirtualSetRegionCodeTest.*
 DeviceDisablingBeforeLoginHostCreated.*
 DeviceDisablingTest.*
 DeviceIDTest.*
@@ -92,7 +95,7 @@ LoginUIShelfVisibilityTest.*
 MarketingOptInDefaultContries/MarketingOptInScreenTest.*
 MarketingOptInDoubleOptInCountriesContries/MarketingOptInScreenTest.*
 MarketingOptInExtendedContries/MarketingOptInScreenTest.*
-MarketingOptInScreenTestDisabled.*
+MarketingOptInExtendedCountries/MarketingTestCountryCodes.*
 NetworkErrorScreenTest.*
 NoOobeTestApiTest.*
 OAuth2Test.*

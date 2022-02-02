@@ -8,6 +8,7 @@
 #include <functional>
 #include <utility>
 
+#include "ash/accelerators/debug_commands.h"
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/metrics/user_metrics_recorder.h"
@@ -25,6 +26,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
@@ -737,17 +739,21 @@ void OverviewSession::OnWindowActivating(
   if (ignore_activations_ || gained_active == GetOverviewFocusWindow())
     return;
 
-  // Activating the Desks bar should not end overview.
-  if (gained_active && gained_active->GetId() == kShellWindowId_DesksBarWindow)
+  // Activating the Desks bar or the Desks Templates grid should not end
+  // overview.
+  if (gained_active &&
+      (gained_active->GetId() == kShellWindowId_DesksBarWindow ||
+       gained_active->GetId() == kShellWindowId_DesksTemplatesGridWindow)) {
     return;
+  }
 
-  // Activating one of the confirmation dialogs associated with desks templates
-  // should not end overview.
+  // Activating or deactivating one of the confirmation dialogs associated with
+  // desks templates should not end overview.
   if (gained_active && desks_templates_util::AreDesksTemplatesEnabled()) {
-    const views::Widget* dialog_widget =
-        desks_templates_dialog_controller_->dialog_widget();
-    if (dialog_widget && gained_active == dialog_widget->GetNativeWindow())
+    if (ShouldKeepOverviewOpenForDesksTemplatesDialog(gained_active,
+                                                      lost_active)) {
       return;
+    }
   }
 
   if (DesksController::Get()->AreDesksBeingModified()) {
@@ -1071,6 +1077,21 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
         Move(/*reverse=*/true);
       }
       break;
+    case ui::VKEY_T: {
+      // This is a debug only shortcut.
+      if (!debug::DeveloperAcceleratorsEnabled() ||
+          !desks_templates_util::AreDesksTemplatesEnabled()) {
+        return;
+      }
+
+      // There are no templates to be viewed.
+      if (!DesksTemplatesPresenter::Get()->should_show_templates_ui())
+        return;
+
+      DCHECK(!grid_list_.empty());
+      ShowDesksTemplatesGrids(grid_list_[0]->desks_bar_view()->IsZeroState());
+      break;
+    }
     case ui::VKEY_W: {
       if (!(event->flags() & ui::EF_CONTROL_DOWN))
         return;
@@ -1326,6 +1347,22 @@ void OverviewSession::UpdateAccessibilityFocus() {
     a11y_widgets[i]->GetContentsView()->NotifyAccessibilityEvent(
         ax::mojom::Event::kTreeChanged, true);
   }
+}
+
+bool OverviewSession::ShouldKeepOverviewOpenForDesksTemplatesDialog(
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  DCHECK(desks_templates_util::AreDesksTemplatesEnabled());
+  const views::Widget* dialog_widget =
+      desks_templates_dialog_controller_->dialog_widget();
+  if (!dialog_widget)
+    return false;
+
+  auto* dialog_window = dialog_widget->GetNativeWindow();
+  if (gained_active == dialog_window || lost_active == dialog_window)
+    return true;
+
+  return false;
 }
 
 }  // namespace ash

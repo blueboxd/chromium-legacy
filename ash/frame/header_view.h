@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "chromeos/ui/frame/frame_header.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller_delegate.h"
@@ -64,6 +63,9 @@ class ASH_EXPORT HeaderView
   ~HeaderView() override;
 
   METADATA_HEADER(HeaderView);
+
+  // Initialize the parts with side effects.
+  void Init();
 
   void set_immersive_mode_changed_callback(base::RepeatingClosure callback) {
     immersive_mode_changed_callback_ = std::move(callback);

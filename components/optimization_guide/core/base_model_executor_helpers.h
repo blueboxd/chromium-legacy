@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
+#include "components/optimization_guide/core/execution_status.h"
 #include "third_party/tflite_support/src/tensorflow_lite_support/cc/task/core/base_task_api.h"
 
 namespace optimization_guide {
@@ -42,10 +44,14 @@ class GenericModelExecutionTask
 
   // Executes the model using |args| and returns the output if the model was
   // executed successfully.
-  absl::optional<OutputType> Execute(InputTypes... args) {
+  absl::optional<OutputType> Execute(ExecutionStatus* out_status,
+                                     InputTypes... args) {
     tflite::support::StatusOr<OutputType> maybe_output = this->Infer(args...);
-    if (maybe_output.ok())
+    if (maybe_output.ok()) {
+      *out_status = ExecutionStatus::kSuccess;
       return maybe_output.value();
+    }
+    *out_status = ExecutionStatus::kErrorUnknown;
     return absl::nullopt;
   }
 
@@ -63,7 +69,7 @@ class GenericModelExecutionTask
 
  private:
   // Guaranteed to outlive this.
-  InferenceDelegate<OutputType, InputTypes...>* delegate_;
+  raw_ptr<InferenceDelegate<OutputType, InputTypes...>> delegate_;
 };
 
 }  // namespace optimization_guide

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertString} from '../chrome_util.js';
+import {assertString} from '../assert.js';
 import * as dom from '../dom.js';
 import {ViewName} from '../type.js';  // eslint-disable-line no-unused-vars
 
@@ -16,7 +16,9 @@ export class Dialog extends View {
    * @param {!ViewName} name View name of the dialog.
    */
   constructor(name) {
-    super(name, true);
+    super(
+        name,
+        {dismissByEsc: true, defaultFocusSelector: '.dialog-positive-button'});
 
     /**
      * @type {!HTMLButtonElement}
@@ -51,19 +53,12 @@ export class Dialog extends View {
   /**
    * @override
    */
-  entering({message, cancellable = false} = {}) {
+  entering({message = undefined, cancellable = false} = {}) {
     if (message !== undefined) {
       this.messageHolder_.textContent = assertString(message);
     }
     if (this.negativeButton_ !== null) {
       this.negativeButton_.hidden = !cancellable;
     }
-  }
-
-  /**
-   * @override
-   */
-  focus() {
-    this.positiveButton_.focus();
   }
 }

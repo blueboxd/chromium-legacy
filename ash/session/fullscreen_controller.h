@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/ash_export.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 
@@ -15,9 +16,10 @@ class PrefRegistrySimple;
 namespace ash {
 
 class SessionControllerImpl;
-class FullscreenAlertBubble;
+class FullscreenNotificationBubble;
 
-class FullscreenController : public chromeos::PowerManagerClient::Observer {
+class ASH_EXPORT FullscreenController
+    : public chromeos::PowerManagerClient::Observer {
  public:
   explicit FullscreenController(SessionControllerImpl* session_controller);
   FullscreenController(const FullscreenController&) = delete;
@@ -27,9 +29,14 @@ class FullscreenController : public chromeos::PowerManagerClient::Observer {
 
   static void MaybeExitFullscreen();
 
-  void MaybeShowAlert();
-
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  void OnLockStateChanged(bool locked);
+
+  void OnLoginScreenUiWindowClosed();
+
+  // Returns the bubble for testing purposes.
+  FullscreenNotificationBubble* bubble_for_test() { return bubble_.get(); }
 
  private:
   // chromeos::PowerManagerClient::Observer:
@@ -41,9 +48,11 @@ class FullscreenController : public chromeos::PowerManagerClient::Observer {
   void LidEventReceived(chromeos::PowerManagerClient::LidState state,
                         base::TimeTicks timestamp) override;
 
+  void MaybeShowNotification();
+
   const SessionControllerImpl* const session_controller_;
 
-  std::unique_ptr<FullscreenAlertBubble> bubble_;
+  std::unique_ptr<FullscreenNotificationBubble> bubble_;
 
   // Whether the screen brightness is low enough to make display dark.
   bool device_in_dark_ = false;

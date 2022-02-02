@@ -7,17 +7,30 @@ import("//build/rust/rust_target.gni")
 
 # This template allows for building Cargo crates within gn.
 #
+# It is intended for use with pre-existing (third party) code and
+# is none too efficient. (It will stall the build pipeline whilst
+# it runs build scripts to work out what flags are needed). First
+# party code should directly use first-class gn targets, such as
+# //build/rust/rust_source_set.gni or similar.
+#
+# Because it's intended for third-party code, it automatically
+# defaults to //build/config/compiler:no_chromium_code which
+# suppresses some warnings. If you *do* use this for first party
+# code, you should remove that config and add the equivalent
+# //build/config/compiler:chromium_code config.
+#
 # Arguments:
 #  sources
 #  crate_root
 #  epoch
-#  configs
 #  deps
 #  features
 #  skip_unit_tests
 #  edition
 #  crate_name
 #    All just as in rust_source_set.gni
+#  library_configs/executable_configs
+#    All just as in rust_target.gni
 #
 #  dev_deps
 #    Same meaning as test_deps in rust_source_set.gni, but called
@@ -76,11 +89,18 @@ template("cargo_crate") {
     if (defined(invoker.crate_type)) {
       crate_type = invoker.crate_type
     }
+    if (!defined(rustflags)) {
+      rustflags = []
+    }
     if (crate_type == "bin") {
       target_type = "executable"
       assert(!defined(invoker.epoch))
     } else if (crate_type == "proc-macro") {
       target_type = "rust_proc_macro"
+      rustflags += [
+        "--extern",
+        "proc_macro",
+      ]
     } else {
       assert(crate_type == "rlib")
       target_type = "rust_library"
@@ -98,6 +118,7 @@ template("cargo_crate") {
                              "target_type",
                              "visibility",
                              "testonly",
+                             "configs",
                            ])
 
     if (defined(invoker.build_root)) {
@@ -107,9 +128,6 @@ template("cargo_crate") {
       }
       if (!defined(sources)) {
         sources = []
-      }
-      if (!defined(rustflags)) {
-        rustflags = []
       }
       if (defined(invoker.dev_deps)) {
         test_deps = invoker.dev_deps
@@ -122,8 +140,9 @@ template("cargo_crate") {
       # calculation done correctly. data_deps won't work because targets don't
       # require them to be present until runtime.
       flags_file = get_label_info(":${orig_target_name}_build_script_output",
-                                  "target_out_dir") + "/cargo_flags.rs"
-      rustflags += [ "@" + rebase_path(flags_file) ]
+                                  "target_out_dir") +
+                   "/${orig_target_name}_cargo_flags.rs"
+      rustflags += [ "@" + rebase_path(flags_file, root_build_dir) ]
       sources += [ flags_file ]
       deps += [ ":${build_script_name}_output" ]
     } else {
@@ -137,7 +156,7 @@ template("cargo_crate") {
       script = rebase_path("//build/rust/run_build_script.py")
       build_script_target = ":${build_script_name}($host_toolchain)"
       deps = [ build_script_target ]
-      flags_file = "$target_out_dir/cargo_flags.rs"
+      flags_file = "$target_out_dir/${orig_target_name}_cargo_flags.rs"
       build_script_out_dir = get_label_info(build_script_target, "root_out_dir")
       build_script = "$build_script_out_dir/${build_script_name}"
       if (is_win) {
@@ -145,19 +164,27 @@ template("cargo_crate") {
       }
       args = [
         "--build-script",
-        rebase_path(build_script),
+        rebase_path(build_script, root_build_dir),
         "--output",
-        rebase_path(flags_file),
+        rebase_path(flags_file, root_build_dir),
         "--rust-prefix",
-        rust_prefix,
+        rebase_path("${rust_sysroot}/bin"),
         "--out-dir",
-        target_out_dir,
+        rebase_path(target_out_dir, root_build_dir),
+        "--src-dir",
+        rebase_path(get_path_info(invoker.build_root, "dir"), root_build_dir),
       ]
       if (defined(rust_abi_target) && rust_abi_target != "") {
         args += [
           "--target",
           rust_abi_target,
         ]
+      }
+      if (defined(invoker.features)) {
+        args += [ "--features" ]
+        foreach(feature, invoker.features) {
+          args += [ feature ]
+        }
       }
       inputs = [ build_script ]
       outputs = [ flags_file ]
@@ -184,8 +211,9 @@ template("cargo_crate") {
                                  "features",
                                  "edition",
                                  "rustflags",
-                                 "configs",
                                ])
+        executable_configs -= [ "//build/config/compiler:chromium_code" ]
+        executable_configs += [ "//build/config/compiler:no_chromium_code" ]
       }
     } else {
       not_needed(invoker,
@@ -196,4 +224,13 @@ template("cargo_crate") {
                  ])
     }
   }
+}
+
+set_defaults("cargo_crate") {
+  library_configs = default_compiler_configs
+  library_configs -= [ "//build/config/compiler:chromium_code" ]
+  library_configs += [ "//build/config/compiler:no_chromium_code" ]
+  executable_configs = default_executable_configs
+  executable_configs -= [ "//build/config/compiler:chromium_code" ]
+  executable_configs += [ "//build/config/compiler:no_chromium_code" ]
 }

@@ -9,9 +9,12 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
 #include "chrome/updater/enum_traits.h"
+#include "components/update_client/update_client.h"
 
 namespace updater {
 
@@ -24,6 +27,22 @@ enum class UpdaterScope;
 // All functions and callbacks must be called on the same sequence.
 class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
  public:
+  // Defines the behavior of the update stack for over-installs.
+  // Typically, same versions updates are not allowed, in which case, the update
+  // server replies with `update not available'. But there are cases, such as
+  // re-installing an application again, when the server may respond with an
+  // update.
+  enum class PolicySameVersionUpdate {
+    // The embedder does not allow over-installs with the same version. In this
+    // case, the server is expected to return `update not available` when it
+    // is queried for updates.
+    kNotAllowed = 0,
+
+    // The embedder is capable of handling updates with the same version, and
+    // the server may respond with such an update.
+    kAllowed = 1,
+  };
+
   // Values posted by the completion |callback| as a result of the
   // non-blocking invocation of the service functions. These values are not
   // present in the telemetry pings.
@@ -158,8 +177,24 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
     kForeground = 2,
   };
 
+  struct AppState {
+    AppState();
+    AppState(const AppState&);
+    AppState& operator=(const AppState&);
+    AppState(AppState&&);
+    AppState& operator=(AppState&&);
+    ~AppState();
+
+    std::string app_id;
+    base::Version version;
+    std::string ap;
+    std::string brand_code;
+    base::FilePath brand_path;
+    base::FilePath ecp;
+  };
+
   using Callback = base::OnceCallback<void(Result)>;
-  using StateChangeCallback = base::RepeatingCallback<void(UpdateState)>;
+  using StateChangeCallback = base::RepeatingCallback<void(const UpdateState&)>;
   using RegisterAppCallback =
       base::OnceCallback<void(const RegistrationResponse&)>;
 
@@ -172,6 +207,10 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   // Registers given request to the updater.
   virtual void RegisterApp(const RegistrationRequest& request,
                            RegisterAppCallback callback) = 0;
+
+  // Gets state of all registered apps.
+  virtual void GetAppStates(
+      base::OnceCallback<void(const std::vector<AppState>&)>) const = 0;
 
   // Runs periodic tasks such as checking for uninstallation of registered
   // applications or doing background updates for registered applications.
@@ -202,6 +241,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   //    Result: the final result from the update engine.
   virtual void Update(const std::string& app_id,
                       Priority priority,
+                      PolicySameVersionUpdate policy_same_version_update,
                       StateChangeCallback state_update,
                       Callback callback) = 0;
 

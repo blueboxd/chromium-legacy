@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
@@ -46,8 +45,7 @@ class BrokerHost : public Channel::Delegate,
  private:
   ~BrokerHost() override;
 
-  bool PrepareHandlesForClient(std::vector<PlatformHandleInTransit>* handles,
-                               bool check_on_failure);
+  bool PrepareHandlesForClient(std::vector<PlatformHandleInTransit>* handles);
 
   // Channel::Delegate:
   void OnChannelMessage(const void* payload,

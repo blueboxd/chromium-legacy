@@ -109,10 +109,13 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
      * @param type ContentSettingsType
      * @return The preference key of this type
      */
-    private static @Nullable String getPreferenceKey(@ContentSettingsType int type) {
+    @VisibleForTesting
+    public static @Nullable String getPreferenceKey(@ContentSettingsType int type) {
         switch (type) {
             case ContentSettingsType.ADS:
                 return "ads_permission_list";
+            case ContentSettingsType.AUTO_DARK_WEB_CONTENT:
+                return "auto_dark_web_content_permission_list";
             case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 return "automatic_downloads_permission_list";
             case ContentSettingsType.BACKGROUND_SYNC:

@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_paths.h"
 #include "base/path_service.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chromeos/settings/cros_settings_names.h"
 
 namespace extensions {
 
@@ -37,7 +37,7 @@ size_t ChromeOSExtensionCacheDelegate::GetMaximumCacheSize() const {
 
   size_t max_size = kDefaultCacheSizeLimit;
   int policy_size = 0;
-  if (ash::CrosSettings::Get()->GetInteger(chromeos::kExtensionCacheSize,
+  if (ash::CrosSettings::Get()->GetInteger(ash::kExtensionCacheSize,
                                            &policy_size) &&
       policy_size >= static_cast<int>(GetMinimumCacheSize())) {
     max_size = policy_size;

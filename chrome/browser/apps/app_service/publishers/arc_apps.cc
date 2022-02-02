@@ -7,6 +7,15 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/components/arc/metrics/arc_metrics_service.h"
+#include "ash/components/arc/mojom/app_permissions.mojom.h"
+#include "ash/components/arc/mojom/compatibility_mode.mojom.h"
+#include "ash/components/arc/mojom/file_system.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
@@ -19,6 +28,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/file_utils.h"
@@ -41,16 +51,6 @@
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
-#include "components/arc/arc_util.h"
-#include "components/arc/intent_helper/intent_constants.h"
-#include "components/arc/metrics/arc_metrics_constants.h"
-#include "components/arc/metrics/arc_metrics_service.h"
-#include "components/arc/mojom/app_permissions.mojom.h"
-#include "components/arc/mojom/compatibility_mode.mojom.h"
-#include "components/arc/mojom/file_system.mojom.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
@@ -77,15 +77,14 @@ void CompleteWithCompressed(apps::LoadIconCallback callback,
     std::move(callback).Run(std::make_unique<apps::IconValue>());
     return;
   }
-  std::unique_ptr<apps::IconValue> iv = std::make_unique<apps::IconValue>();
+  auto iv = std::make_unique<apps::IconValue>();
   iv->icon_type = apps::IconType::kCompressed;
   iv->compressed = std::move(data);
   iv->is_placeholder_icon = false;
   std::move(callback).Run(std::move(iv));
 }
 
-void UpdateIconImage(apps::LoadIconCallback callback,
-                     std::unique_ptr<apps::IconValue> iv) {
+void UpdateIconImage(apps::LoadIconCallback callback, apps::IconValuePtr iv) {
   if (iv->icon_type == apps::IconType::kCompressed) {
     iv->uncompressed.MakeThreadSafe();
     base::ThreadPool::PostTaskAndReplyWithResult(
@@ -108,7 +107,7 @@ void OnArcAppIconCompletelyLoaded(apps::IconType icon_type,
     return;
   }
 
-  std::unique_ptr<apps::IconValue> iv = std::make_unique<apps::IconValue>();
+  auto iv = std::make_unique<apps::IconValue>();
   iv->icon_type = icon_type;
   iv->is_placeholder_icon = false;
 
@@ -524,7 +523,6 @@ ArcApps* ArcApps::Get(Profile* profile) {
 
 ArcApps::ArcApps(AppServiceProxy* proxy)
     : AppPublisher(proxy),
-      proxy_(proxy),
       profile_(proxy->profile()),
       arc_icon_once_loader_(profile_) {}
 
@@ -536,7 +534,7 @@ void ArcApps::Initialize() {
     return;
   }
 
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy_->AppService();
+  mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
   if (!app_service.is_bound()) {
     return;
   }
@@ -547,7 +545,7 @@ void ArcApps::Initialize() {
     return;
   }
   prefs->AddObserver(this);
-  proxy_->SetArcIsRegistered();
+  proxy()->SetArcIsRegistered();
 
   auto* intent_helper_bridge =
       arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
@@ -564,7 +562,7 @@ void ArcApps::Initialize() {
         ash::ArcNotificationsHostInitializer::Get());
   }
 
-  auto* instance_registry = &proxy_->InstanceRegistry();
+  auto* instance_registry = &proxy()->InstanceRegistry();
   if (instance_registry) {
     instance_registry_observation_.Observe(instance_registry);
   }
@@ -575,6 +573,8 @@ void ArcApps::Initialize() {
   }
 
   PublisherBase::Initialize(app_service, apps::mojom::AppType::kArc);
+
+  RegisterPublisher(AppType::kArc);
 
   std::vector<std::unique_ptr<App>> apps;
   for (const auto& app_id : prefs->GetAppIds()) {
@@ -660,6 +660,23 @@ void ArcApps::LoadIcon(const std::string& app_id,
         base::BindOnce(&OnArcAppIconCompletelyLoaded, icon_type,
                        size_hint_in_dip, icon_effects, std::move(callback)));
   }
+}
+
+void ArcApps::LaunchAppWithParams(AppLaunchParams&& params,
+                                  LaunchCallback callback) {
+  auto event_flags = apps::GetEventFlags(params.container, params.disposition,
+                                         /*prefer_container=*/false);
+  auto window_info = apps::MakeWindowInfo(params.display_id);
+  if (params.intent) {
+    LaunchAppWithIntent(params.app_id, event_flags, std::move(params.intent),
+                        params.launch_source, std::move(window_info),
+                        base::DoNothing());
+  } else {
+    Launch(params.app_id, event_flags, params.launch_source,
+           std::move(window_info));
+  }
+  // TODO(crbug.com/1244506): Add launch return value.
+  std::move(callback).Run(LaunchResult());
 }
 
 void ArcApps::Connect(
@@ -1293,7 +1310,7 @@ void ArcApps::OnIntentFiltersUpdated(
 }
 
 void ArcApps::OnPreferredAppsChanged() {
-  mojo::Remote<apps::mojom::AppService>& app_service = proxy_->AppService();
+  mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
   if (!app_service.is_bound()) {
     return;
   }
@@ -1372,9 +1389,9 @@ void ArcApps::OnPreferredAppsChanged() {
 // changes are synchronous within Ash.
 void ArcApps::OnArcSupportedLinksChanged(
     const std::vector<arc::mojom::SupportedLinksPtr>& added,
-    const std::vector<arc::mojom::SupportedLinksPtr>& removed) {
-  mojo::Remote<apps::mojom::AppService>& app_service =
-      apps::AppServiceProxyFactory::GetForProfile(profile_)->AppService();
+    const std::vector<arc::mojom::SupportedLinksPtr>& removed,
+    arc::mojom::SupportedLinkChangeSource source) {
+  mojo::Remote<apps::mojom::AppService>& app_service = proxy()->AppService();
   if (!app_service.is_bound()) {
     return;
   }
@@ -1388,6 +1405,20 @@ void ArcApps::OnArcSupportedLinksChanged(
     std::string app_id =
         prefs->GetAppIdByPackageName(supported_link->package_name);
     if (app_id.empty() || !supported_link->filters.has_value()) {
+      continue;
+    }
+
+    // When kDefaultLinkCapturingInBrowser is enabled, ignore any requests from
+    // ARC to set an app as handling supported links by default. We allow
+    // requests if they were initiated by user action, or if the app already
+    // has a non-default setting on the browser side.
+    bool should_ignore_update =
+        base::FeatureList::GetInstance()->IsEnabled(
+            features::kDefaultLinkCapturingInBrowser) &&
+        source == arc::mojom::SupportedLinkChangeSource::kArcSystem &&
+        !proxy()->PreferredApps().IsPreferredAppForSupportedLinks(app_id);
+
+    if (should_ignore_update) {
       continue;
     }
 
@@ -1593,6 +1624,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   // persisted.
   app->show_in_shelf = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = show;
+  app->handles_intents = show;
 
   if (app_id == arc::kPlayGamesAppId &&
       show == apps::mojom::OptionalBool::kFalse) {

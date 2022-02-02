@@ -9,10 +9,13 @@
 #include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/generated_resources.h"
@@ -129,17 +132,6 @@ class HeaderView : public views::View {
 };
 
 BEGIN_METADATA(HeaderView, views::View)
-END_METADATA
-
-// Used for finding the button from telemetry tests.
-// TODO(crbug.com/1201243): Support using View.GetID() to find elements in
-// telemetry tests instead of subclassing ToolbarButton.
-class SideSearchToolbarButton : public ToolbarButton {
- public:
-  METADATA_HEADER(SideSearchToolbarButton);
-};
-
-BEGIN_METADATA(SideSearchToolbarButton, views::View)
 END_METADATA
 
 std::unique_ptr<views::Separator> CreateSeparator() {
@@ -288,11 +280,13 @@ void SideSearchBrowserController::UpdateSidePanelForContents(
 
 std::unique_ptr<ToolbarButton>
 SideSearchBrowserController::CreateToolbarButton() {
-  auto toolbar_button = std::make_unique<SideSearchToolbarButton>();
+  auto toolbar_button = std::make_unique<ToolbarButton>();
   toolbar_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
   toolbar_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON));
+  toolbar_button->SetProperty(views::kElementIdentifierKey,
+                              kSideSearchButtonElementId);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   toolbar_button->SetVectorIcon(kGoogleGLogoMonochromeIcon);
@@ -397,6 +391,7 @@ void SideSearchBrowserController::SetSidePanelToggledOpen(bool toggled_open) {
     if (auto* active_contents = browser_view_->GetActiveWebContents()) {
       SideSearchTabContentsHelper::FromWebContents(active_contents)
           ->set_toggled_open(toggled_open);
+      side_search::MaybeSaveSideSearchTabSessionData(active_contents);
     }
   } else {
     toggled_open_ = toggled_open;

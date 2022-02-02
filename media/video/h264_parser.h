@@ -15,7 +15,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/ranges.h"
 #include "media/base/video_codecs.h"
@@ -52,9 +51,9 @@ struct MEDIA_EXPORT H264NALU {
     kEOStream = 11,
     kFiller = 12,
     kSPSExt = 13,
-    kReserved14 = 14,
-    kReserved15 = 15,
-    kReserved16 = 16,
+    kPrefix = 14,
+    kSubsetSPS = 15,
+    kDPS = 16,
     kReserved17 = 17,
     kReserved18 = 18,
     kCodedSliceAux = 19,

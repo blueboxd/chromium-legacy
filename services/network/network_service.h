@@ -17,7 +17,7 @@
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -206,7 +206,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void BindTestInterface(
       mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
-  void SetFirstPartySets(const std::string& raw_sets) override;
+  void SetFirstPartySets(base::File sets_file) override;
   void SetPersistedFirstPartySetsAndGetCurrentSets(
       const std::string& persisted_sets,
       mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
@@ -297,9 +297,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // context.
   void OnNetworkContextConnectionClosed(NetworkContext* network_context);
 
+  // Sets First-Party Set data after having read it from a file.
+  void OnReadFirstPartySetsFile(const std::string& raw_sets);
+
   bool initialized_ = false;
 
-  net::NetLog* net_log_;
+  raw_ptr<net::NetLog> net_log_;
 
   std::unique_ptr<NetLogProxySink> net_log_proxy_sink_;
 
@@ -317,6 +320,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
 
   std::unique_ptr<service_manager::BinderRegistry> registry_;
+
+  // Globally-scoped state for First-Party Sets. Must be above the `receiver_`
+  // so it's destroyed after, to make sure even when the reply callback owned by
+  // the `first_party_sets_` is never run when destroyed, the receiver which the
+  // reply callback associated with is already disconnected.
+  std::unique_ptr<FirstPartySets> first_party_sets_;
 
   mojo::Receiver<mojom::NetworkService> receiver_{this};
 
@@ -337,9 +346,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // HttpAuthPreferences.
   mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_network_service_params_;
   mojom::HttpAuthStaticParamsPtr http_auth_static_network_service_params_;
-
-  // Globally-scoped state for First-Party Sets.
-  std::unique_ptr<FirstPartySets> first_party_sets_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the
   // NetworkService when their connection is closed so that it can delete

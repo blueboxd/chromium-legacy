@@ -36,7 +36,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/cert/symantec_certs.h"
-#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "net/dns/dns_util.h"
 #include "net/extras/preload_data/decoder.h"
@@ -512,9 +511,6 @@ TransportSecurityState::CheckCTRequirements(
   ExpectCTState state;
   if (IsDynamicExpectCTEnabled() &&
       GetDynamicExpectCTState(hostname, network_isolation_key, &state)) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.ExpectCTHeader.PolicyComplianceOnConnectionSetup",
-        policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
     if (!complies && expect_ct_reporter_ && !state.report_uri.is_empty() &&
         report_status == ENABLE_EXPECT_CT_REPORTS) {
       MaybeNotifyExpectCTFailed(
@@ -1026,16 +1022,12 @@ void TransportSecurityState::ProcessExpectCTHeader(
   bool enforce;
   GURL report_uri;
   bool parsed = ParseExpectCTHeader(value, &max_age, &enforce, &report_uri);
-  UMA_HISTOGRAM_BOOLEAN("Net.ExpectCTHeader.ParseSuccess", parsed);
   if (!parsed)
     return;
   // Do not persist Expect-CT headers if the connection was not chained to a
   // public root or did not comply with CT policy.
   if (!ssl_info.is_issued_by_known_root)
     return;
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.ExpectCTHeader.PolicyComplianceOnHeaderProcessing",
-      ssl_info.ct_policy_compliance, ct::CTPolicyCompliance::CT_POLICY_COUNT);
   if (ssl_info.ct_policy_compliance !=
       ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS) {
     // If an Expect-CT header is observed over a non-compliant connection, the

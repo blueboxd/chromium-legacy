@@ -11,7 +11,6 @@ namespace web {
 class WebState;
 }
 
-@class BubblePresenter;
 @class ContentSuggestionsHeaderViewController;
 @protocol DiscoverFeedDelegate;
 @class DiscoverFeedMetricsRecorder;
@@ -52,9 +51,6 @@ class WebState;
 // Command handler for NTP related commands.
 @property(nonatomic, weak) id<NewTabPageCommands> ntpCommandHandler;
 
-// Bubble presenter for displaying IPH bubbles relating to the NTP.
-@property(nonatomic, strong) BubblePresenter* bubblePresenter;
-
 // Metrics recorder for the Discover feed events related to ContentSuggestions.
 @property(nonatomic, strong)
     DiscoverFeedMetricsRecorder* discoverFeedMetricsRecorder;
@@ -80,9 +76,6 @@ class WebState;
 
 // Tell location bar has taken focus.
 - (void)locationBarDidBecomeFirstResponder;
-
-// Constrains the named layout guide for the Discover header menu button.
-- (void)constrainDiscoverHeaderMenuButtonNamedGuide;
 
 // Configure Content Suggestions if showing the Start Surface.
 - (void)configureStartSurfaceIfNeeded;

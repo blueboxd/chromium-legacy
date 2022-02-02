@@ -55,6 +55,12 @@
 #include "chrome/install_static/install_util.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+#include "chrome/browser/enterprise/connectors/device_trust/device_trust_features.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/device_trust_key_manager_impl.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/key_rotation_launcher.h"
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+
 #if defined(OS_FUCHSIA)
 #include "chrome/browser/policy/browser_dm_token_storage_fuchsia.h"
 #endif  // defined(OS_FUCHSIA)
@@ -233,6 +239,20 @@ bool ChromeBrowserCloudManagementControllerDesktop::ReadyToInit() {
 std::unique_ptr<ClientDataDelegate>
 ChromeBrowserCloudManagementControllerDesktop::CreateClientDataDelegate() {
   return std::make_unique<ClientDataDelegateDesktop>();
+}
+
+std::unique_ptr<enterprise_connectors::DeviceTrustKeyManager>
+ChromeBrowserCloudManagementControllerDesktop::CreateDeviceTrustKeyManager() {
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+  if (enterprise_connectors::IsDeviceTrustConnectorFeatureEnabled()) {
+    auto key_rotation_launcher =
+        enterprise_connectors::KeyRotationLauncher::Create(
+            BrowserDMTokenStorage::Get(), GetDeviceManagementService());
+    return std::make_unique<enterprise_connectors::DeviceTrustKeyManagerImpl>(
+        std::move(key_rotation_launcher));
+  }
+#endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+  return nullptr;
 }
 
 void ChromeBrowserCloudManagementControllerDesktop::StartInvalidations() {

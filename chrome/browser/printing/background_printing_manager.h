@@ -9,8 +9,6 @@
 #include <memory>
 #include <set>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 
 namespace content {

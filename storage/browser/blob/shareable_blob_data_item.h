@@ -10,7 +10,6 @@
 #include "base/callback_helpers.h"
 #include "base/component_export.h"
 #include "base/hash/hash.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 
@@ -42,6 +41,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ShareableBlobDataItem
   };
 
   ShareableBlobDataItem(scoped_refptr<BlobDataItem> item, State state);
+
+  ShareableBlobDataItem(const ShareableBlobDataItem&) = delete;
+  ShareableBlobDataItem& operator=(const ShareableBlobDataItem&) = delete;
 
   const scoped_refptr<BlobDataItem>& item() const { return item_; }
 
@@ -86,8 +88,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ShareableBlobDataItem
   State state_;
   scoped_refptr<BlobDataItem> item_;
   std::unique_ptr<BlobMemoryController::MemoryAllocation> memory_allocation_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShareableBlobDataItem);
 };
 
 COMPONENT_EXPORT(STORAGE_BROWSER)

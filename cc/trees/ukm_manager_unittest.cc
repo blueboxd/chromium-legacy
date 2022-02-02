@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
@@ -229,7 +230,7 @@ class UkmManagerTest : public testing::Test {
     return breakdown;
   }
 
-  ukm::TestUkmRecorder* test_ukm_recorder_;
+  raw_ptr<ukm::TestUkmRecorder> test_ukm_recorder_;
   std::unique_ptr<UkmManager> manager_;
   base::SimpleTestTickClock test_tick_clock_;
 };
@@ -297,16 +298,26 @@ class UkmManagerCompositorLatencyTest
       public testing::WithParamInterface<
           CompositorFrameReporter::FrameReportType> {
  public:
-  UkmManagerCompositorLatencyTest() : report_type_(GetParam()) {}
+  UkmManagerCompositorLatencyTest() {
+    report_types_.set(static_cast<size_t>(GetParam()));
+  }
   ~UkmManagerCompositorLatencyTest() override = default;
 
  protected:
   CompositorFrameReporter::FrameReportType report_type() const {
-    return report_type_;
+    for (size_t type = 0; type < report_types_.size(); ++type) {
+      if (!report_types_.test(type))
+        continue;
+      return static_cast<CompositorFrameReporter::FrameReportType>(type);
+    }
+    return CompositorFrameReporter::FrameReportType::kNonDroppedFrame;
+  }
+  const CompositorFrameReporter::FrameReportTypes& report_types() const {
+    return report_types_;
   }
 
  private:
-  CompositorFrameReporter::FrameReportType report_type_;
+  CompositorFrameReporter::FrameReportTypes report_types_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -392,7 +403,7 @@ TEST_P(UkmManagerCompositorLatencyTest, CompositorLatency) {
   CompositorFrameReporter::ProcessedVizBreakdown processed_viz_breakdown(
       submit_time, viz_breakdown);
   manager_->RecordCompositorLatencyUKM(
-      report_type(), stage_history, active_trackers, processed_blink_breakdown,
+      report_types(), stage_history, active_trackers, processed_blink_breakdown,
       processed_viz_breakdown);
 
   const auto& entries =

@@ -972,14 +972,6 @@ _BANNED_CPP_FUNCTIONS = (
           r'^base[\\/]win[\\/]scoped_winrt_initializer\.cc$'
       ),
     ),
-    (
-      r'/DISALLOW_(COPY|ASSIGN|COPY_AND_ASSIGN)\(',
-      (
-        'DISALLOW_xxx macros are deprecated. See base/macros.h for details.',
-      ),
-      False,
-      (),
-    ),
 )
 
 # Format: Sequence of tuples containing:
@@ -1129,6 +1121,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/dexsplitter.pydeps',
     'build/android/gyp/dist_aar.pydeps',
     'build/android/gyp/filter_zip.pydeps',
+    'build/android/gyp/flatc_java.pydeps',
     'build/android/gyp/gcc_preprocess.pydeps',
     'build/android/gyp/generate_linker_version_script.pydeps',
     'build/android/gyp/ijar.pydeps',
@@ -1227,6 +1220,11 @@ def _IsJavaFile(input_api, file_path):
 
 def _IsProtoFile(input_api, file_path):
   return input_api.os_path.splitext(file_path)[1] == ".proto"
+
+
+def _IsXmlOrGrdFile(input_api, file_path):
+  ext = input_api.os_path.splitext(file_path)[1]
+  return ext in ('.grd', '.xml')
 
 
 def CheckNoUpstreamDepsOnClank(input_api, output_api):
@@ -1809,6 +1807,15 @@ def CheckUnwantedDependencies(input_api, output_api):
   change. Breaking - rules is an error, breaking ! rules is a
   warning.
   """
+  # Return early if no relevant file types were modified.
+  for f in input_api.AffectedFiles():
+    path = f.LocalPath()
+    if (_IsCPlusPlusFile(input_api, path) or _IsProtoFile(input_api, path) or
+        _IsJavaFile(input_api, path)):
+      break
+  else:
+    return []
+
   import sys
   # We need to wait until we have an input_api object and use this
   # roundabout construct to import checkdeps because this file is
@@ -2052,7 +2059,7 @@ def CheckChromeOsSyncedPrefRegistration(input_api, output_api):
       affected_file,
       files_to_check=('^ash/',
                       '^chromeos/',  # Top-level src/chromeos.
-                      '/chromeos/',  # Any path component.
+                      '.*/chromeos/',  # Any path component.
                       '^components/arc',
                       '^components/exo'),
       files_to_skip=(input_api.DEFAULT_FILES_TO_SKIP))
@@ -2501,8 +2508,9 @@ def CheckUniquePtrOnUpload(input_api, output_api):
         problems_nullptr))
   if problems_constructor:
     errors.append(output_api.PresubmitError(
-        'The following files use explicit std::unique_ptr constructor.'
-        'Use std::make_unique<T>() instead.',
+        'The following files use explicit std::unique_ptr constructor. '
+        'Use std::make_unique<T>() instead, or use base::WrapUnique if '
+        'std::make_unique is not an option.',
         problems_constructor))
   return errors
 
@@ -2641,6 +2649,12 @@ def CheckParseErrors(input_api, output_api):
 
 def CheckJavaStyle(input_api, output_api):
   """Runs checkstyle on changed java files and returns errors if any exist."""
+
+  # Return early if no java files were modified.
+  if not any(_IsJavaFile(input_api, f.LocalPath()) for f in
+             input_api.AffectedFiles()):
+    return []
+
   import sys
   original_sys_path = sys.path
   try:
@@ -2997,6 +3011,11 @@ def CheckSetNoParent(input_api, output_api):
      //build/OWNERS.setnoparent (see also
      //docs/code_reviews.md#owners-files-details)
   """
+  # Return early if no OWNERS files were modified.
+  if not any(f.LocalPath().endswith('OWNERS') for f in
+             input_api.AffectedFiles(include_deletes=False)):
+    return []
+
   errors = []
 
   allowed_owners_files_file = 'build/OWNERS.setnoparent'
@@ -3427,6 +3446,12 @@ def _CheckAndroidWebkitImports(input_api, output_api):
 
 def _CheckAndroidXmlStyle(input_api, output_api, is_check_on_upload):
   """Checks Android XML styles """
+
+  # Return early if no relevant files were modified.
+  if not any(_IsXmlOrGrdFile(input_api, f.LocalPath()) for f in
+             input_api.AffectedFiles(include_deletes=False)):
+    return []
+
   import sys
   original_sys_path = sys.path
   try:
@@ -3452,7 +3477,7 @@ class PydepsChecker(object):
   def _LoadFile(self, path):
     """Returns the list of paths within a .pydeps file relative to //."""
     if path not in self._file_cache:
-      with open(path) as f:
+      with open(path, encoding='utf-8') as f:
         self._file_cache[path] = f.read()
     return self._file_cache[path]
 
@@ -3521,7 +3546,7 @@ class PydepsChecker(object):
     env = dict(os.environ)
     env['PYTHONDONTWRITEBYTECODE'] = '1'
     new_pydeps_data = self._input_api.subprocess.check_output(
-        cmd + ' --output ""', shell=True, env=env)
+        cmd + ' --output ""', shell=True, env=env, encoding='utf-8')
     new_contents = new_pydeps_data.splitlines()[2:]
     if old_contents != new_contents:
       return cmd, '\n'.join(difflib.context_diff(old_contents, new_contents))
@@ -3543,9 +3568,14 @@ def CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   """Checks if a .pydeps file needs to be regenerated."""
   # This check is for Python dependency lists (.pydeps files), and involves
   # paths not only in the PRESUBMIT.py, but also in the .pydeps files. It
-  # doesn't work on Windows and Mac, so skip it on other platforms.
-  if input_api.platform != 'linux2':
+  # doesn't work on Windows and Mac, so skip it on other platforms and skip if
+  # no pydeps files are affected.
+  if not input_api.platform.startswith('linux'):
     return []
+  if not any(f.LocalPath().endswith('.pydeps') for f in input_api.AffectedFiles(
+             include_deletes=True)):
+    return []
+
   is_android = _ParseGclientArgs().get('checkout_android', 'false') == 'true'
   pydeps_to_check = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
   results = []
@@ -4202,7 +4232,7 @@ _NON_INCLUSIVE_TERMS = (
         # ...' will not. This may require some tweaking to catch these cases
         # without triggering a lot of false positives. Leaving it naive and
         # less matchy for now.
-        r'/\b(?i)((black|white)list|slave)\b',  # nocheck
+        r'/\b(?i)((black|white)list|master|slave)\b',  # nocheck
         (
             'Please don\'t use blacklist, whitelist, '  # nocheck
             'or slave in your',  # nocheck
@@ -5174,6 +5204,10 @@ def CheckStableMojomChanges(input_api, output_api):
   changed_mojoms = input_api.AffectedFiles(
       include_deletes=True,
       file_filter=lambda f: f.LocalPath().endswith(('.mojom')))
+
+  if not changed_mojoms:
+    return []
+
   delta = []
   for mojom in changed_mojoms:
     old_contents = ''.join(mojom.OldContents()) or None
@@ -5331,3 +5365,178 @@ def CheckConsistentGrdChanges(input_api, output_api):
               output_api.PresubmitError('Problem on {grd}:{i} - {msg}'.format(
                   grd=grd.LocalPath(), i=i + 1, msg=msg)))
   return errors
+
+def CheckMPArchApiUsage(input_api, output_api):
+  """CC the MPArch watchlist if the CL uses an API that is ambiguous in the
+  presence of MPArch features such as bfcache, prerendering, and fenced frames.
+  """
+
+  # Only consider top-level directories that (1) can use content APIs, (2)
+  # apply to desktop or android chrome, and (3) are known to have a significant
+  # number of uses of the APIs of concern.
+  files_to_check = (
+    r'^(chrome|components|content|extensions)[\\/].+%s' %
+        _IMPLEMENTATION_EXTENSIONS,
+    r'^(chrome|components|content|extensions)[\\/].+%s' % _HEADER_EXTENSIONS,
+  )
+  files_to_skip=(_EXCLUDED_PATHS +
+                 _TEST_CODE_EXCLUDED_PATHS +
+                 input_api.DEFAULT_FILES_TO_SKIP)
+  source_file_filter = lambda f: input_api.FilterSourceFile(
+    f, files_to_check=files_to_check, files_to_skip=files_to_skip)
+
+  # Note that since these are are just regular expressions and we don't have
+  # the compiler's AST, we could have spurious matches (e.g. an unrelated class
+  # could have a method named IsInMainFrame).
+  concerning_class_pattern = input_api.re.compile(
+      r'WebContentsObserver|WebContentsUserData')
+  # A subset of WebContentsObserver overrides where there's particular risk for
+  # confusing tab and page level operations and data (e.g. incorrectly
+  # resetting page state in DidFinishNavigation).
+  concerning_wco_methods = [
+     'DidStartNavigation',
+     'ReadyToCommitNavigation',
+     'DidFinishNavigation',
+     'RenderViewReady',
+     'RenderViewDeleted',
+     'RenderViewHostChanged',
+     'DocumentAvailableInMainFrame',
+     'DocumentOnLoadCompletedInMainFrame',
+     'DOMContentLoaded',
+     'DidFinishLoad',
+  ]
+  concerning_nav_handle_methods = [
+      'IsInMainFrame',
+  ]
+  concerning_web_contents_methods = [
+      'ForEachFrame',
+      'GetAllFrames',
+      'FromRenderFrameHost',
+      'FromRenderViewHost',
+      'GetMainFrame',
+      'GetRenderViewHost',
+  ]
+  concerning_rfh_methods = [
+      'GetParent',
+      'GetMainFrame',
+      'GetFrameTreeNodeId',
+  ]
+  concerning_method_pattern = input_api.re.compile(
+     r'(' +
+     r'|'.join(
+         item
+         for sublist in [concerning_wco_methods,
+                         concerning_nav_handle_methods,
+                         concerning_web_contents_methods,
+                         concerning_rfh_methods]
+         for item in sublist) +
+     r')\(')
+
+  uses_concerning_api = False
+  for f in input_api.AffectedFiles(include_deletes=False,
+                                   file_filter=source_file_filter):
+    for line_num, line in f.ChangedContents():
+      if (concerning_class_pattern.search(line) or
+          concerning_method_pattern.search(line)):
+        uses_concerning_api = True
+        break
+    if uses_concerning_api:
+      break
+
+  if uses_concerning_api:
+    output_api.AppendCC('mparch-reviews+watch@chromium.org')
+
+  return []
+
+
+def CheckAssertAshOnlyCode(input_api, output_api):
+    """Errors if a BUILD.gn file in an ash/ directory doesn't include
+    assert(is_chromeos_ash).
+    """
+
+    def FileFilter(affected_file):
+        """Includes directories known to be Ash only."""
+        return input_api.FilterSourceFile(
+            affected_file,
+            files_to_check=(
+                r'^ash/.*BUILD\.gn',  # Top-level src/ash/.
+                r'.*/ash/.*BUILD\.gn'),  # Any path component.
+            files_to_skip=(input_api.DEFAULT_FILES_TO_SKIP))
+
+    errors = []
+    pattern = input_api.re.compile(r'assert\(is_chromeos_ash')
+    for f in input_api.AffectedFiles(file_filter=FileFilter):
+        if (not pattern.search(input_api.ReadFile(f))):
+            errors.append(
+                output_api.PresubmitError(
+                    'Please add assert(is_chromeos_ash) to %s. If that\'s not '
+                    'possible, please create and issue and add a comment such '
+                    'as:\n  # TODO(https://crbug.com/XXX): add '
+                    'assert(is_chromeos_ash) when ...' % f.LocalPath()))
+    return errors
+
+
+def _IsRendererOnlyCppFile(input_api, affected_file):
+  path = affected_file.LocalPath()
+  if not _IsCPlusPlusFile(input_api, path):
+    return False
+
+  # Any code under a "renderer" subdirectory is assumed to be Renderer-only.
+  if "/renderer/" in path:
+    return True
+
+  # Blink's public/web API is only used/included by Renderer-only code.  Note
+  # that public/platform API may be used in non-Renderer processes (e.g. there
+  # are some includes in code used by Utility, PDF, or Plugin processes).
+  if "/blink/public/web/" in path:
+    return True
+
+  # We assume that everything else may be used outside of Renderer processes.
+  return False
+
+# TODO(https://crbug.com/1273182): Remove these checks, once they are replaced
+# by the Chromium Clang Plugin (which will be preferable because it will
+# 1) report errors earlier - at compile-time and 2) cover more rules).
+def CheckRawPtrUsage(input_api, output_api):
+  """Rough checks that raw_ptr<T> usage guidelines are followed."""
+  errors = []
+  # The regex below matches "raw_ptr<" following a word boundary, but not in a
+  # C++ comment.
+  raw_ptr_matcher = input_api.re.compile(r'^((?!//).)*\braw_ptr<')
+  file_filter = lambda f: _IsRendererOnlyCppFile(input_api, f)
+  for f, line_num, line in input_api.RightHandSideLines(file_filter):
+    if raw_ptr_matcher.search(line):
+      errors.append(
+          output_api.PresubmitError(
+              'Problem on {path}:{line} - '\
+              'raw_ptr<T> should not be used in Renderer-only code '\
+              '(as documented in the "Pointers to unprotected memory" '\
+              'section in //base/memory/raw_ptr.md)'.format(
+                  path=f.LocalPath(), line=line_num)))
+  return errors
+
+
+def CheckPythonShebang(input_api, output_api):
+    """Checks that python scripts use #!/usr/bin/env instead of hardcoding a
+    system-wide python.
+    """
+    errors = []
+    sources = lambda affected_file: input_api.FilterSourceFile(
+        affected_file,
+        files_to_skip=((_THIRD_PARTY_EXCEPT_BLINK,
+                        r'third_party/blink/web_tests/external/') + input_api.
+                       DEFAULT_FILES_TO_SKIP),
+        files_to_check=[r'.*\.py$'])
+    for f in input_api.AffectedSourceFiles(sources):
+        for line_num, line in f.ChangedContents():
+            if line_num == 1 and line.startswith('#!/usr/bin/python'):
+                errors.append(f.LocalPath())
+            break
+
+    result = []
+    for file in errors:
+        result.append(
+            output_api.PresubmitError(
+                "Please use '#!/usr/bin/env python/2/3' as the shebang of %s" %
+                file))
+    return result

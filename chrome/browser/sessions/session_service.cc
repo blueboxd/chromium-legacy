@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -16,6 +17,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -41,6 +43,7 @@
 #include "chrome/browser/ui/session_crashed_bubble.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
@@ -62,6 +65,10 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/app_controller_mac.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "chrome/browser/ui/side_search/side_search_utils.h"
 #endif
 
 using content::NavigationEntry;
@@ -175,7 +182,7 @@ bool SessionService::ShouldRestore(Browser* browser) {
     // restored.
     SessionStartupPref pref =
         SessionStartupPref::GetStartupPref(profile()->GetPrefs());
-    if (pref.type != SessionStartupPref::Type::LAST)
+    if (!pref.ShouldRestoreLastSession())
       return false;
 
     if (!browser)
@@ -209,9 +216,9 @@ bool SessionService::ShouldRestore(Browser* browser) {
   return false;
 }
 
-bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
+bool SessionService::RestoreIfNecessary(const StartupTabs& startup_tabs,
                                         bool restore_apps) {
-  return RestoreIfNecessary(urls_to_open, nullptr, restore_apps);
+  return RestoreIfNecessary(startup_tabs, nullptr, restore_apps);
 }
 
 void SessionService::MoveCurrentSessionToLastSession() {
@@ -268,6 +275,26 @@ void SessionService::SetPinnedState(const SessionID& window_id,
   ScheduleCommand(sessions::CreatePinnedStateCommand(tab_id, is_pinned));
 }
 
+void SessionService::AddTabExtraData(const SessionID& window_id,
+                                     const SessionID& tab_id,
+                                     const char* key,
+                                     const std::string data) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(sessions::CreateAddTabExtraDataCommand(tab_id, key, data));
+}
+
+void SessionService::AddWindowExtraData(const SessionID& window_id,
+                                        const char* key,
+                                        const std::string data) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(
+      sessions::CreateAddWindowExtraDataCommand(window_id, key, data));
+}
+
 void SessionService::TabClosed(const SessionID& window_id,
                                const SessionID& tab_id) {
   if (!tab_id.id())
@@ -305,7 +332,7 @@ void SessionService::WindowOpened(Browser* browser) {
   if (!ShouldTrackBrowser(browser))
     return;
 
-  RestoreIfNecessary(std::vector<GURL>(), browser, /* restore_apps */ false);
+  RestoreIfNecessary(StartupTabs(), browser, /* restore_apps */ false);
   SetWindowType(browser->session_id(), browser->type());
   SetWindowAppName(browser->session_id(), browser->app_name());
 
@@ -413,8 +440,6 @@ void SessionService::SetWindowUserTitle(const SessionID& window_id,
       sessions::CreateSetWindowUserTitleCommand(window_id, user_title));
 }
 
-
-
 void SessionService::OnErrorWritingSessionCommands() {
   // TODO(sky): if `pending_window_close_ids_` is non-empty, then
   // RebuildCommandsIfRequired() will not call ScheduleResetCommands(). This is
@@ -472,7 +497,7 @@ bool SessionService::ShouldRestoreWindowOfType(
   return IsRelevantWindowType(window_type);
 }
 
-bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
+bool SessionService::RestoreIfNecessary(const StartupTabs& startup_tabs,
                                         Browser* browser,
                                         bool restore_apps) {
   if (ShouldRestore(browser)) {
@@ -487,14 +512,14 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
         *base::CommandLine::ForCurrentProcess(), profile());
     sessions::TabRestoreService* tab_restore_service =
         TabRestoreServiceFactory::GetForProfileIfExisting(profile());
-    if (pref.type == SessionStartupPref::LAST &&
+    if (pref.ShouldRestoreLastSession() &&
         (!tab_restore_service || !tab_restore_service->IsRestoring())) {
       SessionRestore::RestoreSession(
           profile(), browser,
           SessionRestore::RESTORE_BROWSER |
               (browser ? 0 : SessionRestore::ALWAYS_CREATE_TABBED_BROWSER) |
               (restore_apps ? SessionRestore::RESTORE_APPS : 0),
-          urls_to_open);
+          startup_tabs);
       return true;
     }
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -506,8 +531,8 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
       StartupBrowserCreator browser_creator;
       browser_creator.LaunchBrowser(*base::CommandLine::ForCurrentProcess(),
                                     profile(), base::FilePath(),
-                                    chrome::startup::IS_PROCESS_STARTUP,
-                                    chrome::startup::IS_NOT_FIRST_RUN,
+                                    chrome::startup::IsProcessStartup::kYes,
+                                    chrome::startup::IsFirstRun::kNo,
                                     std::make_unique<LaunchModeRecorder>());
       return true;
     } else {
@@ -560,6 +585,16 @@ void SessionService::BuildCommandsForTab(
     command_storage_manager()->AppendRebuildCommand(
         sessions::CreateTabGroupCommand(session_id, std::move(group)));
   }
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  absl::optional<std::pair<std::string, std::string>> tab_restore_data =
+      side_search::MaybeGetSideSearchTabRestoreData(tab);
+  if (tab_restore_data.has_value()) {
+    command_storage_manager()->AppendRebuildCommand(
+        sessions::CreateAddTabExtraDataCommand(
+            session_id, tab_restore_data->first, tab_restore_data->second));
+  }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 }
 
 void SessionService::ScheduleResetCommands() {

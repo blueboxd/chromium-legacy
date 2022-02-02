@@ -11,6 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/settings/timezone_settings.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
@@ -60,9 +63,7 @@
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "components/account_id/account_id.h"
-#include "components/arc/arc_prefs.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
 #include "components/prefs/pref_service.h"
@@ -237,12 +238,18 @@ FileManagerPrivateGetPreferencesFunction::Run() {
   result.search_suggest_enabled =
       service->GetBoolean(prefs::kSearchSuggestEnabled);
   result.use24hour_clock = service->GetBoolean(prefs::kUse24HourClock);
-  result.timezone =
-      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                            ->GetCurrentTimezoneID());
+  result.timezone = base::UTF16ToUTF8(
+      ash::system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
   result.arc_enabled = service->GetBoolean(arc::prefs::kArcEnabled);
   result.arc_removable_media_access_enabled =
       service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
+  std::vector<std::string> folder_shortcuts;
+  const auto& value_list =
+      service->GetList(ash::prefs::kFilesAppFolderShortcuts)->GetList();
+  for (const base::Value& value : value_list) {
+    folder_shortcuts.push_back(value.is_string() ? value.GetString() : "");
+  }
+  result.folder_shortcuts = folder_shortcuts;
 
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
@@ -269,6 +276,14 @@ FileManagerPrivateSetPreferencesFunction::Run() {
     service->SetBoolean(
         arc::prefs::kArcHasAccessToRemovableMedia,
         *params->change_info.arc_removable_media_access_enabled);
+  }
+  if (params->change_info.folder_shortcuts) {
+    std::vector<base::Value> folder_shortcuts;
+    for (auto& shortcut : *params->change_info.folder_shortcuts) {
+      folder_shortcuts.push_back(base::Value(shortcut));
+    }
+    service->Set(ash::prefs::kFilesAppFolderShortcuts,
+                 base::Value(std::move(folder_shortcuts)));
   }
 
   return RespondNow(NoArguments());
@@ -1268,12 +1283,14 @@ ExtensionFunction::ResponseAction FileManagerPrivateOpenWindowFunction::Run() {
   const GURL selection_url(
       params->params.selection_url ? (*params->params.selection_url) : "");
 
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.allowed_paths =
+      ui::SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL;
   GURL files_swa_url =
       ::file_manager::util::GetFileManagerMainPageUrlWithParams(
           ui::SelectFileDialog::SELECT_NONE, /*title=*/{}, destination_folder,
           selection_url,
-          /*target_name=*/{},
-          /*file_types=*/nullptr,
+          /*target_name=*/{}, &file_type_info,
           /*file_type_index=*/0,
           /*search_query=*/{},
           /*show_android_picker_apps=*/false);

@@ -233,7 +233,12 @@ void SetV8FlagsIfOverridden(const base::Feature& feature,
 void SetFlags(IsolateHolder::ScriptMode mode,
               const std::string js_command_line_flags) {
   // We assume that all feature flag defaults correspond to the default
-  // values of the coresponding V8 flags.
+  // values of the corresponding V8 flags.
+  SetV8FlagsIfOverridden(features::kV8CompactCodeSpaceWithStack,
+                         "--compact-code-space-with-stack",
+                         "--no-compact-code-space-with-stack");
+  SetV8FlagsIfOverridden(features::kV8CompactWithStack, "--compact-with-stack",
+                         "--no-compact-with-stack");
   SetV8FlagsIfOverridden(features::kV8OptimizeJavascript, "--opt", "--no-opt");
   SetV8FlagsIfOverridden(features::kV8FlushBytecode, "--flush-bytecode",
                          "--no-flush-bytecode");
@@ -269,6 +274,8 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-turboprop");
   SetV8FlagsIfOverridden(features::kV8Sparkplug, "--sparkplug",
                          "--no-sparkplug");
+  SetV8FlagsIfOverridden(features::kV8ConcurrentSparkplug,
+                         "--concurrent-sparkplug", "--no-concurrent-sparkplug");
   SetV8FlagsIfOverridden(features::kV8SparkplugNeedsShortBuiltinCalls,
                          "--sparkplug-needs-short-builtins",
                          "--no-sparkplug-needs-short-builtins");
@@ -279,6 +286,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-write-protect-code-memory");
   SetV8FlagsIfOverridden(features::kV8SlowHistograms, "--slow-histograms",
                          "--no-slow-histograms");
+
+  if (base::FeatureList::IsEnabled(features::kV8ConcurrentSparkplug)) {
+    if (int max_threads = features::kV8ConcurrentSparkplugMaxThreads.Get()) {
+      SetV8FlagsFormatted("--concurrent-sparkplug-max-threads=%i", max_threads);
+    }
+  }
 
   if (base::FeatureList::IsEnabled(features::kV8ScriptAblation)) {
     if (int delay = features::kV8ScriptDelayMs.Get()) {

@@ -9,9 +9,7 @@
 
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 
 namespace ash {
 namespace input_method {

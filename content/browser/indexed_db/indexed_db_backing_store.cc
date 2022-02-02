@@ -11,11 +11,12 @@
 #include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
+#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
@@ -27,7 +28,6 @@
 #include "base/thread_annotations.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
@@ -106,7 +106,7 @@ class AutoDidCommitTransaction {
   ~AutoDidCommitTransaction() { backing_store_->DidCommitTransaction(); }
 
  private:
-  IndexedDBBackingStore* const backing_store_;
+  const raw_ptr<IndexedDBBackingStore> backing_store_;
 };
 
 namespace {
@@ -413,7 +413,7 @@ bool IsPathTooLong(storage::FilesystemProxy* filesystem,
   if (!limit.has_value()) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
 // In limited testing, ChromeOS returns 143, other OSes 255.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
     limit = 143;
 #else
     limit = 255;
@@ -3032,7 +3032,7 @@ IndexedDBBackingStore::Transaction::Transaction(
     blink::mojom::IDBTransactionMode mode)
     : backing_store_(std::move(backing_store)),
       transactional_leveldb_factory_(
-          backing_store_ ? backing_store_->transactional_leveldb_factory_
+          backing_store_ ? backing_store_->transactional_leveldb_factory_.get()
                          : nullptr),
       durability_(durability),
       mode_(mode) {

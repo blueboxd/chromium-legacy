@@ -15,10 +15,12 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/launch.h"
 #include "base/test/gtest_util.h"
 #include "base/test/launcher/test_result.h"
 #include "base/test/launcher/test_results_tracker.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -227,6 +229,8 @@ class TestLauncher {
   // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
   // file to get additional information about test run (status,
   // error-messages, stack-traces and file/line for failures).
+  // |thread_id| is the actual worker thread that launching the child process.
+  // |process_num| is a sequence number of the process executed in the run.
   // |leaked_items| is the number of files and/or directories remaining in the
   // child process's temporary directory upon its termination.
   void ProcessTestResults(const std::vector<std::string>& test_names,
@@ -235,6 +239,8 @@ class TestLauncher {
                           TimeDelta elapsed_time,
                           int exit_code,
                           bool was_timeout,
+                          PlatformThreadId thread_id,
+                          int process_num,
                           int leaked_items);
 
   std::vector<std::string> CollectTests();
@@ -245,7 +251,7 @@ class TestLauncher {
   // is running on the correct thread.
   ThreadChecker thread_checker_;
 
-  TestLauncherDelegate* launcher_delegate_;
+  raw_ptr<TestLauncherDelegate> launcher_delegate_;
 
   // Support for outer sharding, just like gtest does.
   int32_t total_shards_;  // Total number of outer shards, at least one.

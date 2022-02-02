@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/javascript_test_observer.h"
@@ -136,18 +135,6 @@ class NaClBrowserTestPnaclSubzero : public NaClBrowserTestPnacl {
   void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
-class NaClBrowserTestPnaclNonSfi : public NaClBrowserTestBase {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-  base::FilePath::StringType Variant() override;
-};
-
-class NaClBrowserTestNonSfiMode : public NaClBrowserTestBase {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-  base::FilePath::StringType Variant() override;
-};
-
 // A NaCl browser test only using static files.
 class NaClBrowserTestStatic : public NaClBrowserTestBase {
  public:
@@ -188,29 +175,6 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #else
 #  define MAYBE_GLIBC(test_name) test_name
 #endif
-
-// Currently, we only support it on x86-32 or ARM architecture.
-// TODO(hidehiko,mazda): Enable this on x86-64, too, when it is supported.
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&               \
-    !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) && \
-    !defined(MEMORY_SANITIZER) && !defined(LEAK_SANITIZER) &&    \
-    (defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL))
-#  define MAYBE_NONSFI(test_case) test_case
-#else
-#  define MAYBE_NONSFI(test_case) DISABLED_##test_case
-#endif
-
-// Similar to MAYBE_NONSFI, this is available only on x86-32, x86-64 or
-// ARM linux.
-#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&               \
-    !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) && \
-    !defined(MEMORY_SANITIZER) && !defined(LEAK_SANITIZER) &&    \
-    (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
-#  define MAYBE_PNACL_NONSFI(test_case) test_case
-#else
-#  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
-#endif
-
 
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \

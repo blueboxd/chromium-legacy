@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -782,6 +781,10 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BackToAboutBlank) {
     ASSERT_EQ("ok", EvalJs(popup, fetch_script));
     InspectHistograms(histograms, kShouldBeAllowedWithoutSniffing, resource);
   }
+
+  // Do a document.open() so that the initial empty document's history entry
+  // won't get replaced.
+  EXPECT_TRUE(ExecJs(popup, "document.open();"));
 
   // Navigate the popup and then go back to the 'about:blank' URL.
   TestNavigationObserver nav_observer(popup);

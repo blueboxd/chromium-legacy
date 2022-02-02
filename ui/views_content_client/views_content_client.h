@@ -5,8 +5,10 @@
 #ifndef UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_H_
 #define UI_VIEWS_CONTENT_CLIENT_VIEWS_CONTENT_CLIENT_H_
 
+#include <utility>
+
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views_content_client/views_content_client_export.h"
@@ -95,7 +97,7 @@ class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {
  private:
 #if defined(OS_WIN)
   HINSTANCE instance_;
-  sandbox::SandboxInterfaceInfo* sandbox_info_;
+  raw_ptr<sandbox::SandboxInterfaceInfo> sandbox_info_;
 #else
   int argc_;
   const char** argv_;

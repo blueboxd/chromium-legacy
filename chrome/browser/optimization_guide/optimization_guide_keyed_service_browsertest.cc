@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -30,6 +31,7 @@
 #include "components/optimization_guide/core/optimization_hints_component_update_listener.h"
 #include "components/optimization_guide/core/test_hints_component_creator.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/page_info/core/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/active_field_trials.h"
@@ -46,6 +48,8 @@
 #include "services/network/test/test_network_connection_tracker.h"
 
 namespace {
+
+using optimization_guide::proto::OptimizationType;
 
 // A WebContentsObserver that asks whether an optimization type can be applied.
 class OptimizationGuideConsumerWebContentsObserver
@@ -173,6 +177,19 @@ class OptimizationGuideKeyedServiceBrowserTest
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
+  void CanApplyOptimizationOnDemand(
+      const std::vector<GURL>& urls,
+      const std::vector<optimization_guide::proto::OptimizationType>&
+          optimization_types,
+      optimization_guide::OnDemandOptimizationGuideDecisionRepeatingCallback
+          callback) {
+    OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+        ->CanApplyOptimizationOnDemand(
+            urls, optimization_types,
+            optimization_guide::proto::CONTEXT_BATCH_UPDATE_ACTIVE_TABS,
+            callback);
+  }
+
   optimization_guide::PredictionManager* prediction_manager() {
     auto* optimization_guide_keyed_service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
@@ -288,8 +305,19 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
 #endif
 }
 
+class OptimizationGuideKeyedServiceWithoutRegistrationsBrowserTest
+    : public OptimizationGuideKeyedServiceBrowserTest {
+ public:
+  OptimizationGuideKeyedServiceWithoutRegistrationsBrowserTest() {
+    feature_list_.InitWithFeatures({}, {page_info::kPageInfoAboutThisSite});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 IN_PROC_BROWSER_TEST_F(
-    OptimizationGuideKeyedServiceBrowserTest,
+    OptimizationGuideKeyedServiceWithoutRegistrationsBrowserTest,
     NavigateToPageWithHintsButNoRegistrationDoesNotAttemptToLoadHint) {
   PushHintsComponentAndWaitForCompletion();
 
@@ -397,10 +425,13 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   EXPECT_TRUE(ukm_recorder.EntryHasMetric(
       entry,
       ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName));
-  // NOSCRIPT = 1, so bit mask is 10, which equals 2.
+
+  int64_t expected_types = 1 << OptimizationType::NOSCRIPT;
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite))
+    expected_types |= 1 << OptimizationType::ABOUT_THIS_SITE;
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName,
-      2);
+      expected_types);
 }
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
@@ -435,10 +466,12 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
   EXPECT_TRUE(ukm_recorder.EntryHasMetric(
       entry,
       ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName));
-  // NOSCRIPT = 1, so bit mask is 10, which equals 2.
+  int64_t expected_types = 1 << OptimizationType::NOSCRIPT;
+  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite))
+    expected_types |= 1 << OptimizationType::ABOUT_THIS_SITE;
   ukm_recorder.ExpectEntryMetric(
       entry, ukm::builders::OptimizationGuide::kRegisteredOptimizationTypesName,
-      2);
+      expected_types);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -543,6 +576,47 @@ IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
                              kNotAllowedByOptimizationFilter),
         1);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceBrowserTest,
+                       CanApplyOptimizationOnDemand) {
+  PushHintsComponentAndWaitForCompletion();
+  OptimizationGuideKeyedService* ogks =
+      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
+  ogks->RegisterOptimizationTypes(
+      {optimization_guide::proto::OptimizationType::NOSCRIPT,
+       optimization_guide::proto::OptimizationType::FAST_HOST_HINTS});
+
+  base::HistogramTester histogram_tester;
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_with_hints()));
+  optimization_guide::RetryForHistogramUntilCountReached(
+      &histogram_tester, "OptimizationGuide.LoadedHint.Result", 1);
+
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  base::flat_set<GURL> received_callbacks;
+  CanApplyOptimizationOnDemand(
+      {url_with_hints(), GURL("https://blockedhost.com/whatever")},
+      {optimization_guide::proto::OptimizationType::NOSCRIPT,
+       optimization_guide::proto::OptimizationType::FAST_HOST_HINTS},
+      base::BindRepeating(
+          [](base::RunLoop* run_loop, base::flat_set<GURL>* received_callbacks,
+             const GURL& url,
+             const base::flat_map<
+                 optimization_guide::proto::OptimizationType,
+                 optimization_guide::OptimizationGuideDecisionWithMetadata>&
+                 decisions) {
+            received_callbacks->insert(url);
+
+            // Expect one decision per requested type.
+            EXPECT_EQ(decisions.size(), 2u);
+
+            if (received_callbacks->size() == 2) {
+              run_loop->Quit();
+            }
+          },
+          run_loop.get(), &received_callbacks));
+  run_loop->Run();
 }
 
 class OptimizationGuideKeyedServiceDataSaverUserWithInfobarShownTest

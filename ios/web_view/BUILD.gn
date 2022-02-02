@@ -74,6 +74,9 @@ ios_web_view_public_headers = [
   "public/cwv_translation_controller_delegate.h",
   "public/cwv_translation_language.h",
   "public/cwv_translation_policy.h",
+  "public/cwv_trusted_vault_observer.h",
+  "public/cwv_trusted_vault_provider.h",
+  "public/cwv_trusted_vault_utils.h",
   "public/cwv_ui_delegate.h",
   "public/cwv_user_content_controller.h",
   "public/cwv_user_script.h",
@@ -189,6 +192,9 @@ source_set("web_view_sources") {
     "internal/signin/web_view_signin_client_factory.mm",
     "internal/sync/cwv_sync_controller.mm",
     "internal/sync/cwv_sync_controller_internal.h",
+    "internal/sync/cwv_trusted_vault_observer.mm",
+    "internal/sync/cwv_trusted_vault_observer_internal.h",
+    "internal/sync/cwv_trusted_vault_utils.mm",
     "internal/sync/web_view_device_info_sync_service_factory.h",
     "internal/sync/web_view_device_info_sync_service_factory.mm",
     "internal/sync/web_view_gcm_profile_service_factory.h",
@@ -440,6 +446,7 @@ test("ios_web_view_unittests") {
     "internal/signin/web_view_device_accounts_provider_impl_unittest.mm",
     "internal/signin/web_view_gaia_auth_fetcher_unittest.mm",
     "internal/sync/cwv_sync_controller_unittest.mm",
+    "internal/sync/cwv_trusted_vault_observer_unittest.mm",
     "internal/sync/web_view_sync_client_unittest.mm",
     "internal/translate/cwv_translation_controller_unittest.mm",
     "internal/translate/cwv_translation_language_unittest.mm",
@@ -505,6 +512,7 @@ repack_locales("repack_locales") {
     "${root_gen_dir}/components/strings/components_strings_",
     "${root_gen_dir}/components/strings/components_locale_settings_",
     "${root_gen_dir}/ui/strings/app_locale_settings_",
+    "${root_gen_dir}/ui/strings/ax_strings_",
     "${root_gen_dir}/ui/strings/ui_strings_",
   ]
 
@@ -512,6 +520,7 @@ repack_locales("repack_locales") {
     "//components/strings:components_locale_settings",
     "//components/strings:components_strings",
     "//ui/strings:app_locale_settings",
+    "//ui/strings:ax_strings",
     "//ui/strings:ui_strings",
   ]
   input_locales = ios_packed_locales

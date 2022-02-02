@@ -21,6 +21,7 @@ chrome.fileManagerPrivate.VolumeType = {
   DOCUMENTS_PROVIDER: 'documents_provider',
   TESTING: 'testing',
   SMB: 'smb',
+  SYSTEM_INTERNAL: 'system_internal',
 };
 
 /** @enum {string} */
@@ -231,6 +232,15 @@ chrome.fileManagerPrivate.EntryPropertyName = {
   EXTERNAL_FILE_URL: 'externalFileUrl',
   ALTERNATE_URL: 'alternateUrl',
   SHARE_URL: 'shareUrl',
+  CAN_COPY: 'canCopy',
+  CAN_DELETE: 'canDelete',
+  CAN_RENAME: 'canRename',
+  CAN_ADD_CHILDREN: 'canAddChildren',
+  CAN_SHARE: 'canShare',
+  CAN_PIN: 'canPin',
+  IS_MACHINE_ROOT: 'isMachineRoot',
+  IS_EXTERNAL_MEDIA: 'isExternalMedia',
+  IS_ARBITRARY_SYNC_FOLDER: 'isArbitrarySyncFolder',
 };
 
 /** @enum {string} */
@@ -360,6 +370,7 @@ chrome.fileManagerPrivate.FileTask;
  *   canRename: (boolean|undefined),
  *   canAddChildren: (boolean|undefined),
  *   canShare: (boolean|undefined),
+ *   canPin: (boolean|undefined),
  *   isMachineRoot: (boolean|undefined),
  *   isExternalMedia: (boolean|undefined),
  *   isArbitrarySyncFolder: (boolean|undefined)
@@ -494,7 +505,8 @@ chrome.fileManagerPrivate.FileWatchEvent;
  *   use24hourClock: boolean,
  *   timezone: string,
  *   arcEnabled: boolean,
- *   arcRemovableMediaAccessEnabled: boolean
+ *   arcRemovableMediaAccessEnabled: boolean,
+ *   folderShortcuts: !Array<string>
  * }}
  */
 chrome.fileManagerPrivate.Preferences;
@@ -503,7 +515,8 @@ chrome.fileManagerPrivate.Preferences;
  * @typedef {{
  *   cellularDisabled: (boolean|undefined),
  *   arcEnabled: (boolean|undefined),
- *   arcRemovableMediaAccessEnabled: (boolean|undefined)
+ *   arcRemovableMediaAccessEnabled: (boolean|undefined),
+ *   folderShortcuts: (!Array<string>|undefined)
  * }}
  */
 chrome.fileManagerPrivate.PreferencesChange;
@@ -872,6 +885,19 @@ chrome.fileManagerPrivate.removeMount = function(volumeId) {};
  *     chrome.fileManagerPrivate.VolumeMetadata representing mounted volumes.
  */
 chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
+
+/**
+ * Returns the list of files which aren't allowed to be copied. If the source is
+ * a directory, it will check all its files recursively. |entry| Entry of the
+ * source entry to be copied. |parentEntry| Entry of the destination directory.
+ * |callback| Result callback.
+ * @param {!Array<!Entry>} entries
+ * @param {!DirectoryEntry} destinationEntry
+ * @param {!Array<!Entry>} callback Entries of the files not allowed to be
+ *     copied.
+ */
+chrome.fileManagerPrivate.getDisallowedTransfers = function(
+    entries, destinationEntry, callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done

@@ -15,9 +15,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -37,6 +36,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/visibility.h"
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -106,7 +106,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
   bool HasFocus() override;
-  void Show() override;
   void Hide() override;
   bool IsShowing() override;
   void WasUnOccluded() override;
@@ -132,7 +131,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   CursorManager* GetCursorManager() override;
   void SetIsLoading(bool is_loading) override;
   void RenderProcessGone() override;
-  void ShowWithVisibility(Visibility web_contents_visibility) override;
+  void ShowWithVisibility(PageVisibilityState page_visibility) final;
   void Destroy() override;
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override;
   void UpdateTooltip(const std::u16string& tooltip_text) override;
@@ -398,6 +397,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   absl::optional<DisplayFeature> GetDisplayFeature() override;
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
+  void NotifyHostAndDelegateOnWasShown(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
+      final;
+  void RequestPresentationTimeFromHostOrDelegate(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
+      final;
+  void CancelPresentationTimeRequestForHostAndDelegate() final;
 
  private:
   friend class DelegatedFrameHostClientAura;
@@ -610,6 +616,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void CancelActiveTouches();
 
+  // Common part of UnOccluded() and Show().
+  void ShowImpl(PageVisibilityState page_visibility);
+
   // Common part of Occluded() and Hide().
   void HideImpl();
 
@@ -618,7 +627,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void SetTooltipText(const std::u16string& tooltip_text);
 
-  aura::Window* window_;
+  raw_ptr<aura::Window> window_;
 
   std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client_;
   // NOTE: this may be null during destruction.
@@ -637,10 +646,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool in_bounds_changed_;
 
   // Our parent host view, if this is a popup.  NULL otherwise.
-  RenderWidgetHostViewAura* popup_parent_host_view_;
+  raw_ptr<RenderWidgetHostViewAura> popup_parent_host_view_;
 
   // Our child popup host. NULL if we do not have a child popup.
-  RenderWidgetHostViewAura* popup_child_host_view_;
+  raw_ptr<RenderWidgetHostViewAura> popup_child_host_view_;
 
   class EventObserverForPopupExit;
   std::unique_ptr<EventObserverForPopupExit> event_observer_for_popup_exit_;
@@ -677,7 +686,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The LegacyRenderWidgetHostHWND instance is created during the first call
   // to RenderWidgetHostViewAura::InternalSetBounds. The instance is destroyed
   // when the LegacyRenderWidgetHostHWND hwnd is destroyed.
-  content::LegacyRenderWidgetHostHWND* legacy_render_widget_host_HWND_;
+  raw_ptr<content::LegacyRenderWidgetHostHWND> legacy_render_widget_host_HWND_;
 
   // Set to true if the legacy_render_widget_host_HWND_ instance was destroyed
   // by Windows. This could happen if the browser window was destroyed by
@@ -744,7 +753,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Saved value of WebPreferences' |double_tap_to_zoom_enabled|.
   bool double_tap_to_zoom_enabled_ = false;
 
-  Visibility visibility_ = Visibility::HIDDEN;
+  // Current visibility state. Initialized based on
+  // RenderWidgetHostImpl::is_hidden().
+  Visibility visibility_;
 
   // Represents a feature of the physical display whose offset and mask_length
   // are expressed in DIPs relative to the view. See display_feature.h for more

@@ -15,7 +15,6 @@
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,11 +24,11 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/data_model_utils.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -58,6 +57,7 @@ constexpr char16_t kMidlineEllipsis4Dots[] =
 constexpr char16_t kMidlineEllipsis2Dots[] =
     u"\u2022\u2060\u2006\u2060"
     u"\u2022\u2060\u2006\u2060";
+constexpr char16_t kMidlineEllipsisPlainDot = u'\u2022';
 
 namespace {
 
@@ -890,6 +890,13 @@ std::u16string CreditCard::ObfuscatedLastFourDigits(
                                                     obfuscation_length);
 }
 
+std::u16string CreditCard::ObfuscatedLastFourDigitsForSplitFields() const {
+  // For split credit card number fields, use plain dots without spacing and no
+  // LTR formatting. Only obfuscate 12 dots and append the last four digits of
+  // the credit card number.
+  return std::u16string(12, kMidlineEllipsisPlainDot) + LastFourDigits();
+}
+
 std::string CreditCard::CardIconStringForAutofillSuggestion() const {
   if (base::FeatureList::IsEnabled(features::kAutofillEnableGoogleIssuedCard) &&
       IsGoogleIssuedCard()) {
@@ -984,6 +991,10 @@ std::u16string CreditCard::Expiration2DigitMonthAsString() const {
   return data_util::Expiration2DigitMonthAsString(expiration_month_);
 }
 
+std::u16string CreditCard::Expiration2DigitYearAsString() const {
+  return data_util::Expiration2DigitYearAsString(expiration_year_);
+}
+
 std::u16string CreditCard::Expiration4DigitYearAsString() const {
   return data_util::Expiration4DigitYearAsString(expiration_year_);
 }
@@ -1020,10 +1031,6 @@ std::unique_ptr<CreditCard> CreditCard::CreateVirtualCard(
   // server card.
   virtual_card->set_guid(card.guid() + kVirtualCardIdentifierSuffix);
   return virtual_card;
-}
-
-std::u16string CreditCard::Expiration2DigitYearAsString() const {
-  return data_util::Expiration2DigitYearAsString(expiration_year_);
 }
 
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {

@@ -100,7 +100,9 @@ chromium-metrics-reviews@google.com.
   <variant name=".SendTabToSelf"/>
   <variant name=".SharedHighlighting"/>
   <variant name=".SyncError"/>
+  <variant name=".TailoredSecurityEnabled"/>
   <variant name=".UpdatePassword"/>
+  <variant name=".VrServicesUpgrade"/>
 </variants>
 
 <variants name="ProviderPermissionType">
@@ -267,6 +269,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.AutofillAssistant.GetClientToken"
+    enum="AutofillAssistantGetClientTokenResult" expires_after="2022-11-19">
+  <owner>sandromaggi@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    Reports the result of a GetClientToken call to GMS Core. This is recorded
+    every time a call is made. For each call two records are made, one that the
+    call was executed and a second to record it's result status (success or
+    failure). This is done to ensure all calls are properly recorded and none
+    are accidentally dropped.
+  </summary>
+</histogram>
+
 <histogram name="Android.AutofillAssistant.OnboardingFetcher.ResultStatus"
     enum="AutofillAssistantOnboardingFetcherResultStatus"
     expires_after="2022-06-08">
@@ -282,6 +297,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.AutofillAssistant.OnBoarding{Intent}"
     enum="AutofillAssistantOnBoarding" expires_after="2022-06-08">
+  <obsolete>
+    Removed in November 2021.
+  </obsolete>
   <owner>lsuder@chromium.org</owner>
   <owner>mcarlen@chromium.org</owner>
   <summary>
@@ -494,6 +512,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records that a specific background task has been stopped by Background Task
     Scheduler before it was able to complete itself.
+  </summary>
+</histogram>
+
+<histogram name="Android.BiometricAuth.AuthRequester"
+    enum="BiometricAuthRequester" expires_after="2022-04-03">
+  <owner>ioanap@chromium.org</owner>
+  <owner>fhorschig@chromium.org</owner>
+  <summary>
+    Recorded when a UI surface/flow in Chrome on Android chooses to re-auth the
+    user via biometrics. It records that surface/flow which made the request.
   </summary>
 </histogram>
 
@@ -809,7 +837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DarkTheme.ThemeSettingsEntry"
-    enum="AndroidThemeSettingsEntry" expires_after="2022-04-01">
+    enum="AndroidThemeSettingsEntry" expires_after="2022-06-05">
   <owner>nemco@google.com</owner>
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -1330,6 +1358,19 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencyFailure" units="ms"
     expires_after="2022-06-30">
+  <obsolete>
+    Removed in M98. No longer tracked.
+  </obsolete>
+  <owner>drott@chromium.org</owner>
+  <owner>layout-dev@chromium.org</owner>
+  <summary>
+    This metric was never logged. See
+    Android.FontLookup.Blink.DLFontsLatencyFailure2 instead.
+  </summary>
+</histogram>
+
+<histogram name="Android.FontLookup.Blink.DLFontsLatencyFailure2"
+    units="microseconds" expires_after="2022-06-30">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1337,12 +1378,26 @@ chromium-metrics-reviews@google.com.
     fonts at the time of instantiating the font in the fonts backend in the
     renderer. Includes time for error checking and attempting to create the font
     from the retrieved blob, if there is one. Only records timings for
-    situations in which a font could not be instantiated.
+    situations in which a font could not be instantiated. This is recorded only
+    on devices that support high resolution timers.
   </summary>
 </histogram>
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencySuccess" units="ms"
     expires_after="2022-06-30">
+  <obsolete>
+    Removed in M98. No longer tracked.
+  </obsolete>
+  <owner>drott@chromium.org</owner>
+  <owner>layout-dev@chromium.org</owner>
+  <summary>
+    This is obsolete in favor of Android.FontLookup.Blink.DLFontsLatencySuccess.
+    This was incorrectly logging both successes and failures.
+  </summary>
+</histogram>
+
+<histogram name="Android.FontLookup.Blink.DLFontsLatencySuccess2"
+    units="microseconds" expires_after="2022-06-30">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1350,7 +1405,8 @@ chromium-metrics-reviews@google.com.
     fonts at the time of instantiating the font in the fonts backend in the
     renderer. Includes time for error checking and attempting to create the font
     from the retrieved blob, if there is one. Only records timings for
-    situations in which a font was successfully instantiated and returned.
+    situations in which a font was successfully instantiated and returned. This
+    is recorded only on devices that support high resolution timers.
   </summary>
 </histogram>
 
@@ -1369,10 +1425,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.FontLookup.FetchAllFontFiles.Time" units="ms"
+    expires_after="2022-05-01">
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the time taken to fetch all available font files from the GMS Core
+    Android downloadable font provider.
+  </summary>
+</histogram>
+
 <histogram name="Android.FontLookup.FetchFontName" enum="FetchFontName"
     expires_after="2022-04-24">
-  <owner>chouinard@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
   <summary>
     Records font fetch requests by font name. These results may be used to
     determine whether it remains worthwhile to preload fonts that are available
@@ -1382,8 +1448,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.FontLookup.FetchFontResult" enum="FetchFontResult"
     expires_after="2022-05-01">
-  <owner>chouinard@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
   <summary>
     Records the result of font fetch requests made to the GMS Core Android
     downloadable font provider. The result may be success, or failure with a
@@ -1394,8 +1460,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.FontLookup.GmsFontRequest.Time" units="ms"
     expires_after="2022-05-01">
-  <owner>chouinard@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
   <summary>
     Records the time taken to make a fetchFonts font request to GMS Core via the
     Android downloadable font provider API. This metric may be used to determine
@@ -1406,8 +1472,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.FontLookup.MatchLocalFontByUniqueName.Time" units="ms"
     expires_after="2022-05-01">
-  <owner>chouinard@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
   <summary>
     Records the time taken to respond to a request from the renderer to fetch a
     specific font file from the GMS Core Android downloadable font provider.
@@ -1515,7 +1581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.InstantApps.ApiCallDurationWithoutApp" units="ms"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>sbirch@google.com</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>
@@ -1582,7 +1648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.InstantApps.ShouldShowBanner" enum="InstantAppsBanner"
-    expires_after="2022-01-31">
+    expires_after="2022-06-05">
   <owner>sbirch@google.com</owner>
   <owner>tedchoc@chromium.org</owner>
   <summary>
@@ -1669,6 +1735,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Amount of time spent waiting for a split preload task to finish. This will
     only be recorded if isolated splits are enabled.
+  </summary>
+</histogram>
+
+<histogram name="Android.Jank.AsyncTaskGetOnUiThreadStatus"
+    enum="AsyncTaskStatus" expires_after="2022-05-10">
+  <owner>smaier@chromium.org</owner>
+  <owner>agrieve@chromium.org</owner>
+  <summary>
+    The status of an AsyncTask when get() is called on the UI thread. This is
+    only recorded if the AsyncTask isn't immediately available.
+
+    Seeing the distribution of PENDING vs RUNNING tasks will give us a better
+    idea for how to approach these hangs.
   </summary>
 </histogram>
 
@@ -2185,7 +2264,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.InvalidMatch" enum="MatchResult"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>ender@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
@@ -2676,7 +2755,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.Changed" enum="SiteLayout"
-    expires_after="2022-04-01">
+    expires_after="2022-06-05">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -2800,6 +2879,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.SeccompStatus.Syscall" enum="AndroidSeccompStatus"
     expires_after="M99">
+  <obsolete>
+    Recording code deleted on 2015-04-22.
+  </obsolete>
   <owner>rsesek@chromium.org</owner>
   <summary>
     Reports the level of kernel support for the seccomp-bpf sandbox using the
@@ -2855,6 +2937,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.StartupTabPreloader.ActivityStartToLoadDecision"
+    units="ms" expires_after="2022-09-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    The time in a cold start between the start of the activity and the
+    triggerpoint for a startup tab being preloaded. Recorded only in startups
+    for which Android.Startup.Cold.TimeToFirstVisibleContent is being tracked.
+  </summary>
+</histogram>
+
 <histogram
     name="Android.StartupTabPreloader.LoadDecisionToFirstContentfulPaint.{LoadAndMatchResult}"
     units="ms" expires_after="2022-09-01">
@@ -2866,7 +2959,9 @@ chromium-metrics-reviews@google.com.
     recorded, recorded in the case where a startup tab preload is determined
     {LoadAndMatchResult}. In the case where the ElideTabPreloadAtStartup feature
     is enabled, this metric will be segmented to reflect the state that would
-    have resulted if tab preloading was not disabled by the feature.
+    have resulted if tab preloading was not disabled by the feature. Recorded
+    only in startups for which Android.Startup.Cold.TimeToFirstVisibleContent is
+    being tracked.
   </summary>
   <token key="LoadAndMatchResult">
     <variant name="LoadAndMatch"
@@ -2924,7 +3019,9 @@ chromium-metrics-reviews@google.com.
     tab preload is determined {LoadDecision} viable. In the case where the
     ElideTabPreloadAtStartup feature is enabled, this metric will be segmented
     to reflect the state that would have resulted if tab preloading was not
-    disabled by the feature.
+    disabled by the feature. Recorded only for startups in which
+    Android.Startup.Cold.TimeToFirstNavigationCommit is recorded for ability to
+    compare with that metric and its derived metrics.
   </summary>
   <token key="LoadDecision">
     <variant name="Load" summary="to be"/>
@@ -2958,6 +3055,26 @@ chromium-metrics-reviews@google.com.
                  actual initial load. Note that it is not expected that this
                  case occurs in practice, but it is theoretically possible"/>
     <variant name="NoLoad" summary="not to be viable"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Android.StartupTabPreloader.LoadDecisionToMatchDecision.{LoadDecision}"
+    units="ms" expires_after="2022-09-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    The time in a cold start between the triggerpoint for a startup tab being
+    preloaded and the decision being made on whether the preload is a match for
+    the information of the actual initial load that needs to occur, recorded in
+    the case where a startup tab preload is determined {LoadDecision} viable. In
+    the case where the ElideTabPreloadAtStartup feature is enabled, this metric
+    will be segmented to reflect the state that would have resulted if tab
+    preloading was not disabled by the feature.
+  </summary>
+  <token key="LoadDecision">
+    <variant name="Load" summary="to be"/>
+    <variant name="NoLoad" summary="not to be"/>
   </token>
 </histogram>
 
@@ -3643,6 +3760,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.DarkMode.PageDarkenedAccordingToAppTheme"
+    enum="Boolean" expires_after="2022-06-24">
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records WebView is darkened or not when the prefers-color-scheme is set to
+    dark according to the app theme not FORCE_DARK_AUTO setting. This histogram
+    is recorded on main frame's color scheme inferred for every committed
+    navigation.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.DarkMode.PrefersDarkFromTheme"
     enum="BooleanYesNo" expires_after="2022-03-24">
   <owner>michaelbai@chromium.org</owner>
@@ -3909,7 +4038,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ForceDarkBehavior"
-    enum="WebViewForceDarkBehavior" expires_after="2021-12-03">
+    enum="WebViewForceDarkBehavior" expires_after="2022-06-03">
   <owner>peter@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -3919,7 +4048,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.ForceDarkMode" enum="WebViewForceDarkMode"
-    expires_after="2021-12-03">
+    expires_after="2022-06-03">
   <owner>peter@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4449,7 +4578,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage1.FactoryInit"
-    units="ms" expires_after="2022-04-03">
+    units="ms" expires_after="2022-06-05">
   <owner>changwan@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4459,7 +4588,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage2.ProviderInit.Cold"
-    units="ms" expires_after="2022-04-03">
+    units="ms" expires_after="2022-06-05">
   <owner>changwan@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4471,7 +4600,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Startup.CreationTime.Stage2.ProviderInit.Warm"
-    units="ms" expires_after="2022-04-03">
+    units="ms" expires_after="2022-06-05">
   <owner>changwan@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4708,6 +4837,16 @@ chromium-metrics-reviews@google.com.
     feature. When enabled, the feature will show the logo of the default search
     engine in the omnibox. These events record the performance of fetching
     non-Google logos.
+  </summary>
+</histogram>
+
+<histogram name="SingleWebsitePreferences.NavigatedFromToReset"
+    enum="SettingsNavigationSources" expires_after="M104">
+  <owner>peconn@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Logs which way had the user navigated into settings screens when they press
+    &quot;Clear and Reset&quot; button in settings of a single website.
   </summary>
 </histogram>
 

@@ -7,8 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
-#include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {

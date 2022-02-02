@@ -14,6 +14,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter aborted
 [Worker]     getter onabort
+[Worker]     getter reason
 [Worker]     method constructor
 [Worker]     setter onabort
 [Worker] interface AudioData
@@ -2968,6 +2969,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method reportError
 [Worker]     method setInterval
 [Worker]     method setTimeout
+[Worker]     method structuredClone
 [Worker]     setter onerror
 [Worker]     setter onlanguagechange
 [Worker]     setter onrejectionhandled
@@ -3019,6 +3021,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getWriter
 [Worker] interface WritableStreamDefaultController
 [Worker]     attribute @@toStringTag
+[Worker]     getter signal
 [Worker]     method constructor
 [Worker]     method error
 [Worker] interface WritableStreamDefaultWriter

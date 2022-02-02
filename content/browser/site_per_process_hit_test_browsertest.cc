@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -122,7 +123,7 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
   }
 
  private:
-  RenderWidgetHost* host_;
+  raw_ptr<RenderWidgetHost> host_;
   std::vector<blink::WebInputEvent::Type> events_received_;
   std::vector<blink::mojom::InputEventResultSource> events_acked_;
   ui::WebScopedInputEvent event_;
@@ -746,8 +747,8 @@ class SetMouseCaptureInterceptor
   std::unique_ptr<base::RunLoop> run_loop_;
   bool msg_received_;
   bool capturing_;
-  RenderWidgetHostImpl* host_;
-  blink::mojom::WidgetInputHandlerHost* impl_;
+  raw_ptr<RenderWidgetHostImpl> host_;
+  raw_ptr<blink::mojom::WidgetInputHandlerHost> impl_;
 };
 
 #if defined(USE_AURA)
@@ -2550,7 +2551,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   ASSERT_TRUE(ExecJs(root->current_frame_host(),
                      base::StringPrintf("window.scrollTo(%d, %d);", 0, 0)));
   content::RenderFrameSubmissionObserver root_frame_observer(root);
-  gfx::Vector2dF zero_offset;
+  gfx::PointF zero_offset;
   root_frame_observer.WaitForScrollOffset(zero_offset);
 
   RenderWidgetHostViewChildFrame* child_render_widget_host_view_child_frame =
@@ -2578,7 +2579,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // window.scrollY == htmlScrollHeight - viewportHeight;
   // Verify that setting insets scrolled to the bottom to make
   // editable element visible.
-  gfx::Vector2dF final_root_offset(
+  gfx::PointF final_root_offset(
       0, htmlScrollHeight - (original_viewport_size.height() - inset_height));
   root_frame_observer.WaitForScrollOffset(final_root_offset);
   EXPECT_EQ(EvalJs(root->current_frame_host(), "window.scrollY").ExtractInt(),
@@ -3133,8 +3134,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 
 // Verify that an event is properly retargeted to the main frame when an
 // asynchronous hit test to the child frame times out.
+// TODO(crbug.com/1272137) Flaky on all platforms
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
-                       AsynchronousHitTestChildTimeout) {
+                       DISABLED_AsynchronousHitTestChildTimeout) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_busy_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3796,8 +3798,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // This test checks that a MouseDown triggers mouse capture when it hits
 // a scrollbar thumb or a subframe, and does not trigger mouse
 // capture if it hits an element in the main frame.
+// Flaky, https://crbug.com/1269160
+#if defined(OS_LINUX) || defined(OS_MAC) || defined(OS_ANDROID)
+#define MAYBE_CrossProcessMouseCapture DISABLED_CrossProcessMouseCapture
+#else
+#define MAYBE_CrossProcessMouseCapture CrossProcessMouseCapture
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
-                       CrossProcessMouseCapture) {
+                       MAYBE_CrossProcessMouseCapture) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_large_scrollable_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4362,7 +4370,7 @@ class SetCursorInterceptor
 
  private:
   base::RunLoop run_loop_;
-  RenderWidgetHostImpl* render_widget_host_;
+  raw_ptr<RenderWidgetHostImpl> render_widget_host_;
   absl::optional<ui::Cursor> cursor_;
 };
 
@@ -4647,7 +4655,7 @@ class SitePerProcessMouseWheelHitTestBrowserTest
   }
 
  private:
-  RenderWidgetHostViewAura* rwhv_root_;
+  raw_ptr<RenderWidgetHostViewAura> rwhv_root_;
 };
 
 // Fails on Windows official build, see // https://crbug.com/800822
@@ -6473,10 +6481,10 @@ class SitePerProcessGestureHitTestBrowserTest
   }
 
  protected:
-  RenderWidgetHostViewBase* rwhv_child_;
-  RenderWidgetHostViewAura* rwhva_root_;
-  RenderWidgetHostImpl* rwhi_child_;
-  RenderWidgetHostImpl* rwhi_root_;
+  raw_ptr<RenderWidgetHostViewBase> rwhv_child_;
+  raw_ptr<RenderWidgetHostViewAura> rwhva_root_;
+  raw_ptr<RenderWidgetHostImpl> rwhi_child_;
+  raw_ptr<RenderWidgetHostImpl> rwhi_root_;
 };
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessGestureHitTestBrowserTest,

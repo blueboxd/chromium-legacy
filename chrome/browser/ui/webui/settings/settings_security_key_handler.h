@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "device/fido/bio/enrollment.h"
 #include "device/fido/bio/enrollment_handler.h"
+#include "device/fido/credential_management_handler.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -23,7 +23,6 @@ class ListValue;
 
 namespace device {
 struct AggregatedEnumerateCredentialsResponse;
-class CredentialManagementHandler;
 enum class CredentialManagementStatus;
 class SetPINRequestHandler;
 class ResetRequestHandler;
@@ -143,6 +142,8 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
   explicit SecurityKeysCredentialHandler(
       std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory);
   void HandleStart(const base::ListValue* args);
+  void HandlePIN(const base::ListValue* args);
+  void HandleUpdateUserInformation(const base::ListValue* args);
 
  private:
   enum class State {
@@ -152,12 +153,12 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
     kReady,
     kGettingCredentials,
     kDeletingCredentials,
+    kUpdatingUserInformation,
   };
 
   void RegisterMessages() override;
   void Close() override;
 
-  void HandlePIN(const base::ListValue* args);
   void HandleEnumerate(const base::ListValue* args);
   void HandleDelete(const base::ListValue* args);
 
@@ -168,10 +169,11 @@ class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
           std::vector<device::AggregatedEnumerateCredentialsResponse>>
           responses,
       absl::optional<size_t> remaining_credentials);
-  void OnGatherPIN(uint32_t min_pin_length,
-                   int64_t num_retries,
+  void OnGatherPIN(device::CredentialManagementHandler::AuthenticatorProperties
+                       authenticator_properties,
                    base::OnceCallback<void(std::string)>);
   void OnCredentialsDeleted(device::CtapDeviceResponseCode status);
+  void OnUserInformationUpdated(device::CtapDeviceResponseCode status);
   void OnFinished(device::CredentialManagementStatus status);
 
   State state_ = State::kNone;
@@ -217,9 +219,8 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
   void OnReady(device::BioEnrollmentHandler::SensorInfo sensor_info);
   void OnError(device::BioEnrollmentHandler::Error error);
   void OnGatherPIN(uint32_t min_pin_length,
-                   int64_t retries,
+                   int64_t num_retries,
                    base::OnceCallback<void(std::string)>);
-
   void HandleGetSensorInfo(const base::ListValue* args);
 
   void HandleEnumerate(const base::ListValue* args);

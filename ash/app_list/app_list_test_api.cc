@@ -5,51 +5,133 @@
 #include "ash/public/cpp/test/app_list_test_api.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/views/app_list_bubble_apps_page.h"
+#include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_reorder_undo_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
+#include "ash/app_list/views/scrollable_apps_grid_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
+#include "ash/test/layer_animation_stopped_waiter.h"
+#include "base/callback.h"
+#include "base/run_loop.h"
+#include "ui/aura/window_observer.h"
+#include "ui/compositor/layer.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/view_model.h"
 
 namespace ash {
 
 namespace {
 
-PagedAppsGridView* GetAppsGridView() {
+PagedAppsGridView* GetPagedAppsGridView() {
+  // This view only exists for tablet launcher and legacy peeking launcher.
+  DCHECK(Shell::Get()->IsInTabletMode() ||
+         !features::IsProductivityLauncherEnabled());
   AppListView* app_list_view =
       Shell::Get()->app_list_controller()->presenter()->GetView();
   return AppListView::TestApi(app_list_view).GetRootAppsGridView();
 }
 
-AppsContainerView* GetAppsContainerView() {
-  return Shell::Get()
-      ->app_list_controller()
-      ->presenter()
-      ->GetView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->apps_container_view();
+AppListBubbleView* GetAppListBubbleView() {
+  AppListBubbleView* bubble_view = Shell::Get()
+                                       ->app_list_controller()
+                                       ->bubble_presenter_for_test()
+                                       ->bubble_view_for_test();
+  DCHECK(bubble_view) << "Bubble launcher view not yet created. Tests must "
+                         "show the launcher and may need to call "
+                         "WaitForBubbleWindow() if animations are enabled.";
+  return bubble_view;
 }
 
-AppListModel* GetAppListModel() {
-  return AppListModelProvider::Get()->model();
+AppListReorderUndoContainerView* GetReorderUndoContainerViewFromBubble() {
+  DCHECK(features::IsLauncherAppSortEnabled());
+  return GetAppListBubbleView()->apps_page()->reorder_undo_container_for_test();
 }
+
+// WindowAddedWaiter -----------------------------------------------------------
+
+// Waits until a child window is added to a container window.
+class WindowAddedWaiter : public aura::WindowObserver {
+ public:
+  explicit WindowAddedWaiter(aura::Window* container) : container_(container) {
+    container_->AddObserver(this);
+  }
+  WindowAddedWaiter(const WindowAddedWaiter&) = delete;
+  WindowAddedWaiter& operator=(const WindowAddedWaiter&) = delete;
+  ~WindowAddedWaiter() override { container_->RemoveObserver(this); }
+
+  void Wait() { run_loop_.Run(); }
+
+  aura::Window* added_window() { return added_window_; }
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowAdded(aura::Window* new_window) override {
+    added_window_ = new_window;
+    DCHECK(run_loop_.IsRunningOnCurrentThread());
+    run_loop_.Quit();
+  }
+
+  aura::Window* const container_;
+  aura::Window* added_window_ = nullptr;
+  base::RunLoop run_loop_;
+};
 
 }  // namespace
 
 AppListTestApi::AppListTestApi() = default;
 AppListTestApi::~AppListTestApi() = default;
+
+AppListModel* AppListTestApi::GetAppListModel() {
+  return AppListModelProvider::Get()->model();
+}
+
+void AppListTestApi::WaitForBubbleWindow(bool wait_for_opening_animation) {
+  DCHECK(features::IsProductivityLauncherEnabled());
+  DCHECK(!Shell::Get()->IsInTabletMode());
+
+  // Wait for the window only when the app list window does not exist.
+  auto* app_list_controller = Shell::Get()->app_list_controller();
+  if (!app_list_controller->GetWindow()) {
+    // Wait for a child window to be added to the app list container.
+    aura::Window* container = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(), kShellWindowId_AppListContainer);
+    WindowAddedWaiter waiter(container);
+    waiter.Wait();
+
+    // App list window exists.
+    aura::Window* app_list_window = app_list_controller->GetWindow();
+    DCHECK(app_list_window);
+    DCHECK_EQ(app_list_window, waiter.added_window());
+  }
+
+  if (wait_for_opening_animation)
+    WaitUntilAppListAnimationIdle();
+}
+
+void AppListTestApi::WaitUntilAppListAnimationIdle() {
+  aura::Window* app_list_window =
+      Shell::Get()->app_list_controller()->GetWindow();
+  DCHECK(app_list_window);
+  LayerAnimationStoppedWaiter().Wait(app_list_window->layer());
+}
 
 bool AppListTestApi::HasApp(const std::string& app_id) {
   return GetAppListModel()->FindItem(app_id);
@@ -57,7 +139,7 @@ bool AppListTestApi::HasApp(const std::string& app_id) {
 
 std::vector<std::string> AppListTestApi::GetTopLevelViewIdList() {
   std::vector<std::string> id_list;
-  auto* view_model = GetAppsGridView()->view_model();
+  auto* view_model = GetTopLevelAppsGridView()->view_model();
   for (int i = 0; i < view_model->view_size(); ++i) {
     AppListItem* app_list_item = view_model->view_at(i)->item();
     if (app_list_item) {
@@ -129,26 +211,35 @@ int AppListTestApi::GetTopListItemCount() {
   return GetAppListModel()->top_level_item_list()->item_count();
 }
 
+views::View* AppListTestApi::GetLastItemInAppsGridView() {
+  AppsGridView* grid = GetTopLevelAppsGridView();
+  return grid->view_model()->view_at(grid->view_model()->view_size() - 1);
+}
+
 PaginationModel* AppListTestApi::GetPaginationModel() {
-  return GetAppsGridView()->pagination_model();
+  return GetPagedAppsGridView()->pagination_model();
 }
 
 void AppListTestApi::UpdatePagedViewStructure() {
-  GetAppsGridView()->UpdatePagedViewStructure();
+  GetPagedAppsGridView()->UpdatePagedViewStructure();
 }
 
-views::View* AppListTestApi::GetViewForAppListSort(AppListSortOrder order) {
-  views::View* sort_button_container =
-      GetAppsContainerView()->sort_button_container_for_test();
-  switch (order) {
-    case AppListSortOrder::kCustom:
-      NOTREACHED();
-      return nullptr;
-    case AppListSortOrder::kNameAlphabetical:
-      return sort_button_container->children()[0];
-    case AppListSortOrder::kNameReverseAlphabetical:
-      return sort_button_container->children()[1];
+AppsGridView* AppListTestApi::GetTopLevelAppsGridView() {
+  if (features::IsProductivityLauncherEnabled() &&
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return GetAppListBubbleView()->apps_page()->scrollable_apps_grid_view();
   }
+
+  return GetPagedAppsGridView();
+}
+
+views::View* AppListTestApi::GetBubbleReorderUndoButton() {
+  return GetReorderUndoContainerViewFromBubble()
+      ->GetToastDismissButtonForTest();
+}
+
+bool AppListTestApi::GetBubbleReorderUndoToastVisibility() const {
+  return GetReorderUndoContainerViewFromBubble()->is_toast_visible_for_test();
 }
 
 }  // namespace ash

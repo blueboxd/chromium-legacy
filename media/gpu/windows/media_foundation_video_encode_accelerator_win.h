@@ -84,7 +84,9 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Activates the asynchronous encoder instance |encoder_| according to codec
   // merit.
-  bool ActivateAsyncEncoder(IMFActivate** pp_activate, uint32_t activate_count);
+  bool ActivateAsyncEncoder(IMFActivate** pp_activate,
+                            uint32_t activate_count,
+                            bool is_constrained_h264);
 
   // Initializes and allocates memory for input and output parameters.
   bool InitializeInputOutputParameters(VideoCodecProfile output_profile,
@@ -198,11 +200,11 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   // |main_client_task_runner_|.
   base::WeakPtr<Client> main_client_;
   std::unique_ptr<base::WeakPtrFactory<Client>> main_client_weak_factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_client_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_client_task_runner_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
-  // This thread services tasks posted from the VEA API entry points by the
-  // GPU child thread and CompressionCallback() posted from device thread.
-  base::Thread encoder_thread_;
+  // This thread services tasks posted from the VEA API entry points
+  // and runs them on a thread that can do heavy work and call MF COM interface.
   scoped_refptr<base::SingleThreadTaskRunner> encoder_thread_task_runner_;
 
   // DXGI device manager for handling hardware input textures
@@ -210,6 +212,7 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Declared last to ensure that all weak pointers are invalidated before
   // other destructors run.
+  base::WeakPtr<MediaFoundationVideoEncodeAccelerator> encoder_weak_ptr_;
   base::WeakPtrFactory<MediaFoundationVideoEncodeAccelerator>
       encoder_task_weak_factory_{this};
 };

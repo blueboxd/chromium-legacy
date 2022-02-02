@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
@@ -169,6 +168,8 @@ class ServiceConnectionImpl : public ServiceConnection {
   void AddThunderboltObserver(
       mojo::PendingRemote<mojom::CrosHealthdThunderboltObserver>
           pending_observer) override;
+  void AddUsbObserver(mojo::PendingRemote<mojom::CrosHealthdUsbObserver>
+                          pending_observer) override;
   void ProbeTelemetryInfo(
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
@@ -183,8 +184,7 @@ class ServiceConnectionImpl : public ServiceConnection {
       BindNetworkHealthServiceCallback callback) override;
   void SetBindNetworkDiagnosticsRoutinesCallback(
       BindNetworkDiagnosticsRoutinesCallback callback) override;
-  void FetchTouchpadLibraryName(
-      base::OnceCallback<void(const std::string&)> callback) override;
+  std::string FetchTouchpadLibraryName() override;
   void FlushForTesting() override;
 
   // Uses |bind_network_health_callback_| if set to bind a remote to the
@@ -608,6 +608,13 @@ void ServiceConnectionImpl::AddThunderboltObserver(
       std::move(pending_observer));
 }
 
+void ServiceConnectionImpl::AddUsbObserver(
+    mojo::PendingRemote<mojom::CrosHealthdUsbObserver> pending_observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdEventServiceIfNeeded();
+  cros_healthd_event_service_->AddUsbObserver(std::move(pending_observer));
+}
+
 void ServiceConnectionImpl::ProbeTelemetryInfo(
     const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
     mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback) {
@@ -648,8 +655,7 @@ void ServiceConnectionImpl::SetBindNetworkDiagnosticsRoutinesCallback(
 
 // This is a short-term solution for CloudReady. We should remove this work
 // around after cros_healthd team develop a healthier input telemetry approach.
-void ServiceConnectionImpl::FetchTouchpadLibraryName(
-    base::OnceCallback<void(const std::string&)> callback) {
+std::string ServiceConnectionImpl::FetchTouchpadLibraryName() {
 #if defined(USE_LIBINPUT)
   base::FileEnumerator file_enum(base::FilePath("/dev/input/"), false,
                                  base::FileEnumerator::FileType::FILES);
@@ -672,16 +678,15 @@ void ServiceConnectionImpl::FetchTouchpadLibraryName(
     }
 
     if (devinfo->UseLibinput()) {
-      std::move(callback).Run("libinput");
-      return;
+      return "libinput";
     }
   }
 #endif
 
 #if defined(USE_EVDEV_GESTURES)
-  std::move(callback).Run("gestures");
+  return "gestures";
 #else
-  std::move(callback).Run("Default EventConverterEvdev");
+  return "Default EventConverterEvdev";
 #endif
 }
 

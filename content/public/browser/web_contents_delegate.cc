@@ -158,6 +158,12 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
   return false;
 }
 
+bool WebContentsDelegate::CanEnterFullscreenModeForTab(
+    RenderFrameHost* requesting_frame,
+    const blink::mojom::FullscreenOptions& options) {
+  return true;
+}
+
 blink::mojom::DisplayMode WebContentsDelegate::GetDisplayMode(
     const WebContents* web_contents) {
   return blink::mojom::DisplayMode::kBrowser;
@@ -281,11 +287,6 @@ bool WebContentsDelegate::SaveFrame(const GURL& url,
                                     const Referrer& referrer,
                                     content::RenderFrameHost* rfh) {
   return false;
-}
-
-blink::SecurityStyle WebContentsDelegate::GetSecurityStyle(
-    WebContents* web_contents) {
-  return blink::SecurityStyle::kUnknown;
 }
 
 bool WebContentsDelegate::ShouldAllowRunningInsecureContent(

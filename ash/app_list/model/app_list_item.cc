@@ -109,6 +109,10 @@ AppListItem* AppListItem::FindChildItem(const std::string& id) {
   return nullptr;
 }
 
+AppListItem* AppListItem::GetChildItemAt(size_t index) {
+  return nullptr;
+}
+
 size_t AppListItem::ChildItemCount() const {
   return 0;
 }
@@ -153,4 +157,13 @@ void AppListItem::UpdateNotificationBadge(bool has_badge) {
   }
 }
 
+void AppListItem::SetIsNewInstall(bool is_new_install) {
+  if (metadata_->is_new_install == is_new_install)
+    return;
+
+  metadata_->is_new_install = is_new_install;
+  for (auto& observer : observers_) {
+    observer.ItemIsNewInstallChanged();
+  }
+}
 }  // namespace ash

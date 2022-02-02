@@ -7,7 +7,6 @@
 
 #include <algorithm>
 
-#include "base/macros.h"
 #include "base/strings/pattern.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -86,7 +85,7 @@ class TaskManagerMacTest : public InProcessBrowserTest {
 
     DictionaryPrefUpdate dict_update(local_state,
                                      prefs::kTaskManagerColumnVisibility);
-    dict_update->Clear();
+    dict_update->DictClear();
   }
 
   void ToggleColumnVisibility(TaskManagerMac* task_manager, int col_id) {

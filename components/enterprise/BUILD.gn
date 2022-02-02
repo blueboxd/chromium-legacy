@@ -65,7 +65,10 @@ static_library("enterprise") {
     sources += [
       "browser/controller/chrome_browser_cloud_management_controller.cc",
       "browser/controller/chrome_browser_cloud_management_controller.h",
+      "browser/device_trust/device_trust_key_manager.h",
     ]
+
+    deps += [ "//third_party/abseil-cpp:absl" ]
   }
 }
 
@@ -97,7 +100,7 @@ source_set("unit_tests") {
       "browser/reporting/report_uploader_unittest.cc",
     ]
 
-    deps = [
+    deps += [
       ":enterprise",
       ":test_support",
       "//base",

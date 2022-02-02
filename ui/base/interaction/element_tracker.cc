@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/interaction/element_identifier.h"
 
 namespace ui {
@@ -62,7 +63,7 @@ class ElementTracker::ElementData {
   }
 
   void NotifyElementShown(TrackedElement* element) {
-    DCHECK_EQ(identifier().raw_value(), element->identifier().raw_value());
+    DCHECK_EQ(identifier(), element->identifier());
     DCHECK_EQ(static_cast<intptr_t>(context()),
               static_cast<intptr_t>(element->context()));
     const auto it = elements_.insert(elements_.end(), element);
@@ -124,7 +125,7 @@ class ElementTracker::GarbageCollector {
     void Add(ElementData* data) { gc_->AddCandidate(data); }
 
    private:
-    GarbageCollector* const gc_;
+    const raw_ptr<GarbageCollector> gc_;
   };
 
   explicit GarbageCollector(ElementTracker* tracker) : tracker_(tracker) {}
@@ -152,7 +153,7 @@ class ElementTracker::GarbageCollector {
     candidates_.clear();
   }
 
-  ElementTracker* const tracker_;
+  const raw_ptr<ElementTracker> tracker_;
   std::set<ElementData*> candidates_;
   int frame_count_ = 0;
 };
@@ -199,6 +200,16 @@ ElementTracker::ElementList ElementTracker::GetAllMatchingElements(
   if (it != element_data_.end()) {
     std::copy(it->second->elements().begin(), it->second->elements().end(),
               std::back_inserter(result));
+  }
+  return result;
+}
+
+ElementTracker::ElementList ElementTracker::GetAllMatchingElementsInAnyContext(
+    ElementIdentifier id) {
+  ElementList result;
+  for (const auto& pr : element_to_data_lookup_) {
+    if (pr.first->identifier() == id)
+      result.push_back(pr.first);
   }
   return result;
 }
@@ -276,6 +287,9 @@ ElementTracker::ElementData* ElementTracker::GetOrAddElementData(
   const LookupKey key(id, context);
   auto it = element_data_.find(key);
   if (it == element_data_.end()) {
+    // This might be the first time we've referenced this identifier, so make
+    // sure it's registered.
+    ElementIdentifier::RegisterKnownIdentifier(id);
     const auto result = element_data_.emplace(
         key, std::make_unique<ElementData>(this, id, context));
     DCHECK(result.second);

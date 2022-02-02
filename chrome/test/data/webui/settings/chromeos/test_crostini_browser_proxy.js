@@ -33,11 +33,17 @@
       'requestCrostiniInstallerStatus',
       'requestArcAdbSideloadStatus',
       'getCanChangeArcAdbSideloading',
+      'createContainer',
+      'deleteContainer',
+      'requestContainerInfo',
+      'setContainerBadgeColor',
+      'stopContainer',
     ]);
     this.crostiniMicSharingEnabled = false;
     this.crostiniIsRunning = true;
     this.methodCalls_ = {};
     this.portOperationSuccess = true;
+    this.containerInfo = [];
   }
 
   getNewPromiseFor(name) {
@@ -204,5 +210,31 @@
   getCrostiniMicSharingEnabled() {
     this.methodCalled('getCrostiniMicSharingEnabled');
     return Promise.resolve(this.CrostiniMicSharingEnabled);
+  }
+
+  /** @override */
+  createContainer(containerId, imageServer, imageAlias) {
+    this.methodCalled('createContainer');
+  }
+
+  /** @override */
+  deleteContainer(containerId) {
+    this.methodCalled('deleteContainer');
+  }
+
+  /** @override */
+  requestContainerInfo() {
+    this.methodCalled('requestContainerInfo');
+    cr.webUIListenerCallback('crostini-container-info', this.containerInfo);
+  }
+
+  /** @override */
+  setContainerBadgeColor(containerId, badge_color) {
+    this.methodCalled('setContainerBadgeColor');
+  }
+
+  /** @override */
+  stopContainer(containerId) {
+    this.methodCalled('stopContainer');
   }
 }

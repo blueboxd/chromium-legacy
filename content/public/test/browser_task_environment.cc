@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
@@ -144,7 +143,7 @@ BrowserTaskEnvironment::~BrowserTaskEnvironment() {
 
   // Run DestructionObservers before our fake threads go away to ensure
   // BrowserThread::CurrentlyOn() returns the results expected by the observers.
-  NotifyDestructionObserversAndReleaseSequenceManager();
+  DestroyTaskEnvironment();
 
 #if defined(OS_WIN)
   com_initializer_.reset();
@@ -174,8 +173,10 @@ void BrowserTaskEnvironment::Init() {
   CHECK(com_initializer_->Succeeded());
 #endif
 
-  auto browser_ui_thread_scheduler = BrowserUIThreadScheduler::CreateForTesting(
-      sequence_manager(), GetTimeDomain());
+  if (GetMockTimeDomain())
+    sequence_manager()->SetTimeDomain(GetMockTimeDomain());
+  auto browser_ui_thread_scheduler =
+      BrowserUIThreadScheduler::CreateForTesting(sequence_manager());
   auto default_ui_task_runner =
       browser_ui_thread_scheduler->GetHandle()->GetDefaultTaskRunner();
   auto browser_io_thread_delegate =

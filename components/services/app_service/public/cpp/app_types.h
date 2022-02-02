@@ -8,8 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
@@ -19,7 +19,7 @@ enum class AppType {
   kArc = 1,                // Android app.
   kBuiltIn = 2,            // Built-in app.
   kCrostini = 3,           // Linux (via Crostini) app.
-  kExtension = 4,          // Extension-backed app.
+  kChromeApp = 4,          // Chrome app.
   kWeb = 5,                // Web app.
   kMacOs = 6,              // Mac OS app.
   kPluginVm = 7,           // Plugin VM app, see go/pluginvm.
@@ -27,7 +27,7 @@ enum class AppType {
   kRemote = 9,             // Remote app.
   kBorealis = 10,          // Borealis app, see go/borealis-app.
   kSystemWeb = 11,         // System web app.
-  kStandaloneBrowserExtension = 12,  // Extension based apps hosted in Lacros.
+  kStandaloneBrowserChromeApp = 12,  // Chrome app hosted in Lacros.
 };
 
 // Whether an app is ready to launch, i.e. installed.
@@ -53,7 +53,7 @@ enum class Readiness {
   kMaxValue = kUninstalledByMigration,
 };
 
-struct COMPONENT_EXPORT(APP_UPDATE) App {
+struct COMPONENT_EXPORT(APP_TYPES) App {
   App(AppType app_type, const std::string& app_id);
 
   App(const App&) = delete;
@@ -85,6 +85,18 @@ struct COMPONENT_EXPORT(APP_UPDATE) App {
   // When adding new fields to the App type, the `Clone` function and the
   // `AppUpdate` class should also be updated.
 };
+
+// TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
+// AppService.
+COMPONENT_EXPORT(APP_TYPES)
+AppType ConvertMojomAppTypToAppType(apps::mojom::AppType mojom_app_type);
+
+COMPONENT_EXPORT(APP_TYPES)
+Readiness ConvertMojomReadinessToReadiness(
+    apps::mojom::Readiness mojom_readiness);
+
+COMPONENT_EXPORT(APP_TYPES)
+std::unique_ptr<App> ConvertMojomAppToApp(const apps::mojom::AppPtr& mojom_app);
 
 }  // namespace apps
 

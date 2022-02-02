@@ -6,16 +6,16 @@
 
 #include <string>
 
+#include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/mojom/cast_receiver.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/connection_observer.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/mojom/cast_receiver.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/connection_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 
@@ -76,7 +76,7 @@ ArcCastReceiverService::ArcCastReceiverService(content::BrowserContext* context,
                           base::Unretained(this)));
 
   receiver_name_subscription_ = ash::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kCastReceiverName,
+      ash::kCastReceiverName,
       base::BindRepeating(&ArcCastReceiverService::OnCastReceiverNameChanged,
                           base::Unretained(this)));
 }
@@ -113,8 +113,7 @@ void ArcCastReceiverService::OnCastReceiverNameChanged() const {
   if (!cast_receiver_instance)
     return;
   std::string name;
-  if (!ash::CrosSettings::Get()->GetString(chromeos::kCastReceiverName,
-                                           &name) ||
+  if (!ash::CrosSettings::Get()->GetString(ash::kCastReceiverName, &name) ||
       name.empty()) {
     return;
   }

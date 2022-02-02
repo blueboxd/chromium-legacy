@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MechanicalLayout} from 'chrome://resources/ash/common/keyboard_diagram.js';
+import {MechanicalLayout, PhysicalLayout} from 'chrome://resources/ash/common/keyboard_diagram.js';
 import {assertEquals, assertNotEquals, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+import {flushTasks, waitAfterNextRender} from '../../test_util.js';
 
 export function keyboardDiagramTestSuite() {
   /** @type {?KeyboardDiagramElement} */
@@ -67,5 +67,48 @@ export function keyboardDiagramTestSuite() {
     assertKeyVisible('jisBackslashKey');
     assertKeyVisible('jisKanaKey');
     assertKeyVisible('jisYenKey');
+  });
+
+  test('dell-enterprise', async () => {
+    assertKeyHidden('dellDeleteKey');
+    assertKeyHidden('dellPageDownKey');
+    assertKeyHidden('dellPageUpKey');
+    assertKeyHidden('fnKey');
+    assertKeyHidden('layoutSwitchKey');
+
+    diagramElement.physicalLayout = PhysicalLayout.kChromeOSDellEnterprise;
+    await flushTasks();
+
+    assertKeyVisible('dellDeleteKey');
+    assertKeyVisible('dellPageDownKey');
+    assertKeyVisible('dellPageUpKey');
+    assertKeyVisible('fnKey');
+    assertKeyVisible('layoutSwitchKey');
+  });
+
+  test('resize', async () => {
+    const keyboardElement = diagramElement.root.getElementById('keyboard');
+    diagramElement.showNumberPad = false;
+
+    document.body.style.width = '700px';
+    await waitAfterNextRender(keyboardElement);
+    assertEquals(264, keyboardElement.offsetHeight);
+
+    document.body.style.width = '1000px';
+    await waitAfterNextRender(keyboardElement);
+    assertEquals(377, keyboardElement.offsetHeight);
+  });
+
+  test('resizeOnNumpadChange', async () => {
+    const keyboardElement = diagramElement.root.getElementById('keyboard');
+
+    document.body.style.width = '1000px';
+    diagramElement.showNumberPad = false;
+    await waitAfterNextRender(keyboardElement);
+    assertEquals(377, keyboardElement.offsetHeight);
+
+    diagramElement.showNumberPad = true;
+    await waitAfterNextRender(keyboardElement);
+    assertEquals(290, keyboardElement.offsetHeight);
   });
 }

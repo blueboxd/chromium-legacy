@@ -7,6 +7,7 @@
 
 #include <alpha-compositing-unstable-v1-client-protocol.h>
 #include <aura-shell-client-protocol.h>
+#include <chrome-color-management-client-protocol.h>
 #include <cursor-shapes-unstable-v1-client-protocol.h>
 #include <extended-drag-unstable-v1-client-protocol.h>
 #include <fullscreen-shell-unstable-v1-client-protocol.h>
@@ -30,6 +31,7 @@
 #include <surface-augmenter-client-protocol.h>
 #include <text-input-extension-unstable-v1-client-protocol.h>
 #include <text-input-unstable-v1-client-protocol.h>
+#include <touchpad-haptics-unstable-v1-client-protocol.h>
 #include <viewporter-client-protocol.h>
 #include <vsync-feedback-unstable-v1-client-protocol.h>
 #include <wayland-client-core.h>
@@ -81,6 +83,11 @@ DEFAULT_DELETER_FDECL(struct wp_presentation_feedback)
 DEFAULT_DELETER_FDECL(zaura_shell)
 DEFAULT_DELETER_FDECL(zaura_surface)
 DEFAULT_DELETER_FDECL(zaura_output)
+DEFAULT_DELETER_FDECL(zcr_color_manager_v1)
+DEFAULT_DELETER_FDECL(zcr_color_management_output_v1)
+DEFAULT_DELETER_FDECL(zcr_color_management_surface_v1)
+DEFAULT_DELETER_FDECL(zcr_color_space_creator_v1)
+DEFAULT_DELETER_FDECL(zcr_color_space_v1)
 DEFAULT_DELETER_FDECL(zwp_linux_buffer_release_v1)
 DEFAULT_DELETER_FDECL(zwp_fullscreen_shell_v1)
 DEFAULT_DELETER_FDECL(zwp_input_timestamps_manager_v1)
@@ -109,6 +116,7 @@ DEFAULT_DELETER_FDECL(zcr_remote_shell_v1)
 DEFAULT_DELETER_FDECL(zcr_remote_shell_v2)
 DEFAULT_DELETER_FDECL(zcr_stylus_tools_v1)
 DEFAULT_DELETER_FDECL(zcr_text_input_extension_v1)
+DEFAULT_DELETER_FDECL(zcr_touchpad_haptics_v1)
 DEFAULT_DELETER_FDECL(zwp_pointer_gestures_v1)
 DEFAULT_DELETER_FDECL(zwp_pointer_constraints_v1)
 DEFAULT_DELETER_FDECL(zwp_relative_pointer_manager_v1)

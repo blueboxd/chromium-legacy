@@ -26,6 +26,7 @@ message FieldTrialProto {
 }
 
 // Context contains client environment details.
+// Next ID: 20
 message ClientContextProto {
   message Chrome {
     optional string chrome_version = 1;
@@ -40,7 +41,8 @@ message ClientContextProto {
   optional string locale = 5;
 
   // country should be a country code as defined by ISO 3166-1-alpha-2.
-  // The intent is to communicate the client's location to the server.
+  // The intent is to communicate the client's location to the server. Location
+  // is extracted from Chrome Variations Service latest country.
   optional string country = 6;
 
   // Experiment ids string provided by the 'caller'.
@@ -122,6 +124,9 @@ message ClientContextProto {
     LANDSCAPE = 2;
   }
   optional ScreenOrientation screen_orientation = 16;
+
+  // An opaque client token for interactions with payments' systems.
+  optional bytes payments_client_token = 19;
 }
 
 // Get the list of scripts that can potentially be run on a url.
@@ -459,7 +464,20 @@ enum PolicyType {
   SCRIPT = 1;
 }
 
+message CUPRequestData {
+  // A serialized ScriptActionRequestProto.
+  optional bytes request = 1;
+  // Combination of public key id and random nonce.
+  optional bytes query_cup2key = 2;
+  // SHA2 hash of the request.
+  optional bytes hash_hex = 3;
+}
+
 message ScriptActionRequestProto {
+  // CUP-signed version of this proto. When set, the rest of the fields in
+  // ScriptActionRequestProto should be ignored.
+  optional CUPRequestData cup_data = 11;
+
   optional ClientContextProto client_context = 7;
 
   // Global payload from the previous response, possibly for another script.
@@ -475,6 +493,8 @@ message ScriptActionRequestProto {
     InitialScriptActionsRequestProto initial_request = 4;
     NextScriptActionsRequestProto next_request = 5;
   }
+
+  reserved 6, 9, 10;
 }
 
 // Message specifying how to retrieve the scripts. If bundle_path is set, it
@@ -493,6 +513,8 @@ message InitialScriptActionsRequestProto {
     // The exact URL on which the script was initially started.
     optional string url = 2;
     optional PolicyType policy = 3;
+
+    reserved 4 to 12;
   }
   optional QueryProto query = 3;
 
@@ -500,6 +522,8 @@ message InitialScriptActionsRequestProto {
 
   // Specify a bundle and version to run.
   optional ScriptStoreConfig script_store_config = 6;
+
+  reserved 1, 4, 5, 7 to 11;
 }
 
 message RoundtripTimingStats {
@@ -523,8 +547,22 @@ message NextScriptActionsRequestProto {
   optional SlowWarningStatus slow_connection_warning = 34;
 }
 
+message CUPResponseData {
+  // A serialized ActionsResponseProto.
+  optional bytes response = 1;
+  // The signature signing both the response, as well as the request hash, key
+  // ID, and nonce of the corresponding ScriptActionRequestProto. See
+  // https://source.chromium.org/chromium/chromium/src/+/main:docs/updater/cup.md
+  // for the signing scheme.
+  optional bytes ecdsa_signature = 2;
+}
+
 // Response of a script's actions.
 message ActionsResponseProto {
+  // CUP-signed version of this proto. When set, the rest of the fields in
+  // ActionsResponseProto should be ignored.
+  optional CUPResponseData cup_data = 11;
+
   // Opaque data to send to the next ScriptActionRequestProto.
   optional bytes global_payload = 4;
 
@@ -791,7 +829,6 @@ message ActionProto {
     UseAddressProto use_address = 29;
     UploadDomProto upload_dom = 18;
     ShowProgressBarProto show_progress_bar = 24;
-    HighlightElementProto highlight_element = 31;
     ShowDetailsProto show_details = 32;
     StopProto stop = 35;
     CollectUserDataProto collect_user_data = 36;
@@ -849,8 +886,8 @@ message ActionProto {
   // action sent to the client after this one. Default is false.
   optional bool clean_contextual_ui = 33;
 
-  reserved 5, 6, 8, 13 to 17, 20 to 23, 25 to 27, 30, 34, 38, 46 to 48, 50, 51,
-      71, 88;
+  reserved 5, 6, 8, 13 to 17, 20 to 23, 25 to 27, 30, 31, 34, 38, 46 to 48, 50,
+      51, 71, 88;
 }
 
 // Result of |CollectUserDataProto| to be sent to the server.
@@ -1131,10 +1168,6 @@ message WebControllerErrorInfoProto {
     // Select an option from an HTML dropdown.
     SELECT_OPTION = 4;
 
-    // Set the element's style to be highlighted by adding a BoxShadow to the
-    // element.
-    HIGHLIGHT_ELEMENT = 5;
-
     // Scroll the element into view with padding. This uses native JS
     // functionality for the initial scrolling and calculates the scrolling
     // for padding manually.
@@ -1208,6 +1241,8 @@ message WebControllerErrorInfoProto {
 
     // Blur an element that might have focus to remove its focus.
     BLUR_FIELD = 28;
+
+    reserved 5;
   }
 
   // The web-action that failed. This is usually a step in an execution chain
@@ -1864,12 +1899,6 @@ message ShowProgressBarProto {
   reserved 1 to 6;
 }
 
-// Contain all arguments to perform a highlight element action.
-message HighlightElementProto {
-  // The element to highlight.
-  optional SelectorProto element = 1;
-}
-
 // Controls the browser navigation.
 message NavigateProto {
   oneof value {
@@ -2367,6 +2396,8 @@ message AutofillEntryProto {
 message ProfileProto {
   // The values, where the key is one of autofill::ServerFieldType.
   map<int32, AutofillEntryProto> values = 2;
+  // The identifier for this set of profile data.
+  optional string identifier = 3;
 
   reserved 1;
 }
@@ -2374,9 +2405,13 @@ message ProfileProto {
 message PaymentInstrumentProto {
   // The values for the card, where the key is one of autofill::ServerFieldType.
   map<int32, AutofillEntryProto> card_values = 2;
+  // The network of the card.
+  optional string network = 5;
   // The values for the billing address, where the key is one of
   // autofill::ServerFieldType.
   map<int32, AutofillEntryProto> address_values = 3;
+  // The identifier for this payment instrument (credit card + billing address).
+  optional string identifier = 4;
 
   reserved 1;
 }
@@ -2481,9 +2516,25 @@ message CollectUserDataProto {
   repeated RequiredDataPiece required_billing_address_data_piece = 36;
 
   message UserDataProto {
+    // Available contacts to select.
     repeated ProfileProto available_contacts = 1;
+    // The identifier of the contact to select. If not specified, the client
+    // will use its own heuristics to select a default contact.
+    optional string selected_contact_identifier = 5;
+
+    // Available (shipping) addresses to select.
     repeated ProfileProto available_addresses = 4;
+    // The identifier of the shipping address to select. If not specified, the
+    // client will use its own heuristics to select a default shipping address.
+    optional string selected_shipping_address_identifier = 6;
+
+    // Available payment instruments to select.
     repeated PaymentInstrumentProto available_payment_instruments = 2;
+    // The identifier of the payment instrument to select. If not specified,
+    // the client will use its own heuristics to select a default payment
+    // instrument.
+    optional string selected_payment_instrument_identifier = 7;
+
     // The locale to be used when creating this data. This can have influence
     // on the potential processing by Autofill.
     optional string locale = 3;

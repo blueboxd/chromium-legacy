@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/password_manager/password_manager_test_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include <map>
 #include <string>
@@ -10,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -116,7 +116,7 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
   void QuitRunLoop();
 
   // The loop to be stopped when the target state or fallback is observed.
-  base::RunLoop* run_loop_;
+  raw_ptr<base::RunLoop> run_loop_;
 
   // The state CustomManagePasswordsUIController is currently waiting for.
   absl::optional<password_manager::ui::State> target_state_;
@@ -424,6 +424,11 @@ void PasswordStoreResultsObserver::OnGetPasswordStoreResults(
   run_loop_.Quit();
 }
 
+base::WeakPtr<password_manager::PasswordStoreConsumer>
+PasswordStoreResultsObserver::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 std::vector<std::unique_ptr<password_manager::PasswordForm>>
 PasswordStoreResultsObserver::WaitForResults() {
   run_loop_.Run();
@@ -516,7 +521,7 @@ void PasswordManagerBrowserTestBase::WaitForPasswordStore(Browser* browser) {
           browser->profile(), ServiceAccessType::IMPLICIT_ACCESS);
   PasswordStoreResultsObserver profile_syncer;
   profile_password_store->GetAllLoginsWithAffiliationAndBrandingInformation(
-      &profile_syncer);
+      profile_syncer.GetWeakPtr());
   profile_syncer.WaitForResults();
 
   scoped_refptr<password_manager::PasswordStoreInterface>
@@ -525,7 +530,7 @@ void PasswordManagerBrowserTestBase::WaitForPasswordStore(Browser* browser) {
   if (account_password_store) {
     PasswordStoreResultsObserver account_syncer;
     account_password_store->GetAllLoginsWithAffiliationAndBrandingInformation(
-        &account_syncer);
+        account_syncer.GetWeakPtr());
     account_syncer.WaitForResults();
   }
 }

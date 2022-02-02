@@ -3,19 +3,30 @@
     height: 200px;
     width: 300px;
   }
+  .busy-icon {
+    float: left;
+  }
+  .loading-message {
+    float: left;
+  }
 </style>
 
 <base-page orientation="column">
   <div slot="header">
-    <!-- TODO(gavindodd): Update text for i18n -->
-    <h1>Entering RMA</h1>
-    <div>
+    <div class="busy-icon">
       <paper-spinner-lite id="busyIcon" active></paper-spinner-lite>
+    </div>
+    <br> <!-- div is not enough to make a new line after the spinner. -->
+    <div class="splash-title">
+      <h1>[[i18n('shimlessSplashTitle')]]</h1>
+    </div>
+    <div class="loading-message">
+      <div>[[i18n('shimlessSplashRemembering')]]</div>
+      <div>[[i18n('shimlessSplashLoading')]]</div>
     </div>
   </div>
   <div slot="body">
-    <!-- TODO(gavindodd): Replace with real image -->
-    <iron-icon icon="shimless:shimless-placeholder" class="large-icon">
+    <iron-icon icon="shimless:repair-start" class="large-icon">
     </iron-icon>
   </div>
 </base-page>

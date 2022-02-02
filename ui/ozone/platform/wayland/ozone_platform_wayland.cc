@@ -14,16 +14,16 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/no_destructor.h"
-#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/common/features.h"
@@ -56,20 +56,12 @@
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #endif
 
-#include "ui/gfx/buffer_format_util.h"
-
-#if defined(WAYLAND_GBM)
-#include "ui/base/ui_base_features.h"
-#include "ui/gfx/linux/gbm_wrapper.h"  // nogncheck
-#include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
-#endif
-
 #if BUILDFLAG(USE_GTK)
 #include "ui/ozone/platform/wayland/host/linux_ui_delegate_wayland.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#include "ui/ozone/common/bitmap_cursor_factory.h"
 #else
 #include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
 #endif
@@ -84,8 +76,6 @@ class OzonePlatformWayland : public OzonePlatform,
   OzonePlatformWayland()
       : old_synthesize_key_repeat_enabled_(
             KeyEvent::IsSynthesizeKeyRepeatEnabled()) {
-    CHECK(features::IsUsingOzonePlatform());
-
     // Forcing the device scale factor on Wayland is not fully/well supported
     // and is provided for test purposes only.
     // See https://crbug.com/1241546
@@ -233,7 +223,7 @@ class OzonePlatformWayland : public OzonePlatform,
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
 #if defined(OS_CHROMEOS)
-    cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<BitmapCursorFactory>();
 #else
     cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
 #endif
@@ -256,22 +246,6 @@ class OzonePlatformWayland : public OzonePlatform,
     surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
         connection_.get(), buffer_manager_.get());
     overlay_manager_ = std::make_unique<WaylandOverlayManager>();
-#if defined(WAYLAND_GBM)
-    const base::FilePath drm_node_path = path_finder_.GetDrmRenderNodePath();
-    if (drm_node_path.empty()) {
-      LOG(WARNING) << "Failed to find drm render node path.";
-    } else {
-      DrmRenderNodeHandle handle;
-      if (!handle.Initialize(drm_node_path)) {
-        LOG(WARNING) << "Failed to initialize drm render node handle.";
-      } else {
-        auto gbm = CreateGbmDevice(handle.PassFD().release());
-        if (!gbm)
-          LOG(WARNING) << "Failed to initialize gbm device.";
-        buffer_manager_->set_gbm_device(std::move(gbm));
-      }
-    }
-#endif
   }
 
   const PlatformProperties& GetPlatformProperties() override {
@@ -353,11 +327,22 @@ class OzonePlatformWayland : public OzonePlatform,
   }
 
   void AddInterfaces(mojo::BinderMap* binders) override {
+    // It's preferred to reuse the same task runner where the
+    // WaylandBufferManagerGpu has been created. However, when tests are
+    // executed, the task runner might not have been set at that time. Thus, use
+    // the current one. See the comment in WaylandBufferManagerGpu why it takes
+    // a task runner.
+    //
+    // Please note this call happens on the gpu.
+    auto gpu_task_runner = buffer_manager_->gpu_thread_runner();
+    if (!gpu_task_runner)
+      gpu_task_runner = base::ThreadTaskRunnerHandle::Get();
+
     binders->Add<ozone::mojom::WaylandBufferManagerGpu>(
         base::BindRepeating(
             &OzonePlatformWayland::CreateWaylandBufferManagerGpuBinding,
             base::Unretained(this)),
-        base::SequencedTaskRunnerHandle::Get());
+        gpu_task_runner);
   }
 
   void CreateWaylandBufferManagerGpuBinding(

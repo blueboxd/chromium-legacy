@@ -14,10 +14,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -46,10 +46,13 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_visibility_state.h"
+#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -424,11 +427,12 @@ RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForIme() {
   return GetActiveWidget();
 }
 
-void RenderWidgetHostViewMac::Show() {
+void RenderWidgetHostViewMac::ShowWithVisibility(
+    PageVisibilityState page_visibility) {
   is_visible_ = true;
   ns_view_->SetVisible(is_visible_);
   browser_compositor_->SetViewVisible(is_visible_);
-  WasUnOccluded();
+  OnShowWithPageVisibility(page_visibility);
 }
 
 void RenderWidgetHostViewMac::Hide() {
@@ -439,19 +443,21 @@ void RenderWidgetHostViewMac::Hide() {
 }
 
 void RenderWidgetHostViewMac::WasUnOccluded() {
-  if (!host()->is_hidden())
-    return;
+  OnShowWithPageVisibility(PageVisibilityState::kVisible);
+}
+
+void RenderWidgetHostViewMac::NotifyHostAndDelegateOnWasShown(
+    blink::mojom::RecordContentToVisibleTimeRequestPtr tab_switch_start_state) {
+  DCHECK(host_->is_hidden());
+
+  // SetRenderWidgetHostIsHidden may cause a state transition that switches to
+  // a new instance of DelegatedFrameHost and calls WasShown, which causes
+  // HasSavedFrame to always return true. So cache the HasSavedFrame result
+  // before the transition, and do not save this DelegatedFrameHost* locally.
+  const bool has_saved_frame =
+      browser_compositor_->GetDelegatedFrameHost()->HasSavedFrame();
 
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
-
-  bool has_saved_frame =
-      browser_compositor_->has_saved_frame_before_state_transition();
-
-  auto* visible_time_request_trigger = host()->GetVisibleTimeRequestTrigger();
-  // The only way this should be null is if there is no RenderWidgetHostView.
-  DCHECK(visible_time_request_trigger);
-  auto tab_switch_start_state =
-      visible_time_request_trigger->TakeRecordContentToVisibleTimeRequest();
 
   const bool renderer_should_record_presentation_time = !has_saved_frame;
   host()->WasShown(renderer_should_record_presentation_time
@@ -470,6 +476,31 @@ void RenderWidgetHostViewMac::WasUnOccluded() {
       record_presentation_time
           ? std::move(tab_switch_start_state)
           : blink::mojom::RecordContentToVisibleTimeRequestPtr());
+}
+
+void RenderWidgetHostViewMac::RequestPresentationTimeFromHostOrDelegate(
+    blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request) {
+  DCHECK(!host_->is_hidden());
+  DCHECK(visible_time_request);
+
+  // No state transition here so don't use
+  // has_saved_frame_before_state_transition.
+  if (browser_compositor_->GetDelegatedFrameHost()->HasSavedFrame()) {
+    // If the frame for the renderer is already available, then the
+    // tab-switching time is the presentation time for the browser-compositor.
+    browser_compositor_->GetDelegatedFrameHost()
+        ->RequestPresentationTimeForNextFrame(std::move(visible_time_request));
+  } else {
+    host()->RequestPresentationTimeForNextFrame(
+        std::move(visible_time_request));
+  }
+}
+
+void RenderWidgetHostViewMac::
+    CancelPresentationTimeRequestForHostAndDelegate() {
+  DCHECK(!host_->is_hidden());
+  host()->CancelPresentationTimeRequest();
+  browser_compositor_->GetDelegatedFrameHost()->CancelPresentationTimeRequest();
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
@@ -823,8 +854,8 @@ void AddTextNodesToVector(const ui::AXNode* node,
     return;
   }
 
-  for (const auto* child : node->children())
-    AddTextNodesToVector(child, strings);
+  for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i)
+    AddTextNodesToVector(node->GetUnignoredChildAtIndex(i), strings);
 }
 
 using SpeechCallback = base::OnceCallback<void(const std::u16string&)>;
@@ -1806,10 +1837,16 @@ void RenderWidgetHostViewMac::LookUpDictionaryOverlayFromRange(
 }
 
 void RenderWidgetHostViewMac::LookUpDictionaryOverlayAtPoint(
-    const gfx::PointF& root_point) {
+    const gfx::PointF& root_point_in_dips) {
   if (!host() || !host()->delegate() ||
       !host()->delegate()->GetInputEventRouter())
     return;
+
+  // With zoom-for-dsf, RenderWidgetHost coordinate system is physical points,
+  // which means we have to scale the point by device scale factor.
+  gfx::PointF root_point = root_point_in_dips;
+  if (IsUseZoomForDSFEnabled())
+    root_point.Scale(GetDeviceScaleFactor());
 
   gfx::PointF transformed_point;
   RenderWidgetHostImpl* widget_host =
@@ -2138,7 +2175,7 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     int32_t target_widget_process_id,
     int32_t target_widget_routing_id,
     ui::mojom::AttributedStringPtr attributed_string,
-    const gfx::Point& baseline_point) {
+    const gfx::Point& baseline_point_in_layout_space) {
   if (!attributed_string || attributed_string->string.empty()) {
     // The PDF plugin does not support getting the attributed string at point.
     // Until it does, use NSPerformService(), which opens Dictionary.app.
@@ -2165,12 +2202,18 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     // https://crbug.com/737032
     auto* widget_host = content::RenderWidgetHost::FromID(
         target_widget_process_id, target_widget_routing_id);
-    gfx::Point updated_baseline_point = baseline_point;
+    gfx::Point updated_baseline_point = baseline_point_in_layout_space;
     if (widget_host) {
       if (auto* rwhv = widget_host->GetView()) {
-        updated_baseline_point =
-            rwhv->TransformPointToRootCoordSpace(baseline_point);
+        updated_baseline_point = rwhv->TransformPointToRootCoordSpace(
+            baseline_point_in_layout_space);
       }
+    }
+    // If zoom-for-dsf is enabled, then layout space is physical pixels. Scale
+    // it to get DIPs, which is what ns_view_ expects.
+    if (IsUseZoomForDSFEnabled()) {
+      updated_baseline_point = gfx::ScaleToRoundedPoint(
+          updated_baseline_point, 1.f / GetDeviceScaleFactor());
     }
     ns_view_->ShowDictionaryOverlay(std::move(attributed_string),
                                     updated_baseline_point);

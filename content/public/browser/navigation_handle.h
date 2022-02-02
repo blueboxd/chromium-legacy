@@ -11,8 +11,10 @@
 
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/navigating_frame_type.h"
 #include "content/public/browser/navigation_handle_timing.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/prerender_trigger_type.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
 #include "content/public/common/referrer.h"
@@ -120,6 +122,9 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // only meaningful to call this after BeginNavigation().
   virtual bool IsPrerenderedPageActivation() = 0;
 
+  // Returns the type of the frame in which this navigation is taking place.
+  virtual NavigatingFrameType GetNavigatingFrameType() const = 0;
+
   // Whether the navigation was initiated by the renderer process. Examples of
   // renderer-initiated navigations include:
   //  * <a> link click
@@ -160,6 +165,12 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // navigation is taking place in the main frame. This value will not change
   // during a navigation.
   virtual RenderFrameHost* GetParentFrame() = 0;
+
+  // Returns the document owning the frame this NavigationHandle is located
+  // in, which will either be a parent (for <iframe>s) or outer document (for
+  // <fencedframe> and <portal>). See documentation for
+  // `RenderFrameHost::GetParentOrOuterDocument()` for more details.
+  virtual RenderFrameHost* GetParentFrameOrOuterDocument() = 0;
 
   // The WebContents the navigation is taking place in.
   virtual WebContents* GetWebContents();
@@ -507,6 +518,11 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // `true` if the timeout is being started for the first time. Repeated calls
   // will be ignored (they won't reset the timeout) and will return `false`.
   virtual bool SetNavigationTimeout(base::TimeDelta timeout) = 0;
+
+  // Prerender2:
+  // Used for metrics.
+  virtual PrerenderTriggerType GetPrerenderTriggerType() = 0;
+  virtual std::string GetPrerenderEmbedderHistogramSuffix() = 0;
 
   // Testing methods ----------------------------------------------------------
   //

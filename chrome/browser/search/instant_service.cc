@@ -68,9 +68,6 @@ InstantService::InstantService(Profile* profile)
     return;
 
   registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
                  content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllSources());
 
@@ -98,7 +95,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_,
                               std::make_unique<MostVisitedIframeSource>());
 
-  theme_observation_.Observe(native_theme_);
+  theme_observation_.Observe(native_theme_.get());
 }
 
 InstantService::~InstantService() = default;
@@ -167,7 +164,7 @@ NtpTheme* InstantService::GetInitializedNtpTheme() {
 void InstantService::SetNativeThemeForTesting(ui::NativeTheme* theme) {
   theme_observation_.Reset();
   native_theme_ = theme;
-  theme_observation_.Observe(native_theme_);
+  theme_observation_.Observe(native_theme_.get());
 }
 
 void InstantService::Shutdown() {
@@ -184,9 +181,6 @@ void InstantService::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      break;
-    }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       content::RenderProcessHost* rph =
           content::Source<content::RenderProcessHost>(source).ptr();

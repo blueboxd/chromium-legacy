@@ -51,8 +51,8 @@ BOOL UserDataAreEqual(web::SerializableUserData* user_data1,
 BOOL SessionStoragesAreEqual(CRWSessionStorage* session1,
                              CRWSessionStorage* session2) {
   // Check the rest of the properties.
-  NSArray* items1 = session1.itemStorages;
-  NSArray* items2 = session2.itemStorages;
+  NSArray<CRWNavigationItemStorage*>* items1 = session1.itemStorages;
+  NSArray<CRWNavigationItemStorage*>* items2 = session2.itemStorages;
   return ItemStorageListsAreEqual(items1, items2) &&
          session1.hasOpener == session2.hasOpener &&
          session1.lastCommittedItemIndex == session2.lastCommittedItemIndex &&
@@ -111,8 +111,6 @@ TEST_F(CRWNSessionStorageTest, EncodeDecode) {
 // Tests that unarchiving CRWSessionStorage data results in an equivalent
 // storage when the user agent is automatic.
 TEST_F(CRWNSessionStorageTest, EncodeDecodeAutomatic) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(web::features::kUseDefaultUserAgentInWebClient);
   session_storage_.userAgentType = web::UserAgentType::AUTOMATIC;
   NSKeyedArchiver* archiver =
       [[NSKeyedArchiver alloc] initRequiringSecureCoding:NO];

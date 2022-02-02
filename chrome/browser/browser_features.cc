@@ -30,6 +30,11 @@ const base::Feature kColorProviderRedirectionForThemeProvider = {
 const base::Feature kDestroyProfileOnBrowserClose{
     "DestroyProfileOnBrowserClose", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Nukes profile directory before creating a new profile using
+// ProfileManager::CreateMultiProfileAsync().
+const base::Feature kNukeProfileBeforeCreateMultiAsync{
+    "NukeProfileBeforeCreateMultiAsync", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables executing the browser commands sent by the NTP promos.
 const base::Feature kPromoBrowserCommands{"PromoBrowserCommands",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -40,6 +45,17 @@ const base::Feature kPromoBrowserCommands{"PromoBrowserCommands",
 // should map to one of the browser commands specified in:
 // ui/webui/resources/js/browser_command/browser_command.mojom
 const char kBrowserCommandIdParam[] = "BrowserCommandIdParam";
+
+// Enables using policy::ManagementService to get the browser's and platform
+// management state everywhere.
+const base::Feature kUseManagementService{"UseManagementService",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_MAC)
+// Enables integration with the macOS feature Universal Links.
+const base::Feature kEnableUniveralLinks{"EnableUniveralLinks",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables reading and writing PWA notification permissions from quick settings
@@ -75,13 +91,6 @@ const base::Feature kPwaUpdateDialogForNameAndIcon{
 #endif
 };
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-// Enables taking snapshots of the user data directory after a major
-// milestone update and restoring them after a version rollback.
-const base::Feature kUserDataSnapshot{"UserDataSnapshot",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-
 // Gates sandboxed iframe navigation toward external protocol behind any of:
 // - allow-popups
 // - allow-top-navigation
@@ -100,21 +109,42 @@ const base::Feature kUserDataSnapshot{"UserDataSnapshot",
 const base::Feature kSandboxExternalProtocolBlocked{
     "SandboxExternalProtocolBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, a blue-border is drawn around shared tabs.
+// If disabled, the blue border is *never* used, no matter what any other
+// flag might say.
+// If enabled, the blue border is *generally* used, but other flags might
+// still disable it for specific cases.
+const base::Feature kTabCaptureBlueBorder{"TabCaptureBlueBorder",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// This flag is subordinate to |kTabCaptureBlueBorder|:
+// * If |kTabCaptureBlueBorder| is disabled, the blue border is always disabled,
+//    and this flag has no effect.
+// * If |kTabCaptureBlueBorder| and
+//   |kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT| are both enabled,
+//   the blue-border is always drawn.
+// * If |kTabCaptureBlueBorder| is enabled but
+//   |kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT| is disabled,
+//   then the blue-border tab-capture-indicator will NOT be drawn if the
+//   following conditions apply:
+//   1. A single capture of the tab exists, and it is self-capture (a document
+//      is tab-capturing the very tab in which the document is loaded).
+//   2. The capturing document is opted-into Region Capture. (Either through an
+//      origin trial or through enabling Experimental Web Platforms features.)
+const base::Feature kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT{
+    "TabCaptureBlueBorderForSelfCaptureRegionCaptureOT",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables migration of the network context data from `unsandboxed_data_path` to
 // `data_path`. See the explanation in network_context.mojom.
-const base::Feature kTriggerNetworkDataMigration{
-    "TriggerNetworkDataMigration", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool ShouldTriggerNetworkDataMigration() {
+const base::Feature kTriggerNetworkDataMigration {
+  "TriggerNetworkDataMigration",
 #if defined(OS_WIN)
-  // On Windows, if sandbox enabled means data must be migrated.
-  if (SystemNetworkContextManager::IsNetworkSandboxEnabled())
-    return true;
-#endif  // defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kTriggerNetworkDataMigration))
-    return true;
-  return false;
-}
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables runtime detection of USB devices which provide a WebUSB landing page
 // descriptor.
@@ -126,5 +156,10 @@ const base::Feature kWebUsbDeviceDetection{"WebUsbDeviceDetection",
 const base::Feature kCertificateTransparencyAndroid{
     "CertificateTransparencyAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+const base::Feature kLargeFaviconFromGoogle{"LargeFaviconFromGoogle",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
+    &kLargeFaviconFromGoogle, "favicon_size_in_dip", 128};
 
 }  // namespace features

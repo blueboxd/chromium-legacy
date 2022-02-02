@@ -57,7 +57,7 @@ std::unique_ptr<content::CdmInfo> CreateWidevineCdmInfo(
   return std::make_unique<content::CdmInfo>(
       kWidevineKeySystem, Robustness::kSoftwareSecure, std::move(capability),
       /*supports_sub_key_systems=*/false, kWidevineCdmDisplayName,
-      kWidevineCdmGuid, version, cdm_library_path, kWidevineCdmFileSystemId);
+      kWidevineCdmType, version, cdm_library_path, kWidevineCdmFileSystemId);
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -282,11 +282,14 @@ void AddHardwareSecureWidevine(std::vector<content::CdmInfo>* cdms) {
   capability.session_types.insert(media::CdmSessionType::kTemporary);
   capability.session_types.insert(media::CdmSessionType::kPersistentLicense);
 
-  // TODO(xhwang): Specify kChromeOsCdmFileSystemId here and update
-  // MediaInterfaceProxy to use it.
-
-  cdms->push_back(content::CdmInfo(
-      kWidevineKeySystem, Robustness::kHardwareSecure, std::move(capability)));
+  // TODO(crbug.com/1231162): This corresponds to `kChromeOsCdmFileSystemId` in
+  // content/browser/media/media_interface_proxy.cc. Consolidate these once an
+  // enum of CDM types is created.
+  const base::Token kChromeOsCdmType{0xa6ecd3fc63b3ded2ull,
+                                     0x9306d3270227ce5full};
+  cdms->push_back(content::CdmInfo(kWidevineKeySystem,
+                                   Robustness::kHardwareSecure,
+                                   std::move(capability), kChromeOsCdmType));
 #endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
 }
 
@@ -309,9 +312,9 @@ void AddExternalClearKey(std::vector<content::CdmInfo>* cdms) {
   // External Clear Key (ECK) related information.
   // Normal External Clear Key key system.
   const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
-  // A variant of ECK key system that has a different GUID.
-  const char kExternalClearKeyDifferentGuidTestKeySystem[] =
-      "org.chromium.externalclearkey.differentguid";
+  // A variant of ECK key system that has a different CDM type.
+  const char kkExternalClearKeyDifferentCdmTypeTestKeySystem[] =
+      "org.chromium.externalclearkey.differentcdmtype";
 
   // Supported codecs are hard-coded in ExternalClearKeyProperties.
   media::CdmCapability capability(
@@ -319,21 +322,21 @@ void AddExternalClearKey(std::vector<content::CdmInfo>* cdms) {
       {media::CdmSessionType::kTemporary,
        media::CdmSessionType::kPersistentLicense});
 
-  // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.
+  // Register kkExternalClearKeyDifferentCdmTypeTestKeySystem first separately.
   // Otherwise, it'll be treated as a sub-key-system of normal
   // kExternalClearKeyKeySystem. See MultipleCdmTypes test in
   // ECKEncryptedMediaTest.
   cdms->push_back(content::CdmInfo(
-      kExternalClearKeyDifferentGuidTestKeySystem, Robustness::kSoftwareSecure,
-      capability,
+      kkExternalClearKeyDifferentCdmTypeTestKeySystem,
+      Robustness::kSoftwareSecure, capability,
       /*supports_sub_key_systems=*/false, media::kClearKeyCdmDisplayName,
-      media::kClearKeyCdmDifferentGuid, base::Version("0.1.0.0"),
+      media::kClearKeyCdmDifferentCdmType, base::Version("0.1.0.0"),
       clear_key_cdm_path, media::kClearKeyCdmFileSystemId));
 
   cdms->push_back(content::CdmInfo(
       kExternalClearKeyKeySystem, Robustness::kSoftwareSecure, capability,
       /*supports_sub_key_systems=*/true, media::kClearKeyCdmDisplayName,
-      media::kClearKeyCdmGuid, base::Version("0.1.0.0"), clear_key_cdm_path,
+      media::kClearKeyCdmType, base::Version("0.1.0.0"), clear_key_cdm_path,
       media::kClearKeyCdmFileSystemId));
 }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

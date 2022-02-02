@@ -7,11 +7,9 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
@@ -29,7 +27,7 @@ namespace content {
 // It is used in cases without a frame context, e.g. WebRTC's
 // RTCVideoDecoderFactory to create hardware video decoders using
 // MojoVideoDecoder, and WebCodecs audio/video decoding in workers.
-class CONTENT_EXPORT FramelessMediaInterfaceProxy final
+class FramelessMediaInterfaceProxy final
     : public media::mojom::InterfaceFactory {
  public:
   FramelessMediaInterfaceProxy();
@@ -75,8 +73,7 @@ class CONTENT_EXPORT FramelessMediaInterfaceProxy final
       mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver) final;
 #endif  // defined(OS_WIN)
-  void CreateCdm(const std::string& key_system,
-                 const media::CdmConfig& cdm_config,
+  void CreateCdm(const media::CdmConfig& cdm_config,
                  CreateCdmCallback callback) final;
 
  private:

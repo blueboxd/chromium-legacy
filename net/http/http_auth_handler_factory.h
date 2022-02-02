@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
@@ -158,7 +158,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
 
  private:
   // The preferences for HTTP authentication.
-  const HttpAuthPreferences* http_auth_preferences_;
+  raw_ptr<const HttpAuthPreferences> http_auth_preferences_;
 };
 
 // The HttpAuthHandlerRegistryFactory dispatches create requests out

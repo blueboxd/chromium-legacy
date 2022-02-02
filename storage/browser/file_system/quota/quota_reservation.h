@@ -12,7 +12,6 @@
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "storage/browser/file_system/quota/quota_reservation_manager.h"
@@ -32,6 +31,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservation
     : public base::RefCounted<QuotaReservation> {
  public:
   using StatusCallback = base::OnceCallback<void(base::File::Error error)>;
+
+  QuotaReservation(const QuotaReservation&) = delete;
+  QuotaReservation& operator=(const QuotaReservation&) = delete;
 
   // Reclaims unused quota and reserves another |size| of quota.  So that the
   // resulting new |remaining_quota_| will be same as |size| as far as available
@@ -92,8 +94,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaReservation
 
   base::SequenceChecker sequence_checker_;
   base::WeakPtrFactory<QuotaReservation> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuotaReservation);
 };
 
 }  // namespace storage

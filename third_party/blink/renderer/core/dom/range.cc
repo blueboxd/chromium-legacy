@@ -60,7 +60,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -932,7 +932,7 @@ String Range::toString() const {
     }
   }
 
-  return builder.ToString();
+  return builder.ReleaseString();
 }
 
 String Range::GetText() const {
@@ -1353,7 +1353,7 @@ Node* Range::PastLastNode() const {
   return EndPosition().NodeAsRangePastLastNode();
 }
 
-IntRect Range::BoundingBox() const {
+gfx::Rect Range::BoundingBox() const {
   return ComputeTextRect(EphemeralRange(this));
 }
 

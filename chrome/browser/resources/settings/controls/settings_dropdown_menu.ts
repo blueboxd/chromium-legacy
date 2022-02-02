@@ -19,7 +19,6 @@ import '../settings_vars_css.js';
 import {assert} from '//resources/js/assert.m.js';
 import {html, microTask, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.js';
 import {prefToString, stringToPrefValue} from '../prefs/pref_util.js';
 
 import {CrPolicyPrefMixin} from './cr_policy_pref_mixin.js';
@@ -81,7 +80,7 @@ export class SettingsDropdownMenuElement extends
       /**
        * The value of the "custom" item.
        */
-      notFoundValue_: {
+      notFoundValue: {
         type: String,
         value: 'SETTINGS_DROPDOWN_NOT_FOUND_ITEM',
         readOnly: true,
@@ -101,7 +100,7 @@ export class SettingsDropdownMenuElement extends
   menuOptions: DropdownMenuOptionList;
   disabled: boolean;
   prefKey: string|null;
-  private notFoundValue_: string;
+  notFoundValue: string;
   label: string;
 
   focus() {
@@ -114,7 +113,7 @@ export class SettingsDropdownMenuElement extends
   private onChange_() {
     const selected = this.$.dropdownMenu.value;
 
-    if (selected === this.notFoundValue_) {
+    if (selected === this.notFoundValue) {
       return;
     }
 
@@ -156,7 +155,7 @@ export class SettingsDropdownMenuElement extends
     // <select>#value so the correct option gets selected.
     microTask.run(() => {
       this.$.dropdownMenu.value =
-          option === undefined ? this.notFoundValue_ : prefValue;
+          option === undefined ? this.notFoundValue : prefValue;
     });
   }
 
@@ -193,6 +192,12 @@ export class SettingsDropdownMenuElement extends
   private shouldDisableMenu_(): boolean {
     return this.disabled || this.isPrefEnforced() ||
         this.menuOptions === undefined || this.menuOptions.length === 0;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-dropdown-menu': SettingsDropdownMenuElement;
   }
 }
 

@@ -7,10 +7,13 @@
 
 #include "components/history/core/browser/url_row.h"
 #include "components/optimization_guide/content/browser/page_content_annotator.h"
-#include "components/optimization_guide/core/bert_model_executor.h"
+#include "components/optimization_guide/core/bert_model_handler.h"
 #include "components/optimization_guide/core/entity_metadata.h"
+#include "components/optimization_guide/core/model_info.h"
 #include "components/optimization_guide/core/page_content_annotation_job.h"
 #include "components/optimization_guide/core/page_content_annotations_common.h"
+#include "components/optimization_guide/core/page_topics_model_executor.h"
+#include "components/optimization_guide/core/page_visibility_model_executor.h"
 #include "components/optimization_guide/proto/page_topics_model_metadata.pb.h"
 #include "net/base/priority_queue.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -52,6 +55,18 @@ class PageContentAnnotationsModelManager : public PageContentAnnotator {
   void Annotate(BatchAnnotationCallback callback,
                 const std::vector<std::string>& inputs,
                 AnnotationType annotation_type) override;
+
+  // Runs |callback| with true when the model that powers |BatchAnnotate| for
+  // the given annotation type is ready to execute. If the model is ready now,
+  // the callback is run immediately. If the model will never become ready, due
+  // to feature flags for example, the callback run with false.
+  void NotifyWhenModelAvailable(AnnotationType type,
+                                base::OnceCallback<void(bool)> callback);
+
+  // Returns the model info associated with the given AnnotationType, if it is
+  // available and loaded.
+  // TODO(crbug/1249632): Add support for more than just page topics.
+  absl::optional<ModelInfo> GetModelInfoForType(AnnotationType type) const;
 
   // Returns the version of the page topics model that is currently being used
   // to annotate page content. Will return |absl::nullopt| if no model is being
@@ -145,6 +160,18 @@ class PageContentAnnotationsModelManager : public PageContentAnnotator {
   void SetUpPageTopicsModel(
       OptimizationGuideModelProvider* optimization_guide_model_provider);
 
+  // Set up the machinery for execution of the page topics v2 model. This should
+  // only be run at construction.
+  // TODO(crbug/1266504): Actually call this based on a separate feature flag.
+  void SetUpPageTopicsV2Model(
+      OptimizationGuideModelProvider* optimization_guide_model_provider);
+
+  // Set up the machinery for execution of the page visibility model. This
+  // should only be run at construction.
+  // TODO(crbug/1266504): Actually call this based on a separate feature flag.
+  void SetUpPageVisibilityModel(
+      OptimizationGuideModelProvider* optimization_guide_model_provider);
+
   // Requests to execute the page topics model with |text|, populate
   // |current_annotations| with detected topics on success, and proceed to
   // execute any subsequent models.
@@ -195,7 +222,19 @@ class PageContentAnnotationsModelManager : public PageContentAnnotator {
   //
   // Can be nullptr if the page topics model will not be running for the
   // session.
-  std::unique_ptr<BertModelExecutorHandle> page_topics_model_executor_handle_;
+  // TODO(crbug/1266504): Deprecate this in favor of
+  // |on_demand_page_topics_model_executor_|.
+  std::unique_ptr<BertModelHandler> page_topics_model_handler_;
+
+  // The model executor responsible for executing the on demand page topics
+  // model.
+  // TODO(crbug/1266504): Replace |page_topics_model_handler_| with
+  // this.
+  std::unique_ptr<PageTopicsModelExecutor>
+      on_demand_page_topics_model_executor_;
+
+  // The model executor responsible for executing the page visibility model.
+  std::unique_ptr<PageVisibilityModelExecutor> page_visibility_model_executor_;
 
   // The model executor responsible for executing the page entities model.
   //

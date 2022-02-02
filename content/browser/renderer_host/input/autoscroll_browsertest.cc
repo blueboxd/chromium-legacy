@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
@@ -163,7 +164,7 @@ class AutoscrollBrowserTest : public ContentBrowserTest {
   }
 
   void WaitForScroll(RenderFrameSubmissionObserver& observer) {
-    gfx::Vector2dF default_scroll_offset;
+    gfx::PointF default_scroll_offset;
     while (observer.LastRenderFrameMetadata()
                .root_scroll_offset.value_or(default_scroll_offset)
                .y() <= 0) {
@@ -298,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(AutoscrollBrowserTest,
 
   // Wait for 4 commits, then verify that the page has not scrolled.
   WaitForCommitFrames(4);
-  gfx::Vector2dF default_scroll_offset;
+  gfx::PointF default_scroll_offset;
   DCHECK_EQ(observer.LastRenderFrameMetadata()
                 .root_scroll_offset.value_or(default_scroll_offset)
                 .y(),

@@ -14,9 +14,11 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
@@ -54,11 +56,13 @@
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "media/media_buildflags.h"
 #include "media/remoting/remoting_constants.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
+#include "services/device/public/mojom/battery_monitor.mojom-blink.h"
 #include "third_party/blink/public/common/media/display_type.h"
 #include "third_party/blink/public/common/media/watch_time_reporter.h"
-#include "third_party/blink/public/platform/media/power_status_helper.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/media/url_index.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
@@ -79,6 +83,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/platform/media/power_status_helper.h"
 #include "third_party/blink/renderer/platform/media/text_track_impl.h"
 #include "third_party/blink/renderer/platform/media/video_decode_stats_reporter.h"
 #include "third_party/blink/renderer/platform/media/web_content_decryption_module_impl.h"
@@ -322,6 +327,60 @@ bool UsesAudioService(media::RendererType renderer_type) {
   return renderer_type != media::RendererType::kMediaFoundation;
 }
 
+#if defined(OS_ANDROID)
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MimeType {
+  kOtherMimeType = 0,
+  kApplicationDashXml = 1,
+  kApplicationOgg = 2,
+  kApplicationMpegUrl = 3,
+  kApplicationVndAppleMpegUrl = 4,
+  kApplicationXMpegUrl = 5,
+  kAudioMpegUrl = 6,
+  kAudioXMpegUrl = 7,
+  kNonspecificAudio = 8,
+  kNonspecificImage = 9,
+  kNonspecificVideo = 10,
+  kTextVtt = 11,
+  kMaxValue = kTextVtt,  // For UMA histograms.
+};
+MimeType TranslateMimeTypeToHistogramEnum(const std::string& mime_type) {
+  constexpr auto kCaseInsensitive = base::CompareCase::INSENSITIVE_ASCII;
+  if (base::StartsWith(mime_type, "application/dash+xml", kCaseInsensitive))
+    return MimeType::kApplicationDashXml;
+  if (base::StartsWith(mime_type, "application/ogg", kCaseInsensitive))
+    return MimeType::kApplicationOgg;
+  if (base::StartsWith(mime_type, "application/mpegurl", kCaseInsensitive))
+    return MimeType::kApplicationMpegUrl;
+  if (base::StartsWith(mime_type, "application/vnd.apple.mpegurl",
+                       kCaseInsensitive)) {
+    return MimeType::kApplicationVndAppleMpegUrl;
+  }
+  if (base::StartsWith(mime_type, "application/x-mpegurl", kCaseInsensitive))
+    return MimeType::kApplicationXMpegUrl;
+
+  if (base::StartsWith(mime_type, "audio/mpegurl", kCaseInsensitive))
+    return MimeType::kAudioMpegUrl;
+  if (base::StartsWith(mime_type, "audio/x-mpegurl", kCaseInsensitive))
+    return MimeType::kAudioXMpegUrl;
+
+  if (base::StartsWith(mime_type, "audio/", kCaseInsensitive))
+    return MimeType::kNonspecificAudio;
+  if (base::StartsWith(mime_type, "image/", kCaseInsensitive))
+    return MimeType::kNonspecificImage;
+  if (base::StartsWith(mime_type, "video/", kCaseInsensitive))
+    return MimeType::kNonspecificVideo;
+
+  if (base::StartsWith(mime_type, "text/vtt", kCaseInsensitive))
+    return MimeType::kTextVtt;
+
+  return MimeType::kOtherMimeType;
+}
+
+#endif
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -340,6 +399,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     std::unique_ptr<media::RendererFactorySelector> renderer_factory_selector,
     UrlIndex* url_index,
     std::unique_ptr<VideoFrameCompositor> compositor,
+    scoped_refptr<ThreadSafeBrowserInterfaceBrokerProxy> remote_interfaces,
     std::unique_ptr<WebMediaPlayerParams> params)
     : frame_(frame),
       main_task_runner_(frame->GetTaskRunner(TaskType::kMediaElementEvent)),
@@ -378,13 +438,29 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                               base::Unretained(this))),
       will_play_helper_(nullptr),
-      demuxer_override_(params->TakeDemuxerOverride()),
-      power_status_helper_(params->TakePowerStatusHelper()) {
+      demuxer_override_(params->TakeDemuxerOverride()) {
   DVLOG(1) << __func__;
   DCHECK(adjust_allocated_memory_cb_);
   DCHECK(renderer_factory_selector_);
   DCHECK(client_);
   DCHECK(delegate_);
+
+  if (base::FeatureList::IsEnabled(media::kMediaPowerExperiment)) {
+    // The battery monitor is only available through the blink provider.
+    DCHECK(remote_interfaces);
+    auto battery_monitor_cb = base::BindRepeating(
+        [](scoped_refptr<ThreadSafeBrowserInterfaceBrokerProxy>
+               remote_interfaces) {
+          mojo::PendingRemote<device::mojom::blink::BatteryMonitor>
+              battery_monitor;
+          remote_interfaces->GetInterface(
+              battery_monitor.InitWithNewPipeAndPassReceiver());
+          return battery_monitor;
+        },
+        remote_interfaces);
+    power_status_helper_ =
+        std::make_unique<PowerStatusHelper>(std::move(battery_monitor_cb));
+  }
 
   weak_this_ = weak_factory_.GetWeakPtr();
 
@@ -984,11 +1060,6 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   if (watch_time_reporter_)
     watch_time_reporter_->OnSeeking();
 
-  // Send the seek updates only when the seek pipeline hasn't started,
-  // OnPipelineSeeked is not called yet.
-  if (!seeking_)
-    client_->DidSeek();
-
   // TODO(sandersd): Move `seeking_` to PipelineController.
   // TODO(sandersd): Do we want to reset the idle timer here?
   delegate_->SetIdle(delegate_id_, false);
@@ -1539,15 +1610,14 @@ void WebMediaPlayerImpl::SetCdmInternal(WebContentDecryptionModule* cdm) {
     return;
   }
 
-  // Arrival of `cdm_config_` and `key_system_` unblocks recording of encrypted
-  // stats. Attempt to create the stats reporter. Note, we do NOT guard this
-  // within !was_encypted above because often the CDM arrives after the call to
+  // Arrival of `cdm_config_` unblocks recording of encrypted stats. Attempt to
+  // create the stats reporter. Note, we do NOT guard this within !was_encypted
+  // above because often the CDM arrives after the call to
   // OnEncryptedMediaInitData().
   cdm_config_ = web_cdm->GetCdmConfig();
-  key_system_ = web_cdm->GetKeySystem();
-  DCHECK(!key_system_.empty());
+  DCHECK(!cdm_config_->key_system.empty());
 
-  media_metrics_provider_->SetKeySystem(key_system_);
+  media_metrics_provider_->SetKeySystem(cdm_config_->key_system);
   if (cdm_config_->use_hw_secure_codecs)
     media_metrics_provider_->SetIsHardwareSecure();
   CreateVideoDecodeStatsReporter();
@@ -1786,6 +1856,15 @@ void WebMediaPlayerImpl::OnError(media::PipelineStatus status) {
     if (mb_data_source_->IsCorsCrossOrigin()) {
       UMA_HISTOGRAM_BOOLEAN("Media.WebMediaPlayerImpl.HLS.HasAccessControl",
                             mb_data_source_->HasAccessControl());
+    }
+
+    MimeType mime_type =
+        TranslateMimeTypeToHistogramEnum(mb_data_source_->mime_type());
+    base::UmaHistogramEnumeration("Media.WebMediaPlayerImpl.HLS.MimeType",
+                                  mime_type);
+    if (mb_data_source_->IsCorsCrossOrigin()) {
+      base::UmaHistogramEnumeration(
+          "Media.WebMediaPlayerImpl.HLS.CorsCrossOrigin.MimeType", mime_type);
     }
 
     // Note: Does not consider the full redirect chain, which could contain
@@ -2050,7 +2129,7 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (is_encrypted_ && !cdm_config_) {
     return;
   } else if (cdm_config_) {
-    DCHECK(!key_system_.empty());
+    DCHECK(!cdm_config_->key_system.empty());
   }
 
   mojo::PendingRemote<media::mojom::VideoDecodeStatsRecorder> recorder;
@@ -2063,7 +2142,7 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       base::BindRepeating(&WebMediaPlayerImpl::GetPipelineStatistics,
                           base::Unretained(this)),
       pipeline_metadata_.video_decoder_config.profile(),
-      pipeline_metadata_.natural_size, key_system_, cdm_config_,
+      pipeline_metadata_.natural_size, cdm_config_,
       frame_->GetTaskRunner(TaskType::kInternalMedia));
 
   if (delegate_->IsFrameHidden())
@@ -2197,7 +2276,6 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
         !seeking_) {
       underflow_timer_ = std::make_unique<base::ElapsedTimer>();
       watch_time_reporter_->OnUnderflow();
-      client_->DidBufferUnderflow();
 
       if (playback_events_recorder_)
         playback_events_recorder_->OnBuffering();
@@ -3904,13 +3982,13 @@ bool WebMediaPlayerImpl::IsVideoBeingCaptured() const {
 }
 
 void WebMediaPlayerImpl::RegisterFrameSinkHierarchy() {
-  DCHECK(bridge_);
-  bridge_->RegisterFrameSinkHierarchy();
+  if (bridge_)
+    bridge_->RegisterFrameSinkHierarchy();
 }
 
 void WebMediaPlayerImpl::UnregisterFrameSinkHierarchy() {
-  DCHECK(bridge_);
-  bridge_->UnregisterFrameSinkHierarchy();
+  if (bridge_)
+    bridge_->UnregisterFrameSinkHierarchy();
 }
 
 }  // namespace blink

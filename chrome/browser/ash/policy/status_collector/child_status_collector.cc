@@ -14,6 +14,11 @@
 #include <sstream>
 #include <utility>
 
+#include "ash/components/arc/mojom/enterprise_reporting.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
+#include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/timezone_settings.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -37,12 +42,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/arc/mojom/enterprise_reporting.mojom.h"
-#include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_service_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -149,9 +149,9 @@ ChildStatusCollector::ChildStatusCollector(
   auto callback = base::BindRepeating(
       &ChildStatusCollector::UpdateReportingSettings, base::Unretained(this));
   version_info_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kReportDeviceVersionInfo, callback);
-  boot_mode_subscription_ = cros_settings_->AddSettingsObserver(
-      chromeos::kReportDeviceBootMode, callback);
+      ash::kReportDeviceVersionInfo, callback);
+  boot_mode_subscription_ =
+      cros_settings_->AddSettingsObserver(ash::kReportDeviceBootMode, callback);
 
   // Watch for changes on the device state to calculate the child's active time.
   ash::UsageTimeStateNotifier::GetInstance()->AddObserver(this);
@@ -195,7 +195,7 @@ void ChildStatusCollector::UpdateReportingSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called
   // back when they are available.
-  if (chromeos::CrosSettingsProvider::TRUSTED !=
+  if (ash::CrosSettingsProvider::TRUSTED !=
       cros_settings_->PrepareTrustedValues(
           base::BindOnce(&ChildStatusCollector::UpdateReportingSettings,
                          weak_factory_.GetWeakPtr()))) {
@@ -206,11 +206,10 @@ void ChildStatusCollector::UpdateReportingSettings() {
   // Keep the default values in sync with DeviceReportingProto in
   // chrome/browser/ash/policy/status_collector/child_status_collector.cc.
   report_version_info_ = true;
-  cros_settings_->GetBoolean(chromeos::kReportDeviceVersionInfo,
+  cros_settings_->GetBoolean(ash::kReportDeviceVersionInfo,
                              &report_version_info_);
   report_boot_mode_ = true;
-  cros_settings_->GetBoolean(chromeos::kReportDeviceBootMode,
-                             &report_boot_mode_);
+  cros_settings_->GetBoolean(ash::kReportDeviceBootMode, &report_boot_mode_);
 }
 
 void ChildStatusCollector::OnAppActivityReportSubmitted() {
@@ -353,9 +352,8 @@ bool ChildStatusCollector::FillUserSpecificFields(
     scoped_refptr<ChildStatusCollectorState> state,
     em::ChildStatusReportRequest* status) {
   // Time zone.
-  const std::string current_timezone =
-      base::UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
-                            ->GetCurrentTimezoneID());
+  const std::string current_timezone = base::UTF16ToUTF8(
+      ash::system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
   status->set_time_zone(current_timezone);
 
   // Android status.

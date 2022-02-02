@@ -338,6 +338,10 @@ ElementFinder::Result::~Result() = default;
 
 ElementFinder::Result::Result(const Result&) = default;
 
+ElementFinder::Result ElementFinder::Result::EmptyResult() {
+  return ElementFinder::Result();
+}
+
 ElementFinder::ElementFinder(content::WebContents* web_contents,
                              DevtoolsClient* devtools_client,
                              const UserData* user_data,
@@ -353,15 +357,7 @@ ElementFinder::ElementFinder(content::WebContents* web_contents,
 
 ElementFinder::~ElementFinder() = default;
 
-void ElementFinder::Start(Callback callback) {
-  StartInternal(std::move(callback), web_contents_->GetMainFrame(),
-                /* frame_id= */ "", /* document_object_id= */ "");
-}
-
-void ElementFinder::StartInternal(Callback callback,
-                                  content::RenderFrameHost* frame,
-                                  const std::string& frame_id,
-                                  const std::string& document_object_id) {
+void ElementFinder::Start(const Result& start_element, Callback callback) {
   callback_ = std::move(callback);
 
   if (selector_.empty()) {
@@ -376,13 +372,18 @@ void ElementFinder::StartInternal(Callback callback,
     return;
   }
 
-  current_frame_ = frame;
-  current_frame_id_ = frame_id;
-  current_frame_root_ = document_object_id;
-  if (current_frame_root_.empty()) {
+  if (start_element.container_frame_host == nullptr) {
+    current_frame_ = web_contents_->GetMainFrame();
+  } else {
+    current_frame_ = start_element.container_frame_host;
+  }
+  current_frame_id_ = start_element.node_frame_id();
+  frame_stack_ = start_element.frame_stack();
+
+  if (start_element.object_id().empty()) {
     GetDocumentElement();
   } else {
-    current_matches_.emplace_back(current_frame_root_);
+    current_matches_.emplace_back(start_element.object_id());
     ExecuteNextTask();
   }
 }
@@ -673,7 +674,6 @@ void ElementFinder::OnGetDocumentElement(
     return;
   }
 
-  current_frame_root_ = object_id;
   // Use the node as root for the rest of the evaluation.
   current_matches_.emplace_back(object_id);
 
@@ -830,7 +830,12 @@ void ElementFinder::OnDescribeNodeForFrame(
   std::vector<int> backend_ids;
 
   if (node->GetNodeName() == "IFRAME") {
-    DCHECK(node->HasFrameId());  // Ensure all frames have an id.
+    // See: b/206647825
+    if (!node->HasFrameId()) {
+      NOTREACHED() << "Frame without ID";  // Ensure all frames have an id.
+      SendErrorResult(ClientStatus(FRAME_HOST_NOT_FOUND));
+      return;
+    }
 
     frame_stack_.push_back({object_id, current_frame_id_});
 
@@ -842,7 +847,6 @@ void ElementFinder::OnDescribeNodeForFrame(
       return;
     }
     current_frame_ = frame;
-    current_frame_root_.clear();
 
     if (node->HasContentDocument()) {
       // If the frame has a ContentDocument it's considered a local frame. In
@@ -891,12 +895,8 @@ void ElementFinder::OnResolveNode(
     return;
   }
 
-  std::string object_id = result->GetObject()->GetObjectId();
-  if (current_frame_root_.empty()) {
-    current_frame_root_ = object_id;
-  }
   // Use the node as root for the rest of the evaluation.
-  current_matches_.emplace_back(object_id);
+  current_matches_.emplace_back(result->GetObject()->GetObjectId());
   ExecuteNextTask();
 }
 

@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">Περιοχή εξάσκησης: αναπτυσσόμενες λίστες</translation>
 <translation id="1195238899008218998">Επίλογος</translation>
 <translation id="1197088940767939838">Πορτοκαλί</translation>
+<translation id="1198865190323699001">Κινήσεις αφής</translation>
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1206619573307042055">μαρκίζα</translation>
 <translation id="1207086294218137981">Δεν υπάρχει επόμενη κεφαλίδα επιπέδου 4.</translation>
@@ -390,6 +391,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{δεξιά αγκύλη}other{# δεξιές αγκύλες}}</translation>
 <translation id="3494946239022273294">στοιχείο μενού</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{λατινικό ερωτηματικό}other{# λατινικά ερωτηματικά}}</translation>
+<translation id="3505359110822747654">Σύμπτυξη μενού ChromeVox</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{σύμβολο προσθήκης}other{# σύμβολα προσθήκης}}</translation>
 <translation id="352577523970648069">Ένα πεδίο κειμένου με δυνατότητα επεξεργασίας</translation>
 <translation id="3538907380453898475">dscrplst</translation>

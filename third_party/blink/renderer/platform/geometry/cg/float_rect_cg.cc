@@ -30,7 +30,8 @@
 
 namespace blink {
 
-FloatRect::FloatRect(const CGRect& r) : location_(r.origin), size_(r.size) {}
+FloatRect::FloatRect(const CGRect& r)
+    : FloatRect(r.origin.x, r.origin.y, r.size.width, r.size.height) {}
 
 FloatRect::operator CGRect() const {
   return CGRectMake(x(), y(), width(), height());

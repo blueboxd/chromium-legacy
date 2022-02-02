@@ -32,6 +32,7 @@ import("//third_party/blink/renderer/core/events/build.gni")
 import("//third_party/blink/renderer/core/execution_context/build.gni")
 import("//third_party/blink/renderer/core/fetch/build.gni")
 import("//third_party/blink/renderer/core/fileapi/build.gni")
+import("//third_party/blink/renderer/core/fragment_directive/build.gni")
 import("//third_party/blink/renderer/core/frame/build.gni")
 import("//third_party/blink/renderer/core/fullscreen/build.gni")
 import("//third_party/blink/renderer/core/geometry/build.gni")
@@ -132,10 +133,7 @@ config("blink_core_pch") {
   }
 }
 
-core_config_add += [
-  ":blink_core_pch",
-  "//build/config/compiler:noshadowing",
-]
+core_config_add += [ ":blink_core_pch" ]
 
 source_set("core_common") {
   sources = [ "core_export.h" ]
@@ -226,6 +224,9 @@ component("core") {
                          "permissions_policy")
   sources += rebase_path(blink_core_sources_fetch, "", "fetch")
   sources += rebase_path(blink_core_sources_fileapi, "", "fileapi")
+  sources += rebase_path(blink_core_sources_fragment_directive,
+                         "",
+                         "fragment_directive")
   sources += rebase_path(blink_core_sources_frame, "", "frame")
   sources += rebase_path(blink_core_sources_fullscreen, "", "fullscreen")
   sources += rebase_path(blink_core_sources_geometry, "", "geometry")
@@ -293,7 +294,7 @@ component("core") {
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
     "//ui/accessibility:ax_base",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/dragdrop/mojom:mojom_blink_headers",
     "//ui/base/dragdrop/mojom:mojom_shared",
     "//url",
@@ -326,7 +327,6 @@ component("core") {
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:web_feature_mojo_bindings",
     "//third_party/blink/public/strings",
-    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
     "//ui/gfx/geometry",
@@ -398,7 +398,7 @@ source_set("testing") {
     "//components/ukm:test_support",
     "//third_party/blink/renderer/bindings/core/v8:testing",
     "//third_party/blink/renderer/platform:test_support",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 
@@ -495,6 +495,8 @@ generate_event_interfaces("core_event_interfaces") {
     "css/media_query_list_event.idl",
     "dom/events/custom_event.idl",
     "dom/events/event.idl",
+    "editing/ime/character_bounds_update_event.idl",
+    "editing/ime/text_format.idl",
     "editing/ime/text_format_update_event.idl",
     "editing/ime/text_update_event.idl",
     "events/animation_event.idl",
@@ -1289,6 +1291,14 @@ source_set("unit_tests") {
     "fetch/readable_stream_bytes_consumer_test.cc",
     "fetch/request_test.cc",
     "fetch/response_test.cc",
+    "fragment_directive/css_selector_fragment_anchor_test.cc",
+    "fragment_directive/text_fragment_anchor_metrics_test.cc",
+    "fragment_directive/text_fragment_anchor_test.cc",
+    "fragment_directive/text_fragment_finder_test.cc",
+    "fragment_directive/text_fragment_generation_navigation_test.cc",
+    "fragment_directive/text_fragment_handler_test.cc",
+    "fragment_directive/text_fragment_selector_generator_test.cc",
+    "fragment_directive/text_fragment_selector_test.cc",
     "frame/ad_tracker_test.cc",
     "frame/browser_controls_test.cc",
     "frame/child_frame_compositing_helper_test.cc",
@@ -1412,12 +1422,6 @@ source_set("unit_tests") {
     "page/scrolling/scroll_state_test.cc",
     "page/scrolling/scrolling_test.cc",
     "page/scrolling/snap_coordinator_test.cc",
-    "page/scrolling/text_fragment_anchor_metrics_test.cc",
-    "page/scrolling/text_fragment_anchor_test.cc",
-    "page/scrolling/text_fragment_finder_test.cc",
-    "page/scrolling/text_fragment_handler_test.cc",
-    "page/scrolling/text_fragment_selector_generator_test.cc",
-    "page/scrolling/text_fragment_selector_test.cc",
     "page/slot_scoped_traversal_test.cc",
     "page/spatial_navigation_test.cc",
     "page/touch_adjustment_test.cc",
@@ -1429,14 +1433,8 @@ source_set("unit_tests") {
     "paint/box_painter_test.cc",
     "paint/clip_path_clipper_test.cc",
     "paint/clip_rect_test.cc",
-    "paint/compositing/composited_layer_mapping_test.cc",
-    "paint/compositing/compositing_inputs_updater_test.cc",
-    "paint/compositing/compositing_layer_assigner_test.cc",
-    "paint/compositing/compositing_layer_property_updater_test.cc",
     "paint/compositing/compositing_reason_finder_test.cc",
-    "paint/compositing/compositing_requirements_updater_test.cc",
     "paint/compositing/compositing_test.cc",
-    "paint/compositing/paint_layer_compositor_test.cc",
     "paint/css_mask_painter_test.cc",
     "paint/cull_rect_updater_test.cc",
     "paint/first_meaningful_paint_detector_test.cc",
@@ -1508,6 +1506,7 @@ source_set("unit_tests") {
     "svg/animation/smil_time_container_test.cc",
     "svg/animation/svg_smil_element_test.cc",
     "svg/graphics/svg_image_test.cc",
+    "svg/svg_element_test.cc",
     "svg/svg_foreign_object_element_test.cc",
     "svg/svg_path_parser_test.cc",
     "svg/svg_path_query_test.cc",
@@ -1573,8 +1572,12 @@ source_set("unit_tests") {
     "//cc",
     "//components/paint_preview/common:common",
     "//components/shared_highlighting/core/common",
+    "//components/shared_highlighting/core/common:data_driven_testing",
     "//components/ukm:test_support",
+    "//components/viz/test:test_support",
     "//content/test:test_support",
+    "//gpu/command_buffer/client:raster",
+    "//gpu/config",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",
     "//services/metrics/public/cpp:ukm_builders",
@@ -1593,7 +1596,7 @@ source_set("unit_tests") {
     "//third_party/blink/renderer/platform:test_support",
     "//third_party/blink/renderer/platform:unit_tests",
     "//ui/accessibility:ax_base",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/base/dragdrop/mojom:mojom_blink",
     "//ui/gfx:test_support",

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
@@ -554,28 +553,6 @@ TEST_F(GuestOsRegistryServiceTest, SetAndGetPackageId) {
       service()->GetRegistration(app_id_no_package_id);
   EXPECT_EQ(result_valid_package_id->PackageId(), package_id);
   EXPECT_EQ(result_no_package_id->PackageId(), "");
-}
-
-TEST_F(GuestOsRegistryServiceTest, MigrateTerminal) {
-  // Add prefs entry for the deleted terminal.
-  base::DictionaryValue registry;
-  registry.SetKey(crostini::kCrostiniDeletedTerminalId,
-                  base::DictionaryValue());
-  profile()->GetPrefs()->Set(guest_os::prefs::kGuestOsRegistry,
-                             std::move(registry));
-
-  // Only current terminal returned.
-  RecreateService();
-  EXPECT_THAT(
-      GetRegisteredAppIds(),
-      testing::UnorderedElementsAre(crostini::kCrostiniTerminalSystemAppId));
-
-  // Deleted terminal removed from prefs.
-  EXPECT_EQ(profile()
-                ->GetPrefs()
-                ->GetDictionary(guest_os::prefs::kGuestOsRegistry)
-                ->FindKey(crostini::kCrostiniDeletedTerminalId),
-            nullptr);
 }
 
 // Validates crash fix from crbug.com/1113477.

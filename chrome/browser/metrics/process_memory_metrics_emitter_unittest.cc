@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -98,7 +99,7 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
  private:
   ~ProcessMemoryMetricsEmitterFake() override {}
 
-  ukm::UkmRecorder* ukm_recorder_;
+  raw_ptr<ukm::UkmRecorder> ukm_recorder_;
 };
 
 void SetAllocatorDumpMetric(ProcessMemoryDumpPtr& pmd,
@@ -199,6 +200,9 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
   pmd->process_type = ProcessType::RENDERER;
   SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
                          metrics_mb_or_count["Malloc"] * 1024 * 1024);
+  SetAllocatorDumpMetric(
+      pmd, "malloc/allocated_objects", "effective_size",
+      metrics_mb_or_count["Malloc.AllocatedObjects"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "partition_alloc", "effective_size",
                          metrics_mb_or_count["PartitionAlloc"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "blink_gc", "effective_size",
@@ -339,6 +343,7 @@ void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
 }
 
 constexpr int kTestRendererPrivateMemoryFootprint = 130;
+constexpr int kTestRendererMalloc = 120;
 constexpr int kTestRendererSharedMemoryFootprint = 135;
 constexpr int kNativeLibraryResidentMemoryFootprint = 27560;
 constexpr int kNativeLibraryResidentNotOrderedCodeFootprint = 12345;
@@ -358,7 +363,7 @@ MetricMap GetExpectedRendererMetrics() {
 #if !defined(OS_MAC)
         {"Resident", kTestRendererResidentSet},
 #endif
-        {"Malloc", 120},
+        {"Malloc", kTestRendererMalloc},
         {"PrivateMemoryFootprint", kTestRendererPrivateMemoryFootprint},
         {"SharedMemoryFootprint", kTestRendererSharedMemoryFootprint},
         {"PartitionAlloc", 140}, {"BlinkGC", 150}, {"V8", 160},
@@ -928,7 +933,10 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
   histograms.ExpectTotalCount("Memory.Renderer.ResidentSet", 0);
 
   histograms.ExpectTotalCount("Memory.Total.PrivateMemoryFootprint", 0);
+  histograms.ExpectTotalCount(
+      "Memory.Total.PrivateMemoryFootprint.HasZombieProfile", 0);
   histograms.ExpectTotalCount("Memory.Total.RendererPrivateMemoryFootprint", 0);
+  histograms.ExpectTotalCount("Memory.Total.RendererMalloc", 0);
   histograms.ExpectTotalCount("Memory.Total.SharedMemoryFootprint", 0);
   histograms.ExpectTotalCount("Memory.Total.ResidentSet", 0);
   histograms.ExpectTotalCount(
@@ -957,10 +965,14 @@ TEST_F(ProcessMemoryMetricsEmitterTest, RendererAndTotalHistogramsAreRecorded) {
                                 kTestRendererResidentSet, 2);
 #endif
 
+  histograms.ExpectTotalCount(
+      "Memory.Total.PrivateMemoryFootprint.HasZombieProfile", 0);
   histograms.ExpectUniqueSample("Memory.Total.PrivateMemoryFootprint",
                                 2 * kTestRendererPrivateMemoryFootprint, 1);
   histograms.ExpectUniqueSample("Memory.Total.RendererPrivateMemoryFootprint",
                                 2 * kTestRendererPrivateMemoryFootprint, 1);
+  histograms.ExpectUniqueSample("Memory.Total.RendererMalloc",
+                                2 * kTestRendererMalloc, 1);
   histograms.ExpectUniqueSample("Memory.Total.SharedMemoryFootprint",
                                 2 * kTestRendererSharedMemoryFootprint, 1);
 #if defined(OS_MAC)

@@ -18,6 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -122,6 +123,13 @@ void AppListClientImpl::OnAppListControllerDestroyed() {
   app_list_controller_ = nullptr;
   if (current_model_updater_)
     current_model_updater_->SetActive(false);
+}
+
+void AppListClientImpl::StartZeroStateSearch(base::OnceClosure on_done,
+                                             base::TimeDelta timeout) {
+  // TODO(https://crbug.com/1269115): Refresh the zero state results.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, std::move(on_done), timeout);
 }
 
 void AppListClientImpl::StartSearch(const std::u16string& trimmed_query) {
@@ -273,6 +281,7 @@ void AppListClientImpl::ActivateItem(int profile_id,
 void AppListClientImpl::GetContextMenuModel(
     int profile_id,
     const std::string& id,
+    bool add_sort_options,
     GetContextMenuModelCallback callback) {
   auto* requested_model_updater = profile_model_mappings_[profile_id];
   if (requested_model_updater != current_model_updater_ ||
@@ -281,12 +290,13 @@ void AppListClientImpl::GetContextMenuModel(
     return;
   }
   requested_model_updater->GetContextMenuModel(
-      id, base::BindOnce(
-              [](GetContextMenuModelCallback callback,
-                 std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-                std::move(callback).Run(std::move(menu_model));
-              },
-              std::move(callback)));
+      id, add_sort_options,
+      base::BindOnce(
+          [](GetContextMenuModelCallback callback,
+             std::unique_ptr<ui::SimpleMenuModel> menu_model) {
+            std::move(callback).Run(std::move(menu_model));
+          },
+          std::move(callback)));
 }
 
 void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
@@ -297,8 +307,12 @@ void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
-  if (visible && search_controller_)
-    search_controller_->AppListShown();
+  if (visible) {
+    if (search_controller_)
+      search_controller_->AppListShown();
+  } else if (current_model_updater_) {
+    current_model_updater_->OnAppListHidden();
+  }
 }
 
 void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
@@ -548,25 +562,6 @@ void AppListClientImpl::LoadIcon(int profile_id, const std::string& app_id) {
   requested_model_updater->LoadAppIcon(app_id);
 }
 
-void AppListClientImpl::OnAppListSortRequested(int profile_id,
-                                               ash::AppListSortOrder order) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
-    return;
-  }
-  requested_model_updater->OnSortRequested(order);
-}
-
-void AppListClientImpl::OnAppListSortRevertRequested(int profile_id) {
-  auto* requested_model_updater = profile_model_mappings_[profile_id];
-  if (requested_model_updater != current_model_updater_ ||
-      !requested_model_updater) {
-    return;
-  }
-  requested_model_updater->OnSortRevertRequested();
-}
-
 void AppListClientImpl::MaybeRecordViewShown() {
   // Record the time duration between session activation and the first launcher
   // showing if the current user is new.
@@ -588,14 +583,6 @@ void AppListClientImpl::MaybeRecordViewShown() {
   // elegant way. For example, do not bother showing the app list when handling
   // the app list toggling event because the app list is not visible in OOBE.
   if (!IsSessionActive())
-    return;
-
-  // Return early if `state_for_new_user_` is null.
-  // TODO(https://crbug.com/1278947): Theoretically, `state_for_new_user_`
-  // should be meaningful when the current user is new. However, it is not hold
-  // under some edge cases. When the root issue gets fixed, replace it with a
-  // check statement.
-  if (!state_for_new_user_)
     return;
 
   if (state_for_new_user_->showing_recorded) {
@@ -657,7 +644,8 @@ void AppListClientImpl::MaybeRecordLauncherAction(
   DCHECK(launched_from == ash::AppListLaunchedFrom::kLaunchedFromGrid ||
          launched_from ==
              ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip ||
-         launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox);
+         launched_from == ash::AppListLaunchedFrom::kLaunchedFromSearchBox ||
+         launched_from == ash::AppListLaunchedFrom::kLaunchedFromContinueTask);
 
   // Return early if the current user is not new.
   if (!user_manager::UserManager::Get()->IsCurrentUserNew()) {

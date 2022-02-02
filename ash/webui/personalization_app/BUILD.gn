@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/test/base/js2gtest.gni")
 
-assert(is_chromeos, "Personalization App is Chrome OS only")
+assert(is_chromeos_ash, "Personalization App is ash-chrome only")
 
 static_library("personalization_app") {
   sources = [
@@ -30,10 +31,6 @@ static_library("personalization_app") {
     "//ui/resources:webui_resources_grd_grit",
     "//ui/webui",
   ]
-}
-
-group("closure_compile") {
-  deps = [ "resources:closure_compile" ]
 }
 
 js2gtest("browser_tests_js") {
@@ -62,8 +59,8 @@ source_set("browser_test_support") {
     "//ash/public/cpp",
     "//ash/webui/personalization_app/mojom",
     "//ash/webui/personalization_app/proto",
+    "//ash/webui/web_applications/test:test_support",
     "//chrome/test:test_support_ui",
-    "//chromeos/components/web_applications/test:test_support",
   ]
 
   data = []

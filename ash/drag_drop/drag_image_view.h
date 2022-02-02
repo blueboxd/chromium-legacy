@@ -6,7 +6,6 @@
 #define ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
@@ -73,7 +72,7 @@ class ASH_EXPORT DragImageView : public views::ImageView {
   gfx::Size GetMinimumSize() const override;
 
  private:
-  DragImageView(ui::mojom::DragEventSource source);
+  explicit DragImageView(ui::mojom::DragEventSource source);
 
   gfx::Image* DragHint() const;
   // Drag hint images are only drawn when the input source is touch.

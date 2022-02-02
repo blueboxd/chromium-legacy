@@ -20,7 +20,6 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -1292,21 +1291,9 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
       result = ct_result;
   }
 
-  // If no other errors occurred, check whether the connection used a legacy TLS
-  // version.
-  if (result == OK &&
-      SSL_version(ssl_.get()) < context_->config().version_min_warn) {
-    server_cert_verify_result_.cert_status |= CERT_STATUS_LEGACY_TLS;
-
-    // Only set the resulting net error if it hasn't been previously bypassed.
-    if (!IsAllowedBadCert(server_cert_.get(), nullptr))
-      result = ERR_SSL_OBSOLETE_VERSION;
-  }
-
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
       result != ERR_CERT_KNOWN_INTERCEPTION_BLOCKED &&
-      result != ERR_SSL_OBSOLETE_VERSION &&
       context_->transport_security_state()->ShouldSSLErrorsBeFatal(
           host_and_port_.host());
 
@@ -1315,9 +1302,7 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
       // Certificate exceptions are only applicable for the origin name. For
       // simplicity, we do not allow certificate exceptions for the public name
       // and map all bypassable errors to fatal ones.
-      result = result == ERR_SSL_OBSOLETE_VERSION
-                   ? ERR_SSL_VERSION_OR_CIPHER_MISMATCH
-                   : ERR_ECH_FALLBACK_CERTIFICATE_INVALID;
+      result = ERR_ECH_FALLBACK_CERTIFICATE_INVALID;
     }
     if (ssl_config_.ignore_certificate_errors) {
       result = OK;
@@ -1351,24 +1336,6 @@ int SSLClientSocketImpl::CheckCTCompliance() {
           CERT_STATUS_CT_COMPLIANCE_FAILED;
       server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
     }
-
-    // Record the CT compliance status for connections with EV certificates,
-    // to distinguish how often EV status is being dropped due to failing CT
-    // compliance.
-    if (server_cert_verify_result_.is_issued_by_known_root) {
-      UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.EVCompliance2.SSL",
-                                server_cert_verify_result_.policy_compliance,
-                                ct::CTPolicyCompliance::CT_POLICY_COUNT);
-    }
-  }
-
-  // Record the CT compliance of every connection to get an overall picture of
-  // how many connections are CT-compliant.
-  if (server_cert_verify_result_.is_issued_by_known_root) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.CertificateTransparency.ConnectionComplianceStatus2.SSL",
-        server_cert_verify_result_.policy_compliance,
-        ct::CTPolicyCompliance::CT_POLICY_COUNT);
   }
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
@@ -1380,19 +1347,6 @@ int SSLClientSocketImpl::CheckCTCompliance() {
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
           server_cert_verify_result_.policy_compliance,
           ssl_config_.network_isolation_key);
-  if (ct_requirement_status != TransportSecurityState::CT_NOT_REQUIRED) {
-    if (server_cert_verify_result_.is_issued_by_known_root) {
-      // Record the CT compliance of connections for which compliance is
-      // required; this helps answer the question: "Of all connections that
-      // are supposed to be serving valid CT information, how many fail to do
-      // so?"
-      UMA_HISTOGRAM_ENUMERATION(
-          "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus2."
-          "SSL",
-          server_cert_verify_result_.policy_compliance,
-          ct::CTPolicyCompliance::CT_POLICY_COUNT);
-    }
-  }
 
   if (context_->sct_auditing_delegate() &&
       context_->sct_auditing_delegate()->IsSCTAuditingEnabled()) {

@@ -14,6 +14,9 @@ namespace app_list {
 // the highest scoring result per-category. This is assumed to run after the
 // score normalization stage, which makes score comparable between search
 // providers.
+//
+// TODO(crbug.com/1199206): This is temporarily unused while being incorporated
+// into the FtrlCategoryRanker.
 class CategoryItemRanker : public Ranker {
  public:
   CategoryItemRanker() = default;
@@ -23,9 +26,9 @@ class CategoryItemRanker : public Ranker {
   CategoryItemRanker& operator=(const CategoryItemRanker&) = delete;
 
   // Ranker:
-  void Rank(ResultsMap& results,
-            CategoriesMap& categories,
-            ProviderType provider) override;
+  void UpdateCategoryRanks(const ResultsMap& results,
+                           CategoriesList& categories,
+                           ProviderType provider) override;
 };
 
 }  // namespace app_list

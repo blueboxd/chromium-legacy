@@ -6,6 +6,8 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
+#include <lib/ui/scenic/cpp/view_identity.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <memory>
@@ -13,14 +15,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/ignore_result.h"
 #include "base/memory/scoped_refptr.h"
 #include "flatland_connection.h"
 #include "ui/base/cursor/platform_cursor.h"
 #include "ui/events/event.h"
-#include "ui/events/event_constants.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/ozone/platform/flatland/flatland_window_manager.h"
@@ -31,18 +33,29 @@ FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
                                PlatformWindowDelegate* delegate,
                                PlatformWindowInitProperties properties)
     : manager_(window_manager),
-      delegate_(delegate),
+      window_delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
-      event_dispatcher_(this),
       view_ref_(std::move(properties.view_ref_pair.view_ref)),
-      flatland_("Chromium FlatlandWindow",
-                FlatlandConnection::ConnectToFlatland()),
+      flatland_("Chromium FlatlandWindow"),
       bounds_(properties.bounds) {
   fuchsia::ui::views::ViewIdentityOnCreation view_identity = {
       .view_ref = CloneViewRef(),
       .view_ref_control = std::move(properties.view_ref_pair.control_ref)};
-  // TODO(crbug.com/1230150): Add input protocol to |view_bound_protocols|.
+
   fuchsia::ui::composition::ViewBoundProtocols view_bound_protocols;
+  view_bound_protocols.set_view_ref_focused(view_ref_focused_.NewRequest());
+  fuchsia::ui::pointer::TouchSourceHandle touch_source;
+  view_bound_protocols.set_touch_source(touch_source.NewRequest());
+  fuchsia::ui::pointer::MouseSourceHandle mouse_source;
+  view_bound_protocols.set_mouse_source(mouse_source.NewRequest());
+
+  pointer_handler_ = std::make_unique<PointerEventsHandler>(
+      std::move(touch_source), std::move(mouse_source));
+  pointer_handler_->StartWatching(base::BindRepeating(
+      &FlatlandWindow::DispatchEvent,
+      // This is safe since |pointer_handler_| is a class member.
+      base::Unretained(this)));
+
   flatland_.flatland()->CreateView2(
       std::move(properties.view_creation_token), std::move(view_identity),
       std::move(view_bound_protocols), parent_viewport_watcher_.NewRequest());
@@ -50,11 +63,13 @@ FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
       fit::bind_member(this, &FlatlandWindow::OnGetLayout));
   parent_viewport_watcher_->GetStatus(
       fit::bind_member(this, &FlatlandWindow::OnGetStatus));
+  view_ref_focused_->Watch(
+      fit::bind_member(this, &FlatlandWindow::OnViewRefFocusedWatchResult));
 
   root_transform_id_ = flatland_.NextTransformId();
   flatland_.flatland()->CreateTransform(root_transform_id_);
 
-  delegate_->OnAcceleratedWidgetAvailable(window_id_);
+  window_delegate_->OnAcceleratedWidgetAvailable(window_id_);
 
   if (properties.enable_keyboard) {
     is_virtual_keyboard_enabled_ = properties.enable_virtual_keyboard;
@@ -77,6 +92,11 @@ FlatlandWindow::~FlatlandWindow() {
 
 void FlatlandWindow::AttachSurfaceContent(
     fuchsia::ui::views::ViewportCreationToken token) {
+  if (surface_content_id_.value) {
+    flatland_.flatland()->ReleaseViewport(surface_content_id_, [](auto) {});
+    flatland_.flatland()->ReleaseTransform(surface_transform_id_);
+  }
+
   surface_transform_id_ = flatland_.NextTransformId();
   flatland_.flatland()->CreateTransform(surface_transform_id_);
   flatland_.flatland()->AddChild(root_transform_id_, surface_transform_id_);
@@ -90,8 +110,8 @@ void FlatlandWindow::AttachSurfaceContent(
   flatland_.flatland()->CreateViewport(surface_content_id_, std::move(token),
                                        std::move(properties),
                                        content_link.NewRequest());
-
   flatland_.flatland()->SetContent(surface_transform_id_, surface_content_id_);
+  flatland_.Present();
 
   // View is actually not attached but without it we dont get OutputPresenter
   // updates.
@@ -123,6 +143,7 @@ void FlatlandWindow::Show(bool inactive) {
   if (is_visible_)
     return;
 
+  is_visible_ = true;
   flatland_.flatland()->SetRootTransform(root_transform_id_);
   flatland_.Present();
 }
@@ -131,18 +152,18 @@ void FlatlandWindow::Hide() {
   if (!is_visible_)
     return;
 
+  is_visible_ = false;
   flatland_.flatland()->SetRootTransform({0});
   flatland_.Present();
 }
 
 void FlatlandWindow::Close() {
   Hide();
-  delegate_->OnClosed();
+  window_delegate_->OnClosed();
 }
 
 bool FlatlandWindow::IsVisible() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return true;
+  return is_visible_;
 }
 
 void FlatlandWindow::PrepareForShutdown() {
@@ -241,6 +262,15 @@ void FlatlandWindow::OnGetLayout(fuchsia::ui::composition::LayoutInfo info) {
   if (view_properties_ || device_pixel_ratio_ > 0.0)
     UpdateSize();
 
+  // Size update is sent via |delegate_| and SetViewportProperties().
+  if (surface_content_id_.value) {
+    fuchsia::ui::composition::ViewportProperties properties;
+    properties.set_logical_size(info.logical_size());
+    flatland_.flatland()->SetViewportProperties(surface_content_id_,
+                                                std::move(properties));
+    flatland_.Present();
+  }
+
   parent_viewport_watcher_->GetLayout(
       fit::bind_member(this, &FlatlandWindow::OnGetLayout));
 }
@@ -263,6 +293,14 @@ void FlatlandWindow::OnGetStatus(
       fit::bind_member(this, &FlatlandWindow::OnGetStatus));
 }
 
+void FlatlandWindow::OnViewRefFocusedWatchResult(
+    fuchsia::ui::views::FocusState focus_state) {
+  window_delegate_->OnActivationChanged(focus_state.focused());
+
+  view_ref_focused_->Watch(
+      fit::bind_member(this, &FlatlandWindow::OnViewRefFocusedWatchResult));
+}
+
 void FlatlandWindow::UpdateSize() {
   DCHECK_GT(device_pixel_ratio_, 0.0);
   DCHECK(view_properties_);
@@ -278,7 +316,7 @@ void FlatlandWindow::UpdateSize() {
   PlatformWindowDelegate::BoundsChange bounds;
   bounds.bounds = bounds_;
   // TODO(crbug.com/1230150): Calculate insets and update.
-  delegate_->OnBoundsChanged(bounds);
+  window_delegate_->OnBoundsChanged(bounds);
 }
 
 void FlatlandWindow::OnViewAttachedChanged(bool is_view_attached) {
@@ -286,17 +324,7 @@ void FlatlandWindow::OnViewAttachedChanged(bool is_view_attached) {
   is_view_attached_ = is_view_attached;
   PlatformWindowState new_state = GetPlatformWindowState();
   if (old_state != new_state) {
-    delegate_->OnWindowStateChanged(old_state, new_state);
-  }
-}
-
-void FlatlandWindow::OnInputEvent(const fuchsia::ui::input::InputEvent& event) {
-  if (event.is_focus()) {
-    delegate_->OnActivationChanged(event.focus().focused);
-  } else {
-    // Flatland doesn't care if the input event was handled, so ignore the
-    // "handled" status.
-    ignore_result(event_dispatcher_.ProcessEvent(event));
+    window_delegate_->OnWindowStateChanged(old_state, new_state);
   }
 }
 
@@ -307,7 +335,7 @@ void FlatlandWindow::DispatchEvent(ui::Event* event) {
     location.Scale(device_pixel_ratio_);
     located_event->set_location_f(location);
   }
-  delegate_->DispatchEvent(event);
+  window_delegate_->DispatchEvent(event);
 }
 
 }  // namespace ui

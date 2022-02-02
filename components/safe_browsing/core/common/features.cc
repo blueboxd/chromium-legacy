@@ -14,7 +14,6 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/variations/variations_associated_data.h"
 
-#include "base/macros.h"
 #include "base/values.h"
 namespace safe_browsing {
 // Please define any new SafeBrowsing related features in this file, and add
@@ -58,11 +57,13 @@ extern const base::Feature kClientSideDetectionModelHighMemoryTag{
 const base::Feature kClientSideDetectionReferrerChain{
     "ClientSideDetectionReferrerChain", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kFileAnalysisMimeTypeSniff{
-    "FileAnalysisMimeTypeSniff", base::FEATURE_ENABLED_BY_DEFAULT};
+// TODO(b/197749390): Add tests for this feature being enabled when it's
+// finalied.
+const base::Feature kConnectorsScanningReportOnlyUI{
+    "ConnectorsScanningReportOnlyUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kFileTypePoliciesTag{"FileTypePoliciesTag",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -73,6 +74,13 @@ const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
 const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
     &kDelayedWarnings, "mouse",
     /*default_value=*/false};
+
+const base::Feature kExtensionTelemetry{"SafeBrowsingExtensionTelemetry",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds{
+    &kExtensionTelemetry, "UploadIntervalSeconds",
+    /*default_value=*/3600};
 
 const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
@@ -108,7 +116,7 @@ const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise{
 
 const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise{
     "SafeBrowsingRealTimeUrlLookupReferrerChainForEnterprise",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingPageLoadToken{
     "SafeBrowsingPageLoadToken", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -161,6 +169,7 @@ constexpr struct {
     {&kClientSideDetectionModelVersion, true},
     {&kClientSideDetectionReferrerChain, true},
     {&kDelayedWarnings, true},
+    {&kExtensionTelemetry, true},
     {&kFileTypePoliciesTag, true},
     {&kOmitNonUserGesturesFromReferrerChain, true},
     {&kPasswordProtectionForSignedInUsers, true},
@@ -238,12 +247,13 @@ std::string GetClientSideDetectionTag() {
 }
 
 std::string GetFileTypePoliciesTag() {
-  if (base::FeatureList::IsEnabled(kFileTypePoliciesTag)) {
-    return variations::GetVariationParamValueByFeature(
-        kFileTypePoliciesTag, kFileTypePoliciesTagParamName);
+  if (!base::FeatureList::IsEnabled(kFileTypePoliciesTag)) {
+    return "default";
   }
+  std::string tag_value = variations::GetVariationParamValueByFeature(
+      kFileTypePoliciesTag, kFileTypePoliciesTagParamName);
 
-  return "default";
+  return tag_value.empty() ? "default" : tag_value;
 }
 
 }  // namespace safe_browsing

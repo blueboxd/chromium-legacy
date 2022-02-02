@@ -481,7 +481,7 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
         // TODO(schenney) The LayoutUnit(float) constructor always
         // rounds down. We should FromFloatFloor or FromFloatCeil to
         // move toward the border.
-        FloatRect inner_border_rect =
+        gfx::RectF inner_border_rect =
             RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
                 positioning_box_->StyleRef(), unsnapped_positioning_area)
                 .Rect();
@@ -518,7 +518,7 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
       // move toward the border.
       BorderEdge edges[4];
       positioning_box_->StyleRef().GetBorderEdgeInfo(edges);
-      FloatRect inner_border_rect =
+      gfx::RectF inner_border_rect =
           RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
               positioning_box_->StyleRef(), unsnapped_positioning_area)
               .Rect();
@@ -580,7 +580,7 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
         // the size and position of the borders, sometimes adjusting the inner
         // border by more than a pixel when done (particularly under magnifying
         // zoom).
-        FloatRect inner_border_rect =
+        gfx::RectF inner_border_rect =
             RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
                 positioning_box_->StyleRef(), unsnapped_positioning_area)
                 .Rect();
@@ -674,14 +674,14 @@ void BackgroundImageGeometry::ComputePositioningArea(
     // Apply the adjustments.
     snapped_dest_rect_ = unsnapped_dest_rect_;
     snapped_dest_rect_.Contract(snapped_dest_adjust);
-    snapped_dest_rect_ = PhysicalRect(PixelSnappedIntRect(snapped_dest_rect_));
+    snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(snapped_dest_rect_));
     snapped_dest_rect_.size.ClampNegativeToZero();
     unsnapped_dest_rect_.Contract(unsnapped_dest_adjust);
     unsnapped_dest_rect_.size.ClampNegativeToZero();
     snapped_positioning_area = unsnapped_positioning_area;
     snapped_positioning_area.Contract(snapped_box_outset);
     snapped_positioning_area =
-        PhysicalRect(PixelSnappedIntRect(snapped_positioning_area));
+        PhysicalRect(ToPixelSnappedRect(snapped_positioning_area));
     snapped_positioning_area.size.ClampNegativeToZero();
     unsnapped_positioning_area.Contract(unsnapped_box_outset);
     unsnapped_positioning_area.size.ClampNegativeToZero();
@@ -714,9 +714,9 @@ void BackgroundImageGeometry::CalculateFillTileSize(
   PhysicalSize positioning_area_size = !image->HasIntrinsicSize()
                                            ? snapped_positioning_area_size
                                            : unsnapped_positioning_area_size;
-  PhysicalSize image_intrinsic_size = PhysicalSize::FromFloatSizeFloor(
+  PhysicalSize image_intrinsic_size = PhysicalSize::FromSizeFFloor(
       image->ImageSize(positioning_box_->StyleRef().EffectiveZoom(),
-                       FloatSize(positioning_area_size),
+                       gfx::SizeF(positioning_area_size),
                        LayoutObject::ShouldRespectImageOrientation(box_)));
   switch (type) {
     case EFillSizeType::kSizeLength: {
@@ -971,7 +971,7 @@ void BackgroundImageGeometry::Calculate(const LayoutBoxModelObject* container,
   // Clip the snapped rect, and re-snap the dest rect as we may have
   // adjusted it with unsnapped values.
   snapped_dest_rect_.Intersect(paint_rect);
-  snapped_dest_rect_ = PhysicalRect(PixelSnappedIntRect(snapped_dest_rect_));
+  snapped_dest_rect_ = PhysicalRect(ToPixelSnappedRect(snapped_dest_rect_));
 }
 
 const ImageResourceObserver& BackgroundImageGeometry::ImageClient() const {

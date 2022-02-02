@@ -9,3 +9,8 @@
 #endif
 
 NSString* const kNTPCollectionViewIdentifier = @"NTPCollectionViewIdentifier";
+
+NSString* const kNTPIncognitoViewIdentifier = @"kNTPIncognitoViewIdentifier";
+
+NSString* const kNTPFeedHeaderButtonIdentifier =
+    @"kNTPFeedHeaderButtonIdentifier";

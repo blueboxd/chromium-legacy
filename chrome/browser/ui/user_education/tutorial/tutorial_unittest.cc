@@ -15,6 +15,7 @@
 
 namespace {
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kTestIdentifier1);
+const char kTestElementName1[] = "ELEMENT_NAME_1";
 const ui::ElementContext kTestContext1(1);
 
 const TutorialIdentifier kTestTutorial1{"kTestTutorial1"};
@@ -30,12 +31,42 @@ TEST(TutorialTest, TutorialBuilder) {
   Tutorial::Builder builder;
 
   // build a step with an ElementID
-  std::unique_ptr<ui::InteractionSequence::Step> step =
+  std::unique_ptr<ui::InteractionSequence::Step> step1 =
       Tutorial::StepBuilder()
           .SetAnchorElementID(kTestIdentifier1)
           .Build(service.get(), bubble_factory_registry.get());
 
-  builder.SetContext(kTestContext1).AddStep(std::move(step)).Build();
+  // build a step that names an element
+  std::unique_ptr<ui::InteractionSequence::Step> step2 =
+      Tutorial::StepBuilder()
+          .SetAnchorElementID(kTestIdentifier1)
+          .SetNameElementsCallback(
+              base::BindRepeating([](ui::InteractionSequence* sequence,
+                                     ui::TrackedElement* element) {
+                sequence->NameElement(element, "TEST ELEMENT");
+                return true;
+              }))
+          .Build(service.get(), bubble_factory_registry.get());
+
+  // build a step with a named element
+  std::unique_ptr<ui::InteractionSequence::Step> step3 =
+      Tutorial::StepBuilder()
+          .SetAnchorElementName(std::string(kTestElementName1))
+          .Build(service.get(), bubble_factory_registry.get());
+
+  // transition event
+  std::unique_ptr<ui::InteractionSequence::Step> step4 =
+      Tutorial::StepBuilder()
+          .SetAnchorElementID(kTestIdentifier1)
+          .SetTransitionOnlyOnEvent(true)
+          .Build(service.get(), bubble_factory_registry.get());
+
+  builder.SetContext(kTestContext1)
+      .AddStep(std::move(step1))
+      .AddStep(std::move(step2))
+      .AddStep(std::move(step3))
+      .AddStep(std::move(step4))
+      .Build();
 }
 
 TEST(TutorialTest, TutorialRegistryRegistersTutorials) {
@@ -46,7 +77,8 @@ TEST(TutorialTest, TutorialRegistryRegistersTutorials) {
     TutorialDescription description;
     description.steps.emplace_back(TutorialDescription::Step(
         u"title", u"description", ui::InteractionSequence::StepType::kShown,
-        kTestIdentifier1, TutorialDescription::Step::Arrow::NONE));
+        kTestIdentifier1, std::string(),
+        TutorialDescription::Step::Arrow::NONE));
     registry->AddTutorial(kTestTutorial1, description);
   }
 

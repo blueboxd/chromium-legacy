@@ -11,12 +11,11 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/common/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -105,7 +104,8 @@ class ArcIntentHelperBridge : public KeyedService,
       std::vector<IntentFilter> deleted) override;
   void OnSupportedLinksChanged(
       std::vector<arc::mojom::SupportedLinksPtr> added_packages,
-      std::vector<arc::mojom::SupportedLinksPtr> removed_packages) override;
+      std::vector<arc::mojom::SupportedLinksPtr> removed_packages,
+      arc::mojom::SupportedLinkChangeSource source) override;
   void OnDownloadAdded(const std::string& relative_path,
                        const std::string& owner_package_name) override;
   void OnOpenAppWithIntent(const GURL& start_url,

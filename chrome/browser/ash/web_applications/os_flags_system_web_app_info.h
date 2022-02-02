@@ -28,7 +28,7 @@ class OsFlagsSystemWebAppDelegate : public web_app::SystemWebAppDelegate {
   // capturing the os:// search tearms to be used.
   bool ShouldCaptureNavigations() const override;
   bool IsAppEnabled() const override;
-  bool ShouldBeSingleWindow() const override;
+  bool ShouldReuseExistingWindow() const override;
   bool ShouldShowInLauncher() const override;
   bool ShouldShowInSearch() const override;
 };

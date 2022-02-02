@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
@@ -112,6 +111,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataHandle
                          uint64_t size,
                          BlobStorageContext* context);
 
+    BlobDataHandleShared(const BlobDataHandleShared&) = delete;
+    BlobDataHandleShared& operator=(const BlobDataHandleShared&) = delete;
+
    private:
     friend class base::DeleteHelper<BlobDataHandleShared>;
     friend class base::RefCountedThreadSafe<BlobDataHandleShared>;
@@ -124,8 +126,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobDataHandle
     const std::string content_disposition_;
     const uint64_t size_;
     base::WeakPtr<BlobStorageContext> context_;
-
-    DISALLOW_COPY_AND_ASSIGN(BlobDataHandleShared);
   };
 
   friend class BlobStorageContext;

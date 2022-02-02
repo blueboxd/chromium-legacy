@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
@@ -208,7 +209,7 @@ class NavigationOrSwapObserver : public content::WebContentsObserver,
   }
 
  private:
-  TabStripModel* tab_strip_model_;
+  raw_ptr<TabStripModel> tab_strip_model_;
   bool did_start_loading_;
   int number_of_loads_;
   base::RunLoop loop_;
@@ -1253,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, RendererCrash) {
           FINAL_STATUS_RENDERER_CRASHED);
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   std::unique_ptr<NoStatePrefetchHandle> no_state_prefetch_handle(
-      GetNoStatePrefetchManager()->AddPrerenderFromExternalRequest(
+      GetNoStatePrefetchManager()->StartPrefetchingFromExternalRequest(
           GURL(blink::kChromeUICrashURL), content::Referrer(),
           storage_namespace, gfx::Rect(kSize)));
   ASSERT_EQ(no_state_prefetch_handle->contents(), test_prerender->contents());
@@ -1582,9 +1583,8 @@ class NoStatePrefetchOmniboxBrowserTest : public NoStatePrefetchBrowserTest {
     std::unique_ptr<TestPrerender> prerender =
         ExpectPrerender(expected_final_status);
     content::WebContents* web_contents = GetActiveWebContents();
-    GetAutocompleteActionPredictor()->StartPrerendering(
-        url, web_contents->GetController().GetDefaultSessionStorageNamespace(),
-        gfx::Size(50, 50));
+    GetAutocompleteActionPredictor()->StartPrerendering(url, *web_contents,
+                                                        gfx::Size(50, 50));
     prerender->WaitForStart();
     return prerender;
   }

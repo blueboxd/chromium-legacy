@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -272,13 +271,7 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, WriteNoDevice) {
   EXPECT_FALSE(error().empty());
 }
 
-// Flaky on Win. http://crbug.com/927218
-#if defined(OS_WIN)
-#define MAYBE_Write DISABLED_Write
-#else
-#define MAYBE_Write Write
-#endif
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_Write) {
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, Write) {
   FillImageFileWithPattern('i');
   FillDeviceFileWithPattern(0);
 
@@ -288,13 +281,7 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_Write) {
   EXPECT_TRUE(error().empty());
 }
 
-// Flaky on Win. http://crbug.com/927218
-#if defined(OS_WIN)
-#define MAYBE_WriteVerify DISABLED_WriteVerify
-#else
-#define MAYBE_WriteVerify WriteVerify
-#endif
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_WriteVerify) {
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, WriteVerify) {
   FillImageFileWithPattern('m');
   FillDeviceFileWithPattern(0);
 
@@ -304,13 +291,7 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_WriteVerify) {
   EXPECT_TRUE(error().empty());
 }
 
-// Flaky on Win. http://crbug.com/927218
-#if defined(OS_WIN)
-#define MAYBE_WriteCancel DISABLED_WriteCancel
-#else
-#define MAYBE_WriteCancel WriteCancel
-#endif
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_WriteCancel) {
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, WriteCancel) {
   FillImageFileWithPattern('a');
   FillDeviceFileWithPattern(0);
 
@@ -346,13 +327,7 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, VerifyFailure) {
   EXPECT_FALSE(error().empty());
 }
 
-// Flaky on Win. http://crbug.com/927218
-#if defined(OS_WIN)
-#define MAYBE_Verify DISABLED_Verify
-#else
-#define MAYBE_Verify Verify
-#endif
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_Verify) {
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, Verify) {
   FillImageFileWithPattern('e');
   FillDeviceFileWithPattern('e');
 
@@ -362,13 +337,7 @@ IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_Verify) {
   EXPECT_TRUE(error().empty());
 }
 
-// Flaky on Win. http://crbug.com/927218
-#if defined(OS_WIN)
-#define MAYBE_VerifyCancel DISABLED_VerifyCancel
-#else
-#define MAYBE_VerifyCancel VerifyCancel
-#endif
-IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, MAYBE_VerifyCancel) {
+IN_PROC_BROWSER_TEST_F(ImageWriterUtilityClientTest, VerifyCancel) {
   FillImageFileWithPattern('s');
   FillDeviceFileWithPattern('s');
 

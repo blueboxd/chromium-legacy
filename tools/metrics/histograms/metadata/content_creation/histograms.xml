@@ -27,12 +27,31 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="LightweightReactions.AssetsFetchDuration" units="ms"
     expires_after="2022-07-31">
+  <obsolete>
+    Removed 12/2021 in favor of
+    LightweightReactions.AssetsFetchDuration.{Outcome}, which is more useful
+    because it includes whether the fetch was a success or not.
+  </obsolete>
   <owner>gujen@google.com</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
     Records the amount of time taken to download all assets during dialog
     initialization.
   </summary>
+</histogram>
+
+<histogram name="LightweightReactions.AssetsFetchDuration.{Outcome}" units="ms"
+    expires_after="2022-07-31">
+  <owner>gujen@google.com</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records the amount of time taken to download all assets during dialog
+    initialization, for the case where {Outcome}.
+  </summary>
+  <token key="Outcome">
+    <variant name="Failure" summary="the download failed."/>
+    <variant name="Success" summary="the download succeeded."/>
+  </token>
 </histogram>
 
 <histogram name="LightweightReactions.AssetsFetchSuccess" enum="BooleanSuccess"
@@ -123,6 +142,16 @@ chromium-metrics-reviews@google.com.
   <summary>Records whether the GIF was shared in the Share Sheet.</summary>
 </histogram>
 
+<histogram name="LightweightReactions.OrientationChange"
+    enum="DeviceOrientation" expires_after="2022-07-31">
+  <owner>gujen@google.com</owner>
+  <owner>chrome-creation@google.com</owner>
+  <summary>
+    Records that there was an orientation change during Lightweight Reactions
+    scene editing.
+  </summary>
+</histogram>
+
 <histogram name="LightweightReactions.ShareDestination"
     enum="NoteShareDestination" expires_after="2022-07-31">
   <owner>gujen@google.com</owner>
@@ -164,7 +193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NoteCreation.Funnel" enum="NoteCreationFunnel"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -230,7 +259,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.AndroidShareSheet.SharedState"
-    enum="LinkGenerationSharedStatus" expires_after="2022-04-03">
+    enum="LinkGenerationSharedStatus" expires_after="2022-06-05">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -262,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.Desktop.CopiedLinkType"
-    enum="LinkGenerationCopiedLinkType" expires_after="2022-04-03">
+    enum="LinkGenerationCopiedLinkType" expires_after="2022-06-05">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -271,7 +300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error"
-    enum="LinkGenerationError" expires_after="2022-04-03">
+    enum="LinkGenerationError" expires_after="2022-06-05">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -364,7 +393,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.TimeToGenerate" units="ms"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>

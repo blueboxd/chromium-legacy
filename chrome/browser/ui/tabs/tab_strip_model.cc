@@ -13,6 +13,7 @@
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
 #include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -55,7 +56,6 @@
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/range/range.h"
@@ -82,7 +82,7 @@ class ReentrancyCheck {
   ~ReentrancyCheck() { *guard_flag_ = false; }
 
  private:
-  bool* const guard_flag_;
+  const raw_ptr<bool> guard_flag_;
 };
 
 // Returns true if the specified transition is one of the types that cause the
@@ -172,7 +172,7 @@ class RenderWidgetHostVisibilityTracker final
 
 // An object to own a WebContents that is in a tabstrip, as well as other
 // various properties it has.
-class TabStripModel::WebContentsData : public content::WebContentsObserver {
+class TabStripModel::WebContentsData {
  public:
   explicit WebContentsData(std::unique_ptr<WebContents> a_contents);
   WebContentsData(const WebContentsData&) = delete;
@@ -212,10 +212,6 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   }
 
  private:
-  // Make sure that if someone deletes this WebContents out from under us, it
-  // is properly removed from the tab strip.
-  void WebContentsDestroyed() override;
-
   // The WebContents owned by this WebContentsData.
   std::unique_ptr<WebContents> contents_;
 
@@ -223,7 +219,7 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
   // The relationship is discarded easily, e.g. when the user switches to a tab
   // not part of the set. This property is used to determine what tab to
   // activate next when one is closed.
-  WebContents* opener_ = nullptr;
+  raw_ptr<WebContents> opener_ = nullptr;
 
   // True if |opener_| should be reset when any active tab change occurs (rather
   // than just one outside the current tree of openers).
@@ -241,22 +237,12 @@ class TabStripModel::WebContentsData : public content::WebContentsObserver {
 
 TabStripModel::WebContentsData::WebContentsData(
     std::unique_ptr<WebContents> contents)
-    : content::WebContentsObserver(contents.get()),
-      contents_(std::move(contents)) {}
+    : contents_(std::move(contents)) {}
 
 std::unique_ptr<WebContents> TabStripModel::WebContentsData::ReplaceWebContents(
     std::unique_ptr<WebContents> contents) {
   contents_.swap(contents);
-  Observe(contents_.get());
   return contents;
-}
-
-void TabStripModel::WebContentsData::WebContentsDestroyed() {
-  // TODO(erikchen): Remove this NOTREACHED statement as well as the
-  // WebContents observer - this is just a temporary sanity check to make sure
-  // that unit tests are not destroyed a WebContents out from under a
-  // TabStripModel.
-  NOTREACHED();
 }
 
 TabStripModel::DetachedWebContents::DetachedWebContents(
@@ -294,7 +280,7 @@ struct TabStripModel::DetachNotifications {
   //
   // Once the notification for change of active web contents has been sent,
   // this field is set to nullptr.
-  WebContents* initially_active_web_contents = nullptr;
+  raw_ptr<WebContents> initially_active_web_contents = nullptr;
 
   // The WebContents that were recently detached. Observers need to be notified
   // about these. These must be updated after construction.
@@ -523,8 +509,8 @@ void TabStripModel::SendDetachWebContentsNotifications(
 
   TabStripModelChange::Remove remove;
   for (auto& dwc : notifications->detached_web_contents) {
-    remove.contents.push_back(
-        {dwc->contents, dwc->index_before_any_removals, dwc->remove_reason});
+    remove.contents.push_back({dwc->contents, dwc->index_before_any_removals,
+                               dwc->remove_reason, dwc->id});
   }
   TabStripModelChange change(std::move(remove));
 
@@ -1786,8 +1772,7 @@ bool TabStripModel::CloseTabs(base::span<content::WebContents* const> items,
       observer.WillCloseAllTabs(this);
   }
 
-  DetachNotifications notifications(GetWebContentsAtImpl(active_index()),
-                                    selection_model_);
+  DetachNotifications notifications(GetActiveWebContents(), selection_model_);
   const bool closed_all =
       CloseWebContentses(items, close_types, &notifications);
 

@@ -136,10 +136,6 @@ const char kDisableGLDrawingForTests[] = "disable-gl-drawing-for-tests";
 const char kOverrideUseSoftwareGLForTests[] =
     "override-use-software-gl-for-tests";
 
-// Forces the use of software GL instead of hardware gpu for headless.
-const char kOverrideUseSoftwareGLForHeadless[] =
-    "override-use-software-gl-for-headless";
-
 // Disables specified comma separated GL Extensions if found.
 const char kDisableGLExtensions[] = "disable-gl-extensions";
 
@@ -244,6 +240,10 @@ const base::Feature kDefaultANGLEVulkan{"DefaultANGLEVulkan",
 // be reliably retrieved with ANGLE backend.
 const base::Feature kTrackCurrentShaders{"TrackCurrentShaders",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable sharing Vulkan device queue with ANGLE's Vulkan backend.
+const base::Feature kVulkanFromANGLE{"VulkanFromANGLE",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsDefaultANGLEVulkan() {
 #if defined(OS_ANDROID)

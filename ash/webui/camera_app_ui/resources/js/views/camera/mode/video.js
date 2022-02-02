@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {
+  assert,
+  assertInstanceof,
+  assertNotReached,
+} from '../../../assert.js';
 import {AsyncJobQueue} from '../../../async_job_queue.js';
-import {assert, assertInstanceof} from '../../../chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {StreamConstraints} from '../../../device/stream_constraints.js';
 import {
@@ -152,7 +156,7 @@ export class VideoResult {
 /**
  * @typedef {{
  *   name: string,
- *   blob: !Blob,
+ *   getBlob: function(): !Promise<!Blob>,
  *   resolution: !Resolution,
  *   duration: number,
  * }}
@@ -170,7 +174,9 @@ export class VideoHandler {
    * @return {!Promise<!VideoSaver>}
    * @abstract
    */
-  createVideoSaver() {}
+  createVideoSaver() {
+    assertNotReached();
+  }
 
   /**
    * Handles the result video.
@@ -178,7 +184,9 @@ export class VideoHandler {
    * @return {!Promise}
    * @abstract
    */
-  handleResultVideo(video) {}
+  handleResultVideo(video) {
+    assertNotReached();
+  }
 
   /**
    * Handles the result gif video.
@@ -186,7 +194,9 @@ export class VideoHandler {
    * @return {!Promise}
    * @abstract
    */
-  handleResultGif(result) {}
+  handleResultGif(result) {
+    assertNotReached();
+  }
 
   /**
    * Handles the result video snapshot.
@@ -195,19 +205,25 @@ export class VideoHandler {
    * @return {!Promise}
    * @abstract
    */
-  handleResultPhoto(photo, name) {}
+  handleResultPhoto(photo, name) {
+    assertNotReached();
+  }
 
   /**
    * Plays UI effect when doing video snapshot.
    */
-  playShutterEffect() {}
+  playShutterEffect() {
+    assertNotReached();
+  }
 
   /**
    * Gets preview video element.
    * @return {!HTMLVideoElement}
    * @abstract
    */
-  getPreviewVideo() {}
+  getPreviewVideo() {
+    assertNotReached();
+  }
 }
 
 /**
@@ -560,17 +576,18 @@ export class Video extends ModeBase {
       state.set(state.State.RECORDING, false);
       this.gifRecordTime_.stop({pause: false});
 
-      // Measure the latency of gif encoder finishing rest of the encoding
-      // works.
-      state.set(PerfEvent.GIF_CAPTURE_POST_PROCESSING, true);
-      const blob = await gifSaver.endWrite();
-      state.set(PerfEvent.GIF_CAPTURE_POST_PROCESSING, false);
-
       // TODO(b:191950622): Close capture stream before handleResultGif()
       // opening preview page when multi-stream recording enabled.
       await this.handler_.handleResultGif({
-        blob,
         name: gifName,
+        getBlob: async () => {
+          // Measure the latency of gif encoder finishing rest of the encoding
+          // works.
+          state.set(PerfEvent.GIF_CAPTURE_POST_PROCESSING, true);
+          const blob = await gifSaver.endWrite();
+          state.set(PerfEvent.GIF_CAPTURE_POST_PROCESSING, false);
+          return blob;
+        },
         resolution: this.captureResolution_,
         duration: this.gifRecordTime_.inMilliseconds(),
       });

@@ -182,8 +182,8 @@ class TestImporter(object):
             _log.info('Done: no changes to import.')
             return 0
 
-        if self._only_wpt_manifest_changed():
-            _log.info('Only manifest was updated; skipping the import.')
+        if not self._has_wpt_changes():
+            _log.info('Only manifest or expectations was updated; skipping the import.')
             return 0
 
         with self._expectations_updater.prepare_smoke_tests(self.chromium_git):
@@ -472,12 +472,14 @@ class TestImporter(object):
         _log.info('Committing changes.')
         self.chromium_git.commit_locally_with_message(commit_message)
 
-    def _only_wpt_manifest_changed(self):
+    def _has_wpt_changes(self):
         changed_files = self.chromium_git.changed_files()
-        wpt_base_manifest = self.fs.relpath(
-            self.fs.join(self.dest_path, '..', BASE_MANIFEST_NAME),
-            self.finder.chromium_base())
-        return changed_files == [wpt_base_manifest]
+        rel_dest_path = self.fs.relpath(self.dest_path,
+                                        self.finder.chromium_base())
+        for cf in changed_files:
+            if cf.startswith(rel_dest_path):
+                return True
+        return False
 
     def _need_sheriff_attention(self):
         # Per the rules defined for the rubber-stamper, it can not auto approve
@@ -654,11 +656,11 @@ class TestImporter(object):
         self.rebaselined_tests, self.new_test_expectations = (
             self._expectations_updater.update_expectations())
 
-        _log.info('Adding test expectations lines for composite-after-paint')
-        self._expectations_updater.update_expectations_for_flag_specific('composite-after-paint')
-
         _log.info('Adding test expectations lines for disable-layout-ng')
         self._expectations_updater.update_expectations_for_flag_specific('disable-layout-ng')
+
+        _log.info('Adding test expectations lines for disable-site-isolation-trials')
+        self._expectations_updater.update_expectations_for_flag_specific('disable-site-isolation-trials')
 
     def fetch_wpt_override_expectations(self):
         """Modifies WPT Override expectations based on try job results.

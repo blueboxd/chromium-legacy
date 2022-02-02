@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/referrer.h"
@@ -482,8 +481,7 @@ void ServiceWorkerContextClient::SetupNavigationPreload(
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(context_);
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
-      this, fetch_event_id, GURL(url),
-      std::move(preload_url_loader_client_receiver));
+      this, fetch_event_id, url, std::move(preload_url_loader_client_receiver));
   context_->preload_requests.AddWithID(std::move(preload_request),
                                        fetch_event_id);
 }

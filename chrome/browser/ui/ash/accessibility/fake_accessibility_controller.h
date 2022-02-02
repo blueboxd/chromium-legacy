@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_ASH_ACCESSIBILITY_FAKE_ACCESSIBILITY_CONTROLLER_H_
 
 #include "ash/public/cpp/accessibility_controller.h"
-#include "base/macros.h"
 
 // Fake implementation of ash's mojo AccessibilityController interface.
 class FakeAccessibilityController : ash::AccessibilityController {
@@ -64,7 +63,7 @@ class FakeAccessibilityController : ash::AccessibilityController {
       const std::string& path) override;
   void DisableSwitchAccessDisableConfirmationDialogTesting() override;
   void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
-      bool download_in_progress) override;
+      int download_progress) override;
   void ShowSpeechRecognitionDownloadNotificationForDictation(
       bool succeeded,
       const std::u16string& display_language) override;

@@ -12,9 +12,11 @@
 #include "base/compiler_specific.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
+class GUID;
 class Time;
 }  // namespace base
 
@@ -106,7 +108,30 @@ class AttributionStorage {
     // Must be positive.
     virtual base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const
         WARN_UNUSED_RESULT = 0;
+
+    // Returns a new report ID.
+    virtual base::GUID NewReportID() const WARN_UNUSED_RESULT = 0;
   };
+
+  struct CONTENT_EXPORT DeactivatedSource {
+    enum class Reason {
+      kReplacedByNewerSource,
+      kReachedAttributionLimit,
+    };
+
+    DeactivatedSource(StorableSource source, Reason reason);
+    ~DeactivatedSource();
+
+    DeactivatedSource(const DeactivatedSource&);
+    DeactivatedSource(DeactivatedSource&&);
+
+    DeactivatedSource& operator=(const DeactivatedSource&);
+    DeactivatedSource& operator=(DeactivatedSource&&);
+
+    StorableSource source;
+    Reason reason;
+  };
+
   virtual ~AttributionStorage() = default;
 
   // When adding a new method, also add it to
@@ -117,7 +142,11 @@ class AttributionStorage {
   // pair. When a source is stored, all matching sources that have already
   // converted are marked as inactive, and are no longer eligible for reporting.
   // Unconverted matching sources are not modified.
-  virtual void StoreSource(const StorableSource& source) = 0;
+  // Returns at most `deactivated_source_return_limit` deactivated sources, to
+  // put an upper bound on memory usage; use a negative number for no limit.
+  virtual std::vector<DeactivatedSource> StoreSource(
+      const StorableSource& source,
+      int deactivated_source_return_limit = -1) = 0;
 
   class CONTENT_EXPORT CreateReportResult {
    public:
@@ -138,8 +167,11 @@ class AttributionStorage {
       kMaxValue = kDroppedForNoise,
     };
 
-    CreateReportResult(Status status,
-                       absl::optional<AttributionReport> dropped_report);
+    explicit CreateReportResult(
+        Status status,
+        absl::optional<AttributionReport> dropped_report = absl::nullopt,
+        absl::optional<DeactivatedSource::Reason>
+            dropped_report_source_deactivation_reason = absl::nullopt);
     ~CreateReportResult();
 
     CreateReportResult(const CreateReportResult&);
@@ -152,12 +184,18 @@ class AttributionStorage {
 
     const absl::optional<AttributionReport>& dropped_report() const;
 
+    absl::optional<DeactivatedSource> GetDeactivatedSource() const;
+
    private:
     Status status_;
 
     // Null unless `status` is `kSuccessDroppedLowerPriority`,
     // `kPriorityTooLow`, or `kDroppedForNoise`.
     absl::optional<AttributionReport> dropped_report_;
+
+    // Null unless `dropped_report_`'s source was deactivated.
+    absl::optional<DeactivatedSource::Reason>
+        dropped_report_source_deactivation_reason_;
   };
 
   // Finds all stored sources matching a given `trigger`, and stores the

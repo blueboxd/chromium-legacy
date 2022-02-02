@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
@@ -40,6 +39,7 @@ class InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
   void Blur() override;
   void SetSurroundingText(const std::u16string& text,
                           const gfx::Range& selection_range) override;
+  void SetContentType(ui::TextInputType input_type, int input_flags) override;
 
  private:
   // GtkIMContext event handlers.  They are shared among |gtk_context_simple_|

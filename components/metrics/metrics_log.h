@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_base.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
@@ -181,11 +181,9 @@ class MetricsLog {
       DelegatingProvider* delegating_provider);
 
   // Loads the environment proto that was saved by the last RecordEnvironment()
-  // call from prefs. On success, returns true and |app_version| contains the
-  // recovered version. Otherwise (if there was no saved environment in prefs
-  // or it could not be decoded), returns false and |app_version| is empty.
-  bool LoadSavedEnvironmentFromPrefs(PrefService* local_state,
-                                     std::string* app_version);
+  // call from prefs. On success, returns true. Otherwise, (if there was no
+  // saved environment in prefs or it could not be decoded), returns false.
+  bool LoadSavedEnvironmentFromPrefs(PrefService* local_state);
 
   // Records the log_written_by_app_version system_profile field if the client's
   // version is different from the system_profile's app_version.
@@ -260,7 +258,7 @@ class MetricsLog {
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.
-  MetricsServiceClient* const client_;
+  const raw_ptr<MetricsServiceClient> client_;
 
   // The time when the current log was created.
   const base::TimeTicks creation_time_;
@@ -274,11 +272,11 @@ class MetricsLog {
 
   // The clock used to vend Time::Now().  Note that this is not used for the
   // static function MetricsLog::GetCurrentTime(). Can be overridden for tests.
-  base::Clock* clock_;
+  raw_ptr<base::Clock> clock_;
 
   // The NetworkTimeTracker used to provide higher-quality wall clock times than
   // |clock_| (when available). Can be overridden for tests.
-  const network_time::NetworkTimeTracker* network_clock_;
+  raw_ptr<const network_time::NetworkTimeTracker> network_clock_;
 };
 
 }  // namespace metrics

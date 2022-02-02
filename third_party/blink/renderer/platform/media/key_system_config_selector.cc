@@ -1082,6 +1082,11 @@ void KeySystemConfigSelector::SelectConfigInternal(
                            weak_factory_.GetWeakPtr(), std::move(request)));
         return;
       case CONFIGURATION_SUPPORTED:
+        std::string key_system = request->key_system;
+        if (key_systems_->ShouldUseBaseKeySystemName(key_system))
+          key_system = key_systems_->GetBaseKeySystemName(key_system);
+        cdm_config.key_system = key_system;
+
         cdm_config.allow_distinctive_identifier =
             (accumulated_configuration.distinctive_identifier ==
              EmeFeatureRequirement::kRequired);
@@ -1090,6 +1095,7 @@ void KeySystemConfigSelector::SelectConfigInternal(
              EmeFeatureRequirement::kRequired);
         cdm_config.use_hw_secure_codecs =
             config_state.AreHwSecureCodecsRequired();
+
         std::move(request->cb)
             .Run(Status::kSupported, &accumulated_configuration, &cdm_config);
         return;

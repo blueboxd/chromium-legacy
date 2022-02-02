@@ -15,9 +15,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -321,10 +319,6 @@ class DeviceStatusCollector : public StatusCollector,
   void OnProbeDataFetched(
       CrosHealthdDataReceiver callback,
       chromeos::cros_healthd::mojom::TelemetryInfoPtr reply);
-
-  // Returns true if data (e.g. CPU info, power status, etc.) should be fetched
-  // from cros_healthd.
-  bool ShouldFetchCrosHealthdData() const;
 
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();

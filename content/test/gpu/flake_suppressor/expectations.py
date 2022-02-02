@@ -4,12 +4,20 @@
 """Module for interacting with expectation files."""
 
 import base64
+import collections
 import os
 import posixpath
+import re
 
-import requests
+import six
+
+# This script is Python 3-only, but some presubmit stuff still tries to parse
+# it in Python 2, and this module does not exist in Python 2.
+if six.PY3:
+  import urllib.request
 
 import flake_suppressor
+from flake_suppressor import tag_utils
 
 from typ import expectations_parser
 
@@ -29,8 +37,10 @@ EXPECTATION_FILE_OVERRIDE = {
 GITILES_URL = 'https://chromium.googlesource.com/chromium/src/+/refs/heads/main'
 TEXT_FORMAT_ARG = '?format=TEXT'
 
+TAG_GROUP_REGEX = re.compile(r'# tags: \[([^\]]*)\]', re.MULTILINE | re.DOTALL)
 
-def IterateThroughResultsForUser(result_map, group_by_tags):
+
+def IterateThroughResultsForUser(result_map, group_by_tags, include_all_tags):
   """Iterates over |result_map| for the user to provide input.
 
   For each unique result, user will be able to decide whether to ignore it (do
@@ -45,6 +55,8 @@ def IterateThroughResultsForUser(result_map, group_by_tags):
         by tags or not. If True, expectations will be added after an existing
         expectation whose tags are the largest subset of the produced tags. If
         False, new expectations will be appended to the end of the file.
+    include_all_tags: A boolean denoting whether all tags should be used for
+        expectations or only the most specific ones.
   """
   typ_tag_ordered_result_map = _ReorderMapByTypTags(result_map)
   for suite, test_map in result_map.items():
@@ -76,7 +88,46 @@ def IterateThroughResultsForUser(result_map, group_by_tags):
           continue
 
         ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
-                            group_by_tags)
+                            group_by_tags, include_all_tags)
+
+
+def IterateThroughResultsWithThresholds(result_map, group_by_tags,
+                                        result_counts, ignore_threshold,
+                                        flaky_threshold, include_all_tags):
+  """Iterates over |result_map| and generates expectations based off thresholds.
+
+  Args:
+    result_map: Aggregated query results from results.AggregateResults to
+        iterate over.
+    group_by_tags: A boolean denoting whether to attempt to group expectations
+        by tags or not. If True, expectations will be added after an existing
+        expectation whose tags are the largest subset of the produced tags. If
+        False, new expectations will be appended to the end of the file.
+    result_counts: A dict in the format output by queries.GetResultCounts.
+    ignore_threshold: A float containing the fraction of failed tests under
+        which failures will be ignored.
+    flaky_threshold: A float containing the fraction of failed tests under which
+        failures will be suppressed with RetryOnFailure and above which will be
+        suppressed with Failure.
+    include_all_tags: A boolean denoting whether all tags should be used for
+        expectations or only the most specific ones.
+  """
+  assert isinstance(ignore_threshold, float)
+  assert isinstance(flaky_threshold, float)
+  for suite, test_map in result_map.items():
+    for test, tag_map in test_map.items():
+      for typ_tags, build_url_list in tag_map.items():
+        failure_count = len(build_url_list)
+        total_count = result_counts[typ_tags][test]
+        fraction = failure_count / total_count
+        if fraction < ignore_threshold:
+          continue
+        if fraction < flaky_threshold:
+          expected_result = 'RetryOnFailure'
+        else:
+          expected_result = 'Failure'
+        ModifyFileForResult(suite, test, typ_tags, '', expected_result,
+                            group_by_tags, include_all_tags)
 
 
 def FindFailuresInSameTest(result_map, target_suite, target_test,
@@ -197,7 +248,7 @@ def PromptUserForExpectationAction():
 
 
 def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
-                        group_by_tags):
+                        group_by_tags, include_all_tags):
   """Adds an expectation to the appropriate expectation file.
 
   Args:
@@ -211,8 +262,16 @@ def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
         by tags or not. If True, expectations will be added after an existing
         expectation whose tags are the largest subset of the produced tags. If
         False, new expectations will be appended to the end of the file.
+    include_all_tags: A boolean denoting whether all tags should be used for
+        expectations or only the most specific ones.
   """
   expectation_file = GetExpectationFileForSuite(suite, typ_tags)
+  if not include_all_tags:
+    # Remove temporarily un-ignored tags, namely webgl-version-x tags, since
+    # those were necessary to find the correct file. However, we do not want
+    # to actually include them in the file since they are unused/ignored.
+    typ_tags = tag_utils.RemoveTemporarilyKeptIgnoredTags(typ_tags)
+    typ_tags = FilterToMostSpecificTypTags(typ_tags, expectation_file)
   bug = '%s ' % bug if bug else bug
 
   def AppendExpectationToEnd():
@@ -227,12 +286,17 @@ def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
     if insertion_line == -1:
       AppendExpectationToEnd()
     else:
+      # If we've already filtered tags, then use those instead of the "best
+      # matching" ones.
+      tags_to_use = best_matching_tags
+      if not include_all_tags:
+        tags_to_use = typ_tags
       # enumerate starts at 0 but line numbers start at 1.
       insertion_line -= 1
-      best_matching_tags = list(best_matching_tags)
-      best_matching_tags.sort()
-      expectation_line = '%s[ %s ] %s [ %s ]\n' % (
-          bug, ' '.join(best_matching_tags), test, expected_result)
+      tags_to_use = list(tags_to_use)
+      tags_to_use.sort()
+      expectation_line = '%s[ %s ] %s [ %s ]\n' % (bug, ' '.join(tags_to_use),
+                                                   test, expected_result)
       with open(expectation_file) as infile:
         input_contents = infile.read()
       output_contents = ''
@@ -244,6 +308,61 @@ def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
         outfile.write(output_contents)
   else:
     AppendExpectationToEnd()
+
+
+def FilterToMostSpecificTypTags(typ_tags, expectation_file):
+  """Filters |typ_tags| to the most specific set.
+
+  Assumes that the tags in |expectation_file| are ordered from least specific
+  to most specific within each tag group.
+
+  Args:
+    typ_tags: A list of strings containing the typ tags the test produced.
+    expectation_file: A string containing a filepath pointing to the
+        expectation file to filter tags with.
+
+  Returns:
+    A list containing the contents of |typ_tags| with only the most specific
+    tag from each tag group remaining.
+  """
+  with open(expectation_file) as infile:
+    contents = infile.read()
+
+  tag_groups = []
+  for match in TAG_GROUP_REGEX.findall(contents):
+    tag_groups.append(match.strip().replace('#', '').split())
+
+  num_matches = 0
+  tags_in_same_group = collections.defaultdict(list)
+  for tag in typ_tags:
+    for index, tag_group in enumerate(tag_groups):
+      if tag in tag_group:
+        tags_in_same_group[index].append(tag)
+        num_matches += 1
+        break
+  if num_matches != len(typ_tags):
+    all_tags = set()
+    for group in tag_groups:
+      all_tags |= set(group)
+    raise RuntimeError('Found tags not in expectation file: %s' %
+                       ' '.join(set(typ_tags) - all_tags))
+
+  filtered_tags = []
+  for index, tags in tags_in_same_group.items():
+    if len(tags) == 1:
+      filtered_tags.append(tags[0])
+    else:
+      tag_group = tag_groups[index]
+      best_index = -1
+      for t in tags:
+        i = tag_group.index(t)
+        if i > best_index:
+          best_index = i
+      filtered_tags.append(tag_group[best_index])
+
+  # Sort to keep order consistent with what we were given.
+  filtered_tags.sort()
+  return filtered_tags
 
 
 def GetExpectationFileForSuite(suite, typ_tags):
@@ -317,12 +436,11 @@ def GetExpectationFilesFromOrigin():
   origin_dir = RELATIVE_EXPECTATION_FILE_DIRECTORY.replace(os.sep, '/')
 
   origin_dir_url = posixpath.join(GITILES_URL, origin_dir) + TEXT_FORMAT_ARG
-  r = requests.get(origin_dir_url)
-  assert r.status_code == 200
+  response = urllib.request.urlopen(origin_dir_url).read()
   # Response is a base64 encoded, newline-separated list of files in the
   # directory in the format: `mode file_type hash name`
   files = []
-  decoded_text = base64.b64decode(r.text).decode('utf-8')
+  decoded_text = base64.b64decode(response).decode('utf-8')
   for line in decoded_text.splitlines():
     files.append(line.split()[-1])
 
@@ -331,9 +449,8 @@ def GetExpectationFilesFromOrigin():
     origin_filepath = posixpath.join(origin_dir, f)
     origin_filepath_url = posixpath.join(GITILES_URL,
                                          origin_filepath) + TEXT_FORMAT_ARG
-    r = requests.get(origin_filepath_url)
-    assert r.status_code == 200
-    decoded_text = base64.b64decode(r.text).decode('utf-8')
+    response = urllib.request.urlopen(origin_filepath_url).read()
+    decoded_text = base64.b64decode(response).decode('utf-8')
     origin_file_contents[f] = decoded_text
 
   return origin_file_contents

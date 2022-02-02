@@ -21,6 +21,7 @@
 #include "base/cxx17_backports.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_co_mem.h"
@@ -31,6 +32,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
+#include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -185,15 +187,17 @@ MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator(
       frame_rate_(kMaxFrameRateNumerator / kMaxFrameRateDenominator),
       bitrate_(Bitrate::ConstantBitrate(kDefaultTargetBitrate)),
       input_required_(false),
-      main_client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      encoder_thread_("MFEncoderThread") {}
+      main_client_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      encoder_thread_task_runner_(
+          base::ThreadPool::CreateCOMSTATaskRunner({})) {
+  encoder_weak_ptr_ = encoder_task_weak_factory_.GetWeakPtr();
+}
 
 MediaFoundationVideoEncodeAccelerator::
     ~MediaFoundationVideoEncodeAccelerator() {
   DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(!encoder_thread_.IsRunning());
   DCHECK(!encoder_task_weak_factory_.HasWeakPtrs());
 }
 
@@ -202,7 +206,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles() {
   TRACE_EVENT0("gpu,startup",
                "MediaFoundationVideoEncodeAccelerator::GetSupportedProfiles");
   DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SupportedProfiles profiles;
 
@@ -221,7 +225,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesLight() {
   TRACE_EVENT0(
       "gpu,startup",
       "MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesLight");
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   SupportedProfiles profiles;
 
@@ -299,7 +303,7 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
 bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
                                                        Client* client) {
   DVLOG(3) << __func__ << ": " << config.AsHumanReadableString();
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (PIXEL_FORMAT_I420 != config.input_format &&
       PIXEL_FORMAT_NV12 != config.input_format) {
@@ -325,12 +329,6 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  encoder_thread_.init_com_with_mta(false);
-  if (!encoder_thread_.Start()) {
-    DLOG(ERROR) << "Failed spawning encoder thread.";
-    return false;
-  }
-  encoder_thread_task_runner_ = encoder_thread_.task_runner();
   IMFActivate** pp_activate = nullptr;
   uint32_t encoder_count = EnumerateHardwareEncoders(codec_, &pp_activate);
   if (!encoder_count) {
@@ -338,7 +336,8 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (!ActivateAsyncEncoder(pp_activate, encoder_count)) {
+  if (!ActivateAsyncEncoder(pp_activate, encoder_count,
+                            config.is_constrained_h264)) {
     DLOG(ERROR) << "Failed activating an async hardware encoder MFT.";
 
     if (pp_activate) {
@@ -438,6 +437,26 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
       FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, main_client_,
                                 kNumInputBuffers, input_visible_size_,
                                 bitstream_buffer_size_));
+
+  VideoEncoderInfo encoder_info;
+  encoder_info.implementation_name = "MediaFoundationVideoEncodeAccelerator";
+  encoder_info.has_trusted_rate_controller = true;
+  DCHECK(encoder_info.is_hardware_accelerated);
+  DCHECK(encoder_info.supports_native_handle);
+  DCHECK(!encoder_info.supports_simulcast);
+  if (config.HasSpatialLayer() || config.HasTemporalLayer()) {
+    DCHECK(!config.spatial_layers.empty());
+    for (size_t i = 0; i < config.spatial_layers.size(); ++i) {
+      encoder_info.fps_allocation[i] =
+          GetFpsAllocation(config.spatial_layers[i].num_of_temporal_layers);
+    }
+  } else {
+    constexpr uint8_t kFullFramerate = 255;
+    encoder_info.fps_allocation[0] = {kFullFramerate};
+  }
+  main_client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Client::NotifyEncoderInfoChange, main_client_,
+                                encoder_info));
   return SUCCEEDED(hr);
 }
 
@@ -445,19 +464,18 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
     scoped_refptr<VideoFrame> frame,
     bool force_keyframe) {
   DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&MediaFoundationVideoEncodeAccelerator::EncodeTask,
-                     encoder_task_weak_factory_.GetWeakPtr(), std::move(frame),
-                     force_keyframe));
+                     encoder_weak_ptr_, std::move(frame), force_keyframe));
 }
 
 void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     BitstreamBuffer buffer) {
   DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (buffer.size() < bitstream_buffer_size_) {
     DLOG(ERROR) << "Output BitstreamBuffer isn't big enough: " << buffer.size()
@@ -483,7 +501,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
       FROM_HERE,
       base::BindOnce(
           &MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-          encoder_task_weak_factory_.GetWeakPtr(), std::move(buffer_ref)));
+          encoder_weak_ptr_, std::move(buffer_ref)));
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
@@ -491,31 +509,32 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t framerate) {
   DVLOG(3) << __func__ << ": bitrate=" << bitrate.ToString()
            << ": framerate=" << framerate;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaFoundationVideoEncodeAccelerator::
                                     RequestEncodingParametersChangeTask,
-                                encoder_task_weak_factory_.GetWeakPtr(),
-                                bitrate, framerate));
+                                encoder_weak_ptr_, bitrate, framerate));
 }
 
 void MediaFoundationVideoEncodeAccelerator::Destroy() {
   DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Cancel all callbacks.
   main_client_weak_factory_.reset();
 
-  if (encoder_thread_.IsRunning()) {
-    encoder_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaFoundationVideoEncodeAccelerator::DestroyTask,
-                       encoder_task_weak_factory_.GetWeakPtr()));
-    encoder_thread_.Stop();
-  }
-
-  delete this;
+  // MF resources need to be cleaned up on |encoder_thread_task_runner_|,
+  // but the object itself is supposed to be deleted on this runner, so when
+  // DestroyTask() is done we schedule deletion of |this|
+  auto delete_self = [](MediaFoundationVideoEncodeAccelerator* self) {
+    delete self;
+  };
+  encoder_thread_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&MediaFoundationVideoEncodeAccelerator::DestroyTask,
+                     encoder_weak_ptr_),
+      base::BindOnce(delete_self, base::Unretained(this)));
 }
 
 bool MediaFoundationVideoEncodeAccelerator::IsGpuFrameResizeSupported() {
@@ -537,7 +556,7 @@ uint32_t MediaFoundationVideoEncodeAccelerator::EnumerateHardwareEncoders(
     VideoCodec codec,
     IMFActivate*** pp_activate) {
   DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!compatible_with_win7_ &&
       base::win::GetVersion() < base::win::Version::WIN8) {
@@ -581,9 +600,10 @@ uint32_t MediaFoundationVideoEncodeAccelerator::EnumerateHardwareEncoders(
 
 bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
     IMFActivate** pp_activate,
-    uint32_t encoder_count) {
+    uint32_t encoder_count,
+    bool is_constrained_h264) {
   DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Try to create the encoder with priority according to merit value.
   HRESULT hr = E_FAIL;
@@ -594,6 +614,25 @@ bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
       hr = pp_activate[i]->ActivateObject(IID_PPV_ARGS(&encoder_));
       if (encoder_.Get() != nullptr) {
         DCHECK(SUCCEEDED(hr));
+
+        // Skip NVIDIA GPU due to https://crbug.com/1088650 for constrained
+        // baseline profile H.264 encoding, and go to the next instance
+        // according to merit value.
+        if (codec_ == VideoCodec::kH264 && is_constrained_h264) {
+          // Get the vendor id.
+          base::win::ScopedCoMem<WCHAR> vendor_id;
+          UINT32 id_length;
+          pp_activate[i]->GetAllocatedString(
+              MFT_ENUM_HARDWARE_VENDOR_ID_Attribute, &vendor_id, &id_length);
+          if (!_wcsnicmp(vendor_id, L"VEN_10DE", id_length)) {
+            DLOG(WARNING)
+                << "Skipped NVIDIA GPU due to https://crbug.com/1088650";
+            pp_activate[i]->ShutdownObject();
+            encoder_.Reset();
+            hr = E_FAIL;
+            continue;
+          }
+        }
 
         activate_ = pp_activate[i];
         pp_activate[i] = nullptr;
@@ -652,7 +691,7 @@ bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
 bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
     VideoCodecProfile output_profile,
     bool is_constrained_h264) {
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(encoder_);
 
   DWORD input_count = 0;
@@ -734,7 +773,7 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
 }
 
 bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(encoder_);
 
   HRESULT hr = encoder_.As(&codec_api_);
@@ -810,9 +849,6 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
 
 void MediaFoundationVideoEncodeAccelerator::NotifyError(
     VideoEncodeAccelerator::Error error) {
-  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread() ||
-         main_client_task_runner_->BelongsToCurrentThread());
-
   main_client_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::NotifyError, main_client_, error));
 }

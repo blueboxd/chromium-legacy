@@ -53,11 +53,16 @@ ProxyMain::~ProxyMain() {
   DCHECK(!started_);
 }
 
-void ProxyMain::InitializeOnImplThread(CompletionEvent* completion_event) {
+void ProxyMain::InitializeOnImplThread(
+    CompletionEvent* completion_event,
+    int id,
+    const LayerTreeSettings* settings,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   DCHECK(task_runner_provider_->IsImplThread());
   DCHECK(!proxy_impl_);
   proxy_impl_ = std::make_unique<ProxyImpl>(
-      weak_factory_.GetWeakPtr(), layer_tree_host_, task_runner_provider_);
+      weak_factory_.GetWeakPtr(), layer_tree_host_, id, settings,
+      rendering_stats_instrumentation, task_runner_provider_);
   completion_event->Signal();
 }
 
@@ -320,7 +325,11 @@ void ProxyMain::BeginMainFrame(
       base::WaitableEvent::ResetPolicy::MANUAL);
   auto* completion_event = completion_event_ptr.get();
   bool has_updates = (final_pipeline_stage_ == COMMIT_PIPELINE_STAGE);
-  layer_tree_host_->WillCommit(std::move(completion_event_ptr), has_updates);
+  // Must get unsafe_state before calling WillCommit() to avoid deadlock.
+  auto& unsafe_state = layer_tree_host_->GetUnsafeStateForCommit();
+  std::unique_ptr<CommitState> commit_state = layer_tree_host_->WillCommit(
+      std::move(completion_event_ptr), has_updates);
+  DCHECK_EQ(has_updates, (bool)commit_state.get());
   current_pipeline_stage_ = COMMIT_PIPELINE_STAGE;
 
   if (!has_updates) {
@@ -350,7 +359,8 @@ void ProxyMain::BeginMainFrame(
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
-    layer_tree_host_->CommitComplete();
+    layer_tree_host_->CommitComplete(
+        {base::TimeTicks(), base::TimeTicks::Now()});
     layer_tree_host_->RecordEndOfFrameMetrics(
         begin_main_frame_start_time,
         begin_main_frame_state->active_sequence_trackers);
@@ -363,17 +373,19 @@ void ProxyMain::BeginMainFrame(
   // begin the commit process, which is blocking from the main thread's
   // point of view, but asynchronously performed on the impl thread,
   // coordinated by the Scheduler.
+  CommitTimestamps commit_timestamps;
   {
     TRACE_EVENT0("cc,raf_investigation", "ProxyMain::BeginMainFrame::commit");
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
 
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ProxyImpl::NotifyReadyToCommitOnImpl,
-                       base::Unretained(proxy_impl_.get()), completion_event,
-                       layer_tree_host_, begin_main_frame_start_time,
-                       begin_main_frame_state->begin_frame_args));
+        FROM_HERE, base::BindOnce(&ProxyImpl::NotifyReadyToCommitOnImpl,
+                                  base::Unretained(proxy_impl_.get()),
+                                  completion_event, std::move(commit_state),
+                                  &unsafe_state, begin_main_frame_start_time,
+                                  begin_main_frame_state->begin_frame_args,
+                                  &commit_timestamps));
     layer_tree_host_->WaitForCommitCompletion();
   }
 
@@ -382,7 +394,7 @@ void ProxyMain::BeginMainFrame(
   // but *not* script-created IntersectionObserver. See
   // blink::LocalFrameView::RunPostLifecycleSteps.
   layer_tree_host_->DidBeginMainFrame();
-  layer_tree_host_->CommitComplete();
+  layer_tree_host_->CommitComplete(commit_timestamps);
   layer_tree_host_->RecordEndOfFrameMetrics(
       begin_main_frame_start_time,
       begin_main_frame_state->active_sequence_trackers);
@@ -567,8 +579,12 @@ void ProxyMain::Start() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     CompletionEvent completion;
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ProxyMain::InitializeOnImplThread,
-                                  base::Unretained(this), &completion));
+        FROM_HERE,
+        base::BindOnce(&ProxyMain::InitializeOnImplThread,
+                       base::Unretained(this), &completion,
+                       layer_tree_host_->GetId(),
+                       &layer_tree_host_->GetSettings(),
+                       layer_tree_host_->rendering_stats_instrumentation()));
     completion.Wait();
   }
 
@@ -714,13 +730,6 @@ void ProxyMain::SetUkmSmoothnessDestination(
                                 std::move(ukm_smoothness_data)));
 }
 
-void ProxyMain::ClearHistory() {
-  // Must only be called from the impl thread during commit.
-  DCHECK(task_runner_provider_->IsImplThread());
-  DCHECK(task_runner_provider_->IsMainThreadBlocked());
-  proxy_impl_->ClearHistory();
-}
-
 void ProxyMain::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   ImplThreadTaskRunner()->PostTask(
@@ -735,6 +744,11 @@ void ProxyMain::SetEnableFrameRateThrottling(
       FROM_HERE, base::BindOnce(&ProxyImpl::SetEnableFrameRateThrottling,
                                 base::Unretained(proxy_impl_.get()),
                                 enable_frame_rate_throttling));
+}
+
+uint32_t ProxyMain::GetAverageThroughput() const {
+  NOTIMPLEMENTED();
+  return 0u;
 }
 
 }  // namespace cc

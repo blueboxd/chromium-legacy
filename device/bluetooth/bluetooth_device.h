@@ -19,7 +19,6 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
@@ -352,10 +351,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual UUIDSet GetUUIDs() const;
 
 #if defined(OS_CHROMEOS)
-  // Indicate whether or not this device is blocked by admin policy. This would
-  // be true if any of its auto-connect service does not exist in the
-  // ServiceAllowList under org.bluez.AdminPolicy1.
-  virtual bool IsBlockedByPolicy() const = 0;
+  // Sets if this device is blocked by admin policy.
+  void SetIsBlockedByPolicy(bool);
+  bool IsBlockedByPolicy() const;
 #endif
 
   // Returns the last advertised Service Data. Returns an empty map if the
@@ -632,7 +630,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   std::vector<BluetoothRemoteGattService*> GetPrimaryServicesByUUID(
       const BluetoothUUID& service_uuid);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   using ExecuteWriteErrorCallback =
       base::OnceCallback<void(device::BluetoothGattService::GattErrorCode)>;
   using AbortWriteErrorCallback =
@@ -643,7 +641,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // Aborts all the previous prepare writes in a reliable write session.
   virtual void AbortWrite(base::OnceClosure callback,
                           AbortWriteErrorCallback error_callback) = 0;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Set the battery information for the battery type |info.type|. Overrides
@@ -818,6 +816,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Battery information for the known battery types for this device.
   base::flat_map<BatteryType, BatteryInfo> battery_info_map_;
+#endif
+
+#if defined(OS_CHROMEOS)
+  // Indicate whether or not this device is blocked by admin policy. This would
+  // be true if any of its auto-connect service does not exist in the
+  // ServiceAllowList under org.bluez.AdminPolicyStatus1.
+  bool is_blocked_by_policy_ = false;
 #endif
 };
 

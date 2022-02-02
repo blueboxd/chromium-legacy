@@ -139,14 +139,14 @@ chromium-metrics-reviews@google.com.
 <histogram name="FileBrowser.DriveHostedFilePinSuccess" enum="BooleanSuccess"
     expires_after="2022-04-24">
   <owner>austinct@chromium.org</owner>
-  <owner>dats@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning hosted files in Drive.</summary>
 </histogram>
 
 <histogram name="FileBrowser.DrivePinSuccess" enum="BooleanSuccess"
     expires_after="2022-04-24">
   <owner>austinct@chromium.org</owner>
-  <owner>dats@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
   <summary>Tracks success rate of pinning files in Drive.</summary>
 </histogram>
 
@@ -258,6 +258,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.LauncherSearch.Drive" units="ms"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -268,6 +271,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FileBrowser.LauncherSearch.Local" units="ms"
     expires_after="M98">
+  <obsolete>
+    Removed in M92.
+  </obsolete>
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -766,6 +772,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS File Browser: When running as SWA, the mode in which the SWA was
     opened. For the non-SWA, see `FileBrowser.Create`.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.SWA.PrefsMigrationStatus"
+    enum="FileManagerPrefsMigrationStatus" expires_after="2022-04-17">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Status of migration of preferences from Chrome app
+    version to System Web App
   </summary>
 </histogram>
 

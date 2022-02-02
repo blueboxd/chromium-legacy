@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/language_detection/public/cpp/language_detection_service.h"
 #include "components/translate/content/browser/content_translate_driver.h"
@@ -23,7 +22,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace content {
-class NavigationController;
 class WebContents;
 }  // namespace content
 
@@ -41,7 +39,6 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
  public:
   PerFrameContentTranslateDriver(
       content::WebContents& web_contents,
-      content::NavigationController* nav_controller,
       language::UrlLanguageHistogram* url_language_histogram);
 
   PerFrameContentTranslateDriver(const PerFrameContentTranslateDriver&) =

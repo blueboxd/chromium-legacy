@@ -2,9 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert, assertInstanceof} from '../../assert.js';
 import {
-  StreamType,
-} from '/media/capture/video/chromeos/mojom/camera_app.mojom-webui.js';
+  StreamConstraints,  // eslint-disable-line no-unused-vars
+  toMediaStreamConstraints,
+} from '../../device/stream_constraints.js';
+import * as dom from '../../dom.js';
+import {reportError} from '../../error.js';
+import {FaceOverlay} from '../../face.js';
+import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
 import {
   AndroidControlAeAntibandingMode,
   AndroidControlAeMode,
@@ -15,18 +21,8 @@ import {
   AndroidControlAwbState,
   AndroidStatisticsFaceDetectMode,
   CameraMetadataTag,
-} from
-    '/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-webui.js';
-
-import {assert, assertInstanceof} from '../../chrome_util.js';
-import {
-  StreamConstraints,  // eslint-disable-line no-unused-vars
-  toMediaStreamConstraints,
-} from '../../device/stream_constraints.js';
-import * as dom from '../../dom.js';
-import {reportError} from '../../error.js';
-import {FaceOverlay} from '../../face.js';
-import {DeviceOperator, parseMetadata} from '../../mojo/device_operator.js';
+  StreamType,
+} from '../../mojo/type.js';
 import {
   closeEndpoint,
   MojoEndpoint,  // eslint-disable-line no-unused-vars
@@ -543,6 +539,15 @@ export class Preview {
         AndroidControlAeAntibandingMode,
         'ANDROID_CONTROL_AE_ANTIBANDING_MODE_');
 
+    let sensorSensitivity = null;
+    let sensorSensitivityBoost = 100;
+    const getSensitivity = () => {
+      if (sensorSensitivity === null) {
+        return 'N/A';
+      }
+      return sensorSensitivity * sensorSensitivityBoost / 100;
+    };
+
     const tag = CameraMetadataTag;
     /** @type {!Object<string, function(!Array<number>): void>} */
     const metadataEntryHandlers = {
@@ -558,7 +563,13 @@ export class Preview {
         showValue('#preview-af-state', afStateName.get(value));
       },
       [tag.ANDROID_SENSOR_SENSITIVITY]: ([value]) => {
-        const sensitivity = value;
+        sensorSensitivity = value;
+        const sensitivity = getSensitivity();
+        showValue('#preview-sensitivity', `ISO ${sensitivity}`);
+      },
+      [tag.ANDROID_CONTROL_POST_RAW_SENSITIVITY_BOOST]: ([value]) => {
+        sensorSensitivityBoost = value;
+        const sensitivity = getSensitivity();
         showValue('#preview-sensitivity', `ISO ${sensitivity}`);
       },
       [tag.ANDROID_SENSOR_EXPOSURE_TIME]: ([value]) => {
@@ -634,15 +645,17 @@ export class Preview {
 
     const deviceId = videoTrack.getSettings().deviceId;
     const activeArraySize = await deviceOperator.getActiveArraySize(deviceId);
-    const sensorOrientation =
-        await deviceOperator.getSensorOrientation(deviceId);
-    this.faceOverlay_ = new FaceOverlay(activeArraySize, sensorOrientation);
+    const cameraFrameRotation =
+        await deviceOperator.getCameraFrameRotation(deviceId);
+    this.faceOverlay_ =
+        new FaceOverlay(activeArraySize, (360 - cameraFrameRotation) % 360);
 
     const updateFace = (mode, rects) => {
       if (mode ===
           AndroidStatisticsFaceDetectMode
               .ANDROID_STATISTICS_FACE_DETECT_MODE_OFF) {
         dom.get('#preview-num-faces', HTMLDivElement).style.display = 'none';
+        this.faceOverlay_.clear();
         return;
       }
       assert(rects.length % 4 === 0);

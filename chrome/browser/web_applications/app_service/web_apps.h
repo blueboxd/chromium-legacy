@@ -9,12 +9,16 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/apps/app_service/launch_result_type.h"
+#include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_application_info.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -22,8 +26,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
+
+static_assert(!BUILDFLAG(IS_CHROMEOS_LACROS), "For non-Lacros only");
 
 class Profile;
 
@@ -34,6 +39,7 @@ enum class WebappUninstallSource;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace apps {
 class InstanceRegistry;
+struct AppLaunchParams;
 }
 #endif
 
@@ -43,26 +49,19 @@ class WebApp;
 class WebAppProvider;
 
 // An app publisher (in the App Service sense) of Web Apps.
+//
+// TODO(crbug.com/1253250):
+// 1. Remove the parent class apps::PublisherBase.
+// 2. Remove all apps::mojom related code.
 class WebApps : public apps::PublisherBase,
+                public apps::AppPublisher,
                 public WebAppPublisherHelper::Delegate,
                 public base::SupportsWeakPtr<WebApps> {
  public:
-  WebApps(const mojo::Remote<apps::mojom::AppService>& app_service,
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-          apps::InstanceRegistry* instance_registry,
-#endif
-          Profile* profile);
+  explicit WebApps(apps::AppServiceProxy* proxy);
   WebApps(const WebApps&) = delete;
   WebApps& operator=(const WebApps&) = delete;
   ~WebApps() override;
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Uninstall for web apps on Chrome.
-  static void UninstallImpl(WebAppProvider* provider,
-                            const std::string& app_id,
-                            apps::mojom::UninstallSource uninstall_source,
-                            gfx::NativeWindow parent_window);
-#endif
 
   virtual void Shutdown();
 
@@ -84,6 +83,16 @@ class WebApps : public apps::PublisherBase,
 
  private:
   void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
+  // apps::AppPublisher overrides.
+  void LoadIcon(const std::string& app_id,
+                const apps::IconKey& icon_key,
+                apps::IconType icon_type,
+                int32_t size_hint_in_dip,
+                bool allow_placeholder_icon,
+                apps::LoadIconCallback callback) override;
+  void LaunchAppWithParams(apps::AppLaunchParams&& params,
+                           apps::LaunchCallback callback) override;
 
   // apps::mojom::Publisher overrides.
   void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
@@ -113,14 +122,16 @@ class WebApps : public apps::PublisherBase,
   void OpenNativeSettings(const std::string& app_id) override;
 
   // WebAppPublisherHelper::Delegate overrides.
-  void PublishWebApps(std::vector<apps::mojom::AppPtr> apps) override;
-  void PublishWebApp(apps::mojom::AppPtr app) override;
+  void PublishWebApps(std::vector<apps::mojom::AppPtr> mojom_apps) override;
+  void PublishWebApp(apps::mojom::AppPtr mojom_app) override;
   void ModifyWebAppCapabilityAccess(
       const std::string& app_id,
       absl::optional<bool> accessing_camera,
       absl::optional<bool> accessing_microphone) override;
 
+  std::vector<std::unique_ptr<apps::App>> CreateWebApps();
   void ConvertWebApps(std::vector<apps::mojom::AppPtr>* apps_out);
+  void InitWebApps();
   void StartPublishingWebApps(
       mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote);
 
@@ -158,12 +169,12 @@ class WebApps : public apps::PublisherBase,
 
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
-  Profile* const profile_;
+  const raw_ptr<Profile> profile_;
 
-  WebAppProvider* const provider_;
+  const raw_ptr<WebAppProvider> provider_;
 
   // app_service_ is owned by the object that owns this object.
-  apps::mojom::AppService* app_service_;
+  raw_ptr<apps::mojom::AppService> app_service_;
 
   // The app type of the publisher. The app type is kSystemWeb if the web apps
   // are serving from Lacros, and the app type is kWeb for all other cases.

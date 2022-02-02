@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.allOf;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
-import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
@@ -35,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -137,27 +137,27 @@ public class LaunchpadPageTest {
 
     @Test
     @MediumTest
+    @FlakyTest(message = "https://crbug.com/1271233")
     public void testManagementMenuAppPermissions() {
         LaunchpadTestUtils.setPermissionDefaults(LaunchpadTestUtils.APP_URL_2);
         openLaunchpadPage();
         View dialogView = LaunchpadTestUtils.openAppManagementMenu(mLaunchpadCoordinator,
                 mActivityTestRule.getActivity().getModalDialogManager(), 1 /* itemIndex */);
 
-        Context context = InstrumentationRegistry.getTargetContext();
-
         // Icons for permissions that set to "ALLOW" or "BLOCK" are enabled.
         int[] enabledIcons = {R.id.notifications_button, R.id.mic_button, R.id.camera_button};
         for (int id : enabledIcons) {
             ImageView icon = (ImageView) dialogView.findViewById(id);
             Assert.assertEquals(
-                    AppCompatResources.getColorStateList(context, R.color.default_icon_color),
+                    AppCompatResources.getColorStateList(
+                            mActivityTestRule.getActivity(), R.color.default_icon_color_tint_list),
                     icon.getImageTintList());
             Assert.assertTrue(icon.isEnabled());
         }
 
         ImageView locationIcon = (ImageView) dialogView.findViewById(R.id.location_button);
-        Assert.assertEquals(
-                AppCompatResources.getColorStateList(context, R.color.default_icon_color_disabled),
+        Assert.assertEquals(AppCompatResources.getColorStateList(mActivityTestRule.getActivity(),
+                                    R.color.default_icon_color_disabled),
                 locationIcon.getImageTintList());
         Assert.assertFalse(locationIcon.isEnabled());
     }

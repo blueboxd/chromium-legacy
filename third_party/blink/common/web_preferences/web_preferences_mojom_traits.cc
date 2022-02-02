@@ -22,7 +22,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       !data.ReadSansSerifFontFamilyMap(&out->sans_serif_font_family_map) ||
       !data.ReadCursiveFontFamilyMap(&out->cursive_font_family_map) ||
       !data.ReadFantasyFontFamilyMap(&out->fantasy_font_family_map) ||
-      !data.ReadPictographFontFamilyMap(&out->pictograph_font_family_map) ||
       !data.ReadLazyFrameLoadingDistanceThresholdsPx(
           &out->lazy_frame_loading_distance_thresholds_px) ||
       !data.ReadLazyImageLoadingDistanceThresholdsPx(
@@ -80,7 +79,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.data_saver_holdback_web_api_enabled();
   out->local_storage_enabled = data.local_storage_enabled();
   out->databases_enabled = data.databases_enabled();
-  out->application_cache_enabled = data.application_cache_enabled();
   out->tabs_to_links = data.tabs_to_links();
   out->disable_ipc_flooding_protection = data.disable_ipc_flooding_protection();
   out->hyperlink_auditing_enabled = data.hyperlink_auditing_enabled();
@@ -101,6 +99,8 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->accelerated_2d_canvas_enabled = data.accelerated_2d_canvas_enabled();
   out->new_canvas_2d_api_enabled = data.new_canvas_2d_api_enabled();
   out->canvas_2d_layers_enabled = data.canvas_2d_layers_enabled();
+  out->canvas_context_lost_in_background_enabled =
+      data.canvas_context_lost_in_background_enabled();
   out->antialiased_2d_canvas_disabled = data.antialiased_2d_canvas_disabled();
   out->antialiased_clips_2d_canvas_enabled =
       data.antialiased_clips_2d_canvas_enabled();

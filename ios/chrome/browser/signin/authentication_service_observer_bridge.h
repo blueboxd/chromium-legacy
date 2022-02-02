@@ -7,7 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_observer.h"
@@ -15,7 +14,7 @@
 // Objective-C protocol mirroring AuthenticationService::Observer.
 @protocol AuthenticationServiceObserving <NSObject>
 @optional
-- (void)primaryAccountRestricted;
+- (void)onPrimaryAccountRestricted;
 @end
 
 // Simple observer bridge that forwards all events to its delegate observer.
@@ -23,10 +22,9 @@ class AuthenticationServiceObserverBridge
     : public AuthenticationServiceObserver {
  public:
   explicit AuthenticationServiceObserverBridge(
+      AuthenticationService* service,
       id<AuthenticationServiceObserving> observer);
   ~AuthenticationServiceObserverBridge() override;
-
-  void Observe(AuthenticationService* service);
 
   // AuthenticationServiceObserver implementation.
   void OnPrimaryAccountRestricted() override;

@@ -91,7 +91,6 @@ extern const char kWebKitSerifFontFamily[];
 extern const char kWebKitSansSerifFontFamily[];
 extern const char kWebKitCursiveFontFamily[];
 extern const char kWebKitFantasyFontFamily[];
-extern const char kWebKitPictographFontFamily[];
 
 // ISO 15924 four-letter script codes that per-script font prefs are supported
 // for.
@@ -105,7 +104,6 @@ extern const char kWebKitSerifFontFamilyMap[];
 extern const char kWebKitSansSerifFontFamilyMap[];
 extern const char kWebKitCursiveFontFamilyMap[];
 extern const char kWebKitFantasyFontFamilyMap[];
-extern const char kWebKitPictographFontFamilyMap[];
 
 // Per-script font prefs that have defaults, for easy reference when registering
 // the defaults.
@@ -293,6 +291,8 @@ extern const char kHatsUnlockDeviceIsSelected[];
 extern const char kHatsUnlockSurveyCycleEndTs[];
 extern const char kHatsSmartLockDeviceIsSelected[];
 extern const char kHatsSmartLockSurveyCycleEndTs[];
+extern const char kHatsArcGamesDeviceIsSelected[];
+extern const char kHatsArcGamesSurveyCycleEndTs[];
 extern const char kEolStatus[];
 extern const char kEndOfLifeDate[];
 extern const char kEolNotificationDismissed[];
@@ -684,7 +684,6 @@ extern const char kWebAppsDailyMetricsDate[];
 extern const char kWebAppsExtensionIDs[];
 extern const char kWebAppsAppAgnosticIphState[];
 extern const char kWebAppsLastPreinstallSynchronizeVersion[];
-extern const char kWebAppsMigratedPreinstalledApps[];
 extern const char kWebAppsDidMigrateDefaultChromeApps[];
 extern const char kWebAppsUninstalledDefaultChromeApps[];
 extern const char kWebAppsPreferences[];
@@ -857,12 +856,6 @@ extern const char kDnsOverHttpsMode[];
 extern const char kDnsOverHttpsTemplates[];
 extern const char kAdditionalDnsQueryTypesEnabled[];
 
-extern const char kRegisteredProtocolHandlers[];
-extern const char kIgnoredProtocolHandlers[];
-extern const char kPolicyRegisteredProtocolHandlers[];
-extern const char kPolicyIgnoredProtocolHandlers[];
-extern const char kCustomHandlersEnabled[];
-
 #if defined(OS_MAC)
 extern const char kUserRemovedLoginItem[];
 extern const char kChromeCreatedLoginItem[];
@@ -907,6 +900,10 @@ extern const char kRelaunchHeadsUpPeriod[];
 #if defined(OS_MAC)
 extern const char kMacRestoreLocationPermissionsExperimentCount[];
 #endif  // defined(OS_MAC)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kEnrollmentIdUploadedOnChromad[];
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_ANDROID)
 extern const char kAttemptedToEnableAutoupdate[];
@@ -995,8 +992,6 @@ extern const char kLatestVersionWhenClickedUpdateMenuItem[];
 #if defined(OS_ANDROID)
 extern const char kCommerceMerchantViewerMessagesShownTime[];
 #endif
-
-extern const char kComponentUpdatesEnabled[];
 
 #if defined(OS_ANDROID)
 extern const char kSearchGeolocationDisclosureDismissed[];
@@ -1179,6 +1174,8 @@ extern const char kFetchKeepaliveDurationOnShutdown[];
 
 extern const char kSuppressDifferentOriginSubframeJSDialogs[];
 
+extern const char kUserAgentReduction[];
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kPdfAnnotationsEnabled[];
 #endif
@@ -1202,6 +1199,7 @@ extern const char kLensRegionSearchEnabled[];
 #endif
 
 extern const char kPrivacyReviewShowWelcomeCard[];
+extern const char kPrivacyGuideViewed[];
 
 extern const char kCorsNonWildcardRequestHeadersSupport[];
 

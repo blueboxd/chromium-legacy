@@ -94,6 +94,13 @@ AX_BASE_EXPORT extern const base::Feature
 // following mode in Magnifier settings is enabled.
 AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
 
+// Enables ability to resize Docked Magnifier.
+AX_BASE_EXPORT extern const base::Feature kDockedMagnifierResizing;
+
+// Returns true if the feature which adds ability for user to grab and resize
+// bottom of Docked Magnifier is enabled.
+AX_BASE_EXPORT bool IsDockedMagnifierResizingEnabled();
+
 // Enables dictation to use on-device speech recognition when available.
 AX_BASE_EXPORT extern const base::Feature
     kExperimentalAccessibilityDictationOffline;
@@ -110,14 +117,6 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if the expeirmental accessibility feature to enable dictation
 // text editing commands is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationCommandsEnabled();
-
-// Enable a setup guide to walk through the steps of initially configuring
-// Switch Access.
-AX_BASE_EXPORT extern const base::Feature
-    kExperimentalAccessibilitySwitchAccessSetupGuide;
-
-// Returns true if setup guide for Switch Access is enabled.
-AX_BASE_EXPORT bool IsExperimentalAccessibilitySwitchAccessSetupGuideEnabled();
 
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;
@@ -161,6 +160,13 @@ AX_BASE_EXPORT extern const base::Feature kComputeAXMode;
 // Returns true if the IChromeAccessible COM API is enabled.
 AX_BASE_EXPORT bool IsComputeAXModeEnabled();
 #endif  // defined(OS_ANDROID)
+
+AX_BASE_EXPORT extern const base::Feature kReaderModeSidePanel;
+
+// Returns true if reader mode in a side panel is enabled. This feature shows
+// users websites, such as articles, in a comfortable reading experience in a
+// side panel.
+AX_BASE_EXPORT bool IsReaderModeSidePanelEnabled();
 
 }  // namespace features
 

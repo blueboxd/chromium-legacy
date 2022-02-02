@@ -10,8 +10,9 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "base/command_line.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "build/chromeos_buildflags.h"');
-GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
+GEN('#include "components/signin/public/base/signin_buildflags.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
 
@@ -30,7 +31,7 @@ class SigninBrowserTest extends PolymerTest {
 var SigninSyncConfirmationTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js';
+    return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js&host=webui-test';
   }
 };
 
@@ -38,6 +39,7 @@ TEST_F('SigninSyncConfirmationTest', 'Dialog', function() {
   mocha.run();
 });
 
+GEN('#if BUILDFLAG(ENABLE_DICE_SUPPORT)');
 /**
  * Test fixture for
  * chrome/browser/resources/signin/signin_reauth/signin_reauth.html.
@@ -47,7 +49,7 @@ var SigninReauthTest = class extends SigninBrowserTest {
   get browsePreload() {
     // See signin_metrics::ReauthAccessPoint for definition of the
     // "access_point" parameter.
-    return 'chrome://signin-reauth/test_loader.html?module=signin/signin_reauth_test.js&access_point=2';
+    return 'chrome://signin-reauth/test_loader.html?module=signin/signin_reauth_test.js&access_point=2&host=webui-test';
   }
 };
 
@@ -63,13 +65,14 @@ TEST_F('SigninReauthTest', 'Dialog', function() {
 var DiceWebSigninInterceptTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://signin-dice-web-intercept/test_loader.html?module=signin/dice_web_signin_intercept_test.js';
+    return 'chrome://signin-dice-web-intercept/test_loader.html?module=signin/dice_web_signin_intercept_test.js&host=webui-test';
   }
 };
 
 TEST_F('DiceWebSigninInterceptTest', 'Bubble', function() {
   mocha.run();
 });
+GEN('#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)');
 
 /**
  * Test fixture for
@@ -79,7 +82,7 @@ TEST_F('DiceWebSigninInterceptTest', 'Bubble', function() {
 var ProfileTypeChoiceTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/profile_type_choice_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_type_choice_test.js&host=webui-test';
   }
 };
 
@@ -96,7 +99,7 @@ TEST_F('ProfileTypeChoiceTest', 'Buttons', function() {
 var LocalProfileCustomizationTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/local_profile_customization_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/local_profile_customization_test.js&host=webui-test';
   }
 };
 
@@ -112,7 +115,7 @@ TEST_F('LocalProfileCustomizationTest', 'All', function() {
 var ProfilePickerAppTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/profile_picker_app_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_picker_app_test.js&host=webui-test';
   }
 };
 
@@ -128,7 +131,7 @@ TEST_F('ProfilePickerAppTest', 'All', function() {
 var ProfilePickerMainViewTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/profile_picker_main_view_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_picker_main_view_test.js&host=webui-test';
   }
 };
 
@@ -144,7 +147,7 @@ TEST_F('ProfilePickerMainViewTest', 'All', function() {
 var ProfileCardMenuTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/profile_card_menu_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_card_menu_test.js&host=webui-test';
   }
 };
 
@@ -160,7 +163,7 @@ TEST_F('ProfileCardMenuTest', 'All', function() {
 var ProfileSwitchTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/profile_switch_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_switch_test.js&host=webui-test';
   }
 };
 
@@ -176,7 +179,7 @@ TEST_F('ProfileSwitchTest', 'All', function() {
 var ProfileCustomizationTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-customization/test_loader.html?module=signin/profile_customization_test.js';
+    return 'chrome://profile-customization/test_loader.html?module=signin/profile_customization_test.js&host=webui-test';
   }
 };
 
@@ -192,7 +195,7 @@ TEST_F('ProfileCustomizationTest', 'Bubble', function() {
 var SigninEnterpriseProfileWelcomeTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://enterprise-profile-welcome/test_loader.html?module=signin/enterprise_profile_welcome_test.js';
+    return 'chrome://enterprise-profile-welcome/test_loader.html?module=signin/enterprise_profile_welcome_test.js&host=webui-test';
   }
 };
 
@@ -209,7 +212,7 @@ GEN('#if BUILDFLAG(IS_CHROMEOS_LACROS)');
 var AccountSelectionLacrosTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://profile-picker/test_loader.html?module=signin/account_selection_lacros_test.js';
+    return 'chrome://profile-picker/test_loader.html?module=signin/account_selection_lacros_test.js&host=webui-test';
   }
 };
 

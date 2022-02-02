@@ -7,7 +7,9 @@
 #include <memory>
 #include <ostream>
 
+#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -187,11 +189,11 @@ class WebFeedSubscriptionModel {
  private:
   // Each of these are non-null and guaranteed to remain valid for the lifetime
   // of WebFeedSubscriptionModel.
-  FeedStore* store_;
-  WebFeedIndex* index_;
+  raw_ptr<FeedStore> store_;
+  raw_ptr<WebFeedIndex> index_;
   // Owned by WebFeedSubscriptionCoordinator so that memory of recent
   // subscriptions is retained when the model is deleted.
-  std::vector<feedstore::WebFeedInfo>* recent_unsubscribed_;
+  raw_ptr<std::vector<feedstore::WebFeedInfo>> recent_unsubscribed_;
 
   // The current known state of subscriptions.
   std::vector<feedstore::WebFeedInfo> subscriptions_;
@@ -624,7 +626,9 @@ SubscriptionInfo WebFeedSubscriptionCoordinator::FindSubscriptionInfoById(
   return model_->GetSubscriptionInfo(web_feed_id);
 }
 
-void WebFeedSubscriptionCoordinator::RefreshRecommendedFeeds() {
+void WebFeedSubscriptionCoordinator::RefreshRecommendedFeeds(
+    base::OnceCallback<void(RefreshResult)> callback) {
+  on_refresh_recommended_feeds_.push_back(std::move(callback));
   WithModel(base::BindOnce(
       &WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsStart,
       base::Unretained(this)));
@@ -638,7 +642,7 @@ void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsIfStale() {
       base::Time::Now() - index_.GetRecommendedFeedsUpdateTime();
   if (staleness > GetFeedConfig().recommended_feeds_staleness_threshold ||
       staleness < -base::Hours(1)) {
-    RefreshRecommendedFeeds();
+    RefreshRecommendedFeeds(base::DoNothing());
   }
 }
 
@@ -658,11 +662,25 @@ void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsStart() {
 void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsComplete(
     FetchRecommendedWebFeedsTask::Result result) {
   DCHECK(model_);
+  feed::WebFeedSubscriptions::RefreshResult refresh_result;
+  refresh_result.success = false;
   fetching_recommended_web_feeds_ = false;
   feed_stream_->GetMetricsReporter().RefreshRecommendedWebFeedsAttempted(
       result.status, result.recommended_web_feeds.size());
-  if (result.status == WebFeedRefreshStatus::kSuccess)
+  if (result.status == WebFeedRefreshStatus::kSuccess) {
+    refresh_result.success = true;
     model_->UpdateRecommendedFeeds(std::move(result.recommended_web_feeds));
+  }
+  CallRefreshRecommendedFeedsCompleteCallbacks(refresh_result);
+}
+
+void WebFeedSubscriptionCoordinator::
+    CallRefreshRecommendedFeedsCompleteCallbacks(RefreshResult result) {
+  std::vector<base::OnceCallback<void(RefreshResult)>> callbacks;
+  on_refresh_recommended_feeds_.swap(callbacks);
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(result);
+  }
 }
 
 void WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsIfStale(

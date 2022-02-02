@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile_attributes_init_params.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
@@ -97,7 +98,7 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
   }
 #endif  // !defined(OS_ANDROID)
 
-  void CreateIdleProfile(std::string profile_name) {
+  void CreateIdleProfile(const std::string& profile_name) {
     ProfileAttributesInitParams params;
     params.profile_path =
         profile_manager()->profiles_dir().AppendASCII(profile_name);
@@ -106,21 +107,22 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
         std::move(params));
   }
 
-  TestingProfile* CreateActiveProfile(std::string profile_name) {
-    return profile_manager_.CreateTestingProfile(profile_name);
+  TestingProfile* CreateActiveProfile(const std::string& profile_name) {
+    return CreateActiveProfileWithPolicies(profile_name, nullptr);
   }
 
   TestingProfile* CreateActiveProfileWithPolicies(
-      std::string profile_name,
+      const std::string& profile_name,
       std::unique_ptr<policy::PolicyService> policy_service) {
     return profile_manager_.CreateTestingProfile(
         profile_name, {}, base::UTF8ToUTF16(profile_name), 0, {},
-        TestingProfile::TestingFactories(), absl::nullopt,
-        std::move(policy_service));
+        IdentityTestEnvironmentProfileAdaptor::
+            GetIdentityTestEnvironmentFactories(),
+        absl::nullopt, std::move(policy_service));
   }
 
 #if !defined(OS_ANDROID)
-  void CreateActiveProfileWithContent(std::string profile_name) {
+  void CreateActiveProfileWithContent(const std::string& profile_name) {
     TestingProfile* active_profile = CreateActiveProfile(profile_name);
 
     extensions::ExtensionRegistry* extension_registry =
@@ -140,6 +142,7 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
     base::RunLoop run_loop;
 
     browser_report_generator_.Generate(
+        ReportType::kFull,
         base::BindLambdaForTesting(
             [&run_loop, &request](std::unique_ptr<em::BrowserReport> report) {
               request->set_allocated_browser_report(report.release()),
@@ -219,7 +222,7 @@ class ReportRequestQueueGeneratorTest : public ::testing::Test {
  private:
   void FindAndRemove(std::set<std::string>& names, const std::string& name) {
     auto it = names.find(name);
-    EXPECT_NE(names.end(), it);
+    EXPECT_NE(names.end(), it) << "missing: " << name;
     names.erase(it);
   }
 

@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -110,9 +109,11 @@ class TestUpdater : public OnDemandUpdater {
   }
 
   // Registers a CRX component for updates.
-  bool RegisterComponent(const update_client::CrxComponent& component) {
+  bool RegisterComponent(const ComponentRegistration& component) {
     component_installers_[component.name] = component.installer;
-    component_id_to_name_[update_client::GetCrxComponentID(component)] =
+    update_client::CrxComponent crx;
+    crx.pk_hash = component.public_key_hash;
+    component_id_to_name_[update_client::GetCrxComponentID(crx)] =
         component.name;
     return true;
   }

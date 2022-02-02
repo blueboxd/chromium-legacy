@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_VR_VR_TAB_HELPER_H_
 #define CHROME_BROWSER_VR_VR_TAB_HELPER_H_
 
-#include "base/macros.h"
 #include "chrome/browser/vr/ui_suppressed_element.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -46,8 +45,6 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
   explicit VrTabHelper(content::WebContents* contents);
 
   friend class content::WebContentsUserData<VrTabHelper>;
-
-  content::WebContents* web_contents_;
 
   // If is_in_vr_ is true, that means that the only content displayed is
   // inside vr (for example, VR browsing or immersive experience

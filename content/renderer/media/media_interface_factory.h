@@ -6,12 +6,10 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_INTERFACE_FACTORY_H_
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
@@ -29,8 +27,7 @@ namespace content {
 // MediaInterfaceFactory is an implementation of media::mojom::InterfaceFactory
 // that provides thread safety and handles disconnection error automatically.
 // The Create* methods can be called on any thread.
-class CONTENT_EXPORT MediaInterfaceFactory final
-    : public media::mojom::InterfaceFactory {
+class MediaInterfaceFactory final : public media::mojom::InterfaceFactory {
  public:
   explicit MediaInterfaceFactory(
       blink::BrowserInterfaceBrokerProxy* interface_broker);
@@ -80,8 +77,7 @@ class CONTENT_EXPORT MediaInterfaceFactory final
       mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
           renderer_extension_receiver) final;
 #endif  // defined(OS_WIN)
-  void CreateCdm(const std::string& key_system,
-                 const media::CdmConfig& cdm_config,
+  void CreateCdm(const media::CdmConfig& cdm_config,
                  CreateCdmCallback callback) final;
 
  private:

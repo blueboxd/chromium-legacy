@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -76,8 +77,8 @@ class TabGroupHighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
  private:
-  const views::View* const chip_;
-  const views::View* const title_;
+  const raw_ptr<const views::View> chip_;
+  const raw_ptr<const views::View> title_;
 };
 
 }  // namespace
@@ -306,6 +307,17 @@ std::u16string TabGroupHeader::GetTooltipText(const gfx::Point& p) const {
         IDS_TAB_GROUPS_UNNAMED_GROUP_TOOLTIP,
         tab_strip_->controller()->GetGroupContentString(group().value()));
   }
+}
+
+gfx::Rect TabGroupHeader::GetAnchorBoundsInScreen() const {
+  // Skip the insetting in TabSlotView::GetAnchorBoundsInScreen(). In this
+  // context insetting makes the anchored bubble partially cut into the tab
+  // outline.
+  // TODO(crbug.com/1268481): See if the layout of TabGroupHeader can be unified
+  // with tabs so that bounds do not need to be calculated differently between
+  // tabs and headers. As of writing this, hover cards to not cut into the tab
+  // outline but without this change TabGroupEditorBubbleView does.
+  return View::GetAnchorBoundsInScreen();
 }
 
 TabSlotView::ViewType TabGroupHeader::GetTabSlotViewType() const {

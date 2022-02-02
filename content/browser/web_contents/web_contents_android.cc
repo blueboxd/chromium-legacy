@@ -356,10 +356,10 @@ bool WebContentsAndroid::IsLoading(JNIEnv* env,
   return web_contents_->IsLoading();
 }
 
-bool WebContentsAndroid::IsLoadingToDifferentDocument(
+bool WebContentsAndroid::ShouldShowLoadingUI(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {
-  return web_contents_->IsLoadingToDifferentDocument();
+  return web_contents_->ShouldShowLoadingUI();
 }
 
 void WebContentsAndroid::DispatchBeforeUnload(JNIEnv* env,
@@ -525,9 +525,8 @@ void WebContentsAndroid::ScrollFocusedEditableNodeIntoView(
   auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
-  RenderFrameHostImpl* rfh = web_contents_->GetMainFrame();
   bool should_overlay_content =
-      rfh && rfh->ShouldVirtualKeyboardOverlayContent();
+      web_contents_->GetPrimaryPage().virtual_keyboard_overlays_content();
   if (!should_overlay_content)
     input_handler->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
 }
@@ -540,13 +539,17 @@ void WebContentsAndroid::SelectWordAroundCaretAck(bool did_select,
     rwhva->SelectWordAroundCaretAck(did_select, start_adjust, end_adjust);
 }
 
-void WebContentsAndroid::SelectWordAroundCaret(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
+void WebContentsAndroid::SelectAroundCaret(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj,
+                                           jint granularity,
+                                           jboolean should_show_handle,
+                                           jboolean should_show_context_menu) {
   auto* input_handler = web_contents_->GetFocusedFrameWidgetInputHandler();
   if (!input_handler)
     return;
-  input_handler->SelectWordAroundCaret(
+  input_handler->SelectAroundCaret(
+      static_cast<blink::mojom::SelectionGranularity>(granularity),
+      should_show_handle, should_show_context_menu,
       base::BindOnce(&WebContentsAndroid::SelectWordAroundCaretAck,
                      weak_factory_.GetWeakPtr()));
 }

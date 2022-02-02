@@ -56,6 +56,8 @@ per-file exo_parts.*=oshima@chromium.org
 per-file flag-never-expire-list.json=avi@chromium.org
 per-file flag-never-expire-list.json=ellyjones@chromium.org
 
+per-file load_library_perf_test.*=xhwang@chromium.org
+
 per-file *.mm=avi@chromium.org
 per-file *.mm=mark@chromium.org
 per-file *.mm=rsesek@chromium.org
@@ -90,3 +92,5 @@ per-file chrome_back_forward_cache_browsertest.cc=file://content/OWNERS
 
 # Web Platform security metrics tests:
 per-file chrome_web_platform_security_metrics_browsertest.cc=file://content/OWNERS
+
+per-file universal_web_contents_helpers.*=file://content/OWNERS

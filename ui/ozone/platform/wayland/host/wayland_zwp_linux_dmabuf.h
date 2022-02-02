@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
@@ -108,7 +107,7 @@ class WaylandZwpLinuxDmabuf
 
   // Contains callbacks for requests to create |wl_buffer|s using
   // |zwp_linux_dmabuf_| factory.
-  base::flat_map<struct zwp_linux_buffer_params_v1*,
+  base::flat_map<wl::Object<zwp_linux_buffer_params_v1>,
                  wl::OnRequestBufferCallback>
       pending_params_;
 };

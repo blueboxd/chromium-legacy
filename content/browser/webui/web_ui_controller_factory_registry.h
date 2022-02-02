@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_WEBUI_WEB_UI_CONTROLLER_FACTORY_REGISTRY_H_
 #define CONTENT_BROWSER_WEBUI_WEB_UI_CONTROLLER_FACTORY_REGISTRY_H_
 
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/web_ui_controller_factory.h"
 
@@ -13,8 +12,7 @@ namespace content {
 
 // A singleton which holds on to all the registered WebUIControllerFactory
 // instances.
-class CONTENT_EXPORT WebUIControllerFactoryRegistry
-    : public WebUIControllerFactory {
+class WebUIControllerFactoryRegistry : public WebUIControllerFactory {
  public:
   static WebUIControllerFactoryRegistry* GetInstance();
 

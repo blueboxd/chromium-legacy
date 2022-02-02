@@ -7,23 +7,27 @@
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "base/containers/contains.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/eche_app/app_id.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -95,11 +99,13 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     const std::string& app_id,
     Profile* profile) {
   // These file manager apps have a shelf presence, but can only be launched
-  // when provided a filename to open. Likewise, the feedback extension needs
-  // context when launching. Pinning these creates an item that does nothing.
+  // when provided a filename to open. Likewise, the feedback extension, the
+  // Eche application need context when launching. Pinning these creates an
+  // item that does nothing.
   const char* kNoPinAppIds[] = {
       file_manager::kAudioPlayerAppId,
       extension_misc::kFeedbackExtensionId,
+      ash::eche_app::kEcheAppId,
   };
   if (base::Contains(kNoPinAppIds, app_id))
     return AppListControllerDelegate::NO_PIN;
@@ -155,22 +161,18 @@ void PinAppWithIDToShelf(const std::string& app_id) {
   auto* shelf_model = shelf_controller->shelf_model();
   if (shelf_model->ItemIndexByAppID(app_id) >= 0) {
     shelf_model->PinExistingItemWithID(app_id);
-    return;
-  }
-
-  ash::ShelfItem item;
-  std::unique_ptr<ash::ShelfItemDelegate> delegate;
-  bool result = shelf_controller->shelf_item_factory()->CreateShelfItemForAppId(
-      app_id, &item, &delegate);
-  if (result) {
-    item.type = ash::TYPE_PINNED_APP;
-    shelf_model->Add(item, std::move(delegate));
+  } else {
+    shelf_model->AddAndPinAppWithFactoryConstructedDelegate(app_id);
   }
 }
 
 void UnpinAppWithIDFromShelf(const std::string& app_id) {
   auto* shelf_controller = ChromeShelfController::instance();
   shelf_controller->shelf_model()->UnpinAppWithID(app_id);
+}
+
+bool IsAppWithIDPinnedToShelf(const std::string& app_id) {
+  return ChromeShelfController::instance()->shelf_model()->IsAppPinned(app_id);
 }
 
 apps::mojom::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
@@ -188,5 +190,23 @@ apps::mojom::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
       return apps::mojom::LaunchSource::kFromAppListRecommendation;
     case ash::LAUNCH_FROM_SHELF:
       return apps::mojom::LaunchSource::kFromShelf;
+  }
+}
+
+bool BrowserAppShelfControllerShouldHandleApp(const std::string& app_id,
+                                              Profile* profile) {
+  if (!web_app::IsWebAppsCrosapiEnabled()) {
+    return false;
+  }
+  auto* proxy =
+      apps::AppServiceProxyFactory::GetInstance()->GetForProfile(profile);
+  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
+  switch (app_type) {
+    case apps::mojom::AppType::kWeb:
+    case apps::mojom::AppType::kSystemWeb:
+    case apps::mojom::AppType::kStandaloneBrowser:
+      return true;
+    default:
+      return false;
   }
 }

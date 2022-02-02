@@ -15,6 +15,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,6 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -49,7 +51,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/browser/signin/identity_browser_test_base.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -64,6 +65,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
+#include "chrome/browser/ui/startup/startup_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -94,6 +96,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -108,14 +111,18 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/webview/webview.h"
 #include "url/gurl.h"
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/callback.h"
+#include "base/json/values_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
-#include "chrome/browser/ui/webui/welcome/helpers.h"
+#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/webui/signin/profile_picker_handler.h"
+#include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -131,6 +138,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "ui/views/widget/any_widget_observer.h"
 #include "ui/views/widget/widget.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/webui/welcome/helpers.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
@@ -209,8 +220,8 @@ void DisableWelcomePages(const std::vector<Profile*>& profiles) {
 Browser* OpenNewBrowser(Profile* profile) {
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl creator(base::FilePath(), dummy,
-                                    chrome::startup::IS_FIRST_RUN);
-  creator.Launch(profile, false, nullptr);
+                                    chrome::startup::IsFirstRun::kYes);
+  creator.Launch(profile, chrome::startup::IsProcessStartup::kNo, nullptr);
   return chrome::FindBrowserWithProfile(profile);
 }
 
@@ -219,6 +230,26 @@ Browser* CloseBrowserAndOpenNew(Browser* browser, Profile* profile) {
   ui_test_utils::WaitForBrowserToClose(browser);
   return OpenNewBrowser(profile);
 }
+
+bool HasInfoBar(infobars::ContentInfoBarManager* infobar_manager,
+                const infobars::InfoBarDelegate::InfoBarIdentifier identifier) {
+  for (size_t i = 0; i < infobar_manager->infobar_count(); i++) {
+    infobars::InfoBar* infobar = infobar_manager->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() == identifier) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+struct StartupBrowserCreatorFlagTypeValue {
+  std::string flag;
+  infobars::InfoBarDelegate::InfoBarIdentifier infobar_identifier;
+  // True if the infobar is supposed to be shown in every tab, false if it is
+  // only supposed to be shown once.
+  bool is_global_infobar;
+};
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -383,12 +414,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenURLsPopup) {
   ASSERT_EQ(popup, observer.added_browser_);
 
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
+  chrome::startup::IsFirstRun first_run =
+      first_run::IsChromeFirstRun() ? chrome::startup::IsFirstRun::kYes
+                                    : chrome::startup::IsFirstRun::kNo;
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
   // This should create a new window, but re-use the profile from |popup|. If
   // it used a null or invalid profile, it would crash.
-  launch.OpenURLsInBrowser(popup, false, urls);
+  launch.OpenURLsInBrowser(popup, chrome::startup::IsProcessStartup::kNo, urls);
   ASSERT_NE(popup, observer.added_browser_);
   BrowserList::RemoveObserver(&observer);
 }
@@ -486,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlShortcut) {
   command_line.AppendSwitchASCII(switches::kApp, url.spec());
 
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
 
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -532,7 +564,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppUrlIncognitoShortcut) {
   Browser* incognito = CreateIncognitoBrowser();
 
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       incognito->profile(), {}));
 
   Browser* new_browser = FindOneOtherBrowser(incognito);
@@ -712,7 +744,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
 
   if (IsExpectedToAllowLaunch()) {
@@ -750,7 +782,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
 
   if (IsExpectedToAllowLaunch()) {
@@ -789,7 +821,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
 
   if (IsExpectedToAllowLaunch()) {
@@ -841,7 +873,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorChromeAppShortcutTest,
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
 
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
   tab_waiter.Wait();
 
@@ -898,7 +930,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ValidNotificationLaunchId) {
       L"1|1|0|Default|0|https://example.com/|notification_id");
 
   ASSERT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
 
   // The launch delegates to the notification system and doesn't open any new
@@ -912,7 +944,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, InvalidNotificationLaunchId) {
   command_line.AppendSwitchNative(switches::kNotificationLaunchId, L"");
   StartupBrowserCreator browser_creator;
   ASSERT_FALSE(StartupBrowserCreator().ProcessCmdLineImpl(
-      command_line, base::FilePath(), /*process_startup=*/false,
+      command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
       browser()->profile(), {}));
 
   // No new browser window is open.
@@ -1079,6 +1111,20 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, PRE_UpdateWithTwoProfiles) {
     ASSERT_TRUE(profile2);
   }
   DisableWelcomePages({profile1, profile2});
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros only supports syncing profiles for now.
+  // TODO(https://crbug.com/1260291): Revisit this once non-syncing profiles
+  // are allowed.
+  ProfileAttributesStorage* attributes_storage =
+      &profile_manager->GetProfileAttributesStorage();
+  attributes_storage->GetProfileAttributesWithPath(profile1->GetPath())
+      ->SetAuthInfo("gaia_id_1", u"email_1",
+                    /*is_consented_primary_account=*/true);
+  attributes_storage->GetProfileAttributesWithPath(profile2->GetPath())
+      ->SetAuthInfo("gaia_id_2", u"email_2",
+                    /*is_consented_primary_account=*/true);
+#endif
 
   // Don't delete Profiles too early.
   ScopedProfileKeepAlive profile1_keep_alive(
@@ -1677,8 +1723,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorRestartTest,
   SessionRestoreTestHelper restore_waiter;
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl creator(base::FilePath(), dummy,
-                                    chrome::startup::IS_NOT_FIRST_RUN);
-  creator.Launch(test_profile, false, nullptr);
+                                    chrome::startup::IsFirstRun::kNo);
+  creator.Launch(test_profile, chrome::startup::IsProcessStartup::kNo, nullptr);
   restore_waiter.Wait();
 
   // We expect a browser to open, but we should NOT get a duplicate app.
@@ -1719,18 +1765,12 @@ class BrowserAddedObserver : public BrowserListObserver {
   }
 
  private:
-  Browser* browser_ = nullptr;
+  raw_ptr<Browser> browser_ = nullptr;
   base::RunLoop run_loop_;
 };
 
-class StartupBrowserWithWebAppTest : public StartupBrowserCreatorTest,
-                                     public testing::WithParamInterface<bool> {
+class StartupBrowserWithWebAppTest : public StartupBrowserCreatorTest {
  protected:
-  StartupBrowserWithWebAppTest() {
-    scoped_feature_list_.InitWithFeatureState(
-        features::kDesktopPWAsFileHandlingSettingsGated, GetParam());
-  }
-
   void SetUpCommandLine(base::CommandLine* command_line) override {
     StartupBrowserCreatorTest::SetUpCommandLine(command_line);
     if (GetTestPreCount() == 1) {
@@ -1744,7 +1784,7 @@ class StartupBrowserWithWebAppTest : public StartupBrowserCreatorTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
                        PRE_PRE_LastUsedProfilesWithWebApp) {
   // Simulate a browser restart by creating the profiles in the PRE_PRE part.
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -1766,6 +1806,21 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
         dest_path.Append(FILE_PATH_LITERAL("New Profile 2")));
     ASSERT_TRUE(profile2);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Lacros only supports syncing profiles for now.
+  // TODO(https://crbug.com/1260291): Revisit this once non-syncing profiles
+  // are allowed.
+  ProfileAttributesStorage* attributes_storage =
+      &profile_manager->GetProfileAttributesStorage();
+  attributes_storage->GetProfileAttributesWithPath(profile1->GetPath())
+      ->SetAuthInfo("gaia_id_1", u"email_1",
+                    /*is_consented_primary_account=*/true);
+  attributes_storage->GetProfileAttributesWithPath(profile2->GetPath())
+      ->SetAuthInfo("gaia_id_2", u"email_2",
+                    /*is_consented_primary_account=*/true);
+#endif
+
   DisableWelcomePages({profile1, profile2});
 
   // Open some urls with the browsers, and close them.
@@ -1820,7 +1875,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
                        PRE_LastUsedProfilesWithWebApp) {
   BrowserAddedObserver added_observer;
   content::RunAllTasksUntilIdle();
@@ -1837,7 +1892,7 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
   CloseBrowserAsynchronously(browser());
 }
 
-IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
+IN_PROC_BROWSER_TEST_F(StartupBrowserWithWebAppTest,
                        LastUsedProfilesWithWebApp) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
@@ -1878,10 +1933,6 @@ IN_PROC_BROWSER_TEST_P(StartupBrowserWithWebAppTest,
   tab_strip = new_browser->tab_strip_model();
   EXPECT_EQ("/title2.html", tab_strip->GetWebContentsAt(0)->GetURL().path());
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         StartupBrowserWithWebAppTest,
-                         ::testing::Values(true, false));
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 class StartupBrowserWithRealWebAppTest : public StartupBrowserCreatorTest {
@@ -2020,9 +2071,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWithRealWebAppTest,
   // Trigger the restore via StartupBrowserCreator.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy,
-                                   chrome::startup::IS_NOT_FIRST_RUN);
+                                   chrome::startup::IsFirstRun::kNo);
   // Fake |process_startup| true.
-  EXPECT_TRUE(launch.Launch(profile1, /* process_startup */ true, nullptr));
+  EXPECT_TRUE(launch.Launch(profile1, chrome::startup::IsProcessStartup::kYes,
+                            nullptr));
 
   // We should get two windows from profile1.
   ASSERT_EQ(3u, BrowserList::GetInstance()->size());
@@ -2823,8 +2875,6 @@ class StartupBrowserWebAppProtocolAndFileHandlingTest
     : public StartupBrowserWebAppProtocolHandlingTest {
   base::test::ScopedFeatureList feature_list_{
       blink::features::kFileHandlingAPI};
-  base::test::ScopedFeatureList feature_list2_{
-      features::kDesktopPWAsFileHandlingSettingsGated};
 };
 
 // Verifies that a "file://" URL on the command line is treated as a file
@@ -2885,7 +2935,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWebAppProtocolAndFileHandlingTest,
 class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  public:
   StartupBrowserCreatorFirstRunTest() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
     scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
+#endif
   }
   StartupBrowserCreatorFirstRunTest(const StartupBrowserCreatorFirstRunTest&) =
       delete;
@@ -2936,8 +2988,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTab) {
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
 
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
-                                   chrome::startup::IS_FIRST_RUN);
-  ASSERT_TRUE(launch.Launch(browser()->profile(), false, nullptr));
+                                   chrome::startup::IsFirstRun::kYes);
+  ASSERT_TRUE(launch.Launch(browser()->profile(),
+                            chrome::startup::IsProcessStartup::kNo, nullptr));
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -2992,8 +3045,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
-                                   chrome::startup::IS_FIRST_RUN);
-  ASSERT_TRUE(launch.Launch(browser()->profile(), true, nullptr));
+                                   chrome::startup::IsFirstRun::kYes);
+  ASSERT_TRUE(launch.Launch(browser()->profile(),
+                            chrome::startup::IsProcessStartup::kYes, nullptr));
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -3038,8 +3092,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   // Do a process-startup browser launch.
   base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
   StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
-                                   chrome::startup::IS_FIRST_RUN);
-  ASSERT_TRUE(launch.Launch(browser()->profile(), true, nullptr));
+                                   chrome::startup::IsFirstRun::kYes);
+  ASSERT_TRUE(launch.Launch(browser()->profile(),
+                            chrome::startup::IsProcessStartup::kYes, nullptr));
 
   // This should have created a new browser window.
   Browser* new_browser = FindOneOtherBrowser(browser());
@@ -3092,10 +3147,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   std::string new_tab_url1 =
       tab_strip1->GetWebContentsAt(0)->GetURL().possibly_invalid_spec();
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // On Lacros Welcome page appears in the new (non-main) profile only if
-  // account consistency is not enabled.
-  should_show_welcome =
-      !base::FeatureList::IsEnabled(kMultiProfileAccountConsistency);
+  // Welcome page should not be shown on Lacros.
+  // (about:blank or new tab page will be shown instead)
+  should_show_welcome = false;
 #endif
   if (should_show_welcome)
     EXPECT_EQ(chrome::kChromeUIWelcomeURL, new_tab_url1);
@@ -3250,17 +3304,20 @@ enum class CommandLineFlagSecurityWarningsPolicy {
 class StartupBrowserCreatorInfobarsTest
     : public InProcessBrowserTest,
       public ::testing::WithParamInterface<
-          CommandLineFlagSecurityWarningsPolicy> {
+          std::tuple<StartupBrowserCreatorFlagTypeValue,
+                     CommandLineFlagSecurityWarningsPolicy>> {
  public:
-  StartupBrowserCreatorInfobarsTest() : policy_(GetParam()) {}
+  StartupBrowserCreatorInfobarsTest()
+      : flag_type_(std::get<0>(GetParam())), policy_(std::get<1>(GetParam())) {}
 
  protected:
   infobars::ContentInfoBarManager* LaunchBrowserAndGetCreatedInfoBarManager(
       const base::CommandLine& command_line) {
     Profile* profile = browser()->profile();
     StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
-                                     chrome::startup::IS_NOT_FIRST_RUN);
-    EXPECT_TRUE(launch.Launch(profile, true, nullptr));
+                                     chrome::startup::IsFirstRun::kNo);
+    EXPECT_TRUE(launch.Launch(profile, chrome::startup::IsProcessStartup::kYes,
+                              nullptr));
 
     // This should have created a new browser window.
     Browser* new_browser = FindOneOtherBrowser(browser());
@@ -3270,6 +3327,7 @@ class StartupBrowserCreatorInfobarsTest
         new_browser->tab_strip_model()->GetWebContentsAt(0));
   }
 
+  const StartupBrowserCreatorFlagTypeValue flag_type_;
   const CommandLineFlagSecurityWarningsPolicy policy_;
 
  private:
@@ -3295,61 +3353,216 @@ class StartupBrowserCreatorInfobarsTest
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
-IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest,
-                       CheckInfobarForEnableAutomation) {
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest, CheckInfobar) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kEnableAutomation);
+  // We deliberately set the flag on the process command line instead of on the
+  // command_line passed to the StartupBrowserCreator, because these flags are
+  // all read from CommandLine::ForCurrentProcess and ignore the command line
+  // passed to StartupBrowserCreator. In browser tests, this references the
+  // browser test's instead of the new process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(flag_type_.flag);
   infobars::ContentInfoBarManager* infobar_manager =
       LaunchBrowserAndGetCreatedInfoBarManager(command_line);
   ASSERT_TRUE(infobar_manager);
 
-  bool found_automation_infobar = false;
-  for (size_t i = 0; i < infobar_manager->infobar_count(); i++) {
-    infobars::InfoBar* infobar = infobar_manager->infobar_at(i);
-    if (infobar->delegate()->GetIdentifier() ==
-        infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE) {
-      found_automation_infobar = true;
-    }
-  }
-
-  EXPECT_EQ(found_automation_infobar,
+  EXPECT_EQ(HasInfoBar(infobar_manager, flag_type_.infobar_identifier),
             policy_ != CommandLineFlagSecurityWarningsPolicy::kDisabled);
 }
 
 IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest,
-                       CheckInfobarForBadFlag) {
+                       CheckInfobarIsShownForWebApps) {
+  // We deliberately set the flag on the process command line instead of on the
+  // command_line passed to the StartupBrowserCreator, because these flags are
+  // all read from CommandLine::ForCurrentProcess and ignore the command line
+  // passed to StartupBrowserCreator. In browser tests, this references the
+  // browser test's instead of the new process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(flag_type_.flag);
+
+  Profile* test_profile = browser()->profile();
+  // Install web app
+  GURL example_url("http://www.example.com");
+  web_app::AppId app_id = InstallPWA(test_profile, example_url);
+
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  // Test one of the flags from |bad_flags_prompt.cc|. Any of the flags should
-  // have the same behavior.
-  command_line.AppendSwitch(switches::kDisableWebSecurity);
-  // BadFlagsPrompt::ShowBadFlagsPrompt uses CommandLine::ForCurrentProcess
-  // instead of the command-line passed to StartupBrowserCreator. In browser
-  // tests, this references the browser test's instead of the new process.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableWebSecurity);
+  command_line.AppendSwitchASCII(switches::kAppId, app_id);
+
   infobars::ContentInfoBarManager* infobar_manager =
       LaunchBrowserAndGetCreatedInfoBarManager(command_line);
   ASSERT_TRUE(infobar_manager);
 
-  bool found_bad_flags_infobar = false;
-  for (size_t i = 0; i < infobar_manager->infobar_count(); i++) {
-    infobars::InfoBar* infobar = infobar_manager->infobar_at(i);
-    if (infobar->delegate()->GetIdentifier() ==
-        infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE) {
-      found_bad_flags_infobar = true;
-    }
-  }
-
-  EXPECT_EQ(found_bad_flags_infobar,
+  EXPECT_EQ(HasInfoBar(infobar_manager, flag_type_.infobar_identifier),
             policy_ != CommandLineFlagSecurityWarningsPolicy::kDisabled);
+}
+
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest,
+                       CheckInfobarIsShownForAppUrlShortcuts) {
+  // We deliberately set the flag on the process command line instead of on the
+  // command_line passed to the StartupBrowserCreator, because these flags are
+  // all read from CommandLine::ForCurrentProcess and ignore the command line
+  // passed to StartupBrowserCreator. In browser tests, this references the
+  // browser test's instead of the new process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(flag_type_.flag);
+
+  // Add --app=<url> to the command line. Tests launching legacy apps which may
+  // have been created by "Add to Desktop" in old versions of Chrome.
+  // TODO(mgiuca): Delete this feature (https://crbug.com/751029). We are
+  // keeping it for now to avoid disrupting existing workflows.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(FILE_PATH_LITERAL("title2.html")));
+  command_line.AppendSwitchASCII(switches::kApp, url.spec());
+
+  infobars::ContentInfoBarManager* infobar_manager =
+      LaunchBrowserAndGetCreatedInfoBarManager(command_line);
+  ASSERT_TRUE(infobar_manager);
+
+  EXPECT_EQ(HasInfoBar(infobar_manager, flag_type_.infobar_identifier),
+            policy_ != CommandLineFlagSecurityWarningsPolicy::kDisabled);
+}
+
+// The trybots set the kNoSandbox flag when running browser tests with the
+// address sanitizer enabled, which contradicts with the assumption of this test
+// that there is no bad flag on the process command line.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CheckInfobarOnlyUsesProcessCommandLine \
+  DISABLED_CheckInfobarOnlyUsesProcessCommandLine
+#else
+#define MAYBE_CheckInfobarOnlyUsesProcessCommandLine \
+  CheckInfobarOnlyUsesProcessCommandLine
+#endif
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsTest,
+                       MAYBE_CheckInfobarOnlyUsesProcessCommandLine) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  // The flag should not result in an infobar when not set on the process
+  // command line via CommandLine::ForCurrentProcess.
+  command_line.AppendArg(flag_type_.flag);
+  infobars::ContentInfoBarManager* infobar_manager =
+      LaunchBrowserAndGetCreatedInfoBarManager(command_line);
+  ASSERT_TRUE(infobar_manager);
+
+  EXPECT_FALSE(HasInfoBar(infobar_manager, flag_type_.infobar_identifier));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     PolicyControl,
     StartupBrowserCreatorInfobarsTest,
-    ::testing::Values(CommandLineFlagSecurityWarningsPolicy::kNoPolicy,
-                      CommandLineFlagSecurityWarningsPolicy::kEnabled,
-                      CommandLineFlagSecurityWarningsPolicy::kDisabled));
+    ::testing::Combine(
+        ::testing::Values(
+            StartupBrowserCreatorFlagTypeValue{
+                switches::kEnableAutomation,
+                infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE},
+            // Test one of the flags from |bad_flags_prompt.cc|. Any of the
+            // flags should have the same behavior.
+            StartupBrowserCreatorFlagTypeValue{
+                switches::kDisableWebSecurity,
+                infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE}),
+        ::testing::Values(CommandLineFlagSecurityWarningsPolicy::kNoPolicy,
+                          CommandLineFlagSecurityWarningsPolicy::kEnabled,
+                          CommandLineFlagSecurityWarningsPolicy::kDisabled)),
+    [](const testing::TestParamInfo<
+        StartupBrowserCreatorInfobarsTest::ParamType>& info) {
+      std::string policyState;
+      switch (std::get<1>(info.param)) {
+        case CommandLineFlagSecurityWarningsPolicy::kNoPolicy:
+          policyState = "no policy";
+          break;
+        case CommandLineFlagSecurityWarningsPolicy::kEnabled:
+          policyState = "policy enabled";
+          break;
+        case CommandLineFlagSecurityWarningsPolicy::kDisabled:
+          policyState = "policy disabled";
+          break;
+      }
+
+      std::string name = std::get<0>(info.param).flag + " " + policyState;
+      std::replace_if(
+          name.begin(), name.end(), [](char c) { return !std::isalnum(c); },
+          '_');
+      return name;
+    });
+
+// Verifies that infobars are displayed in the first browser window, even when
+// the browser is started without an initial browser window by passing the
+// `switches::kNoStartupWindow` command line switch.
+class StartupBrowserCreatorInfobarsWithoutStartupWindowTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<StartupBrowserCreatorFlagTypeValue> {
+ public:
+  StartupBrowserCreatorInfobarsWithoutStartupWindowTest()
+      : flag_type_(GetParam()) {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kNoStartupWindow);
+    command_line->AppendSwitch(switches::kKeepAliveForTest);
+  }
+
+  infobars::ContentInfoBarManager* LaunchBrowserAndGetCreatedInfoBarManager() {
+    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+
+    StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
+                                     chrome::startup::IsFirstRun::kNo);
+    EXPECT_TRUE(launch.Launch(profile, chrome::startup::IsProcessStartup::kNo,
+                              nullptr));
+    Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
+
+    return infobars::ContentInfoBarManager::FromWebContents(
+        new_browser->tab_strip_model()->GetWebContentsAt(0));
+  }
+
+  const StartupBrowserCreatorFlagTypeValue flag_type_;
+};
+
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorInfobarsWithoutStartupWindowTest,
+                       CheckInfobar) {
+  // We deliberately set the flag on the process command line instead of on the
+  // command_line passed to the StartupBrowserCreator, because these flags are
+  // all read from `CommandLine::ForCurrentProcess` and ignore the command line
+  // passed to `StartupBrowserCreator`. In browser tests, this references the
+  // browser test's instead of the new process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(flag_type_.flag);
+
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+  infobars::ContentInfoBarManager* infobar_manager =
+      LaunchBrowserAndGetCreatedInfoBarManager();
+  ASSERT_TRUE(infobar_manager);
+  EXPECT_TRUE(HasInfoBar(infobar_manager, flag_type_.infobar_identifier));
+
+  // Now close and reopen the browser again - and re-check if the infobar is
+  // there.
+  CloseBrowserSynchronously(BrowserList::GetInstance()->GetLastActive());
+
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+  infobar_manager = LaunchBrowserAndGetCreatedInfoBarManager();
+  ASSERT_TRUE(infobar_manager);
+  EXPECT_EQ(flag_type_.is_global_infobar,
+            HasInfoBar(infobar_manager, flag_type_.infobar_identifier));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    StartupBrowserCreatorInfobarsWithoutStartupWindowTest,
+    ::testing::Values(
+        StartupBrowserCreatorFlagTypeValue{
+            switches::kEnableAutomation,
+            infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE, true},
+        // Test one of the flags from |bad_flags_prompt.cc|. Any of the
+        // flags should have the same behavior.
+        StartupBrowserCreatorFlagTypeValue{
+            switches::kDisableWebSecurity,
+            infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE, false}),
+    [](const testing::TestParamInfo<
+        StartupBrowserCreatorInfobarsWithoutStartupWindowTest::ParamType>&
+           info) {
+      std::string name = info.param.flag;
+      std::replace_if(
+          name.begin(), name.end(), [](char c) { return !std::isalnum(c); },
+          '_');
+      return name;
+    });
 
 #endif  // !defined(OS_CHROMEOS)
 
@@ -3365,12 +3578,19 @@ class StartupBrowserCreatorInfobarsKioskTest : public InProcessBrowserTest {
   LaunchKioskBrowserAndGetCreatedInfoBarManager(
       const std::string& extra_switch) {
     Profile* profile = browser()->profile();
+
+    // CommandLine::ForCurrentProcess is used to determine whether kiosk mode is
+    // enabled instead of the command-line passed to StartupBrowserCreator. In
+    // browser tests, this references the browser test's instead of the new
+    // process.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kKioskMode);
+
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitch(switches::kKioskMode);
     command_line.AppendSwitch(extra_switch);
     StartupBrowserCreatorImpl launch(base::FilePath(), command_line,
-                                     chrome::startup::IS_NOT_FIRST_RUN);
-    EXPECT_TRUE(launch.Launch(profile, true, nullptr));
+                                     chrome::startup::IsFirstRun::kNo);
+    EXPECT_TRUE(launch.Launch(profile, chrome::startup::IsProcessStartup::kYes,
+                              nullptr));
 
     // This should have created a new browser window.
     Browser* new_browser = FindOneOtherBrowser(browser());
@@ -3386,21 +3606,22 @@ class StartupBrowserCreatorInfobarsKioskTest : public InProcessBrowserTest {
 // Verify that the Automation Enabled infobar is still shown in Kiosk mode.
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorInfobarsKioskTest,
                        CheckInfobarForEnableAutomation) {
+  // CommandLine::ForCurrentProcess is used to determine whether automation is
+  // enabled instead of the command-line passed to StartupBrowserCreator. In
+  // browser tests, this references the browser test's instead of the new
+  // process.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAutomation);
+
+  // Passing the kEnableAutomation argument here presently does not do
+  // anything because of the aforementioned limitation.
   infobars::ContentInfoBarManager* infobar_manager =
       LaunchKioskBrowserAndGetCreatedInfoBarManager(
           switches::kEnableAutomation);
   ASSERT_TRUE(infobar_manager);
 
-  bool found_automation_infobar = false;
-  for (size_t i = 0; i < infobar_manager->infobar_count(); i++) {
-    infobars::InfoBar* infobar = infobar_manager->infobar_at(i);
-    if (infobar->delegate()->GetIdentifier() ==
-        infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE) {
-      found_automation_infobar = true;
-    }
-  }
-
-  EXPECT_TRUE(found_automation_infobar);
+  EXPECT_TRUE(HasInfoBar(
+      infobar_manager, infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE));
 }
 
 // Verify that the Bad Flags infobar is not shown in kiosk mode.
@@ -3420,15 +3641,12 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorInfobarsKioskTest,
           switches::kDisableWebSecurity);
   ASSERT_TRUE(infobar_manager);
 
-  for (size_t i = 0; i < infobar_manager->infobar_count(); i++) {
-    infobars::InfoBar* infobar = infobar_manager->infobar_at(i);
-    EXPECT_NE(infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE,
-              infobar->delegate()->GetIdentifier());
-  }
+  EXPECT_FALSE(HasInfoBar(
+      infobar_manager, infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE));
 }
 
 // Checks the correct behavior of the profile picker on startup.
-class StartupBrowserCreatorPickerTestBase : public IdentityPlatformBrowserTest {
+class StartupBrowserCreatorPickerTestBase : public InProcessBrowserTest {
  public:
   StartupBrowserCreatorPickerTestBase() {
     // This test configures command line params carefully. Make sure
@@ -3462,10 +3680,12 @@ class StartupBrowserCreatorPickerTestBase : public IdentityPlatformBrowserTest {
               .GetProfileAttributesWithPath(profile_path);
       ASSERT_NE(entry, nullptr);
       entry->SetActiveTimeToNow();
+      // Enabling sync, as Lacros only supports syncing profiles, see
+      // https://crbug.com/1260291.
       entry->SetAuthInfo(
           base::StringPrintf("gaia_id_%i", i),
           base::UTF8ToUTF16(base::StringPrintf("user%i@gmail.com", i)),
-          /*is_consented_primary_account=*/false);
+          /*is_consented_primary_account=*/true);
     }
   }
 };
@@ -3666,4 +3886,140 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorPickerNoParamsTest,
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 }
 
+class SearchQueryStartupBrowserCreatorPickerTest
+    : public StartupBrowserCreatorPickerTestBase {
+ public:
+  SearchQueryStartupBrowserCreatorPickerTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendArg("? Foo");
+  }
+};
+
+// Create a secondary profile in a separate PRE run because the existence of
+// profiles is checked during startup in the actual test.
+IN_PROC_BROWSER_TEST_F(SearchQueryStartupBrowserCreatorPickerTest,
+                       PRE_SkipsPickerWithCommandLineSearchQuery) {
+  CreateMultipleProfiles();
+  // Need to close the browser window manually so that the real test does not
+  // treat it as session restore.
+  CloseAllBrowsers();
+}
+
+IN_PROC_BROWSER_TEST_F(SearchQueryStartupBrowserCreatorPickerTest,
+                       SkipsPickerWithCommandLineSearchQuery) {
+  // A browser window is shown on start-up because the command line contains a
+  // search query.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  // Check the return value of `GetStartupProfilePath()` explicitly.
+  base::FilePath current_dir = base::FilePath();
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendArg("? Foo");
+  StartupProfilePathInfo startup_profile_path_info =
+      GetStartupProfilePath(current_dir, command_line,
+                            /*ignore_profile_picker=*/false);
+  EXPECT_EQ(startup_profile_path_info.mode, StartupProfileMode::kBrowserWindow);
+}
+
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+
+class StartupBrowserCreatorPickerInfobarTest
+    : public StartupBrowserCreatorPickerTestBase,
+      public ::testing::WithParamInterface<StartupBrowserCreatorFlagTypeValue> {
+ public:
+  StartupBrowserCreatorPickerInfobarTest() : flag_type_(GetParam()) {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {}
+
+ protected:
+  // Simulates a click on a profile card. The profile picker must be already
+  // opened.
+  void OpenProfileFromPicker(const base::FilePath& profile_path,
+                             bool open_settings) {
+    base::ListValue args;
+    args.Append(
+        base::Value::ToUniquePtrValue(base::FilePathToValue(profile_path)));
+    profile_picker_handler()->HandleLaunchSelectedProfile(open_settings, &args);
+  }
+
+  // Returns the profile picker webUI handler. The profile picker must be opened
+  // before calling this function.
+  ProfilePickerHandler* profile_picker_handler() {
+    DCHECK(ProfilePicker::IsOpen());
+
+    views::WebView* web_view = ProfilePicker::GetWebViewForTesting();
+    if (web_view == nullptr) {
+      return nullptr;
+    }
+
+    return web_view->GetWebContents()
+        ->GetWebUI()
+        ->GetController()
+        ->GetAs<ProfilePickerUI>()
+        ->GetProfilePickerHandlerForTesting();
+  }
+
+  const StartupBrowserCreatorFlagTypeValue flag_type_;
+};
+
+// Create a secondary profile in a separate PRE run because the existence of
+// profiles is checked during startup in the actual test.
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorPickerInfobarTest,
+                       PRE_ShowsEnableAutomationInfobar) {
+  CreateMultipleProfiles();
+  // Need to close the browser window manually so that the real test does not
+  // treat it as session restore.
+  CloseAllBrowsers();
+}
+
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorPickerInfobarTest,
+                       ShowsEnableAutomationInfobar) {
+  EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
+
+  // We deliberately set the flag on the process command line instead of on the
+  // command_line passed to the StartupBrowserCreator, because these flags are
+  // always read from the command line of the current process
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(flag_type_.flag);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* profile = nullptr;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    profile = profile_manager->GetLastUsedProfile();
+  }
+
+  OpenProfileFromPicker(profile->GetPath(), false);
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
+
+  infobars::ContentInfoBarManager* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(
+          new_browser->tab_strip_model()->GetWebContentsAt(0));
+
+  EXPECT_TRUE(HasInfoBar(infobar_manager, flag_type_.infobar_identifier));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    StartupBrowserCreatorPickerInfobarTest,
+    ::testing::Values(
+        StartupBrowserCreatorFlagTypeValue{
+            switches::kEnableAutomation,
+            infobars::InfoBarDelegate::AUTOMATION_INFOBAR_DELEGATE},
+        // Test one of the flags from |bad_flags_prompt.cc|. Any of the
+        // flags should have the same behavior.
+        StartupBrowserCreatorFlagTypeValue{
+            switches::kDisableWebSecurity,
+            infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE}),
+    [](const testing::TestParamInfo<
+        StartupBrowserCreatorPickerInfobarTest::ParamType>& info) {
+      std::string name = info.param.flag;
+      std::replace_if(
+          name.begin(), name.end(), [](char c) { return !std::isalnum(c); },
+          '_');
+      return name;
+    });
+
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)

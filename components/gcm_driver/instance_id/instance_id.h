@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
@@ -170,7 +170,7 @@ class InstanceID {
 
   // Owned by GCMProfileServiceFactory, which is a dependency of
   // InstanceIDProfileServiceFactory, which owns this.
-  gcm::GCMDriver* gcm_driver_;
+  raw_ptr<gcm::GCMDriver> gcm_driver_;
 
   std::string app_id_;
 

@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -64,7 +66,7 @@ class AutofillPopupRowView : public views::View {
   virtual std::unique_ptr<views::Background> CreateBackground() = 0;
 
  private:
-  AutofillPopupViewNativeViews* popup_view_;
+  raw_ptr<AutofillPopupViewNativeViews> popup_view_;
   const int line_number_;
   bool selected_ = false;
 };
@@ -75,8 +77,9 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
                                      public AutofillPopupView {
  public:
   METADATA_HEADER(AutofillPopupViewNativeViews);
-  AutofillPopupViewNativeViews(AutofillPopupController* controller,
-                               views::Widget* parent_widget);
+  AutofillPopupViewNativeViews(
+      base::WeakPtr<AutofillPopupController> controller,
+      views::Widget* parent_widget);
   AutofillPopupViewNativeViews(const AutofillPopupViewNativeViews&) = delete;
   AutofillPopupViewNativeViews& operator=(const AutofillPopupViewNativeViews&) =
       delete;
@@ -100,7 +103,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // methods in AutofillPopupBaseView.
   void OnMouseMoved(const ui::MouseEvent& event) override {}
 
-  AutofillPopupController* controller() { return controller_; }
+  base::WeakPtr<AutofillPopupController> controller() { return controller_; }
 
  private:
   void OnSelectedRowChanged(absl::optional<int> previous_row_selection,
@@ -108,6 +111,8 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   void OnSuggestionsChanged() override;
 
   // Creates child views based on the suggestions given by |controller_|.
+  // This method expects that all non-footer suggestions precede footer
+  // suggestions.
   void CreateChildViews();
 
   // Applies certain rounding rules to the given width, such as matching the
@@ -118,12 +123,12 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   bool DoUpdateBoundsAndRedrawPopup() override;
 
   // Controller for this view.
-  AutofillPopupController* controller_ = nullptr;
+  base::WeakPtr<AutofillPopupController> controller_ = nullptr;
   std::vector<AutofillPopupRowView*> rows_;
-  views::BoxLayout* layout_ = nullptr;
-  views::ScrollView* scroll_view_ = nullptr;
-  views::View* body_container_ = nullptr;
-  views::View* footer_container_ = nullptr;
+  raw_ptr<views::BoxLayout> layout_ = nullptr;
+  raw_ptr<views::ScrollView> scroll_view_ = nullptr;
+  raw_ptr<views::View> body_container_ = nullptr;
+  raw_ptr<views::View> footer_container_ = nullptr;
 };
 
 }  // namespace autofill

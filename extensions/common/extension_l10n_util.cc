@@ -17,6 +17,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -128,11 +129,12 @@ bool LocalizeManifestListValue(const std::string& key,
     return true;
 
   bool ret = true;
-  for (size_t i = 0; i < list->GetList().size(); ++i) {
-    std::string result;
-    if (list->GetString(i, &result)) {
+  base::Value::ListView list_view = list->GetList();
+  for (size_t i = 0; i < list_view.size(); ++i) {
+    if (list_view[i].is_string()) {
+      std::string result = list_view[i].GetString();
       if (messages.ReplaceMessages(&result, error))
-        list->Set(i, std::make_unique<base::Value>(result));
+        list_view[i] = base::Value(result);
       else
         ret = false;
     }
@@ -234,27 +236,29 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
   if (!LocalizeManifestValue(keys::kDescription, messages, manifest, error))
     return false;
 
+  // Returns the key for the "default_title" entry in the given
+  // `action_key`'s manifest entry.
+  auto get_title_key = [](const char* action_key) {
+    return base::StrCat({action_key, ".", keys::kActionDefaultTitle});
+  };
+
   // Initialize browser_action.default_title
-  std::string key(keys::kBrowserAction);
-  key.append(".");
-  key.append(keys::kActionDefaultTitle);
-  if (!LocalizeManifestValue(key, messages, manifest, error))
+  if (!LocalizeManifestValue(get_title_key(keys::kBrowserAction), messages,
+                             manifest, error)) {
     return false;
+  }
 
   // Initialize page_action.default_title
-  key.assign(keys::kPageAction);
-  key.append(".");
-  key.append(keys::kActionDefaultTitle);
-  if (!LocalizeManifestValue(key, messages, manifest, error))
+  if (!LocalizeManifestValue(get_title_key(keys::kPageAction), messages,
+                             manifest, error)) {
     return false;
+  }
 
   // Initialize action.default_title
-  // TODO(devlin): These could easily use something like base::StrCat().
-  key.assign(keys::kAction);
-  key.append(".");
-  key.append(keys::kActionDefaultTitle);
-  if (!LocalizeManifestValue(key, messages, manifest, error))
+  if (!LocalizeManifestValue(get_title_key(keys::kAction), messages, manifest,
+                             error)) {
     return false;
+  }
 
   // Initialize omnibox.keyword.
   if (!LocalizeManifestValue(keys::kOmniboxKeyword, messages, manifest, error))
@@ -262,7 +266,6 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
 
   base::ListValue* file_handlers = NULL;
   if (manifest->GetList(keys::kFileBrowserHandlers, &file_handlers)) {
-    key.assign(keys::kFileBrowserHandlers);
     for (size_t i = 0; i < file_handlers->GetList().size(); i++) {
       base::DictionaryValue* handler = NULL;
       if (!file_handlers->GetDictionary(i, &handler)) {
@@ -305,8 +308,8 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     for (base::DictionaryValue::Iterator iter(*commands_handler);
          !iter.IsAtEnd();
          iter.Advance()) {
-      key.assign(
-          base::StringPrintf("commands.%s.description", iter.key().c_str()));
+      std::string key =
+          base::StringPrintf("commands.%s.description", iter.key().c_str());
       if (!LocalizeManifestValue(key, messages, manifest, error))
         return false;
     }
@@ -319,8 +322,8 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
     for (base::DictionaryValue::Iterator iter(*search_provider);
          !iter.IsAtEnd();
          iter.Advance()) {
-      key.assign(base::StringPrintf(
-          "%s.%s", keys::kOverrideSearchProvider, iter.key().c_str()));
+      std::string key = base::StrCat(
+          {keys::kOverrideSearchProvider, ".", iter.key().c_str()});
       bool success =
           (key == keys::kSettingsOverrideAlternateUrls)
               ? LocalizeManifestListValue(key, messages, manifest, error)

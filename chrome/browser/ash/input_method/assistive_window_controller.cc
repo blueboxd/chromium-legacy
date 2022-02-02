@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -27,13 +28,16 @@ gfx::NativeView GetParentView() {
   gfx::NativeView parent = nullptr;
 
   aura::Window* active_window = ash::window_util::GetActiveWindow();
-  // Use VirtualKeyboardContainer so that it works even with a system modal
-  // dialog.
+  // Use MenuContainer so that it works even with a system modal dialog.
   parent = ash::Shell::GetContainer(
       active_window ? active_window->GetRootWindow()
                     : ash::Shell::GetRootWindowForNewWindows(),
-      ash::kShellWindowId_VirtualKeyboardContainer);
+      ash::kShellWindowId_MenuContainer);
   return parent;
+}
+
+bool IsLacrosEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
 }
 
 }  // namespace
@@ -156,8 +160,13 @@ void AssistiveWindowController::SetBounds(const Bounds& bounds) {
   // TODO(crbug/1112982): Investigate getting bounds to suggester before sending
   // show suggestion request.
   if (suggestion_window_view_ && !tracking_last_suggestion_) {
+    // TODO(crbug/1146266): When running the multi word feature with lacros,
+    //     composition mode is unavailable, thus we need to use the caret
+    //     bounds instead. Investigate how we can position the window correctly
+    //     without composition bounds.
     suggestion_window_view_->SetAnchorRect(
-        confirmed_length_ == 0 ? bounds.caret : bounds.composition_text);
+        (confirmed_length_ != 0 && !IsLacrosEnabled()) ? bounds.composition_text
+                                                       : bounds.caret);
   }
   if (grammar_suggestion_window_) {
     grammar_suggestion_window_->SetBounds(bounds_.caret);
@@ -186,6 +195,7 @@ void AssistiveWindowController::SetButtonHighlighted(
   switch (button.window_type) {
     case ui::ime::AssistiveWindowType::kEmojiSuggestion:
     case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
+    case ui::ime::AssistiveWindowType::kMultiWordSuggestion:
       if (!suggestion_window_view_)
         return;
 
@@ -241,6 +251,7 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
       break;
     case ui::ime::AssistiveWindowType::kEmojiSuggestion:
     case ui::ime::AssistiveWindowType::kPersonalInfoSuggestion:
+    case ui::ime::AssistiveWindowType::kMultiWordSuggestion:
       if (!suggestion_window_view_)
         InitSuggestionWindow();
       if (window_.visible) {

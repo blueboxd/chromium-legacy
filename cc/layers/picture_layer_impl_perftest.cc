@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "cc/layers/picture_layer_impl.h"
 
 #include "base/threading/thread_task_runner_handle.h"
@@ -97,8 +98,7 @@ class PictureLayerImplPerfTest : public LayerTreeImplTestBase,
         ->pending_tree()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            pending_layer_->element_id(),
-            gfx::Vector2dF(viewport.x(), viewport.y()));
+            pending_layer_->element_id(), gfx::PointF(viewport.origin()));
     host_impl()->pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
@@ -145,8 +145,7 @@ class PictureLayerImplPerfTest : public LayerTreeImplTestBase,
         ->pending_tree()
         ->property_trees()
         ->scroll_tree.UpdateScrollOffsetBaseForTesting(
-            pending_layer_->element_id(),
-            gfx::Vector2dF(viewport.x(), viewport.y()));
+            pending_layer_->element_id(), gfx::PointF(viewport.origin()));
     host_impl()->pending_tree()->UpdateDrawProperties();
 
     timer_.Reset();
@@ -172,7 +171,7 @@ class PictureLayerImplPerfTest : public LayerTreeImplTestBase,
     return reporter;
   }
 
-  FakePictureLayerImpl* pending_layer_;
+  raw_ptr<FakePictureLayerImpl> pending_layer_;
   base::LapTimer timer_;
 };
 

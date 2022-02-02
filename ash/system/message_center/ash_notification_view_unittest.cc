@@ -4,19 +4,23 @@
 
 #include "ash/system/message_center/ash_notification_view.h"
 
+#include "ash/public/cpp/rounded_image_view.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/message_center/ash_notification_expand_button.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/notification_view.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/test/button_test_api.h"
 
 using message_center::Notification;
@@ -29,10 +33,12 @@ namespace {
 
 constexpr char kDefaultNotificationId[] = "ash notification id";
 
-const gfx::Image CreateTestImage(int width, int height) {
+const gfx::Image CreateTestImage(int width,
+                                 int height,
+                                 SkColor color = SK_ColorGREEN) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(width, height);
-  bitmap.eraseColor(SK_ColorGREEN);
+  bitmap.eraseColor(color);
   return gfx::Image::CreateFrom1xBitmap(bitmap);
 }
 
@@ -85,10 +91,13 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   }
 
   // Create a test notification that is used in the view.
-  std::unique_ptr<Notification> CreateTestNotification(bool has_image = false) {
+  std::unique_ptr<Notification> CreateTestNotification(
+      bool has_image = false,
+      bool show_snooze_button = false) {
     message_center::RichNotificationData data;
     data.settings_button_handler =
         message_center::SettingsButtonHandler::INLINE;
+    data.should_show_snooze_button = show_snooze_button;
 
     std::unique_ptr<Notification> notification = std::make_unique<Notification>(
         message_center::NOTIFICATION_TYPE_BASE_FORMAT,
@@ -148,6 +157,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   }
   views::View* left_content() { return notification_view_->left_content(); }
   views::View* content_row() { return notification_view_->content_row(); }
+  RoundedImageView* app_icon_view() {
+    return notification_view_->app_icon_view_;
+  }
   views::View* title_row() { return notification_view_->title_row_; }
   views::Label* title_view() {
     return notification_view_->title_row_->title_view_;
@@ -165,6 +177,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   AshNotificationExpandButton* expand_button() {
     return notification_view_->expand_button_;
   }
+  views::FlexLayoutView* expand_button_container() {
+    return notification_view_->expand_button_container_;
+  }
   views::View* inline_settings_row() {
     return notification_view()->inline_settings_row();
   }
@@ -173,6 +188,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   }
   views::LabelButton* inline_settings_cancel_button() {
     return notification_view_->inline_settings_cancel_button_;
+  }
+  views::ImageButton* snooze_button() {
+    return notification_view_->snooze_button_;
   }
 
   scoped_refptr<NotificationTestDelegate> delegate() { return delegate_; }
@@ -349,6 +367,30 @@ TEST_F(AshNotificationViewTest, GroupedNotificationExpandState) {
   EXPECT_TRUE(GetMainViewForNotificationView(child_view)->GetVisible());
 }
 
+TEST_F(AshNotificationViewTest, GroupedNotificationChildIcon) {
+  auto notification = CreateTestNotification();
+  notification->set_icon(CreateTestImage(16, 16, SK_ColorBLUE));
+  notification->SetGroupChild();
+  notification_view()->UpdateWithNotification(*notification.get());
+
+  // Notification's icon should be used in child notification's app icon (we
+  // check this by comparing the color of the app icon with the color of the
+  // generated test image).
+  EXPECT_EQ(color_utils::SkColorToRgbaString(SK_ColorBLUE),
+            color_utils::SkColorToRgbaString(
+                app_icon_view()->original_image().bitmap()->getColor(0, 0)));
+
+  // This should not be changed after theme changed.
+  notification_view()->OnThemeChanged();
+  EXPECT_EQ(color_utils::SkColorToRgbaString(SK_ColorBLUE),
+            color_utils::SkColorToRgbaString(
+                app_icon_view()->original_image().bitmap()->getColor(0, 0)));
+
+  // Reset the notification to be group parent at the end.
+  notification->SetGroupParent();
+  notification_view()->UpdateWithNotification(*notification.get());
+}
+
 TEST_F(AshNotificationViewTest, ExpandButtonVisibility) {
   // Expand button should be shown in any type of notification and hidden in
   // inline settings UI.
@@ -435,6 +477,45 @@ TEST_F(AshNotificationViewTest, InlineSettingsCancel) {
 
   EXPECT_FALSE(inline_settings_row()->GetVisible());
   EXPECT_FALSE(delegate()->disable_notification_called());
+}
+
+TEST_F(AshNotificationViewTest, SnoozeButtonVisibility) {
+  auto notification = CreateTestNotification();
+  notification_view()->UpdateWithNotification(*notification);
+
+  // Snooze button should be null if notification does not use it.
+  EXPECT_EQ(snooze_button(), nullptr);
+
+  notification =
+      CreateTestNotification(/*has_image=*/false, /*show_snooze_button=*/true);
+  notification_view()->UpdateWithNotification(*notification);
+
+  // Snooze button should be visible if notification does use it.
+  EXPECT_TRUE(snooze_button()->GetVisible());
+}
+
+TEST_F(AshNotificationViewTest, AppIconAndExpandButtonAlignment) {
+  auto notification = CreateTestNotification();
+  notification_view()->UpdateWithNotification(*notification);
+
+  // Make sure that app icon and expand button is vertically aligned in
+  // collapsed mode. Also, the padding of them should be the same.
+  notification_view()->SetExpanded(false);
+  EXPECT_EQ(app_icon_view()->GetBoundsInScreen().y(),
+            expand_button_container()->GetBoundsInScreen().y());
+  EXPECT_EQ(app_icon_view()->GetContentsBounds().y(),
+            expand_button_container()->GetInteriorMargin().top());
+
+  // Make sure that app icon, expand button, and also header row is vertically
+  // aligned in collapsed mode. Also check the padding for app icon and expand
+  // button again.
+  notification_view()->SetExpanded(true);
+  EXPECT_EQ(app_icon_view()->GetBoundsInScreen().y(),
+            expand_button_container()->GetBoundsInScreen().y());
+  EXPECT_EQ(app_icon_view()->GetBoundsInScreen().y(),
+            header_row()->GetBoundsInScreen().y());
+  EXPECT_EQ(app_icon_view()->GetContentsBounds().y(),
+            expand_button_container()->GetInteriorMargin().top());
 }
 
 }  // namespace ash

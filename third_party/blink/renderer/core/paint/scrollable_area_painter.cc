@@ -35,7 +35,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     return;
 
   gfx::Rect visual_rect =
-      ToGfxRect(GetScrollableArea().ResizerCornerRect(kResizerForPointer));
+      GetScrollableArea().ResizerCornerRect(kResizerForPointer);
   visual_rect.Offset(paint_offset);
   if (!cull_rect.Intersects(visual_rect))
     return;
@@ -53,13 +53,13 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
 
   DrawingRecorder recorder(context, client, DisplayItem::kResizer, visual_rect);
 
-  DrawPlatformResizerImage(context, IntRect(visual_rect));
+  DrawPlatformResizerImage(context, visual_rect);
 
   // Draw a frame around the resizer (1px grey line) if there are any scrollbars
   // present.  Clipping will exclude the right and bottom edges of this frame.
   if (GetScrollableArea().NeedsScrollCorner()) {
     GraphicsContextStateSaver state_saver(context);
-    context.Clip(IntRect(visual_rect));
+    context.Clip(visual_rect);
     gfx::Rect larger_corner = visual_rect;
     larger_corner.set_size(
         gfx::Size(larger_corner.width() + 1, larger_corner.height() + 1));
@@ -68,7 +68,7 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     context.SetFillColor(Color::kTransparent);
     AutoDarkMode auto_dark_mode(PaintAutoDarkMode(
         box->StyleRef(), DarkModeFilter::ElementRole::kBackground));
-    context.DrawRect(IntRect(larger_corner), auto_dark_mode);
+    context.DrawRect(larger_corner, auto_dark_mode);
   }
 }
 
@@ -80,8 +80,7 @@ void ScrollableAreaPainter::RecordResizerScrollHitTestData(
   if (!box->CanResize())
     return;
 
-  gfx::Rect touch_rect =
-      ToGfxRect(scrollable_area_->ResizerCornerRect(kResizerForTouch));
+  gfx::Rect touch_rect = scrollable_area_->ResizerCornerRect(kResizerForTouch);
   touch_rect.Offset(ToRoundedVector2d(paint_offset));
   context.GetPaintController().RecordScrollHitTestData(
       DisplayItemClientForCorner(), DisplayItem::kResizerScrollHitTest, nullptr,
@@ -90,35 +89,39 @@ void ScrollableAreaPainter::RecordResizerScrollHitTestData(
 
 void ScrollableAreaPainter::DrawPlatformResizerImage(
     GraphicsContext& context,
-    const IntRect& resizer_corner_rect) {
+    const gfx::Rect& resizer_corner_rect) {
   gfx::Point points[4];
   bool on_left = false;
+  float paint_scale = GetScrollableArea().ScaleFromDIP();
+  int edge_offset = std::ceil(paint_scale);
   if (GetScrollableArea()
           .GetLayoutBox()
           ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
     on_left = true;
-    points[0].set_x(resizer_corner_rect.x() + 1);
+    points[0].set_x(resizer_corner_rect.x() + edge_offset);
     points[1].set_x(resizer_corner_rect.x() + resizer_corner_rect.width() -
                     resizer_corner_rect.width() / 2);
     points[2].set_x(points[0].x());
     points[3].set_x(resizer_corner_rect.x() + resizer_corner_rect.width() -
                     resizer_corner_rect.width() * 3 / 4);
   } else {
-    points[0].set_x(resizer_corner_rect.x() + resizer_corner_rect.width() - 1);
+    points[0].set_x(resizer_corner_rect.x() + resizer_corner_rect.width() -
+                    edge_offset);
     points[1].set_x(resizer_corner_rect.x() + resizer_corner_rect.width() / 2);
     points[2].set_x(points[0].x());
     points[3].set_x(resizer_corner_rect.x() +
                     resizer_corner_rect.width() * 3 / 4);
   }
   points[0].set_y(resizer_corner_rect.y() + resizer_corner_rect.height() / 2);
-  points[1].set_y(resizer_corner_rect.y() + resizer_corner_rect.height() - 1);
+  points[1].set_y(resizer_corner_rect.y() + resizer_corner_rect.height() -
+                  edge_offset);
   points[2].set_y(resizer_corner_rect.y() +
                   resizer_corner_rect.height() * 3 / 4);
   points[3].set_y(points[1].y());
 
   PaintFlags paint_flags;
   paint_flags.setStyle(PaintFlags::kStroke_Style);
-  paint_flags.setStrokeWidth(1);
+  paint_flags.setStrokeWidth(std::ceil(paint_scale));
 
   SkPathBuilder line_path;
 
@@ -136,10 +139,12 @@ void ScrollableAreaPainter::DrawPlatformResizerImage(
 
   // Draw a light line one pixel below the light line,
   // to ensure contrast against a dark background
-  line_path.moveTo(points[0].x(), points[0].y() + 1);
-  line_path.lineTo(points[1].x() + (on_left ? -1 : 1), points[1].y());
-  line_path.moveTo(points[2].x(), points[2].y() + 1);
-  line_path.lineTo(points[3].x() + (on_left ? -1 : 1), points[3].y());
+  int v_offset = std::ceil(paint_scale);
+  int h_offset = on_left ? -v_offset : v_offset;
+  line_path.moveTo(points[0].x(), points[0].y() + v_offset);
+  line_path.lineTo(points[1].x() + h_offset, points[1].y());
+  line_path.moveTo(points[2].x(), points[2].y() + v_offset);
+  line_path.lineTo(points[3].x() + h_offset, points[3].y());
   paint_flags.setColor(SkColorSetARGB(153, 255, 255, 255));
   context.DrawPath(line_path.detach(), paint_flags, auto_dark_mode);
 }
@@ -229,7 +234,7 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                                            const CullRect& cull_rect) {
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
-  gfx::Rect visual_rect = ToGfxRect(scrollbar.FrameRect());
+  gfx::Rect visual_rect = scrollbar.FrameRect();
   visual_rect.Offset(paint_offset);
   if (!cull_rect.Intersects(visual_rect))
     return;
@@ -278,9 +283,9 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
 void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
                                               const gfx::Vector2d& paint_offset,
                                               const CullRect& cull_rect) {
-  IntRect visual_rect = GetScrollableArea().ScrollCornerRect();
+  gfx::Rect visual_rect = GetScrollableArea().ScrollCornerRect();
   visual_rect.Offset(paint_offset);
-  if (!cull_rect.Intersects(ToGfxRect(visual_rect)))
+  if (!cull_rect.Intersects(visual_rect))
     return;
 
   if (const auto* scroll_corner = GetScrollableArea().ScrollCorner()) {

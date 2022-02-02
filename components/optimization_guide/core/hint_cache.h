@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/containers/lru_cache.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
@@ -36,9 +36,8 @@ class HintCache {
   // Construct the HintCache with an optional backing store and max host-keyed
   // cache size. If a backing store is not provided, all hints will only be
   // stored in-memory.
-  explicit HintCache(
-      base::WeakPtr<OptimizationGuideStore> optimization_guide_store,
-      int max_host_keyed_memory_cache_size);
+  explicit HintCache(OptimizationGuideStore* optimization_guide_store,
+                     int max_host_keyed_memory_cache_size);
 
   HintCache(const HintCache&) = delete;
   HintCache& operator=(const HintCache&) = delete;
@@ -153,7 +152,7 @@ class HintCache {
   bool IsHintStoreAvailable() const;
 
   // Returns the persistent store for |this|.
-  base::WeakPtr<optimization_guide::OptimizationGuideStore> hint_store() {
+  optimization_guide::OptimizationGuideStore* hint_store() {
     return optimization_guide_store_;
   }
 
@@ -185,8 +184,8 @@ class HintCache {
       std::unique_ptr<MemoryHint> hint);
 
   // The backing store used with this hint cache. Set during construction. Not
-  // owned.
-  base::WeakPtr<OptimizationGuideStore> optimization_guide_store_;
+  // owned. Guaranteed to outlive |this|.
+  raw_ptr<OptimizationGuideStore> optimization_guide_store_;
 
   // The cache of host-keyed hints loaded from the store. Maps store
   // EntryKey to Hint proto. This serves two purposes:
@@ -202,7 +201,7 @@ class HintCache {
   URLKeyedHintCache url_keyed_hint_cache_;
 
   // The clock used to determine if hints have expired.
-  const base::Clock* clock_;
+  raw_ptr<const base::Clock> clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

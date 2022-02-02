@@ -22,6 +22,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/extensions/extensions_side_panel_controller.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -61,8 +61,8 @@
 #include "chrome/browser/ui/views/toolbar/chrome_labs_button.h"
 #include "chrome/browser/ui/views/toolbar/chrome_labs_utils.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
-#include "chrome/browser/ui/views/toolbar/read_later_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/side_panel_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -280,6 +280,8 @@ void ToolbarView::Init() {
   // ChromeOS only badges Incognito and Guest icons in the browser window.
   show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
                                browser_->profile()->IsGuestSession();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  show_avatar_toolbar_button = !profiles::IsPublicSession();
 #endif
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableToolbarStatusChip)) {
@@ -290,18 +292,13 @@ void ToolbarView::Init() {
         std::make_unique<ToolbarAccountIconContainerView>(browser_view_);
   }
 
-  std::unique_ptr<ReadLaterToolbarButton> read_later_button;
+  std::unique_ptr<SidePanelToolbarButton> side_panel_button;
   if (browser_view_->right_aligned_side_panel() &&
       reading_list::switches::IsReadingListEnabled()) {
-    read_later_button = std::make_unique<ReadLaterToolbarButton>(browser_);
+    side_panel_button = std::make_unique<SidePanelToolbarButton>(browser_);
   }
 
   // Always add children in order from left to right, for accessibility.
-  if (browser_view_->extensions_side_panel_controller()) {
-    left_side_panel_button_ =
-        AddChildView(browser_view_->extensions_side_panel_controller()
-                         ->CreateToolbarButton());
-  }
   back_ = AddChildView(std::move(back));
   forward_ = AddChildView(std::move(forward));
   reload_ = AddChildView(std::move(reload));
@@ -351,8 +348,8 @@ void ToolbarView::Init() {
   if (send_tab_to_self_button)
     send_tab_to_self_button_ = AddChildView(std::move(send_tab_to_self_button));
 
-  if (read_later_button)
-    read_later_button_ = AddChildView(std::move(read_later_button));
+  if (side_panel_button)
+    side_panel_button_ = AddChildView(std::move(side_panel_button));
 
   if (toolbar_account_icon_container) {
     toolbar_account_icon_container_ =
@@ -578,7 +575,8 @@ void ToolbarView::OnCriticalUpgradeInstalled() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, ui::AcceleratorProvider implementation:
 
-bool ToolbarView::GetAcceleratorForCommandId(int command_id,
+bool ToolbarView::GetAcceleratorForCommandId(
+    int command_id,
     ui::Accelerator* accelerator) const {
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
@@ -881,8 +879,8 @@ void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
       can_show_bubble);
 }
 
-ReadLaterToolbarButton* ToolbarView::GetSidePanelButton() {
-  return read_later_button_;
+SidePanelToolbarButton* ToolbarView::GetSidePanelButton() {
+  return side_panel_button_;
 }
 
 AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
@@ -935,7 +933,8 @@ void ToolbarView::LoadImages() {
 void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
   views::BubbleDialogDelegateView::CreateBubble(
-      new CriticalNotificationBubbleView(app_menu_button_))->Show();
+      new CriticalNotificationBubbleView(app_menu_button_))
+      ->Show();
 #endif
 }
 

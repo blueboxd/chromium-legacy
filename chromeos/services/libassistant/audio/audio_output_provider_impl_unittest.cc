@@ -9,11 +9,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
-#include "libassistant/shared/public/platform_audio_output.h"
+#include "chromeos/assistant/internal/libassistant/shared_headers.h"
 #include "media/base/audio_bus.h"
 #include "media/base/bind_to_current_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"

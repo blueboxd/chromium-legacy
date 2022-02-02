@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
-#include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -89,7 +88,7 @@ bool AreAllExtensionsAllowedForBFCache() {
     return true;
 
   static base::FeatureParam<bool> all_extensions_allowed(
-      &features::kBackForwardCache, "all_extensions_allowed", false);
+      &features::kBackForwardCache, "all_extensions_allowed", true);
   return all_extensions_allowed.Get();
 }
 
@@ -179,6 +178,7 @@ TabHelper::~TabHelper() = default;
 
 TabHelper::TabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<TabHelper>(*web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       extension_app_(nullptr),
       script_executor_(new ScriptExecutor(web_contents)),
@@ -187,9 +187,6 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   CreateSessionServiceTabHelper(web_contents);
-  // We need an ExtensionWebContentsObserver, so make sure one exists (this is
-  // a no-op if one already does).
-  ChromeExtensionWebContentsObserver::CreateForWebContents(web_contents);
   // The Unretained() is safe because ForEachFrame() is synchronous.
   web_contents->ForEachFrame(
       base::BindRepeating(&TabHelper::SetTabId, base::Unretained(this)));
@@ -435,9 +432,11 @@ void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
   // We should wait for RenderFrameCreated() to happen, to avoid sending this
   // message twice.
   if (render_frame_host->IsRenderFrameCreated()) {
+    SessionID id = sessions::SessionTabHelper::IdForTab(web_contents());
+    CHECK(id.is_valid());
     ExtensionWebContentsObserver::GetForWebContents(web_contents())
         ->GetLocalFrame(render_frame_host)
-        ->SetTabId(sessions::SessionTabHelper::IdForTab(web_contents()).id());
+        ->SetTabId(id.id());
   }
 }
 

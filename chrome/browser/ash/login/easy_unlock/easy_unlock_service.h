@@ -9,8 +9,8 @@
 #include <set>
 #include <string>
 
+#include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/chrome_proximity_auth_client.h"
@@ -20,7 +20,6 @@
 #include "chrome/browser/ash/login/easy_unlock/smartlock_feature_usage_metrics.h"
 #include "chrome/browser/ash/login/easy_unlock/smartlock_state_handler.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -139,7 +138,7 @@ class EasyUnlockService : public KeyedService {
 
   // Updates the user pod on the signin/lock screen for the user associated with
   // the service to reflect the provided Smart Lock state.
-  bool UpdateSmartLockState(SmartLockState state);
+  void UpdateSmartLockState(SmartLockState state);
 
   // Starts an auth attempt for the user associated with the service. The
   // attempt type (unlock vs. signin) will depend on the service type. Returns
@@ -281,6 +280,12 @@ class EasyUnlockService : public KeyedService {
 
   void EnsureTpmKeyPresentIfNeeded();
 
+  // Determines whether failure to unlock with phone should be handled as an
+  // authentication failure.
+  bool IsSmartLockStateValidOnRemoteAuthFailure() const;
+
+  void NotifySmartLockAuthResult(bool success);
+
   Profile* const profile_;
   secure_channel::SecureChannelClient* secure_channel_client_;
 
@@ -288,6 +293,8 @@ class EasyUnlockService : public KeyedService {
 
   // Created lazily in `GetSmartLockStateHandler`.
   std::unique_ptr<SmartLockStateHandler> smartlock_state_handler_;
+
+  absl::optional<SmartLockState> smart_lock_state_;
 
   // The handler for the current auth attempt. Set iff an auth attempt is in
   // progress.

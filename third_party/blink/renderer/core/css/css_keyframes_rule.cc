@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -154,7 +154,7 @@ String CSSKeyframesRule::cssText() const {
     result.Append('\n');
   }
   result.Append('}');
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 unsigned CSSKeyframesRule::length() const {

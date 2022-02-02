@@ -20,11 +20,11 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace {
 
@@ -416,7 +416,7 @@ TransformationMatrix DevToolsEmulator::ForceViewport(
   if (!viewport_override_)
     viewport_override_ = ViewportOverride();
 
-  viewport_override_->position = FloatPoint(position);
+  viewport_override_->position = position;
   viewport_override_->scale = scale;
 
   // Move the correct (scaled) content area to show in the top left of the
@@ -446,10 +446,10 @@ void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
 
   // Translate while taking into account current scroll offset.
   // TODO(lukasza): https://crbug.com/734201: Add OOPIF support.
-  gfx::Vector2dF scroll_offset =
+  gfx::PointF scroll_offset =
       web_view_->MainFrame()->IsWebLocalFrame()
           ? web_view_->MainFrame()->ToWebLocalFrame()->GetScrollOffset()
-          : gfx::Vector2dF();
+          : gfx::PointF();
   gfx::PointF visual_offset = web_view_->VisualViewportOffset();
   float scroll_x = scroll_offset.x() + visual_offset.x();
   float scroll_y = scroll_offset.y() + visual_offset.y();
@@ -472,15 +472,15 @@ TransformationMatrix DevToolsEmulator::ComputeRootLayerTransform() {
 }
 
 void DevToolsEmulator::OverrideVisibleRect(
-    const IntSize& viewport_size,
-    IntRect* visible_rect_in_frame) const {
+    const gfx::Size& viewport_size,
+    gfx::Rect* visible_rect_in_frame) const {
   WebLocalFrameImpl* frame = web_view_->MainFrameImpl();
   if (!viewport_override_ || !frame)
     return;
 
   // Don't apply viewport_override_->scale because all coordinates here are
   // under the same scale.
-  IntRect visible_rect_in_document = EnclosingIntRect(
+  gfx::Rect visible_rect_in_document = ToEnclosingRect(
       FloatRect(viewport_override_->position, FloatSize(viewport_size)));
   *visible_rect_in_frame =
       frame->GetFrameView()->DocumentToFrame(visible_rect_in_document);

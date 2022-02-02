@@ -6,6 +6,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
 #include "base/tracing/tracing_tls.h"
@@ -80,6 +81,12 @@ class ProducerEndpoint : public perfetto::ProducerEndpoint,
       const perfetto::DataSourceDescriptor& descriptor) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     producer_host_->RegisterDataSource(descriptor);
+  }
+
+  void UpdateDataSource(
+      const perfetto::DataSourceDescriptor& descriptor) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    NOTREACHED();
   }
 
   void UnregisterDataSource(const std::string& name) override {
@@ -321,7 +328,7 @@ class ProducerEndpoint : public perfetto::ProducerEndpoint,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  perfetto::Producer* const producer_;
+  const raw_ptr<perfetto::Producer> producer_;
 
   base::flat_map<perfetto::DataSourceInstanceID, StartDataSourceCallback>
       ds_start_callbacks_;
@@ -639,7 +646,7 @@ class ConsumerEndpoint : public perfetto::ConsumerEndpoint,
   }
 
   SEQUENCE_CHECKER(sequence_checker_);
-  perfetto::Consumer* const consumer_;
+  const raw_ptr<perfetto::Consumer> consumer_;
   mojo::Remote<tracing::mojom::ConsumerHost> consumer_host_;
   mojo::Remote<tracing::mojom::TracingSessionHost> tracing_session_host_;
   mojo::Receiver<tracing::mojom::TracingSessionClient> tracing_session_client_{

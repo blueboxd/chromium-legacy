@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -44,7 +45,8 @@
 #include "base/android/radio_utils.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "services/network/public/cpp/features.h"
+#include "net/android/radio_activity_tracker.h"
+#include "net/base/features.h"
 #include "services/network/radio_monitor_android.h"
 #endif
 
@@ -140,7 +142,7 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   absl::optional<net::AddressList> result_addresses_;
   absl::optional<std::vector<std::string>> result_text_;
   absl::optional<std::vector<net::HostPortPair>> result_hosts_;
-  base::RunLoop* const run_loop_;
+  const raw_ptr<base::RunLoop> run_loop_;
 };
 
 class TestMdnsListenClient : public mojom::MdnsListenClient {
@@ -1578,7 +1580,7 @@ class HostResolverRecordRadioWakeupTest : public HostResolverTest {
  public:
   HostResolverRecordRadioWakeupTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kRecordRadioWakeupTrigger);
+        net::features::kRecordRadioWakeupTrigger);
   }
 
  private:
@@ -1588,9 +1590,10 @@ class HostResolverRecordRadioWakeupTest : public HostResolverTest {
 TEST_F(HostResolverRecordRadioWakeupTest, RecordPreconnect) {
   base::HistogramTester histograms;
 
-  RadioMonitorAndroid::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  RadioMonitorAndroid::GetInstance().OverrideRadioTypeForTesting(
+  net::android::RadioActivityTracker::GetInstance()
+      .OverrideRadioActivityForTesting(
+          base::android::RadioDataActivity::kDormant);
+  net::android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
       base::android::RadioConnectionType::kCell);
 
   auto inner_resolver = std::make_unique<net::MockHostResolver>();

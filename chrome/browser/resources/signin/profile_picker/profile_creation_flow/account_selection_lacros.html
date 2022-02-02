@@ -12,12 +12,13 @@
     background-color: white;
     border: var(--cr-hairline);
     border-radius: 8px;
-    margin: 25px auto;
+    margin: 65px 25% 25px 25%;
     min-width: 500px;
     padding-bottom: 30px;
     padding-top: 30px;
-    position: relative;
+    position: absolute;
     text-align: center;
+    top: 0;
     width: 50%;
   }
 
@@ -112,9 +113,11 @@
 <div style$="--theme-frame-color:[[profileThemeInfo.themeFrameColor]];
              --theme-text-color:[[profileThemeInfo.themeFrameTextColor]];">
   <div id="signinPromoBanner" class="banner"></div>
-  <cr-icon-button id="backButton" iron-icon="cr:arrow-back"
-      on-click="onBackClick_" aria-label$="[[getBackButtonAriaLabel_()]]">
-  </cr-icon-button>
+  <template is="dom-if" if="[[hasPreviousRoute_]]">
+    <cr-icon-button id="backButton" iron-icon="cr:arrow-back"
+        on-click="onBackClick_" aria-label$="[[getBackButtonAriaLabel_()]]">
+    </cr-icon-button>
+  </template>
 </div>
 <div id="accountsContainer">
   <img id="product-logo" on-click="onProductLogoTap_"
@@ -126,10 +129,10 @@
     <h3>$i18n{accountSelectionLacrosSubtitle}</h3>
   </div>
   <div id="buttonsContainer">
-    <template is="dom-repeat" items="[[unassignedAccounts_]]">
+    <template is="dom-repeat" items="[[availableAccounts_]]">
       <button class="account-button" on-click="onAccountClick_">
         <!-- Placeholder account image. -->
-        <img class="account-avatar" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg==">
+        <img class="account-avatar" src="[[item.accountImageUrl]]">
         <div class="account-text">
           <div class="account-name">[[item.name]]</div>
           <div class="account-email">[[item.email]]</div>

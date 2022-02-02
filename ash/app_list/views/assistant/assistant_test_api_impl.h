@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/public/cpp/test/assistant_test_api.h"
-#include "base/macros.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ui {
@@ -33,6 +32,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   void DisableAnimations() override;
   bool IsVisible() override;
   void SendTextQuery(const std::string& query) override;
+  void EnableAssistantAndWait() override;
   void SetAssistantEnabled(bool enable) override;
   void SetScreenContextEnabled(bool enabled) override;
   void SetTabletMode(bool enable) override;

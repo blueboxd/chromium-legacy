@@ -12,6 +12,7 @@
 #include "components/autofill_assistant/browser/action_value.pb.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -25,37 +26,37 @@ std::vector<std::string> GetContactValidationErrors(
     const autofill::AutofillProfile* profile,
     const CollectUserDataOptions& collect_user_data_options);
 
-// Sorts the given autofill profiles based on completeness, and returns a
-// vector of profile indices in sorted order. Full profiles will be ordered
-// before empty ones, and for equally complete profiles, this falls back to
-// sorting based on the profile names.
+// Sorts the given contacts based on completeness, and returns a vector of
+// indices in sorted order. Full contacts will be ordered before empty ones,
+// and for equally complete contacts, this falls back to sorting based on last
+// used.
 std::vector<int> SortContactsByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
-    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+    const std::vector<std::unique_ptr<Contact>>& contacts);
 
-// Get the default selection for the current list of profiles. Returns -1 if no
+// Get the default selection for the current list of contacts. Returns -1 if no
 // default selection is possible.
-int GetDefaultContactProfile(
-    const CollectUserDataOptions& collect_user_data_options,
-    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+int GetDefaultContact(const CollectUserDataOptions& collect_user_data_options,
+                      const std::vector<std::unique_ptr<Contact>>& contacts);
 
+// Validate the completeness of a shipping address.
 std::vector<std::string> GetShippingAddressValidationErrors(
     const autofill::AutofillProfile* profile,
     const CollectUserDataOptions& collect_user_data_options);
 
-// Sorts the given autofill profiles based on completeness, and returns a
-// vector of profile indices in sorted order. Full profiles will be ordered
-// before empty ones, and for equally complete profiles, this falls back to
-// sorting based on the profile names.
+// Sorts the given addresses based on completeness, and returns a vector of
+// indices in sorted order. Full addresses will be ordered before empty ones,
+// and for equally complete profiles, this falls back to sorting based on
+// last used.
 std::vector<int> SortShippingAddressesByCompleteness(
     const CollectUserDataOptions& collect_user_data_options,
-    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+    const std::vector<std::unique_ptr<Address>>& addresses);
 
-// Get the default selection for the current list of profiles. Returns -1 if no
-// default selection is possible.
-int GetDefaultShippingAddressProfile(
+// Get the default selection for the current list of addresses. Returns -1 if no
+// no default selection is possible.
+int GetDefaultShippingAddress(
     const CollectUserDataOptions& collect_user_data_options,
-    const std::vector<std::unique_ptr<autofill::AutofillProfile>>& profiles);
+    const std::vector<std::unique_ptr<Address>>& addresses);
 
 std::vector<std::string> GetPaymentInstrumentValidationErrors(
     const autofill::CreditCard* credit_card,
@@ -133,6 +134,24 @@ void ResolveTextValue(
     const ElementFinder::Result& target_element,
     const ActionDelegate* action_delegate,
     base::OnceCallback<void(const ClientStatus&, const std::string&)> callback);
+
+// Returns the next selection state for when an event of type |event_type|
+// happens while the current state is |old_state|.
+Metrics::UserDataSelectionState GetNewSelectionState(
+    Metrics::UserDataSelectionState old_state,
+    UserDataEventType event_type);
+
+// Returns the bit array describing which fields are present in |profile|, using
+// Metrics::AutofillAssistantProfileFields as columns.
+// If |profile| is nullptr, returns zero (i.e. all fields are considered
+// missing).
+int GetFieldBitArrayForAddress(const autofill::AutofillProfile* profile);
+
+// Returns the bit array describing which fields are present in |card|, using
+// Metrics::AutofillAssistantCreditCardFields as columns.
+// If |card| is nullptr, returns zero (i.e. all fields are considered
+// missing).
+int GetFieldBitArrayForCreditCard(const autofill::CreditCard* card);
 
 }  // namespace user_data
 }  // namespace autofill_assistant

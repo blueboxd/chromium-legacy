@@ -31,7 +31,11 @@ extern const base::FilePath::CharType kSystemFontsPath[];
 // Absolute path for the folder containing archive mounts.
 extern const base::FilePath::CharType kArchiveMountPath[];
 
-// Returns FilesApp origin chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj.
+// Name of the mount point used to store temporary files for sharing.
+extern const char kShareCacheMountPointName[];
+
+// Returns the valid FilesApp origin. It may be either the System Web App
+// chrome:// URL or the legacy Chrome App chrome-extension:// URL.
 const url::Origin& GetFilesAppOrigin();
 
 // Gets the absolute path for the 'Downloads' folder for the |profile|.
@@ -43,6 +47,10 @@ base::FilePath GetMyFilesFolderForProfile(Profile* profile);
 // Gets the absolute path for the user's Android Play files (Movies, Pictures,
 // etc..., Android apps excluded). The default path may be overridden by tests.
 base::FilePath GetAndroidFilesPath();
+
+// Gets the absolute path for the user's Share Cache directory, which is used
+// to store temporary files being shared from one app to another.
+base::FilePath GetShareCacheFilePath(Profile* profile);
 
 // Converts |old_path| to |new_path| and returns true, if the old path points
 // to an old location of user folders (in "Downloads" or "Google Drive").

@@ -105,9 +105,9 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
   // SnapFlingClient implementation.
   bool GetSnapFlingInfoAndSetAnimatingSnapTarget(
       const gfx::Vector2dF& natural_displacement,
-      gfx::Vector2dF* out_initial_position,
-      gfx::Vector2dF* out_target_position) const override;
-  gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
+      gfx::PointF* out_initial_position,
+      gfx::PointF* out_target_position) const override;
+  gfx::PointF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
   void ScrollEndForSnapFling(bool did_finish) override;
   void RequestAnimationForSnapFling() override;
 
@@ -186,7 +186,7 @@ class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
   // customization.
   Member<Node> previous_gesture_scrolled_node_;
 
-  FloatSize last_scroll_delta_for_scroll_gesture_;
+  ScrollOffset last_scroll_delta_for_scroll_gesture_;
 
   // True iff some of the delta has been consumed for the current
   // scroll sequence in this frame, or any child frames. Only used

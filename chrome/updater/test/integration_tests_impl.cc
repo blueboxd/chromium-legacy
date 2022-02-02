@@ -66,8 +66,10 @@ constexpr char kDoNothingCRXName[] = "updater_qualification_app_exe.crx";
 constexpr char kDoNothingCRXRun[] = "qualification_app.exe";
 constexpr char kDoNothingCRXHash[] =
     "0705f7eedb0427810db76dfc072c8cbc302fbeb9b2c56fa0de3752ed8d6f9164";
-#else
-static_assert(false, "Unsupported platform for IntegrationTest.*");
+#elif defined(OS_LINUX)
+constexpr char kDoNothingCRXName[] = "updater_qualification_app.crx";
+constexpr char kDoNothingCRXRun[] = "qualification_app";
+constexpr char kDoNothingCRXHash[] = "";
 #endif
 
 std::string GetUpdateResponse(const std::string& app_id,
@@ -199,7 +201,8 @@ void Update(UpdaterScope scope, const std::string& app_id) {
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
   base::RunLoop loop;
   update_service->Update(
-      app_id, UpdateService::Priority::kForeground, base::DoNothing(),
+      app_id, UpdateService::Priority::kForeground,
+      UpdateService::PolicySameVersionUpdate::kNotAllowed, base::DoNothing(),
       base::BindOnce(base::BindLambdaForTesting(
           [&loop](UpdateService::Result result_unused) { loop.Quit(); })));
   loop.Run();

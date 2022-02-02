@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -33,9 +34,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/download/notification/download_notification_manager.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -73,7 +74,7 @@ class DownloadShelfUIControllerDelegate
   // DownloadUIController::Delegate
   void OnNewDownloadReady(download::DownloadItem* item) override;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 };
 
 void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
@@ -121,14 +122,14 @@ DownloadUIController::DownloadUIController(content::DownloadManager* manager,
 #if defined(OS_ANDROID)
   if (!delegate_)
     delegate_ = std::make_unique<AndroidUIControllerDelegate>();
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif defined(OS_CHROMEOS)
   if (!delegate_) {
     // The Profile is guaranteed to be valid since DownloadUIController is owned
     // by DownloadService, which in turn is a profile keyed service.
     delegate_ = std::make_unique<DownloadNotificationManager>(
         Profile::FromBrowserContext(manager->GetBrowserContext()));
   }
-#else   // BUILDFLAG(IS_CHROMEOS_ASH)
+#else   // defined(OS_CHROMEOS)
   if (!delegate_) {
     delegate_ = std::make_unique<DownloadShelfUIControllerDelegate>(
         Profile::FromBrowserContext(manager->GetBrowserContext()));

@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/memory_stats.h"
@@ -96,7 +97,16 @@ void APIENTRY CrashReportOnGLErrorDebugCallback(GLenum source,
                                                 const GLvoid* user_param) {
   if (type == GL_DEBUG_TYPE_ERROR && source == GL_DEBUG_SOURCE_API &&
       user_param) {
-    LOG(ERROR) << gl::GLEnums::GetStringEnum(id) << ": " << message;
+    // Note: log_message cannot contain any user data. The error strings
+    // generated from ANGLE are all static strings and do not contain user
+    // information such as shader source code. Be careful if updating the
+    // contents of this string.
+    std::string log_message = gl::GLEnums::GetStringEnum(id);
+    if (message && length > 0) {
+      log_message += ": " + std::string(message, length);
+    }
+    LOG(ERROR) << log_message;
+    crash_keys::gpu_gl_error_message.Set(log_message);
     int* remaining_reports =
         const_cast<int*>(static_cast<const int*>(user_param));
     if (*remaining_reports > 0) {
@@ -799,12 +809,8 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     // Disable robust resource initialization for raster decoder and compositor.
     // TODO(crbug.com/1192632): disable robust_resource_initialization for
     // SwANGLE.
-    // TODO(crbug.com/1116174): Currently disabling robust initialization is
-    // breaking some tests with OOP canvas. Once that's fixed remove check for
-    // kCanvasOopRasterization feature.
     if (gl::GLSurfaceEGL::GetDisplayType() != gl::ANGLE_SWIFTSHADER &&
-        features::IsUsingSkiaRenderer() &&
-        !base::FeatureList::IsEnabled(features::kCanvasOopRasterization)) {
+        features::IsUsingSkiaRenderer()) {
       attribs.robust_resource_initialization = false;
     }
 
@@ -874,27 +880,13 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
                                     &remaining_gl_error_reports);
   }
 
-  // OOP-R needs GrContext for raster tiles.
-  bool need_gr_context =
-      gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      gpu::kGpuFeatureStatusEnabled;
-
-  // SkiaRenderer needs GrContext to composite output surface.
-  need_gr_context |= features::IsUsingSkiaRenderer();
-
-  // GpuMemoryAblationExperiment needs a context to use Skia for Gpu
-  // allocations.
-  need_gr_context |= GpuMemoryAblationExperiment::ExperimentSupported();
-
-  if (need_gr_context) {
-    if (!shared_context_state->InitializeGrContext(
-            gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
-            &activity_flags_, watchdog_)) {
-      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize"
-                    "GrContext for SharedContextState";
-      *result = ContextResult::kFatalFailure;
-      return nullptr;
-    }
+  if (!shared_context_state->InitializeGrContext(
+          gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
+          &activity_flags_, watchdog_)) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize"
+                  "GrContext for SharedContextState";
+    *result = ContextResult::kFatalFailure;
+    return nullptr;
   }
   shared_context_state_ = std::move(shared_context_state);
 

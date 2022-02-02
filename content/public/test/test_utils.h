@@ -8,7 +8,8 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
@@ -95,8 +96,10 @@ bool AreAllSitesIsolatedForTesting();
 // Returns true if |origin| is currently isolated with respect to the
 // BrowsingInstance of |site_instance|. This is only relevant for
 // OriginAgentCluster isolation, and not other types of origin isolation.
-bool ShouldOriginGetOptInIsolation(SiteInstance* site_instance,
-                                   const url::Origin& origin);
+// Note: this only indicates logcial OriginAgentCluster isolation, and says
+// nothing about process-isolation (RequiresOriginKeyedProcess).
+bool IsOriginAgentClusterEnabledForOrigin(SiteInstance* site_instance,
+                                          const url::Origin& origin);
 
 // Returns true if default SiteInstances are enabled. Typically used in a test
 // to mark expectations specific to default SiteInstances.
@@ -352,7 +355,9 @@ class RenderFrameDeletedObserver : public WebContentsObserver {
   // Overridden WebContentsObserver methods.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
 
-  void WaitUntilDeleted();
+  // TODO(1267073): Add WARN_UNUSED_RESULT
+  // Returns true if the frame was deleted before the timeout.
+  bool WaitUntilDeleted();
   bool deleted() const;
 
  private:
@@ -384,7 +389,8 @@ class RenderFrameHostWrapper {
 
   // See RenderFrameDeletedObserver for notes on the difference between
   // RenderFrame being deleted and RenderFrameHost being destroyed.
-  void WaitUntilRenderFrameDeleted();
+  // Returns true if the frame was deleted before the timeout.
+  WARN_UNUSED_RESULT bool WaitUntilRenderFrameDeleted();
   bool IsRenderFrameDeleted() const;
 
   // Pointerish operators. Feel free to add more if you need them.
@@ -479,6 +485,27 @@ class EffectiveURLContentBrowserClient : public ContentBrowserClient {
   std::map<GURL, GURL> urls_to_modify_;
 
   bool requires_dedicated_process_;
+};
+
+// Wrapper around `SetBrowserClientForTesting()` that ensures the
+// previous content browser client is restored upon destruction.
+class ScopedContentBrowserClientSetting final {
+ public:
+  explicit ScopedContentBrowserClientSetting(ContentBrowserClient* new_client);
+  ~ScopedContentBrowserClientSetting();
+
+  ScopedContentBrowserClientSetting(const ScopedContentBrowserClientSetting&) =
+      delete;
+  ScopedContentBrowserClientSetting(ScopedContentBrowserClientSetting&&) =
+      delete;
+
+  ScopedContentBrowserClientSetting& operator=(
+      const ScopedContentBrowserClientSetting&) = delete;
+  ScopedContentBrowserClientSetting& operator=(
+      ScopedContentBrowserClientSetting&&) = delete;
+
+ private:
+  const raw_ptr<ContentBrowserClient> old_client_;
 };
 
 }  // namespace content

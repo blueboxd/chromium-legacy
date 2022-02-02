@@ -6,7 +6,6 @@
 #define UI_NATIVE_THEME_NATIVE_THEME_MAC_H_
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/native_theme/native_theme_aura.h"
@@ -176,12 +175,6 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
 class NativeThemeMacWeb : public NativeThemeAura {
  public:
   NativeThemeMacWeb();
-
-  float AdjustBorderWidthByZoom(float border_width,
-                                float zoom_level) const override;
-  float AdjustBorderRadiusByZoom(Part part,
-                                 float border_width,
-                                 float zoom_level) const override;
 
   static NativeThemeMacWeb* instance();
 };

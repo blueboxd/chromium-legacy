@@ -603,13 +603,13 @@ bool FrameSelection::ShouldPaintCaret(
   return result;
 }
 
-IntRect FrameSelection::AbsoluteCaretBounds() const {
+gfx::Rect FrameSelection::AbsoluteCaretBounds() const {
   DCHECK(ComputeVisibleSelectionInDOMTree().IsValidFor(*frame_->GetDocument()));
   return frame_caret_->AbsoluteCaretBounds();
 }
 
-bool FrameSelection::ComputeAbsoluteBounds(IntRect& anchor,
-                                           IntRect& focus) const {
+bool FrameSelection::ComputeAbsoluteBounds(gfx::Rect& anchor,
+                                           gfx::Rect& focus) const {
   if (!IsAvailable() || GetSelectionInDOMTree().IsNone())
     return false;
 
@@ -1042,7 +1042,7 @@ PhysicalRect FrameSelection::AbsoluteUnclippedBounds() const {
   return PhysicalRect(layout_selection_->AbsoluteSelectionBounds());
 }
 
-IntRect FrameSelection::ComputeRectToScroll(
+gfx::Rect FrameSelection::ComputeRectToScroll(
     RevealExtentOption reveal_extent_option) {
   const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
   if (selection.IsCaret())
@@ -1140,6 +1140,19 @@ void FrameSelection::ScheduleVisualUpdateForPaintInvalidationIfNeeded() const {
 }
 
 bool FrameSelection::SelectWordAroundCaret() {
+  return SelectAroundCaret(TextGranularity::kWord,
+                           HandleVisibility::kNotVisible,
+                           ContextMenuVisibility::kNotVisible);
+}
+
+bool FrameSelection::SelectAroundCaret(
+    TextGranularity text_granularity,
+    HandleVisibility handle_visibility,
+    ContextMenuVisibility context_menu_visibility) {
+  // Only supports word and sentence granularities for now.
+  DCHECK(text_granularity == TextGranularity::kWord ||
+         text_granularity == TextGranularity::kSentence);
+
   const VisibleSelection& selection = ComputeVisibleSelectionInDOMTree();
   // TODO(editing-dev): The use of VisibleSelection needs to be audited. See
   // http://crbug.com/657237 for more details.
@@ -1149,8 +1162,18 @@ bool FrameSelection::SelectWordAroundCaret() {
   static const WordSide kWordSideList[2] = {kNextWordIfOnBoundary,
                                             kPreviousWordIfOnBoundary};
   for (WordSide word_side : kWordSideList) {
-    Position start = StartOfWordPosition(position, word_side);
-    Position end = EndOfWordPosition(position, word_side);
+    Position start;
+    Position end;
+    // Use word granularity by default unless sentence granularity is explicitly
+    // requested.
+    if (text_granularity == TextGranularity::kSentence) {
+      start = StartOfSentencePosition(position);
+      end = EndOfSentence(position, SentenceTrailingSpaceBehavior::kOmitSpace)
+                .GetPosition();
+    } else {
+      start = StartOfWordPosition(position, word_side);
+      end = EndOfWordPosition(position, word_side);
+    }
 
     // TODO(editing-dev): |StartOfWord()| and |EndOfWord()| should not make null
     // for non-null parameter.
@@ -1171,8 +1194,19 @@ bool FrameSelection::SelectWordAroundCaret() {
           SetSelectionOptions::Builder()
               .SetShouldCloseTyping(true)
               .SetShouldClearTypingStyle(true)
-              .SetGranularity(TextGranularity::kWord)
+              .SetGranularity(text_granularity == TextGranularity::kSentence
+                                  ? TextGranularity::kSentence
+                                  : TextGranularity::kWord)
+              .SetShouldShowHandle(handle_visibility ==
+                                   HandleVisibility::kVisible)
               .Build());
+
+      if (context_menu_visibility == ContextMenuVisibility::kVisible) {
+        ContextMenuAllowedScope scope;
+        frame_->GetEventHandler().ShowNonLocatedContextMenu(
+            /*override_target_element=*/nullptr, kMenuSourceTouch);
+      }
+
       return true;
     }
   }

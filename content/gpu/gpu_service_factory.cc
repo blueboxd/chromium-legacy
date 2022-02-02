@@ -24,6 +24,7 @@ GpuServiceFactory::GpuServiceFactory(
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     const gpu::GpuFeatureInfo& gpu_feature_info,
+    const gpu::GPUInfo& gpu_info,
     base::WeakPtr<media::MediaGpuChannelManager> media_gpu_channel_manager,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     media::AndroidOverlayMojoFactoryCB android_overlay_factory_cb) {
@@ -31,6 +32,7 @@ GpuServiceFactory::GpuServiceFactory(
   gpu_preferences_ = gpu_preferences;
   gpu_workarounds_ = gpu_workarounds;
   gpu_feature_info_ = gpu_feature_info;
+  gpu_info_ = gpu_info;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   media_gpu_channel_manager_ = std::move(media_gpu_channel_manager);
   gpu_memory_buffer_factory_ = gpu_memory_buffer_factory;
@@ -48,7 +50,8 @@ void GpuServiceFactory::RunMediaService(
   // hence "user blocking".
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
 #if defined(OS_WIN)
-  // Run everything on the gpu main thread, since that's where the CDM runs.
+  // Run everything on the gpu main thread, since it's required for decode swap
+  // chains. See SwapChainPresenter::TryPresentToDecodeSwapChain().
   task_runner = task_runner_;
 #else
   // TODO(crbug.com/786169): Check whether this needs to be single threaded.
@@ -61,7 +64,7 @@ void GpuServiceFactory::RunMediaService(
   FactoryCallback factory =
       base::BindOnce(&media::CreateGpuMediaService, std::move(receiver),
                      gpu_preferences_, gpu_workarounds_, gpu_feature_info_,
-                     task_runner_, media_gpu_channel_manager_,
+                     gpu_info_, task_runner_, media_gpu_channel_manager_,
                      gpu_memory_buffer_factory_, android_overlay_factory_cb_);
   task_runner->PostTask(
       FROM_HERE,

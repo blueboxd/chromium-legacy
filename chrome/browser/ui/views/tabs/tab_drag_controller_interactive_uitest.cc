@@ -20,6 +20,7 @@
 #include "base/dcheck_is_on.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -1508,7 +1509,7 @@ class CaptureLoseWindowFinder : public WindowFinder {
   }
 
  private:
-  TabStrip* tab_strip_;
+  raw_ptr<TabStrip> tab_strip_;
 };
 
 }  // namespace
@@ -1590,7 +1591,7 @@ class MaximizedBrowserWindowWaiter {
   }
 
   // The browser window observed by this waiter.
-  BrowserWindow* window_;
+  raw_ptr<BrowserWindow> window_;
 
   // The waiter's RunLoop quit closure.
   base::RepeatingClosure quit_;
@@ -3314,7 +3315,7 @@ void DoNotAttachToOtherWindowTestStep2(
   // Get this new created window and set it to non-attachable.
   Browser* new_browser = test->browser_list->get(2);
   new_browser->window()->GetNativeWindow()->SetProperty(
-      ash::kCanAttachToAnotherWindowKey, false);
+      chromeos::kCanAttachToAnotherWindowKey, false);
 
   // Now drag to target_tab_strip.
   ASSERT_TRUE(
@@ -3372,12 +3373,13 @@ void DeferredTargetTabStripTestStep2(DetachToBrowserTabDragControllerTest* test,
   // At this point, |target_tab_strip| should be the deferred target tabstip.
   // Theoratically the dragged tabstrip will merge into |target_tab_strip| after
   // the drag ends.
-  EXPECT_TRUE(test::GetWindowForTabStrip(target_tab_strip)
-                  ->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(
+      test::GetWindowForTabStrip(target_tab_strip)
+          ->GetProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey));
 
   // Now clear the property.
   test::GetWindowForTabStrip(target_tab_strip)
-      ->ClearProperty(ash::kIsDeferredTabDraggingTargetWindowKey);
+      ->ClearProperty(chromeos::kIsDeferredTabDraggingTargetWindowKey);
 
   ASSERT_TRUE(test->ReleaseInput());
 }
@@ -3499,8 +3501,8 @@ void DragToMinimizedOverviewWindowStep2(
                              ui::SHOW_STATE_MINIMIZED);
 
   ASSERT_TRUE(test->DragInputTo(target_point));
-  EXPECT_TRUE(
-      target_window->GetProperty(ash::kIsDeferredTabDraggingTargetWindowKey));
+  EXPECT_TRUE(target_window->GetProperty(
+      chromeos::kIsDeferredTabDraggingTargetWindowKey));
 
   ASSERT_TRUE(test->ReleaseInput());
 }

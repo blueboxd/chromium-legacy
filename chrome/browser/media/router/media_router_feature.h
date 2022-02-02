@@ -46,6 +46,11 @@ extern const base::Feature kGlobalMediaControlsCastStartStop;
 // Presentation API. If disabled, only the allowlisted sites can do so.
 extern const base::Feature kAllowAllSitesToInitiateMirroring;
 
+// If enabled, HTTP requests for DIAL can only be made to URLs that contain the
+// target device IP address.
+// TODO(crbug.com/1270509): Remove this base::Feature once fully launched.
+extern const base::Feature kDialEnforceUrlIPAddress;
+
 namespace prefs {
 // Pref name for the enterprise policy for allowing Cast devices on all IPs.
 constexpr char kMediaRouterCastAllowAllIPs[] =
@@ -79,11 +84,13 @@ bool GetCastAllowAllIPsPref(PrefService* pref_service);
 // randomly generated string and stored in |pref_service|.
 std::string GetReceiverIdHashToken(PrefService* pref_service);
 
-// Returns true if browser side DIAL Media Route Provider is enabled.
+// Returns true if support for DIAL devices is enabled.  Disabling DIAL support
+// also disables SSDP-based discovery for Cast devices.
 bool DialMediaRouteProviderEnabled();
 
-// Returns true if global media controls are used to start and stop casting.
-bool GlobalMediaControlsCastStartStopEnabled();
+// Returns true if global media controls are used to start and stop casting and
+// Media Router is enabled for |context|.
+bool GlobalMediaControlsCastStartStopEnabled(content::BrowserContext* context);
 
 // Returns true if this user is allowed to use Access Codes & QR codes to
 // discover cast devices.

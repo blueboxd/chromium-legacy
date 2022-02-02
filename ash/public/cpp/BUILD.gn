@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+
+assert(is_chromeos_ash)
 
 # C++ headers and sources that can be used outside ash.
 component("cpp") {
@@ -111,6 +114,7 @@ component("cpp") {
     "clipboard_image_model_factory.h",
     "desk_template.cc",
     "desk_template.h",
+    "desks_templates_delegate.h",
     "esim_manager.cc",
     "esim_manager.h",
     "file_icon_util.cc",
@@ -225,17 +229,12 @@ component("cpp") {
     "privacy_screen_dlp_helper.h",
     "projector/projector_annotator_controller.cc",
     "projector/projector_annotator_controller.h",
+    "projector/projector_client.cc",
     "projector/projector_client.h",
     "projector/projector_controller.cc",
     "projector/projector_controller.h",
     "projector/projector_session.cc",
     "projector/projector_session.h",
-    "quick_answers/controller/quick_answers_browser_client.cc",
-    "quick_answers/controller/quick_answers_browser_client.h",
-    "quick_answers/controller/quick_answers_controller.cc",
-    "quick_answers/controller/quick_answers_controller.h",
-    "quick_answers/quick_answers_state.cc",
-    "quick_answers/quick_answers_state.h",
     "resize_shadow_type.h",
     "rounded_corner_utils.cc",
     "rounded_corner_utils.h",
@@ -315,6 +314,8 @@ component("cpp") {
     "vm_camera_mic_constants.h",
     "wallpaper/online_wallpaper_params.cc",
     "wallpaper/online_wallpaper_params.h",
+    "wallpaper/online_wallpaper_variant.cc",
+    "wallpaper/online_wallpaper_variant.h",
     "wallpaper/wallpaper_controller.cc",
     "wallpaper/wallpaper_controller.h",
     "wallpaper/wallpaper_controller_client.h",
@@ -335,6 +336,7 @@ component("cpp") {
   defines = [ "ASH_PUBLIC_IMPLEMENTATION" ]
 
   assert_no_deps = [
+    "//ash/components/arc",
     "//ash/public/cpp/external_arc",
     "//components/arc",
     "//components/exo",
@@ -343,7 +345,6 @@ component("cpp") {
 
   deps = [
     "//ash/components/audio",
-    "//ash/components/quick_answers/public/cpp:prefs",
     "//ash/constants",
     "//ash/public/cpp/ambient/proto",
     "//ash/strings",
@@ -357,6 +358,7 @@ component("cpp") {
     "//chromeos/ui/base",
     "//chromeos/ui/frame",
     "//chromeos/ui/vector_icons",
+    "//components/favicon_base:favicon_base",
     "//components/language/core/browser:browser",
     "//components/pref_registry",
     "//components/prefs",
@@ -377,8 +379,10 @@ component("cpp") {
   ]
 
   public_deps = [
+    "//ash/components/arc/mojom:notifications",
     "//ash/components/security_token_pin",
     "//ash/public/mojom",
+    "//ash/webui/personalization_app/proto",
     "//base",
     "//chromeos/crosapi/mojom",
     "//chromeos/services/assistant/public/mojom",
@@ -386,7 +390,6 @@ component("cpp") {
     "//chromeos/services/cellular_setup/public/mojom",
     "//chromeos/services/network_config/public/mojom",
     "//components/app_restore",
-    "//components/arc/mojom:notifications",
     "//components/session_manager:base",
     "//components/user_manager",
     "//ui/base/ime/ash:ime_types",
@@ -426,6 +429,7 @@ source_set("unit_tests") {
     "//mojo/public/cpp/bindings",
     "//testing/gtest",
     "//ui/aura:test_support",
+    "//ui/chromeos/styles:cros_styles_views",
     "//ui/compositor_extra",
     "//ui/gfx:test_support",
     "//ui/views",
@@ -440,6 +444,8 @@ source_set("test_support") {
     "test/mock_projector_controller.h",
     "test/test_app_list_color_provider.cc",
     "test/test_app_list_color_provider.h",
+    "test/test_desks_templates_delegate.cc",
+    "test/test_desks_templates_delegate.h",
     "test/test_image_downloader.cc",
     "test/test_image_downloader.h",
     "test/test_keyboard_controller_observer.cc",
@@ -457,6 +463,7 @@ source_set("test_support") {
   deps = [
     ":cpp",
     "//base",
+    "//components/favicon_base:favicon_base",
     "//services/device/public/cpp:test_support",
     "//services/network/public/cpp:cpp",
     "//testing/gmock",

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
 <translation id="102360288709523007">Googleକୁ ବ୍ୟବହାରର ପରିସଂଖ୍ୟାନ ଏବଂ କ୍ରାସ୍‌ ରିପୋର୍ଟ ପଠାଇ, Chromiumକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ।</translation>
+<translation id="1047130070405668746">Chromium ଚୟନ କରନ୍ତୁ</translation>
 <translation id="1185134272377778587">Chromium ବିଷୟରେ</translation>
 <translation id="1257458525759135959">ଛବିଗୁଡ଼ିକୁ ସେଭ୍ କରିବା ପାଇଁ, Chromiumକୁ ଆପଣଙ୍କ ଫଟୋଗୁଡ଼ିକରେ ଯୋଗ କରିବାକୁ ଅନୁମତି ଦେବା ପାଇଁ ସେଟିଂସରେ ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="1289216811211435351">Chromiumକୁ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
@@ -13,10 +14,12 @@
 <translation id="1531155317299575425">Chromiumରେ ସାଇନ୍ ଇନ୍ କରିବାକୁ ପ୍ରମ୍ପ୍ଟ ଦେଖାଏ।</translation>
 <translation id="1584569488888892906">Chromium ସରଳ, ସୁରକ୍ଷିତ ଏବଂ ପୂର୍ବ ଅପେକ୍ଷା-ଅଧିକ-ଦ୍ରୁତ ଅଟେ</translation>
 <translation id="1617663976202781617">Chromium ସିଙ୍କ୍‍ରୁ ଡାଟା</translation>
+<translation id="1722370509450468186">ଆପଣଙ୍କ ପାସୱାର୍ଡ ଆପଣଙ୍କ ଆକାଉଣ୍ଟ (<ph name="EMAIL" />)ରେ ସେଭ କରାଯିବ।</translation>
 <translation id="1736662517232558588">Chromium ଡାଟା ଖାଲି କରାଯାଇଛି</translation>
 <translation id="1838412507805038478">Chromium ଯାଞ୍ଚ କରିଛି ଯେ, <ph name="ISSUER" />ଏହି ୱେବସାଇଟ୍‌ର ସାର୍ଟିଫିକେଟ୍ ଜାରି କରିଛନ୍ତି।</translation>
 <translation id="1843424232666537147">Chromiumରେ ଏପରି ବୈଶିଷ୍ଟ୍ୟ ଅଛି ଯାହା ଆପଣଙ୍କୁ ଆପଣଙ୍କର ଇଣ୍ଟର୍ନେଟ୍‌ ଡାଟା ପରିଚାଳନା କରିବାରେ ଏବଂ ଆପଣ କେତେ ଜଲଦି ୱେବ୍‌ପୃଷ୍ଠାଗୁଡ଼ିକ ଲୋଡ୍‌ କରିପାରିବେ, ସେଥିରେ ସାହାଯ୍ୟ କରିଥାଏ।
 <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /></translation>
+<translation id="1867772173333403444">4. Chromium ଚୟନ କରନ୍ତୁ</translation>
 <translation id="2006345422933397527">ଅପଡେଟଗୁଡ଼ିକ ଅଛି କି ନାହିଁ ତାହା Chromium ଯାଞ୍ଚ କରିପାରିଲା ନାହିଁ। ଆପଣଙ୍କ ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ଯାଞ୍ଚ କରି ଦେଖନ୍ତୁ।</translation>
 <translation id="2054703085270098503">Chromium ସହ ସୁରକ୍ଷିତ ରୁହନ୍ତୁ</translation>
 <translation id="2168108852149185974">କିଛି ଆଡ୍-ଅନ୍, Chromium କ୍ରାସ୍ ହେବାର କାରଣ ହୋଇପାରେ। ଦୟାକରି ଅନ୍‌ଇନ୍‌ଷ୍ଟଲ୍ କରନ୍ତୁ:</translation>
@@ -78,6 +81,7 @@
 <translation id="7099326575020694068">ସ୍ପ୍ଲିଟ୍ ଭ୍ୟୁ ମୋଡ୍‌ରେ Chromium ଆପଣଙ୍କର କ୍ୟାମେରା ବ୍ୟବହାର କରିପାରିବ ନାହିଁ</translation>
 <translation id="7108914401277488191">Chromium ସହ ଅଧିକ କାର୍ଯ୍ୟ କରନ୍ତୁ</translation>
 <translation id="7118091470949186573">ଆପଣ ବର୍ତ୍ତମାନ ମେସେଜ୍, ଡକ୍ୟୁମେଣ୍ଟ ଏବଂ ଅନ୍ୟ ଆପଗୁଡ଼ିକର ଲିଙ୍କରେ ଯେ କୌଣସି ସମୟରେ ଟାପ୍ କରି Chromium ବ୍ୟବହାର କରିପାରିବେ।</translation>
+<translation id="7175400662502680481">ଏକ ଡାଟା ଉଲ୍ଲଙ୍ଘନ ଯୋଗୁଁ ଆପଣଙ୍କ ପାସୱାର୍ଡଟି ଚୋରି ହୋଇଯାଇଛି। ପାସୱାର୍ଡ ମ୍ୟାନେଜର ବର୍ତ୍ତମାନ ଏହାକୁ ପରିବର୍ତ୍ତନ କରିବା ପାଇଁ ସୁପାରିଶ କରେ।</translation>
 <translation id="7208566199746267865">ଆପଣଙ୍କର ଆକାଉଣ୍ଟକୁ ୱେବ୍‌କୁ ଆଣି Chromium ଆପଣଙ୍କର ସମୟ ବଞ୍ଚାଏ। ଆପଣ ସେଟିଂସ୍‌ରେ ଆକାଉଣ୍ଟ ଯୋଗ କରିପାରିବେ କିମ୍ବା କାଢ଼ିପାରିବେ।</translation>
 <translation id="725427773388857052">ଡାଟା ଉଲ୍ଲଙ୍ଘନ, ଅସୁରକ୍ଷିତ ୱେବସାଇଟ୍ କିମ୍ବା ଆହୁରି ଅନେକ କିଛିରୁ Chromium ଆପଣଙ୍କୁ ସୁରକ୍ଷିତ ରଖିବାରେ ସାହାଯ୍ୟ କରିପାରିବ।</translation>
 <translation id="7269362888766543920">କିଛି ଆଡ୍-ଅନ୍ କାରଣରୁ Chromium କ୍ରାଶ୍ ହୋଇପାରେ। ଦୟାକରି ସେଗୁଡ଼ିକୁ ଅନ୍‌ଇନ୍‍ଷ୍ଟଲ୍ କରିବା ପାଇଁ ଚେଷ୍ଟା କରନ୍ତୁ।</translation>

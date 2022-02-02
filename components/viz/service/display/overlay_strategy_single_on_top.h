@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/viz_service_export.h"
@@ -56,20 +56,22 @@ class VIZ_SERVICE_EXPORT OverlayStrategySingleOnTop
       const PrimaryPlane* primary_plane,
       OverlayCandidateList* candidates,
       std::vector<gfx::Rect>* content_bounds,
-      OverlayProposedCandidate* proposed_candidate) override;
+      const OverlayProposedCandidate& proposed_candidate) override;
+
+  void CommitCandidate(const OverlayProposedCandidate& proposed_candidate,
+                       AggregatedRenderPass* render_pass) override;
 
   OverlayStrategy GetUMAEnum() const override;
 
  private:
   static constexpr size_t kMaxFrameCandidateWithSameResourceId = 3;
 
-  bool TryOverlay(QuadList* quad_list,
+  bool TryOverlay(AggregatedRenderPass* render_pass,
                   const PrimaryPlane* primary_plane,
                   OverlayCandidateList* candidate_list,
-                  const OverlayCandidate& candidate,
-                  QuadList::Iterator candidate_iterator);
+                  const OverlayProposedCandidate& proposed_candidate);
 
-  OverlayProcessorUsingStrategy* capability_checker_;  // Weak.
+  raw_ptr<OverlayProcessorUsingStrategy> capability_checker_;  // Weak.
 
   ResourceId previous_frame_resource_id_ = kInvalidResourceId;
   size_t same_resource_id_frames_count_ = 0;

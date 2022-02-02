@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "components/feed/core/proto/v2/store.pb.h"
@@ -89,6 +90,8 @@ class StreamModel {
     virtual void OnStoreChange(StoreUpdate update) = 0;
   };
 
+  // TODO(crbug.com/1268575): Add LoggingParameters here, as they should stay
+  // constant over the life of the model.
   explicit StreamModel(Context* context);
   ~StreamModel();
 
@@ -177,7 +180,7 @@ class StreamModel {
   StreamType stream_type_;
 
   base::ObserverList<Observer> observers_;
-  StoreObserver* store_observer_ = nullptr;  // Unowned.
+  raw_ptr<StoreObserver> store_observer_ = nullptr;  // Unowned.
   stream_model::ContentMap content_map_;
   stream_model::FeatureTree base_feature_tree_{&content_map_};
   // |base_feature_tree_| with |ephemeral_changes_| applied.

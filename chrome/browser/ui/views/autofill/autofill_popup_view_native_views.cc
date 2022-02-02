@@ -11,6 +11,7 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -61,6 +63,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using autofill::PopupItemId;
 using views::BubbleBorder;
 
 namespace {
@@ -92,20 +95,28 @@ constexpr int kAdjacentLabelsVerticalSpacing = 2;
 // The default icon size used in the suggestion drop down.
 constexpr int kIconSize = 16;
 
-// Popup footer items that use a leading icon instead of a trailing one.
-constexpr autofill::PopupItemId kItemTypesUsingLeadingIcons[] = {
-    autofill::PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS,
-    autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS,
-    autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
-    autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY,
-    autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
-    autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN,
-    autofill::PopupItemId::
-        POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE};
+// Popup items that use a leading icon instead of a trailing one.
+constexpr PopupItemId kItemTypesUsingLeadingIcons[] = {
+    PopupItemId::POPUP_ITEM_ID_CLEAR_FORM,
+    PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS,
+    PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS,
+    PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
+    PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY,
+    PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN,
+    PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN,
+    PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE};
+
+// Convenienve wrapper to check if the feature to improve the suggestion UI is
+// used.
+bool UseImprovedSuggestionUi() {
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillVisualImprovementsForSuggestionUi);
+}
 
 int GetContentsVerticalPadding() {
   return ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
+      UseImprovedSuggestionUi() ? DISTANCE_CONTENT_LIST_VERTICAL_SINGLE
+                                : DISTANCE_CONTENT_LIST_VERTICAL_MULTI);
 }
 
 int GetHorizontalMargin() {
@@ -160,6 +171,9 @@ std::unique_ptr<views::ImageView> GetIconImageViewByName(
 
   if (icon_str == "keyIcon")
     return ImageViewFromVectorIcon(kKeyIcon);
+
+  if (icon_str == "clearIcon")
+    return ImageViewFromVectorIcon(kBackspaceIcon);
 
   if (icon_str == "globeIcon")
     return ImageViewFromVectorIcon(kGlobeIcon);
@@ -228,6 +242,36 @@ std::unique_ptr<views::Label> CreateLabelWithStyleAndContext(
   return label;
 }
 
+// Returns the name of the network for payment method icons, empty string
+// otherwise.
+std::u16string GetIconAccessibleName(const std::string& icon_text) {
+  // Networks for which icons are currently shown.
+  if (icon_text == autofill::kAmericanExpressCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_AMEX);
+  if (icon_text == autofill::kDinersCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DINERS);
+  if (icon_text == autofill::kDiscoverCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_DISCOVER);
+  if (icon_text == autofill::kEloCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_ELO);
+  if (icon_text == autofill::kJCBCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
+  if (icon_text == autofill::kMasterCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+  if (icon_text == autofill::kMirCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MIR);
+  if (icon_text == autofill::kTroyCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_TROY);
+  if (icon_text == autofill::kUnionPay)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
+  if (icon_text == autofill::kVisaCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_VISA);
+  // Other networks.
+  if (icon_text == autofill::kGenericCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_GENERIC);
+  return std::u16string();
+}
+
 }  // namespace
 
 namespace autofill {
@@ -243,13 +287,18 @@ class PopupSeparator : public views::Separator {
   void OnThemeChanged() override;
 
  private:
-  AutofillPopupBaseView* popup_;
+  raw_ptr<AutofillPopupBaseView> popup_;
 };
 
 PopupSeparator::PopupSeparator(AutofillPopupBaseView* popup) : popup_(popup) {
-  // Add some spacing between the the previous item and the separator.
   SetPreferredHeight(views::MenuConfig::instance().separator_thickness);
-  SetBorder(views::CreateEmptyBorder(GetContentsVerticalPadding(), 0, 0, 0));
+  // Add some spacing between the previous item and the separator.
+  // If the feature AutofillVisualImprovementsForSuggestionUi is enabled, also
+  // add a padding after the separator.
+  // TODO(crbug.com/1274134): Clean up once improvements are launched.
+  SetBorder(views::CreateEmptyBorder(
+      GetContentsVerticalPadding(), 0,
+      UseImprovedSuggestionUi() ? GetContentsVerticalPadding() : 0, 0));
 }
 
 void PopupSeparator::OnThemeChanged() {
@@ -269,7 +318,7 @@ class SuggestionLabel : public views::Label {
   void OnThemeChanged() override;
 
  private:
-  AutofillPopupBaseView* popup_;
+  raw_ptr<AutofillPopupBaseView> popup_;
 };
 
 SuggestionLabel::SuggestionLabel(const std::u16string& text,
@@ -534,8 +583,14 @@ END_METADATA
 /************** AutofillPopupItemView **************/
 
 void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
   std::vector<std::u16string> text;
+
+  auto suggestion = controller->GetSuggestionAt(GetLineNumber());
+  std::u16string icon_name = GetIconAccessibleName(suggestion.icon);
+  if (!icon_name.empty())
+    text.push_back(icon_name);
 
   auto main_text = controller->GetSuggestionMainTextAt(GetLineNumber());
   text.push_back(main_text);
@@ -551,7 +606,6 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   }
 
   // TODO(siyua): GetSuggestionLabelAt should return a vector of strings.
-  auto suggestion = controller->GetSuggestionAt(GetLineNumber());
   if (!suggestion.offer_label.empty()) {
     // |offer_label| is only populated for credit card suggestions.
     text.push_back(suggestion.offer_label);
@@ -598,14 +652,16 @@ void AutofillPopupItemView::OnMouseEntered(const ui::MouseEvent& event) {
   // don't want to show a preview.
   if (!mouse_observed_outside_of_item_)
     return;
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
   if (controller)
     controller->SetSelectedLine(GetLineNumber());
 }
 
 void AutofillPopupItemView::OnMouseExited(const ui::MouseEvent& event) {
   mouse_observed_outside_of_item_ = true;
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
   if (controller)
     controller->SelectionCleared();
 }
@@ -616,7 +672,8 @@ void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
   // current item.
   if (!mouse_observed_outside_of_item_)
     return;
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
   if (controller && event.IsOnlyLeftMouseButton() &&
       HitTestPoint(event.location())) {
     controller->AcceptSuggestion(GetLineNumber());
@@ -624,7 +681,8 @@ void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupItemView::OnGestureEvent(ui::GestureEvent* event) {
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
   if (!controller)
     return;
   switch (event->type()) {
@@ -644,7 +702,8 @@ void AutofillPopupItemView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void AutofillPopupItemView::CreateContent() {
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -729,16 +788,30 @@ void AutofillPopupItemView::RefreshStyle() {
                                    : popup_view()->GetBackgroundColor();
   SkColor fg_color = GetSelected() ? popup_view()->GetSelectedForegroundColor()
                                    : popup_view()->GetForegroundColor();
+
+  // Set style for each label in this view depending on current state since the
+  // style isn't automatically adjusted after creation of the label.
   for (views::Label* label : inner_labels_) {
     label->SetAutoColorReadabilityEnabled(false);
     label->SetBackgroundColor(bk_color);
-    // Set style depending on current state since the style isn't automatically
-    // adjusted after creation of the label.
-    label->SetEnabledColor(
-        label->GetEnabled()
-            ? fg_color
-            : views::style::GetColor(*this, label->GetTextContext(),
-                                     views::style::STYLE_DISABLED));
+
+    if (!label->GetEnabled()) {
+      label->SetEnabledColor(views::style::GetColor(
+          *this, label->GetTextContext(), views::style::STYLE_DISABLED));
+      continue;
+    }
+
+    if (!UseImprovedSuggestionUi()) {
+      label->SetEnabledColor(fg_color);
+      continue;
+    }
+
+    // If the current suggestion is selected, retrieve a color that corresponds
+    // to the SELECTED style. Otherwise, use the color that corresponds to the
+    // actual style of the label.
+    label->SetEnabledColor(views::style::GetColor(
+        *this, label->GetTextContext(),
+        GetSelected() ? views::style::STYLE_SELECTED : label->GetTextStyle()));
   }
   SchedulePaint();
 }
@@ -759,7 +832,8 @@ std::unique_ptr<views::Label> AutofillPopupItemView::CreateMainTextView() {
           .is_value_secondary) {
     std::unique_ptr<views::Label> label = CreateLabelWithStyleAndContext(
         text, views::style::CONTEXT_DIALOG_BODY_TEXT,
-        views::style::STYLE_SECONDARY);
+        UseImprovedSuggestionUi() ? views::style::STYLE_PRIMARY
+                                  : views::style::STYLE_SECONDARY);
     KeepLabel(label.get());
     return label;
   }
@@ -848,7 +922,9 @@ int AutofillPopupSuggestionView::GetPrimaryTextStyle() {
 }
 
 gfx::Font::Weight AutofillPopupSuggestionView::GetPrimaryTextWeight() const {
-  return views::TypographyProvider::MediumWeightForUI();
+  return UseImprovedSuggestionUi()
+             ? gfx::Font::Weight::NORMAL
+             : views::TypographyProvider::MediumWeightForUI();
 }
 
 AutofillPopupSuggestionView::AutofillPopupSuggestionView(
@@ -979,7 +1055,8 @@ AutofillPopupFooterView* AutofillPopupFooterView::Create(
 }
 
 void AutofillPopupFooterView::CreateContent() {
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
 
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -1005,10 +1082,12 @@ void AutofillPopupFooterView::CreateContent() {
   }
 
   // GetCornerRadius adds extra height to the footer to account for rounded
-  // corners.
+  // corners. If the feature UseImprovedSuggestionUi is used, this is not
+  // necessary because there is an additional padding.
   layout_manager->set_minimum_cross_axis_size(
       views::MenuConfig::instance().touchable_menu_height +
-      AutofillPopupBaseView::GetCornerRadius());
+      (UseImprovedSuggestionUi() ? 0
+                                 : AutofillPopupBaseView::GetCornerRadius()));
 
   auto main_text_label = CreateMainTextView();
   main_text_label->SetEnabled(!suggestion.is_loading);
@@ -1032,8 +1111,12 @@ void AutofillPopupFooterView::CreateContent() {
 void AutofillPopupFooterView::RefreshStyle() {
   AutofillPopupItemView::RefreshStyle();
   SetBorder(views::CreateSolidSidedBorder(
-      // If the footer is the first item, do not draw a separator line.
-      /*top=*/GetLineNumber() == 0
+      // If the footer is the first item, do not draw a top border line that
+      // acts as a separator line.
+      // Also, if the feature to improve the suggestion UI is used, do not draw
+      // it.
+      // TODO(crbug.com/1274134): Clean up once improvements are launched.
+      /*top=*/(GetLineNumber() == 0 || UseImprovedSuggestionUi())
           ? 0
           : views::MenuConfig::instance().separator_thickness,
       /*left=*/0,
@@ -1082,12 +1165,17 @@ void AutofillPopupSeparatorView::CreateContent() {
 }
 
 void AutofillPopupSeparatorView::RefreshStyle() {
+  if (UseImprovedSuggestionUi()) {
+    SetBackground(CreateBackground());
+  }
   SchedulePaint();
 }
 
 std::unique_ptr<views::Background>
 AutofillPopupSeparatorView::CreateBackground() {
-  return nullptr;
+  return UseImprovedSuggestionUi()
+             ? views::CreateSolidBackground(popup_view()->GetBackgroundColor())
+             : nullptr;
 }
 
 AutofillPopupSeparatorView::AutofillPopupSeparatorView(
@@ -1111,7 +1199,8 @@ AutofillPopupWarningView* AutofillPopupWarningView::Create(
 
 void AutofillPopupWarningView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
   if (!controller)
     return;
 
@@ -1120,7 +1209,8 @@ void AutofillPopupWarningView::GetAccessibleNodeData(
 }
 
 void AutofillPopupWarningView::CreateContent() {
-  AutofillPopupController* controller = popup_view()->controller();
+  base::WeakPtr<AutofillPopupController> controller =
+      popup_view()->controller();
 
   int horizontal_margin = GetHorizontalMargin();
   int vertical_margin = AutofillPopupBaseView::GetCornerRadius();
@@ -1200,7 +1290,7 @@ END_METADATA
 /************** AutofillPopupViewNativeViews **************/
 
 AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
-    AutofillPopupController* controller,
+    base::WeakPtr<AutofillPopupController> controller,
     views::Widget* parent_widget)
     : AutofillPopupBaseView(controller, parent_widget),
       controller_(controller) {
@@ -1262,6 +1352,8 @@ void AutofillPopupViewNativeViews::OnSelectedRowChanged(
 
   if (current_row_selection)
     rows_[*current_row_selection]->SetSelected(true);
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
 }
 
 void AutofillPopupViewNativeViews::OnSuggestionsChanged() {
@@ -1281,60 +1373,128 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   body_container_ = nullptr;
   footer_container_ = nullptr;
 
-  int line_number = 0;
-  bool has_footer = false;
+  int line_count = controller_->GetLineCount();
 
-  // Process and add all the suggestions which are in the primary container.
-  // Stop once the first footer item is found, or there are no more items.
-  while (line_number < controller_->GetLineCount()) {
-    int frontend_id = controller_->GetSuggestionAt(line_number).frontend_id;
-    switch (frontend_id) {
-      case autofill::PopupItemId::POPUP_ITEM_ID_CLEAR_FORM:
-      case autofill::PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS:
-      case autofill::PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
-      case autofill::PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
-      case autofill::PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS:
-      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
-      case autofill::PopupItemId::
-          POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN:
-      case autofill::PopupItemId::
+  std::vector<int> footer_item_line_numbers;
+  footer_item_line_numbers.reserve(line_count);
+
+  // Convert a line number to a front end id.
+  auto line_number_to_frontend_id = [&](int line_number) {
+    return controller_->GetSuggestionAt(line_number).frontend_id;
+  };
+
+  // Returns true if the item at |line_number| is a footer item.
+  // Returns false if the |line_number| exceeds the line count.
+  auto is_footer_item = [&](int line_number) {
+    if (line_number >= line_count)
+      return false;
+
+    switch (line_number_to_frontend_id(line_number)) {
+      case PopupItemId::POPUP_ITEM_ID_SCAN_CREDIT_CARD:
+      case PopupItemId::POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
+      case PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
+      case PopupItemId::POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS:
+      case PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN:
+      case PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN:
+      case PopupItemId::
           POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
-      case autofill::PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
-      case autofill::PopupItemId::POPUP_ITEM_ID_USE_VIRTUAL_CARD:
-        // This is a footer, so this suggestion will be processed later. Don't
-        // increment |line_number|, or else it will be skipped when adding
-        // footer rows below.
-        has_footer = true;
-        break;
+      case PopupItemId::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS:
+      case PopupItemId::POPUP_ITEM_ID_USE_VIRTUAL_CARD:
+        return UseImprovedSuggestionUi();
 
-      case autofill::PopupItemId::POPUP_ITEM_ID_SEPARATOR:
-        rows_.push_back(AutofillPopupSeparatorView::Create(this, line_number));
-        break;
-
-      case autofill::PopupItemId::POPUP_ITEM_ID_MIXED_FORM_MESSAGE:
-      case autofill::PopupItemId::
-          POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-        rows_.push_back(AutofillPopupWarningView::Create(this, line_number));
-        break;
-
-      case autofill::PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
-        rows_.push_back(PasswordPopupSuggestionView::Create(this, line_number,
-                                                            frontend_id));
-        break;
+      case PopupItemId::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
+      case PopupItemId::POPUP_ITEM_ID_CLEAR_FORM:
+      case PopupItemId::POPUP_ITEM_ID_AUTOFILL_OPTIONS:
+        return true;
 
       default:
-        rows_.push_back(AutofillPopupSuggestionView::Create(
-            this, line_number, frontend_id, controller_->GetPopupType()));
+        return false;
+    }
+  };
+
+  // Process and add all the suggestions which are in the primary container.
+  // Collect all footer line numbers such that those can be added to the footer
+  // container below. DCHECK that all non-footer items are added before any
+  // footer items.
+  for (int current_line_number = 0; current_line_number < line_count;
+       ++current_line_number) {
+    // Collect all footer item numbers for subsequent processing.
+    if (is_footer_item(current_line_number)) {
+      footer_item_line_numbers.emplace_back(current_line_number);
+      continue;
     }
 
-    if (has_footer)
-      break;
-    line_number++;
+    int frontend_id = line_number_to_frontend_id(current_line_number);
+    bool is_separator = frontend_id == PopupItemId::POPUP_ITEM_ID_SEPARATOR;
+
+    // Non-footer items must precede footer items.
+    // The separator item can be part of both the footer or the scroll view.
+    DCHECK(footer_item_line_numbers.empty() || is_separator);
+
+    switch (frontend_id) {
+      // The separator should be added to the scroll view only if the next item
+      // is not a footer item and the footer section has not been started yet.
+      case PopupItemId::POPUP_ITEM_ID_SEPARATOR:
+        if (footer_item_line_numbers.empty() &&
+            !is_footer_item(current_line_number + 1)) {
+          rows_.push_back(
+              AutofillPopupSeparatorView::Create(this, current_line_number));
+        } else {
+          footer_item_line_numbers.push_back(current_line_number);
+        }
+        break;
+
+      case PopupItemId::POPUP_ITEM_ID_MIXED_FORM_MESSAGE:
+      case PopupItemId::POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+        rows_.push_back(
+            AutofillPopupWarningView::Create(this, current_line_number));
+        break;
+
+      case PopupItemId::POPUP_ITEM_ID_USERNAME_ENTRY:
+      case PopupItemId::POPUP_ITEM_ID_PASSWORD_ENTRY:
+      case PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_USERNAME_ENTRY:
+      case PopupItemId::POPUP_ITEM_ID_ACCOUNT_STORAGE_PASSWORD_ENTRY:
+        rows_.push_back(PasswordPopupSuggestionView::Create(
+            this, current_line_number, frontend_id));
+        break;
+
+      // The default section contains most of the suggestions including
+      // addresses and credit cards.
+      default:
+        rows_.push_back(AutofillPopupSuggestionView::Create(
+            this, current_line_number, frontend_id,
+            controller_->GetPopupType()));
+    }
+  }
+
+  // Convenience pointers to the content area view and layout that are used to
+  // add top-level content. Note that those are replaced below if the feature
+  // kAutofillVisualImprovementsForSuggestionUi is enabled.
+  // TODO(crbug.com/1274134): Clean up once improvements are launched.
+  raw_ptr<views::View> content_view = this;
+  raw_ptr<views::BoxLayout> content_layout = layout_;
+
+  // If kAutofillVisualImprovementsForSuggestionUi is enabled, introduce an
+  // additional view with a vertical padding that wraps the full content of the
+  // bubble. This is similar to the padding_wrapper used in the scroll area, but
+  // it allows to add a padding below the footer.
+  if (UseImprovedSuggestionUi()) {
+    // Create the view and set the convenience pointers defined above.
+    std::unique_ptr<views::View> content_padding_wrapper =
+        std::make_unique<views::View>();
+
+    content_layout = content_padding_wrapper->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
+
+    // This adds a padding area on the top and the bottom of the bubble content.
+    content_padding_wrapper->SetBorder(
+        views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
+
+    content_view = AddChildView(std::move(content_padding_wrapper));
+
+    content_layout->set_main_axis_alignment(
+        views::BoxLayout::MainAxisAlignment::kStart);
   }
 
   if (!rows_.empty()) {
@@ -1357,44 +1517,61 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
     scroll_view_->SetDrawOverflowIndicator(false);
     scroll_view_->ClipHeightTo(0, body_container_->GetPreferredSize().height());
 
-    // Use an additional container to apply padding outside the scroll view, so
-    // that the padding area is stationary. This ensures that the rounded
-    // corners appear properly; on Mac, the clipping path will not apply
-    // properly to a scrollable area. NOTE: GetContentsVerticalPadding is
-    // guaranteed to return a size which accommodates the rounded corners.
-    views::View* padding_wrapper = new views::View();
-    padding_wrapper->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
-    padding_wrapper->SetLayoutManager(std::make_unique<views::FillLayout>());
-    padding_wrapper->AddChildView(scroll_view_);
-    AddChildView(padding_wrapper);
-    layout_->SetFlexForView(padding_wrapper, 1);
-  }
+    // TODO(crbug.com/1274134): Clean up once improvements are launched.
+    // Note, the padding wrapper is not needed if the content_padding_wrapper is
+    // used.
+    if (UseImprovedSuggestionUi()) {
+      content_view->AddChildView(scroll_view_.get());
+      content_layout->SetFlexForView(scroll_view_.get(), 1);
+    } else {
+      // Use an additional container to apply padding outside the scroll view,
+      // so that the padding area is stationary. This ensures that the rounded
+      // corners appear properly; on Mac, the clipping path will not apply
+      // properly to a scrollable area. NOTE: GetContentsVerticalPadding is
+      // guaranteed to return a size which accommodates the rounded corners.
+      // Add the padding to the top unconditionally, but only add a padding to
+      // the bottom if there are no footer items to follow.
+      views::View* padding_wrapper = new views::View();
+      padding_wrapper->SetBorder(views::CreateEmptyBorder(gfx::Insets(
+          GetContentsVerticalPadding(), 0,
+          (footer_item_line_numbers.empty()) ? GetContentsVerticalPadding() : 0,
+          0)));
 
-  // All the remaining rows (where index >= |line_number|) are part of the
-  // footer. This needs to be in its own container because it should not be
-  // affected by scrolling behavior (it's "sticky") and because it has a
-  // special background color.
-  if (has_footer) {
-    auto* footer_container = new views::View();
-
-    views::BoxLayout* footer_layout =
-        footer_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kVertical));
-    footer_layout->set_main_axis_alignment(
-        views::BoxLayout::MainAxisAlignment::kStart);
-
-    while (line_number < controller_->GetLineCount()) {
-      rows_.push_back(AutofillPopupFooterView::Create(
-          this, line_number,
-          controller_->GetSuggestionAt(line_number).frontend_id));
-      footer_container->AddChildView(rows_.back());
-      line_number++;
+      padding_wrapper->SetLayoutManager(std::make_unique<views::FillLayout>());
+      padding_wrapper->AddChildView(scroll_view_.get());
+      content_view->AddChildView(padding_wrapper);
+      content_layout->SetFlexForView(padding_wrapper, 1);
     }
-
-    footer_container_ = AddChildView(footer_container);
-    layout_->SetFlexForView(footer_container_, 0);
   }
+
+  if (footer_item_line_numbers.empty()) {
+    return;
+  }
+
+  // Footer items need to be in their own container because they should not be
+  // affected by scrolling behavior (they are "sticky" at the bottom) and
+  // because they have a special background color
+  auto* footer_container = new views::View();
+
+  views::BoxLayout* footer_layout =
+      footer_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+  footer_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kStart);
+
+  for (int line_number : footer_item_line_numbers) {
+    // The footer can contain either footer views or separator lines.
+    if (line_number_to_frontend_id(line_number) == POPUP_ITEM_ID_SEPARATOR) {
+      rows_.push_back(AutofillPopupSeparatorView::Create(this, line_number));
+    } else {
+      rows_.push_back(AutofillPopupFooterView::Create(
+          this, line_number, line_number_to_frontend_id(line_number)));
+    }
+    footer_container->AddChildView(rows_.back());
+  }
+
+  footer_container_ = content_view->AddChildView(footer_container);
+  content_layout->SetFlexForView(footer_container_, 0);
 }
 
 int AutofillPopupViewNativeViews::AdjustWidth(int width) const {
@@ -1551,7 +1728,7 @@ AutofillPopupView* AutofillPopupView::Create(
     return nullptr;
 #endif
 
-  return new AutofillPopupViewNativeViews(controller.get(), observing_widget);
+  return new AutofillPopupViewNativeViews(controller, observing_widget);
 }
 
 }  // namespace autofill

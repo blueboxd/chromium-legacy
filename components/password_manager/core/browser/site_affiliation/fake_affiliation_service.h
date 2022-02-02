@@ -27,7 +27,9 @@ class FakeAffiliationService : public AffiliationService {
                 const base::Time& keep_fresh_until) override;
   void CancelPrefetch(const FacetURI& facet_uri,
                       const base::Time& keep_fresh_until) override;
+  void KeepPrefetchForFacets(std::vector<FacetURI> facet_uris) override;
   void TrimCacheForFacetURI(const FacetURI& facet_uri) override;
+  void TrimUnusedCache(std::vector<FacetURI> facet_uris) override;
 
   void InjectAffiliationAndBrandingInformation(
       std::vector<std::unique_ptr<PasswordForm>> forms,
@@ -37,4 +39,4 @@ class FakeAffiliationService : public AffiliationService {
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SITE_AFFILIATION_MOCK_AFFILIATION_SERVICE_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SITE_AFFILIATION_FAKE_AFFILIATION_SERVICE_H_

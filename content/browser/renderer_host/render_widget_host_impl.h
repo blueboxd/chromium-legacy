@@ -20,7 +20,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -46,6 +46,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/scheduler/browser_task_executor.h"
+#include "content/common/content_export.h"
 #include "content/common/frame.mojom-forward.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
@@ -417,6 +418,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void WasHidden();
   void WasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request);
+
+  // Called to request the presentation time for the next frame or cancel any
+  // requests when the RenderWidget's visibility state is not changing. If the
+  // visibility state is changing call WasHidden or WasShown instead.
+  void RequestPresentationTimeForNextFrame(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request);
+  void CancelPresentationTimeRequest();
 
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto
@@ -1115,16 +1123,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AddPendingUserActivation(const blink::WebInputEvent& event);
   void ClearPendingUserActivation();
 
-  // Calls the pending blink::mojom::Widget::WasShown.
-  void RunPendingWasShown(base::TimeTicks show_request_timestamp,
-                          bool is_evicted,
-                          blink::mojom::RecordContentToVisibleTimeRequestPtr
-                              record_tab_switch_time_request);
-
   // An expiry time for resetting the pending_user_activation_timer_.
   static const base::TimeDelta kActivationNotificationExpireTime;
 
-  FrameTree* frame_tree_;
+  raw_ptr<FrameTree> frame_tree_;
 
   // RenderWidgetHost are either:
   // - Owned by RenderViewHostImpl.
@@ -1153,12 +1155,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-null until DetachDelegate() is called.
-  RenderWidgetHostDelegate* delegate_;
+  raw_ptr<RenderWidgetHostDelegate> delegate_;
 
   // The delegate of the owner of this object.
   // This member is non-null if and only if this RenderWidgetHost is associated
   // with a main frame RenderWidget.
-  RenderWidgetHostOwnerDelegate* owner_delegate_ = nullptr;
+  raw_ptr<RenderWidgetHostOwnerDelegate> owner_delegate_ = nullptr;
 
   // AgentSchedulingGroupHost to be used for IPC with the corresponding
   // (renderer-side) AgentSchedulingGroup. Its channel may be nullptr if the
@@ -1386,7 +1388,23 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   InputRouterImpl::RequestMouseLockCallback request_mouse_callback_;
 
-  base::OnceClosure pending_show_closure_;
+  // Parameters to pass to blink::mojom::Widget::WasShown after
+  // `waiting_for_init_` becomes true. These are stored in a struct instead of
+  // storing a callback so that they can be updated if
+  // RequestPresentationTimeForNextFrame is called while waiting.
+  struct PendingShowParams {
+    PendingShowParams(bool is_evicted,
+                      blink::mojom::RecordContentToVisibleTimeRequestPtr
+                          visible_time_request);
+    ~PendingShowParams();
+
+    PendingShowParams(const PendingShowParams&) = delete;
+    PendingShowParams& operator=(const PendingShowParams&) = delete;
+
+    bool is_evicted;
+    blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request;
+  };
+  absl::optional<PendingShowParams> pending_show_params_;
 
   // If this is initialized with a frame this member will be valid and
   // can be used to send messages directly to blink.

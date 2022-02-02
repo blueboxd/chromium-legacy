@@ -156,17 +156,26 @@ void WaylandSurface::SetAcquireFence(gfx::GpuFenceHandle acquire_fence) {
   return;
 }
 
-void WaylandSurface::AttachBuffer(WaylandBufferHandle* buffer_handle) {
+bool WaylandSurface::AttachBuffer(WaylandBufferHandle* buffer_handle) {
   DCHECK(!apply_state_immediately_);
   if (!buffer_handle) {
     pending_state_.buffer = nullptr;
     pending_state_.buffer_id = 0;
-    return;
+    return false;
   }
 
   pending_state_.buffer_size_px = buffer_handle->size();
   pending_state_.buffer = buffer_handle->wl_buffer();
   pending_state_.buffer_id = buffer_handle->id();
+
+  if (state_.buffer_id == pending_state_.buffer_id &&
+      buffer_handle->released()) {
+    state_.buffer = nullptr;
+    state_.buffer_id = 0;
+  }
+  // Compare buffer_id because it is monotonically increasing. state_.buffer
+  // may have been de-allocated.
+  return state_.buffer_id != pending_state_.buffer_id;
 }
 
 void WaylandSurface::UpdateBufferDamageRegion(const gfx::Rect& damage_px) {
@@ -174,9 +183,10 @@ void WaylandSurface::UpdateBufferDamageRegion(const gfx::Rect& damage_px) {
   pending_state_.damage_px.push_back(damage_px);
 }
 
-void WaylandSurface::Commit() {
+void WaylandSurface::Commit(bool flush) {
   wl_surface_commit(surface_.get());
-  connection_->ScheduleFlush();
+  if (flush)
+    connection_->ScheduleFlush();
 }
 
 void WaylandSurface::SetBufferTransform(gfx::OverlayTransform transform) {
@@ -187,7 +197,6 @@ void WaylandSurface::SetBufferTransform(gfx::OverlayTransform transform) {
 }
 
 void WaylandSurface::SetSurfaceBufferScale(float scale) {
-  DCHECK_GE(scale, 1.0f);
   if (SurfaceSubmissionInPixelCoordinates())
     return;
 
@@ -355,21 +364,24 @@ void WaylandSurface::ApplyPendingState() {
               surface_sync, pending_state_.acquire_fence.owned_fd.get());
         }
 
-        auto* linux_buffer_release =
-            zwp_linux_surface_synchronization_v1_get_release(surface_sync);
+        if (!explicit_release_callback_.is_null()) {
+          auto* linux_buffer_release =
+              zwp_linux_surface_synchronization_v1_get_release(surface_sync);
 
-        static struct zwp_linux_buffer_release_v1_listener release_listener = {
-            &WaylandSurface::FencedRelease,
-            &WaylandSurface::ImmediateRelease,
-        };
-        zwp_linux_buffer_release_v1_add_listener(linux_buffer_release,
-                                                 &release_listener, this);
+          static struct zwp_linux_buffer_release_v1_listener release_listener =
+              {
+                  &WaylandSurface::FencedRelease,
+                  &WaylandSurface::ImmediateRelease,
+              };
+          zwp_linux_buffer_release_v1_add_listener(linux_buffer_release,
+                                                   &release_listener, this);
 
-        linux_buffer_releases_.emplace(
-            linux_buffer_release,
-            ExplicitReleaseInfo(
-                wl::Object<zwp_linux_buffer_release_v1>(linux_buffer_release),
-                pending_state_.buffer));
+          linux_buffer_releases_.emplace(
+              linux_buffer_release,
+              ExplicitReleaseInfo(
+                  wl::Object<zwp_linux_buffer_release_v1>(linux_buffer_release),
+                  pending_state_.buffer));
+        }
       }
     }
   }
@@ -428,16 +440,37 @@ void WaylandSurface::ApplyPendingState() {
                   .get());
   }
 
-  if (pending_state_.rounded_corners != state_.rounded_corners &&
-      !pending_state_.rounded_corners.empty()) {
+  if (pending_state_.rounded_clip_bounds != state_.rounded_clip_bounds) {
     DCHECK(GetAugmentedSurface());
-    DCHECK(pending_state_.rounded_corners.size() == 4u);
-    augmented_surface_set_rounded_corners(
-        GetAugmentedSurface(),
-        wl_fixed_from_double(pending_state_.rounded_corners.at(0)),
-        wl_fixed_from_double(pending_state_.rounded_corners.at(1)),
-        wl_fixed_from_double(pending_state_.rounded_corners.at(2)),
-        wl_fixed_from_double(pending_state_.rounded_corners.at(3)));
+    if (augmented_surface_get_version(GetAugmentedSurface()) >=
+        AUGMENTED_SURFACE_SET_ROUNDED_CLIP_BOUNDS_SINCE_VERSION) {
+      gfx::RRectF rounded_clip_bounds = pending_state_.rounded_clip_bounds;
+      gfx::Transform scale_transform;
+      scale_transform.Scale(1.f / pending_state_.buffer_scale,
+                            1.f / pending_state_.buffer_scale);
+      scale_transform.TransformRRectF(&rounded_clip_bounds);
+
+      augmented_surface_set_rounded_clip_bounds(
+          GetAugmentedSurface(), rounded_clip_bounds.rect().x(),
+          rounded_clip_bounds.rect().y(), rounded_clip_bounds.rect().width(),
+          rounded_clip_bounds.rect().height(),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kUpperLeft)
+                  .x()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kUpperRight)
+                  .x()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kLowerRight)
+                  .x()),
+          wl_fixed_from_double(
+              rounded_clip_bounds
+                  .GetCornerRadii(gfx::RRectF::Corner::kLowerLeft)
+                  .x()));
+    }
   }
 
   // Buffer-local coordinates are in pixels, surface coordinates are in DIP.
@@ -590,7 +623,7 @@ WaylandSurface::State& WaylandSurface::State::operator=(
   crop = other.crop;
   viewport_px = other.viewport_px;
   opacity = other.opacity;
-  rounded_corners = other.rounded_corners;
+  rounded_clip_bounds = other.rounded_clip_bounds;
   use_blending = other.use_blending;
   priority_hint = other.priority_hint;
   return *this;
@@ -657,14 +690,10 @@ bool WaylandSurface::SurfaceSubmissionInPixelCoordinates() const {
   return connection_->surface_submission_in_pixel_coordinates();
 }
 
-void WaylandSurface::SetRoundedCorners(
-    const std::vector<float> rounded_corners) {
-  // WaylandOverlayConfig.rounded_corners are always created from gfx::RRectF
-  // and must always have size equal to 4. However, to be sure malformed
-  // requests do not get through, explicitly check if size is correct and ignore
-  // the request if it is not.
-  if (GetAugmentedSurface() && rounded_corners.size() == 4u)
-    pending_state_.rounded_corners = rounded_corners;
+void WaylandSurface::SetRoundedClipBounds(
+    const gfx::RRectF& rounded_clip_bounds) {
+  if (GetAugmentedSurface())
+    pending_state_.rounded_clip_bounds = rounded_clip_bounds;
 }
 
 // static

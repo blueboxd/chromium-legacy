@@ -294,7 +294,7 @@ void WebAppUiManagerImpl::OnShortcutLocationGathered(
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
 
   const bool is_extension = proxy->AppRegistryCache().GetAppType(from_app) ==
-                            apps::mojom::AppType::kExtension;
+                            apps::mojom::AppType::kChromeApp;
   if (is_extension) {
     WaitForExtensionShortcutsDeleted(
         from_app,
@@ -339,6 +339,17 @@ void WebAppUiManagerImpl::AddAppToQuickLaunchBar(const AppId& app_id) {
     controller->UpdateV1AppState(app_id);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+bool WebAppUiManagerImpl::IsAppInQuickLaunchBar(const AppId& app_id) const {
+  DCHECK(CanAddAppToQuickLaunchBar());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // ChromeShelfController does not exist in unit tests.
+  if (auto* controller = ChromeShelfController::instance()) {
+    return IsAppWithIDPinnedToShelf(app_id);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  return false;
 }
 
 bool WebAppUiManagerImpl::IsInAppWindow(content::WebContents* web_contents,

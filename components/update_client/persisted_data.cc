@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -39,9 +38,8 @@ const base::Value* PersistedData::GetAppKey(const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!pref_service_)
     return nullptr;
-  const base::DictionaryValue* dict =
-      pref_service_->GetDictionary(kPersistedDataPreference);
-  if (!dict)
+  const base::Value* dict = pref_service_->Get(kPersistedDataPreference);
+  if (!dict || dict->type() != base::Value::Type::DICTIONARY)
     return nullptr;
   const base::Value* apps = dict->FindDictKey("apps");
   if (!apps)

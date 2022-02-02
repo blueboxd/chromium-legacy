@@ -146,7 +146,7 @@ def main():
   for x in version:
     version_number <<= 8
     version_number += ord(x)
-  if (version != VERSION2 and version != VERSION3):
+  if (version not in (VERSION2, VERSION3)):
     print("Token has wrong version: %d" % version_number)
     sys.exit(1)
 

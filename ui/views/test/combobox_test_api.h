@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_TEST_COMBOBOX_TEST_API_H_
 #define UI_VIEWS_TEST_COMBOBOX_TEST_API_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace gfx {
 class Size;
@@ -41,7 +41,7 @@ class ComboboxTestApi {
   ui::MenuModel* menu_model();
 
  private:
-  Combobox* combobox_;
+  raw_ptr<Combobox> combobox_;
 };
 
 }  // namespace test

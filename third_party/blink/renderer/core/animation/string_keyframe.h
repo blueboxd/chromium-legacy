@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/animation/keyframe.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -120,6 +120,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
     bool IsNeutral() const final { return !value_; }
     bool IsRevert() const final;
+    bool IsRevertLayer() const final;
     Keyframe::PropertySpecificKeyframe* NeutralKeyframe(
         double offset,
         scoped_refptr<TimingFunction> easing) const final;
@@ -157,6 +158,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
     bool IsNeutral() const final { return value_.IsNull(); }
     bool IsRevert() const final { return false; }
+    bool IsRevertLayer() const final { return false; }
     PropertySpecificKeyframe* NeutralKeyframe(
         double offset,
         scoped_refptr<TimingFunction> easing) const final;

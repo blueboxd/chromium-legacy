@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/website_login_manager_impl.h"
 
 #include "base/containers/cxx20_erase.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -19,7 +20,6 @@
 #include "components/password_manager/core/browser/votes_uploader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -250,7 +250,7 @@ class WebsiteLoginManagerImpl::PendingDeletePasswordRequest
  private:
   Login login_;
   base::OnceCallback<void(bool)> callback_;
-  password_manager::PasswordStoreInterface* store_;
+  raw_ptr<password_manager::PasswordStoreInterface> store_;
 };
 
 // A pending request to edit the password for the specified |login|.
@@ -359,7 +359,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
  private:
   const password_manager::PasswordForm password_form_;
   const autofill::FormData form_data_;
-  password_manager::PasswordManagerClient* const client_ = nullptr;
+  const raw_ptr<password_manager::PasswordManagerClient> client_ = nullptr;
   // This callback will execute when presaving is completed.
   base::OnceCallback<void()> presaving_completed_callback_;
   const std::unique_ptr<password_manager::PasswordSaveManager>
@@ -448,7 +448,7 @@ void WebsiteLoginManagerImpl::EditPasswordForLogin(
                      weak_ptr_factory_.GetWeakPtr())));
   pending_requests_.back()->Start();
 }
-absl::optional<std::string> WebsiteLoginManagerImpl::GeneratePassword(
+std::string WebsiteLoginManagerImpl::GeneratePassword(
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
     uint64_t max_length) {
@@ -460,9 +460,7 @@ absl::optional<std::string> WebsiteLoginManagerImpl::GeneratePassword(
   // frame has a different origin than the main frame, passwords-related
   // features may not work.
   auto* driver = factory->GetDriverForFrame(web_contents_->GetMainFrame());
-  if (!driver) {
-    return absl::nullopt;
-  }
+  DCHECK(driver);
 
   return base::UTF16ToUTF8(
       driver->GetPasswordGenerationHelper()->GeneratePassword(

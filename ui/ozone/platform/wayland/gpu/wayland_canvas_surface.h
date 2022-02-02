@@ -8,11 +8,12 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
@@ -58,12 +59,16 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas,
   void ResizeCanvas(const gfx::Size& viewport_size, float scale) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  bool SupportsOverridePlatformSize() const override;
 
  private:
   // Internal helper class, which creates a shared memory region, asks the
   // WaylandBufferManager to import a wl_buffer, and creates an SkSurface, which
   // is backed by that shared region.
   class SharedMemoryBuffer;
+
+  // Internal implementation of gfx::VSyncProvider.
+  class VSyncProvider;
 
   void ProcessUnsubmittedBuffers();
 
@@ -97,6 +102,13 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas,
 
   // Previously used buffer. Set on OnSubmission().
   SharedMemoryBuffer* previous_buffer_ = nullptr;
+
+  // Used by the internal VSyncProvider implementation. Set on OnPresentation().
+  base::TimeTicks last_timestamp_;
+  base::TimeDelta last_interval_;
+  bool is_hw_clock_;
+
+  base::WeakPtrFactory<WaylandCanvasSurface> weak_factory_{this};
 };
 
 }  // namespace ui

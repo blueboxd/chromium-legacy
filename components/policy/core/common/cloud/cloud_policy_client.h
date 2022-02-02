@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -65,7 +66,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // A callback which receives fetched remote commands.
   using RemoteCommandCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      const std::vector<enterprise_management::RemoteCommand>&,
       const std::vector<enterprise_management::SignedData>&)>;
 
   // A callback for fetching device robot OAuth2 authorization tokens.
@@ -416,6 +416,11 @@ class POLICY_EXPORT CloudPolicyClient {
   // |callback| will be called when the operation completes.
   virtual void UpdateGcmId(const std::string& gcm_id, StatusCallback callback);
 
+  // Sends a request with EUICCs on device to the DM server.
+  virtual void UploadEuiccInfo(
+      std::unique_ptr<enterprise_management::UploadEuiccInfoRequest> request,
+      StatusCallback callback);
+
   // Sends certificate provisioning start csr request. It is Step 1 in the
   // certificate provisioning flow. |cert_scope| defines if it is a user- or
   // device-level request, |cert_profile_id| defines for which profile from
@@ -723,6 +728,14 @@ class POLICY_EXPORT CloudPolicyClient {
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
+  // Callback for EUICC info upload requests.
+  void OnEuiccInfoUploaded(
+      StatusCallback callback,
+      DeviceManagementService::Job* job,
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
   // Callback for certificate provisioning start csr requests.
   void OnClientCertProvisioningStartCsrResponse(
       ClientCertProvisioningStartCsrCallback callback,
@@ -793,7 +806,7 @@ class POLICY_EXPORT CloudPolicyClient {
   int64_t fetched_invalidation_version_ = 0;
 
   // Used for issuing requests to the cloud.
-  DeviceManagementService* service_ = nullptr;
+  raw_ptr<DeviceManagementService> service_ = nullptr;
 
   // Only one outstanding policy fetch or device/user registration request is
   // allowed. Using a separate job to track those requests. If multiple
@@ -806,11 +819,13 @@ class POLICY_EXPORT CloudPolicyClient {
 
   // Only one outstanding app push-install report upload is allowed, and it must
   // be accessible so that it can be canceled.
-  DeviceManagementService::Job* app_install_report_request_job_ = nullptr;
+  raw_ptr<DeviceManagementService::Job> app_install_report_request_job_ =
+      nullptr;
 
   // Only one outstanding extension install report upload is allowed, and it
   // must be accessible so that it can be canceled.
-  DeviceManagementService::Job* extension_install_report_request_job_ = nullptr;
+  raw_ptr<DeviceManagementService::Job> extension_install_report_request_job_ =
+      nullptr;
 
   // The policy responses returned by the last policy fetch operation.
   ResponseMap responses_;

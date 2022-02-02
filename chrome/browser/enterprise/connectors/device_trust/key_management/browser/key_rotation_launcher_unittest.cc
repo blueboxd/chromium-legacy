@@ -4,7 +4,10 @@
 
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/key_rotation_launcher.h"
 
+#include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/memory/raw_ptr.h"
+#include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands/key_rotation_command.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/browser/commands/key_rotation_command_factory.h"
@@ -40,8 +43,13 @@ class KeyRotationLauncherTest : public testing::Test {
     scoped_command_factory_.SetMock(std::move(mock_command));
   }
 
+  std::unique_ptr<KeyRotationLauncher> CreateLauncher() {
+    return KeyRotationLauncher::Create(&fake_dm_token_storage_,
+                                       &fake_device_management_service_);
+  }
+
   base::test::SingleThreadTaskEnvironment task_environment_;
-  testing::StrictMock<test::MockKeyRotationCommand>* mock_command_;
+  raw_ptr<testing::StrictMock<test::MockKeyRotationCommand>> mock_command_;
   ScopedKeyRotationCommandFactory scoped_command_factory_;
   policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
   testing::StrictMock<policy::MockJobCreationHandler> job_creation_handler_;
@@ -55,15 +63,16 @@ TEST_F(KeyRotationLauncherTest, LaunchKeyRotation) {
   fake_dm_token_storage_.SetClientId(kFakeClientId);
 
   absl::optional<KeyRotationCommand::Params> params;
-  EXPECT_CALL(*mock_command_, Trigger(testing::_))
+  EXPECT_CALL(*mock_command_, Trigger(testing::_, testing::_))
       .WillOnce(testing::Invoke(
-          [&params](const KeyRotationCommand::Params given_params) {
+          [&params](const KeyRotationCommand::Params given_params,
+                    KeyRotationCommand::Callback callback) {
             params = given_params;
-            return true;
+            std::move(callback).Run(KeyRotationCommand::Status::SUCCEEDED);
           }));
 
-  EXPECT_TRUE(LaunchKeyRotation(&fake_dm_token_storage_,
-                                &fake_device_management_service_, kNonce));
+  auto launcher = CreateLauncher();
+  launcher->LaunchKeyRotation(kNonce, base::DoNothing());
 
   ASSERT_TRUE(params.has_value());
   EXPECT_EQ(kNonce, params->nonce);
@@ -75,8 +84,15 @@ TEST_F(KeyRotationLauncherTest, LaunchKeyRotation_InvalidDMToken) {
   // Set the DM token to an invalid value (i.e. empty string).
   fake_dm_token_storage_.SetDMToken("");
 
-  EXPECT_FALSE(LaunchKeyRotation(&fake_dm_token_storage_,
-                                 &fake_device_management_service_, kNonce));
+  auto launcher = CreateLauncher();
+  bool callback_called;
+  launcher->LaunchKeyRotation(
+      kNonce, base::BindLambdaForTesting(
+                  [&callback_called](KeyRotationCommand::Status status) {
+                    EXPECT_EQ(KeyRotationCommand::Status::FAILED, status);
+                    callback_called = true;
+                  }));
+  EXPECT_TRUE(callback_called);
 }
 
 }  // namespace enterprise_connectors

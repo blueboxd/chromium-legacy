@@ -21,6 +21,7 @@ import './passwords_shared_css.js';
 import './payments_list.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
@@ -30,123 +31,9 @@ import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_browser_proxy.js';
 
-type PersonalDataChangedListener =
-    (addresses: Array<chrome.autofillPrivate.AddressEntry>,
-     creditCards: Array<chrome.autofillPrivate.CreditCardEntry>) => void;
+import {PersonalDataChangedListener} from './autofill_manager_proxy.js';
+import {PaymentsManagerImpl, PaymentsManagerProxy} from './payments_manager_proxy.js';
 
-/**
- * Interface for all callbacks to the payments autofill API.
- */
-export interface PaymentsManager {
-  /**
-   * Add an observer to the list of personal data.
-   */
-  setPersonalDataManagerListener(listener: PersonalDataChangedListener): void;
-
-  /**
-   * Remove an observer from the list of personal data.
-   */
-  removePersonalDataManagerListener(listener: PersonalDataChangedListener):
-      void;
-
-  /**
-   * Request the list of credit cards.
-   */
-  getCreditCardList(
-      callback:
-          (entries: Array<chrome.autofillPrivate.CreditCardEntry>) => void):
-      void;
-
-  /** @param guid The GUID of the credit card to remove. */
-  removeCreditCard(guid: string): void;
-
-  /**
-   * @param guid The GUID to credit card to remove from the cache.
-   */
-  clearCachedCreditCard(guid: string): void;
-
-  /**
-   * Saves the given credit card.
-   */
-  saveCreditCard(creditCard: chrome.autofillPrivate.CreditCardEntry): void;
-
-  /**
-   * Migrate the local credit cards.
-   */
-  migrateCreditCards(): void;
-
-  /**
-   * Logs that the server cards edit link was clicked.
-   */
-  logServerCardLinkClicked(): void;
-
-  /**
-   * Enables FIDO authentication for card unmasking.
-   */
-  setCreditCardFIDOAuthEnabledState(enabled: boolean): void;
-
-  /**
-   * Requests the list of UPI IDs from personal data.
-   */
-  getUpiIdList(callback: (entries: Array<string>) => void): void;
-}
-
-/**
- * Implementation that accesses the private API.
- */
-export class PaymentsManagerImpl implements PaymentsManager {
-  setPersonalDataManagerListener(listener: PersonalDataChangedListener) {
-    chrome.autofillPrivate.onPersonalDataChanged.addListener(listener);
-  }
-
-  removePersonalDataManagerListener(listener: PersonalDataChangedListener) {
-    chrome.autofillPrivate.onPersonalDataChanged.removeListener(listener);
-  }
-
-  getCreditCardList(
-      callback:
-          (entries: Array<chrome.autofillPrivate.CreditCardEntry>) => void) {
-    chrome.autofillPrivate.getCreditCardList(callback);
-  }
-
-  removeCreditCard(guid: string) {
-    chrome.autofillPrivate.removeEntry(assert(guid));
-  }
-
-  clearCachedCreditCard(guid: string) {
-    chrome.autofillPrivate.maskCreditCard(assert(guid));
-  }
-
-  saveCreditCard(creditCard: chrome.autofillPrivate.CreditCardEntry) {
-    chrome.autofillPrivate.saveCreditCard(creditCard);
-  }
-
-  migrateCreditCards() {
-    chrome.autofillPrivate.migrateCreditCards();
-  }
-
-  logServerCardLinkClicked() {
-    chrome.autofillPrivate.logServerCardLinkClicked();
-  }
-
-  setCreditCardFIDOAuthEnabledState(enabled: boolean) {
-    chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState(enabled);
-  }
-
-  getUpiIdList(callback: (entries: Array<string>) => void) {
-    chrome.autofillPrivate.getUpiIdList(callback);
-  }
-
-  static getInstance(): PaymentsManager {
-    return instance || (instance = new PaymentsManagerImpl());
-  }
-
-  static setInstance(obj: PaymentsManager) {
-    instance = obj;
-  }
-}
-
-let instance: PaymentsManager|null = null;
 
 type DotsCardMenuiClickEvent = CustomEvent<{
   creditCard: chrome.autofillPrivate.CreditCardEntry,
@@ -159,16 +46,23 @@ declare global {
   }
 }
 
-interface SettingsPaymentsSectionElement {
+export interface SettingsPaymentsSectionElement {
   $: {
+    addCreditCard: CrButtonElement,
+    autofillCreditCardToggle: SettingsToggleButtonElement,
+    canMakePaymentToggle: SettingsToggleButtonElement,
     creditCardSharedMenu: CrActionMenuElement,
-    addCreditCard: HTMLElement,
+    menuClearCreditCard: HTMLElement,
+    menuEditCreditCard: HTMLElement,
+    menuRemoveCreditCard: HTMLElement,
+    migrateCreditCards: HTMLElement,
+    paymentsList: HTMLElement,
   };
 }
 
 const SettingsPaymentsSectionElementBase = I18nMixin(PolymerElement);
 
-class SettingsPaymentsSectionElement extends
+export class SettingsPaymentsSectionElement extends
     SettingsPaymentsSectionElementBase {
   static get is() {
     return 'settings-payments-section';
@@ -180,6 +74,8 @@ class SettingsPaymentsSectionElement extends
 
   static get properties() {
     return {
+      prefs: Object,
+
       /**
        * An array of all saved credit cards.
        */
@@ -228,6 +124,7 @@ class SettingsPaymentsSectionElement extends
     };
   }
 
+  prefs: {[key: string]: any};
   creditCards: Array<chrome.autofillPrivate.CreditCardEntry>;
   upiIds: Array<string>;
   private userIsFidoVerifiable_: boolean;
@@ -236,7 +133,8 @@ class SettingsPaymentsSectionElement extends
   private migratableCreditCardsInfo_: string;
   private migrationEnabled_: boolean;
   private activeDialogAnchor_: HTMLElement|null;
-  private paymentsManager_: PaymentsManager = PaymentsManagerImpl.getInstance();
+  private paymentsManager_: PaymentsManagerProxy =
+      PaymentsManagerImpl.getInstance();
   private setPersonalDataListener_: PersonalDataChangedListener|null = null;
 
   constructor() {
@@ -453,6 +351,12 @@ class SettingsPaymentsSectionElement extends
         this.i18n('migratableCardsInfoMultiple');
 
     return true;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-payments-section': SettingsPaymentsSectionElement;
   }
 }
 

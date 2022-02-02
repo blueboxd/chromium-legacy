@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser.h"
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
@@ -24,6 +24,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 using content::SiteInstance;
@@ -113,6 +114,7 @@ TEST_F(BrowserUnitTest, MAYBE_SetBackgroundColorForNewTab) {
             *raw_contents2->GetMainFrame()->GetView()->GetBackgroundColor());
 }
 
+#if BUILDFLAG(ENABLE_PRINTING)
 // Ensure the print command gets disabled when a tab crashes.
 TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -135,6 +137,7 @@ TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_FALSE(chrome::CanPrint(browser()));
 }
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 // Ensure the zoom-in and zoom-out commands get disabled when a tab crashes.
 TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
@@ -338,7 +341,7 @@ class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {
                                             reason);
     }
 
-    Browser* browser_;  // Weak ptr.
+    raw_ptr<Browser> browser_;  // Weak ptr.
     BookmarkBar::State bookmark_bar_state_;
   };
 };

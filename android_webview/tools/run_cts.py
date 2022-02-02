@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env vpython3
 #
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -46,8 +46,6 @@ _CTS_ARCHIVE_DIR = os.path.join(os.path.dirname(__file__), 'cts_archive')
 _CTS_WEBKIT_PACKAGES = ["com.android.cts.webkit", "android.webkit.cts"]
 
 SDK_PLATFORM_DICT = {
-    version_codes.LOLLIPOP: 'L',
-    version_codes.LOLLIPOP_MR1: 'L',
     version_codes.MARSHMALLOW: 'M',
     version_codes.NOUGAT: 'N',
     version_codes.NOUGAT_MR1: 'N',
@@ -145,7 +143,7 @@ def RunCTS(test_runner_args, local_cts_dir, apk, json_results_file=None):
 
 def MergeTestResults(existing_results_json, additional_results_json):
   """Appends results in additional_results_json to existing_results_json."""
-  for k, v in additional_results_json.iteritems():
+  for k, v in additional_results_json.items():
     if k not in existing_results_json:
       existing_results_json[k] = v
     else:
@@ -270,9 +268,8 @@ def DetermineCtsRelease(device):
     # Otherwise, we must be below the supported version range.
     min_supported_sdk = min(SDK_PLATFORM_DICT.keys())
     raise Exception("We don't support running CTS tests on platforms less "
-                    "than {release} as the WebView is not updatable".format(
-                        release=SDK_PLATFORM_DICT.get(min_supported_sdk),
-                    ))
+                    "than {release}".format(
+                        release=SDK_PLATFORM_DICT.get(min_supported_sdk), ))
   logging.info(('Using test APKs from CTS release=%s because '
                 'build.version.sdk=%s'),
                cts_release, device.build_version_sdk)

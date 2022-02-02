@@ -13,7 +13,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -40,6 +39,9 @@ class MockQuotaManager : public QuotaManager {
                    const base::FilePath& profile_path,
                    scoped_refptr<base::SingleThreadTaskRunner> io_thread,
                    scoped_refptr<SpecialStoragePolicy> special_storage_policy);
+
+  MockQuotaManager(const MockQuotaManager&) = delete;
+  MockQuotaManager& operator=(const MockQuotaManager&) = delete;
 
   // Overrides QuotaManager's implementation that maintains an internal
   // container of created buckets and avoids going to the DB.
@@ -81,6 +83,13 @@ class MockQuotaManager : public QuotaManager {
                         QuotaClientTypes quota_client_types,
                         StatusCallback callback) override;
 
+  // Finds and removes a bucket from the canned list of buckets, but doesn't
+  // touch anything on disk. Will remove bucket data from all QuotaClientTypes.
+  // Will return kOk if deletion is successful or there is no bucket to delete.
+  void FindAndDeleteBucketData(const blink::StorageKey& storage_key,
+                               const std::string& bucket_name,
+                               StatusCallback callback) override;
+
   // Overrides QuotaManager's implementation so that tests can observe
   // calls to this function.
   void NotifyWriteFailed(const blink::StorageKey& storage_key) override;
@@ -120,6 +129,8 @@ class MockQuotaManager : public QuotaManager {
   std::map<const blink::StorageKey, int> write_error_tracker() const {
     return write_error_tracker_;
   }
+
+  void SetDisableDatabase(bool disable) { db_disabled_ = disable; }
 
  protected:
   ~MockQuotaManager() override;
@@ -175,8 +186,8 @@ class MockQuotaManager : public QuotaManager {
       GetBucketsCallback callback,
       std::unique_ptr<std::set<BucketLocator>> buckets,
       blink::mojom::StorageType storage_type);
-  void DidDeleteStorageKeyData(StatusCallback callback,
-                               blink::mojom::QuotaStatusCode status);
+  void DidDeleteBucketData(StatusCallback callback,
+                           blink::mojom::QuotaStatusCode status);
 
   BucketId::Generator bucket_id_generator_;
 
@@ -188,9 +199,9 @@ class MockQuotaManager : public QuotaManager {
   // Tracks number of times NotifyFailedWrite has been called per storage key.
   std::map<const blink::StorageKey, int> write_error_tracker_;
 
-  base::WeakPtrFactory<MockQuotaManager> weak_factory_{this};
+  bool db_disabled_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(MockQuotaManager);
+  base::WeakPtrFactory<MockQuotaManager> weak_factory_{this};
 };
 
 }  // namespace storage

@@ -12,7 +12,7 @@
 # tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
 #             android-pixel-4 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
-#         fuchsia-board-astro fuchsia-board-qemu-x64 ]
+#         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
 #         mobile ]
@@ -113,7 +113,6 @@ crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performan
 
 # Flakily hits a DCHECK during shared image creation.
 crbug.com/1188437 [ linux intel display-server-wayland ] GpuProcess_webgl [ RetryOnFailure ]
-crbug.com/1253917 [ linux intel display-server-wayland ] GpuProcess_disable_gpu [ RetryOnFailure ]
 
 # Flakey/slow tests using clang_rt.
 crbug.com/1261260 [ android android-nexus-5x ] GpuProcess_webgpu_iframe_removed [ Failure ]

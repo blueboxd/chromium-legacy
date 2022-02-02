@@ -29,6 +29,7 @@
 #include "printing/metafile.h"
 #include "printing/page_number.h"
 #include "printing/print_settings_conversion.h"
+#include "printing/printing_context.h"
 #include "printing/units.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_elider.h"
@@ -158,7 +159,7 @@ scoped_refptr<PrintedPage> PrintedDocument::GetPage(uint32_t page_number) {
   return page;
 }
 
-void PrintedDocument::DropPage(const PrintedPage* page) {
+void PrintedDocument::RemovePage(const PrintedPage* page) {
   base::AutoLock lock(lock_);
   PrintedPages::const_iterator it =
       mutable_.pages_.find(page->page_number() - 1);
@@ -182,6 +183,21 @@ void PrintedDocument::SetDocument(std::unique_ptr<MetafilePlayer> metafile) {
 
 const MetafilePlayer* PrintedDocument::GetMetafile() {
   return mutable_.metafile_.get();
+}
+
+mojom::ResultCode PrintedDocument::RenderPrintedDocument(
+    PrintingContext* context) {
+  mojom::ResultCode result = context->NewPage();
+  if (result != mojom::ResultCode::kSuccess)
+    return result;
+  {
+    base::AutoLock lock(lock_);
+    result = context->PrintDocument(*GetMetafile(), *immutable_.settings_,
+                                    mutable_.expected_page_count_);
+    if (result != mojom::ResultCode::kSuccess)
+      return result;
+  }
+  return context->PageDone();
 }
 
 bool PrintedDocument::IsComplete() const {
@@ -276,25 +292,6 @@ void PrintedDocument::DebugDumpData(
       base::BindOnce(&DebugDumpDataTask, name(), extension,
                      base::RetainedRef(data)));
 }
-
-#if defined(OS_WIN)
-// static
-gfx::Rect PrintedDocument::GetCenteredPageContentRect(
-    const gfx::Size& paper_size,
-    const gfx::Size& page_size,
-    const gfx::Rect& page_content_rect) {
-  gfx::Rect content_rect = page_content_rect;
-  if (paper_size.width() > page_size.width()) {
-    int diff = paper_size.width() - page_size.width();
-    content_rect.set_x(content_rect.x() + diff / 2);
-  }
-  if (paper_size.height() > page_size.height()) {
-    int diff = paper_size.height() - page_size.height();
-    content_rect.set_y(content_rect.y() + diff / 2);
-  }
-  return content_rect;
-}
-#endif
 
 PrintedDocument::Mutable::Mutable() = default;
 

@@ -413,10 +413,10 @@ void ConversionContext::StartClip(
   ApplyTransform(local_transform);
   const bool antialias = true;
   if (combined_clip_rect.IsRounded()) {
-    cc_list_.push<cc::ClipRRectOp>(combined_clip_rect, SkClipOp::kIntersect,
-                                   antialias);
+    cc_list_.push<cc::ClipRRectOp>(SkRRect(combined_clip_rect),
+                                   SkClipOp::kIntersect, antialias);
   } else {
-    cc_list_.push<cc::ClipRectOp>(combined_clip_rect.Rect(),
+    cc_list_.push<cc::ClipRectOp>(gfx::RectFToSkRect(combined_clip_rect.Rect()),
                                   SkClipOp::kIntersect, antialias);
   }
   if (const auto* clip_path = lowest_combined_clip_node.ClipPath()) {
@@ -578,8 +578,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode& effect) {
     // with empty bounds, with a filter applied that produces output even when
     // there's no input this will expand the bounds to match.
     gfx::RectF filtered_bounds = current_effect_->MapRect(
-        gfx::RectF(ToGfxPointF(effect.Filter().ReferenceBox().CenterPoint()),
-                   gfx::SizeF()));
+        gfx::RectF(effect.Filter().ReferenceBox().CenterPoint(), gfx::SizeF()));
     effect_bounds_stack_.back().bounds = filtered_bounds;
     // Emit an empty paint operation to add the filtered bounds (mapped to layer
     // space) to the visual rect of the filter's SaveLayerOp.
@@ -966,7 +965,7 @@ static void UpdateRegionCaptureData(cc::Layer& layer,
                                     const PropertyTreeState& layer_state,
                                     const PaintChunkSubset& chunks) {
   const gfx::Vector2dF layer_offset = layer.offset_to_transform_parent();
-  cc::RegionCaptureBounds capture_bounds;
+  viz::RegionCaptureBounds capture_bounds;
   for (const PaintChunk& chunk : chunks) {
     if (!chunk.region_capture_data)
       continue;

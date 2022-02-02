@@ -49,8 +49,6 @@ UsageListInitializer initializers[] = {
     {Storage::StorageTypeEnum::File_systems,
      &blink::mojom::UsageBreakdown::fileSystem},
     {Storage::StorageTypeEnum::Websql, &blink::mojom::UsageBreakdown::webSql},
-    {Storage::StorageTypeEnum::Appcache,
-     &blink::mojom::UsageBreakdown::appcache},
     {Storage::StorageTypeEnum::Indexeddb,
      &blink::mojom::UsageBreakdown::indexedDatabase},
     {Storage::StorageTypeEnum::Cache_storage,
@@ -363,8 +361,6 @@ void StorageHandler::ClearDataForOrigin(
       storage_types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::unordered_set<std::string> set(types.begin(), types.end());
   uint32_t remove_mask = 0;
-  if (set.count(Storage::StorageTypeEnum::Appcache))
-    remove_mask |= StoragePartition::REMOVE_DATA_MASK_APPCACHE;
   if (set.count(Storage::StorageTypeEnum::Cookies)) {
     remove_mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
     // Interest groups should be cleared with cookies for its origin trial as

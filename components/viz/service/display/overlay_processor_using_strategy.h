@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
@@ -46,7 +46,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
       // A iterator in the vector of quads.
       QuadList::Iterator quad_iter;
       OverlayCandidate candidate;
-      Strategy* strategy = nullptr;
+      raw_ptr<Strategy> strategy = nullptr;
 
       // heuristic sort element
       int relative_power_gain = 0;
@@ -100,7 +100,13 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
         const PrimaryPlane* primary_plane,
         OverlayCandidateList* candidates,
         std::vector<gfx::Rect>* content_bounds,
-        OverlayProposedCandidate* proposed_candidate) = 0;
+        const OverlayProposedCandidate& proposed_candidate) = 0;
+
+    // Commits to using the proposed candidate by updating |render_pass| as
+    // appropriate when this candidate is presented in an overlay plane.
+    virtual void CommitCandidate(
+        const OverlayProposedCandidate& proposed_candidate,
+        AggregatedRenderPass* render_pass) = 0;
 
     // Currently this is only overridden by the Underlay strategy: the underlay
     // strategy needs to enable blending for the primary plane in order to show
@@ -178,7 +184,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
       const OverlayCandidate& overlay) const;
 
   StrategyList strategies_;
-  Strategy* last_successful_strategy_ = nullptr;
+  raw_ptr<Strategy> last_successful_strategy_ = nullptr;
 
   gfx::Rect overlay_damage_rect_;
   bool previous_is_underlay = false;

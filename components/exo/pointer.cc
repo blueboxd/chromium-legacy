@@ -26,11 +26,11 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/cursor/cursor_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/cursor_size.h"
-#include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_scale_factor.h"
@@ -770,8 +770,8 @@ void Pointer::UpdateCursor() {
 
     // Use panel_rotation() rather than "natural" rotation, as it actually
     // relates to the hardware you're about to draw the cursor bitmap on.
-    ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
-                                              &bitmap, &hotspot);
+    aura::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
+                                                &bitmap, &hotspot);
 
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.

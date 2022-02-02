@@ -7,21 +7,18 @@
 #include <memory>
 #include <utility>
 
-#include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/drag_drop/toplevel_window_drag_delegate.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "third_party/skia/include/core/SkPath.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_client_observer.h"
 #include "ui/aura/client/drag_drop_delegate.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
@@ -90,7 +87,6 @@ void DropIfAllowed(const ui::OSExchangeData* drag_data,
                    aura::client::DragUpdateInfo& drag_info,
                    base::OnceClosure drop_cb) {
   DCHECK(drag_data);
-
   if (ui::DataTransferPolicyController::HasInstance()) {
     ui::DataTransferPolicyController::Get()->DropIfAllowed(
         drag_data->GetSource(), &drag_info.data_endpoint, std::move(drop_cb));
@@ -99,59 +95,40 @@ void DropIfAllowed(const ui::OSExchangeData* drag_data,
   }
 }
 
+aura::Window* GetTarget(const ui::LocatedEvent& event) {
+  gfx::Point location_in_screen = event.location();
+  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event.target()),
+                             &location_in_screen);
+  aura::Window* root_window_at_point =
+      window_util::GetRootWindowAt(location_in_screen);
+  gfx::Point location_in_root = location_in_screen;
+  ::wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);
+  return root_window_at_point->GetEventHandlerForPoint(location_in_root);
+}
+
+std::unique_ptr<ui::LocatedEvent> ConvertEvent(aura::Window* target,
+                                               const ui::LocatedEvent& event) {
+  gfx::Point target_location = event.location();
+  aura::Window::ConvertPointToTarget(static_cast<aura::Window*>(event.target()),
+                                     target, &target_location);
+  gfx::Point target_root_location = event.location();
+  aura::Window* target_root = target->GetRootWindow();
+  aura::Window::ConvertPointToTarget(static_cast<aura::Window*>(event.target()),
+                                     target_root, &target_root_location);
+  int changed_button_flags = 0;
+  if (event.IsMouseEvent())
+    changed_button_flags = event.AsMouseEvent()->changed_button_flags();
+  return std::make_unique<ui::MouseEvent>(
+      event.type(), target_location, target_root_location,
+      ui::EventTimeForNow(), event.flags(), changed_button_flags);
+}
+
 }  // namespace
-
-class DragDropTrackerDelegate : public aura::WindowDelegate {
- public:
-  explicit DragDropTrackerDelegate(DragDropController* controller)
-      : drag_drop_controller_(controller) {}
-
-  DragDropTrackerDelegate(const DragDropTrackerDelegate&) = delete;
-  DragDropTrackerDelegate& operator=(const DragDropTrackerDelegate&) = delete;
-
-  ~DragDropTrackerDelegate() override = default;
-
-  // Overridden from WindowDelegate:
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-
-  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
-
-  void OnBoundsChanged(const gfx::Rect& old_bounds,
-                       const gfx::Rect& new_bounds) override {}
-  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
-    return gfx::kNullCursor;
-  }
-  int GetNonClientComponent(const gfx::Point& point) const override {
-    return HTCAPTION;
-  }
-  bool ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) override {
-    return true;
-  }
-  bool CanFocus() override { return true; }
-  void OnCaptureLost() override {
-    if (drag_drop_controller_->IsDragDropInProgress())
-      drag_drop_controller_->DragCancel();
-  }
-  void OnPaint(const ui::PaintContext& context) override {}
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-  void OnWindowDestroying(aura::Window* window) override {}
-  void OnWindowDestroyed(aura::Window* window) override {}
-  void OnWindowTargetVisibilityChanged(bool visible) override {}
-  bool HasHitTestMask() const override { return true; }
-  void GetHitTestMask(SkPath* mask) const override { DCHECK(mask->isEmpty()); }
-
- private:
-  DragDropController* drag_drop_controller_;
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 // DragDropController, public:
 
-DragDropController::DragDropController()
-    : drag_drop_window_delegate_(new DragDropTrackerDelegate(this)) {
+DragDropController::DragDropController() {
   Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
 }
@@ -193,22 +170,21 @@ DragOperation DragDropController::StartDragAndDrop(
 
   operation_ = DragOperation::kNone;
   current_drag_event_source_ = source;
-  DragDropTracker* tracker =
-      new DragDropTracker(root_window, drag_drop_window_delegate_.get());
-  if (source == ui::mojom::DragEventSource::kTouch) {
-    // We need to transfer the current gesture sequence and the GR's touch event
-    // queue to the |drag_drop_tracker_|'s capture window so that when it takes
-    // capture, it still gets a valid gesture state.
-    aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
-        source_window, tracker->capture_window(),
+  capture_delegate_ = nullptr;
+
+  // When an extended drag is started, a capture window will be created to
+  // handle moving gestures between different wl surfaces to support dragging
+  // chrome tabs into and out of browsers.
+  if (source == ui::mojom::DragEventSource::kTouch &&
+      toplevel_window_drag_delegate_) {
+    toplevel_window_drag_delegate_->TakeCapture(
+        root_window, source_window,
+        base::BindRepeating(&DragDropController::CancelIfInProgress,
+                            base::Unretained(this)),
         ui::TransferTouchesBehavior::kCancel);
-    // We also send a gesture end to the source window so it can clear state.
-    // TODO(varunjain): Remove this whole block when gesture sequence
-    // transferring is properly done in the GR (http://crbug.com/160558)
-    DispatchGestureEndToWindow(source_window);
+    capture_delegate_ = toplevel_window_drag_delegate_;
   }
-  tracker->TakeCapture();
-  drag_drop_tracker_.reset(tracker);
+
   drag_source_window_ = source_window;
   if (drag_source_window_)
     drag_source_window_->AddObserver(this);
@@ -234,7 +210,7 @@ DragOperation DragDropController::StartDragAndDrop(
 
   if (toplevel_window_drag_delegate_) {
     toplevel_window_drag_delegate_->OnToplevelWindowDragStarted(
-        gfx::PointF(start_location_), source);
+        gfx::PointF(start_location_), source, drag_source_window_);
   }
 
   if (TabDragDropDelegate::IsChromeTabDrag(*drag_data_)) {
@@ -243,6 +219,16 @@ DragOperation DragDropController::StartDragAndDrop(
         root_window, drag_source_window_, start_location_);
     static_cast<DragImageView*>(drag_image_widget_->GetContentsView())
         ->SetTouchDragOperationHintOff();
+    // Avoid taking capture twice if the toplevel drag delegate is being used.
+    if (!toplevel_window_drag_delegate_ &&
+        source == ui::mojom::DragEventSource::kTouch) {
+      tab_drag_drop_delegate_->TakeCapture(
+          root_window, source_window,
+          base::BindRepeating(&DragDropController::CancelIfInProgress,
+                              base::Unretained(this)),
+          ui::TransferTouchesBehavior::kDontCancel);
+      capture_delegate_ = tab_drag_drop_delegate_.get();
+    }
   }
 
   if (should_block_during_drag_drop_) {
@@ -255,11 +241,8 @@ DragOperation DragDropController::StartDragAndDrop(
       !pending_long_tap_.get()) {
     // If drag cancel animation is running, this cleanup is done when the
     // animation completes.
-    if (drag_source_window_) {
-      // A check to catch an UAF issue like crbug.com/1282480 on non asan build.
-      DCHECK(!drag_source_window_->is_destroying());
+    if (drag_source_window_)
       drag_source_window_->RemoveObserver(this);
-    }
     drag_source_window_ = nullptr;
   }
 
@@ -309,7 +292,7 @@ void DragDropController::DragCancel() {
 }
 
 bool DragDropController::IsDragDropInProgress() {
-  return !!drag_drop_tracker_ && !!drag_data_;
+  return !!drag_data_;
 }
 
 void DragDropController::AddObserver(
@@ -339,20 +322,25 @@ void DragDropController::OnMouseEvent(ui::MouseEvent* event) {
     event->StopPropagation();
     return;
   }
-
-  aura::Window* translated_target = drag_drop_tracker_->GetTarget(*event);
+  aura::Window* translated_target = GetTarget(*event);
   if (!translated_target) {
-    DragCancel();
+    // ET_MOUSE_CAPTURE_CHANGED event does not have a location that can
+    // be used to locate a translated target.
+    if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
+      DragCancel();
     event->StopPropagation();
     return;
   }
-  std::unique_ptr<ui::LocatedEvent> translated_event(
-      drag_drop_tracker_->ConvertEvent(translated_target, *event));
+  // If the event ET_MOUSE_RELEASED is received we must allow the event
+  // to propagate so that the target window eventually releases capture.
+  bool stop_propagation = true;
+  auto translated_event = ConvertEvent(translated_target, *event);
   switch (translated_event->type()) {
     case ui::ET_MOUSE_DRAGGED:
       DragUpdate(translated_target, *translated_event.get());
       break;
     case ui::ET_MOUSE_RELEASED:
+      stop_propagation = false;
       Drop(translated_target, *translated_event.get());
       break;
     default:
@@ -361,11 +349,16 @@ void DragDropController::OnMouseEvent(ui::MouseEvent* event) {
       // (aura::RootWindow::PostMouseMoveEventAfterWindowChange).
       break;
   }
+  ui::Event::DispatcherApi(translated_event.get()).set_phase(ui::EP_PRETARGET);
+  ui::Event::DispatcherApi(translated_event.get())
+      .set_target(translated_target->GetToplevelWindow());
 
   if (toplevel_window_drag_delegate_)
-    toplevel_window_drag_delegate_->OnToplevelWindowDragEvent(event);
+    toplevel_window_drag_delegate_->OnToplevelWindowDragEvent(
+        translated_event.get());
 
-  event->StopPropagation();
+  if (stop_propagation)
+    event->StopPropagation();
 }
 
 void DragDropController::OnTouchEvent(ui::TouchEvent* event) {
@@ -410,34 +403,50 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
     touch_offset_event.set_root_location_f(touch_offset_root_location);
   }
 
-  aura::Window* translated_target =
-      drag_drop_tracker_->GetTarget(touch_offset_event);
+  aura::Window* translated_target;
+  if (capture_delegate_) {
+    translated_target = capture_delegate_->GetTarget(touch_offset_event);
+  } else {
+    ui::Event::DispatcherApi(&touch_offset_event).set_target(event->target());
+    translated_target = GetTarget(touch_offset_event);
+  }
+
   if (!translated_target) {
     DragCancel();
     event->StopPropagation();
     return;
   }
-  std::unique_ptr<ui::LocatedEvent> translated_event(
-      drag_drop_tracker_->ConvertEvent(translated_target, touch_offset_event));
+
+  std::unique_ptr<ui::LocatedEvent> translated_event;
+  if (capture_delegate_) {
+    translated_event =
+        capture_delegate_->ConvertEvent(translated_target, touch_offset_event);
+  } else {
+    translated_event = ConvertEvent(translated_target, touch_offset_event);
+  }
 
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      DragUpdate(translated_target, *translated_event.get());
+      DragUpdate(translated_target, *translated_event);
       break;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
-      Drop(translated_target, *translated_event.get());
+      Drop(translated_target, *translated_event);
       break;
     case ui::ET_GESTURE_LONG_TAP:
       // Ideally we would want to just forward this long tap event to the
       // |drag_source_window_|. However, webkit does not accept events while a
       // drag drop is still in progress. The drag drop ends only when the nested
-      // message loop ends. Due to this stupidity, we have to defer forwarding
+      // message loop ends. Due to this, we have to defer forwarding
       // the long tap.
-      pending_long_tap_ = std::make_unique<ui::GestureEvent>(
-          *event,
-          static_cast<aura::Window*>(drag_drop_tracker_->capture_window()),
-          static_cast<aura::Window*>(drag_source_window_));
+      if (capture_delegate_) {
+        pending_long_tap_ = std::make_unique<ui::GestureEvent>(
+            *event,
+            static_cast<aura::Window*>(capture_delegate_->capture_window()),
+            static_cast<aura::Window*>(drag_source_window_));
+      } else {
+        pending_long_tap_ = ui::Event::Clone(*event);
+      }
       DoDragCancel(kTouchCancelAnimationDuration);
       break;
     default:
@@ -681,7 +690,8 @@ void DragDropController::StartCanceledAnimation(
 
 void DragDropController::ForwardPendingLongTap() {
   if (drag_source_window_ && drag_source_window_->delegate()) {
-    drag_source_window_->delegate()->OnGestureEvent(pending_long_tap_.get());
+    drag_source_window_->delegate()->OnGestureEvent(
+        pending_long_tap_->AsGestureEvent());
     DispatchGestureEndToWindow(drag_source_window_);
   }
   pending_long_tap_.reset();
@@ -693,21 +703,13 @@ void DragDropController::ForwardPendingLongTap() {
 void DragDropController::Cleanup() {
   for (aura::client::DragDropClientObserver& observer : observers_)
     observer.OnDragEnded();
-
-  // Do not remove observer `the drag_window_1 is same as `drag_source_window_`.
-  // `drag_source_window_` is still necessary to process long tab and the
-  // observer will be reset when `drag_source_window_` is destroyed.
-  if (drag_window_ && drag_window_ != drag_source_window_)
+  if (drag_window_)
     drag_window_->RemoveObserver(this);
   drag_window_ = nullptr;
-
   drag_data_.reset();
   allowed_operations_ = 0;
   tab_drag_drop_delegate_.reset();
-
-  // Cleanup can be called again while deleting DragDropTracker, so delete
-  // the pointer with a local variable to avoid double free.
-  std::unique_ptr<DragDropTracker> holder = std::move(drag_drop_tracker_);
+  capture_delegate_ = nullptr;
 }
 
 void DragDropController::PerformDrop(
@@ -747,6 +749,11 @@ void DragDropController::PerformDrop(
     operation_ = toplevel_window_drag_delegate_->OnToplevelWindowDragDropped();
   }
   drag_cancel.ReplaceClosure(base::DoNothing());
+}
+
+void DragDropController::CancelIfInProgress() {
+  if (IsDragDropInProgress())
+    DragCancel();
 }
 
 }  // namespace ash

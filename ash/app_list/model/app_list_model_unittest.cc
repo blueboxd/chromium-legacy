@@ -17,7 +17,6 @@
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_model_observer.h"
@@ -512,14 +511,14 @@ TEST_F(AppListModelFolderTest, UninstallFolderItems) {
   EXPECT_EQ("folder1", GetModelContents());
 
   // Delete Item 2 from folder.
-  model_->DeleteUninstalledItem("Item 2");
+  model_->DeleteItem("Item 2");
   EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1->item_list()));
   EXPECT_EQ("folder1", GetModelContents());
 
   // Delete Item 1 from folder, should reparent Item 0 and delete folder1.
-  model_->DeleteUninstalledItem("Item 1");
-  EXPECT_EQ(nullptr, model_->FindItem("folder1"));
-  EXPECT_EQ("Item 0", GetModelContents());
+  model_->DeleteItem("Item 1");
+  EXPECT_EQ("Item 0", GetItemListContents(folder1->item_list()));
+  EXPECT_EQ("folder1", GetModelContents());
 }
 
 TEST_F(AppListModelFolderTest, UninstallPersistentFolderItem) {
@@ -537,7 +536,7 @@ TEST_F(AppListModelFolderTest, UninstallPersistentFolderItem) {
   EXPECT_EQ("folder1", GetModelContents());
 
   // Delete Item from folder.
-  model_->DeleteUninstalledItem("Item 1");
+  model_->DeleteItem("Item 1");
   ASSERT_EQ("folder1", GetModelContents());
   EXPECT_EQ("Item 0", GetItemListContents(folder1->item_list()));
 }
@@ -554,7 +553,7 @@ TEST_F(AppListModelFolderTest, UninstallSingleItemFolderItem) {
   EXPECT_EQ("folder1", GetModelContents());
 
   // Delete only item from folder, folder should also be removed.
-  model_->DeleteUninstalledItem("Item 0");
+  model_->DeleteItem("Item 0");
   EXPECT_EQ(nullptr, model_->FindItem("folder1"));
   EXPECT_EQ("", GetModelContents());
 }

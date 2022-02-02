@@ -15,6 +15,7 @@
 const tpmUIState = {
   DEFAULT: 'default',
   TPM_OWNED: 'tpm-owned',
+  DBUS_ERROR: 'dbus-error',
 };
 
 /**
@@ -42,24 +43,10 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
 
   /* #html_template_placeholder */
 
-  static get properties() {
-    return {
-      osName_: {
-        type: String,
-        computed: 'updateOSName_(isBranded)',
-      },
-
-      isBranded: {
-        type: Boolean,
-        value: false,
-      },
-    };
-  }
+  static get properties() {}
 
   constructor() {
     super();
-    this.isBranded = false;
-    this.osName_ = this.updateOSName_();
   }
 
   ready() {
@@ -71,7 +58,9 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
 
   /** @override */
   get EXTERNAL_API() {
-    return ['setStep', 'setIsBrandedBuild'];
+    return [
+      'setStep',
+    ];
   }
 
   get UI_STEPS() {
@@ -94,12 +83,11 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
 
   /**
    * @param {string} locale
-   * @param {string} osName
    * @return {string}
    * @private
    */
-  getTPMOwnedFailureContent_(locale, osName) {
-    return this.i18nAdvanced('errorTPMOwnedContent', {substitutions: [osName]});
+  getTPMOwnedFailureContent_(locale) {
+    return this.i18nAdvanced('errorTPMOwnedContent');
   }
 
   onRestartTap_() {
@@ -111,21 +99,6 @@ class TPMErrorMessage extends TPMErrorMessageElementBase {
    */
   get defaultControl() {
     return this.$.errorDialog;
-  }
-
-  /**
-   * @param {boolean} is_branded
-   */
-  setIsBrandedBuild(is_branded) {
-    this.isBranded = is_branded;
-  }
-
-  /**
-   * @return {string} OS name
-   */
-  updateOSName_() {
-    return this.isBranded ? loadTimeData.getString('osInstallCloudReadyOS') :
-                            loadTimeData.getString('osInstallChromiumOS');
   }
 }
 

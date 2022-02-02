@@ -18,7 +18,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -788,6 +787,7 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
       base::Time::Now(), true,
       std::vector<download::DownloadItem::ReceivedSlice>(),
       download::DownloadItemRerouteInfo(), absl::nullopt /*download_schedule*/,
+      download::kInvalidRange, download::kInvalidRange,
       nullptr /* download_entry */);
   in_progress_manager->AddDownloadItem(std::move(in_progress_item));
   SetInProgressDownloadManager(std::move(in_progress_manager));

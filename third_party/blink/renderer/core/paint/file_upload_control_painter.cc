@@ -79,9 +79,9 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
         layout_file_upload_control_.ResolveColor(GetCSSPropertyColor()));
     paint_info.context.DrawBidiText(
         font, text_run_paint_info,
-        FloatPoint(RoundToInt(text_x), RoundToInt(text_y)),
+        gfx::PointF(RoundToInt(text_x), RoundToInt(text_y)),
         PaintAutoDarkMode(layout_file_upload_control_.StyleRef(),
-                          DarkModeFilter::ElementRole::kText));
+                          DarkModeFilter::ElementRole::kForeground));
     if (!font.ShouldSkipDrawing()) {
       ScopedPaintTimingDetectorBlockPaintHook
           scoped_paint_timing_detector_block_paint_hook;
@@ -89,8 +89,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
           layout_file_upload_control_, paint_info.context.GetPaintController()
                                            .CurrentPaintChunkProperties());
       text_bounds.Offset(text_x, text_y);
-      PaintTimingDetector::NotifyTextPaint(
-          ToGfxRect(EnclosingIntRect(text_bounds)));
+      PaintTimingDetector::NotifyTextPaint(ToEnclosingRect(text_bounds));
     }
   }
 

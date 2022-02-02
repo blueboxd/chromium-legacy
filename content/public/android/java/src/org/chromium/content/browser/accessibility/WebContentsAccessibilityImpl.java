@@ -119,9 +119,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // Constants defined for AccessibilityNodeInfo Bundle extras keys.
     public static final String EXTRAS_KEY_CHROME_ROLE = "AccessibilityNodeInfo.chromeRole";
-    public static final String EXTRA_KEY_CLICKABLE_SCORE = "AccessibilityNodeInfo.clickableScore";
+    public static final String EXTRAS_KEY_CLICKABLE_SCORE = "AccessibilityNodeInfo.clickableScore";
     public static final String EXTRAS_KEY_HAS_IMAGE = "AccessibilityNodeInfo.hasImage";
     public static final String EXTRAS_KEY_HINT = "AccessibilityNodeInfo.hint";
+    public static final String EXTRAS_KEY_IMAGE_DATA = "AccessibilityNodeInfo.imageData";
     public static final String EXTRAS_KEY_OFFSCREEN = "AccessibilityNodeInfo.offscreen";
     public static final String EXTRAS_KEY_ROLE_DESCRIPTION =
             "AccessibilityNodeInfo.roleDescription";
@@ -132,6 +133,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     public static final String EXTRAS_KEY_UNCLIPPED_BOTTOM =
             "AccessibilityNodeInfo.unclippedBottom";
     public static final String EXTRAS_KEY_URL = "url";
+
+    // Constants defined for requests to add data to AccessibilityNodeInfo Bundle extras.
+    public static final String EXTRAS_DATA_REQUEST_IMAGE_DATA_KEY =
+            "AccessibilityNodeInfo.requestImageData";
 
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
@@ -174,7 +179,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mNotifyFrameInfoInitializedCalled;
-    private boolean mAccessibilityEnabledForTesting;
+    private boolean mAccessibilityEnabledOverride;
     private int mSelectionGranularity;
     private int mAccessibilityFocusId;
     private int mSelectionNodeId;
@@ -396,7 +401,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @VisibleForTesting
     @Override
     public void setAccessibilityEnabledForTesting() {
-        mAccessibilityEnabledForTesting = true;
+        mAccessibilityEnabledOverride = true;
     }
 
     @VisibleForTesting
@@ -580,6 +585,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mNativeObj = WebContentsAccessibilityImplJni.get().initWithAXTree(
                 WebContentsAccessibilityImpl.this, nativeAxTree);
         onNativeInit();
+    }
+
+    @CalledByNative
+    public String generateAccessibilityNodeInfoString(int virtualViewId) {
+        // If accessibility isn't enabled, all the AccessibilityNodeInfo objects will be null, so
+        // temporarily set the |mAccessibilityEnabledOverride| flag to true, then disable it.
+        mAccessibilityEnabledOverride = true;
+        String returnString =
+                AccessibilityNodeInfoUtils.toString(createAccessibilityNodeInfo(virtualViewId));
+        mAccessibilityEnabledOverride = false;
+        return returnString;
     }
 
     @CalledByNative
@@ -1404,7 +1420,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @Override
     public boolean isAccessibilityEnabled() {
         return isNativeInitialized()
-                && (mAccessibilityEnabledForTesting || mAccessibilityManager.isEnabled());
+                && (mAccessibilityEnabledOverride || mAccessibilityManager.isEnabled());
     }
 
     private AccessibilityNodeInfo createNodeForHost(int rootId) {
@@ -1792,7 +1808,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         // For non-zero clickable scores, add to the Bundle extras.
         if (clickableScore > 0) {
-            bundle.putInt(EXTRA_KEY_CLICKABLE_SCORE, clickableScore);
+            bundle.putInt(EXTRAS_KEY_CLICKABLE_SCORE, clickableScore);
         }
     }
 
@@ -2021,8 +2037,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    protected void setAccessibilityNodeInfoOAttributes(
-            AccessibilityNodeInfo node, boolean hasCharacterLocations, String hint) {
+    protected void setAccessibilityNodeInfoOAttributes(AccessibilityNodeInfo node,
+            boolean hasCharacterLocations, boolean hasImage, String hint) {
         // Requires O or higher.
     }
 
@@ -2036,6 +2052,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             AccessibilityNodeInfo node, int startIndex, int endIndex) {
         node.setEditable(true);
         node.setTextSelection(startIndex, endIndex);
+    }
+
+    @CalledByNative
+    protected void setAccessibilityNodeInfoImageData(AccessibilityNodeInfo info, byte[] imageData) {
+        info.getExtras().putByteArray(EXTRAS_KEY_IMAGE_DATA, imageData);
     }
 
     @CalledByNative
@@ -2235,5 +2256,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, boolean allowImageDescriptions);
         boolean onHoverEventNoRenderer(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, float x, float y);
+        boolean getImageData(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, AccessibilityNodeInfo info, int id,
+                boolean hasSentPreviousRequest);
     }
 }

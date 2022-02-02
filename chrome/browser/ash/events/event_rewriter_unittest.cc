@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -64,11 +63,24 @@ constexpr char kKbdTopRowLayout2Tag[] = "2";
 constexpr char kKbdTopRowLayoutWilcoTag[] = "3";
 constexpr char kKbdTopRowLayoutDrallionTag[] = "4";
 
+// A tag that should fail parsing for the top row layout.
+constexpr char kKbdTopRowLayoutInvalidTag[] = "X";
+
 // A default example of the layout string read from the function_row_physmap
 // sysfs attribute. The values represent the scan codes for each position
 // in the top row, which maps to F-Keys.
 constexpr char kKbdDefaultCustomTopRowLayout[] =
     "01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f";
+
+// A tag that should fail parsing for the top row custom scan code string.
+constexpr char kKbdInvalidCustomTopRowLayout[] = "X X X";
+
+// Values for enum output parameters to IdentifyKeyboard() that do not
+// match any enum types.
+constexpr auto kImpossibleDeviceType =
+    static_cast<ui::EventRewriterChromeOS::DeviceType>(-1);
+constexpr auto kImpossibleKeyboardTopRowLayout =
+    static_cast<ui::EventRewriterChromeOS::KeyboardTopRowLayout>(-1);
 
 class TestEventRewriterContinuation
     : public ui::test::TestEventRewriterContinuation {
@@ -230,10 +242,11 @@ class EventRewriterTest : public ChromeAshTestBase {
     int_pref->SetValue(static_cast<int>(modifierKey));
   }
 
-  void SetupKeyboard(const std::string& name,
-                     const std::string& layout = "",
-                     ui::InputDeviceType type = ui::INPUT_DEVICE_INTERNAL,
-                     bool has_custom_top_row = false) {
+  ui::InputDevice SetupKeyboard(
+      const std::string& name,
+      const std::string& layout = "",
+      ui::InputDeviceType type = ui::INPUT_DEVICE_INTERNAL,
+      bool has_custom_top_row = false) {
     // Add a fake device to udev.
     const ui::InputDevice keyboard(kKeyboardDeviceId, type, name, /*phys=*/"",
                                    base::FilePath(kKbdSysPath), /*vendor=*/-1,
@@ -267,6 +280,8 @@ class EventRewriterTest : public ChromeAshTestBase {
     rewriter_->ResetStateForTesting();
     rewriter_->KeyboardDeviceAddedForTesting(kKeyboardDeviceId);
     rewriter_->set_last_keyboard_device_id_for_testing(kKeyboardDeviceId);
+
+    return keyboard;
   }
 
   void TestKeyboard(const std::string& name,
@@ -410,7 +425,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
 
   // Simulate the default initialization of the Apple Command key remap pref to
   // Ctrl.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   TestExternalAppleKeyboard({
       // VKEY_A, Alt modifier.
@@ -488,7 +503,7 @@ TEST_F(EventRewriterTest, TestRewriteCommandToControl) {
 TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
   // Simulate the default initialization of the Meta key on external keyboards
   // remap pref to Search.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // By default, the Meta key on all keyboards, internal, external Chrome OS
   // branded keyboards, and Generic keyboards should produce Search.
@@ -600,7 +615,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalMetaKey) {
 // For crbug.com/133896.
 TEST_F(EventRewriterTest, TestRewriteCommandToControlWithControlRemapped) {
   // Remap Control to Alt.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember control;
   InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
@@ -811,7 +826,7 @@ TEST_F(EventRewriterTest, TestRewriteNumPadKeys) {
 void EventRewriterTest::TestRewriteNumPadKeysOnAppleKeyboard() {
   // Simulate the default initialization of the Apple Command key remap pref to
   // Ctrl.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   TestExternalAppleKeyboard({
       // XK_KP_End (= NumPad 1 without Num Lock), Win modifier.
@@ -935,7 +950,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersNoRemapMultipleKeys) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
   // Disable Search, Control and Escape keys.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember search;
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kVoidKey);
@@ -1024,7 +1039,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersDisableSome) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
   // Remap Search to Control.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember search;
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
@@ -1089,7 +1104,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToControl) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
   // Remap Search to Escape.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember search;
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kEscapeKey);
@@ -1105,7 +1120,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToEscape) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapEscapeToAlt) {
   // Remap Escape to Alt.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember escape;
   InitModifierKeyPref(&escape, prefs::kLanguageRemapEscapeKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
@@ -1125,7 +1140,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapEscapeToAlt) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapAltToControl) {
   // Remap Alt to Control.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember alt;
   InitModifierKeyPref(&alt, prefs::kLanguageRemapAltKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
@@ -1154,7 +1169,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapAltToControl) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapUnderEscapeControlAlt) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // Remap Escape to Alt.
   IntegerPrefMember escape;
@@ -1211,7 +1226,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapUnderEscapeControlAlt) {
 
 TEST_F(EventRewriterTest,
        TestRewriteModifiersRemapUnderEscapeControlAltSearch) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // Remap Escape to Alt.
   IntegerPrefMember escape;
@@ -1264,7 +1279,7 @@ TEST_F(EventRewriterTest,
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapBackspaceToEscape) {
   // Remap Backspace to Escape.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember backspace;
   InitModifierKeyPref(&backspace, prefs::kLanguageRemapBackspaceKeyTo,
                       ui::chromeos::ModifierKey::kEscapeKey);
@@ -1280,7 +1295,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapBackspaceToEscape) {
 
 TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   // Remap Search to Caps Lock.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember search;
   InitModifierKeyPref(&search, prefs::kLanguageRemapSearchKeyTo,
                       ui::chromeos::ModifierKey::kCapsLockKey);
@@ -1403,7 +1418,7 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteCapsLock) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
                 ui::INPUT_DEVICE_UNKNOWN);
@@ -1460,7 +1475,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExternalCapsLockWithDifferentScenarios) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   SetupKeyboard("External Generic Keyboard", kKbdTopRowLayoutUnspecified,
                 ui::INPUT_DEVICE_UNKNOWN);
@@ -1542,7 +1557,7 @@ TEST_F(EventRewriterTest, TestRewriteExternalCapsLockWithDifferentScenarios) {
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
   // Remap CapsLock to Control.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember control;
   InitModifierKeyPref(&control, prefs::kLanguageRemapCapsLockKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
@@ -1576,7 +1591,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
 
 TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
   // Remap CapsLock to Control.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember control;
   InitModifierKeyPref(&control, prefs::kLanguageRemapCapsLockKeyTo,
                       ui::chromeos::ModifierKey::kControlKey);
@@ -1600,7 +1615,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 
 // TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariantsOld) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndDisableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleKeyboardVariants({
@@ -1674,7 +1689,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariantsOld) {
 // For M92 kImprovedKeyboardShortcuts is enabled but kDeprecateAltBasedSixPack
 // is disabled.
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariantsM92) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   TestNonAppleKeyboardVariants({
       // Alt+Backspace -> Delete
       {ui::ET_KEY_PRESSED,
@@ -1746,7 +1761,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariantsM92) {
 // This is the intended final state with both kImprovedKeyboardShortcuts and
 // kDeprecateAltBasedSixPack enabled.
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariants) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndEnableFeature(
       ::features::kDeprecateAltBasedSixPack);
   // All the previously supported Alt based rewrites no longer have any
@@ -1836,7 +1851,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysAltVariants) {
 
 // TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
 TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertOld) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndDisableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleKeyboardVariants({
@@ -1862,7 +1877,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertOld) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertDeprecatedNotification) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndEnableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleKeyboardVariants({
@@ -1895,7 +1910,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertDeprecatedNotification) {
 
 // TODO(crbug.com/1179893): Rename once the feature is enabled permanently.
 TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertNew) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndEnableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleKeyboardVariants({
@@ -1915,7 +1930,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeyInsertNew) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysSearchVariants) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   TestNonAppleKeyboardVariants({
       // Search+Backspace -> Delete
       {ui::ET_KEY_PRESSED,
@@ -1959,7 +1974,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysSearchVariants) {
 }
 
 TEST_F(EventRewriterTest, TestNumberRowIsNotRewritten) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   TestNonAppleNonCustomLayoutKeyboardVariants({
       // The number row should not be rewritten without Search key.
@@ -2028,7 +2043,7 @@ TEST_F(EventRewriterTest, TestNumberRowIsNotRewritten) {
 
 // TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
 TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKeyOld) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndDisableFeature(
       ::features::kImprovedKeyboardShortcuts);
   TestNonAppleNonCustomLayoutKeyboardVariants({
@@ -2086,7 +2101,7 @@ TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKeyOld) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKeyNoAction) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   TestNonAppleNonCustomLayoutKeyboardVariants({
       // Search+Number should now have no effect but a notification will
       // be shown the first time F1 to F10 is pressed.
@@ -2174,7 +2189,7 @@ TEST_F(EventRewriterTest, TestRewriteSearchNumberToFunctionKeyNoAction) {
 }
 
 TEST_F(EventRewriterTest, TestFunctionKeysNotRewrittenBySearch) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   TestNonAppleNonCustomLayoutKeyboardVariants({
       // The function keys should not be rewritten with Search key pressed.
@@ -2218,7 +2233,7 @@ TEST_F(EventRewriterTest, TestFunctionKeysNotRewrittenBySearch) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysNonCustomLayouts) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // Old CrOS keyboards that do not have custom layouts send F-Keys by default
   // and are translated by default to Actions based on hardcoded mappings.
@@ -2378,7 +2393,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysNonCustomLayouts) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysCustomLayoutsFKeyUnchanged) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // On devices with custom layouts, the F-Keys are never remapped.
   TestChromeCustomLayoutKeyboardVariants({
@@ -2581,7 +2596,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysCustomLayoutsFKeyUnchanged) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysCustomLayoutsActionUnchanged) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // An action key on these devices is one where the scan code matches an entry
   // in the layout map. It doesn't matter what the action is, as long the
@@ -2609,7 +2624,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysCustomLayoutsActionUnchanged) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysCustomLayouts) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // On devices with custom layouts, scan codes that match the layout
   // map get mapped to F-Keys based only on the scan code. The search
@@ -2704,7 +2719,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysCustomLayouts) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   TestKeyboard(
       "Internal Keyboard", kKbdTopRowLayout2Tag, ui::INPUT_DEVICE_INTERNAL,
       /*has_custom_top_row=*/false,
@@ -2869,7 +2884,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysLayout2) {
 
 // TODO(crbug.com/1179893): Remove once the feature is enabled permanently.
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayoutsDeprecated) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   scoped_feature_list_.InitAndDisableFeature(
       ::features::kImprovedKeyboardShortcuts);
   std::vector<KeyTestCase> wilco_standard_tests({
@@ -2927,7 +2942,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayoutsDeprecated) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   std::vector<KeyTestCase> wilco_standard_tests({
       // F1 -> F1, Search + F1 -> Back
@@ -3199,7 +3214,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysWilcoLayouts) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   KeyTestCase wilco_standard_tests[] = {
       // Back -> Back, Search + Back -> F1
@@ -3395,7 +3410,7 @@ TEST_F(EventRewriterTest, TestRewriteActionKeysWilcoLayouts) {
 }
 
 TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // Enable preference treat-top-row-as-function-keys.
   // That causes action keys to be mapped back to Fn keys, unless the search
@@ -3586,7 +3601,7 @@ TEST_F(EventRewriterTest, TestTopRowAsFnKeysForKeyboardWilcoLayouts) {
 }
 
 TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
 
   // Not adding a keyboard simulates a failure in getting top row layout, which
   // will fallback to Layout1 in which case keys are rewritten to their default
@@ -3649,7 +3664,7 @@ TEST_F(EventRewriterTest, TestRewriteFunctionKeysInvalidLayout) {
 // Tests that event rewrites still work even if modifiers are remapped.
 TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithControlRemapped) {
   // Remap Control to Search.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember search;
   InitModifierKeyPref(&search, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kSearchKey);
@@ -3671,7 +3686,7 @@ TEST_F(EventRewriterTest, TestRewriteExtendedKeysWithControlRemapped) {
 
 TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   // Remap Control to Alt.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember control;
   InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
@@ -3697,7 +3712,7 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
 
 TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
   // Remap Control to Alt.
-  chromeos::Preferences::RegisterProfilePrefs(prefs()->registry());
+  Preferences::RegisterProfilePrefs(prefs()->registry());
   IntegerPrefMember control;
   InitModifierKeyPref(&control, prefs::kLanguageRemapControlKeyTo,
                       ui::chromeos::ModifierKey::kAltKey);
@@ -3821,7 +3836,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
     delegate_->set_pref_service_for_testing(prefs());
     rewriter_ = std::make_unique<ui::EventRewriterChromeOS>(
         delegate_.get(), sticky_keys_controller_, false, &fake_ime_keyboard_);
-    chromeos::Preferences::RegisterProfilePrefs(prefs_.registry());
+    Preferences::RegisterProfilePrefs(prefs_.registry());
     source_.AddEventRewriter(rewriter_.get());
     sticky_keys_controller_->Enable(true);
   }
@@ -4122,6 +4137,109 @@ TEST_F(EventRewriterTest, DeprecatedAltClickGeneratesNotification) {
     // No notification expected for this case.
     EXPECT_EQ(message_center_.NotificationCount(), 0);
   }
+}
+
+TEST_F(EventRewriterTest, IdentifyKeyboardUnspecified) {
+  ui::InputDevice input_device =
+      SetupKeyboard("Internal Keyboard", kKbdTopRowLayoutUnspecified,
+                    ui::INPUT_DEVICE_INTERNAL, /*has_custom_top_row=*/false);
+
+  auto out_type = kImpossibleDeviceType;
+  auto out_layout = kImpossibleKeyboardTopRowLayout;
+  base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>
+      scan_code_map;
+
+  bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
+      input_device, &out_type, &out_layout, &scan_code_map);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceInternalKeyboard);
+  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault);
+  EXPECT_TRUE(scan_code_map.empty());
+}
+
+TEST_F(EventRewriterTest, IdentifyKeyboardInvalidLayoutTag) {
+  ui::InputDevice input_device =
+      SetupKeyboard("Internal Keyboard", kKbdTopRowLayoutInvalidTag,
+                    ui::INPUT_DEVICE_INTERNAL, /*has_custom_top_row=*/false);
+
+  auto out_type = kImpossibleDeviceType;
+  auto out_layout = kImpossibleKeyboardTopRowLayout;
+  base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>
+      scan_code_map;
+
+  bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
+      input_device, &out_type, &out_layout, &scan_code_map);
+  EXPECT_FALSE(result);
+  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceUnknown);
+  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault);
+  EXPECT_TRUE(scan_code_map.empty());
+}
+
+TEST_F(EventRewriterTest, IdentifyKeyboardInvalidCustomLayout) {
+  ui::InputDevice input_device =
+      SetupKeyboard("Internal Keyboard", kKbdInvalidCustomTopRowLayout,
+                    ui::INPUT_DEVICE_INTERNAL, /*has_custom_top_row=*/true);
+
+  auto out_type = kImpossibleDeviceType;
+  auto out_layout = kImpossibleKeyboardTopRowLayout;
+  base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>
+      scan_code_map;
+
+  bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
+      input_device, &out_type, &out_layout, &scan_code_map);
+  // Unparsable custom top row layout attributes are ignored and the
+  // keyboard treated as default layout.
+  EXPECT_TRUE(result);
+  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceInternalKeyboard);
+  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutDefault);
+  EXPECT_TRUE(scan_code_map.empty());
+}
+
+TEST_F(EventRewriterTest, IdentifyKeyboardExternalChrome) {
+  ui::InputDevice input_device =
+      SetupKeyboard("External Chrome Keyboard", kKbdTopRowLayout2Tag,
+                    ui::INPUT_DEVICE_UNKNOWN, /*has_custom_top_row=*/false);
+
+  auto out_type = kImpossibleDeviceType;
+  auto out_layout = kImpossibleKeyboardTopRowLayout;
+  base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>
+      scan_code_map;
+
+  bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
+      input_device, &out_type, &out_layout, &scan_code_map);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(out_type,
+            ui::EventRewriterChromeOS::kDeviceExternalChromeOsKeyboard);
+  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayout2);
+  EXPECT_TRUE(scan_code_map.empty());
+}
+
+TEST_F(EventRewriterTest, IdentifyKeyboardCustomLayout) {
+  ui::InputDevice input_device = SetupKeyboard(
+      "Internal Custom Layout Keyboard", kKbdDefaultCustomTopRowLayout,
+      ui::INPUT_DEVICE_INTERNAL, /*has_custom_top_row=*/true);
+
+  auto out_type = kImpossibleDeviceType;
+  auto out_layout = kImpossibleKeyboardTopRowLayout;
+  base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>
+      scan_code_map;
+
+  bool result = ui::EventRewriterChromeOS::IdentifyKeyboard(
+      input_device, &out_type, &out_layout, &scan_code_map);
+
+  EXPECT_TRUE(result);
+  EXPECT_EQ(out_type, ui::EventRewriterChromeOS::kDeviceInternalKeyboard);
+  EXPECT_EQ(out_layout, ui::EventRewriterChromeOS::kKbdTopRowLayoutCustom);
+
+  // Basic inspection to match kKbdDefaultCustomTopRowLayout
+  EXPECT_EQ(15, scan_code_map.size());
+
+  ASSERT_TRUE(scan_code_map.contains(1));
+  EXPECT_EQ(ui::VKEY_F1, scan_code_map[1].key_code);
+  ASSERT_TRUE(scan_code_map.contains(2));
+  EXPECT_EQ(ui::VKEY_F2, scan_code_map[2].key_code);
+  ASSERT_TRUE(scan_code_map.contains(15));
+  EXPECT_EQ(ui::VKEY_F15, scan_code_map[15].key_code);
 }
 
 TEST_F(EventRewriterAshTest, StickyKeyEventDispatchImpl) {

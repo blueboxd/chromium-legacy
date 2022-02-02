@@ -15,8 +15,6 @@ class DesktopFrame;
 namespace remoting {
 namespace protocol {
 
-struct HostFrameStats;
-
 // An abstract interface for frame schedulers, which are responsible for
 // scheduling when video frames are captured and for defining encoding
 // parameters for each frame.
@@ -36,13 +34,9 @@ class WebrtcFrameScheduler : public VideoChannelStateObserver {
   // if the capture request failed.
   virtual void OnFrameCaptured(const webrtc::DesktopFrame* frame) = 0;
 
-  // Writes the following bandwidth-related statistics to |frame_stats_out|:
-  // * bandwidth_estimate_kbps
-  // * rtt_estimate
-  // * send_pending_delay - an estimate of the delay (due to WebRTC's pacing
-  //   buffer) before the recently-encoded frame will be sent.
-  // This should be called just after OnFrameEncoded().
-  virtual void GetSchedulerStats(HostFrameStats& frame_stats_out) const = 0;
+  // Called when WebRTC requests the VideoTrackSource to provide frames
+  // at a maximum framerate.
+  virtual void SetMaxFramerateFps(int max_framerate_fps) = 0;
 };
 
 }  // namespace protocol

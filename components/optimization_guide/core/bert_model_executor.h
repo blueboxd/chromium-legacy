@@ -5,34 +5,15 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_CORE_BERT_MODEL_EXECUTOR_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_BERT_MODEL_EXECUTOR_H_
 
-#include "components/optimization_guide/core/model_executor.h"
+#include "components/optimization_guide/core/tflite_model_executor.h"
 #include "third_party/tflite_support/src/tensorflow_lite_support/cc/task/core/category.h"
 
 namespace optimization_guide {
 
-// An implementation of a ModelHandler that executes BERT models.
-//
-// Note that sentencepiece tokenizers are not supported by Chromium's copy of
-// the TFLite Support library.
-class BertModelExecutorHandle
-    : public ModelHandler<std::vector<tflite::task::core::Category>,
-                          const std::string&> {
- public:
-  BertModelExecutorHandle(
-      OptimizationGuideModelProvider* model_provider,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      proto::OptimizationTarget optimization_target,
-      const absl::optional<proto::Any>& model_metadata);
-  ~BertModelExecutorHandle() override;
-
-  BertModelExecutorHandle(const BertModelExecutorHandle&) = delete;
-  BertModelExecutorHandle& operator=(const BertModelExecutorHandle&) = delete;
-};
-
 // A full implementation of a ModelExecutor that executes BERT models.
 class BertModelExecutor
-    : public ModelExecutor<std::vector<tflite::task::core::Category>,
-                           const std::string&> {
+    : public TFLiteModelExecutor<std::vector<tflite::task::core::Category>,
+                                 const std::string&> {
  public:
   explicit BertModelExecutor(proto::OptimizationTarget optimization_target);
   ~BertModelExecutor() override;
@@ -44,9 +25,11 @@ class BertModelExecutor
   // ModelExecutor:
   absl::optional<std::vector<tflite::task::core::Category>> Execute(
       ModelExecutionTask* execution_task,
+      ExecutionStatus* out_status,
       const std::string& input) override;
   std::unique_ptr<ModelExecutionTask> BuildModelExecutionTask(
-      base::MemoryMappedFile* model_file) override;
+      base::MemoryMappedFile* model_file,
+      ExecutionStatus* out_status) override;
 
  private:
   const proto::OptimizationTarget optimization_target_;

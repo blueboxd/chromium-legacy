@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
 #include "build/build_config.h"
@@ -294,12 +293,12 @@ const views::Widget* MessageBoxDialog::GetWidget() const {
 
 namespace chrome {
 
-void ShowWarningMessageBox(gfx::NativeWindow parent,
-                           const std::u16string& title,
-                           const std::u16string& message) {
-  MessageBoxDialog::Show(parent, title, message,
-                         chrome::MESSAGE_BOX_TYPE_WARNING, std::u16string(),
-                         std::u16string(), std::u16string());
+MessageBoxResult ShowWarningMessageBox(gfx::NativeWindow parent,
+                                       const std::u16string& title,
+                                       const std::u16string& message) {
+  return MessageBoxDialog::Show(
+      parent, title, message, chrome::MESSAGE_BOX_TYPE_WARNING,
+      std::u16string(), std::u16string(), std::u16string());
 }
 
 void ShowWarningMessageBoxWithCheckbox(

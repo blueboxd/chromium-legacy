@@ -82,6 +82,7 @@ def collect_forward_decls_and_include_headers(idl_types):
             header_include_headers.update([
                 "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h",
                 "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h",
+                "third_party/blink/renderer/platform/heap/member.h",
             ])
         elif idl_type.is_nullable:
             if not blink_type_info(idl_type.inner_type).has_null_value:
@@ -92,7 +93,8 @@ def collect_forward_decls_and_include_headers(idl_types):
         elif (idl_type.is_sequence or idl_type.is_frozen_array
               or idl_type.is_record or idl_type.is_variadic):
             header_include_headers.add(
-                "third_party/blink/renderer/platform/heap/heap_allocator.h")
+                "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+            )
         elif idl_type.is_string:
             header_include_headers.add(
                 "third_party/blink/renderer/platform/wtf/text/wtf_string.h")
@@ -107,15 +109,21 @@ def collect_forward_decls_and_include_headers(idl_types):
                     PathManager(type_def_obj).api_path(ext="h"))
             elif type_def_obj.is_interface:
                 header_forward_decls.add(blink_class_name(type_def_obj))
+                header_include_headers.add(
+                    "third_party/blink/renderer/platform/heap/member.h")
                 source_include_headers.add(
                     PathManager(type_def_obj).blink_path(ext="h"))
             else:
                 header_forward_decls.add(blink_class_name(type_def_obj))
+                header_include_headers.add(
+                    "third_party/blink/renderer/platform/heap/member.h")
                 source_include_headers.add(
                     PathManager(type_def_obj).api_path(ext="h"))
         elif idl_type.union_definition_object:
             union_def_obj = idl_type.union_definition_object
             header_forward_decls.add(blink_class_name(union_def_obj))
+            header_include_headers.add(
+                "third_party/blink/renderer/platform/heap/member.h")
             source_include_headers.add(
                 PathManager(union_def_obj).api_path(ext="h"))
         else:

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/sample_vector.h"
@@ -176,8 +177,12 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
   // (alternative service info if it supports QUIC, for instance).
   const IsolationInfo& isolation_info() const { return isolation_info_; }
 
-  base::SafeRef<ResolveContext> AsSafeRef() const {
+  base::SafeRef<ResolveContext> AsSafeRef() {
     return weak_ptr_factory_.GetSafeRef();
+  }
+
+  base::WeakPtr<ResolveContext> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
@@ -248,15 +253,17 @@ class NET_EXPORT_PRIVATE ResolveContext : public base::CheckedObserver {
 
   static bool ServerStatsToDohAvailability(const ServerStats& stats);
 
-  URLRequestContext* url_request_context_;
+  raw_ptr<URLRequestContext> url_request_context_;
 
   std::unique_ptr<HostCache> host_cache_;
 
   // Current maximum server fallback period. Updated on connection change.
   base::TimeDelta max_fallback_period_;
 
+  // All DohStatusObservers only hold a WeakPtr<ResolveContext>, so there's no
+  // need for check_empty to be true.
   base::ObserverList<DohStatusObserver,
-                     true /* check_empty */,
+                     false /* check_empty */,
                      false /* allow_reentrancy */>
       doh_status_observers_;
 

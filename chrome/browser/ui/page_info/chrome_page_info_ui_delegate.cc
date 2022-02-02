@@ -6,13 +6,14 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/page_info/about_this_site_service_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/page_info/about_this_site_service.h"
+#include "components/page_info/core/about_this_site_service.h"
 #include "components/permissions/permission_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -170,8 +171,7 @@ std::u16string ChromePageInfoUiDelegate::GetPermissionDetail(
     case ContentSettingsType::ADS:
       return l10n_util::GetStringUTF16(IDS_PAGE_INFO_PERMISSION_ADS_SUBTITLE);
     default:
-      return content_settings::GetPermissionDetailString(GetProfile(), type,
-                                                         site_url_);
+      return {};
   }
 }
 

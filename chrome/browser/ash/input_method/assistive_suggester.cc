@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/services/ime/public/cpp/suggestions.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/metrics/histogram_functions.h"
@@ -15,7 +16,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "components/exo/wm_helper.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -117,6 +117,51 @@ void RecordSuggestionsMatch(const std::vector<TextSuggestion>& suggestions) {
   }
 }
 
+bool IsUsEnglishEngineId(const std::string& engine_id) {
+  return engine_id == "xkb:us::eng";
+}
+
+bool IsMultiWordPrefEnabled(PrefService* pref_service) {
+  return pref_service->GetBoolean(prefs::kAssistPredictiveWritingEnabled);
+}
+
+bool IsLacrosEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
+}
+
+void RecordTextInputStateMetric(AssistiveTextInputState state) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.MultiWord.InputState",
+                                state);
+}
+
+void RecordMultiWordTextInputState(PrefService* pref_service,
+                                   AssistiveSuggesterSwitch* suggester_switch,
+                                   const std::string& engine_id) {
+  if (IsLacrosEnabled()) {
+    RecordTextInputStateMetric(AssistiveTextInputState::kUnsupportedClient);
+    return;
+  }
+
+  if (!suggester_switch->IsMultiWordSuggestionAllowed()) {
+    RecordTextInputStateMetric(
+        AssistiveTextInputState::kFeatureBlockedByDenylist);
+    return;
+  }
+
+  if (!IsMultiWordPrefEnabled(pref_service)) {
+    RecordTextInputStateMetric(
+        AssistiveTextInputState::kFeatureBlockedByPreference);
+    return;
+  }
+
+  if (!IsUsEnglishEngineId(engine_id)) {
+    RecordTextInputStateMetric(AssistiveTextInputState::kUnsupportedLanguage);
+    return;
+  }
+
+  RecordTextInputStateMetric(AssistiveTextInputState::kFeatureEnabled);
+}
+
 }  // namespace
 
 AssistiveSuggester::AssistiveSuggester(
@@ -143,14 +188,27 @@ bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
          IsMultiWordSuggestEnabled() || IsEnhancedEmojiSuggestEnabled();
 }
 
+bool AssistiveSuggester::IsAssistiveFeatureAllowed(
+    const AssistiveFeature& feature) {
+  switch (feature) {
+    case AssistiveFeature::kEmojiSuggestion:
+      return suggester_switch_->IsEmojiSuggestionAllowed();
+    case AssistiveFeature::kMultiWordSuggestion:
+      return suggester_switch_->IsMultiWordSuggestionAllowed();
+    case AssistiveFeature::kPersonalInfoSuggestion:
+      return suggester_switch_->IsPersonalInfoSuggestionAllowed();
+    default:
+      return false;
+  }
+}
+
 bool AssistiveSuggester::IsAssistPersonalInfoEnabled() {
   return base::FeatureList::IsEnabled(features::kAssistPersonalInfo) &&
          profile_->GetPrefs()->GetBoolean(prefs::kAssistPersonalInfoEnabled);
 }
 
 bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {
-  return base::FeatureList::IsEnabled(features::kEmojiSuggestAddition) &&
-         profile_->GetPrefs()->GetBoolean(
+  return profile_->GetPrefs()->GetBoolean(
              prefs::kEmojiSuggestionEnterpriseAllowed) &&
          profile_->GetPrefs()->GetBoolean(prefs::kEmojiSuggestionEnabled);
 }
@@ -185,9 +243,6 @@ DisabledReason AssistiveSuggester::GetDisabledReasonForPersonalInfo() {
 }
 
 DisabledReason AssistiveSuggester::GetDisabledReasonForEmoji() {
-  if (!base::FeatureList::IsEnabled(features::kEmojiSuggestAddition)) {
-    return DisabledReason::kFeatureFlagOff;
-  }
   if (!profile_->GetPrefs()->GetBoolean(
           prefs::kEmojiSuggestionEnterpriseAllowed)) {
     return DisabledReason::kEnterpriseSettingsOff;
@@ -201,7 +256,8 @@ DisabledReason AssistiveSuggester::GetDisabledReasonForEmoji() {
   return DisabledReason::kNone;
 }
 
-DisabledReason AssistiveSuggester::GetDisabledReasonForMultiWord() {
+DisabledReason AssistiveSuggester::GetDisabledReasonForMultiWord(
+    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
   if (!features::IsAssistiveMultiWordEnabled()) {
     return DisabledReason::kFeatureFlagOff;
   }
@@ -209,7 +265,7 @@ DisabledReason AssistiveSuggester::GetDisabledReasonForMultiWord() {
           prefs::kAssistPredictiveWritingEnabled)) {
     return DisabledReason::kUserSettingsOff;
   }
-  if (!suggester_switch_->IsMultiWordSuggestionAllowed()) {
+  if (!enabled_suggestions.multi_word_suggestions) {
     return DisabledReason::kUrlOrAppNotAllowed;
   }
   return DisabledReason::kNone;
@@ -259,7 +315,8 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
   // surrounding text change, which is triggered by a keydown event. As a
   // result, the next key event after suggesting would be a keyup event of the
   // same key, and that event is meaningless to us.
-  if (IsSuggestionShown() && event.type() == ui::ET_KEY_PRESSED) {
+  if (IsSuggestionShown() && event.type() == ui::ET_KEY_PRESSED &&
+      !event.IsControlDown() && !event.IsAltDown() && !event.IsShiftDown()) {
     SuggestionStatus status = current_suggester_->HandleKeyEvent(event);
     switch (status) {
       case SuggestionStatus::kAccept:
@@ -281,17 +338,24 @@ bool AssistiveSuggester::OnKeyEvent(const ui::KeyEvent& event) {
 
 void AssistiveSuggester::OnExternalSuggestionsUpdated(
     const std::vector<TextSuggestion>& suggestions) {
-  if (!IsMultiWordSuggestEnabled()) {
+  if (!IsMultiWordSuggestEnabled())
     return;
-  }
 
+  suggester_switch_->GetEnabledSuggestions(
+      base::BindOnce(&AssistiveSuggester::ProcessExternalSuggestions,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(suggestions)));
+}
+
+void AssistiveSuggester::ProcessExternalSuggestions(
+    const std::vector<TextSuggestion>& suggestions,
+    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
   RecordSuggestionsMatch(suggestions);
 
-  if (!suggester_switch_->IsMultiWordSuggestionAllowed() &&
+  if (!enabled_suggestions.multi_word_suggestions &&
       !IsExpandedMultiWordSuggestEnabled()) {
     if (IsTopResultMultiWord(suggestions))
       RecordAssistiveDisabledReasonForMultiWord(
-          GetDisabledReasonForMultiWord());
+          GetDisabledReasonForMultiWord(std::move(enabled_suggestions)));
     return;
   }
 
@@ -304,6 +368,14 @@ void AssistiveSuggester::OnExternalSuggestionsUpdated(
     current_suggester_ = &multi_word_suggester_;
     current_suggester_->OnExternalSuggestionsUpdated(suggestions);
     RecordAssistiveCoverage(current_suggester_->GetProposeActionType());
+  }
+}
+
+void AssistiveSuggester::RecordTextInputStateMetrics(
+    const std::string& engine_id) {
+  if (features::IsAssistiveMultiWordEnabled()) {
+    RecordMultiWordTextInputState(profile_->GetPrefs(), suggester_switch_.get(),
+                                  engine_id);
   }
 }
 

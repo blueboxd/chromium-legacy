@@ -36,7 +36,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/night_light/time_of_day.h"
+#include "ash/system/time/time_of_day.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
@@ -1128,20 +1128,19 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   std::unique_ptr<FingerprintView> fingerprint_view;
   std::unique_ptr<LoginAuthFactorsView> auth_factors_view;
   if (smart_lock_ui_revamp_enabled_) {
-    // TODO(https://crbug.com/1233614): Inject a more specialized "click to
-    // enter" callback directly into SmartLockAuthFactorModel and remove this
-    // behavior from OnUserViewTap().
-    auth_factors_view =
-        std::make_unique<LoginAuthFactorsView>(base::BindRepeating(
-            &LoginAuthUserView::OnUserViewTap, base::Unretained(this)));
-    auth_factors_view_ = auth_factors_view.get();
     auto fingerprint_auth_factor_model =
         std::make_unique<FingerprintAuthFactorModel>();
     fingerprint_auth_factor_model_ = fingerprint_auth_factor_model.get();
-    auth_factors_view_->AddAuthFactor(std::move(fingerprint_auth_factor_model));
     auto smart_lock_auth_factor_model =
-        std::make_unique<SmartLockAuthFactorModel>();
+        std::make_unique<SmartLockAuthFactorModel>(base::BindRepeating(
+            &LoginAuthUserView::OnUserViewTap, base::Unretained(this)));
     smart_lock_auth_factor_model_ = smart_lock_auth_factor_model.get();
+    auth_factors_view =
+        std::make_unique<LoginAuthFactorsView>(base::BindRepeating(
+            &SmartLockAuthFactorModel::OnArrowButtonTapOrClickEvent,
+            base::Unretained(smart_lock_auth_factor_model_)));
+    auth_factors_view_ = auth_factors_view.get();
+    auth_factors_view_->AddAuthFactor(std::move(fingerprint_auth_factor_model));
     auth_factors_view_->AddAuthFactor(std::move(smart_lock_auth_factor_model));
   } else {
     fingerprint_view = std::make_unique<FingerprintView>();
@@ -1345,9 +1344,11 @@ void LoginAuthUserView::SetAuthMethods(
 
   if (smart_lock_ui_revamp_enabled_) {
     DCHECK(fingerprint_auth_factor_model_);
+    DCHECK(smart_lock_auth_factor_model_);
+    DCHECK(auth_factors_view_);
     fingerprint_auth_factor_model_->set_available(
         current_state.has_fingerprint);
-    fingerprint_auth_factor_model_->SetCanUsePin(HasAuthMethod(AUTH_PIN));
+    auth_factors_view_->SetCanUsePin(HasAuthMethod(AUTH_PIN));
   } else {
     DCHECK(fingerprint_view_);
     fingerprint_view_->SetVisible(current_state.has_fingerprint);

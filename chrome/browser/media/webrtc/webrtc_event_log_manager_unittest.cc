@@ -23,6 +23,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_unittest_helpers.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -156,7 +158,7 @@ bool CreateRemoteBoundLogFile(const base::FilePath& dir,
           .AddExtension(extension);
 
   constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
-                             base::File::FLAG_EXCLUSIVE_WRITE;
+                             base::File::FLAG_WIN_EXCLUSIVE_WRITE;
   file->Initialize(*file_path, file_flags);
   if (!file->IsValid() || !file->created()) {
     return false;
@@ -706,7 +708,9 @@ class WebRtcEventLogManagerTestBase : public ::testing::Test {
     profile_builder.OverridePolicyConnectorIsManagedForTesting(
         is_managed_profile);
     if (is_supervised) {
-      profile_builder.SetSupervisedUserId("id");
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+#endif
     }
     std::unique_ptr<TestingProfile> profile = profile_builder.Build();
 
@@ -1231,7 +1235,7 @@ class WebRtcEventLogManagerTestIncognito
         std::make_unique<MockRenderProcessHost>(incognito_profile_);
   }
 
-  Profile* incognito_profile_;
+  raw_ptr<Profile> incognito_profile_;
   std::unique_ptr<MockRenderProcessHost> incognito_rph_;
 };
 
@@ -1292,7 +1296,7 @@ class PeerConnectionTrackerProxyForTesting
   }
 
  private:
-  WebRtcEventLogManagerTestBase* const test_;
+  const raw_ptr<WebRtcEventLogManagerTestBase> test_;
 };
 
 // The factory for the following fake uploader produces a sequence of
@@ -1343,7 +1347,7 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
    private:
     std::list<WebRtcLogFileInfo> expected_files_;
     const bool result_;
-    base::RunLoop* const run_loop_;
+    const raw_ptr<base::RunLoop> run_loop_;
   };
 
   // The logic is in the factory; the uploader just reports success so that the
@@ -4051,16 +4055,15 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
 // TODO(crbug.com/1035829): Figure out whether this can be resolved by tweaking
 // the test setup or whether the Active Directory services need to be adapted
 // for easy testing.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(WebRtcEventLogManagerTestPolicy,
        ManagedProfileDoesNotAllowRemoteLoggingForSupervisedProfiles) {
   SetUp(true);  // Feature generally enabled (kill-switch not engaged).
 
   const bool allow_remote_logging = false;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager =
       GetScopedUserManager(user_manager::USER_TYPE_CHILD);
-#endif
 
   auto browser_context = CreateBrowserContextWithCustomSupervision(
       "name", true /* is_managed_profile */,
@@ -4074,6 +4077,7 @@ TEST_F(WebRtcEventLogManagerTestPolicy,
   ASSERT_TRUE(OnPeerConnectionSessionIdSet(key));
   EXPECT_EQ(StartRemoteLogging(key), allow_remote_logging);
 }
+#endif
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(WebRtcEventLogManagerTestPolicy,

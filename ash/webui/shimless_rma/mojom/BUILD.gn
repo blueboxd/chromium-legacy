@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+
+assert(is_chromeos_ash)
 
 mojom("mojom") {
   sources = [ "shimless_rma.mojom" ]
@@ -28,6 +31,10 @@ mojom("mojom") {
         {
           mojom = "ash.shimless_rma.mojom.Component"
           cpp = "::rmad::ComponentsRepairState_ComponentRepairStatus"
+        },
+        {
+          mojom = "ash.shimless_rma.mojom.WriteProtectDisableCompleteAction"
+          cpp = "::rmad::WriteProtectDisableCompleteState_Action"
         },
         {
           mojom = "ash.shimless_rma.mojom.ProvisioningStatus"
@@ -56,6 +63,10 @@ mojom("mojom") {
         {
           mojom = "ash.shimless_rma.mojom.FinalizationStatus"
           cpp = "::rmad::FinalizeStatus_Status"
+        },
+        {
+          mojom = "ash.shimless_rma.mojom.UpdateRoFirmwareStatus"
+          cpp = "::rmad::UpdateRoFirmwareStatus"
         },
         {
           mojom = "media.mojom.CdmKeyInformation"

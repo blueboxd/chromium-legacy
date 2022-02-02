@@ -164,8 +164,6 @@ luci.realm(
 )
 
 luci.builder.defaults.experiments.set({
-    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
-    "chromium.chromium_tests.use_rdb_results": 100,
     # Launch Swarming tasks in "realms-aware mode", crbug.com/1136313.
     "luci.use_realms": 100,
 })
@@ -180,6 +178,7 @@ exec("//notifiers.star")
 exec("//subprojects/chromium/subproject.star")
 branches.exec("//subprojects/codesearch/subproject.star")
 branches.exec("//subprojects/findit/subproject.star")
+branches.exec("//subprojects/flakiness/subproject.star")
 branches.exec("//subprojects/goma/subproject.star")
 branches.exec("//subprojects/reclient/subproject.star")
 branches.exec("//subprojects/webrtc/subproject.star")

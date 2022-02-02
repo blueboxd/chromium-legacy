@@ -79,6 +79,17 @@ Polymer({
       },
     },
 
+    /**
+     * The domain of the organization managing the device.
+     * @private
+     */
+    deviceManager_: {
+      type: String,
+      value() {
+        return loadTimeData.getString('deviceManager');
+      },
+    },
+
     /** @private */
     hasCheckedForUpdates_: {
       type: Boolean,
@@ -158,6 +169,12 @@ Polymer({
       }
     },
 
+    /** @protected */
+    showFirmwareUpdatesApp_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('isFirmwareUpdaterAppEnabled'),
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -212,6 +229,7 @@ Polymer({
         chromeos.settings.mojom.Setting.kReportAnIssue,
         chromeos.settings.mojom.Setting.kTermsOfService,
         chromeos.settings.mojom.Setting.kDiagnostics,
+        chromeos.settings.mojom.Setting.kFirmwareUpdates,
       ]),
     },
   },
@@ -345,6 +363,13 @@ Polymer({
   },
 
   /** @private */
+  onFirmwareUpdatesClick_() {
+    assert(this.showFirmwareUpdatesApp_);
+    this.aboutBrowserProxy_.openFirmwareUpdatesPage();
+    recordSettingChange(chromeos.settings.mojom.Setting.kFirmwareUpdates);
+  },
+
+  /** @private */
   onRelaunchClick_() {
     recordSettingChange();
     LifetimeBrowserProxyImpl.getInstance().relaunch();
@@ -425,7 +450,9 @@ Polymer({
           return this.i18nAdvanced('aboutUpgradeSuccessChannelSwitch');
         }
         if (this.currentUpdateStatusEvent_.rollback) {
-          return this.i18nAdvanced('aboutRollbackSuccess');
+          return this.i18nAdvanced('aboutRollbackSuccess', {
+            substitutions: [this.deviceManager_],
+          });
         }
         return this.i18nAdvanced('aboutUpgradeRelaunch');
       case UpdateStatus.UPDATED:
@@ -445,7 +472,7 @@ Polymer({
         }
         if (this.currentUpdateStatusEvent_.rollback) {
           return this.i18nAdvanced('aboutRollbackInProgress', {
-            substitutions: [progressPercent],
+            substitutions: [this.deviceManager_, progressPercent],
           });
         }
         if (this.currentUpdateStatusEvent_.progress > 0) {

@@ -385,6 +385,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
                                         InvalidationScope =
                                             kInvalidateCurrentScope);
   void ScheduleCustomElementInvalidations(HashSet<AtomicString> tag_names);
+  void ElementInsertedOrRemoved(Element* parent, Element& element);
+  void SubtreeInsertedOrRemoved(Element* parent, Element& subtree_root);
 
   void NodeWillBeRemoved(Node&);
   void ChildrenRemoved(ContainerNode& parent);
@@ -577,6 +579,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       UnorderedTreeScopeSet& tree_scopes_removed);
 
   bool ShouldSkipInvalidationFor(const Element&) const;
+  bool IsSubtreeAndSiblingsStyleDirty(const Element&) const;
   void ScheduleRuleSetInvalidationsForElement(
       Element&,
       const HeapHashSet<Member<RuleSet>>&);
@@ -645,6 +648,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // We may need to update whitespaces in the layout tree after a flat tree
   // removal which caused a layout subtree to be detached.
   void MarkForLayoutTreeChangesAfterDetach();
+
+  void RebuildLayoutTreeForTraversalRootAncestors(Element* parent);
+
+  // Separate path for layout tree rebuild for html fieldset as a size query
+  // container.
+  void RebuildFieldSetContainer(HTMLFieldSetElement& fieldset);
 
   Member<Document> document_;
 

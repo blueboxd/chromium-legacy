@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LAYOUT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LAYOUT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -39,9 +38,6 @@ class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
 
   // Returns true if |service_| is initialized and ready to be called.
   bool EnsureServiceConnected();
-
-  // Returns true if the current frame is a top-level browsing context.
-  bool CalledFromSupportedContext(ExecutionContext*);
 
   void GotKeyboardLayoutMap(ScriptPromiseResolver*,
                             mojom::blink::GetKeyboardLayoutMapResultPtr);

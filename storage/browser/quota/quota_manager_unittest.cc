@@ -15,11 +15,9 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
-#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -112,6 +110,9 @@ class QuotaManagerImplTest : public testing::Test {
 
  public:
   QuotaManagerImplTest() : mock_time_counter_(0) {}
+
+  QuotaManagerImplTest(const QuotaManagerImplTest&) = delete;
+  QuotaManagerImplTest& operator=(const QuotaManagerImplTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -714,8 +715,6 @@ class QuotaManagerImplTest : public testing::Test {
   int mock_time_counter_;
 
   base::WeakPtrFactory<QuotaManagerImplTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuotaManagerImplTest);
 };
 
 TEST_F(QuotaManagerImplTest, GetUsageInfo) {

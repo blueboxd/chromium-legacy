@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/ignore_result.h"
+
 namespace IPC {
 namespace internal {
 

@@ -11,10 +11,12 @@
 
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -24,6 +26,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
@@ -73,7 +76,7 @@ class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
   }
 
  private:
-  FrameTreeNode* owner_;
+  raw_ptr<FrameTreeNode> owner_;
   bool observing_original_opener_;
 };
 
@@ -264,6 +267,36 @@ void FrameTreeNode::ResetForNavigation() {
   UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kClearActivation,
       blink::mojom::UserActivationNotificationType::kNone);
+}
+
+RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocument() {
+  return GetParentOrOuterDocumentHelper(/*escape_guest_view=*/false);
+}
+
+RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocumentOrEmbedder() {
+  return GetParentOrOuterDocumentHelper(/*escape_guest_view=*/true);
+}
+
+RenderFrameHostImpl* FrameTreeNode::GetParentOrOuterDocumentHelper(
+    bool escape_guest_view) {
+  // Find the parent in the FrameTree (iframe).
+  if (parent_)
+    return parent_;
+
+  if (!escape_guest_view) {
+    // If we are not a fenced frame root nor inside a portal then return early.
+    // This code does not escape GuestViews.
+    if (!IsFencedFrameRoot() && !frame_tree_->delegate()->IsPortal())
+      return nullptr;
+  }
+
+  // Find the parent in the outer embedder (GuestView, Portal, or Fenced Frame).
+  FrameTreeNode* frame_in_embedder = render_manager()->GetOuterDelegateNode();
+  if (frame_in_embedder)
+    return frame_in_embedder->current_frame_host()->GetParent();
+
+  // No parent found.
+  return nullptr;
 }
 
 size_t FrameTreeNode::GetFrameTreeSize() const {
@@ -556,13 +589,14 @@ void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   render_manager_.CleanUpNavigation();
 }
 
-void FrameTreeNode::DidStartLoading(bool to_different_document,
+void FrameTreeNode::DidStartLoading(bool should_show_loading_ui,
                                     bool was_previously_loading) {
   TRACE_EVENT2("navigation", "FrameTreeNode::DidStartLoading",
-               "frame_tree_node", frame_tree_node_id(), "to different document",
-               to_different_document);
+               "frame_tree_node", frame_tree_node_id(),
+               "should_show_loading_ui ", should_show_loading_ui);
+  base::ElapsedTimer timer;
 
-  frame_tree_->DidStartLoadingNode(*this, to_different_document,
+  frame_tree_->DidStartLoadingNode(*this, should_show_loading_ui,
                                    was_previously_loading);
 
   // Set initial load progress and update overall progress. This will notify
@@ -571,6 +605,10 @@ void FrameTreeNode::DidStartLoading(bool to_different_document,
 
   // Notify the RenderFrameHostManager of the event.
   render_manager()->OnDidStartLoading();
+  base::UmaHistogramTimes(
+      base::StrCat({"Navigation.DidStartLoading.",
+                    IsMainFrame() ? "MainFrame" : "Subframe"}),
+      timer.Elapsed());
 }
 
 void FrameTreeNode::DidStopLoading() {
@@ -873,6 +911,17 @@ void FrameTreeNode::SetFencedFrameNonceIfNeeded() {
       parent_->frame_tree_node()->fenced_frame_nonce();
   DCHECK(nonce.has_value());
   fenced_frame_nonce_ = nonce;
+}
+
+bool FrameTreeNode::IsErrorPageIsolationEnabled() const {
+  // Enable error page isolation for fenced frames in both MPArch and ShadowDOM
+  // modes to address the issue with invalid urn:uuid (crbug.com/1264224).
+  //
+  // Note that `IsMainFrame()` only covers MPArch, therefore we add explicit
+  // `IsFencedFrameRoot()` check for ShadowDOM, at least until error page
+  // isolation is supported for subframes in crbug.com/1092524.
+  return SiteIsolationPolicy::IsErrorPageIsolationEnabled(IsMainFrame() ||
+                                                          IsFencedFrameRoot());
 }
 
 }  // namespace content

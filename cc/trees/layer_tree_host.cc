@@ -144,11 +144,10 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       scheduling_client_(params.scheduling_client),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       pending_commit_state_(std::make_unique<CommitState>()),
+      thread_unsafe_commit_state_(params.mutator_host),
       settings_(*params.settings),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params.task_graph_runner),
-      main_thread_pipeline_(params.main_thread_pipeline),
-      compositor_thread_pipeline_(params.compositor_thread_pipeline),
       mutator_host_(params.mutator_host),
       dark_mode_filter_(params.dark_mode_filter) {
   DCHECK(task_graph_runner_);
@@ -159,7 +158,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
   pending_commit_state_->needs_full_tree_sync = true;
   pending_commit_state_->debug_state = settings_.initial_debug_state;
 
-  mutator_host_->SetMutatorHostClient(this);
+  params.mutator_host->SetMutatorHostClient(this);
 
   rendering_stats_instrumentation_->set_record_rendering_stats(
       pending_commit_state_->debug_state.RecordRenderingStats());
@@ -250,7 +249,7 @@ LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
   // Clear any references into the LayerTreeHost.
-  mutator_host_->SetMutatorHostClient(nullptr);
+  mutator_host()->SetMutatorHostClient(nullptr);
 
   if (root_layer()) {
     root_layer()->SetLayerTreeHost(nullptr);
@@ -258,7 +257,7 @@ LayerTreeHost::~LayerTreeHost() {
     // The root layer must be destroyed before the layer tree. We've made a
     // contract with our animation controllers that the animation_host will
     // outlive them, and we must make good.
-    pending_commit_state()->root_layer = nullptr;
+    thread_unsafe_commit_state().root_layer = nullptr;
   }
 
   // Fail any pending image decodes.
@@ -352,136 +351,6 @@ void LayerTreeHost::RequestMainFrameUpdate(bool report_metrics) {
     pending_commit_state()->begin_main_frame_metrics.reset();
 }
 
-// This function commits the LayerTreeHost to an impl tree. When modifying
-// this function, keep in mind that the function *runs* on the impl thread! Any
-// code that is logically a main thread operation, e.g. deletion of a Layer,
-// should be delayed until the LayerTreeHost::CommitComplete, which will run
-// after the commit, but on the main thread.
-void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
-  DCHECK(task_runner_provider_->IsImplThread());
-  CommitState* state = active_commit_state();
-  DCHECK(state);
-
-  TRACE_EVENT0("cc,benchmark", "LayerTreeHost::FinishCommitOnImplThread");
-
-  LayerTreeImpl* sync_tree = host_impl->sync_tree();
-  sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kBeginningSync);
-
-  if (state->next_commit_forces_redraw)
-    sync_tree->ForceRedrawNextActivation();
-  if (state->next_commit_forces_recalculate_raster_scales)
-    sync_tree->ForceRecalculateRasterScales();
-  if (!state->pending_presentation_time_callbacks.empty()) {
-    sync_tree->AddPresentationCallbacks(
-        std::move(state->pending_presentation_time_callbacks));
-  }
-
-  if (state->needs_full_tree_sync)
-    TreeSynchronizer::SynchronizeTrees(state, sync_tree);
-
-  if (state->clear_caches_on_next_commit) {
-    proxy_->ClearHistory();
-    host_impl->ClearCaches();
-  }
-
-  {
-    TRACE_EVENT0("cc", "LayerTreeHost::PushProperties");
-
-    PushPropertyTreesTo(sync_tree);
-    sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kSyncedPropertyTrees);
-
-    if (state->needs_surface_ranges_sync) {
-      sync_tree->ClearSurfaceRanges();
-      sync_tree->SetSurfaceRanges(state->SurfaceRanges());
-    }
-    TreeSynchronizer::PushLayerProperties(state, sync_tree);
-    sync_tree->lifecycle().AdvanceTo(
-        LayerTreeLifecycle::kSyncedLayerProperties);
-
-    PushLayerTreePropertiesTo(state, sync_tree);
-    PushLayerTreeHostPropertiesTo(host_impl);
-
-    sync_tree->PassSwapPromises(std::move(state->swap_promises));
-    sync_tree->AppendEventsMetricsFromMainThread(
-        std::move(state->event_metrics));
-
-    sync_tree->set_ui_resource_request_queue(state->ui_resource_request_queue);
-
-    // This must happen after synchronizing property trees and after pushing
-    // properties, which updates the clobber_active_value flag.
-    // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
-    sync_tree->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
-        property_trees(), sync_tree, settings_.commit_fractional_scroll_deltas);
-
-    // This must happen after synchronizing property trees and after push
-    // properties, which updates property tree indices, but before animation
-    // host pushes properties as animation host push properties can change
-    // KeyframeModel::InEffect and we want the old InEffect value for updating
-    // property tree scrolling and animation.
-    // TODO(pdr): Enforce this comment with DCHECKS and a lifecycle state.
-    sync_tree->UpdatePropertyTreeAnimationFromMainThread();
-
-    TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
-    DCHECK(host_impl->mutator_host());
-    mutator_host_->PushPropertiesTo(host_impl->mutator_host());
-    MoveChangeTrackingToLayers(sync_tree);
-
-    // Updating elements affects whether animations are in effect based on their
-    // properties so run after pushing updated animation properties.
-    host_impl->UpdateElements(ElementListType::PENDING);
-
-    sync_tree->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
-  }
-
-  // Transfer image decode requests to the impl thread.
-  for (auto& entry : state->queued_image_decodes) {
-    host_impl->QueueImageDecode(entry.first, *entry.second);
-  }
-
-  for (auto& benchmark : state->benchmarks)
-    host_impl->ScheduleMicroBenchmark(std::move(benchmark));
-
-  property_trees_.ResetAllChangeTracking();
-
-  state->impl_commit_finish_time = base::TimeTicks::Now();
-
-  // Dump property trees and layers if run with:
-  //   --vmodule=layer_tree_host=3
-  if (VLOG_IS_ON(3)) {
-    const char* client_name = GetClientNameForMetrics();
-    if (!client_name)
-      client_name = "<unknown client>";
-    VLOG(3) << "After finishing (" << client_name
-            << ") commit on impl, the sync tree:"
-            << "\nproperty_trees:\n"
-            << sync_tree->property_trees()->ToString() << "\n"
-            << "cc::LayerImpls:\n"
-            << sync_tree->LayerListAsJson();
-  }
-}
-
-void LayerTreeHost::MoveChangeTrackingToLayers(LayerTreeImpl* tree_impl) {
-  // This is only true for single-thread compositing (i.e. not via Blink).
-  bool property_trees_changed_on_active_tree =
-      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
-
-  if (property_trees_changed_on_active_tree) {
-    // Property trees may store damage status. We preserve the sync tree damage
-    // status by pushing the damage status from sync tree property trees to main
-    // thread property trees or by moving it onto the layers.
-    DCHECK(active_commit_state());
-    if (active_commit_state()->root_layer) {
-      if (property_trees_.sequence_number ==
-          tree_impl->property_trees()->sequence_number)
-        tree_impl->property_trees()->PushChangeTrackingTo(&property_trees_);
-      else
-        tree_impl->MoveChangeTrackingToLayers();
-    }
-  } else {
-    tree_impl->MoveChangeTrackingToLayers();
-  }
-}
-
 void LayerTreeHost::ImageDecodesFinished(
     const std::vector<std::pair<int, bool>>& results) {
   // Issue stored callbacks and remove them from the pending list.
@@ -493,47 +362,27 @@ void LayerTreeHost::ImageDecodesFinished(
   }
 }
 
-void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
-  bool property_trees_changed_on_active_tree =
-      tree_impl->IsActiveTree() && tree_impl->property_trees()->changed;
-  // Property trees may store damage status. We preserve the sync tree damage
-  // status by pushing the damage status from sync tree property trees to main
-  // thread property trees or by moving it onto the layers.
-  DCHECK(active_commit_state());
-  if (active_commit_state()->root_layer &&
-      property_trees_changed_on_active_tree) {
-    if (property_trees_.sequence_number ==
-        tree_impl->property_trees()->sequence_number)
-      tree_impl->property_trees()->PushChangeTrackingTo(&property_trees_);
-    else
-      tree_impl->MoveChangeTrackingToLayers();
-  }
-
-  tree_impl->SetPropertyTrees(&property_trees_);
-}
-
 void LayerTreeHost::SetNextCommitWaitsForActivation() {
   DCHECK(task_runner_provider_->IsMainThread());
   pending_commit_state()->commit_waits_for_activation = true;
 }
 
-CommitState* LayerTreeHost::WillCommit(
+std::unique_ptr<CommitState> LayerTreeHost::WillCommit(
     std::unique_ptr<CompletionEvent> completion,
     bool has_updates) {
   DCHECK(!commit_completion_event_);
   commit_completion_event_ = std::move(completion);
-  CommitState* result = nullptr;
+  std::unique_ptr<CommitState> result;
   if (has_updates)
     result = ActivateCommitState();
   swap_promise_manager_.WillCommit();
-  client_->WillCommit(result ? result : pending_commit_state());
+  client_->WillCommit(has_updates ? *result : *pending_commit_state());
   pending_commit_state()->source_frame_number++;
   return result;
 }
 
-CommitState* LayerTreeHost::ActivateCommitState() {
+std::unique_ptr<CommitState> LayerTreeHost::ActivateCommitState() {
   DCHECK(pending_commit_state());
-  DCHECK(!active_commit_state_);
 
   // Pull state not stored directly on LayerTreeHost
   pending_commit_state()->event_metrics =
@@ -547,9 +396,9 @@ CommitState* LayerTreeHost::ActivateCommitState() {
   pending_commit_state()->benchmarks =
       micro_benchmark_controller_.CreateImplBenchmarks();
 
-  active_commit_state_.swap(pending_commit_state_);
-  pending_commit_state_ = std::make_unique<CommitState>(*active_commit_state_);
-  return active_commit_state_.get();
+  auto active_commit_state = std::move(pending_commit_state_);
+  pending_commit_state_ = std::make_unique<CommitState>(*active_commit_state);
+  return active_commit_state;
 }
 
 void LayerTreeHost::WaitForCommitCompletion() {
@@ -570,22 +419,15 @@ bool LayerTreeHost::IsUsingLayerLists() const {
   return settings_.use_layer_lists;
 }
 
-void LayerTreeHost::CommitComplete() {
+void LayerTreeHost::CommitComplete(const CommitTimestamps& commit_timestamps) {
   // This DCHECK ensures that WaitForCommitCompletion() will not block.
   DCHECK(!in_commit());
   WaitForCommitCompletion();
-  auto* commit_state = active_commit_state_.get();
-  if (commit_state) {
-    client_->DidCommit(commit_state->impl_commit_start_time,
-                       commit_state->impl_commit_finish_time);
-  } else {
-    client_->DidCommit(base::TimeTicks(), base::TimeTicks::Now());
-  }
+  client_->DidCommit(commit_timestamps.start, commit_timestamps.finish);
   if (did_complete_scale_animation_) {
     client_->DidCompletePageScaleAnimation();
     did_complete_scale_animation_ = false;
   }
-  active_commit_state_ = nullptr;
 }
 
 void LayerTreeHost::NotifyTransitionRequestsFinished(
@@ -641,29 +483,54 @@ void LayerTreeHost::DidFailToInitializeLayerTreeFrameSink() {
 
 std::unique_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
+  // This method is special: it should be the only LayerTreeHost method that
+  // runs on the impl thread. As such, it cannot use LayerTreeHost getter
+  // methods that enforce DCHECK(IsMainThread()). Because it only ever runs when
+  // the main thread is blocked, it's safe to access member variables directly.
   DCHECK(task_runner_provider_->IsImplThread());
+  DCHECK(task_runner_provider_->IsMainThreadBlocked());
+  return CreateLayerTreeHostImplInternal(
+      client, thread_unsafe_commit_state_.mutator_host, settings_,
+      task_runner_provider_.get(), dark_mode_filter_, id_, task_graph_runner_,
+      image_worker_task_runner_, scheduling_client_,
+      rendering_stats_instrumentation_.get(), ukm_recorder_factory_,
+      compositor_delegate_weak_ptr_);
+}
 
+std::unique_ptr<LayerTreeHostImpl>
+LayerTreeHost::CreateLayerTreeHostImplInternal(
+    LayerTreeHostImplClient* client,
+    MutatorHost* mutator_host,
+    const LayerTreeSettings& settings,
+    TaskRunnerProvider* task_runner_provider,
+    raw_ptr<RasterDarkModeFilter>& dark_mode_filter,
+    int id,
+    raw_ptr<TaskGraphRunner>& task_graph_runner,
+    scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+    LayerTreeHostSchedulingClient* scheduling_client,
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    std::unique_ptr<UkmRecorderFactory>& ukm_recorder_factory,
+    base::WeakPtr<CompositorDelegateForInput>& compositor_delegate_weak_ptr) {
   std::unique_ptr<MutatorHost> mutator_host_impl =
-      mutator_host_->CreateImplInstance();
+      mutator_host->CreateImplInstance();
 
-  if (!settings_.scroll_animation_duration_for_testing.is_zero()) {
-    mutator_host_->SetScrollAnimationDurationForTesting(
-        settings_.scroll_animation_duration_for_testing);
+  if (!settings.scroll_animation_duration_for_testing.is_zero()) {
+    mutator_host->SetScrollAnimationDurationForTesting(  // IN-TEST
+        settings.scroll_animation_duration_for_testing);
   }
 
   std::unique_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings_, client, task_runner_provider_.get(),
-      rendering_stats_instrumentation_.get(), task_graph_runner_,
-      std::move(mutator_host_impl), dark_mode_filter_, id_,
-      std::move(image_worker_task_runner_), scheduling_client_);
-  if (ukm_recorder_factory_) {
-    host_impl->InitializeUkm(ukm_recorder_factory_->CreateRecorder());
-    ukm_recorder_factory_.reset();
+      settings, client, task_runner_provider, rendering_stats_instrumentation,
+      task_graph_runner, std::move(mutator_host_impl), dark_mode_filter, id,
+      std::move(image_worker_task_runner), scheduling_client);
+  if (ukm_recorder_factory) {
+    host_impl->InitializeUkm(ukm_recorder_factory->CreateRecorder());
+    ukm_recorder_factory.reset();
   }
 
-  task_graph_runner_ = nullptr;
-  dark_mode_filter_ = nullptr;
-  compositor_delegate_weak_ptr_ = host_impl->AsWeakPtr();
+  task_graph_runner = nullptr;
+  dark_mode_filter = nullptr;
+  compositor_delegate_weak_ptr = host_impl->AsWeakPtr();
   return host_impl;
 }
 
@@ -718,7 +585,7 @@ void LayerTreeHost::OnDeferCommitsChanged(bool defer_status,
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
-  swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  swap_promise_manager_.NotifyLatencyInfoSwapPromiseMonitors();
   events_metrics_manager_.SaveActiveEventMetrics();
 }
 
@@ -730,13 +597,13 @@ void LayerTreeHost::SetNeedsAnimateIfNotInsideMainFrame() {
 DISABLE_CFI_PERF
 void LayerTreeHost::SetNeedsUpdateLayers() {
   proxy_->SetNeedsUpdateLayers();
-  swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  swap_promise_manager_.NotifyLatencyInfoSwapPromiseMonitors();
   events_metrics_manager_.SaveActiveEventMetrics();
 }
 
 void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
-  swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
+  swap_promise_manager_.NotifyLatencyInfoSwapPromiseMonitors();
   events_metrics_manager_.SaveActiveEventMetrics();
 }
 
@@ -822,7 +689,7 @@ void LayerTreeHost::CompositeForTest(base::TimeTicks frame_begin_time,
 
 bool LayerTreeHost::UpdateLayers() {
   if (!root_layer()) {
-    property_trees_.clear();
+    property_trees()->clear();
     pending_commit_state()->viewport_property_ids = ViewportPropertyIds();
     return false;
   }
@@ -862,32 +729,6 @@ void LayerTreeHost::DidPresentCompositorFrame(
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {
   did_complete_scale_animation_ = true;
-}
-
-void LayerTreeHost::RecordGpuRasterizationHistogram(
-    const LayerTreeHostImpl* host_impl) {
-  // Gpu rasterization is only supported for Renderer compositors.
-  // Checking for IsSingleThreaded() to exclude Browser compositors.
-  DCHECK(active_commit_state());
-  if (!active_commit_state()->needs_gpu_rasterization_histogram)
-    return;
-
-  bool gpu_rasterization_enabled = false;
-  if (host_impl->layer_tree_frame_sink()) {
-    viz::ContextProvider* compositor_context_provider =
-        host_impl->layer_tree_frame_sink()->context_provider();
-    if (compositor_context_provider) {
-      gpu_rasterization_enabled =
-          compositor_context_provider->ContextCapabilities().gpu_rasterization;
-    }
-  }
-
-  // Record how widely gpu rasterization is enabled.
-  // This number takes device/gpu allowlist/denylist into account.
-  // Note that we do not consider the forced gpu rasterization mode, which is
-  // mostly used for debugging purposes.
-  UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
-                        gpu_rasterization_enabled);
 }
 
 std::string LayerTreeHost::LayersAsString() const {
@@ -946,12 +787,12 @@ bool LayerTreeHost::DoUpdateLayers() {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                          "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                         property_trees_.AsTracedValue());
+                         property_trees()->AsTracedValue());
   } else {
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                          "LayerTreeHost::UpdateLayers_ReceivedPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
-                         property_trees_.AsTracedValue());
+                         property_trees()->AsTracedValue());
     // The HUD layer is managed outside the layer list sent to LayerTreeHost
     // and needs to have its property tree state set.
     if (hud_layer() && root_layer()) {
@@ -971,16 +812,17 @@ bool LayerTreeHost::DoUpdateLayers() {
   // |PropertyTreeBuilder::BuildPropertyTrees| fails to create property tree
   // nodes.
   for (auto* layer : *this) {
-    DCHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
-    DCHECK(property_trees_.transform_tree.Node(layer->transform_tree_index()));
-    DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
-    DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
+    DCHECK(property_trees()->effect_tree.Node(layer->effect_tree_index()));
+    DCHECK(
+        property_trees()->transform_tree.Node(layer->transform_tree_index()));
+    DCHECK(property_trees()->clip_tree.Node(layer->clip_tree_index()));
+    DCHECK(property_trees()->scroll_tree.Node(layer->scroll_tree_index()));
   }
 #else
   // This is a quick sanity check for readiness of paint properties.
   // TODO(crbug.com/913464): This is to help analysis of crashes of the bug.
   // Remove this CHECK when we close the bug.
-  CHECK(property_trees_.effect_tree.Node(root_layer()->effect_tree_index()));
+  CHECK(property_trees()->effect_tree.Node(root_layer()->effect_tree_index()));
 #endif
 
   draw_property_utils::UpdatePropertyTrees(this);
@@ -1135,7 +977,7 @@ void LayerTreeHost::ApplyCompositorChanges(CompositorCommitData* commit_data) {
 void LayerTreeHost::ApplyMutatorEvents(std::unique_ptr<MutatorEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   if (!events->IsEmpty())
-    mutator_host_->SetAnimationEvents(std::move(events));
+    mutator_host()->SetAnimationEvents(std::move(events));
 }
 
 void LayerTreeHost::RecordStartOfFrameMetrics() {
@@ -1167,17 +1009,17 @@ void LayerTreeHost::UpdateBrowserControlsState(BrowserControlsState constraints,
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
-  std::unique_ptr<MutatorEvents> events = mutator_host_->CreateEvents();
+  std::unique_ptr<MutatorEvents> events = mutator_host()->CreateEvents();
 
-  if (mutator_host_->TickAnimations(monotonic_time,
-                                    property_trees()->scroll_tree, true))
-    mutator_host_->UpdateAnimationState(true, events.get());
+  if (mutator_host()->TickAnimations(monotonic_time,
+                                     property_trees()->scroll_tree, true))
+    mutator_host()->UpdateAnimationState(true, events.get());
 
   if (!events->IsEmpty()) {
     // If not using layer lists, animation state changes will require
     // rebuilding property trees to track them.
     if (!IsUsingLayerLists())
-      property_trees_.needs_rebuild = true;
+      property_trees()->needs_rebuild = true;
 
     // A commit is required to push animation changes to the compositor.
     SetNeedsCommit();
@@ -1253,7 +1095,7 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> new_root_layer) {
     WaitForCommitCompletion();
     root_layer()->SetLayerTreeHost(nullptr);
   }
-  pending_commit_state()->root_layer = new_root_layer;
+  thread_unsafe_commit_state().root_layer = new_root_layer;
   if (root_layer()) {
     DCHECK(!root_layer()->parent());
     root_layer()->SetLayerTreeHost(this);
@@ -1445,7 +1287,7 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
   SetNeedsCommit();
 }
 
-void LayerTreeHost::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
+void LayerTreeHost::StartPageScaleAnimation(const gfx::Point& target_offset,
                                             bool use_anchor,
                                             float scale,
                                             base::TimeDelta duration) {
@@ -1594,8 +1436,8 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
   if (!IsUsingLayerLists() && layer->element_id()) {
-    mutator_host_->RegisterElementId(layer->element_id(),
-                                     ElementListType::ACTIVE);
+    mutator_host()->RegisterElementId(layer->element_id(),
+                                      ElementListType::ACTIVE);
   }
 }
 
@@ -1603,10 +1445,10 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   if (!IsUsingLayerLists() && layer->element_id()) {
-    mutator_host_->UnregisterElementId(layer->element_id(),
-                                       ElementListType::ACTIVE);
+    mutator_host()->UnregisterElementId(layer->element_id(),
+                                        ElementListType::ACTIVE);
   }
-  pending_commit_state()->layers_that_should_push_properties.erase(layer);
+  thread_unsafe_commit_state().layers_that_should_push_properties.erase(layer);
   layer_id_map_.erase(layer->id());
 }
 
@@ -1641,7 +1483,7 @@ void LayerTreeHost::RemoveSurfaceRange(const viz::SurfaceRange& surface_range) {
 }
 
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
-  pending_commit_state()->layers_that_should_push_properties.insert(layer);
+  thread_unsafe_commit_state().layers_that_should_push_properties.insert(layer);
 }
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {
@@ -1698,7 +1540,7 @@ bool LayerTreeHost::is_hud_layer(const Layer* layer) const {
 
 void LayerTreeHost::SetNeedsFullTreeSync() {
   pending_commit_state()->needs_full_tree_sync = true;
-  property_trees_.needs_rebuild = true;
+  property_trees()->needs_rebuild = true;
   SetNeedsCommit();
 }
 
@@ -1707,113 +1549,8 @@ void LayerTreeHost::ResetNeedsFullTreeSyncForTesting() {
 }
 
 void LayerTreeHost::SetPropertyTreesNeedRebuild() {
-  property_trees_.needs_rebuild = true;
+  property_trees()->needs_rebuild = true;
   SetNeedsUpdateLayers();
-}
-
-void LayerTreeHost::PushLayerTreePropertiesTo(CommitState* state,
-                                              LayerTreeImpl* tree_impl) {
-  DCHECK(state);
-  tree_impl->set_needs_full_tree_sync(state->needs_full_tree_sync);
-
-  if (state->hud_layer_id != Layer::INVALID_ID) {
-    LayerImpl* hud_impl = tree_impl->LayerById(state->hud_layer_id);
-    tree_impl->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(hud_impl));
-  } else {
-    tree_impl->set_hud_layer(nullptr);
-  }
-
-  tree_impl->set_background_color(state->background_color);
-  tree_impl->set_have_scroll_event_handlers(state->have_scroll_event_handlers);
-  tree_impl->set_event_listener_properties(
-      EventListenerClass::kTouchStartOrMove,
-      state->GetEventListenerProperties(EventListenerClass::kTouchStartOrMove));
-  tree_impl->set_event_listener_properties(
-      EventListenerClass::kMouseWheel,
-      state->GetEventListenerProperties(EventListenerClass::kMouseWheel));
-  tree_impl->set_event_listener_properties(
-      EventListenerClass::kTouchEndOrCancel,
-      state->GetEventListenerProperties(EventListenerClass::kTouchEndOrCancel));
-
-  tree_impl->SetViewportPropertyIds(state->viewport_property_ids);
-
-  tree_impl->RegisterSelection(state->selection);
-
-  tree_impl->PushPageScaleFromMainThread(state->page_scale_factor,
-                                         state->min_page_scale_factor,
-                                         state->max_page_scale_factor);
-
-  tree_impl->SetBrowserControlsParams(state->browser_controls_params);
-  tree_impl->set_overscroll_behavior(state->overscroll_behavior);
-  tree_impl->PushBrowserControlsFromMainThread(
-      state->top_controls_shown_ratio, state->bottom_controls_shown_ratio);
-  tree_impl->elastic_overscroll()->PushMainToPending(state->elastic_overscroll);
-  if (tree_impl->IsActiveTree())
-    tree_impl->elastic_overscroll()->PushPendingToActive();
-
-  tree_impl->SetDisplayColorSpaces(state->display_color_spaces);
-  tree_impl->SetExternalPageScaleFactor(state->external_page_scale_factor);
-
-  tree_impl->set_painted_device_scale_factor(
-      state->painted_device_scale_factor);
-  tree_impl->SetDeviceScaleFactor(state->device_scale_factor);
-  tree_impl->SetDeviceViewportRect(state->device_viewport_rect);
-
-  if (state->new_local_surface_id_request)
-    tree_impl->RequestNewLocalSurfaceId();
-
-  tree_impl->SetLocalSurfaceIdFromParent(state->local_surface_id_from_parent);
-  tree_impl->SetVisualPropertiesUpdateDuration(
-      state->visual_properties_update_duration);
-
-  if (state->pending_page_scale_animation) {
-    tree_impl->SetPendingPageScaleAnimation(
-        std::move(state->pending_page_scale_animation));
-  }
-
-  if (state->force_send_metadata_request)
-    tree_impl->RequestForceSendMetadata();
-
-  tree_impl->set_has_ever_been_drawn(false);
-
-  // TODO(ericrk): The viewport changes caused by |top_controls_shown_ratio_|
-  // changes should propagate back to the main tree. This does not currently
-  // happen, so we must force the impl tree to update its viewports if
-  // |top_controls_shown_ratio_| is greater than 0.0f and less than 1.0f
-  // (partially shown). crbug.com/875943
-  if (state->top_controls_shown_ratio > 0.0f &&
-      state->top_controls_shown_ratio < 1.0f) {
-    tree_impl->UpdateViewportContainerSizes();
-  }
-
-  tree_impl->set_display_transform_hint(state->display_transform_hint);
-
-  if (state->delegated_ink_metadata)
-    tree_impl->set_delegated_ink_metadata(
-        std::move(state->delegated_ink_metadata));
-
-  // Transfer page transition directives.
-  for (auto& request : state->document_transition_requests)
-    tree_impl->AddDocumentTransitionRequest(std::move(request));
-}
-
-void LayerTreeHost::PushLayerTreeHostPropertiesTo(
-    LayerTreeHostImpl* host_impl) {
-  CommitState* state = active_commit_state();
-  DCHECK(state);
-  // TODO(bokan): The |external_pinch_gesture_active| should not be going
-  // through the LayerTreeHost but directly from InputHandler to InputHandler.
-  host_impl->SetExternalPinchGestureActive(
-      state->is_external_pinch_gesture_active);
-
-  RecordGpuRasterizationHistogram(host_impl);
-
-  host_impl->SetDebugState(state->debug_state);
-  host_impl->SetVisualDeviceViewportSize(state->visual_device_viewport_size);
-  host_impl->set_viewport_mobile_optimized(state->is_viewport_mobile_optimized);
-  host_impl->SetPrefersReducedMotion(state->prefers_reduced_motion);
-  host_impl->SetMayThrottleIfUndrawnFrames(
-      state->may_throttle_if_undrawn_frames);
 }
 
 Layer* LayerTreeHost::LayerByElementId(ElementId element_id) {
@@ -1830,18 +1567,18 @@ void LayerTreeHost::RegisterElement(ElementId element_id,
                                     Layer* layer) {
   element_layers_map_[element_id] = layer;
   if (!IsUsingLayerLists())
-    mutator_host_->RegisterElementId(element_id, ElementListType::ACTIVE);
+    mutator_host()->RegisterElementId(element_id, ElementListType::ACTIVE);
 }
 
 void LayerTreeHost::UnregisterElement(ElementId element_id) {
   if (!IsUsingLayerLists())
-    mutator_host_->UnregisterElementId(element_id, ElementListType::ACTIVE);
+    mutator_host()->UnregisterElementId(element_id, ElementListType::ACTIVE);
   element_layers_map_.erase(element_id);
 }
 
 void LayerTreeHost::UpdateActiveElements() {
   DCHECK(IsUsingLayerLists());
-  mutator_host_->UpdateRegisteredElementIds(ElementListType::ACTIVE);
+  mutator_host()->UpdateRegisteredElementIds(ElementListType::ACTIVE);
 }
 
 void LayerTreeHost::SetElementIdsForTesting() {
@@ -1867,7 +1604,7 @@ void LayerTreeHost::SetMutatorsNeedCommit() {
 }
 
 void LayerTreeHost::SetMutatorsNeedRebuildPropertyTrees() {
-  property_trees_.needs_rebuild = true;
+  property_trees()->needs_rebuild = true;
 }
 
 void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
@@ -1876,7 +1613,7 @@ void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
   if (IsUsingLayerLists()) {
     // In BlinkGenPropertyTrees/CompositeAfterPaint we always have property
     // tree nodes and can set the filter directly on the effect node.
-    property_trees_.effect_tree.OnFilterAnimated(element_id, filters);
+    property_trees()->effect_tree.OnFilterAnimated(element_id, filters);
     return;
   }
 
@@ -1892,8 +1629,8 @@ void LayerTreeHost::SetElementBackdropFilterMutated(
   if (IsUsingLayerLists()) {
     // In BlinkGenPropertyTrees/CompositeAfterPaint we always have property
     // tree nodes and can set the backdrop_filter directly on the effect node.
-    property_trees_.effect_tree.OnBackdropFilterAnimated(element_id,
-                                                         backdrop_filters);
+    property_trees()->effect_tree.OnBackdropFilterAnimated(element_id,
+                                                           backdrop_filters);
     return;
   }
 
@@ -1909,7 +1646,7 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
   DCHECK_LE(opacity, 1.f);
 
   if (IsUsingLayerLists()) {
-    property_trees_.effect_tree.OnOpacityAnimated(element_id, opacity);
+    property_trees()->effect_tree.OnOpacityAnimated(element_id, opacity);
     return;
   }
 
@@ -1918,13 +1655,13 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
   layer->OnOpacityAnimated(opacity);
 
   if (EffectNode* node =
-          property_trees_.effect_tree.Node(layer->effect_tree_index())) {
+          property_trees()->effect_tree.Node(layer->effect_tree_index())) {
     DCHECK_EQ(layer->effect_tree_index(), node->id);
     if (node->opacity == opacity)
       return;
 
     node->opacity = opacity;
-    property_trees_.effect_tree.set_needs_update(true);
+    property_trees()->effect_tree.set_needs_update(true);
   }
 
   SetNeedsUpdateLayers();
@@ -1935,7 +1672,7 @@ void LayerTreeHost::SetElementTransformMutated(
     ElementListType list_type,
     const gfx::Transform& transform) {
   if (IsUsingLayerLists()) {
-    property_trees_.transform_tree.OnTransformAnimated(element_id, transform);
+    property_trees()->transform_tree.OnTransformAnimated(element_id, transform);
     return;
   }
 
@@ -1945,14 +1682,14 @@ void LayerTreeHost::SetElementTransformMutated(
 
   if (layer->has_transform_node()) {
     TransformNode* node =
-        property_trees_.transform_tree.Node(layer->transform_tree_index());
+        property_trees()->transform_tree.Node(layer->transform_tree_index());
     if (node->local == transform)
       return;
 
     node->local = transform;
     node->needs_local_transform_update = true;
     node->has_potential_animation = true;
-    property_trees_.transform_tree.set_needs_update(true);
+    property_trees()->transform_tree.set_needs_update(true);
   }
 
   SetNeedsUpdateLayers();
@@ -1961,7 +1698,7 @@ void LayerTreeHost::SetElementTransformMutated(
 void LayerTreeHost::SetElementScrollOffsetMutated(
     ElementId element_id,
     ElementListType list_type,
-    const gfx::Vector2dF& scroll_offset) {
+    const gfx::PointF& scroll_offset) {
   // Do nothing. Scroll deltas will be sent from the compositor thread back
   // to the main thread in the same manner as during non-animated
   // compositor-driven scrolling.
@@ -1982,11 +1719,6 @@ void LayerTreeHost::MaximumScaleChanged(ElementId element_id,
                                         float maximum_scale) {
   DCHECK_EQ(ElementListType::ACTIVE, list_type);
   property_trees()->MaximumAnimationScaleChanged(element_id, maximum_scale);
-}
-
-gfx::Vector2dF LayerTreeHost::GetScrollOffsetForAnimation(
-    ElementId element_id) const {
-  return property_trees()->scroll_tree.current_scroll_offset(element_id);
 }
 
 void LayerTreeHost::QueueImageDecode(const PaintImage& image,
@@ -2033,7 +1765,7 @@ LayerListReverseConstIterator LayerTreeHost::rend() const {
 
 void LayerTreeHost::SetPropertyTreesForTesting(
     const PropertyTrees* property_trees) {
-  property_trees_ = *property_trees;
+  thread_unsafe_commit_state().property_trees = *property_trees;
 }
 
 void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
@@ -2086,18 +1818,6 @@ void LayerTreeHost::SetDelegatedInkMetadata(
   SetNeedsCommit();
 }
 
-gfx::RenderingPipeline* LayerTreeHost::TakeMainPipeline() {
-  auto* pipeline = main_thread_pipeline_;
-  main_thread_pipeline_ = nullptr;
-  return pipeline;
-}
-
-gfx::RenderingPipeline* LayerTreeHost::TakeCompositorPipeline() {
-  auto* pipeline = compositor_thread_pipeline_;
-  compositor_thread_pipeline_ = nullptr;
-  return pipeline;
-}
-
 std::vector<base::OnceClosure>
 LayerTreeHost::TakeDocumentTransitionCallbacksForTesting() {
   std::vector<base::OnceClosure> result;
@@ -2106,4 +1826,9 @@ LayerTreeHost::TakeDocumentTransitionCallbacksForTesting() {
   document_transition_callbacks_.clear();
   return result;
 }
+
+uint32_t LayerTreeHost::GetAverageThroughput() const {
+  return proxy_->GetAverageThroughput();
+}
+
 }  // namespace cc

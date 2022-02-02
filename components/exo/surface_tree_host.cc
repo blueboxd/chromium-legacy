@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
@@ -36,7 +35,9 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace exo {
@@ -277,7 +278,8 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   }
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
-      root_surface_origin_, host_window()->layer()->device_scale_factor(),
+      gfx::PointF(root_surface_origin_),
+      host_window()->layer()->device_scale_factor(),
       layer_tree_frame_sink_holder_->resource_manager(), &frame);
 
   std::vector<GLbyte*> sync_tokens;
@@ -330,7 +332,7 @@ void SurfaceTreeHost::UpdateHostWindowBounds() {
     host_window_->SetTransform(tr);
   }
   const bool fills_bounds_opaquely =
-      bounds.size() == root_surface_->content_size() &&
+      gfx::SizeF(bounds.size()) == root_surface_->content_size() &&
       root_surface_->FillsBoundsOpaquely();
   host_window_->SetTransparent(!fills_bounds_opaquely);
 

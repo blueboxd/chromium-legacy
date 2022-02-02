@@ -32,10 +32,6 @@ extern const base::Feature kEnableFREDefaultBrowserScreenTesting;
 // Feature flag that enables using the FRE UI module to show first run screens.
 extern const base::Feature kEnableFREUIModuleIOS;
 
-// Feature flag that enables using the strings of the previous sync screen in
-// the current FRE.
-extern const base::Feature kOldSyncStringFRE;
-
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
 extern const base::Feature kModernTabStrip;
@@ -48,6 +44,10 @@ extern const base::Feature kIncognitoNtpRevamp;
 
 // Feature flag that experiments with the default browser fullscreen promo UI.
 extern const base::Feature kDefaultBrowserFullscreenPromoExperiment;
+
+// Feature flag that shows iOS 15 context menu, instead of tooltip popover,
+// during a location bar long press gesture.
+extern const base::Feature kIOSLocationBarUseNativeContextMenu;
 
 // Feature flag that swaps the omnibox textfield implementation.
 extern const base::Feature kIOSNewOmniboxImplementation;
@@ -78,6 +78,10 @@ extern const base::Feature kCredentialProviderExtensionPromo;
 
 // Feature flag to enable duplicate NTP cleanup.
 extern const base::Feature kRemoveExcessNTPs;
+
+// Feature flag to enable shortened instruction to turn on Password AutoFill for
+// Chrome.
+extern const base::Feature kEnableShortenedPasswordAutoFillInstruction;
 
 // Whether the ContextMenuActionsRefresh flag is enabled.
 bool IsContextMenuActionsRefreshEnabled();

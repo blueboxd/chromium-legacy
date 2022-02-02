@@ -8,7 +8,6 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -17,6 +16,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/core/browser/db/safebrowsing.pb.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -391,8 +391,8 @@ void V4UpdateProtocolManager::OnURLLoaderCompleteInternal(
   timeout_timer_.Stop();
 
   last_response_code_ = response_code;
-  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      "SafeBrowsing.V4Update.Network.Result", net_error, last_response_code_);
+  RecordHttpResponseOrErrorCode("SafeBrowsing.V4Update.Network.Result",
+                                net_error, last_response_code_);
 
   last_response_time_ = Time::Now();
 

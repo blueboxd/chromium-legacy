@@ -275,6 +275,9 @@ struct AppHistoryEntry {
   mojo_base.mojom.String16 key;
   mojo_base.mojom.String16 id;
   mojo_base.mojom.String16 url;
+  int64 item_sequence_number;
+  int64 document_sequence_number;
+  mojo_base.mojom.String16 state;
 };
 
 // Used by commit IPC messages. Holds the parameters needed by the renderer to
@@ -473,6 +476,16 @@ struct CommitNavigationParams {
   array<AppHistoryEntry> app_history_forward_entries;
 
   array<url.mojom.Url> early_hints_preloaded_resources;
+
+  // If this is a navigation to the result of an InterestGroup auction, this
+  // is a list of URNs that map to auction component URLs. Null, otherwise.
+  // When non-null, always contains exactly kMaxAdAuctionAdComponents=20 URNs
+  // to avoid use as a data sidechannel between auction worklets and the
+  // fenced frames their results are loaded in.
+  //
+  // Mojo doesn't allow using symbolic constants as array lengths, so hard-code
+  // the length here directly.
+  array<url.mojom.Url, 20>? ad_auction_components;
 
   // The time the commit was sent from the browser.
   mojo_base.mojom.TimeTicks commit_sent;

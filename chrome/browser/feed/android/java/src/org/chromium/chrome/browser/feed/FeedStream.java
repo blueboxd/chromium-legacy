@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.StreamType;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
+import org.chromium.chrome.browser.xsurface.LoggingParameters;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
@@ -196,6 +197,14 @@ public class FeedStream implements Stream {
         @Override
         public void processThereAndBackAgainData(byte[] data) {
             assert ThreadUtils.runningOnUiThread();
+            FeedStreamJni.get().processThereAndBackAgain(mNativeFeedStream, FeedStream.this, data);
+        }
+
+        @Override
+        public void processThereAndBackAgainData(byte[] data, LoggingParameters loggingParameters) {
+            assert ThreadUtils.runningOnUiThread();
+            // TODO(crbug.com/1268575): Forward loggingParameters to FeedApi, and check that they
+            // match the current state.
             FeedStreamJni.get().processThereAndBackAgain(mNativeFeedStream, FeedStream.this, data);
         }
 
@@ -479,26 +488,30 @@ public class FeedStream implements Stream {
                 mScrollReporter.trackScroll(dx, dy);
             }
         };
+
         // Only watch for unread content on the web feed, not for-you feed.
         // Sort options only available for web feed right now.
-        if (!isInterestFeed && ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED_SORT)) {
+        if (!isInterestFeed) {
             mUnreadContentObserver = new UnreadContentObserver(/*isWebFeed=*/true);
 
-            @ContentOrder
-            int currentSort = FeedServiceBridge.getContentOrderForWebFeed();
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED_SORT)) {
+                @ContentOrder
+                int currentSort = FeedServiceBridge.getContentOrderForWebFeed();
 
-            mSortView = LayoutInflater.from(activity).inflate(R.layout.feed_options_panel, null);
-            SortView chipView = mSortView.findViewById(R.id.button_bar);
-            ListModel<PropertyModel> sortModel = new ListModel<>();
-            ListModelChangeProcessor<ListModel<PropertyModel>, SortView, Void> processor =
-                    new ListModelChangeProcessor<>(sortModel, chipView, new SortViewBinder());
-            sortModel.addObserver(processor);
+                mSortView =
+                        LayoutInflater.from(activity).inflate(R.layout.feed_options_panel, null);
+                SortView chipView = mSortView.findViewById(R.id.button_bar);
+                ListModel<PropertyModel> sortModel = new ListModel<>();
+                ListModelChangeProcessor<ListModel<PropertyModel>, SortView, Void> processor =
+                        new ListModelChangeProcessor<>(sortModel, chipView, new SortViewBinder());
+                sortModel.addObserver(processor);
 
-            sortModel.add(
-                    createSortModel(ContentOrder.REVERSE_CHRON, R.string.latest, currentSort));
+                sortModel.add(
+                        createSortModel(ContentOrder.REVERSE_CHRON, R.string.latest, currentSort));
 
-            sortModel.add(createSortModel(
-                    ContentOrder.GROUPED, R.string.feed_sort_publisher, currentSort));
+                sortModel.add(createSortModel(
+                        ContentOrder.GROUPED, R.string.feed_sort_publisher, currentSort));
+            }
         }
     }
 
@@ -841,6 +854,9 @@ public class FeedStream implements Stream {
 
         mLastFetchTimeMs = streamUpdate.getFetchTimeMs();
 
+        FeedLoggingParameters loggingParameters =
+                new FeedLoggingParameters(streamUpdate.getLoggingParameters());
+
         // Invalidate the saved scroll state if the content in the feed has changed.
         // Don't do anything if mLastFetchTimeMs is unset.
         if (mScrollStateToRestore != null && mLastFetchTimeMs != 0) {
@@ -862,7 +878,7 @@ public class FeedStream implements Stream {
                 streamUpdate.getUpdatedSlicesList()) {
             if (sliceUpdate.hasSlice()) {
                 NtpListContentManager.FeedContent content =
-                        createContentFromSlice(sliceUpdate.getSlice());
+                        createContentFromSlice(sliceUpdate.getSlice(), loggingParameters);
                 if (content != null) {
                     newContentList.add(content);
                 }
@@ -885,11 +901,12 @@ public class FeedStream implements Stream {
         maybeLoadMore(/*lookaheadTrigger=*/0);
     }
 
-    private NtpListContentManager.FeedContent createContentFromSlice(FeedUiProto.Slice slice) {
+    private NtpListContentManager.FeedContent createContentFromSlice(
+            FeedUiProto.Slice slice, LoggingParameters loggingParameters) {
         String sliceId = slice.getSliceId();
         if (slice.hasXsurfaceSlice()) {
-            return new NtpListContentManager.ExternalViewContent(
-                    sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
+            return new NtpListContentManager.ExternalViewContent(sliceId,
+                    slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray(), loggingParameters);
         } else if (slice.hasLoadingSpinnerSlice()) {
             // If the placeholder is shown, spinner is not needed.
             if (mIsPlaceholderShown) {
@@ -1028,6 +1045,11 @@ public class FeedStream implements Stream {
         return mMainScrollListener;
     }
 
+    @VisibleForTesting
+    UnreadContentObserver getUnreadContentObserverForTest() {
+        return mUnreadContentObserver;
+    }
+
     // Scroll state can't be restored until enough items are added to the recycler view adapter.
     // Attempts to restore scroll state every time new items are added to the adapter.
     class RestoreScrollObserver extends RecyclerView.AdapterDataObserver {
@@ -1087,7 +1109,8 @@ public class FeedStream implements Stream {
         }
     }
 
-    private class UnreadContentObserver extends FeedServiceBridge.UnreadContentObserver {
+    @VisibleForTesting
+    class UnreadContentObserver extends FeedServiceBridge.UnreadContentObserver {
         ObservableSupplierImpl<Boolean> mHasUnreadContent = new ObservableSupplierImpl<>();
 
         UnreadContentObserver(boolean isWebFeed) {

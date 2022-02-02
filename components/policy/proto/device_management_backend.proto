@@ -8,6 +8,8 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
+option go_package="chromium/policy/enterprise_management_proto";
+
 import "private_membership_rlwe.proto";
 
 // Everything below this comment will be synchronized between client and server
@@ -369,12 +371,12 @@ message DeviceServiceApiAccessResponse {
 
 // Device Identifier for non-Chrome OS platform.
 message BrowserDeviceIdentifier {
+  reserved 3;
+
   // Name of the computer.
   optional string computer_name = 1;
   // Device serial number (definition depending on the platform).
   optional string serial_number = 2;
-  // Android-specific identifiers.
-  optional AndroidIdentifier android_identifier = 3;
 }
 
 message PolicyFetchRequest {
@@ -1414,6 +1416,37 @@ message BootInfo {
   optional bool secure_boot = 2 [deprecated = true];
 }
 
+// Hardware component bus device classes.
+// Maps to BusDeviceClass from cros_healthd.
+enum BusDeviceClass {
+  DEVICE_CLASS_UNSPECIFIED = 0;
+  DISPLAY_CONTROLLER = 1;
+  ETHERNET_CONTROLLER = 2;
+  WIRELESS_CONTROLLER = 3;
+  BLUETOOTH_ADAPTER = 4;
+  THUNDERBOLT_CONTROLLER = 5;
+}
+
+// Hardware component busses.
+// Maps to BusInfo types from cros_healthd.
+enum BusType {
+  BUS_TYPE_UNSPECIFIED = 0;
+  PCI_BUS = 1;
+  USB_BUS = 2;
+  THUNDERBOLT_BUS = 3;
+}
+
+// Information about a device's network hardware.
+message NetworkAdapterInfo {
+  optional BusDeviceClass device_class = 1;
+  optional BusType bus_type = 2;
+  optional int32 vendor_id = 3;
+  optional string vendor_name = 4;
+  optional int32 device_id = 5;
+  optional string device_name = 6;
+  repeated string driver = 7;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1548,6 +1581,9 @@ message DeviceStatusReportRequest {
 
   // Information about how the os was booted.
   optional BootInfo boot_info = 44;
+
+  // Information about the device's network hardware.
+  repeated NetworkAdapterInfo network_adapter_info = 45;
 }
 
 message OsUpdateStatus {
@@ -2022,13 +2058,6 @@ message OSReport {
 enum PartialReportType {
   UNSPECIFIED = 0;
   EXTENSION_REQUEST = 1;
-}
-
-// Android-specific IDs to be reported in addition to the Client ID. Explicit
-// approval from Chrome Privacy is required for new IDs.
-message AndroidIdentifier {
-  // Gservices Android ID, only uploaded for Android version S and older.
-  optional string gservices_android_id = 1;
 }
 
 // Report the status of a Chrome installation on non-Chrome OS platform.
@@ -2689,6 +2718,9 @@ message RemoteCommand {
     // Reset the cellular EUICC (Embedded Universal Integrated Circuit Card) on
     // the device.
     DEVICE_RESET_EUICC = 13;
+
+    // Rotates the attestation credentials associated with a browser device.
+    BROWSER_ROTATE_ATTESTATION_CREDENTIAL = 14;
 
     // Please update metrics after adding a new item - see the comment above.
   }
@@ -3572,6 +3604,15 @@ message UploadEuiccInfoRequest {
 
   // List of policy provisioned eSIM profiles on the device.
   repeated ESimProfileInfo esim_profiles = 2;
+
+  // A boolean flag which indicates that the list of eSim profiles was cleared.
+  // We use this differentiate between intentionally empty profile list(after
+  // cleanup) or not yet provisioned one.
+  // On the server, we would ignore requests where |esim_profiles| is empty
+  // if |clear_profile_list| is not set to |true| to not accidentally clear the
+  // values previously stored for this device(which can happen in a case of
+  // device being in after-powerwash state, for example).
+  optional bool clear_profile_list = 3;
 }
 
 // Response from server to device for EUICC status update.
@@ -4342,6 +4383,7 @@ message DeviceManagementResponse {
   optional BrowserPublicKeyUploadResponse browser_public_key_upload_response =
       36;
 
+  // Response to EUICC info upload request.
   optional UploadEuiccInfoResponse upload_euicc_info_response = 37;
 
   // Next id: 38.

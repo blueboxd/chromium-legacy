@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ur">
 <translation id="102360288709523007">‏Google کو استعمال کے اعداد و شمار اور کریش رپورٹس بھیج کر Chromium کو بہتر بنانے میں مدد کریں۔</translation>
+<translation id="1047130070405668746">‏Chromium منتخب کریں</translation>
 <translation id="1185134272377778587">‏Chromium کے بارے میں</translation>
 <translation id="1257458525759135959">‏تصاویر محفوظ کرنے کے لیے، Chromium کو آپ کی تصاویر میں شامل کرنے دینے کے لیے ترتیبات پر تھپتھپائیں</translation>
 <translation id="1289216811211435351">‏Chromium پر جائیں</translation>
@@ -13,10 +14,12 @@
 <translation id="1531155317299575425">‏Chromium میں سائن ان کرنے کے لیے پرامپٹس دکھاتا ہے۔</translation>
 <translation id="1584569488888892906">‏Chromium آسان، محفوظ اور پہلے سے کہیں زیادہ تیز ہے</translation>
 <translation id="1617663976202781617">‏Chromium مطابقت پذیری کا ڈیٹا</translation>
+<translation id="1722370509450468186">آپ کا پاس ورڈ آپ کے اکاؤنٹ (<ph name="EMAIL" />) میں محفوظ ہو جائے گا۔</translation>
 <translation id="1736662517232558588">‏Chromium ڈیٹا کو صاف کر دیا گیا</translation>
 <translation id="1838412507805038478">‏Chromium نے توثیق کی ہے کہ <ph name="ISSUER" /> نے اس ویب سائٹ کا سرٹیفیکیٹ جاری کیا ہے۔</translation>
 <translation id="1843424232666537147">‏Chromium میں ایسی خصوصیات ہیں جو آپ کے انٹرنیٹ ڈیٹا اور کتنی جلدی آپ ویب صفحات کو لوڈ کرنے کیلئے اہل ہیں اس کا نظم کرنے میں آپ کی مدد کرتی ہیں۔
 <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
+<translation id="1867772173333403444">‏4۔ Chromium منتخب کریں</translation>
 <translation id="2006345422933397527">‏Chromium اپ ڈیٹس چیک نہیں کر سکا۔ اپنا انٹرنیٹ کنکشن چیک کرنے کی کوشش کریں۔</translation>
 <translation id="2054703085270098503">‏Chromium کے ساتھ محفوظ رہیں</translation>
 <translation id="2168108852149185974">‏کچھ اضافے Chromium کے کریش ہونے کا سبب بنتے ہیں۔ براہ کرم اَن انسٹال کریں:</translation>
@@ -28,6 +31,7 @@
 <translation id="2478931088402984578">‏<ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> کو منتخب کریں</translation>
 <translation id="2567507405773541360">‏ایک آسان، محفوظ اور پہلے سے کہیں زیادہ تیز Chromium کے ساتھ مزید کام کریں</translation>
 <translation id="2590893390871230428">‏اپنے Chromium ڈیٹا کو مطابقت پذیر بنائیں</translation>
+<translation id="259094968798709429">پاس ورڈز کو <ph name="BEGIN_LINK" />پاس ورڈ مینیجر<ph name="END_LINK" /> میں محفوظ کیا جاتا ہے تاکہ آپ انہیں کسی بھی آلہ پر استعمال کرسکیں۔</translation>
 <translation id="2650312721222849884">‏اپنے ٹیبز کو دیکھنے کے لئے جہاں بھی آپ Chromium استعمال کرتے ہیں، سِنک کو آن کریں</translation>
 <translation id="2684230048001240293">‏اپنے ٹیبز، پاس ورڈز اور ادائیگی کی معلومات کو اپنے تمام آلات پر سنک کرنے کیلئے Chromium کو بطور ڈیفالٹ براؤزر سیٹ کریں</translation>
 <translation id="2730884209570016437">‏Chromium آپ کا کیمرا استعمال نہیں کر سکتا ہے کیونکہ یہ کسی دوسری ایپلیکیشن کے زیر استعمال ہے</translation>
@@ -41,6 +45,7 @@
 <translation id="3639997914391704523">‏جب آپ اپنے Google اکاؤنٹ سے سائن ان کرتے ہیں تو Chromium آپ کے پاس ورڈز کو چیک کر سکتا ہے۔</translation>
 <translation id="3805899903892079518">‏Chromium کو آپ کی تصاویر یا ویڈیوز تک رسائی حاصل نہیں ہے۔ iOS ترتیبات &gt; رازداری &gt; تصاویر میں رسائی کو فعال کریں۔</translation>
 <translation id="3946918322491238254">آپ ابھی بھی اپنے تمام بک مارکس، سرگزشت، پاس ورڈز اور دیگر ترتیبات کو اس آلے پر دیکھ سکتے ہیں۔ اگر آپ تبدیلیاں کرتے ہیں تو وہ آپ کے اکاؤنٹ کے ساتھ سینک نہیں ہوں گی۔</translation>
+<translation id="4043291146360695975">پاس ورڈز صرف اس آلہ پر پاس ورڈ مینیجر میں محفوظ کیے جاتے ہیں۔</translation>
 <translation id="4099085513035183040">‏Chromium بی ٹا پر تعاون یافتہ نہیں ہے</translation>
 <translation id="4555020257205549924">‏یہ خصوصیت آن کیے جانے پر، Chromium دوسری زبانوں میں لکھے ہوئے صفحات کا Google ترجمہ استعمال کر کے ترجمہ کرنے کی پیشکش کرے گا۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">‏اب جب بھی آپ پیغامات، دستاویزات اور دیگر ایپس میں لنکس پر تھپتھپائیں تو آپ Chromium استعمال کر سکتے ہیں۔</translation>
@@ -78,6 +83,7 @@
 <translation id="7099326575020694068">‏Chromium تقسیم کے منظر کی وضع میں آپ کا کیمرا استعمال نہیں کر سکتا ہے</translation>
 <translation id="7108914401277488191">‏Chromium کے ساتھ بہت کچھ کریں</translation>
 <translation id="7118091470949186573">‏اب جب بھی آپ پیغامات، دستاویزات اور دیگر ایپس میں لنکس کو تھپتھپائیں تو آپ Chromium استعمال کرسکتے ہیں۔</translation>
+<translation id="7175400662502680481">ڈیٹا کی خلاف ورزی میں آپ کا پاس ورڈ افشاء ہو گیا۔ پاس ورڈ مینیجر اسے ابھی تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="7208566199746267865">‏Chromium آپ کے اکاؤنٹس کو ویب پر لا کر آپ کا وقت بچاتا ہے۔ آپ ترتیبات میں اکاؤنٹس کو شامل کر سکتے یا ہٹا سکتے ہیں۔</translation>
 <translation id="725427773388857052">‏Chromium آپ کو ڈیٹا کی خلاف ورزیوں، غیر محفوظ ویب سائٹس اور بہت کچھ سے محفوظ رکھنے میں مدد کر سکتا ہے۔</translation>
 <translation id="7269362888766543920">‏کچھ اضافے Chromium کے کریش ہونے کا سبب بنتے ہیں۔ براہ کرم ان کو اَن انسٹال کرنے کی کوشش کریں۔</translation>

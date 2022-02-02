@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="102360288709523007">Google-এ ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ রিপোর্ট পাঠিয়ে Chromium-কে আরও ভাল করে তুলতে সহায়তা করুন।</translation>
+<translation id="1047130070405668746">Chromium বেছে নিন</translation>
 <translation id="1185134272377778587">Chromium সম্পর্কে</translation>
 <translation id="1257458525759135959">ছবি সেভ করতে, সেটিংসে ট্যাপ করুন যাতে Chromium আপনার ফটো যোগ করতে পারে</translation>
 <translation id="1289216811211435351">Chromium-এ পাল্টান</translation>
@@ -13,10 +14,12 @@
 <translation id="1531155317299575425">Chromium-এ সাইন-ইন করার প্রম্পট দেখাবে।</translation>
 <translation id="1584569488888892906">Chromium হল সহজ, নিরাপদ এবং এখনও পর্যন্ত উপলভ্য অন্য সব ব্রাউজারের চেয়ে দ্রুততর</translation>
 <translation id="1617663976202781617">Chromium সিঙ্ক থেকে ডেটা</translation>
+<translation id="1722370509450468186">পাসওয়ার্ড আপনার অ্যাকাউন্টে (<ph name="EMAIL" />) সেভ করা হবে।</translation>
 <translation id="1736662517232558588">Chromium ডেটা সাফ করা হয়েছে</translation>
 <translation id="1838412507805038478"><ph name="ISSUER" /> যে এই ওয়েবসাইটের শংসাপত্র প্রকাশ করেছে Chromium তা যাচাই করেছে।</translation>
 <translation id="1843424232666537147">Google Chrome-এর এমন বৈশিষ্ট্য রয়েছে যা আপনাকে আপনার ইন্টারনেট ডেটা পরিচালনা করতে এবং কিভাবে আপনি ওয়েবপৃষ্ঠাগুলি দ্রুত লোড করতে পারবেন সে বিষয়ে সহায়তা করে।
 <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
+<translation id="1867772173333403444">৪. Chromium বেছে নিন</translation>
 <translation id="2006345422933397527">কোনও নতুন আপডেট আছে কিনা তা Chromium-এ চেক করে দেখা যায়নি। ডিভাইসের ইন্টারনেট কানেকশন চেক করে দেখুন।</translation>
 <translation id="2054703085270098503">Chromium-এর সাহায্যে নিরাপদে থাকুন</translation>
 <translation id="2168108852149185974">কিছু অ্যাড-অনের কারণে Chromium ক্র্যাশ করতে পারে৷ দয়া করে আনইনস্টল করুন:</translation>
@@ -78,6 +81,7 @@
 <translation id="7099326575020694068">Chromium আপনার ক্যামেরা বিভক্ত দৃশ্য মোডে ব্যবহার করতে পারবে না</translation>
 <translation id="7108914401277488191">Chromium ব্যবহার করে আরও অনেক কিছু করুন</translation>
 <translation id="7118091470949186573">এখন থেকে আপনি চাইলে মেসেজ, ডকুমেন্ট এবং অন্যান্য অ্যাপে থাকা বিভিন্ন লিঙ্কে ট্যাপ করে তা Chromium ব্রাউজারে খুলতে পারেন।</translation>
+<translation id="7175400662502680481">আপনার পাসওয়ার্ড কোনও হ্যাক হওয়া ডেটাবেসে প্রকাশ করা হয়েছে। পাসওয়ার্ড ম্যানেজার এখনই এটি পরিবর্তন করার সাজেশন দিচ্ছে।</translation>
 <translation id="7208566199746267865">Chromium আপনার অ্যাকাউন্টগুলিকে ওয়েবে নিয়ে এসে আপনার সময় বাঁচায়। আপনি সেটিংস থেকে অ্যাকাউন্ট জুড়তে বা সরাতে পারবেন।</translation>
 <translation id="725427773388857052">Chromium আপনাকে ডেটার নিরাপত্তা লঙ্ঘন, ক্ষতিকর ওয়েবসাইট ও আরও অনেক কিছু থেকে সুরক্ষিত থাকতে সাহায্য করে।</translation>
 <translation id="7269362888766543920">কিছু অ্যাড-অনের কারণে Chromium ক্র্যাশ করতে পারে৷ অনুগ্রহ করে সেগুলিকে আনইনস্টল করে দেখুন৷</translation>

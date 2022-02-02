@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "content/browser/webrtc/webrtc_internals_connections_observer.h"
@@ -26,6 +27,7 @@ namespace {
 const GlobalRenderFrameHostId kFrameId = {20, 30};
 const int kLid = 40;
 const int kPid = 123;
+const int kRequestId = 1;
 const char kConstraints[] = "c";
 const char kRtcConfiguration[] = "r";
 const char kUrl[] = "u";
@@ -35,6 +37,12 @@ const char* const kWakeLockDisconnectingValues[] = {"disconnected", "closed",
                                                     "failed", "new"};
 const char kAudioConstraint[] = "aaa";
 const char kVideoConstraint[] = "vvv";
+
+const char kStreamId[] = "streamid";
+const char kAudioTrackInfo[] = "id:audio label:fancy device";
+const char kVideoTrackInfo[] = "id:audio label:fancy device";
+const char kGetUserMediaError[] = "SomeError";
+const char kGetUserMediaErrorMessage[] = "Something bad happened.";
 
 class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
  public:
@@ -56,7 +64,7 @@ class MockWebRtcInternalsProxy : public WebRTCInternalsUIObserver {
 
   std::string event_name_;
   std::unique_ptr<base::Value> event_data_;
-  base::RunLoop* loop_{nullptr};
+  raw_ptr<base::RunLoop> loop_{nullptr};
 };
 
 class MockWakeLock : public device::mojom::WakeLock {
@@ -154,7 +162,7 @@ class WebRtcInternalsTest : public testing::Test {
   void VerifyGetUserMediaData(base::Value* actual_data,
                               GlobalRenderFrameHostId frame_id,
                               int pid,
-                              const std::string& origin,
+                              int request_id,
                               const std::string& audio,
                               const std::string& video) {
     ASSERT_TRUE(actual_data->is_dict());
@@ -163,9 +171,47 @@ class WebRtcInternalsTest : public testing::Test {
 
     VerifyInt(dict, "rid", frame_id.child_id);
     VerifyInt(dict, "pid", pid);
-    VerifyString(dict, "origin", origin);
+    // origin is the empty string in tests.
+    VerifyString(dict, "origin", "");
+    VerifyInt(dict, "request_id", request_id);
     VerifyString(dict, "audio", audio);
     VerifyString(dict, "video", video);
+  }
+
+  void VerifyGetUserMediaSuccessData(base::Value* actual_data,
+                                     GlobalRenderFrameHostId frame_id,
+                                     int pid,
+                                     int request_id,
+                                     const std::string& stream_id,
+                                     const std::string& audio_track_info,
+                                     const std::string& video_track_info) {
+    ASSERT_TRUE(actual_data->is_dict());
+    const base::DictionaryValue& dict =
+        base::Value::AsDictionaryValue(*actual_data);
+
+    VerifyInt(dict, "rid", frame_id.child_id);
+    VerifyInt(dict, "pid", pid);
+    VerifyInt(dict, "request_id", request_id);
+    VerifyString(dict, "stream_id", stream_id);
+    VerifyString(dict, "audio_track_info", audio_track_info);
+    VerifyString(dict, "video_track_info", video_track_info);
+  }
+
+  void VerifyGetUserMediaFailureData(base::Value* actual_data,
+                                     GlobalRenderFrameHostId frame_id,
+                                     int pid,
+                                     int request_id,
+                                     const std::string& error,
+                                     const std::string& error_message) {
+    ASSERT_TRUE(actual_data->is_dict());
+    const base::DictionaryValue& dict =
+        base::Value::AsDictionaryValue(*actual_data);
+
+    VerifyInt(dict, "rid", frame_id.child_id);
+    VerifyInt(dict, "pid", pid);
+    VerifyInt(dict, "request_id", request_id);
+    VerifyString(dict, "error", error);
+    VerifyString(dict, "error_message", error_message);
   }
 
   BrowserTaskEnvironment task_environment_;
@@ -354,14 +400,61 @@ TEST_F(WebRtcInternalsTest, AddGetUserMedia) {
   // Add one observer before "getUserMedia".
   webrtc_internals.AddObserver(&observer);
 
-  webrtc_internals.OnGetUserMedia(kFrameId, kPid, kUrl, true, true,
+  webrtc_internals.OnGetUserMedia(kFrameId, kPid, kRequestId, true, true,
                                   kAudioConstraint, kVideoConstraint);
 
   loop.Run();
 
   ASSERT_EQ("add-get-user-media", observer.event_name());
-  VerifyGetUserMediaData(observer.event_data(), kFrameId, kPid, kUrl,
+  VerifyGetUserMediaData(observer.event_data(), kFrameId, kPid, kRequestId,
                          kAudioConstraint, kVideoConstraint);
+
+  webrtc_internals.RemoveObserver(&observer);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WebRtcInternalsTest, UpdateGetUserMediaSuccess) {
+  base::RunLoop loop;
+  MockWebRtcInternalsProxy observer(&loop);
+  WebRTCInternalsForTest webrtc_internals;
+
+  // Add one observer before "getUserMediaSuccess".
+  webrtc_internals.AddObserver(&observer);
+
+  webrtc_internals.OnGetUserMediaSuccess(kFrameId, kPid, kRequestId, kStreamId,
+                                         kAudioTrackInfo, kVideoTrackInfo);
+
+  loop.Run();
+
+  ASSERT_EQ("update-get-user-media", observer.event_name());
+  VerifyGetUserMediaSuccessData(observer.event_data(), kFrameId, kPid,
+                                kRequestId, kStreamId, kAudioTrackInfo,
+                                kVideoTrackInfo);
+
+  webrtc_internals.RemoveObserver(&observer);
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(WebRtcInternalsTest, UpdateGetUserMediaError) {
+  base::RunLoop loop;
+  MockWebRtcInternalsProxy observer(&loop);
+  WebRTCInternalsForTest webrtc_internals;
+
+  // Add one observer before "getUserMediaFailure".
+  webrtc_internals.AddObserver(&observer);
+
+  webrtc_internals.OnGetUserMediaFailure(kFrameId, kPid, kRequestId,
+                                         kGetUserMediaError,
+                                         kGetUserMediaErrorMessage);
+
+  loop.Run();
+
+  ASSERT_EQ("update-get-user-media", observer.event_name());
+  VerifyGetUserMediaFailureData(observer.event_data(), kFrameId, kPid,
+                                kRequestId, kGetUserMediaError,
+                                kGetUserMediaErrorMessage);
 
   webrtc_internals.RemoveObserver(&observer);
 
@@ -370,7 +463,7 @@ TEST_F(WebRtcInternalsTest, AddGetUserMedia) {
 
 TEST_F(WebRtcInternalsTest, SendAllUpdateWithGetUserMedia) {
   WebRTCInternalsForTest webrtc_internals;
-  webrtc_internals.OnGetUserMedia(kFrameId, kPid, kUrl, true, true,
+  webrtc_internals.OnGetUserMedia(kFrameId, kPid, kRequestId, true, true,
                                   kAudioConstraint, kVideoConstraint);
 
   MockWebRtcInternalsProxy observer;
@@ -379,7 +472,7 @@ TEST_F(WebRtcInternalsTest, SendAllUpdateWithGetUserMedia) {
   webrtc_internals.UpdateObserver(&observer);
 
   EXPECT_EQ("add-get-user-media", observer.event_name());
-  VerifyGetUserMediaData(observer.event_data(), kFrameId, kPid, kUrl,
+  VerifyGetUserMediaData(observer.event_data(), kFrameId, kPid, kRequestId,
                          kAudioConstraint, kVideoConstraint);
 
   webrtc_internals.RemoveObserver(&observer);

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
@@ -57,9 +56,9 @@ class MODULES_EXPORT PresentationAvailabilityState final
 
  private:
   enum class ListeningState {
-    INACTIVE,
-    WAITING,
-    ACTIVE,
+    kInactive,
+    kWaiting,
+    kActive,
   };
 
   // Tracks listeners of presentation displays availability for

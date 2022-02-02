@@ -4,19 +4,13 @@
 
 package org.chromium.content.browser.accessibility;
 
-import static org.chromium.content.browser.accessibility.AccessibilityContentShellActivityTestRule.EVENTS_ERROR;
+import static org.chromium.content.browser.accessibility.AccessibilityContentShellActivityTestRule.NODE_ERROR;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellActivityTestRule.RESULTS_NULL;
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellTestUtils.sClassNameMatcher;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.ACTION_CONTEXT_CLICK;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.ACTION_SHOW_ON_SCREEN;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_BOTTOM;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_TOP;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.os.Bundle;
-import android.text.InputType;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.test.filters.SmallTest;
@@ -26,10 +20,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
-
-import java.lang.reflect.Method;
 
 /**
  * Tests for WebContentsAccessibilityImpl integration with accessibility services.
@@ -38,9 +31,12 @@ import java.lang.reflect.Method;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @SuppressLint("VisibleForTests")
+@Batch(Batch.UNIT_TESTS)
 public class WebContentsAccessibilityTreeTest {
     // File path that holds all the relevant tests.
-    private static final String BASE_FILE_PATH = "content/test/data/accessibility/html/";
+    private static final String BASE_ARIA_FILE_PATH = "content/test/data/accessibility/aria/";
+    private static final String BASE_HTML_FILE_PATH = "content/test/data/accessibility/html/";
+    private static final String DEFAULT_FILE_SUFFIX = "-expected-android-external.txt";
 
     @Rule
     public AccessibilityContentShellActivityTestRule mActivityTestRule =
@@ -52,39 +48,63 @@ public class WebContentsAccessibilityTreeTest {
      *      2. Generate the full AccessibilityNodeInfo tree
      *      3. Read expectations file and compare with results
      *
-     * @param inputFile                     HTML test input file
-     * @param inputFile                     HTML test input file
-     * @param expectationFile               TXT expectations file
-     * @param expectationFilePath           directory that holds the test files
+     * @param inputFile HTML test input file
+     * @param expectationFile TXT expectations file
+     * @param expectationFilePath directory that holds the test files
      */
     private void performTest(String inputFile, String expectationFile, String expectationFilePath) {
         // Build page from given file and enable testing framework.
         mActivityTestRule.setupTestFromFile(expectationFilePath + inputFile);
 
+        // Create an extra string to print to logs along with potential error for rebase tool.
+        String errorStringPrefix = String.format("\n\nTesting: %s%s\nExpected output: %s%s",
+                expectationFilePath, inputFile, expectationFilePath, expectationFile);
+
         // Generate full AccessibilityNodeInfo tree and verify results.
-        assertResults(expectationFilePath + expectationFile, generateAccessibilityNodeInfoTree());
+        assertResults(expectationFilePath + expectationFile, generateAccessibilityNodeInfoTree(),
+                errorStringPrefix);
+    }
+
+    // Helper methods to pass-through to the performTest method so each individual test does
+    // not need to include its own filepath.
+    private void performAriaTest(String input) {
+        // Remove the '.html' from the input file, and append the standard suffix.
+        performAriaTest(input, input.substring(0, input.length() - 5) + DEFAULT_FILE_SUFFIX);
+    }
+
+    private void performAriaTest(String inputFile, String expectationFile) {
+        performTest(inputFile, expectationFile, BASE_ARIA_FILE_PATH);
+    }
+
+    private void performHtmlTest(String input) {
+        // Remove the '.html' from the input file, and append the standard suffix.
+        performHtmlTest(input, input.substring(0, input.length() - 5) + DEFAULT_FILE_SUFFIX);
+    }
+
+    private void performHtmlTest(String inputFile, String expectationFile) {
+        performTest(inputFile, expectationFile, BASE_HTML_FILE_PATH);
     }
 
     /**
      * Helper method to compare test outputs with expected results. Reads content of expectations
      * file, asserts non-null, then compares with results.
      *
-     * @param expectationFile           File of the expectations for the test (including path)
-     * @param actualResults             Actual results generated by the accessibility code
+     * @param expectationFile File of the expectations for the test (including path)
+     * @param actualResults Actual results generated by the accessibility code
      */
-    private void assertResults(String expectationFile, String actualResults) {
+    private void assertResults(String expectationFile, String actualResults, String errorPrefix) {
         String expectedResults = mActivityTestRule.readExpectationFile(expectationFile);
 
         Assert.assertNotNull(RESULTS_NULL, actualResults);
-        Assert.assertEquals(EVENTS_ERROR + "\n\nExpected:\n" + expectedResults + "\n\nActual:\n"
-                        + actualResults + "\n\n",
+        Assert.assertEquals(NODE_ERROR + errorPrefix + "\n\nExpected\n--------\n" + expectedResults
+                        + "\n\nActual\n------\n" + actualResults + "\n<-- End-of-file -->\n\n\n",
                 expectedResults, actualResults);
     }
 
     /**
      * Generate the full AccessibilityNodeInfo tree as a String of text.
      *
-     * @return String                   The AccessibilityNodeInfo tree in text form
+     * @return String The AccessibilityNodeInfo tree in text form
      */
     private String generateAccessibilityNodeInfoTree() {
         StringBuilder builder = new StringBuilder();
@@ -93,7 +113,7 @@ public class WebContentsAccessibilityTreeTest {
         int rootNodevvId =
                 mActivityTestRule.waitForNodeMatching(sClassNameMatcher, "android.webkit.WebView");
         AccessibilityNodeInfo nodeInfo = createAccessibilityNodeInfo(rootNodevvId);
-        builder.append(customToString(nodeInfo));
+        builder.append(AccessibilityNodeInfoUtils.toString(nodeInfo));
 
         // Recursively generate strings for all descendants.
         for (int i = 0; i < nodeInfo.getChildCount(); ++i) {
@@ -108,13 +128,13 @@ public class WebContentsAccessibilityTreeTest {
     /**
      * Recursively add AccessibilityNodeInfo descendants to the given builder.
      *
-     * @param node                       Given object to print all descendants for
-     * @param builder                    builder to add generated Strings to
-     * @param indent                     prefix to indent each generation, e.g. "++"
+     * @param node Given object to print all descendants for
+     * @param builder builder to add generated Strings to
+     * @param indent prefix to indent each generation, e.g. "++"
      */
     private void recursivelyFormatTree(
             AccessibilityNodeInfo node, StringBuilder builder, String indent) {
-        builder.append("\n").append(indent).append(customToString(node));
+        builder.append("\n").append(indent).append(AccessibilityNodeInfoUtils.toString(node));
         for (int j = 0; j < node.getChildCount(); ++j) {
             int childId = mActivityTestRule.getChildId(node, j);
             AccessibilityNodeInfo childNodeInfo = createAccessibilityNodeInfo(childId);
@@ -127,212 +147,73 @@ public class WebContentsAccessibilityTreeTest {
         return mActivityTestRule.mNodeProvider.createAccessibilityNodeInfo(virtualViewId);
     }
 
-    /**
-     * Helper method to use reflection to convert AccessibilityNodeInfo actions to human-
-     * readable text. The method is private so we set accessible to true.
-     *
-     * @param node                        The object that contains the action
-     * @param action                      Action int to convert to a String
-     * @return  String                    Human-readable representation of the action int
-     */
-    @SuppressLint("SoonBlockedPrivateApi")
-    private String getSymbolicName(AccessibilityNodeInfo node, int action) {
-        try {
-            Method getActionSymbolicName = AccessibilityNodeInfo.class.getDeclaredMethod(
-                    "getActionSymbolicName", int.class);
-            getActionSymbolicName.setAccessible(true);
-            return (String) getActionSymbolicName.invoke(node, Integer.valueOf(action));
-        } catch (Exception ex) {
-            Assert.fail("Unable to call hidden AccessibilityNodeInfo method: " + ex.toString());
-            return "";
-        }
+    // ------------------ ARIA TESTS ------------------ //
+
+    @Test
+    @SmallTest
+    public void test_annotationRoles() {
+        performAriaTest("annotation-roles.html");
     }
 
-    /**
-     * Helper method to perform a custom toString on a given AccessibilityNodeInfo object.
-     *
-     * @param node                        Object to create a toString for
-     * @return  String                    Custom toString result for the given object
-     */
-    private String customToString(AccessibilityNodeInfo node) {
-        StringBuilder builder = new StringBuilder();
+    // ------------------ HTML TESTS ------------------ //
 
-        // Classname and text should always be printed.
-        builder.append(node.getClassName());
-        builder.append("; text: ").append(node.getText()).append(";");
-
-        // Text properties - Only print when non-null
-        if (node.getContentDescription() != null) {
-            builder.append(" contentDescription: ")
-                    .append(node.getContentDescription())
-                    .append(";");
-        }
-        if (node.getViewIdResourceName() != null) {
-            builder.append(" viewIdResName: ").append(node.getViewIdResourceName()).append(";");
-        }
-        if (node.getError() != null) {
-            builder.append(" error: ").append(node.getError()).append(";");
-        }
-
-        // Boolean properties - Only print when set to true.
-        if (node.canOpenPopup()) {
-            builder.append(" canOpenPopUp");
-        }
-        if (node.isCheckable()) {
-            builder.append(" checkable");
-        }
-        if (node.isChecked()) {
-            builder.append(" checked");
-        }
-        if (node.isClickable()) {
-            builder.append(" clickable");
-        }
-        if (node.isContentInvalid()) {
-            builder.append(" contentInvalid:");
-        }
-        if (node.isDismissable()) {
-            builder.append(" dismissable");
-        }
-        if (node.isEditable()) {
-            builder.append(" editable");
-        }
-        if (node.isEnabled()) {
-            builder.append(" enabled");
-        }
-        if (node.isFocusable()) {
-            builder.append(" focusable");
-        }
-        if (node.isFocused()) {
-            builder.append(" focused");
-        }
-        if (node.isMultiLine()) {
-            builder.append(" multiLine");
-        }
-        if (node.isPassword()) {
-            builder.append(" password");
-        }
-        if (node.isScrollable()) {
-            builder.append(" scrollable");
-        }
-        if (node.isSelected()) {
-            builder.append(" selected");
-        }
-        if (node.isVisibleToUser()) {
-            builder.append(" visibleToUser");
-        }
-
-        // Integer properties - Only print when not default values.
-        if (node.getInputType() != InputType.TYPE_NULL) {
-            builder.append("; inputType: ").append(node.getInputType());
-        }
-        if (node.getTextSelectionStart() != -1) {
-            builder.append("; textSelectionStart: ").append(node.getTextSelectionStart());
-        }
-        if (node.getTextSelectionEnd() != -1) {
-            builder.append("; textSelectionEnd: ").append(node.getTextSelectionEnd());
-        }
-        if (node.getMaxTextLength() != -1) {
-            builder.append("; maxTextLength: ").append(node.getMaxTextLength());
-        }
-
-        // Child objects - print for non-null cases.
-        if (node.getCollectionInfo() != null) {
-            builder.append("; CollectionInfo: ")
-                    .append(collectionInfoToString(node.getCollectionInfo()));
-        }
-        if (node.getCollectionItemInfo() != null) {
-            builder.append("; CollectionItemInfo: ")
-                    .append(collectionItemInfoToString(node.getCollectionItemInfo()));
-        }
-        if (node.getRangeInfo() != null) {
-            builder.append("; RangeInfo: ").append(rangeInfoToString(node.getRangeInfo()));
-        }
-
-        // Actions and Bundle extras - Always print.
-        builder.append("; actions: ").append(actionsToString(node));
-        builder.append("; bundle: ").append(bundleToString(node.getExtras()));
-
-        return builder.toString();
+    @Test
+    @SmallTest
+    public void test_a() {
+        performHtmlTest("a.html");
     }
 
-    // Various helper methods to print custom toStrings for objects.
-    private String collectionInfoToString(AccessibilityNodeInfo.CollectionInfo info) {
-        return "[" + info.isHierarchical() + ", " + info.getSelectionMode() + ", "
-                + info.getRowCount() + ", " + info.getColumnCount() + "]";
+    @Test
+    @SmallTest
+    public void test_aName() {
+        performHtmlTest("a-name.html");
     }
 
-    private String collectionItemInfoToString(AccessibilityNodeInfo.CollectionItemInfo info) {
-        return "[" + info.isHeading() + ", " + info.isSelected() + ", " + info.getRowIndex() + ", "
-                + info.getRowSpan() + ", " + info.getColumnIndex() + ", " + info.getColumnSpan()
-                + "]";
+    @Test
+    @SmallTest
+    public void test_aNameCalc() {
+        performHtmlTest("a-name-calc.html");
     }
 
-    private String rangeInfoToString(AccessibilityNodeInfo.RangeInfo info) {
-        return "[" + info.getType() + ", " + info.getCurrent() + ", " + info.getMin() + ", "
-                + info.getMax() + "]";
+    @Test
+    @SmallTest
+    public void test_aNestedStructure() {
+        performHtmlTest("a-nested-structure.html");
     }
 
-    private String actionsToString(AccessibilityNodeInfo node) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        for (AccessibilityNodeInfo.AccessibilityAction action : node.getActionList()) {
-            // Four actions are set on all nodes, so ignore those when printing the tree.
-            if (action.getId() == AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT
-                    || action.getId() == AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT
-                    || action.getId() == ACTION_SHOW_ON_SCREEN
-                    || action.getId() == ACTION_CONTEXT_CLICK) {
-                continue;
-            }
-
-            builder.append(getSymbolicName(node, action.getId())).append(", ");
-        }
-        // Remove the extra comma for cleanliness
-        if (builder.length() > 2) {
-            builder.setLength(builder.length() - 2);
-        }
-
-        builder.append("]");
-        return builder.toString();
+    @Test
+    @SmallTest
+    public void test_aNoText() {
+        performHtmlTest("a-no-text.html");
     }
 
-    private String bundleToString(Bundle extras) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        for (String key : extras.keySet()) {
-            // Two Bundle extras are related to bounding boxes, these should be ignored so the
-            // tests can safely run on varying devices and not be screen-dependent.
-            if (key.equals(EXTRAS_KEY_UNCLIPPED_TOP) || key.equals(EXTRAS_KEY_UNCLIPPED_BOTTOM)) {
-                continue;
-            }
+    @Test
+    @SmallTest
+    public void test_aOnclick() {
+        performHtmlTest("a-onclick.html");
+    }
 
-            // Since every node has a few Bundle extras, and some are often empty, we will only
-            // print non-null and not empty values.
-            if (extras.get(key).toString().isEmpty()) {
-                continue;
-            }
+    @Test
+    @SmallTest
+    public void test_aWithBefore() {
+        performHtmlTest("a-with-before.html");
+    }
 
-            builder.append(key).append(" - ").append(extras.get(key).toString()).append(", ");
-        }
-        // Remove the extra comma for cleanliness
-        if (builder.length() > 2) {
-            builder.setLength(builder.length() - 2);
-        }
-
-        builder.append("]");
-        return builder.toString();
+    @Test
+    @SmallTest
+    public void test_aWithImg() {
+        performHtmlTest("a-with-img.html");
     }
 
     @Test
     @SmallTest
     public void test_tableSimple() {
-        performTest(
-                "table-simple.html", "table-simple-expected-android-external.txt", BASE_FILE_PATH);
+        performHtmlTest("table-simple.html");
     }
 
     @Test
     @SmallTest
     public void test_clickableScore() {
-        performTest("clickable-score.html", "clickable-score-expected-android-external.txt",
-                BASE_FILE_PATH);
+        performHtmlTest("clickable-score.html");
     }
 }

@@ -8,6 +8,8 @@
 
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
@@ -15,6 +17,20 @@ namespace ash {
 TestAppListClient::TestAppListClient() = default;
 
 TestAppListClient::~TestAppListClient() = default;
+
+void TestAppListClient::StartZeroStateSearch(base::OnceClosure on_done,
+                                             base::TimeDelta timeout) {
+  start_zero_state_search_count_++;
+  if (run_zero_state_callback_immediately_) {
+    // Most unit tests generally expect the launcher to open immediately, so run
+    // the callback synchronously.
+    std::move(on_done).Run();
+  } else {
+    // Simulate production behavior, which collects the results asynchronously.
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, std::move(on_done), base::Milliseconds(1));
+  }
+}
 
 void TestAppListClient::StartSearch(const std::u16string& trimmed_query) {
   last_search_query_ = trimmed_query;
@@ -34,7 +50,7 @@ void TestAppListClient::OpenSearchResult(int profile_id,
 void TestAppListClient::InvokeSearchResultAction(
     const std::string& result_id,
     SearchResultActionType action) {
-  invoked_result_actions_.push_back(std::make_pair(result_id, action));
+  invoked_result_actions_.emplace_back(result_id, action);
 }
 
 void TestAppListClient::GetSearchResultContextMenuModel(
@@ -53,6 +69,7 @@ void TestAppListClient::ActivateItem(int profile_id,
 void TestAppListClient::GetContextMenuModel(
     int profile_id,
     const std::string& id,
+    bool add_sort_options,
     GetContextMenuModelCallback callback) {
   auto model = std::make_unique<ui::SimpleMenuModel>(/*delegate=*/nullptr);
   model->AddItem(/*command_id=*/0, u"Menu item");

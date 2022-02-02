@@ -55,8 +55,10 @@ TEST_F(WebCryptoHmacTest, HMACSampleSets) {
   for (size_t test_index = 0; test_index < tests.GetList().size();
        ++test_index) {
     SCOPED_TRACE(test_index);
-    base::DictionaryValue* test;
-    ASSERT_TRUE(tests.GetDictionary(test_index, &test));
+    const base::Value& test_value = tests.GetList()[test_index];
+    ASSERT_TRUE(test_value.is_dict());
+    const base::DictionaryValue* test =
+        &base::Value::AsDictionaryValue(test_value);
 
     blink::WebCryptoAlgorithm test_hash = GetDigestAlgorithm(test, "hash");
     const std::vector<uint8_t> test_key = GetBytesFromHexString(test, "key");
@@ -331,7 +333,7 @@ TEST_F(WebCryptoHmacTest, ImportJwkInputConsistency) {
   // Consistency rules when JWK value exists: Fail if inconsistency is found.
 
   // Pass: All input values are consistent with the JWK values.
-  dict.Clear();
+  dict.DictClear();
   dict.SetString("kty", "oct");
   dict.SetString("alg", "HS256");
   dict.SetString("use", "sig");
@@ -365,7 +367,7 @@ TEST_F(WebCryptoHmacTest, ImportJwkInputConsistency) {
 
   // Fail: Input algorithm (AES-CBC) is inconsistent with JWK value
   // (HMAC SHA256).
-  dict.Clear();
+  dict.DictClear();
   dict.SetString("kty", "oct");
   dict.SetString("alg", "HS256");
   dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");

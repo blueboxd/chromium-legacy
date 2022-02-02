@@ -9,21 +9,18 @@
 
 #include "base/callback_helpers.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/browser_process_io_thread.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/buildflags.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "content/browser/media/keyboard_mic_registration.h"
-#endif
 
 #if defined(USE_AURA)
 namespace aura {
@@ -122,7 +119,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // The ThreadPoolInstance must exist but not to be started when building
   // BrowserMainLoop.
   explicit BrowserMainLoop(
-      const MainFunctionParams& parameters,
+      MainFunctionParams parameters,
       std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence> fence);
 
   BrowserMainLoop(const BrowserMainLoop&) = delete;
@@ -187,9 +184,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   net::NetworkChangeNotifier* network_change_notifier() const {
     return network_change_notifier_.get();
   }
-  KeyboardMicRegistration* keyboard_mic_registration() {
-    return &keyboard_mic_registration_;
-  }
 #endif
 
   midi::MidiService* midi_service() const { return midi_service_.get(); }
@@ -253,6 +247,13 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   int PreMainMessageLoopRun();
 
+  // One last opportunity to intercept the upcoming MainMessageLoopRun (or
+  // before yielding to the native loop on Android). Returns false iff the run
+  // should proceed after this call.
+  using ProceedWithMainMessageLoopRun =
+      base::StrongAlias<class ProceedWithMainMessageLoopRunTag, bool>;
+  ProceedWithMainMessageLoopRun InterceptMainMessageLoopRun();
+
   void MainMessageLoopRun();
 
   void InitializeMojo();
@@ -284,7 +285,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   //   OnFirstIdle()
 
   // Members initialized on construction ---------------------------------------
-  const MainFunctionParams& parameters_;
+  MainFunctionParams parameters_;
   const base::CommandLine& parsed_command_line_;
   int result_code_;
   bool created_threads_;  // True if the non-UI threads were created.
@@ -392,9 +393,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_refptr<responsiveness::Watcher> responsiveness_watcher_;
 
   // Members not associated with a specific phase.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  KeyboardMicRegistration keyboard_mic_registration_;
-#endif
   std::unique_ptr<SmsProvider> sms_provider_;
 
   // DO NOT add members here. Add them to the right categories above.

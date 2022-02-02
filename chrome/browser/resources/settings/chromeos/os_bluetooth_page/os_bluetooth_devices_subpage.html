@@ -22,7 +22,6 @@
     margin-inline-start: 32px;
   }
 </style>
-<!-- TODO(crbug.com/1010321): Add pair new device button. -->
 <div class="settings-box first">
   <div id="onOff" class="start" on$="[[isBluetoothToggleOn_]]"
       aria-hidden="true">
@@ -37,6 +36,13 @@
 </div>
 <div class="device-lists-separator"></div>
 <div id="container">
+  <template is="dom-if"
+      if="[[shouldShowNoDevicesFound_(unconnectedDevices_.length,
+          connectedDevices_.length)]]" restamp>
+    <div id="noDevices" class="settings-box-text">
+      $i18n{bluetoothDeviceListNoConnectedDevices}
+    </div>
+  </template>
   <template is="dom-if"
       if="[[shouldShowDeviceList_(connectedDevices_,
           connectedDevices_.length)]]" restamp>

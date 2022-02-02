@@ -12,12 +12,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/message_filter.h"
 
@@ -27,8 +25,7 @@ class GpuMemoryBufferManager;
 
 namespace content {
 
-class CONTENT_EXPORT BrowserGpuChannelHostFactory
-    : public gpu::GpuChannelEstablishFactory {
+class BrowserGpuChannelHostFactory : public gpu::GpuChannelEstablishFactory {
  public:
   static void Initialize(bool establish_gpu_channel);
   static void Terminate();

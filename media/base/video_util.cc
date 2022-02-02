@@ -50,7 +50,7 @@ void FillRegionOutsideVisibleRect(uint8_t* data,
     const int pad_length = coded_width - visible_size.width();
     uint8_t* dst = data + visible_size.width();
     for (int i = 0; i < visible_size.height(); ++i, dst += stride)
-      std::memset(dst, *(dst - 1), pad_length);
+      memset(dst, *(dst - 1), pad_length);
   }
 
   if (visible_size.height() < coded_size.height()) {
@@ -58,7 +58,7 @@ void FillRegionOutsideVisibleRect(uint8_t* data,
     uint8_t* src = dst - stride;
     for (int i = visible_size.height(); i < coded_size.height();
          ++i, dst += stride)
-      std::memcpy(dst, src, coded_width);
+      memcpy(dst, src, coded_width);
   }
 }
 
@@ -220,27 +220,11 @@ bool ReadbackTexturePlaneToMemorySyncOOP(const VideoFrame& src_frame,
 }  // namespace
 
 void FillYUV(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v) {
-  // Fill the Y plane.
-  uint8_t* y_plane = frame->data(VideoFrame::kYPlane);
-  int y_rows = frame->rows(VideoFrame::kYPlane);
-  int y_row_bytes = frame->row_bytes(VideoFrame::kYPlane);
-  for (int i = 0; i < y_rows; ++i) {
-    memset(y_plane, y, y_row_bytes);
-    y_plane += frame->stride(VideoFrame::kYPlane);
-  }
-
-  // Fill the U and V planes.
-  uint8_t* u_plane = frame->data(VideoFrame::kUPlane);
-  uint8_t* v_plane = frame->data(VideoFrame::kVPlane);
-  int uv_rows = frame->rows(VideoFrame::kUPlane);
-  int u_row_bytes = frame->row_bytes(VideoFrame::kUPlane);
-  int v_row_bytes = frame->row_bytes(VideoFrame::kVPlane);
-  for (int i = 0; i < uv_rows; ++i) {
-    memset(u_plane, u, u_row_bytes);
-    memset(v_plane, v, v_row_bytes);
-    u_plane += frame->stride(VideoFrame::kUPlane);
-    v_plane += frame->stride(VideoFrame::kVPlane);
-  }
+  libyuv::I420Rect(
+      frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
+      frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
+      frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane), 0,
+      0, frame->coded_size().width(), frame->coded_size().height(), y, u, v);
 }
 
 void FillYUVA(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v, uint8_t a) {
@@ -248,13 +232,10 @@ void FillYUVA(VideoFrame* frame, uint8_t y, uint8_t u, uint8_t v, uint8_t a) {
   FillYUV(frame, y, u, v);
 
   // Fill the A plane.
-  uint8_t* a_plane = frame->data(VideoFrame::kAPlane);
-  int a_rows = frame->rows(VideoFrame::kAPlane);
-  int a_row_bytes = frame->row_bytes(VideoFrame::kAPlane);
-  for (int i = 0; i < a_rows; ++i) {
-    memset(a_plane, a, a_row_bytes);
-    a_plane += frame->stride(VideoFrame::kAPlane);
-  }
+  libyuv::SetPlane(frame->data(VideoFrame::kAPlane),
+                   frame->stride(VideoFrame::kAPlane),
+                   frame->row_bytes(VideoFrame::kAPlane),
+                   frame->rows(VideoFrame::kAPlane), a);
 }
 
 static void LetterboxPlane(VideoFrame* frame,
@@ -278,30 +259,32 @@ static void LetterboxPlane(VideoFrame* frame,
   CHECK_LE(view_area.right(), row_bytes);
   CHECK_LE(view_area.bottom(), rows);
 
-  int y = 0;
-  for (; y < view_area.y(); y++) {
-    memset(ptr, fill_byte, row_bytes);
-    ptr += stride;
+  if (view_area.IsEmpty()) {
+    libyuv::SetPlane(ptr, stride, row_bytes, rows, fill_byte);
+    return;
   }
+
+  if (view_area.y() > 0) {
+    libyuv::SetPlane(ptr, stride, row_bytes, view_area.y(), fill_byte);
+    ptr += stride * view_area.y();
+  }
+
   if (view_area.width() < row_bytes) {
-    for (; y < view_area.bottom(); y++) {
-      if (view_area.x() > 0) {
-        memset(ptr, fill_byte, view_area.x());
-      }
-      if (view_area.right() < row_bytes) {
-        memset(ptr + view_area.right(),
-               fill_byte,
-               row_bytes - view_area.right());
-      }
-      ptr += stride;
+    if (view_area.x() > 0) {
+      libyuv::SetPlane(ptr, stride, view_area.x(), view_area.height(),
+                       fill_byte);
     }
-  } else {
-    y += view_area.height();
-    ptr += stride * view_area.height();
+    if (view_area.right() < row_bytes) {
+      libyuv::SetPlane(ptr + view_area.right(), stride,
+                       row_bytes - view_area.right(), view_area.height(),
+                       fill_byte);
+    }
   }
-  for (; y < rows; y++) {
-    memset(ptr, fill_byte, row_bytes);
-    ptr += stride;
+  ptr += stride * view_area.height();
+
+  if (view_area.bottom() < rows) {
+    libyuv::SetPlane(ptr, stride, row_bytes, rows - view_area.bottom(),
+                     fill_byte);
   }
 }
 
@@ -712,6 +695,12 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
   if (!src_frame.IsMappable() || !dst_frame.IsMappable())
     return Status(StatusCode::kUnsupportedFrameFormatError);
 
+  // I420A can only be produced from I420A.
+  if (dst_frame.format() == PIXEL_FORMAT_I420A &&
+      src_frame.format() != PIXEL_FORMAT_I420A) {
+    return Status(StatusCode::kUnsupportedFrameFormatError);
+  }
+
   if ((dst_frame.format() == PIXEL_FORMAT_I420 ||
        dst_frame.format() == PIXEL_FORMAT_NV12) &&
       (src_frame.format() == PIXEL_FORMAT_XBGR ||
@@ -723,7 +712,7 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
 
     size_t src_stride = src_frame.stride(VideoFrame::kARGBPlane);
     const uint8_t* src_data = src_frame.visible_data(VideoFrame::kARGBPlane);
-    if (src_frame.visible_rect() != dst_frame.visible_rect()) {
+    if (src_frame.visible_rect().size() != dst_frame.visible_rect().size()) {
       size_t tmp_buffer_size = VideoFrame::AllocationSize(
           src_frame.format(), dst_frame.coded_size());
       if (tmp_buf.size() < tmp_buffer_size)
@@ -775,9 +764,21 @@ Status ConvertAndScaleFrame(const VideoFrame& src_frame,
   // Converting between YUV formats doesn't change the color space.
   dst_frame.set_color_space(src_frame.ColorSpace());
 
-  // Both frames are I420, only scaling is required.
-  if (dst_frame.format() == PIXEL_FORMAT_I420 &&
-      src_frame.format() == PIXEL_FORMAT_I420) {
+  // Both frames are I420 or I420A, only scaling is required.
+  if ((dst_frame.format() == PIXEL_FORMAT_I420 ||
+       dst_frame.format() == PIXEL_FORMAT_I420A) &&
+      (src_frame.format() == PIXEL_FORMAT_I420 ||
+       src_frame.format() == PIXEL_FORMAT_I420A)) {
+    if (dst_frame.format() == PIXEL_FORMAT_I420A) {
+      libyuv::ScalePlane(src_frame.visible_data(media::VideoFrame::kAPlane),
+                         src_frame.stride(media::VideoFrame::kAPlane),
+                         src_frame.visible_rect().width(),
+                         src_frame.visible_rect().height(),
+                         dst_frame.data(media::VideoFrame::kAPlane),
+                         dst_frame.stride(media::VideoFrame::kAPlane),
+                         dst_frame.coded_size().width(),
+                         dst_frame.coded_size().height(), kDefaultFiltering);
+    }
     int error = libyuv::I420Scale(
         src_frame.visible_data(VideoFrame::kYPlane),
         src_frame.stride(VideoFrame::kYPlane),

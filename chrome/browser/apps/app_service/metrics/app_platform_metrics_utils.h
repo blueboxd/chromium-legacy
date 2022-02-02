@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_METRICS_APP_PLATFORM_METRICS_UTILS_H_
 
 #include "base/time/time.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 class Profile;
@@ -33,11 +34,11 @@ enum class AppTypeName {
   kBorealis = 10,
   kSystemWeb = 11,
   kChromeBrowser = 12,
-  kStandaloneBrowserExtension = 13,
+  kStandaloneBrowserChromeApp = 13,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kStandaloneBrowserExtension,
+  kMaxValue = kStandaloneBrowserChromeApp,
 };
 
 // This is used for logging, so do not remove or reorder existing entries.
@@ -62,11 +63,11 @@ enum class AppTypeNameV2 {
   kBorealis = 12,
   kSystemWeb = 13,
   kChromeBrowser = 14,
-  kStandaloneBrowserExtension = 15,
+  kStandaloneBrowserChromeApp = 15,
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kStandaloneBrowserExtension,
+  kMaxValue = kStandaloneBrowserChromeApp,
 };
 
 extern const base::TimeDelta kMinDuration;
@@ -106,13 +107,13 @@ AppTypeName GetAppTypeNameForWindow(Profile* profile,
 bool ShouldRecordUkm(Profile* profile);
 
 // Due to the privacy limitation, only ARC apps, Chrome apps and web apps(PWA),
-// system web apps, builtin apps and Crostini apps are recorded because they are
-// synced to server/cloud, or part of OS. Other app types, e.g. remote apps,
-// etc, are not recorded. So returns true if the app_type_name is allowed to
-// record UKM. Otherwise, returns false.
+// system web apps, builtin apps, Borealis apps, and Crostini apps are recorded
+// because they are synced to server/cloud, or part of OS. Other app types,
+// e.g. remote apps, etc, are not recorded. So returns true if the
+// app_type_name is allowed to record UKM. Otherwise, returns false.
 //
 // See DD: go/app-platform-metrics-using-ukm for details.
-bool ShouldRecordUkmForAppTypeName(AppTypeName app_type_name);
+bool ShouldRecordUkmForAppTypeName(AppType app_type_name);
 
 int GetUserTypeByDeviceTypeMetrics();
 

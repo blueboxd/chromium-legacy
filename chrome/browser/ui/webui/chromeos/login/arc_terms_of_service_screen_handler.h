@@ -8,13 +8,12 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "ash/components/settings/timezone_settings.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/arc/optin/arc_optin_preference_handler_observer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/network/network_state_handler_observer.h"
-#include "chromeos/settings/timezone_settings.h"
 
 namespace arc {
 class ArcOptInPreferenceHandler;

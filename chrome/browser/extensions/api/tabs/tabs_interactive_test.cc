@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "apps/test/app_window_waiter.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/values.h"
@@ -174,6 +175,15 @@ IN_PROC_BROWSER_TEST_P(NonPersistentExtensionTabsTest,
   ASSERT_TRUE(RunExtensionTest("tabs/last_focused_window")) << message_;
 }
 
+// TODO(http://crbug.com/58229): The Linux and Lacros window managers
+// behave differently, which complicates the test. A separate  test should
+// be written for them to avoid complicating this one.
+#if !defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+IN_PROC_BROWSER_TEST_P(NonPersistentExtensionTabsTest, WindowSetFocus) {
+  ASSERT_TRUE(RunExtensionTest("window_update/set_focus")) << message_;
+}
+#endif
+
 INSTANTIATE_TEST_SUITE_P(EventPage,
                          NonPersistentExtensionTabsTest,
                          ::testing::Values(ContextType::kEventPage));
@@ -232,7 +242,7 @@ class ExtensionWindowLastFocusedTest : public PlatformAppBrowserTest {
     }
 
    private:
-    views::Widget* widget_;
+    raw_ptr<views::Widget> widget_;
     bool waiting_;
     base::RepeatingClosure quit_closure_;
   };
@@ -273,11 +283,11 @@ int ExtensionWindowLastFocusedTest::GetTabId(
   const base::ListValue* tabs = nullptr;
   if (!value->GetList(keys::kTabsKey, &tabs))
     return -2;
-  const base::Value* tab = nullptr;
-  if (!tabs->Get(0, &tab))
+  if (tabs->GetList().empty())
     return -2;
+  const base::Value& tab = tabs->GetList()[0];
   const base::DictionaryValue* tab_dict = nullptr;
-  if (!tab->GetAsDictionary(&tab_dict))
+  if (!tab.GetAsDictionary(&tab_dict))
     return -2;
   absl::optional<int> tab_id = tab_dict->FindIntKey(keys::kIdKey);
   if (!tab_id)

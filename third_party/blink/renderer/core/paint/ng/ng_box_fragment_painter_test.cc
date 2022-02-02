@@ -77,33 +77,20 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
   scroll_hit_test.scroll_translation =
       scroller.FirstFragment().PaintProperties()->ScrollTranslation();
   scroll_hit_test.scroll_hit_test_rect = gfx::Rect(0, 0, 40, 40);
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    EXPECT_THAT(
-        ContentPaintChunks(),
-        ElementsAre(
-            VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
-            IsPaintChunk(1, 1,
-                         PaintChunk::Id(scroller.Layer()->Id(),
-                                        DisplayItem::kLayerChunk),
-                         scroller.FirstFragment().LocalBorderBoxProperties()),
-            IsPaintChunk(
-                1, 1,
-                PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
-                scroller.FirstFragment().LocalBorderBoxProperties(),
-                &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
-            IsPaintChunk(1, 2)));
-  } else {
-    EXPECT_THAT(
-        ContentPaintChunks(),
-        ElementsAre(
-            VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
-            IsPaintChunk(
-                1, 1,
-                PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
-                scroller.FirstFragment().LocalBorderBoxProperties(),
-                &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
-            IsPaintChunk(1, 2)));
-  }
+  EXPECT_THAT(
+      ContentPaintChunks(),
+      ElementsAre(
+          VIEW_SCROLLING_BACKGROUND_CHUNK_COMMON,
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(scroller.Layer()->Id(), DisplayItem::kLayerChunk),
+              scroller.FirstFragment().LocalBorderBoxProperties()),
+          IsPaintChunk(
+              1, 1,
+              PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
+              scroller.FirstFragment().LocalBorderBoxProperties(),
+              &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
+          IsPaintChunk(1, 2)));
 }
 
 TEST_P(NGBoxFragmentPainterTest, AddUrlRects) {
@@ -238,7 +225,7 @@ TEST_P(NGBoxFragmentPainterTest, NodeAtPointWithSvgInline) {
 
   auto* root = GetDocument().getElementById("svg")->GetLayoutBox();
   HitTestResult result;
-  root->NodeAtPoint(result, HitTestLocation(FloatPoint(256, 192)),
+  root->NodeAtPoint(result, HitTestLocation(gfx::PointF(256, 192)),
                     PhysicalOffset(0, 0), kHitTestForeground);
   EXPECT_EQ(GetDocument().getElementById("pass"), result.InnerElement());
 }

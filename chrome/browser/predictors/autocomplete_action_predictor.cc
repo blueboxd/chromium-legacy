@@ -20,7 +20,9 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
@@ -28,6 +30,7 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace {
 
@@ -182,25 +185,62 @@ void AutocompleteActionPredictor::CancelPrerender() {
     no_state_prefetch_handle_->OnCancel();
     no_state_prefetch_handle_.reset();
   }
+
+  // TODO(https://crbug.com/1166085): Find a proper way to reset
+  // prerender_handle_ here.
 }
 
 void AutocompleteActionPredictor::StartPrerendering(
     const GURL& url,
-    content::SessionStorageNamespace* session_storage_namespace,
+    content::WebContents& web_contents,
     const gfx::Size& size) {
-  // Only cancel the old prefetch after starting the new one, so if the URLs
-  // are the same, the underlying prefetcher will be reused.
-  std::unique_ptr<prerender::NoStatePrefetchHandle>
-      old_no_state_prefetch_handle = std::move(no_state_prefetch_handle_);
-  prerender::NoStatePrefetchManager* no_state_prefetch_manager =
-      prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(profile_);
-  if (no_state_prefetch_manager) {
-    no_state_prefetch_handle_ =
-        no_state_prefetch_manager->AddPrerenderFromOmnibox(
-            url, session_storage_namespace, size);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (blink::features::IsPrerender2Enabled() &&
+      base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2)) {
+    // Check whether preloading is enabled. If users disable this
+    // setting, it means users do not want to preload pages.
+    // TODO(https://crbug.com/1269204): Move this check into
+    // WebContentsDelegate::IsPrerender2Supported after exposing TriggerType to
+    // embedders.
+    if (!prefetch::IsSomePreloadingEnabled(*profile_->GetPrefs())) {
+      return;
+    }
+
+    // TODO(https://crbug.com/1166085): Reset the handle upon prerendering
+    // activation/cancellation. There is a case that a user input the same url
+    // after activation/cancellation, and this mechanism prevents the user from
+    // starting a new prerendering.
+    if (prerender_handle_) {
+      // `url` has already been prerendered. Avoid starting new prerendering.
+      if (prerender_handle_->GetInitialPrerenderingUrl() == url) {
+        return;
+      }
+      // `url` does not matched with previously prerendered url. Reset the
+      // handle to trigger cancellation.
+      prerender_handle_.reset();
+    }
+
+    prerender_handle_ = web_contents.StartPrerendering(
+        url, content::PrerenderTriggerType::kEmbedder, "_DirectURLInput");
+  } else if (base::FeatureList::IsEnabled(
+                 features::kOmniboxTriggerForNoStatePrefetch)) {
+    content::SessionStorageNamespace* session_storage_namespace =
+        web_contents.GetController().GetDefaultSessionStorageNamespace();
+    // Only cancel the old prefetch after starting the new one, so if the URLs
+    // are the same, the underlying prefetcher will be reused.
+    std::unique_ptr<prerender::NoStatePrefetchHandle>
+        old_no_state_prefetch_handle = std::move(no_state_prefetch_handle_);
+    prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+        prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
+            profile_);
+    if (no_state_prefetch_manager) {
+      no_state_prefetch_handle_ =
+          no_state_prefetch_manager->StartPrefetchingFromOmnibox(
+              url, session_storage_namespace, size);
+    }
+    if (old_no_state_prefetch_handle)
+      old_no_state_prefetch_handle->OnCancel();
   }
-  if (old_no_state_prefetch_handle)
-    old_no_state_prefetch_handle->OnCancel();
 }
 
 AutocompleteActionPredictor::Action
@@ -292,6 +332,10 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
         "AutocompleteActionPredictor.NoStatePrefetchStatus",
         NoStatePrefetchStatus::kNotStarted);
   }
+
+  // TODO(https://crbug.com/1166085): Find a proper way to reset
+  // prerender_handle_ here.
+
   UpdateDatabaseFromTransitionalMatches(opened_url);
 }
 

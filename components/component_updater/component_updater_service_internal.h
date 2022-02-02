@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "components/component_updater/update_scheduler.h"
@@ -40,7 +39,8 @@ class CrxUpdateService : public ComponentUpdateService,
  public:
   CrxUpdateService(scoped_refptr<Configurator> config,
                    std::unique_ptr<UpdateScheduler> scheduler,
-                   scoped_refptr<UpdateClient> update_client);
+                   scoped_refptr<UpdateClient> update_client,
+                   const std::string& brand);
 
   CrxUpdateService(const CrxUpdateService&) = delete;
   CrxUpdateService& operator=(const CrxUpdateService&) = delete;
@@ -50,7 +50,7 @@ class CrxUpdateService : public ComponentUpdateService,
   // Overrides for ComponentUpdateService.
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  bool RegisterComponent(const CrxComponent& component) override;
+  bool RegisterComponent(const ComponentRegistration& component) override;
   bool UnregisterComponent(const std::string& id) override;
   std::vector<std::string> GetComponentIDs() const override;
   std::vector<ComponentInfo> GetComponents() const override;
@@ -79,9 +79,12 @@ class CrxUpdateService : public ComponentUpdateService,
                               Callback callback);
   bool OnDemandUpdateWithCooldown(const std::string& id);
 
-  bool DoUnregisterComponent(const CrxComponent& component);
+  bool DoUnregisterComponent(const std::string& id);
 
-  absl::optional<CrxComponent> GetComponent(const std::string& id) const;
+  CrxComponent ToCrxComponent(const ComponentRegistration& component) const;
+
+  absl::optional<ComponentRegistration> GetComponent(
+      const std::string& id) const;
 
   const CrxUpdateItem* GetComponentState(const std::string& id) const;
 
@@ -98,8 +101,10 @@ class CrxUpdateService : public ComponentUpdateService,
 
   scoped_refptr<UpdateClient> update_client_;
 
+  std::string brand_;
+
   // A collection of every registered component.
-  using Components = base::flat_map<std::string, CrxComponent>;
+  using Components = base::flat_map<std::string, ComponentRegistration>;
   Components components_;
 
   // Maintains the order in which components have been registered. The position

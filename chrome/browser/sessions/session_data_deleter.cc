@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
@@ -122,13 +121,8 @@ void SessionDataDeleterInternal::Run(
         // Fire and forget. Session cookies will be cleaned up on start as well.
         // (SQLitePersistentCookieStore::Backend::DeleteSessionCookiesOnStartup)
         base::DoNothing());
-
-    // If the permissions policy feature is enabled, delete the client hint
-    // preferences
-    if (base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints)) {
-      host_content_settings_map->ClearSettingsForOneType(
-          ContentSettingsType::CLIENT_HINTS);
-    }
+    host_content_settings_map->ClearSettingsForOneType(
+        ContentSettingsType::CLIENT_HINTS);
   }
 
   if (!storage_policy_.get() || !storage_policy_->HasSessionOnlyOrigins())
@@ -160,13 +154,12 @@ void SessionDataDeleter::DeleteSessionOnlyData(bool skip_session_cookies,
   // called during shutdown.
   DCHECK(!browser_shutdown::IsTryingToQuit());
 
-  SessionStartupPref::Type startup_pref_type =
+  SessionStartupPref startup_pref =
       StartupBrowserCreator::GetSessionStartupPref(
-          *base::CommandLine::ForCurrentProcess(), profile_)
-          .type;
+          *base::CommandLine::ForCurrentProcess(), profile_);
 
   bool delete_only_by_session_only_policy =
-      skip_session_cookies || startup_pref_type == SessionStartupPref::LAST;
+      skip_session_cookies || startup_pref.ShouldRestoreLastSession();
 
   auto deleter = base::MakeRefCounted<SessionDataDeleterInternal>(
       profile_, delete_only_by_session_only_policy, std::move(callback));

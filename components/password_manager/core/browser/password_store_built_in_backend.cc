@@ -262,6 +262,10 @@ bool PasswordStoreBuiltInBackend::DeleteAndRecreateDatabaseFile() {
   return login_db_ && login_db_->DeleteAndRecreateDatabaseFile();
 }
 
+base::WeakPtr<PasswordStoreBackend> PasswordStoreBuiltInBackend::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void PasswordStoreBuiltInBackend::InitBackend(
     RemoteChangesReceived remote_form_changes_received,
     base::RepeatingClosure sync_enabled_or_disabled_cb,
@@ -277,7 +281,8 @@ void PasswordStoreBuiltInBackend::InitBackend(
       std::move(completion));
 }
 
-void PasswordStoreBuiltInBackend::GetAllLoginsAsync(LoginsReply callback) {
+void PasswordStoreBuiltInBackend::GetAllLoginsAsync(
+    LoginsOrErrorReply callback) {
   DCHECK(!was_shutdown_);
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   background_task_runner_->PostTaskAndReplyWithResult(
@@ -288,7 +293,7 @@ void PasswordStoreBuiltInBackend::GetAllLoginsAsync(LoginsReply callback) {
 }
 
 void PasswordStoreBuiltInBackend::GetAutofillableLoginsAsync(
-    LoginsReply callback) {
+    LoginsOrErrorReply callback) {
   DCHECK(!was_shutdown_);
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   background_task_runner_->PostTaskAndReplyWithResult(
@@ -434,17 +439,6 @@ PasswordStoreBuiltInBackend::CreateSyncControllerDelegate() {
           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PasswordStoreBuiltInBackend::GetSyncStatus(
-    base::OnceCallback<void(bool)> callback) {
-  DCHECK(!was_shutdown_);
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  background_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&PasswordStoreBuiltInBackend::IsSyncEnabled,
-                     base::Unretained(this)),  // Safe until `Shutdown()`.
-      std::move(callback));
-}
-
 void PasswordStoreBuiltInBackend::AddSiteStats(const InteractionsStats& stats) {
   DCHECK(!was_shutdown_);
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
@@ -465,7 +459,7 @@ void PasswordStoreBuiltInBackend::RemoveSiteStats(const GURL& origin_domain) {
 
 void PasswordStoreBuiltInBackend::GetSiteStats(
     const GURL& origin_domain,
-    PasswordStoreConsumer* consumer) {
+    base::WeakPtr<PasswordStoreConsumer> consumer) {
   DCHECK(!was_shutdown_);
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
@@ -473,8 +467,7 @@ void PasswordStoreBuiltInBackend::GetSiteStats(
       base::BindOnce(&PasswordStoreBuiltInBackend::GetSiteStatsInternal,
                      base::Unretained(this),  // Safe until `Shutdown()`.
                      origin_domain),
-      base::BindOnce(&PasswordStoreConsumer::OnGetSiteStatistics,
-                     consumer->GetWeakPtr()));
+      base::BindOnce(&PasswordStoreConsumer::OnGetSiteStatistics, consumer));
 }
 
 void PasswordStoreBuiltInBackend::RemoveStatisticsByOriginAndTime(
@@ -503,15 +496,14 @@ void PasswordStoreBuiltInBackend::AddFieldInfo(const FieldInfo& field_info) {
 }
 
 void PasswordStoreBuiltInBackend::GetAllFieldInfo(
-    PasswordStoreConsumer* consumer) {
+    base::WeakPtr<PasswordStoreConsumer> consumer) {
   DCHECK(!was_shutdown_);
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::BindOnce(&PasswordStoreBuiltInBackend::GetAllFieldInfoInternal,
                      base::Unretained(this)),  // Safe until `Shutdown()`.
-      base::BindOnce(&PasswordStoreConsumer::OnGetAllFieldInfo,
-                     consumer->GetWeakPtr()));
+      base::BindOnce(&PasswordStoreConsumer::OnGetAllFieldInfo, consumer));
 }
 
 void PasswordStoreBuiltInBackend::RemoveFieldInfoByTime(
@@ -747,13 +739,6 @@ void PasswordStoreBuiltInBackend::RemoveFieldInfoByTimeInternal(
     base::Time remove_end) {
   if (login_db_)
     login_db_->field_info_table().RemoveRowsByTime(remove_begin, remove_end);
-}
-
-bool PasswordStoreBuiltInBackend::IsSyncEnabled() const {
-  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  if (!sync_bridge_ || !sync_bridge_->change_processor())
-    return false;
-  return sync_bridge_->change_processor()->IsTrackingMetadata();
 }
 
 }  // namespace password_manager

@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "base/containers/lru_cache.h"
-#include "base/macros.h"
 #include "base/numerics/checked_math.h"
 #include "base/task/single_thread_task_runner.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/content_change_type.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/core/typed_arrays/nadc_typed_array_view.h"
 #include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
@@ -87,7 +87,6 @@ class HTMLImageElement;
 class HTMLVideoElement;
 class ImageBitmap;
 class ImageData;
-class IntSize;
 class OESVertexArrayObject;
 class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 class VideoFrame;
@@ -145,6 +144,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   ~WebGLRenderingContextBase() override;
 
+  NoAllocDirectCallHost* AsNoAllocDirectCallHost() final;
+
   HTMLCanvasElement* canvas() const {
     if (Host()->IsOffscreenCanvas())
       return nullptr;
@@ -173,6 +174,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   int drawingBufferWidth() const;
   int drawingBufferHeight() const;
+  GLenum drawingBufferFormat() const;
 
   void activeTexture(GLenum texture);
   void attachShader(WebGLProgram*, WebGLShader*);
@@ -488,52 +490,52 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                      ExceptionState&);
 
   void uniform1f(const WebGLUniformLocation*, GLfloat x);
-  void uniform1fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
+  void uniform1fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
   void uniform1fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform1i(const WebGLUniformLocation*, GLint x);
-  void uniform1iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
+  void uniform1iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
   void uniform1iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniform2f(const WebGLUniformLocation*, GLfloat x, GLfloat y);
-  void uniform2fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
+  void uniform2fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
   void uniform2fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform2i(const WebGLUniformLocation*, GLint x, GLint y);
-  void uniform2iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
+  void uniform2iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
   void uniform2iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniform3f(const WebGLUniformLocation*, GLfloat x, GLfloat y, GLfloat z);
-  void uniform3fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
+  void uniform3fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
   void uniform3fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform3i(const WebGLUniformLocation*, GLint x, GLint y, GLint z);
-  void uniform3iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
+  void uniform3iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
   void uniform3iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniform4f(const WebGLUniformLocation*,
                  GLfloat x,
                  GLfloat y,
                  GLfloat z,
                  GLfloat w);
-  void uniform4fv(const WebGLUniformLocation*, const FlexibleFloat32Array&);
+  void uniform4fv(const WebGLUniformLocation*, NADCTypedArrayView<GLfloat>);
   void uniform4fv(const WebGLUniformLocation*, Vector<GLfloat>&);
   void uniform4i(const WebGLUniformLocation*,
                  GLint x,
                  GLint y,
                  GLint z,
                  GLint w);
-  void uniform4iv(const WebGLUniformLocation*, const FlexibleInt32Array&);
+  void uniform4iv(const WebGLUniformLocation*, NADCTypedArrayView<GLint>);
   void uniform4iv(const WebGLUniformLocation*, Vector<GLint>&);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        MaybeShared<DOMFloat32Array> value);
+                        NADCTypedArrayView<GLfloat> value);
   void uniformMatrix2fv(const WebGLUniformLocation*,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
   void uniformMatrix3fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        MaybeShared<DOMFloat32Array> value);
+                        NADCTypedArrayView<GLfloat> value);
   void uniformMatrix3fv(const WebGLUniformLocation*,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
   void uniformMatrix4fv(const WebGLUniformLocation*,
                         GLboolean transpose,
-                        MaybeShared<DOMFloat32Array> value);
+                        NADCTypedArrayView<GLfloat> value);
   void uniformMatrix4fv(const WebGLUniformLocation*,
                         GLboolean transpose,
                         Vector<GLfloat>& value);
@@ -542,16 +544,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void validateProgram(WebGLProgram*);
 
   void vertexAttrib1f(GLuint index, GLfloat x);
-  void vertexAttrib1fv(GLuint index, MaybeShared<const DOMFloat32Array> values);
+  void vertexAttrib1fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
   void vertexAttrib1fv(GLuint index, const Vector<GLfloat>& values);
   void vertexAttrib2f(GLuint index, GLfloat x, GLfloat y);
-  void vertexAttrib2fv(GLuint index, MaybeShared<const DOMFloat32Array> values);
+  void vertexAttrib2fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
   void vertexAttrib2fv(GLuint index, const Vector<GLfloat>& values);
   void vertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z);
-  void vertexAttrib3fv(GLuint index, MaybeShared<const DOMFloat32Array> values);
+  void vertexAttrib3fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
   void vertexAttrib3fv(GLuint index, const Vector<GLfloat>& values);
   void vertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-  void vertexAttrib4fv(GLuint index, MaybeShared<const DOMFloat32Array> values);
+  void vertexAttrib4fv(GLuint index, NADCTypedArrayView<const GLfloat> values);
   void vertexAttrib4fv(GLuint index, const Vector<GLfloat>& values);
   void vertexAttribPointer(GLuint index,
                            GLint size,
@@ -614,7 +616,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // Returns the drawing buffer size after it is, probably, has scaled down
   // to the maximum supported canvas size.
-  IntSize DrawingBufferSize() const override;
+  gfx::Size DrawingBufferSize() const override;
   DrawingBuffer* GetDrawingBuffer() const;
 
   class TextureUnitState {
@@ -641,6 +643,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void SetFilterQuality(cc::PaintFlags::FilterQuality) override;
 
   V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
+
+  void drawingBufferStorage(GLenum sizedformat, GLsizei width, GLsizei height);
 
   void commit();
 
@@ -851,7 +855,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     enum class CacheType { kImage, kVideo };
     LRUCanvasResourceProviderCache(wtf_size_t capacity, CacheType type);
     // The pointer returned is owned by the image buffer map.
-    CanvasResourceProvider* GetCanvasResourceProvider(const IntSize&);
+    CanvasResourceProvider* GetCanvasResourceProvider(const gfx::Size&);
 
    private:
     void BubbleToFront(wtf_size_t idx);
@@ -1156,19 +1160,19 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     WebGLImageConversion::ImageHtmlDomSource,
                     bool flip_y,
                     bool premultiply_alpha,
-                    const IntRect&,
+                    const absl::optional<gfx::Rect>&,
                     GLsizei depth,
                     GLint unpack_image_height);
   template <typename T>
-  IntRect GetTextureSourceSize(T* texture_source) {
-    return IntRect(0, 0, texture_source->width(), texture_source->height());
+  gfx::Rect GetTextureSourceSize(T* texture_source) {
+    return gfx::Rect(0, 0, texture_source->width(), texture_source->height());
   }
 
   template <typename T>
   bool ValidateTexImageSubRectangle(const char* function_name,
                                     TexImageFunctionID function_id,
                                     T* image,
-                                    const IntRect& sub_rect,
+                                    const gfx::Rect& sub_rect,
                                     GLsizei depth,
                                     GLint unpack_image_height,
                                     bool* selecting_sub_rectangle) {
@@ -1195,7 +1199,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
         << ") @ (" << sub_rect.x() << ", " << sub_rect.y() << "), image = ("
         << image_width << " x " << image_height << ")";
 
-    if (!sub_rect.IsValid() || sub_rect.x() < 0 || sub_rect.y() < 0 ||
+    if (sub_rect.x() < 0 || sub_rect.y() < 0 ||
         sub_rect.right() > image_width || sub_rect.bottom() > image_height ||
         sub_rect.width() < 0 || sub_rect.height() < 0) {
       SynthesizeGLError(GL_INVALID_OPERATION, function_name,
@@ -1506,7 +1510,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool ValidateUniformMatrixParameters(const char* function_name,
                                        const WebGLUniformLocation*,
                                        GLboolean transpose,
-                                       DOMFloat32Array*,
+                                       const NADCTypedArrayView<GLfloat>&,
                                        GLsizei mod,
                                        GLuint src_offset,
                                        size_t src_length);
@@ -1519,14 +1523,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                        GLuint src_offset,
                                        GLuint src_length);
 
-  template <typename WTFTypedArray>
-  bool ValidateUniformParameters(
-      const char* function_name,
-      const WebGLUniformLocation* location,
-      const TypedFlexibleArrayBufferView<WTFTypedArray>& v,
-      GLsizei required_min_size,
-      GLuint src_offset,
-      size_t src_length) {
+  template <typename T>
+  bool ValidateUniformParameters(const char* function_name,
+                                 const WebGLUniformLocation* location,
+                                 const NADCTypedArrayView<T>& v,
+                                 GLsizei required_min_size,
+                                 GLuint src_offset,
+                                 size_t src_length) {
     GLuint length;
     if (!base::CheckedNumeric<GLuint>(src_length).AssignIfValid(&length)) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name,
@@ -1534,17 +1537,16 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       return false;
     }
     GLuint array_length;
-    if (!base::CheckedNumeric<GLuint>(v.length())
-             .AssignIfValid(&array_length)) {
+    if (!base::CheckedNumeric<GLuint>(v.Size()).AssignIfValid(&array_length)) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "array is too big");
       return false;
     }
-    if (!v.DataMaybeOnStack()) {
+    if (v.IsEmpty()) {
       SynthesizeGLError(GL_INVALID_VALUE, function_name, "no array");
       return false;
     }
     return ValidateUniformMatrixParameters(
-        function_name, location, false, v.DataMaybeOnStack(), array_length,
+        function_name, location, false, v.Data(), array_length,
         required_min_size, src_offset, length);
   }
 
@@ -1657,7 +1659,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void EnableOrDisable(GLenum capability, bool enable);
 
   // Clamp the width and height to GL_MAX_VIEWPORT_DIMS.
-  IntSize ClampedCanvasSize() const;
+  gfx::Size ClampedCanvasSize() const;
 
   // First time called, if EXT_draw_buffers is supported, query the value;
   // otherwise return 0.  Later, return the cached value.
@@ -1729,7 +1731,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                GLint,
                                GLint,
                                ImageData*,
-                               const IntRect&,
+                               const gfx::Rect&,
                                GLint);
 
   void TexImageHelperHTMLImageElement(const SecurityOrigin*,
@@ -1743,7 +1745,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLint,
                                       GLint,
                                       HTMLImageElement*,
-                                      const IntRect&,
+                                      const absl::optional<gfx::Rect>&,
                                       GLsizei,
                                       GLint,
                                       ExceptionState&);
@@ -1759,7 +1761,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                                 GLint,
                                                 GLint,
                                                 CanvasRenderingContextHost*,
-                                                const IntRect&,
+                                                const gfx::Rect&,
                                                 GLsizei,
                                                 GLint,
                                                 ExceptionState&);
@@ -1775,7 +1777,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       GLint,
                                       GLint,
                                       HTMLVideoElement*,
-                                      const IntRect&,
+                                      const absl::optional<gfx::Rect>&,
                                       GLsizei,
                                       GLint,
                                       ExceptionState&);
@@ -1791,7 +1793,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                 GLint,
                                 GLint,
                                 VideoFrame*,
-                                const IntRect&,
+                                const absl::optional<gfx::Rect>&,
                                 GLsizei,
                                 GLint,
                                 ExceptionState&);
@@ -1806,14 +1808,13 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                  GLint,
                                  GLint,
                                  ImageBitmap*,
-                                 const IntRect&,
+                                 const gfx::Rect&,
                                  GLsizei,
                                  GLint,
                                  ExceptionState&);
   static const char* GetTexImageFunctionName(TexImageFunctionID);
-  IntRect SentinelEmptyRect();
-  IntRect SafeGetImageSize(Image*);
-  IntRect GetImageDataSize(ImageData*);
+  gfx::Rect SafeGetImageSize(Image*);
+  gfx::Rect GetImageDataSize(ImageData*);
 
   // Helper implementing readPixels for WebGL 1.0 and 2.0.
   void ReadPixelsHelper(GLint x,
@@ -1853,7 +1854,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       GLint xoffset,
       GLint yoffset,
       GLint zoffset,
-      const IntRect& source_image_rect,
+      const absl::optional<gfx::Rect>& source_image_rect,
       GLsizei depth,
       GLint unpack_image_height,
       WebGLTexture* texture,
@@ -1872,7 +1873,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                       GLint,
                       AcceleratedStaticBitmapImage*,
                       WebGLRenderingContextBase*,
-                      const IntRect& source_sub_rectangle,
+                      const gfx::Rect& source_sub_rectangle,
                       bool premultiply_alpha,
                       bool flip_y);
   bool CanUseTexImageViaGPU(GLenum format, GLenum type);

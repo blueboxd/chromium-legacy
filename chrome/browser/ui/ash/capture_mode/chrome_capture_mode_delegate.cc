@@ -136,15 +136,26 @@ bool ChromeCaptureModeDelegate::IsCaptureModeInitRestrictedByDlp() const {
   return policy::DlpContentManager::Get()->IsCaptureModeInitRestricted();
 }
 
-bool ChromeCaptureModeDelegate::IsCaptureAllowedByDlp(
+void ChromeCaptureModeDelegate::CheckCaptureModeInitRestrictionByDlp(
+    ash::OnCaptureModeDlpRestrictionChecked callback) {
+  policy::DlpContentManager::Get()->CheckCaptureModeInitRestriction(
+      std::move(callback));
+}
+
+void ChromeCaptureModeDelegate::CheckCaptureOperationRestrictionByDlp(
     const aura::Window* window,
     const gfx::Rect& bounds,
-    bool for_video) const {
-  policy::DlpContentManager* dlp_content_manager =
-      policy::DlpContentManager::Get();
+    ash::OnCaptureModeDlpRestrictionChecked callback) {
   const ScreenshotArea area = ConvertToScreenshotArea(window, bounds);
-  return for_video ? !dlp_content_manager->IsVideoCaptureRestricted(area)
-                   : !dlp_content_manager->IsScreenshotRestricted(area);
+  policy::DlpContentManager::Get()->CheckScreenshotRestriction(
+      area, std::move(callback));
+}
+
+bool ChromeCaptureModeDelegate::IsCaptureAllowedByDlp(
+    const aura::Window* window,
+    const gfx::Rect& bounds) const {
+  return !policy::DlpContentManager::Get()->IsScreenshotRestricted(
+      ConvertToScreenshotArea(window, bounds));
 }
 
 bool ChromeCaptureModeDelegate::IsCaptureAllowedByPolicy() const {

@@ -13,13 +13,13 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/style_util.h"
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/ranges/algorithm.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -60,33 +60,22 @@ views::BoxLayout* CreateAndInitBoxLayoutForView(views::View* view) {
 }
 
 void SetInkDropForButton(views::Button* button) {
-  auto* ink_drop = views::InkDrop::Get(button);
-  ink_drop->SetMode(views::InkDropHost::InkDropMode::ON);
-  button->SetHasInkDropActionOnClick(true);
-  ink_drop->SetVisibleOpacity(capture_mode::kInkDropVisibleOpacity);
-  views::InkDrop::UseInkDropForFloodFillRipple(ink_drop,
-                                               /*highlight_on_hover=*/false,
-                                               /*highlight_on_focus=*/false);
-  ink_drop->SetCreateHighlightCallback(base::BindRepeating(
-      [](views::Button* host) {
-        const AshColorProvider::RippleAttributes ripple_attributes =
-            AshColorProvider::Get()->GetRippleAttributes();
-        auto highlight = std::make_unique<views::InkDropHighlight>(
-            gfx::SizeF(host->size()), ripple_attributes.base_color);
-        highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
-        return highlight;
-      },
-      button));
-  ink_drop->SetBaseColor(capture_mode::kInkDropBaseColor);
+  StyleUtil::SetUpInkDropForButton(button, gfx::Insets(),
+                                   /*highlight_on_hover=*/false,
+                                   /*highlight_on_focus=*/false);
   views::InstallRectHighlightPathGenerator(button);
 }
+
+}  // namespace
 
 // -----------------------------------------------------------------------------
 // CaptureModeMenuHeader:
 
 // The header of the menu group, which has an icon and a text label. Not user
 // interactable.
-class CaptureModeMenuHeader : public views::View {
+class CaptureModeMenuHeader
+    : public views::View,
+      public CaptureModeSessionFocusCycler::HighlightableView {
  public:
   METADATA_HEADER(CaptureModeMenuHeader);
 
@@ -110,6 +99,20 @@ class CaptureModeMenuHeader : public views::View {
   CaptureModeMenuHeader& operator=(const CaptureModeMenuHeader&) = delete;
   ~CaptureModeMenuHeader() override = default;
 
+  const std::u16string& GetHeaderLabel() const {
+    return label_view_->GetText();
+  }
+
+  // views::View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    View::GetAccessibleNodeData(node_data);
+    node_data->SetName(GetHeaderLabel());
+    node_data->role = ax::mojom::Role::kHeader;
+  }
+
+  // CaptureModeSessionFocusCycler::HighlightableView:
+  views::View* GetView() override { return this; }
+
  private:
   views::ImageView* icon_view_;
   views::Label* label_view_;
@@ -117,8 +120,6 @@ class CaptureModeMenuHeader : public views::View {
 
 BEGIN_METADATA(CaptureModeMenuHeader, views::View)
 END_METADATA
-
-}  // namespace
 
 // -----------------------------------------------------------------------------
 // CaptureModeMenuItem:
@@ -231,6 +232,15 @@ class CaptureModeOption
                                      : enabled_color);
   }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    Button::GetAccessibleNodeData(node_data);
+    node_data->SetName(GetOptionLabel());
+    node_data->role = ax::mojom::Role::kRadioButton;
+    node_data->SetCheckedState(IsOptionChecked()
+                                   ? ax::mojom::CheckedState::kTrue
+                                   : ax::mojom::CheckedState::kFalse);
+  }
+
   // CaptureModeSessionFocusCycler::HighlightableView:
   views::View* GetView() override { return this; }
 
@@ -249,9 +259,10 @@ END_METADATA
 CaptureModeMenuGroup::CaptureModeMenuGroup(Delegate* delegate,
                                            const gfx::VectorIcon& header_icon,
                                            std::u16string header_label)
-    : delegate_(delegate) {
-  AddChildView(std::make_unique<CaptureModeMenuHeader>(
-      header_icon, std::move(header_label)));
+    : delegate_(delegate),
+      menu_header_(AddChildView(
+          std::make_unique<CaptureModeMenuHeader>(header_icon,
+                                                  std::move(header_label)))) {
   options_container_ = AddChildView(std::make_unique<views::View>());
   options_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -316,6 +327,7 @@ bool CaptureModeMenuGroup::IsOptionChecked(int option_id) const {
 void CaptureModeMenuGroup::AppendHighlightableItems(
     std::vector<CaptureModeSessionFocusCycler::HighlightableView*>&
         highlightable_items) {
+  highlightable_items.push_back(menu_header_);
   for (auto* option : options_) {
     if (option->GetEnabled())
       highlightable_items.push_back(option);

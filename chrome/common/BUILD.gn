@@ -136,8 +136,6 @@ static_library("common") {
     "search/ntp_logging_events.h",
     "secure_origin_allowlist.cc",
     "secure_origin_allowlist.h",
-    "ssl_insecure_content.cc",
-    "ssl_insecure_content.h",
     "url_constants.cc",
     "url_constants.h",
     "webui_url_constants.cc",
@@ -264,6 +262,8 @@ static_library("common") {
     sources += [
       "extensions/api/commands/commands_handler.cc",
       "extensions/api/commands/commands_handler.h",
+      "extensions/api/file_browser_handlers/file_browser_handler.cc",
+      "extensions/api/file_browser_handlers/file_browser_handler.h",
       "extensions/api/notifications/notification_style.cc",
       "extensions/api/notifications/notification_style.h",
       "extensions/api/omnibox/omnibox_handler.cc",
@@ -350,8 +350,6 @@ static_library("common") {
   if (is_chromeos_ash) {
     assert(enable_extensions)
     sources += [
-      "extensions/api/file_browser_handlers/file_browser_handler.cc",
-      "extensions/api/file_browser_handlers/file_browser_handler.h",
       "extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.cc",
       "extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h",
       "extensions/api/input_ime/input_components_handler.cc",
@@ -713,7 +711,6 @@ mojom("mojo_bindings") {
     "cache_stats_recorder.mojom",
     "chrome_render_frame.mojom",
     "draggable_regions.mojom",
-    "lite_video_service.mojom",
     "media/webrtc_logging.mojom",
     "metrics.mojom",
     "net/net_error_page_support.mojom",
@@ -722,7 +719,6 @@ mojom("mojo_bindings") {
     "network_easter_egg.mojom",
     "open_search_description_document_handler.mojom",
     "plugin.mojom",
-    "previews_resource_loading_hints.mojom",
     "renderer_configuration.mojom",
     "subresource_redirect_service.mojom",
     "sync_encryption_keys_extension.mojom",

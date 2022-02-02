@@ -9,6 +9,9 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
+#include "ash/components/settings/cros_settings_provider.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
@@ -16,7 +19,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
@@ -29,7 +31,9 @@
 #include "chrome/browser/ash/login/reporting/login_logout_reporter.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/core/policy_pref_names.h"
+#include "chrome/browser/ash/policy/networking/euicc_status_uploader.h"
 #include "chrome/browser/ash/policy/remote_commands/device_commands_factory_ash.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_manager.h"
 #include "chrome/browser/ash/policy/reporting/user_added_removed/user_added_removed_reporter.h"
 #include "chrome/browser/ash/policy/rsu/lookup_key_uploader.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
@@ -41,8 +45,6 @@
 #include "chrome/browser/ash/policy/uploading/system_log_uploader.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/settings/cros_settings_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -126,6 +128,7 @@ void DeviceCloudPolicyManagerAsh::RemoveDeviceCloudPolicyManagerObserver(
 
 // Keep clean up order as the reversed creation order.
 void DeviceCloudPolicyManagerAsh::Shutdown() {
+  metric_reporting_manager_.reset();
   login_logout_reporter_.reset();
   user_added_removed_reporter_.reset();
   heartbeat_scheduler_.reset();
@@ -213,6 +216,10 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
   lookup_key_uploader_ = std::make_unique<LookupKeyUploader>(
       device_store(), g_browser_process->local_state(),
       enrollment_certificate_uploader_.get());
+  if (ash::features::IsESimPolicyEnabled()) {
+    euicc_status_uploader_ = std::make_unique<EuiccStatusUploader>(
+        client(), g_browser_process->local_state());
+  }
 
   // Don't create a MachineCertificateUploader or start the
   // AttestationPolicyObserver if machine cert requests are disabled.
@@ -251,6 +258,8 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
         managed_session_service_.get());
     user_added_removed_reporter_ =
         std::make_unique<::reporting::UserAddedRemovedReporter>();
+    metric_reporting_manager_ = reporting::MetricReportingManager::Create(
+        managed_session_service_.get());
   }
 
   NotifyConnected();
@@ -305,7 +314,7 @@ void DeviceCloudPolicyManagerAsh::CreateStatusUploader() {
   bool granular_reporting_enabled;
   ash::CrosSettings* settings = ash::CrosSettings::Get();
 
-  if (!settings->GetBoolean(chromeos::kEnableDeviceGranularReporting,
+  if (!settings->GetBoolean(ash::kEnableDeviceGranularReporting,
                             &granular_reporting_enabled)) {
     granular_reporting_enabled = true;
   }

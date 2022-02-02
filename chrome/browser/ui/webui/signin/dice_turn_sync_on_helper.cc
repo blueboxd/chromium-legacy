@@ -11,7 +11,6 @@
 #include "base/check.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/no_destructor.h"
@@ -19,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -32,8 +32,8 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
@@ -57,6 +57,7 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/dice_signed_in_profile_creator.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #endif
 
 namespace {
@@ -256,6 +257,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
                      weak_pointer_factory_.GetWeakPtr()));
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
@@ -273,6 +275,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
           signin_aborted_mode,
           std::make_unique<DiceTurnSyncOnHelperDelegateImpl>(browser),
           base::OnceClosure()) {}
+#endif
 
 DiceTurnSyncOnHelper::~DiceTurnSyncOnHelper() {
   DCHECK_EQ(this, GetCurrentDiceTurnSyncOnHelper(profile_));
@@ -624,20 +627,30 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
       break;
     }
     case LoginUIService::ABORT_SYNC: {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // TODO(crbug.com/1263553): Support truly disabling sync on lacros. Before
+      // this is done, all data types get disabled, instead. This is only
+      // exposed to tests as the "No" button is hidden until the full support is
+      // implemented.
+      syncer::SyncService* sync_service = GetSyncService();
+      if (sync_service) {
+        sync_service->GetUserSettings()->SetSelectedTypes(
+            /*sync_everything=*/false,
+            /*types=*/{});
+        sync_service->GetUserSettings()->SetFirstSetupComplete(
+            syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+      }
+      break;
+#else
       auto* primary_account_mutator =
           identity_manager_->GetPrimaryAccountMutator();
       DCHECK(primary_account_mutator);
       primary_account_mutator->RevokeSyncConsent(
           signin_metrics::ABORT_SIGNIN,
           signin_metrics::SignoutDelete::kIgnoreMetric);
-#else
-      // TODO(crbug.com/1248047): We should support this flow by disabling all
-      // data types instead of revoking the sync consent.
-      NOTIMPLEMENTED() << "Not syncing is not yet supported on lacros.";
-#endif
       AbortAndDelete();
       return;
+#endif
     }
     // No explicit action when the ui gets closed. If the embedder wants the
     // helper to abort sync in this case, it must redirect this action to
@@ -708,6 +721,7 @@ void DiceTurnSyncOnHelper::AbortAndDelete() {
             kDiceTurnOnSyncHelper_Abort);
   }
 #else
+  // TODO(https://crbug.com/1260291): Implement on Lacros.
   NOTIMPLEMENTED()
       << "Profiles without accounts are not yet supported on lacros.";
 #endif

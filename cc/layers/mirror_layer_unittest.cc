@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/containers/contains.h"
 #include "cc/animation/animation_host.h"
 #include "cc/layers/mirror_layer.h"
 #include "cc/layers/mirror_layer_impl.h"
@@ -26,7 +25,9 @@ class MirrorLayerTest : public testing::Test {
   // Synchronizes |layer_tree_host_| and |host_impl_| and pushes surface ids.
   void SynchronizeTrees() {
     TreeSynchronizer::PushLayerProperties(
-        layer_tree_host_->pending_commit_state(), host_impl_.pending_tree());
+        *layer_tree_host_->GetPendingCommitState(),
+        layer_tree_host_->GetThreadUnsafeCommitState(),
+        host_impl_.pending_tree());
   }
 
  protected:
@@ -89,7 +90,7 @@ TEST_F(MirrorLayerTest, MirrorCount) {
 
   layer_tree_host_->WillCommit(/*completion_event=*/nullptr,
                                /*has_updates=*/true);
-  layer_tree_host_->CommitComplete();
+  layer_tree_host_->CommitComplete({base::TimeTicks(), base::TimeTicks::Now()});
   layer_tree_host_->property_trees()->needs_rebuild = false;
   EXPECT_EQ(0, mirrored->mirror_count());
 
@@ -98,9 +99,8 @@ TEST_F(MirrorLayerTest, MirrorCount) {
   EXPECT_EQ(1, mirrored->mirror_count());
   EXPECT_EQ(mirrored.get(), mirror1->mirrored_layer());
   EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(
-      layer_tree_host_->pending_commit_state()
-          ->layers_that_should_push_properties.contains(mirrored.get()));
+  EXPECT_TRUE(layer_tree_host_->GetThreadUnsafeCommitState()
+                  .layers_that_should_push_properties.contains(mirrored.get()));
   layer_tree_host_->property_trees()->needs_rebuild = false;
 
   // Creating a second mirror layer should not trigger property trees rebuild.
@@ -108,9 +108,8 @@ TEST_F(MirrorLayerTest, MirrorCount) {
   EXPECT_EQ(2, mirrored->mirror_count());
   EXPECT_EQ(mirrored.get(), mirror2->mirrored_layer());
   EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(
-      layer_tree_host_->pending_commit_state()
-          ->layers_that_should_push_properties.contains(mirrored.get()));
+  EXPECT_TRUE(layer_tree_host_->GetThreadUnsafeCommitState()
+                  .layers_that_should_push_properties.contains(mirrored.get()));
   layer_tree_host_->property_trees()->needs_rebuild = false;
 
   // Destroying one of the mirror layers should not trigger property trees
@@ -119,8 +118,8 @@ TEST_F(MirrorLayerTest, MirrorCount) {
   mirror1 = nullptr;
   EXPECT_EQ(1, mirrored->mirror_count());
   EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_EQ(1u, layer_tree_host_->pending_commit_state()
-                    ->layers_that_should_push_properties.size());
+  EXPECT_EQ(1u, layer_tree_host_->GetThreadUnsafeCommitState()
+                    .layers_that_should_push_properties.size());
   layer_tree_host_->property_trees()->needs_rebuild = false;
 
   // Destroying the only remaining mirror layer should trigger property trees
@@ -129,9 +128,8 @@ TEST_F(MirrorLayerTest, MirrorCount) {
   mirror2 = nullptr;
   EXPECT_EQ(0, mirrored->mirror_count());
   EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(
-      layer_tree_host_->pending_commit_state()
-          ->layers_that_should_push_properties.contains(mirrored.get()));
+  EXPECT_TRUE(layer_tree_host_->GetThreadUnsafeCommitState()
+                  .layers_that_should_push_properties.contains(mirrored.get()));
   layer_tree_host_->property_trees()->needs_rebuild = false;
 
   mirrored->SetLayerTreeHost(nullptr);

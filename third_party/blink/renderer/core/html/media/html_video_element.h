@@ -33,9 +33,10 @@
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
-#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
 namespace blink {
+
+class CanvasResourceProvider;
 class ImageBitmapOptions;
 class IntersectionObserverEntry;
 class MediaCustomControlsFullscreenDetector;
@@ -66,7 +67,7 @@ class CORE_EXPORT HTMLVideoElement final
   unsigned videoWidth() const;
   unsigned videoHeight() const;
 
-  IntSize videoVisibleSize() const;
+  gfx::Size videoVisibleSize() const;
 
   bool IsDefaultIntrinsicSize() const {
     return is_default_overridden_intrinsic_size_;
@@ -89,7 +90,7 @@ class CORE_EXPORT HTMLVideoElement final
   //
   // PaintFlags is optional. If unspecified, its blend mode defaults to kSrc.
   void PaintCurrentFrame(cc::PaintCanvas*,
-                         const IntRect&,
+                         const gfx::Rect&,
                          const cc::PaintFlags*) const;
 
   bool HasAvailableVideoFrame() const;
@@ -111,12 +112,12 @@ class CORE_EXPORT HTMLVideoElement final
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(
       SourceImageStatus*,
-      const FloatSize&,
+      const gfx::SizeF&,
       const AlphaDisposition alpha_disposition = kPremultiplyAlpha) override;
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin() const override;
-  FloatSize ElementSize(const FloatSize&,
-                        const RespectImageOrientationEnum) const override;
+  gfx::SizeF ElementSize(const gfx::SizeF&,
+                         const RespectImageOrientationEnum) const override;
   const KURL& SourceURL() const override { return currentSrc(); }
   bool IsHTMLVideoElement() const override { return true; }
   // Video elements currently always go through RAM when used as a canvas image
@@ -124,9 +125,9 @@ class CORE_EXPORT HTMLVideoElement final
   bool IsAccelerated() const override { return false; }
 
   // ImageBitmapSource implementation
-  IntSize BitmapSourceSize() const override;
+  gfx::Size BitmapSourceSize() const override;
   ScriptPromise CreateImageBitmap(ScriptState*,
-                                  absl::optional<IntRect> crop_rect,
+                                  absl::optional<gfx::Rect> crop_rect,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 

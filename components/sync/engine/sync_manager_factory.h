@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace network {
 class NetworkConnectionTracker;
@@ -33,7 +33,7 @@ class SyncManagerFactory {
       const std::string& name);
 
  private:
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker> network_connection_tracker_;
 };
 
 }  // namespace syncer

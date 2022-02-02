@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/loader/navigation_url_loader_impl.h"
+#include "base/memory/raw_ptr.h"
+#include "build/build_config.h"
 
 #include <memory>
 #include <string>
@@ -130,12 +132,12 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
   }
 
  private:
-  void DeleteURLLoader(network::mojom::URLLoader* url_loader) {
+  void DeleteURLLoader(network::URLLoader* url_loader) {
     DCHECK_EQ(url_loader_.get(), url_loader);
     url_loader_.reset();
   }
 
-  absl::optional<network::ResourceRequest>*
+  raw_ptr<absl::optional<network::ResourceRequest>>
       most_recent_resource_request_;  // NOT OWNED.
   network::ResourceScheduler resource_scheduler_;
   std::unique_ptr<net::URLRequestContext> context_;
@@ -526,7 +528,14 @@ TEST_F(NavigationURLLoaderImplTest, NavigationTimeoutTest) {
 
 // Like NavigationTimeoutTest but the navigation initially results in a redirect
 // before hanging, to test a slightly more complicated navigation.
-TEST_F(NavigationURLLoaderImplTest, NavigationTimeoutRedirectTest) {
+// TODO(crbug.com/1271228): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_NavigationTimeoutRedirectTest \
+  DISABLED_NavigationTimeoutRedirectTest
+#else
+#define MAYBE_NavigationTimeoutRedirectTest NavigationTimeoutRedirectTest
+#endif
+TEST_F(NavigationURLLoaderImplTest, MAYBE_NavigationTimeoutRedirectTest) {
   ASSERT_TRUE(http_test_server_.Start());
   const GURL hang_url = http_test_server_.GetURL("/hung");
   const GURL redirect_url =

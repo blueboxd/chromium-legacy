@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/omnibox/common/omnibox_features.h"
-#include "components/page_info/features.h"
+#include "components/page_info/core/features.h"
 #include "components/page_info/page_info_ui_delegate.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_manager.h"
@@ -196,8 +196,6 @@ base::span<const PageInfoUI::PermissionUIInfo> GetContentSettingsUIInfo() {
      IDS_SITE_SETTINGS_TYPE_IDLE_DETECTION_MID_SENTENCE},
 #if !defined(OS_ANDROID)
     // Page Info Permissions that are not defined in Android.
-    {ContentSettingsType::FILE_HANDLING, IDS_SITE_SETTINGS_TYPE_FILE_HANDLING,
-     IDS_SITE_SETTINGS_TYPE_FILE_HANDLING_MID_SENTENCE},
     {ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
      IDS_SITE_SETTINGS_TYPE_FILE_SYSTEM_ACCESS_WRITE,
      IDS_SITE_SETTINGS_TYPE_FILE_SYSTEM_ACCESS_WRITE_MID_SENTENCE},
@@ -338,9 +336,6 @@ std::u16string GetPermissionAskStateString(ContentSettingsType type) {
     case ContentSettingsType::IDLE_DETECTION:
       message_id = IDS_PAGE_INFO_STATE_TEXT_IDLE_DETECTION_ASK;
       break;
-    case ContentSettingsType::FILE_HANDLING:
-      message_id = IDS_PAGE_INFO_STATE_TEXT_FILE_HANDLING_ASK;
-      break;
     // Guard content settings:
     case ContentSettingsType::USB_GUARD:
       message_id = IDS_PAGE_INFO_STATE_TEXT_USB_ASK;
@@ -479,12 +474,6 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
               IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY_SHORT,
               IDS_PAGE_INFO_MIXED_CONTENT_DETAILS,
               SecurityDescriptionType::CONNECTION);
-        case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
-          return CreateSecurityDescription(
-              SecuritySummaryColor::RED,
-              IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY_SHORT,
-              IDS_PAGE_INFO_LEGACY_TLS_DETAILS,
-              SecurityDescriptionType::CONNECTION);
         default:
           // Do not show details for secure connections.
           return CreateSecurityDescription(SecuritySummaryColor::GREEN,
@@ -523,11 +512,6 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
           return CreateSecurityDescription(SecuritySummaryColor::RED,
                                            IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
                                            IDS_PAGE_INFO_MIXED_CONTENT_DETAILS,
-                                           SecurityDescriptionType::CONNECTION);
-        case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
-          return CreateSecurityDescription(SecuritySummaryColor::RED,
-                                           IDS_PAGE_INFO_MIXED_CONTENT_SUMMARY,
-                                           IDS_PAGE_INFO_LEGACY_TLS_DETAILS,
                                            SecurityDescriptionType::CONNECTION);
         default:
 
@@ -925,7 +909,6 @@ int PageInfoUI::GetConnectionIconID(PageInfo::SiteConnectionStatus status) {
       return IDR_PAGEINFO_GOOD;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
-    case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
     case PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
@@ -961,7 +944,6 @@ int PageInfoUI::GetConnectionIconColorID(
       return IDR_PAGEINFO_GOOD_COLOR;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_FORM_ACTION:
-    case PageInfo::SITE_CONNECTION_STATUS_LEGACY_TLS:
     case PageInfo::SITE_CONNECTION_STATUS_UNENCRYPTED:
       return IDR_PAGEINFO_WARNING_COLOR;
     case PageInfo::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -45,7 +45,7 @@ class FieldFiller {
   // Returns the phone number value for the given |field|. The returned value
   // might be |number|, or |phone_home_city_and_number|, or could possibly be a
   // meaningful subset |number|, if that's appropriate for the field.
-  static std::u16string GetPhoneNumberValue(
+  static std::u16string GetPhoneNumberValueForInput(
       const AutofillField& field,
       const std::u16string& number,
       const std::u16string& phone_home_city_and_number,
@@ -60,7 +60,7 @@ class FieldFiller {
  private:
   const std::string app_locale_;
   // Weak, should outlive this object. May be null.
-  AddressNormalizer* address_normalizer_;
+  raw_ptr<AddressNormalizer> address_normalizer_;
 };
 
 }  // namespace autofill

@@ -30,6 +30,7 @@
 <translation id="1189258430971676908">Mashq hududi: Pastga ochiladigan roʻyxatlar</translation>
 <translation id="1195238899008218998">Xotima</translation>
 <translation id="1197088940767939838">Apelsinrang</translation>
+<translation id="1198865190323699001">Sensorli ishoralar</translation>
 <translation id="1201402288615127009">Keyingisi</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Bundan keyin boshqa 2-darajali sarlavha mavjud emas</translation>
@@ -388,6 +389,7 @@
 <translation id="3492609944033322585">{COUNT,plural, =1{o‘ng qavs}other{# ta o‘ng qavs}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{so‘roq belgisi}other{# ta so‘roq belgisi}}</translation>
+<translation id="3505359110822747654">ChromeVox menyularini yigʻish</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{sirkumfleks belgisi}other{# ta sirkumfleks belgisi}}</translation>
 <translation id="352577523970648069">Tahrirlanadigan matn</translation>
 <translation id="3538907380453898475">dscrplst</translation>

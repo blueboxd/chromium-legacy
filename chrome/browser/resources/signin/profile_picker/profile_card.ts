@@ -18,7 +18,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 
-interface ProfileCardElement {
+export interface ProfileCardElement {
   $: {
     gaiaName: HTMLElement,
     gaiaNameTooltip: PaperTooltipElement,
@@ -29,7 +29,7 @@ interface ProfileCardElement {
 
 const ProfileCardElementBase = I18nMixin(PolymerElement);
 
-class ProfileCardElement extends ProfileCardElementBase {
+export class ProfileCardElement extends ProfileCardElementBase {
   static get is() {
     return 'profile-card';
   }
@@ -141,6 +141,12 @@ class ProfileCardElement extends ProfileCardElementBase {
     if (this.$.nameInput.invalid) {
       this.$.nameInput.value = this.profileState.localProfileName;
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'profile-card': ProfileCardElement;
   }
 }
 

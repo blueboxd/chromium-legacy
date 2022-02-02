@@ -76,35 +76,10 @@ var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js&host=webui-test';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      disabled: ['features::kSettingsLandingPageRedesign'],
-    };
-  }
 };
 
 TEST_F('CrSettingsBasicPageTest', 'All', function() {
   runMochaSuite('SettingsBasicPage');
-});
-
-var CrSettingsBasicPageRedesignTest = class extends CrSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/basic_page_test.js&host=webui-test';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: ['features::kSettingsLandingPageRedesign'],
-    };
-  }
-};
-
-TEST_F('CrSettingsBasicPageRedesignTest', 'All', function() {
-  runMochaSuite('SettingsBasicPageRedesign');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
@@ -653,7 +628,7 @@ GEN('#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 GEN('#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
-[['DefaultBrowser', 'default_browser_browsertest.js'],
+[['DefaultBrowser', 'default_browser_test.js'],
  ['ImportDataDialog', 'import_data_dialog_test.js'],
  ['SystemPage', 'system_page_tests.js'],
 ].forEach(test => registerTest(...test));

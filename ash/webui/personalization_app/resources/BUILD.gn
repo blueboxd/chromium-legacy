@@ -2,33 +2,145 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
-generate_grd("build_grd") {
-  deps = [
-    "common:preprocess",
-    "trusted:preprocess",
-    "untrusted:preprocess",
-  ]
-  input_files_base_dir = rebase_path(".", "//")
-  input_files = [ "icon_192.png" ]
-  manifest_files = [
-    "$target_gen_dir/common/manifest.json",
-    "$target_gen_dir/trusted/manifest.json",
-    "$target_gen_dir/untrusted/manifest.json",
-  ]
-  grd_prefix = "ash_personalization_app"
-  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
+assert(is_chromeos_ash)
+
+preprocess_folder = "preprocessed"
+
+# When adding a new file to personalization app, add it to one of the lists
+# below.  `static_js_files` are plain javascript files, `polymer_js_files` are
+# polymer based js files that need to be processed first,
+# `static_resource_files` are non-js files, e.g. image, html, css
+static_js_files = [
+  "common/constants.ts",
+  "common/utils.ts",
+
+  "trusted/iframe_api.ts",
+  "trusted/personalization_actions.ts",
+  "trusted/personalization_app.ts",
+  "trusted/personalization_reducers.ts",
+  "trusted/personalization_state.ts",
+  "trusted/personalization_store.ts",
+  "trusted/personalization_test_api.ts",
+  "trusted/utils.ts",
+  "trusted/wallpaper/untrusted_message_handler.js",
+  "trusted/wallpaper/wallpaper_controller.ts",
+  "trusted/wallpaper/wallpaper_interface_provider.ts",
+  "trusted/wallpaper/wallpaper_subpage.ts",
+
+  "untrusted/iframe_api.ts",
+  "untrusted/setup.ts",
+]
+
+polymer_js_files = [
+  "common/icons.js",
+  "common/styles.js",
+
+  "trusted/personalization_router_element.ts",
+  "trusted/personalization_toast_element.ts",
+  "trusted/personalization_breadcrumb_element.ts",
+  "trusted/wallpaper/google_photos_element.js",
+  "trusted/wallpaper/local_images_element.js",
+  "trusted/wallpaper/styles.ts",
+  "trusted/wallpaper/wallpaper_collections_element.js",
+  "trusted/wallpaper/wallpaper_error_element.ts",
+  "trusted/wallpaper/wallpaper_fullscreen_element.ts",
+  "trusted/wallpaper/wallpaper_grid_item_element.ts",
+  "trusted/wallpaper/wallpaper_images_element.js",
+  "trusted/wallpaper/wallpaper_selected_element.js",
+
+  "untrusted/collections_grid.js",
+  "untrusted/images_grid.js",
+  "untrusted/styles.ts",
+]
+
+static_resource_files = [
+  "icon_192.png",
+
+  "common/base.css",
+  "common/no_images.svg",
+
+  "trusted/index.html",
+
+  "untrusted/collections.html",
+  "untrusted/images.html",
+]
+
+html_to_js("web_components") {
+  js_files = polymer_js_files
 }
 
-group("closure_compile") {
+preprocess_if_expr("preprocess") {
+  deps = []
+  in_folder = "."
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  in_files = static_js_files
+}
+
+preprocess_if_expr("preprocess_generated") {
   deps = [
-    "common:closure_compile",
-    "trusted:closure_compile",
-    "untrusted:closure_compile",
+    ":web_components",
+    "untrusted:shared_vars_css_module",
   ]
+  in_folder = target_gen_dir
+  out_folder = "$target_gen_dir/$preprocess_folder"
+  in_files = polymer_js_files + [ "untrusted/untrusted_shared_vars_css.js" ]
+}
+
+copy("copy_mojo_to_trusted") {
+  deps = [ "../mojom:mojom_webui_js" ]
+  sources = [ "$root_gen_dir/mojom-webui/ash/webui/personalization_app/mojom/personalization_app.mojom-webui.js" ]
+  outputs =
+      [ "$target_gen_dir/$preprocess_folder/trusted/{{source_file_part}}" ]
+}
+
+# This is to work around the problem untrusted/ cannot access shared resources
+# in chrome://. In the future when we merge trusted/ and untrusted/ we should
+# remove this.
+copy("copy_js_to_common") {
+  deps = [ "//ui/webui/resources/js:modulize_local" ]
+  sources = [ "$root_gen_dir/ui/webui/resources/js/assert.m.js" ]
+  outputs = [ "$target_gen_dir/$preprocess_folder/common/{{source_file_part}}" ]
+}
+
+ts_library("build_ts") {
+  root_dir = "$target_gen_dir/$preprocess_folder"
+  out_dir = "$target_gen_dir/tsc"
+  tsconfig_base = "tsconfig_base.json"
+
+  in_files = static_js_files + polymer_js_files + [
+               "common/assert.m.js",
+               "trusted/personalization_app.mojom-webui.js",
+               "untrusted/untrusted_shared_vars_css.js",
+             ]
+
+  deps = [
+    "//third_party/polymer/v3_0:library",
+    "//ui/webui/resources:library",
+    "//ui/webui/resources/mojo:library",
+  ]
+
+  definitions = []
+
+  extra_deps = [
+    ":copy_js_to_common",
+    ":copy_mojo_to_trusted",
+    ":preprocess",
+    ":preprocess_generated",
+  ]
+}
+
+generate_grd("build_grd") {
+  deps = [ ":build_ts" ]
+  input_files_base_dir = rebase_path(".", "//")
+  input_files = static_resource_files
+  manifest_files = [ "$target_gen_dir/tsconfig.manifest" ]
+  grd_prefix = "ash_personalization_app"
+  out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
 }

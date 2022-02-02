@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -161,7 +162,7 @@ class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(NavigateToURL(web_contents(), GetWebUIURL(kChromeUIGpuHost)));
     test_handler_ = new TestWebUIMessageHandler();
     web_contents()->GetWebUI()->AddMessageHandler(
-        base::WrapUnique(test_handler_));
+        base::WrapUnique(test_handler_.get()));
   }
 
  protected:
@@ -186,7 +187,7 @@ class WebUIRequiringGestureBrowserTest : public ContentBrowserTest {
   base::SimpleTestTickClock clock_;
 
   // Owned by the WebUI associated with the WebContents.
-  TestWebUIMessageHandler* test_handler_ = nullptr;
+  raw_ptr<TestWebUIMessageHandler> test_handler_ = nullptr;
 };
 
 }  // namespace
@@ -492,8 +493,8 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest, DefaultSchemesCanBeRequested) {
 
   std::vector<std::string> requestable_schemes = {
       // WebSafe Schemes:
-      "feed", url::kHttpScheme, url::kHttpsScheme, url::kFtpScheme,
-      url::kDataScheme, url::kWsScheme, url::kWssScheme,
+      url::kHttpScheme, url::kHttpsScheme, url::kDataScheme, url::kWsScheme,
+      url::kWssScheme,
       // Default added as requestable schemes:
       url::kFileScheme, kChromeUIScheme};
 
@@ -532,10 +533,8 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest,
   // not requestable.
   std::vector<std::string> requestable_schemes = {
       // WebSafe schemes:
-      "feed",
       url::kHttpScheme,
       url::kHttpsScheme,
-      url::kFtpScheme,
       url::kDataScheme,
       url::kWsScheme,
       url::kWssScheme,

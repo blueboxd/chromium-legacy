@@ -80,10 +80,9 @@ class ChromeShelfPrefs : public app_list::AppListSyncableService::Observer {
   // https://crbug.com/1085597
   static void SkipPinnedAppsFromSyncForTest();
 
-  // This is run once each time ash launches. This method unpins any of the
-  // legacy camera apps. and then uses their pinned position for the new camera
-  // app.
-  void MigrateLegacyCameraApp(
+  // Ensure the Files Chrome app pinned positions are appropriately migrated to
+  // the Files System Web App.
+  void MigrateFilesChromeAppToSWA(
       app_list::AppListSyncableService* syncable_service);
 
   // This is run once each time ash launches. If the chrome app is not pinned

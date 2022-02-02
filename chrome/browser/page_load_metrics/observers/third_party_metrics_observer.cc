@@ -10,6 +10,7 @@
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -353,9 +354,9 @@ void ThirdPartyMetricsObserver::RecordMetrics(
               .MergeMainFrameAndSubframes();
   if (third_party_font_loaded_ &&
       all_frames_largest_contentful_paint.ContainsValidTime() &&
-      all_frames_largest_contentful_paint.Type() ==
-          page_load_metrics::ContentfulPaintTimingInfo::LargestContentType::
-              kText &&
+      all_frames_largest_contentful_paint.TextOrImage() ==
+          page_load_metrics::ContentfulPaintTimingInfo::
+              LargestContentTextOrImage::kText &&
       WasStartedInForegroundOptionalEventInForeground(
           all_frames_largest_contentful_paint.Time(), GetDelegate())) {
     PAGE_LOAD_HISTOGRAM(

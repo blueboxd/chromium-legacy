@@ -36,11 +36,11 @@ const CLIENT_DELEGATE = {
 
   /**
    * Checks whether the SWA can trigger a new Projector session.
-   * @return {Promise<boolean>}
+   * @return {!Promise<!projectorApp.NewScreencastPreconditionState>}
    */
-  canStartProjectorSession() {
+  getNewScreencastPreconditionState() {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'canStartProjectorSession', []);
+        'getNewScreencastPreconditionState', []);
   },
 
   /**
@@ -100,20 +100,50 @@ const CLIENT_DELEGATE = {
         [url, method, requestBody ? requestBody : '', !!useCredentials]);
   },
 
-  shouldShowNewScreencastButton() {
-    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
-        'shouldShowNewScreencastButton', []);
-  },
-
+  /**
+   * Returns true if the device supports on device speech recognition.
+   * @return {!Promise<boolean>}
+   */
   shouldDownloadSoda() {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'shouldDownloadSoda', []);
   },
 
+  /**
+   * Triggers the installation of on device speech recognition binary and
+   * language packs for the user's locale. Returns true if download and
+   * installation started.
+   * @return {!Promise<boolean>}
+   */
   installSoda() {
     return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
         'installSoda', []);
-  }
+  },
+
+  /**
+   * Checks if the user has given consent for the creation flow during
+   * onboarding. If the `userPref` is not supported the returned promise will be
+   * rejected.
+   * @param {string} userPref
+   * @return {!Promise<Object>}
+   */
+  getUserPref(userPref) {
+    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
+        'getUserPref', [userPref]);
+  },
+
+  /**
+   * Returns consent given by the user to enable creation flow during
+   * onboarding.
+   * @param {string} userPref
+   * @param {Object} value A preference can store multiple types (dictionaries,
+   *     lists, Boolean, etc..); therefore, accept a generic Object value.
+   * @return {!Promise} Promise resolved when the request was handled.
+   */
+  setUserPref(userPref, value) {
+    return AppUntrustedCommFactory.getPostMessageAPIClient().callApiFn(
+        'setUserPref', [userPref, value]);
+  },
 };
 
 /**
@@ -129,14 +159,14 @@ export class UntrustedAppRequestHandler extends RequestHandler {
     super(null, TARGET_URL, TARGET_URL);
     this.targetWindow_ = parentWindow;
 
-    this.registerMethod('onNewScreencastPreconditionChanged', (canStart) => {
-      if (canStart.length !== 1 || typeof canStart[0] !== 'boolean') {
+    this.registerMethod('onNewScreencastPreconditionChanged', (args) => {
+      if (args.length !== 1) {
         console.error(
-            'Invalid argument to onNewScreencastPreconditionChanged', canStart);
+            'Invalid argument to onNewScreencastPreconditionChanged', args);
         return;
       }
 
-      getAppElement().onNewScreencastPreconditionChanged(canStart[0]);
+      getAppElement().onNewScreencastPreconditionChanged(args[0]);
     });
     this.registerMethod('onSodaInstallProgressUpdated', (args) => {
       if (args.length !== 1 || isNaN(args[0])) {

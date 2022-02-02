@@ -614,8 +614,22 @@ void AXObjectCacheImpl::Dispose() {
   permission_observer_receiver_.reset();
 }
 
+void AXObjectCacheImpl::AddInspectorAgent(InspectorAccessibilityAgent* agent) {
+  agents_.insert(agent);
+}
+
+void AXObjectCacheImpl::RemoveInspectorAgent(
+    InspectorAccessibilityAgent* agent) {
+  agents_.erase(agent);
+}
+
 AXObject* AXObjectCacheImpl::Root() {
   return GetOrCreate(document_);
+}
+
+AXObject* AXObjectCacheImpl::ObjectFromAXID(AXID id) const {
+  auto it = objects_.find(id);
+  return it != objects_.end() ? it->value : nullptr;
 }
 
 Node* AXObjectCacheImpl::FocusedElement() {
@@ -872,13 +886,6 @@ AXID AXObjectCacheImpl::GetAXID(Node* node) {
   return ax_object->AXObjectID();
 }
 
-Element* AXObjectCacheImpl::GetElementFromAXID(AXID axid) {
-  AXObject* ax_object = ObjectFromAXID(axid);
-  if (!ax_object || !ax_object->GetElement())
-    return nullptr;
-  return ax_object->GetElement();
-}
-
 AXObject* AXObjectCacheImpl::Get(AccessibleNode* accessible_node) {
   if (!accessible_node)
     return nullptr;
@@ -1021,19 +1028,7 @@ bool AXObjectCacheImpl::IsRelevantSlotElement(const HTMLSlotElement& slot) {
     return true;
 
   const Element* parent_element = DynamicTo<Element>(parent);
-  if (!parent_element)
-    return false;
-
-  // Authors can include elements as "Fallback content" inside a <canvas> in
-  // order to provide an alternative means to interact with the canvas using
-  // a screen reader. Those should always be included.
-  if (parent_element->IsInCanvasSubtree())
-    return true;
-
-  // LayoutObject::CreateObject() will not create an object for elements
-  // with display:contents. If we do not include a <slot> for that reason,
-  // any descendants will be not be included in the accessibility tree.
-  return parent_element->HasDisplayContentsStyle();
+  return parent_element ? parent_element->IsInCanvasSubtree() : false;
 }
 
 // static
@@ -3368,7 +3363,8 @@ void AXObjectCacheImpl::PostPlatformNotification(
     std::transform(event_intents.begin(), event_intents.end(),
                    event.event_intents.begin(),
                    [](const auto& intent) { return intent.key.intent(); });
-
+    for (auto agent : agents_)
+      agent->AXEventFired(obj, event_type);
     web_frame->Client()->PostAccessibilityEvent(event);
   }
 }
@@ -3384,6 +3380,8 @@ void AXObjectCacheImpl::MarkAXObjectDirtyWithCleanLayoutHelper(AXObject* obj,
   if (webframe && webframe->Client())
     webframe->Client()->MarkWebAXObjectDirty(WebAXObject(obj), subtree);
   obj->UpdateCachedAttributeValuesIfNeeded(true);
+  for (auto agent : agents_)
+    agent->AXObjectModified(obj, subtree);
 }
 
 void AXObjectCacheImpl::MarkAXObjectDirtyWithCleanLayout(AXObject* obj) {
@@ -3633,7 +3631,7 @@ void AXObjectCacheImpl::HandleTextMarkerDataAddedWithCleanLayout(Node* node) {
   const DocumentMarker::MarkerTypes non_spelling_or_grammar_markers(
       DocumentMarker::kTextMatch | DocumentMarker::kActiveSuggestion |
       DocumentMarker::kSuggestion | DocumentMarker::kTextFragment |
-      DocumentMarker::kHighlight);
+      DocumentMarker::kCustomHighlight);
   if (!marker_controller.MarkersFor(*text_node, non_spelling_or_grammar_markers)
            .IsEmpty()) {
     ChildrenChangedWithCleanLayout(node);
@@ -3921,6 +3919,7 @@ void AXObjectCacheImpl::RequestAOMEventListenerPermission() {
 }
 
 void AXObjectCacheImpl::Trace(Visitor* visitor) const {
+  visitor->Trace(agents_);
   visitor->Trace(document_);
   visitor->Trace(accessible_node_mapping_);
   visitor->Trace(layout_object_mapping_);

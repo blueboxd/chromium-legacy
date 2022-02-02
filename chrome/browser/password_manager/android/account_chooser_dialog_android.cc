@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/macros.h"
 #include "chrome/android/chrome_jni_headers/AccountChooserDialog_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/password_manager/android/credential_android.h"
@@ -245,7 +244,9 @@ bool AccountChooserDialogAndroid::HandleCredentialChosen(
 
   scoped_refptr<device_reauth::BiometricAuthenticator> authenticator =
       client_->GetBiometricAuthenticator();
-  if (password_manager_util::CanUseBiometricAuth(authenticator.get())) {
+  if (password_manager_util::CanUseBiometricAuth(
+          authenticator.get(),
+          device_reauth::BiometricAuthRequester::kAccountChooserDialog)) {
     authenticator_ = std::move(authenticator);
     authenticator_->Authenticate(
         device_reauth::BiometricAuthRequester::kAccountChooserDialog,

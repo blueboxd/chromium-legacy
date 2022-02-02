@@ -8,6 +8,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/sequence_bound.h"
@@ -280,7 +281,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   SharedHandleState GetSharedHandleStateForPath(
       const base::FilePath& path,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       FileSystemAccessPermissionContext::HandleType handle_type,
       FileSystemAccessPermissionContext::UserAction user_action);
 
@@ -413,7 +414,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   void CreateTransferTokenImpl(
       const storage::FileSystemURL& url,
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       const SharedHandleState& handle_state,
       FileSystemAccessPermissionContext::HandleType handle_type,
       mojo::PendingReceiver<blink::mojom::FileSystemAccessTransferToken>
@@ -487,7 +488,7 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
   base::SequenceBound<storage::FileSystemOperationRunner> operation_runner_;
-  FileSystemAccessPermissionContext* permission_context_;
+  raw_ptr<FileSystemAccessPermissionContext> permission_context_;
 
   // All the mojo receivers for this FileSystemAccessManager itself. Keeps
   // track of associated origin and other state as well to not have to rely on

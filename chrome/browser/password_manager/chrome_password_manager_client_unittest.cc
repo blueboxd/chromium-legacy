@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -209,6 +208,11 @@ std::unique_ptr<KeyedService> CreateTestSyncService(
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
+  ChromePasswordManagerClientTest() {
+    scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDelayedWarnings);
+  }
+  ~ChromePasswordManagerClientTest() override = default;
+
   void SetUp() override;
   void TearDown() override;
 
@@ -267,8 +271,6 @@ void ChromePasswordManagerClientTest::SetUp() {
   // Connect our bool for testing.
   ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
       &metrics_enabled_);
-
-  scoped_feature_list_.InitAndEnableFeature(safe_browsing::kDelayedWarnings);
 }
 
 void ChromePasswordManagerClientTest::TearDown() {
@@ -491,9 +493,7 @@ struct SchemeTestCase {
 const SchemeTestCase kSchemeTestCases[] = {
     {url::kHttpScheme, true},
     {url::kHttpsScheme, true},
-    {url::kFtpScheme, true},
     {url::kDataScheme, true},
-    {"feed", true},
 
     {"invalid-scheme-i-just-made-up", false},
     {content::kChromeDevToolsScheme, false},
@@ -695,9 +695,7 @@ TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {
   } kTestCases[] = {
     {url::kHttpScheme, true},
     {url::kHttpsScheme, true},
-    {url::kFtpScheme, true},
     {url::kDataScheme, true},
-    {"feed", true},
     {url::kBlobScheme, true},
     {url::kFileSystemScheme, true},
 

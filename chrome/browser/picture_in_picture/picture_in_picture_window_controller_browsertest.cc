@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 
 #include "base/barrier_closure.h"
@@ -182,7 +183,7 @@ class WidgetSizeChangeWaiter final : public views::WidgetObserver {
   int bounds_change_count() const { return bounds_change_count_; }
 
  private:
-  views::Widget* const widget_;
+  const raw_ptr<views::Widget> widget_;
   const gfx::Size expected_size_;
   int bounds_change_count_ = 0;
   base::RunLoop run_loop_;
@@ -305,7 +306,8 @@ class PictureInPictureWindowControllerBrowserTest
   }
 
  private:
-  content::PictureInPictureWindowController* pip_window_controller_ = nullptr;
+  raw_ptr<content::PictureInPictureWindowController> pip_window_controller_ =
+      nullptr;
   MockPictureInPictureWindowController mock_controller_;
 };
 
@@ -331,14 +333,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
-#if defined(TOOLKIT_VIEWS)
   gfx::NativeWindow native_window = GetOverlayWindow()->GetNativeWindow();
-#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC)
   EXPECT_FALSE(platform_util::IsWindowActive(native_window));
-#else
-  EXPECT_TRUE(platform_util::IsWindowActive(native_window));
-#endif
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
@@ -1634,17 +1630,12 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerFencedFrameBrowserTest,
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 
   // Navigation to fenced frame page should not close Picture-in-Picture window.
-  GURL fenced_frame_url = embedded_test_server()->GetURL(
-      "example.com", "/media/picture-in-picture/window-size.html");
+  GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
   content::RenderFrameHost* fenced_frame_host =
       fenced_frame_test_helper().CreateFencedFrame(
           active_web_contents->GetMainFrame(), fenced_frame_url);
-  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
-
-  // Picture-in-Picture window should not be closed when navigating the fenced
-  // frame as the user has not navigated away from the primary page.
-  fenced_frame_test_helper().NavigateFrameInFencedFrameTree(fenced_frame_host,
-                                                            fenced_frame_url);
+  EXPECT_NE(nullptr, fenced_frame_host);
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
 }
 
@@ -2066,7 +2057,7 @@ class WebAppPictureInPictureWindowControllerBrowserTest
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
-  content::WebContents* web_contents_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
 };
 
 // Hide pwa page and check that Picture-in-Picture is entered automatically.

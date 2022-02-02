@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/task/task_traits.h"
@@ -163,7 +164,7 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
   // DataClearer deletes itself when removal is done.
   ~DataClearer() override = default;
 
-  content::BrowsingDataRemover* remover_;
+  raw_ptr<content::BrowsingDataRemover> remover_;
   base::OnceCallback<void()> callback_;
 };
 
@@ -636,7 +637,8 @@ void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
       safe_browsing::SetSafeBrowsingState(
           pref_service,
           value ? safe_browsing::SafeBrowsingState::STANDARD_PROTECTION
-                : safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING);
+                : safe_browsing::SafeBrowsingState::NO_SAFE_BROWSING,
+          /*is_esb_enabled_in_sync=*/false);
 #endif
       break;
     case SettingType::UKM_ENABLED: {

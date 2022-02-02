@@ -20,7 +20,7 @@
 
 namespace policy {
 
-// TODO(crbug.com/1254329) Enable on LaCros once DlpRulesManager is available.
+// TODO(crbug.com/1262948): Enable and modify for lacros.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
 const DlpContentRestrictionSet kScreenshotRestricted(
@@ -110,11 +110,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentRestrictionSetBrowserTest,
 
   SetDlpRulesPolicy(rules);
 
-  DlpContentRestrictionSet screenshot_and_videocapture(kScreenshotRestricted);
-  screenshot_and_videocapture.SetRestriction(
-      DlpContentRestriction::kVideoCapture, DlpRulesManager::Level::kBlock,
-      GURL());
-  EXPECT_EQ(screenshot_and_videocapture,
+  EXPECT_EQ(kScreenshotRestricted,
             DlpContentRestrictionSet::GetForURL(GURL(kUrl1)));
   EXPECT_EQ(kPrivacyScreenEnforced,
             DlpContentRestrictionSet::GetForURL(GURL(kUrl2)));

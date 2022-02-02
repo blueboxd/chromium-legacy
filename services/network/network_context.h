@@ -19,7 +19,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -71,6 +71,10 @@
 #include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_report.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+#if BUILDFLAG(IS_CT_SUPPORTED)
+#include "services/network/sct_auditing/sct_auditing_handler.h"
+#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 namespace base {
 class UnguessableToken;
@@ -299,7 +303,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnCTLogListUpdated(
       const std::vector<network::mojom::CTLogInfoPtr>& log_list,
       base::Time update_time);
-  bool is_sct_auditing_enabled() { return is_sct_auditing_enabled_; }
+  SCTAuditingHandler* sct_auditing_handler() { return &sct_auditing_handler_; }
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(
       mojo::PendingReceiver<mojom::UDPSocket> receiver,
@@ -556,12 +560,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   WebBundleManager& GetWebBundleManager() { return web_bundle_manager_; }
 
-#if BUILDFLAG(IS_CT_SUPPORTED)
-  void SetIsSCTAuditingEnabledForTesting(bool enabled) {
-    is_sct_auditing_enabled_ = enabled;
-  }
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
-
   // Returns the current same-origin-policy exceptions.  For more details see
   // network::mojom::NetworkContextParams::cors_origin_access_list and
   // network::mojom::NetworkContext::SetCorsOriginAccessListsForOrigin.
@@ -585,6 +583,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnReportAdded(const net::ReportingReport* service_report) override;
   void OnReportUpdated(const net::ReportingReport* service_report) override;
   void OnReportingObserverDisconnect(mojo::RemoteSetElementId mojo_id);
+  void OnEndpointsUpdatedForOrigin(
+      const std::vector<net::ReportingEndpoint>& endpoints) override;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
  private:
@@ -643,7 +643,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void FinishConstructingTrustTokenStore(
       std::unique_ptr<SQLiteTrustTokenPersister> persister);
 
-  NetworkService* const network_service_;
+  const raw_ptr<NetworkService> network_service_;
 
   mojo::Remote<mojom::NetworkContextClient> client_;
 
@@ -654,7 +654,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // URLRequestContext.
   URLRequestContextOwner url_request_context_owner_;
 
-  net::URLRequestContext* url_request_context_;
+  raw_ptr<net::URLRequestContext> url_request_context_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
   bool is_observing_reporting_service_;
@@ -663,7 +663,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   // Owned by URLRequestContext.
-  NetworkServiceNetworkDelegate* network_delegate_ = nullptr;
+  raw_ptr<NetworkServiceNetworkDelegate> network_delegate_ = nullptr;
 
   mojom::NetworkContextParamsPtr params_;
 
@@ -732,7 +732,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   int current_resource_scheduler_client_id_ = 0;
 
   // Owned by the URLRequestContext
-  net::StaticHttpUserAgentSettings* user_agent_settings_ = nullptr;
+  raw_ptr<net::StaticHttpUserAgentSettings> user_agent_settings_ = nullptr;
 
   // Pointed to by the TransportSecurityState (owned by the
   // URLRequestContext), and must be disconnected from it before it's destroyed.
@@ -748,10 +748,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       outstanding_set_expect_ct_callbacks_;
 
   // Owned by the URLRequestContext.
-  certificate_transparency::ChromeCTPolicyEnforcer* ct_policy_enforcer_ =
-      nullptr;
+  raw_ptr<certificate_transparency::ChromeCTPolicyEnforcer>
+      ct_policy_enforcer_ = nullptr;
 
-  bool is_sct_auditing_enabled_ = false;
+  SCTAuditingHandler sct_auditing_handler_;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -773,7 +773,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       host_resolvers_;
   std::unique_ptr<net::HostResolver::ProbeRequest> doh_probes_request_;
 
-  NetworkServiceProxyDelegate* proxy_delegate_ = nullptr;
+  raw_ptr<NetworkServiceProxyDelegate> proxy_delegate_ = nullptr;
 
   // Used for Signed Exchange certificate verification.
   int next_cert_verify_id_ = 0;

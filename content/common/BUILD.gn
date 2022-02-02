@@ -46,8 +46,6 @@ source_set("common") {
 
   sources = [
     "all_messages.h",
-    "appcache_interfaces.cc",
-    "appcache_interfaces.h",
     "ax_serialization_utils.cc",
     "ax_serialization_utils.h",
     "background_fetch/background_fetch_types.cc",
@@ -135,8 +133,6 @@ source_set("common") {
     "process_visibility_tracker.h",
     "pseudonymization_salt.cc",
     "pseudonymization_salt.h",
-    "service_worker/service_worker_utils.cc",
-    "service_worker/service_worker_utils.h",
     "set_process_title.cc",
     "set_process_title.h",
     "shared_file_util.cc",
@@ -174,7 +170,7 @@ source_set("common") {
     "//third_party/blink/public/common",
     "//ui/accessibility",
     "//ui/accessibility/mojom",
-    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor",
     "//ui/events/ipc",
   ]
   deps = [
@@ -337,7 +333,7 @@ source_set("common") {
   }
 
   if (use_aura) {
-    deps += [ "//ui/base/cursor" ]
+    deps += [ "//ui/aura/cursor" ]
   } else {
     sources -= [ "cursors/webcursor_aura.cc" ]
   }

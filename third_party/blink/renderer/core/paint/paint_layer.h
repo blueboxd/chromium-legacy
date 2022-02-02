@@ -51,7 +51,6 @@
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
@@ -103,21 +102,6 @@ enum PaintLayerIteration {
       kNormalFlowChildren | kPositiveZOrderChildren,
   kAllChildren =
       kNegativeZOrderChildren | kNormalFlowChildren | kPositiveZOrderChildren
-};
-
-// FIXME: remove this once the compositing query DCHECKS are no longer hit.
-class CORE_EXPORT DisableCompositingQueryAsserts {
-  STACK_ALLOCATED();
-
- public:
-  DisableCompositingQueryAsserts();
-  DisableCompositingQueryAsserts(const DisableCompositingQueryAsserts&) =
-      delete;
-  DisableCompositingQueryAsserts& operator=(
-      const DisableCompositingQueryAsserts&) = delete;
-
- private:
-  base::AutoReset<CompositingQueryMode> disabler_;
 };
 
 struct CORE_EXPORT PaintLayerRareData final
@@ -326,11 +310,11 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // TODO(crbug.com/962299): This method snaps to pixels incorrectly because
   // Location() is not the correct paint offset. It's also incorrect in flipped
   // blocks writing mode.
-  IntSize PixelSnappedSize() const {
+  gfx::Size PixelSnappedSize() const {
     LayoutPoint location = layout_object_->IsBox()
                                ? To<LayoutBox>(layout_object_.Get())->Location()
                                : LayoutPoint();
-    return PixelSnappedIntSize(Size(), location);
+    return ToPixelSnappedSize(Size(), location);
   }
 
 #if DCHECK_IS_ON()
@@ -340,11 +324,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool IsRootLayer() const { return is_root_layer_; }
 
   PaintLayerCompositor* Compositor() const;
-
-  // Notification from the layoutObject that its content changed (e.g. current
-  // frame of image changed).  Allows updates of layer content without
-  // invalidating paint.
-  void ContentChanged(ContentChangeType);
 
   bool UpdateSize();
   void UpdateSizeAndScrollingAfterLayout();
@@ -488,7 +467,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   PhysicalRect PhysicalBoundingBox(const PaintLayer* ancestor_layer) const;
   PhysicalRect FragmentsBoundingBox(const PaintLayer* ancestor_layer) const;
 
-  IntRect ExpandedBoundingBoxForCompositingOverlapTest(
+  gfx::Rect ExpandedBoundingBoxForCompositingOverlapTest(
       bool use_clipped_bounding_rect) const;
   PhysicalRect BoundingBoxForCompositing() const;
 
@@ -546,7 +525,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   TransformationMatrix RenderableTransform(GlobalPaintFlags) const;
 
   bool Preserves3D() const {
-    return GetLayoutObject().StyleRef().Preserves3D();
+    return GetLayoutObject().IsBox() &&
+           GetLayoutObject().StyleRef().Preserves3D();
   }
   bool Has3DTransform() const {
     return rare_data_ && rare_data_->transform &&
@@ -556,8 +536,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // FIXME: reflections should force transform-style to be flat in the style:
   // https://bugs.webkit.org/show_bug.cgi?id=106959
   bool ShouldPreserve3D() const {
-    return !GetLayoutObject().HasReflection() &&
-           GetLayoutObject().StyleRef().Preserves3D();
+    return !GetLayoutObject().HasReflection() && Preserves3D();
   }
 
   // Returns |true| if any property that renders using filter operations is
@@ -623,11 +602,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
       const LayoutBoxModelObject& paint_invalidation_container,
       PhysicalOffset&);
 
-  bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
-    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);
-  }
-
   // Returns the ScrollingCoordinator associated with this layer, if
   // any. Otherwise nullptr.
   ScrollingCoordinator* GetScrollingCoordinator();
@@ -640,13 +614,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   bool PaintsIntoOwnOrGroupedBacking(GlobalPaintFlags) const;
 
   bool SupportsSubsequenceCaching() const;
-
-  // Returns true if background phase is painted opaque in the given rect.
-  // The query rect is given in local coordinates.
-  // if |should_check_children| is true, checks non-composited stacking children
-  // recursively to see if they paint opaquely over the rect.
-  bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&,
-                                         bool should_check_children) const;
 
   // If the input CompositorFilterOperation is not empty, it will be populated
   // only if |filter_on_effect_node_dirty_| is true or the reference box has
@@ -682,7 +649,7 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Maps "forward" to determine which pixels in a destination rect are
   // affected by pixels in the source rect.
   // See also FilterEffect::mapRect.
-  FloatRect MapRectForFilter(const FloatRect&) const;
+  gfx::RectF MapRectForFilter(const gfx::RectF&) const;
 
   // Calls the above, rounding outwards.
   PhysicalRect MapRectForFilter(const PhysicalRect&) const;
@@ -698,8 +665,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   // Filter reference box is the area over which the filter is computed, in the
   // local coordinate system of the effect node containing the filter.
-  FloatRect FilterReferenceBox() const;
-  FloatRect BackdropFilterReferenceBox() const;
+  gfx::RectF FilterReferenceBox() const;
+  gfx::RectF BackdropFilterReferenceBox() const;
   gfx::RRectF BackdropFilterBounds() const;
 
   void UpdateFilterReferenceBox();
@@ -879,8 +846,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
 
   // These two do not include any applicable scroll offset of the
   // root PaintLayer, unless CompositingOptimizationsEnabled is on.
-  const IntRect ClippedAbsoluteBoundingBox() const;
-  const IntRect UnclippedAbsoluteBoundingBox() const;
+  const gfx::Rect ClippedAbsoluteBoundingBox() const;
+  const gfx::Rect UnclippedAbsoluteBoundingBox() const;
 
   const PaintLayer* OpacityAncestor() const {
     return GetAncestorDependentCompositingInputs().opacity_ancestor;
@@ -1010,7 +977,8 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
       OverlayScrollbarClipBehavior = kIgnoreOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const PhysicalOffset* offset_from_root = nullptr,
-      const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset()) const;
+      const PhysicalOffset& sub_pixel_accumulation = PhysicalOffset(),
+      const FragmentData* root_fragment = nullptr) const;
 
   bool SelfNeedsRepaint() const { return self_needs_repaint_; }
   bool DescendantNeedsRepaint() const { return descendant_needs_repaint_; }
@@ -1101,17 +1069,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
     return has3d_transformed_descendant_;
   }
 
-  // Whether the value of isSelfPaintingLayer() changed since the last clearing
-  // (which happens after the flag is chedked during compositing update).
-  bool SelfPaintingStatusChanged() const {
-    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    return self_painting_status_changed_;
-  }
-  void ClearSelfPaintingStatusChanged() {
-    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    self_painting_status_changed_ = false;
-  }
-
   // Returns true if this PaintLayer should be fragmented, relative
   // to the given |compositing_layer| backing. In SPv1 mode, fragmentation
   // may not cross compositing boundaries, so this wil return false
@@ -1150,16 +1107,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   PhysicalOffset OffsetForInFlowRelPosition() const {
     return rare_data_ ? rare_data_->offset_for_in_flow_rel_position
                       : PhysicalOffset();
-  }
-
-  bool NeedsPaintOffsetTranslationForCompositing() const {
-    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-    DCHECK(IsAllowedToQueryCompositingInputs());
-    return needs_paint_offset_translation_for_compositing_;
-  }
-
-  void SetNeedsPaintOffsetTranslationForCompositing(bool b) {
-    needs_paint_offset_translation_for_compositing_ = b;
   }
 
   bool KnownToClipSubtree() const;
@@ -1204,17 +1151,18 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
                          const HitTestLocation& original_location_arg);
   };
 
-  PaintLayer* HitTestLayer(PaintLayer* root_layer,
-                           PaintLayer* container_layer,
+  PaintLayer* HitTestLayer(const PaintLayer& transform_container,
+                           const FragmentData* container_fragment,
                            HitTestResult&,
                            const HitTestRecursionData& recursion_data,
-                           bool applied_transform,
+                           bool applied_transform = false,
                            HitTestingTransformState* = nullptr,
                            double* z_offset = nullptr,
                            bool check_resizer_only = false);
   PaintLayer* HitTestLayerByApplyingTransform(
-      PaintLayer* root_layer,
-      PaintLayer* container_layer,
+      const PaintLayer& transform_container,
+      const FragmentData* container_fragment,
+      const FragmentData& local_fragment,
       HitTestResult&,
       const HitTestRecursionData& recursion_data,
       HitTestingTransformState*,
@@ -1223,21 +1171,22 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
       const PhysicalOffset& translation_offset = PhysicalOffset());
   PaintLayer* HitTestChildren(
       PaintLayerIteration,
-      PaintLayer* root_layer,
+      const PaintLayer& transform_container,
+      const FragmentData* container_fragment,
       HitTestResult&,
       const HitTestRecursionData& recursion_data,
-      HitTestingTransformState*,
+      HitTestingTransformState* container_transform_state,
       double* z_offset_for_descendants,
       double* z_offset,
-      HitTestingTransformState* unflattened_transform_state,
+      HitTestingTransformState* local_transform_state,
       bool depth_sort_descendants);
 
   HitTestingTransformState CreateLocalTransformState(
-      PaintLayer* root_layer,
-      PaintLayer* container_layer,
+      const PaintLayer& transform_container,
+      const FragmentData& container_fragment,
+      const FragmentData& local_fragment,
       const HitTestRecursionData& recursion_data,
-      const HitTestingTransformState* container_transform_state,
-      const PhysicalOffset& translation_offset = PhysicalOffset()) const;
+      const HitTestingTransformState* root_transform_state) const;
 
   bool HitTestContents(HitTestResult&,
                        const NGPhysicalBoxFragment*,
@@ -1245,23 +1194,21 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
                        const HitTestLocation&,
                        HitTestFilter) const;
   bool HitTestContentsForFragments(const PaintLayerFragments&,
-                                   const PhysicalOffset& offset,
                                    HitTestResult&,
                                    const HitTestLocation&,
                                    HitTestFilter,
                                    bool& inside_clip_rect) const;
-  PaintLayer* HitTestTransformedLayerInFragments(PaintLayer* root_layer,
-                                                 PaintLayer* container_layer,
-                                                 HitTestResult&,
-                                                 const HitTestRecursionData&,
-                                                 HitTestingTransformState*,
-                                                 double* z_offset,
-                                                 bool check_resizer_only,
-                                                 ShouldRespectOverflowClipType);
-  bool HitTestClippedOutByClipPath(PaintLayer* root_layer,
+  PaintLayer* HitTestTransformedLayerInFragments(
+      const PaintLayer& transform_container,
+      const FragmentData* container_fragment,
+      HitTestResult&,
+      const HitTestRecursionData&,
+      HitTestingTransformState*,
+      double* z_offset,
+      bool check_resizer_only,
+      ShouldRespectOverflowClipType);
+  bool HitTestClippedOutByClipPath(const PaintLayer& root_layer,
                                    const HitTestLocation&) const;
-
-  bool ChildBackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const;
 
   bool ShouldBeSelfPaintingLayer() const;
 
@@ -1275,14 +1222,14 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   // Indicates whether the descendant-dependent tree walk bit should also
   // be set.
   enum DescendantDependentFlagsUpdateFlag {
-    NeedsDescendantDependentUpdate,
-    DoesNotNeedDescendantDependentUpdate
+    kNeedsDescendantDependentUpdate,
+    kDoesNotNeedDescendantDependentUpdate
   };
 
   // Marks the ancestor chain for paint property update, and if
   // the flag is set, the descendant-dependent tree walk as well.
   void MarkAncestorChainForFlagsUpdate(
-      DescendantDependentFlagsUpdateFlag = NeedsDescendantDependentUpdate);
+      DescendantDependentFlagsUpdateFlag = kNeedsDescendantDependentUpdate);
 
   bool AttemptDirectCompositingUpdate(const StyleDifference&,
                                       const ComputedStyle* old_style);
@@ -1405,8 +1352,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   unsigned has_non_contained_absolute_position_descendant_ : 1;
   unsigned has_stacked_descendant_in_current_stacking_context_ : 1;
 
-  unsigned self_painting_status_changed_ : 1;
-
   // These are set to true when filter style or filter resource changes,
   // indicating that we need to update the filter (or backdrop_filter) field of
   // the effect paint property node. They are cleared when the effect paint
@@ -1433,8 +1378,6 @@ class CORE_EXPORT PaintLayer : public GarbageCollected<PaintLayer>,
   unsigned needs_reorder_overlay_overflow_controls_ : 1;
   unsigned static_inline_edge_ : 2;
   unsigned static_block_edge_ : 2;
-
-  unsigned needs_paint_offset_translation_for_compositing_ : 1;
 
   unsigned needs_check_raster_invalidation_ : 1;
 

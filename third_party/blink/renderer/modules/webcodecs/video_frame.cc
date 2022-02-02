@@ -23,6 +23,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_plane_layout.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_cssimagevalue_htmlcanvaselement_htmlimageelement_htmlvideoelement_imagebitmap_offscreencanvas_svgimageelement_videoframe.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_color_space_init.h"
@@ -41,6 +42,8 @@
 #include "third_party/blink/renderer/modules/webcodecs/parsed_copy_to_options.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_color_space.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_init_util.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_hash_traits.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
@@ -200,13 +203,13 @@ class CanvasResourceProviderCache
       delete;
   CanvasResourceProviderCache(const CanvasResourceProviderCache&) = delete;
 
-  CanvasResourceProvider* CreateProvider(IntSize size) {
+  CanvasResourceProvider* CreateProvider(gfx::Size size) {
     if (size_to_provider_.IsEmpty())
       PostMonitoringTask();
 
     last_access_time_ = base::TimeTicks::Now();
 
-    FloatSize key(size);
+    gfx::SizeF key(size);
     auto iter = size_to_provider_.find(key);
     if (iter != size_to_provider_.end()) {
       auto* result = iter->value.get();
@@ -250,7 +253,8 @@ class CanvasResourceProviderCache
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  HashMap<FloatSize, std::unique_ptr<CanvasResourceProvider>> size_to_provider_;
+  HashMap<gfx::SizeF, std::unique_ptr<CanvasResourceProvider>>
+      size_to_provider_;
   base::TimeTicks last_access_time_;
   TaskHandle task_handle_;
 };
@@ -485,7 +489,7 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
   // Some elements like OffscreenCanvas won't choose a default size, so we must
   // ask them what size they think they are first.
   auto source_size =
-      image_source->ElementSize(FloatSize(), kRespectImageOrientation);
+      image_source->ElementSize(gfx::SizeF(), kRespectImageOrientation);
 
   SourceImageStatus status = kInvalidSourceImageStatus;
   auto image = image_source->GetSourceImageForCanvas(&status, source_size);
@@ -948,7 +952,11 @@ ScriptPromise VideoFrame::copyTo(ScriptState* script_state,
     plane->setStride(layout.planes[i].stride);
     result.push_back(plane);
   }
-  return ScriptPromise::Cast(script_state, ToV8(result, script_state));
+
+  return ScriptPromise::Cast(
+      script_state,
+      ToV8Traits<IDLSequence<PlaneLayout>>::ToV8(script_state, result)
+          .ToLocalChecked());
 }
 
 void VideoFrame::close() {
@@ -968,7 +976,7 @@ VideoFrame* VideoFrame::clone(ExceptionState& exception_state) {
 
 scoped_refptr<Image> VideoFrame::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    const FloatSize&,
+    const gfx::SizeF&,
     const AlphaDisposition alpha_disposition) {
   // UnpremultiplyAlpha is not implemented yet.
   DCHECK_EQ(alpha_disposition, kPremultiplyAlpha);
@@ -992,8 +1000,8 @@ scoped_refptr<Image> VideoFrame::GetSourceImageForCanvas(
   auto* execution_context =
       ExecutionContext::From(v8::Isolate::GetCurrent()->GetCurrentContext());
   auto& provider_cache = CanvasResourceProviderCache::From(*execution_context);
-  auto* resource_provider = provider_cache.CreateProvider(
-      IntSize(local_handle->frame()->natural_size()));
+  auto* resource_provider =
+      provider_cache.CreateProvider(local_handle->frame()->natural_size());
 
   const auto dest_rect = gfx::Rect(local_handle->frame()->natural_size());
   auto image = CreateImageFromVideoFrame(local_handle->frame(),
@@ -1016,24 +1024,24 @@ bool VideoFrame::WouldTaintOrigin() const {
   return false;
 }
 
-FloatSize VideoFrame::ElementSize(
-    const FloatSize& default_object_size,
+gfx::SizeF VideoFrame::ElementSize(
+    const gfx::SizeF& default_object_size,
     const RespectImageOrientationEnum respect_orientation) const {
   // BitmapSourceSize() will always ignore orientation.
   if (respect_orientation == kRespectImageOrientation) {
     auto local_frame = handle_->frame();
     if (!local_frame)
-      return FloatSize();
+      return gfx::SizeF();
 
     const auto orientation_enum = VideoTransformationToImageOrientation(
         local_frame->metadata().transformation.value_or(
             media::kNoTransformation));
-    auto orientation_adjusted_size = FloatSize(local_frame->natural_size());
+    auto orientation_adjusted_size = gfx::SizeF(local_frame->natural_size());
     if (ImageOrientation(orientation_enum).UsesWidthAsHeight())
-      return orientation_adjusted_size.TransposedSize();
+      orientation_adjusted_size.Transpose();
     return orientation_adjusted_size;
   }
-  return FloatSize(BitmapSourceSize());
+  return gfx::SizeF(BitmapSourceSize());
 }
 
 bool VideoFrame::IsVideoFrame() const {
@@ -1055,17 +1063,17 @@ bool VideoFrame::IsAccelerated() const {
   return false;
 }
 
-IntSize VideoFrame::BitmapSourceSize() const {
+gfx::Size VideoFrame::BitmapSourceSize() const {
   auto local_frame = handle_->frame();
   if (!local_frame)
-    return IntSize();
+    return gfx::Size();
 
   // ImageBitmaps should always return the size w/o respecting orientation.
-  return IntSize(local_frame->natural_size());
+  return local_frame->natural_size();
 }
 
 ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
-                                            absl::optional<IntRect> crop_rect,
+                                            absl::optional<gfx::Rect> crop_rect,
                                             const ImageBitmapOptions* options,
                                             ExceptionState& exception_state) {
   const auto local_handle = handle_->CloneForInternalUse();
@@ -1091,8 +1099,8 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
   auto* execution_context =
       ExecutionContext::From(v8::Isolate::GetCurrent()->GetCurrentContext());
   auto& provider_cache = CanvasResourceProviderCache::From(*execution_context);
-  auto* resource_provider = provider_cache.CreateProvider(
-      IntSize(local_handle->frame()->natural_size()));
+  auto* resource_provider =
+      provider_cache.CreateProvider(local_handle->frame()->natural_size());
 
   const auto dest_rect = gfx::Rect(local_handle->frame()->natural_size());
   auto image = CreateImageFromVideoFrame(local_handle->frame(),

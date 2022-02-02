@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -158,7 +158,7 @@ class TestStateMachineEventRewriterOld : public EventRewriter {
   };
   typedef std::map<RewriteCase, RewriteResult> RewriteRules;
   RewriteRules rules_;
-  Event* last_rewritten_event_;
+  raw_ptr<Event> last_rewritten_event_;
   int state_;
 };
 

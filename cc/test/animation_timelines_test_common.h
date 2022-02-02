@@ -8,15 +8,17 @@
 #include <memory>
 #include <unordered_map>
 
+#include "base/memory/raw_ptr.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/keyframe_model.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
+#include "cc/trees/property_tree.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/keyframe/target_property.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/transform.h"
-#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace cc {
 
@@ -59,8 +61,8 @@ class TestLayer {
     mutated_properties_[TargetProperty::BACKDROP_FILTER] = true;
   }
 
-  gfx::Vector2dF scroll_offset() const { return scroll_offset_; }
-  void set_scroll_offset(const gfx::Vector2dF& scroll_offset) {
+  gfx::PointF scroll_offset() const { return scroll_offset_; }
+  void set_scroll_offset(const gfx::PointF& scroll_offset) {
     scroll_offset_ = scroll_offset;
     mutated_properties_[TargetProperty::SCROLL_OFFSET] = true;
   }
@@ -97,7 +99,7 @@ class TestLayer {
   float opacity_;
   FilterOperations filters_;
   FilterOperations backdrop_filters_;
-  gfx::Vector2dF scroll_offset_;
+  gfx::PointF scroll_offset_;
 
   gfx::TargetProperties has_potential_animation_;
   gfx::TargetProperties is_currently_animating_;
@@ -135,10 +137,9 @@ class TestHostClient : public MutatorHostClient {
                                   ElementListType list_type,
                                   const gfx::Transform& transform) override;
 
-  void SetElementScrollOffsetMutated(
-      ElementId element_id,
-      ElementListType list_type,
-      const gfx::Vector2dF& scroll_offset) override;
+  void SetElementScrollOffsetMutated(ElementId element_id,
+                                     ElementListType list_type,
+                                     const gfx::PointF& scroll_offset) override;
 
   void ElementIsAnimatingChanged(const PropertyToElementIdMap& element_id_map,
                                  ElementListType list_type,
@@ -150,9 +151,9 @@ class TestHostClient : public MutatorHostClient {
 
   void ScrollOffsetAnimationFinished() override {}
 
-  void SetScrollOffsetForAnimation(const gfx::Vector2dF& scroll_offset);
-  gfx::Vector2dF GetScrollOffsetForAnimation(
-      ElementId element_id) const override;
+  void SetScrollOffsetForAnimation(const gfx::PointF& scroll_offset,
+                                   ElementId element_id);
+  const PropertyTrees& GetPropertyTrees() const { return property_trees_; }
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
                                          ElementListType tree_type) override {}
@@ -183,8 +184,8 @@ class TestHostClient : public MutatorHostClient {
   float GetOpacity(ElementId element_id, ElementListType list_type) const;
   gfx::Transform GetTransform(ElementId element_id,
                               ElementListType list_type) const;
-  gfx::Vector2dF GetScrollOffset(ElementId element_id,
-                                 ElementListType list_type) const;
+  gfx::PointF GetScrollOffset(ElementId element_id,
+                              ElementListType list_type) const;
   bool GetHasPotentialTransformAnimation(ElementId element_id,
                                          ElementListType list_type) const;
   bool GetTransformIsCurrentlyAnimating(ElementId element_id,
@@ -227,8 +228,8 @@ class TestHostClient : public MutatorHostClient {
   ElementIdToTestLayer layers_in_active_tree_;
   ElementIdToTestLayer layers_in_pending_tree_;
 
-  gfx::Vector2dF scroll_offset_;
   bool mutators_need_commit_;
+  PropertyTrees property_trees_;
 };
 
 class TestAnimationDelegate : public AnimationDelegate {
@@ -298,8 +299,6 @@ class AnimationTimelinesTest : public testing::Test {
   KeyframeEffect* GetKeyframeEffectForElementId(ElementId element_id);
   KeyframeEffect* GetImplKeyframeEffectForLayerId(ElementId element_id);
 
-  int NextTestLayerId();
-
   bool CheckKeyframeEffectTimelineNeedsPushProperties(
       bool needs_push_properties) const;
 
@@ -308,14 +307,12 @@ class AnimationTimelinesTest : public testing::Test {
   TestHostClient client_;
   TestHostClient client_impl_;
 
-  AnimationHost* host_;
-  AnimationHost* host_impl_;
+  raw_ptr<AnimationHost> host_;
+  raw_ptr<AnimationHost> host_impl_;
 
   const int timeline_id_;
   const int animation_id_;
   ElementId element_id_;
-
-  int next_test_layer_id_;
 
   scoped_refptr<AnimationTimeline> timeline_;
   scoped_refptr<Animation> animation_;

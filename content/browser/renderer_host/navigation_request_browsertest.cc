@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -335,7 +336,7 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   int will_redirect_called_ = 0;
   int will_fail_called_ = 0;
   int will_process_called_ = 0;
-  TestNavigationThrottle* navigation_throttle_ = nullptr;
+  raw_ptr<TestNavigationThrottle> navigation_throttle_ = nullptr;
   int install_count_ = 0;
   scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_redirect_loop_runner_;
@@ -2281,9 +2282,6 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
 // TODO(crbug.com/1262910): Enable the test again.
 IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest,
                        DISABLED_BlockCredentialedSubresources) {
-  if (!base::FeatureList::IsEnabled(features::kBlockCredentialedSubresources))
-    return;
-
   const struct {
     GURL main_url;
     GURL iframe_url;

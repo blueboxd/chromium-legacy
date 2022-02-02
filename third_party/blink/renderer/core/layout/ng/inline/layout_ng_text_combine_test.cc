@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
@@ -523,6 +524,25 @@ LayoutNGBlockFlow DIV id="root"
             ToSimpleLayoutTree(root_layout_object));
 }
 
+// http://crbug.com/1258331
+// See also VerticalWritingModeByWBR
+TEST_F(LayoutNGTextCombineTest, InsertBR) {
+  InsertStyleElement(
+      "br { text-combine-upright: all; writing-mode: vertical-rl; }");
+  SetBodyInnerHTML("<div id=root>x</div>");
+  auto& root = *GetElementById("root");
+  root.insertBefore(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
+                    root.lastChild());
+  RunDocumentLifecycle();
+
+  EXPECT_EQ(R"DUMP(
+LayoutNGBlockFlow DIV id="root"
+  +--LayoutBR BR
+  +--LayoutText #text "x"
+)DUMP",
+            ToSimpleLayoutTree(*root.GetLayoutObject()));
+}
+
 // http://crbug.com/1215026
 TEST_F(LayoutNGTextCombineTest, LegacyQuote) {
   InsertStyleElement(
@@ -592,14 +612,16 @@ TEST_F(LayoutNGTextCombineTest, LayoutOverflow) {
   //       text run at (0,0) width 200: "aX"
 
   const auto& sample1 = *To<LayoutBlockFlow>(GetLayoutObjectByElementId("t1"));
-  const auto& sample_fragment1 = *sample1.CurrentFragment();
+  ASSERT_EQ(sample1.PhysicalFragmentCount(), 1u);
+  const auto& sample_fragment1 = *sample1.GetPhysicalFragment(0);
   EXPECT_FALSE(sample_fragment1.HasLayoutOverflow());
   EXPECT_EQ(PhysicalSize(150, 200), sample_fragment1.Size());
   EXPECT_EQ(PhysicalRect(PhysicalOffset(), PhysicalSize(150, 200)),
             sample_fragment1.LayoutOverflow());
 
   const auto& sample2 = *To<LayoutBlockFlow>(GetLayoutObjectByElementId("t2"));
-  const auto& sample_fragment2 = *sample2.CurrentFragment();
+  ASSERT_EQ(sample2.PhysicalFragmentCount(), 1u);
+  const auto& sample_fragment2 = *sample2.GetPhysicalFragment(0);
   EXPECT_FALSE(sample_fragment2.HasLayoutOverflow());
   EXPECT_EQ(PhysicalSize(150, 200), sample_fragment2.Size());
   EXPECT_EQ(PhysicalRect(PhysicalOffset(), PhysicalSize(150, 200)),

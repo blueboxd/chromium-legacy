@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
+#include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -46,6 +47,7 @@ namespace blink {
 class CanvasImageSource;
 class HTMLCanvasElement;
 class ImageBitmap;
+class NoAllocDirectCallHost;
 class
     V8UnionCanvasRenderingContext2DOrGPUCanvasContextOrImageBitmapRenderingContextOrWebGL2RenderingContextOrWebGLRenderingContext;
 class
@@ -94,6 +96,8 @@ class CORE_EXPORT CanvasRenderingContext
   bool IsWebGPU() const {
     return canvas_rendering_type_ == CanvasRenderingAPI::kWebgpu;
   }
+
+  virtual NoAllocDirectCallHost* AsNoAllocDirectCallHost();
 
   // ActiveScriptWrappable
   // As this class inherits from ActiveScriptWrappable, as long as
@@ -235,9 +239,9 @@ class CORE_EXPORT CanvasRenderingContext
     NOTREACHED();
     return 0;
   }
-  virtual IntSize DrawingBufferSize() const {
+  virtual gfx::Size DrawingBufferSize() const {
     NOTREACHED();
-    return IntSize(0, 0);
+    return gfx::Size(0, 0);
   }
 
   // OffscreenCanvas-specific methods.

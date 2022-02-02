@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -63,8 +63,8 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   SkColor GetWarningColor() const;
 
  protected:
-  explicit AutofillPopupBaseView(AutofillPopupViewDelegate* delegate,
-                                 views::Widget* parent_widget);
+  AutofillPopupBaseView(base::WeakPtr<AutofillPopupViewDelegate> delegate,
+                        views::Widget* parent_widget);
   ~AutofillPopupBaseView() override;
 
   // Show this popup. Idempotent. Returns |true| if popup is shown, |false|
@@ -88,8 +88,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   // popup, it hides and thus deletes |this| and returns false. (virtual for
   // testing).
   virtual bool DoUpdateBoundsAndRedrawPopup();
-
-  const AutofillPopupViewDelegate* delegate() const { return delegate_; }
 
   // Returns the border to be applied to the popup.
   virtual std::unique_ptr<views::Border> CreateBorder();
@@ -127,18 +125,16 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   gfx::NativeView container_view();
 
   // Controller for this popup. Weak reference.
-  AutofillPopupViewDelegate* delegate_;
+  base::WeakPtr<AutofillPopupViewDelegate> delegate_;
 
   // The widget of the window that triggered this popup. Weak reference.
-  views::Widget* parent_widget_;
+  raw_ptr<views::Widget> parent_widget_;
 
   // The time when the popup was shown.
   base::Time show_time_;
 
   // Ensures that the menu start event is not fired redundantly.
   bool is_ax_menu_start_event_fired_ = false;
-
-  base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

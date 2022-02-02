@@ -52,8 +52,11 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink-forward.h"
+
+namespace ui {
+class Cursor;
+}
 
 namespace blink {
 
@@ -100,9 +103,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   HitTestResult HitTestResultAtLocation(
       const HitTestLocation&,
-      HitTestRequest::HitTestRequestType hit_type =
-          HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kRetargetForInert,
+      HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
+                                                    HitTestRequest::kActive,
       const LayoutObject* stop_node = nullptr,
       bool no_lifecycle_update = false);
 
@@ -130,8 +132,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
 
   void ResizeScrollableAreaDestroyed();
 
-  FloatPoint LastKnownMousePositionInRootFrame() const;
-  FloatPoint LastKnownMouseScreenPosition() const;
+  gfx::PointF LastKnownMousePositionInRootFrame() const;
+  gfx::PointF LastKnownMouseScreenPosition() const;
 
   gfx::Point DragDataTransferLocationForTesting();
 
@@ -205,7 +207,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
                                            const HitTestResult&,
                                            gfx::Point& target_point,
                                            Node*& target_node);
-  void CacheTouchAdjustmentResult(uint32_t, FloatPoint);
+  void CacheTouchAdjustmentResult(uint32_t, gfx::PointF);
 
   // Dispatch a context menu event. If |override_target_element| is provided,
   // the context menu event will use that, so that the browser-generated context
@@ -263,6 +265,8 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
   EventHandlerRegistry& GetEventHandlerRegistry() const {
     return *event_handler_registry_;
   }
+
+  GestureManager& GetGestureManager() const { return *gesture_manager_; }
 
   void AnimateSnapFling(base::TimeTicks monotonic_time);
 
@@ -370,7 +374,7 @@ class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
       const HitTestRequest& request,
       const WebMouseEvent& mev);
 
-  IntRect GetFocusedElementRectForNonLocatedContextMenu(
+  gfx::Rect GetFocusedElementRectForNonLocatedContextMenu(
       Element* focused_element);
 
   // NOTE: If adding a new field to this class please ensure that it is

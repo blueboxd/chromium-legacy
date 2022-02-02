@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/test/bind.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
@@ -417,8 +416,9 @@ class ContentVerifierHashTest
 
 // Tests that corruption of a requested extension resource always disables the
 // extension.
+// Flaky test. See crbug.com/1276043.
 IN_PROC_BROWSER_TEST_P(ContentVerifierHashTest,
-                       TamperRequestedResourceKeepComputedHashes) {
+                       DISABLED_TamperRequestedResourceKeepComputedHashes) {
   ASSERT_TRUE(InstallDefaultResourceExtension());
 
   DisableExtension();

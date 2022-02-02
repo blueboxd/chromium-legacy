@@ -18,6 +18,8 @@ class Notification;
 
 namespace views {
 class BoxLayout;
+class FlexLayoutView;
+class ImageButton;
 class LabelButton;
 class View;
 }  // namespace views
@@ -43,8 +45,17 @@ class ASH_EXPORT AshNotificationView
   // Update the expanded state for grouped child notification.
   void SetGroupedChildExpanded(bool expanded);
 
+  // Animate the grouped child notification when switching between expand and
+  // collapse state.
+  void AnimateGroupedChildExpandedCollapse(bool expanded);
+
   // Toggle the expand state of the notification.
   void ToggleExpand();
+
+  // Gets the animation duration for a recent bounds change. Called after
+  // `PreferredSizeChanged()`, so the current state is the target state.
+  base::TimeDelta GetBoundsAnimationDuration(
+      const message_center::Notification& notification) const;
 
   // message_center::MessageView:
   void AddGroupNotification(const message_center::Notification& notification,
@@ -66,6 +77,7 @@ class ASH_EXPORT AshNotificationView
       const message_center::Notification& notification) override;
   void CreateOrUpdateInlineSettingsViews(
       const message_center::Notification& notification) override;
+  void UpdateControlButtonsVisibility() override;
   bool IsIconViewShown() const override;
   void SetExpandButtonEnabled(bool enabled) override;
   bool IsExpandable() const override;
@@ -78,7 +90,9 @@ class ASH_EXPORT AshNotificationView
       views::Button::PressedCallback callback,
       const std::u16string& label) override;
   gfx::Size GetIconViewSize() const override;
+  int GetLargeImageViewMaxWidth() const override;
   void ToggleInlineSettings(const ui::Event& event) override;
+  void ActionButtonPressed(size_t index, const ui::Event& event) override;
 
  private:
   friend class AshNotificationViewTest;
@@ -103,6 +117,9 @@ class ASH_EXPORT AshNotificationView
     // Update children's visibility based on the state of expand/collapse.
     void UpdateVisibility(bool in_collapsed_mode);
 
+    // Perform expand/collapse animation in children views.
+    void PerformExpandCollapseAnimation();
+
    private:
     friend class AshNotificationViewTest;
 
@@ -117,6 +134,11 @@ class ASH_EXPORT AshNotificationView
     base::OneShotTimer timestamp_update_timer_;
     absl::optional<base::Time> timestamp_;
   };
+
+  // Create or update the customized snooze button in action buttons row
+  // according to the given notification.
+  void CreateOrUpdateSnoozeButton(
+      const message_center::Notification& notification);
 
   // Update `message_in_expanded_view_` according to the given notification.
   void UpdateMessageViewInExpandedState(
@@ -135,9 +157,14 @@ class ASH_EXPORT AshNotificationView
   // Update the color and icon for `app_icon_view_`.
   void UpdateAppIconView();
 
+  // AshNotificationView will animate its expand/collapse in the parent's
+  // ChildPreferredSizeChange(). Child views are animated here.
+  void PerformExpandCollapseAnimation();
+
   // Owned by views hierarchy.
   RoundedImageView* app_icon_view_ = nullptr;
   AshNotificationExpandButton* expand_button_ = nullptr;
+  views::FlexLayoutView* expand_button_container_ = nullptr;
   views::View* control_buttons_container_ = nullptr;
   views::View* left_content_ = nullptr;
   views::Label* message_view_in_expanded_state_ = nullptr;
@@ -147,6 +174,8 @@ class ASH_EXPORT AshNotificationView
   views::View* main_view_ = nullptr;
   views::LabelButton* turn_off_notifications_button_ = nullptr;
   views::LabelButton* inline_settings_cancel_button_ = nullptr;
+  views::View* snooze_button_spacer_ = nullptr;
+  views::ImageButton* snooze_button_ = nullptr;
 
   // These views below are dynamically created inside view hierarchy.
   NotificationTitleRow* title_row_ = nullptr;
@@ -173,6 +202,8 @@ class ASH_EXPORT AshNotificationView
   bool is_grouped_child_view_ = false;
   // Whether this view is shown in a notification popup.
   bool shown_in_popup_ = false;
+
+  base::WeakPtrFactory<AshNotificationView> weak_factory_{this};
 };
 
 }  // namespace ash

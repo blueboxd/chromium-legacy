@@ -86,6 +86,7 @@ constexpr const char kUserActionActivateRemoraRequisition[] =
     "activateRemoraRequisition";
 constexpr const char kUserActionEditDeviceRequisition[] =
     "editDeviceRequisition";
+constexpr const char kUserActionQuickStartClicked[] = "activateQuickStart";
 
 struct WelcomeScreenA11yUserAction {
   const char* name_;
@@ -171,6 +172,8 @@ std::string WelcomeScreen::GetResultString(Result result) {
       return "SetupDemo";
     case Result::ENABLE_DEBUGGING:
       return "EnableDebugging";
+    case Result::QUICK_START:
+      return "QuickStart";
   }
 }
 
@@ -183,7 +186,6 @@ WelcomeScreen::WelcomeScreen(WelcomeView* view,
     view_->Bind(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
-  UpdateLanguageList();
 }
 
 WelcomeScreen::~WelcomeScreen() {
@@ -245,8 +247,11 @@ std::string WelcomeScreen::GetInputMethod() const {
 
 void WelcomeScreen::SetApplicationLocale(const std::string& locale) {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  if (app_locale == locale || locale.empty())
+  if (app_locale == locale || locale.empty()) {
+    if (language_list_.GetList().empty())
+      UpdateLanguageList();
     return;
+  }
 
   // Cancel pending requests.
   weak_factory_.InvalidateWeakPtrs();
@@ -373,6 +378,11 @@ void WelcomeScreen::HideImpl() {
 }
 
 void WelcomeScreen::OnUserAction(const std::string& action_id) {
+  if (action_id == kUserActionQuickStartClicked) {
+    DCHECK(ash::features::IsOobeQuickStartEnabled());
+    exit_callback_.Run(Result::QUICK_START);
+    return;
+  }
   if (action_id == kUserActionContinueButtonClicked) {
     OnContinueButtonPressed();
     return;
@@ -561,7 +571,7 @@ void WelcomeScreen::OnLanguageListResolved(
     const std::string& new_selected_language) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  language_list_ = std::move(new_language_list);
+  language_list_ = std::move(*new_language_list);
   language_list_locale_ = new_language_list_locale;
   selected_language_code_ = new_selected_language;
 

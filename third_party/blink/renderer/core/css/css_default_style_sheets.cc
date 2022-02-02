@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -289,7 +289,7 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
       AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontSize,
                                 settings->GetTextTrackTextSize());
       builder.Append(" } ");
-      text_track_style_sheet_ = ParseUASheet(builder.ToString());
+      text_track_style_sheet_ = ParseUASheet(builder.ReleaseString());
       AddRulesToDefaultStyleSheets(text_track_style_sheet_,
                                    NamespaceType::kMediaControls);
       changed_default_style = true;

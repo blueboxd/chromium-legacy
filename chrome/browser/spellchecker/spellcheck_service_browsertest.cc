@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -270,7 +271,7 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   std::unique_ptr<content::MockRenderProcessHost> renderer_;
 
   // Not owned preferences service.
-  PrefService* prefs_;
+  raw_ptr<PrefService> prefs_;
 
   // Binding to receive the SpellChecker request flow.
   mojo::Receiver<spellcheck::mojom::SpellChecker> receiver_{this};
@@ -630,11 +631,18 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesMigrated) {
   SpellcheckServiceFactory::GetForContext(GetContext());
 
   // Make sure the preferences have been migrated.
-  std::string new_pref;
-  EXPECT_TRUE(GetPrefs()
+  ASSERT_EQ(1u, GetPrefs()
+                    ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                    ->GetList()
+                    .size());
+  ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(0, &new_pref));
-  EXPECT_EQ("en-US", new_pref);
+                  ->GetList()[0]
+                  .is_string());
+  EXPECT_EQ("en-US", GetPrefs()
+                         ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                         ->GetList()[0]
+                         .GetString());
   EXPECT_TRUE(
       GetPrefs()->GetString(spellcheck::prefs::kSpellCheckDictionary).empty());
 }
@@ -650,11 +658,18 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, PreferencesNotMigrated) {
   SpellcheckServiceFactory::GetForContext(GetContext());
 
   // Make sure the preferences have not been migrated.
-  std::string new_pref;
-  EXPECT_TRUE(GetPrefs()
+  ASSERT_EQ(1u, GetPrefs()
+                    ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                    ->GetList()
+                    .size());
+  ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(0, &new_pref));
-  EXPECT_EQ("en-US", new_pref);
+                  ->GetList()[0]
+                  .is_string());
+  EXPECT_EQ("en-US", GetPrefs()
+                         ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                         ->GetList()[0]
+                         .GetString());
   EXPECT_TRUE(
       GetPrefs()->GetString(spellcheck::prefs::kSpellCheckDictionary).empty());
 }
@@ -695,15 +710,22 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                     ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
                     ->GetList()
                     .size());
-  std::string pref;
   ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(0, &pref));
-  EXPECT_EQ("en-US", pref);
+                  ->GetList()[0]
+                  .is_string());
+  EXPECT_EQ("en-US", GetPrefs()
+                         ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                         ->GetList()[0]
+                         .GetString());
   ASSERT_TRUE(GetPrefs()
                   ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
-                  ->GetString(1, &pref));
-  EXPECT_EQ("fr", pref);
+                  ->GetList()[1]
+                  .is_string());
+  EXPECT_EQ("fr", GetPrefs()
+                      ->GetList(spellcheck::prefs::kSpellCheckDictionaries)
+                      ->GetList()[1]
+                      .GetString());
 }
 
 #if defined(OS_WIN)
@@ -721,6 +743,12 @@ class SpellcheckServiceWindowsHybridBrowserTest
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTest,
                        WindowsHybridSpellcheck) {
   if (!spellcheck::WindowsVersionSupportsSpellchecker())
+    return;
+
+  // This test specifically covers the case where spellcheck delayed
+  // initialization is not enabled, so return early if it is. Other tests
+  // cover the case where delayed initialization is enabled.
+  if (base::FeatureList::IsEnabled(spellcheck::kWinDelaySpellcheckServiceInit))
     return;
 
   ASSERT_TRUE(spellcheck::UseBrowserSpellChecker());

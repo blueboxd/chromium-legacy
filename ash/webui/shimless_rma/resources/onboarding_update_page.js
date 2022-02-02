@@ -22,19 +22,18 @@ import {HardwareVerificationStatusObserverInterface, HardwareVerificationStatusO
  * to date before starting the rma process.
  */
 
-// TODO(gavindodd): i18n string
-const operationName = {
-  [OsUpdateOperation.kIdle]: 'Not updating',
-  [OsUpdateOperation.kCheckingForUpdate]: 'checking for update',
-  [OsUpdateOperation.kUpdateAvailable]: 'update found',
-  [OsUpdateOperation.kDownloading]: 'downloading update',
-  [OsUpdateOperation.kVerifying]: 'verifying update',
-  [OsUpdateOperation.kFinalizing]: 'installing update',
-  [OsUpdateOperation.kUpdatedNeedReboot]: 'need reboot',
-  [OsUpdateOperation.kReportingErrorEvent]: 'error updating',
-  [OsUpdateOperation.kAttemptingRollback]: 'attempting rollback',
-  [OsUpdateOperation.kDisabled]: 'update disabled',
-  [OsUpdateOperation.kNeedPermissionToUpdate]: 'need permission to update'
+const operationNameKeys = {
+  [OsUpdateOperation.kIdle]: 'onboardingUpdateIdle',
+  [OsUpdateOperation.kCheckingForUpdate]: 'onboardingUpdateChecking',
+  [OsUpdateOperation.kUpdateAvailable]: 'onboardingUpdateAvailable',
+  [OsUpdateOperation.kDownloading]: 'onboardingUpdateDownloading',
+  [OsUpdateOperation.kVerifying]: 'onboardingUpdateVerifying',
+  [OsUpdateOperation.kFinalizing]: 'onboardingUpdateFinalizing',
+  [OsUpdateOperation.kUpdatedNeedReboot]: 'onboardingUpdateReboot',
+  [OsUpdateOperation.kReportingErrorEvent]: 'onboardingUpdateError',
+  [OsUpdateOperation.kAttemptingRollback]: 'onboardingUpdateRollback',
+  [OsUpdateOperation.kDisabled]: 'onboardingUpdateDisabled',
+  [OsUpdateOperation.kNeedPermissionToUpdate]: 'onboardingUpdatePermission'
 };
 
 /**
@@ -60,6 +59,11 @@ export class OnboardingUpdatePageElement extends
     return {
       /** @protected */
       currentVersionText_: {
+        type: String,
+        value: '',
+      },
+
+      updateVersionText_: {
         type: String,
         value: '',
       },
@@ -159,8 +163,10 @@ export class OnboardingUpdatePageElement extends
   checkForUdpates_() {
     this.shimlessRmaService_.checkForOsUpdates().then((res) => {
       if (res && res.updateAvailable) {
-        this.updateAvailable_ = true;
         this.updateVersion_ = res.version;
+        this.updateVersionText_ =
+            this.i18n('updateVersionRestartLabel', this.updateVersion_);
+        this.updateAvailable_ = true;
       }
 
       this.currentVersionText_ = this.i18n(
@@ -168,6 +174,7 @@ export class OnboardingUpdatePageElement extends
                                   'currentVersionUpToDateText',
           this.currentVersion_);
       this.setUpdateNoticeMessage_();
+      this.setNextButtonLabel_();
     });
   }
 
@@ -180,8 +187,7 @@ export class OnboardingUpdatePageElement extends
         ));
     this.shimlessRmaService_.updateOs().then((res) => {
       if (!res.updateStarted) {
-        // TODO(gavindodd): i18n string
-        this.updateProgressMessage_ = 'OS update failed';
+        this.updateProgressMessage_ = this.i18n('osUpdateFailedToStartText');
         this.updateInProgress_ = false;
         this.dispatchEvent(new CustomEvent(
             'disable-next-button',
@@ -206,18 +212,15 @@ export class OnboardingUpdatePageElement extends
 
   /** @private */
   setUpdateNoticeMessage_() {
-    // TODO(gavindodd): i18n string
     if (!this.isCompliant_) {
-      this.updateNoticeMessage_ = 'An unrecognized component has been found. ' +
-          'Unrecognized devices will not be configured correctly and may be ' +
-          'unusable. Updating to the latest version of Chrome OS may resolve ' +
-          'this issue.';
+      this.updateNoticeMessage_ =
+          this.i18n('osUpdateInvalidComponentsDescriptionText');
     } else if (this.updateAvailable_) {
       // TODO(gavindodd): Do we need a check that the current major version is
       // within n of the installed version to switch between this message and
       // 'Chrome OS needs an additional update to get fully up to date.'?
-      this.updateNoticeMessage_ = 'If Chrome OS is out of date, Shimless RMA ' +
-          'process may have been updated since this version was installed.';
+      this.updateNoticeMessage_ =
+          this.i18n('osUpdateVeryOutOfDateDescriptionText');
     } else {
       // Note: In current implementation this should not be reached, but it is
       // still a perfectly valid state.
@@ -252,9 +255,9 @@ export class OnboardingUpdatePageElement extends
           {bubbles: true, composed: true, detail: false},
           ));
     }
-    // TODO(gavindodd): i18n string
-    this.updateProgressMessage_ = 'OS update progress received ' +
-        operationName[operation] + ' ' + Math.round(progress * 100) + '%';
+    this.updateProgressMessage_ = this.i18n(
+        'onboardingUpdateProgress', this.i18n(operationNameKeys[operation]),
+        Math.round(progress * 100));
   }
 
   /**
@@ -266,6 +269,18 @@ export class OnboardingUpdatePageElement extends
   onHardwareVerificationResult(isCompliant, errorMessage) {
     this.isCompliant_ = isCompliant;
     this.setUpdateNoticeMessage_();
+  }
+
+  /** @protected */
+  setNextButtonLabel_() {
+    this.dispatchEvent(new CustomEvent(
+        'set-next-button-label',
+        {
+          bubbles: true,
+          composed: true,
+          detail: this.updateAvailable_ ? 'skipButtonLabel' : 'nextButtonLabel'
+        },
+        ));
   }
 }
 

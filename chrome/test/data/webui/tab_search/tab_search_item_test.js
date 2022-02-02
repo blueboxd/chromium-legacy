@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Tab, TabData, TabGroup, TabGroupColor, TabItemType, TabSearchItem} from 'chrome://tab-search.top-chrome/tab_search.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {assertDeepEquals, assertEquals, assertNotEquals} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+import {Tab, TabAlertState, TabData, TabGroup, TabGroupColor, TabItemType, TabSearchItem} from 'chrome://tab-search.top-chrome/tab_search.js';
+
+import {assertDeepEquals, assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
+import {flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {sampleToken} from './tab_search_test_data.js';
-import {typed} from './tab_search_test_helper.js';
 
 suite('TabSearchItemTest', () => {
   /** @type {!TabSearchItem} */
@@ -18,7 +19,7 @@ suite('TabSearchItemTest', () => {
   async function setupTest(data) {
     tabSearchItem = /** @type {!TabSearchItem} */ (
         document.createElement('tab-search-item'));
-    tabSearchItem.data = typed(data, TabData);
+    tabSearchItem.data = data;
     document.body.innerHTML = '';
     document.body.appendChild(tabSearchItem);
     await flushTasks();
@@ -31,24 +32,23 @@ suite('TabSearchItemTest', () => {
    */
   async function assertTabSearchItemHighlights(
       text, fieldHighlightRanges, expected) {
-    const data = /** @type {!TabData} */ ({
-      hostname: text,
-      tab: {
-        active: true,
-        index: 0,
-        isDefaultFavicon: true,
-        lastActiveTimeTicks: {internalValue: BigInt(0)},
-        pinned: false,
-        showIcon: true,
-        tabId: 0,
-        url: {url: 'https://example.com'},
-        title: text,
-      },
-      highlightRanges: {
-        'tab.title': fieldHighlightRanges,
-        hostname: fieldHighlightRanges,
-      },
-    });
+    const data = new TabData(
+        {
+          active: true,
+          index: 0,
+          isDefaultFavicon: true,
+          lastActiveTimeTicks: {internalValue: BigInt(0)},
+          pinned: false,
+          showIcon: true,
+          tabId: 0,
+          url: {url: 'https://example.com'},
+          title: text,
+        },
+        TabItemType.OPEN_TAB, text);
+    data.highlightRanges = {
+      'tab.title': fieldHighlightRanges,
+      hostname: fieldHighlightRanges,
+    };
     await setupTest(data);
 
     assertHighlight(
@@ -84,31 +84,33 @@ suite('TabSearchItemTest', () => {
   });
 
   test('CloseButtonPresence', async () => {
-    const tab = /** @type {!Tab} */ ({
-      active: true,
-      index: 0,
-      isDefaultFavicon: true,
-      lastActiveTimeTicks: {internalValue: BigInt(0)},
-      pinned: false,
-      showIcon: true,
-      tabId: 0,
-      url: {url: 'https://example.com'},
-      title: 'Example.com site',
-    });
-
-    await setupTest(/** @type {!TabData} */ ({
-      hostname: 'example',
-      tab,
-      type: TabItemType.OPEN_TAB,
-      highlightRanges: {},
-    }));
+    await setupTest(new TabData(
+        {
+          active: true,
+          alertStates: [],
+          index: 0,
+          isDefaultFavicon: true,
+          lastActiveTimeTicks: {internalValue: BigInt(0)},
+          pinned: false,
+          showIcon: true,
+          tabId: 0,
+          url: {url: 'https://example.com'},
+          title: 'Example.com site',
+        },
+        TabItemType.OPEN_TAB, 'example'));
 
     let tabSearchItemCloseButton = /** @type {!HTMLElement} */ (
         tabSearchItem.shadowRoot.querySelector('cr-icon-button'));
     assertNotEquals(null, tabSearchItemCloseButton);
 
-    await setupTest(/** @type {!TabData} */ (
-        {hostname: 'example', tab, type: TabItemType.RECENTLY_CLOSED_TAB}));
+    await setupTest(new TabData(
+        {
+          tabId: 0,
+          title: 'Example.com site',
+          url: {url: 'https://example.com'},
+          lastActiveTimeTicks: {internalValue: BigInt(0)},
+        },
+        TabItemType.RECENTLY_CLOSED_TAB, 'example'));
 
     tabSearchItemCloseButton = /** @type {!HTMLElement} */ (
         tabSearchItem.shadowRoot.querySelector('cr-icon-button'));
@@ -119,6 +121,7 @@ suite('TabSearchItemTest', () => {
     const token = sampleToken(1, 1);
     const tab = /** @type {!Tab} */ ({
       active: true,
+      alertStates: [],
       index: 0,
       isDefaultFavicon: true,
       lastActiveTimeTicks: {internalValue: BigInt(0)},
@@ -136,13 +139,9 @@ suite('TabSearchItemTest', () => {
       title: 'Examples',
     });
 
-    await setupTest(/** @type {!TabData} */ ({
-      hostname: 'example',
-      tab,
-      type: TabItemType.OPEN_TAB,
-      tabGroup,
-      highlightRanges: {},
-    }));
+    const tabData = new TabData(tab, TabItemType.OPEN_TAB, 'example');
+    tabData.tabGroup = tabGroup;
+    await setupTest(tabData);
 
     const groupDotElement = tabSearchItem.shadowRoot.querySelector('#groupDot');
     assertNotEquals(null, groupDotElement);
@@ -154,4 +153,56 @@ suite('TabSearchItemTest', () => {
     assertNotEquals(
         null, tabSearchItem.shadowRoot.querySelector('#groupTitle'));
   });
+
+  test('MediaAlertIndicatorPresence', async () => {
+    const token = sampleToken(1, 1);
+    const tab = /** @type {!Tab} */ ({
+      active: true,
+      alertStates: [TabAlertState.kMediaRecording, TabAlertState.kAudioPlaying],
+      index: 0,
+      isDefaultFavicon: true,
+      lastActiveTimeTicks: {internalValue: BigInt(0)},
+      pinned: false,
+      showIcon: true,
+      tabId: 0,
+      groupId: token,
+      url: {url: 'https://example.com'},
+      title: 'Example.com site',
+    });
+
+    await setupTest(new TabData(tab, TabItemType.OPEN_TAB, 'example'));
+
+    const recordingMediaAlert =
+        tabSearchItem.shadowRoot.querySelector('#mediaAlert');
+    assertNotEquals(null, recordingMediaAlert);
+    assertEquals('media-recording', recordingMediaAlert.getAttribute('class'));
+  });
+
+  test('MediaAlertIndicatorPresenceWithUnsupportedAlert', async () => {
+    /* Since we currently don't consider DesktopCapturing, the AudioPlaying
+     * should be displayed */
+    const token = sampleToken(1, 1);
+    const tab = /** @type {!Tab} */ ({
+      active: true,
+      alertStates:
+          [TabAlertState.kDesktopCapturing, TabAlertState.kAudioPlaying],
+      index: 0,
+      isDefaultFavicon: true,
+      lastActiveTimeTicks: {internalValue: BigInt(0)},
+      pinned: false,
+      showIcon: true,
+      tabId: 0,
+      groupId: token,
+      url: {url: 'https://example.com'},
+      title: 'Example.com site',
+    });
+
+    await setupTest(new TabData(tab, TabItemType.OPEN_TAB, 'example'));
+
+    const audioMediaAlert =
+        tabSearchItem.shadowRoot.querySelector('#mediaAlert');
+    assertNotEquals(null, audioMediaAlert);
+    assertEquals('audio-playing', audioMediaAlert.getAttribute('class'));
+  });
+
 });

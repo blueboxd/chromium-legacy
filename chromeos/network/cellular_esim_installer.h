@@ -9,7 +9,6 @@
 
 #include "base/component_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/hermes/hermes_response_status.h"
 #include "chromeos/network/cellular_inhibitor.h"
@@ -80,14 +79,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimInstaller {
 
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  enum class InstallProfileViaQrCodeResult {
+  enum class InstallESimProfileResult {
     kSuccess = 0,
     kInhibitFailed = 1,
     kHermesInstallFailed = 2,
     kMaxValue = kHermesInstallFailed
   };
-  static void RecordInstallProfileViaQrCodeResult(
-      InstallProfileViaQrCodeResult result);
+  static void RecordInstallESimProfileResult(InstallESimProfileResult result,
+                                             bool is_managed);
 
   void PerformInstallProfileFromActivationCode(
       const std::string& activation_code,

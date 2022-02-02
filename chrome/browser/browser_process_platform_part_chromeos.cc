@@ -8,11 +8,14 @@
 #include <utility>
 
 #include "ash/components/account_manager/account_manager_factory.h"
+#include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
+#include "ash/components/arc/enterprise/snapshot_hours_policy_service.h"
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/timezone/timezone_resolver.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -34,7 +37,6 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,8 +52,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/app_restore/features.h"
-#include "components/arc/enterprise/arc_data_snapshotd_manager.h"
-#include "components/arc/enterprise/snapshot_hours_policy_service.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -161,7 +162,7 @@ void BrowserProcessPlatformPart::BrowserRestoreObserver::RestoreUrls(
   for (const auto& url : pref.urls)
     urls.push_back(url);
 
-  ProtocolHandlerRegistry* registry =
+  custom_handlers::ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(browser->profile());
   for (const GURL& url : urls) {
     // We skip URLs that we'd have to launch an external protocol handler for.
@@ -196,6 +197,7 @@ void BrowserProcessPlatformPart::InitializeAutomaticRebootManager() {
 
   automatic_reboot_manager_ =
       std::make_unique<ash::system::AutomaticRebootManager>(
+          base::DefaultClock::GetInstance(),
           base::DefaultTickClock::GetInstance());
 }
 
@@ -265,7 +267,7 @@ void BrowserProcessPlatformPart::ShutdownCrosComponentManager() {
 void BrowserProcessPlatformPart::InitializeSchedulerConfigurationManager() {
   DCHECK(!scheduler_configuration_manager_);
   scheduler_configuration_manager_ =
-      std::make_unique<chromeos::SchedulerConfigurationManager>(
+      std::make_unique<ash::SchedulerConfigurationManager>(
           chromeos::DBusThreadManager::Get()->GetDebugDaemonClient(),
           g_browser_process->local_state());
 }

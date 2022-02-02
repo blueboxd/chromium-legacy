@@ -4,6 +4,7 @@
 
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 
+#include "base/guid.h"
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -21,14 +22,12 @@ AttributionReport GetReport(base::Time impression_time,
                             base::TimeDelta expiry = kDefaultExpiry,
                             StorableSource::SourceType source_type =
                                 StorableSource::SourceType::kNavigation) {
-  base::Time report_time = conversion_time;
-  return AttributionReport(SourceBuilder(impression_time)
-                               .SetExpiry(expiry)
-                               .SetSourceType(source_type)
-                               .Build(),
-                           /*trigger_data=*/123, conversion_time, report_time,
-                           /*priority=*/0,
-                           /*conversion_id=*/absl::nullopt);
+  return ReportBuilder(SourceBuilder(impression_time)
+                           .SetExpiry(expiry)
+                           .SetSourceType(source_type)
+                           .Build())
+      .SetConversionTime(conversion_time)
+      .Build();
 }
 
 }  // namespace
@@ -138,6 +137,10 @@ TEST_F(AttributionStorageDelegateImplTest,
   EXPECT_EQ(impression_time + base::Days(4) + base::Hours(1),
             AttributionStorageDelegateImpl().GetReportTime(
                 report.impression, report.conversion_time));
+}
+
+TEST_F(AttributionStorageDelegateImplTest, NewReportID_IsValidGUID) {
+  EXPECT_TRUE(AttributionStorageDelegateImpl().NewReportID().is_valid());
 }
 
 }  // namespace content

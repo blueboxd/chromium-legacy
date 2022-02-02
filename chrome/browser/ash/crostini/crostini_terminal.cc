@@ -4,17 +4,29 @@
 
 #include "chrome/browser/ash/crostini/crostini_terminal.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/feature_list.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/menu_item_constants.h"
+#include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_installer.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,10 +39,14 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/base_window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -46,6 +62,35 @@ constexpr char kDefaultBackgroundColor[] = "#202124";
 
 constexpr char kSettingPassCtrlW[] = "/hterm/profiles/default/pass-ctrl-w";
 constexpr bool kDefaultPassCtrlW = false;
+
+constexpr char kShortcutKey[] = "shortcut";
+constexpr char kShortcutValueSSH[] = "ssh";
+constexpr char kShortcutValueTerminal[] = "terminal";
+
+std::string ShortcutIdForSSH() {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey(kShortcutKey, base::Value(kShortcutValueSSH));
+  std::string shortcut_id;
+  base::JSONWriter::Write(dict, &shortcut_id);
+  return shortcut_id;
+}
+
+std::string ShortcutIdFromContainerId(const crostini::ContainerId& id) {
+  base::Value dict = id.ToDictValue();
+  dict.SetKey(kShortcutKey, base::Value(kShortcutValueTerminal));
+  std::string shortcut_id;
+  base::JSONWriter::Write(dict, &shortcut_id);
+  return shortcut_id;
+}
+
+base::flat_map<std::string, std::string> ExtrasFromShortcutId(
+    const base::Value& shortcut) {
+  base::flat_map<std::string, std::string> extras;
+  for (const auto it : shortcut.DictItems()) {
+    extras[it.first] = it.second.GetString();
+  }
+  return extras;
+}
 
 GURL GenerateVshInCroshUrl(Profile* profile,
                            const ContainerId& container_id,
@@ -106,6 +151,30 @@ void LaunchTerminalImpl(Profile* profile,
   LOG(WARNING) << "Profile becomes invalid. Abort launching terminal.";
 }
 
+// Loads |resource_ids| and appends the gfx::ImageSkia results to |images|.
+// Invokes |callback| with |images| when complete.
+void LoadIconsFromResources(
+    std::vector<int> resource_ids,
+    std::vector<gfx::ImageSkia> images,
+    base::OnceCallback<void(std::vector<gfx::ImageSkia>)> callback) {
+  if (images.size() >= resource_ids.size()) {
+    return std::move(callback).Run(std::move(images));
+  }
+  apps::LoadIconFromResource(
+      apps::IconType::kStandard, apps::kAppShortcutIconSizeDip,
+      resource_ids[images.size()], /*placeholder=*/false,
+      apps::IconEffects::kNone,
+      base::BindOnce(
+          [](std::vector<int> resource_ids, std::vector<gfx::ImageSkia> images,
+             base::OnceCallback<void(std::vector<gfx::ImageSkia>)> callback,
+             apps::IconValuePtr icon) {
+            images.emplace_back(std::move(icon->uncompressed));
+            LoadIconsFromResources(std::move(resource_ids), std::move(images),
+                                   std::move(callback));
+          },
+          std::move(resource_ids), std::move(images), std::move(callback)));
+}
+
 }  // namespace
 
 void LaunchTerminal(Profile* profile,
@@ -116,6 +185,11 @@ void LaunchTerminal(Profile* profile,
   GURL vsh_in_crosh_url =
       GenerateVshInCroshUrl(profile, container_id, cwd, terminal_args);
   LaunchTerminalWithUrl(profile, display_id, vsh_in_crosh_url);
+}
+
+void LaunchTerminalForSSH(Profile* profile, int64_t display_id) {
+  LaunchTerminalWithUrl(profile, display_id,
+                        GURL("chrome-untrusted://terminal/html/nassh.html"));
 }
 
 void LaunchTerminalWithUrl(Profile* profile,
@@ -145,6 +219,68 @@ void LaunchTerminalWithUrl(Profile* profile,
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(LaunchTerminalImpl, profile, url, std::move(*params)));
+}
+
+void LaunchTerminalWithIntent(Profile* profile,
+                              int64_t display_id,
+                              apps::mojom::IntentPtr intent,
+                              CrostiniSuccessCallback callback) {
+  // Check if crostini is installed.
+  if (!CrostiniFeatures::Get()->IsEnabled(profile)) {
+    crostini::CrostiniInstaller::GetForProfile(profile)->ShowDialog(
+        CrostiniUISurface::kAppList);
+    return std::move(callback).Run(false, "Crostini not installed");
+  }
+
+  // Look for vm_name and container_name in intent->extras.
+  ContainerId container_id = ContainerId::GetDefault();
+  if (intent && intent->extras.has_value()) {
+    for (const auto& extra : intent->extras.value()) {
+      if (extra.first == "vm_name") {
+        container_id.vm_name = extra.second;
+      } else if (extra.first == "container_name") {
+        container_id.container_name = extra.second;
+      }
+    }
+  }
+
+  // Check if we need to show recovery.
+  auto* crostini_manager = crostini::CrostiniManager::GetForProfile(profile);
+  if (crostini_manager->IsUncleanStartup()) {
+    ShowCrostiniRecoveryView(profile, crostini::CrostiniUISurface::kAppList,
+                             kCrostiniTerminalSystemAppId, display_id, {},
+                             base::DoNothing());
+    return std::move(callback).Run(false, "Recovery required");
+  }
+
+  // Use first file (if any) as cwd.
+  std::string cwd;
+  CrostiniManager::RestartOptions options;
+  auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
+  if (intent && intent->files && intent->files->size()) {
+    GURL gurl = intent->files.value()[0]->url;
+    storage::ExternalMountPoints* mount_points =
+        storage::ExternalMountPoints::GetSystemInstance();
+    storage::FileSystemURL url = mount_points->CrackURL(
+        gurl, blink::StorageKey(url::Origin::Create(gurl)));
+    base::FilePath path;
+    if (file_manager::util::ConvertFileSystemURLToPathInsideCrostini(
+            profile, url, &path)) {
+      cwd = path.value();
+      if (url.mount_filesystem_id() !=
+              file_manager::util::GetCrostiniMountPointName(profile) &&
+          !share_path->IsPathShared(container_id.vm_name, url.path())) {
+        options.share_paths.push_back(url.path());
+      }
+    } else {
+      LOG(WARNING) << "Failed to parse: " << gurl;
+    }
+  }
+
+  CrostiniManager::GetForProfile(profile)->RestartCrostiniWithOptions(
+      container_id, std::move(options), base::DoNothing());
+  LaunchTerminal(profile, display_id, container_id, cwd);
+  std::move(callback).Run(true, "");
 }
 
 void LaunchTerminalSettings(Profile* profile, int64_t display_id) {
@@ -276,6 +412,108 @@ bool GetTerminalSettingPassCtrlW(Profile* profile) {
   const base::DictionaryValue* value = profile->GetPrefs()->GetDictionary(
       crostini::prefs::kCrostiniTerminalSettings);
   return value->FindBoolKey(kSettingPassCtrlW).value_or(kDefaultPassCtrlW);
+}
+
+void AddTerminalMenuItems(Profile* profile,
+                          apps::mojom::MenuItemsPtr* menu_items) {
+  apps::AddCommandItem(ash::SETTINGS, IDS_INTERNAL_APP_SETTINGS, menu_items);
+  if (IsCrostiniRunning(profile)) {
+    apps::AddCommandItem(ash::SHUTDOWN_GUEST_OS,
+                         IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM, menu_items);
+  }
+}
+
+void AddTerminalMenuShortcuts(
+    Profile* profile,
+    int next_command_id,
+    apps::mojom::MenuItemsPtr menu_items,
+    apps::mojom::Publisher::GetMenuModelCallback callback,
+    std::vector<gfx::ImageSkia> images) {
+  constexpr bool kIconIndexSSH = 0;
+  constexpr bool kIconIndexTerminal = 1;
+  if (images.empty()) {
+    std::vector<int> resource_ids = {IDR_LOGO_CROSTINI_TERMINAL_SSH,
+                                     IDR_CROSTINI_MASCOT};
+    return LoadIconsFromResources(
+        std::move(resource_ids), std::vector<gfx::ImageSkia>(),
+        base::BindOnce(
+            [](Profile* profile, int next_command_id,
+               apps::mojom::MenuItemsPtr menu_items,
+               apps::mojom::Publisher::GetMenuModelCallback callback,
+               std::vector<gfx::ImageSkia> images) {
+              AddTerminalMenuShortcuts(profile, next_command_id,
+                                       std::move(menu_items),
+                                       std::move(callback), std::move(images));
+            },
+            profile, next_command_id, std::move(menu_items),
+            std::move(callback)));
+  }
+
+  DCHECK_EQ(2, images.size());
+  if (base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH)) {
+    apps::AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
+    apps::AddShortcutCommandItem(
+        next_command_id++, ShortcutIdForSSH(),
+        l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_CONNECT_TO_SSH),
+        images[kIconIndexSSH], &menu_items);
+  }
+
+  if (!CrostiniFeatures::Get()->IsEnabled(profile)) {
+    return std::move(callback).Run(std::move(menu_items));
+  }
+
+  if (crostini::CrostiniFeatures::Get()->IsMultiContainerAllowed(profile)) {
+    const base::Value* container_list =
+        profile->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
+    if (container_list && container_list->GetList().size() > 1) {
+      // Shortcuts for each container.
+      for (const auto& dict : container_list->GetList()) {
+        crostini::ContainerId id(dict);
+        if (!id.vm_name.empty() && !id.container_name.empty()) {
+          std::string shortcut_id = ShortcutIdFromContainerId(id);
+          std::string label =
+              base::StrCat({id.vm_name, ":", id.container_name});
+          apps::AddShortcutCommandItem(next_command_id++, shortcut_id, label,
+                                       images[kIconIndexTerminal], &menu_items);
+        }
+      }
+      return std::move(callback).Run(std::move(menu_items));
+    }
+  }
+
+  // Single shortcut: 'Connect to Linux'.
+  if (base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH)) {
+    std::string shortcut_id =
+        ShortcutIdFromContainerId(ContainerId::GetDefault());
+    apps::AddShortcutCommandItem(
+        next_command_id++, shortcut_id,
+        l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_CONNECT_TO_LINUX),
+        images[kIconIndexTerminal], &menu_items);
+  }
+  std::move(callback).Run(std::move(menu_items));
+}
+
+bool ExecuteTerminalMenuShortcutCommand(Profile* profile,
+                                        const std::string& shortcut_id,
+                                        int64_t display_id) {
+  auto shortcut = base::JSONReader::Read(shortcut_id);
+  if (!shortcut || !shortcut->is_dict()) {
+    return false;
+  }
+  const std::string* shortcut_value = shortcut->FindStringKey(kShortcutKey);
+  if (shortcut_value && *shortcut_value == kShortcutValueSSH) {
+    LaunchTerminalForSSH(profile, display_id);
+    return true;
+  }
+
+  if (!shortcut_value || *shortcut_value != kShortcutValueTerminal) {
+    return false;
+  }
+  apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
+  intent->extras = ExtrasFromShortcutId(std::move(*shortcut));
+  LaunchTerminalWithIntent(profile, display_id, std::move(intent),
+                           base::DoNothing());
+  return true;
 }
 
 }  // namespace crostini

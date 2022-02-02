@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
@@ -120,7 +120,7 @@ class MockServerSocket : public net::ServerSocket {
   net::IoMode mode_ = net::SYNCHRONOUS;
   int accept_result_ = net::OK;
   net::CompletionOnceCallback accept_callback_;
-  std::unique_ptr<net::StreamSocket>* accept_socket_;
+  raw_ptr<std::unique_ptr<net::StreamSocket>> accept_socket_;
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<net::StaticSocketDataProvider>> data_providers_;
   size_t next_data_provider_index_ = 0;
@@ -583,11 +583,8 @@ TEST_F(TCPSocketTest, SocketClosed) {
   // On some macOS kernels, send() on a closing TCP socket can return
   // EPROTOTYPE, which is unknown to the net stack and gets mapped to
   // net::ERR_FAILED.
-  // This behavior is known to exist as late as 10.12. Whether it exists after
-  // that is unknown.
   // See https://crbug.com/1034991
-  if (base::mac::IsAtMostOS10_12())
-    result_ok |= result == net::ERR_FAILED;
+  result_ok |= result == net::ERR_FAILED;
 #endif
   EXPECT_TRUE(result_ok) << "actual result: " << result;
 }

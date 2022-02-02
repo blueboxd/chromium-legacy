@@ -5,6 +5,7 @@
 module apps.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/safe_base_name.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/image/mojom/image.mojom";
 import "url/mojom/url.mojom";
@@ -63,6 +64,10 @@ struct App {
   OptionalBool show_in_search;
   OptionalBool show_in_management;
 
+  // kTrue if the app is able to handle intents and should be shown in intent
+  // surfaces.
+  OptionalBool handles_intents;
+
   // Whether the app publisher allows the app to be uninstalled.
   OptionalBool allow_uninstall;
 
@@ -115,7 +120,7 @@ enum AppType {
   kArc,                   // Android app.
   kBuiltIn,               // Built-in app.
   kCrostini,              // Linux (via Crostini) app.
-  kExtension,             // Extension-backed app.
+  kChromeApp,             // Chrome app.
   kWeb,                   // Web app.
   kMacOs,                 // Mac OS app.
   kPluginVm,              // Plugin VM app, see go/pluginvm.
@@ -123,7 +128,7 @@ enum AppType {
   kRemote,                // Remote app.
   kBorealis,              // Borealis app, see go/borealis-app.
   kSystemWeb,             // System web app.
-  kStandaloneBrowserExtension,  // Extension based apps hosted in Lacros.
+  kStandaloneBrowserChromeApp,  // Chrome app hosted in Lacros.
 };
 
 // Whether an app is ready to launch, i.e. installed.
@@ -418,12 +423,14 @@ struct IntentFile {
   // information in cases where fetching the metadata through the file would be
   // difficult or expensive.
 
-  string? mime_type;  // File MIME type.
-  // TODO(crbug.com/1238215): Use BaseName instead, when available.
-  string? file_name;  // Human readable file name, including extension. Should
-                      // not contain path separators.
-  uint64 file_size;   // File size in bytes.
-  OptionalBool is_directory; // Whether this is a directory or not.
+  // File MIME type.
+  string? mime_type;
+  // Human readable file name, including extension.
+  mojo_base.mojom.SafeBaseName? file_name;
+  // File size in bytes.
+  uint64 file_size;
+  // Whether this is a directory or not.
+  OptionalBool is_directory;
 };
 
 // Action and resource handling request. This should

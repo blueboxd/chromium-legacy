@@ -136,7 +136,6 @@ Next we need a class to handle requests to this new resource URL. Typically this
 #define COMPONENTS_HELLO_WORLD_HELLO_WORLD_UI_H_
 #pragma once
 
-#include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The WebUI for chrome://hello-world
@@ -246,7 +245,7 @@ You probably want your new WebUI page to be able to do something or get informat
 +
 +   // Register callback handler.
 +   RegisterMessageCallback("addNumbers",
-+       base::BindRepeating(&HelloWorldUI::AddNumbers,
++       base::BindRepeating(&HelloWorldUI::AddPositiveNumbers,
 +                           base::Unretained(this)));
 
     // Localized strings.
@@ -254,8 +253,8 @@ You probably want your new WebUI page to be able to do something or get informat
     virtual ~HelloWorldUI();
 +
 +  private:
-+   // Add two numbers together using integer arithmetic.
-+   void AddNumbers(base::Value::ConstListView args);
++   // Add two positive numbers together using integer arithmetic.
++   void AddPositiveNumbers(base::Value::ConstListView args);
   };
 ```
 
@@ -269,11 +268,13 @@ You probably want your new WebUI page to be able to do something or get informat
   HelloWorldUI::~HelloWorldUI() {
   }
 +
-+ void HelloWorldUI::AddNumbers(base::Value::ConstListView args) {
-+   if (args.size() != 3)
-+     return;
++ void HelloWorldUI::AddPositiveNumbers(base::Value::ConstListView args) {
++   // IMPORTANT: Fully validate `args`.
++   CHECK_EQ(3u, args.size());
 +   int term1 = args[1].GetInt();
++   CHECK_GT(term1, 0);
 +   int term2 = args[2].GetInt();
++   CHECK_GT(term2, 0);
 +   base::FundamentalValue result(term1 + term2);
 +   AllowJavascript();
 +   std::string callback_id = args[0].GetString();

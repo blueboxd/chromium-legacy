@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -23,7 +22,7 @@ class ShellPlatformDelegate;
 
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
-  explicit ShellBrowserMainParts(const MainFunctionParams& parameters);
+  explicit ShellBrowserMainParts(MainFunctionParams parameters);
 
   ShellBrowserMainParts(const ShellBrowserMainParts&) = delete;
   ShellBrowserMainParts& operator=(const ShellBrowserMainParts&) = delete;
@@ -69,8 +68,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   std::unique_ptr<ShellBrowserContext> off_the_record_browser_context_;
 
   // For running content_browsertests.
-  const MainFunctionParams parameters_;
-  bool run_message_loop_;
+  MainFunctionParams parameters_;
 
   std::unique_ptr<performance_manager::PerformanceManagerLifetime>
       performance_manager_lifetime_;

@@ -115,7 +115,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
           expected.ToString().Ascii().c_str(),                                 \
           inflated_expected.ToString().Ascii().c_str()));                      \
       EXPECT_TRUE(                                                             \
-          PhysicalRect(EnclosingIntRect(slow_path_rect)).Contains(expected));  \
+          PhysicalRect(ToEnclosingRect(slow_path_rect)).Contains(expected));   \
       EXPECT_TRUE(inflated_expected.Contains(slow_path_rect));                 \
     } else {                                                                   \
       SCOPED_TRACE("Slow path: ");                                             \
@@ -128,11 +128,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          PaintPropertyTreeBuilderTest,
-                         ::testing::Values(0,
-                                           kCompositeAfterPaint,
-                                           kUnderInvalidationChecking,
-                                           kCompositeAfterPaint |
-                                               kUnderInvalidationChecking));
+                         ::testing::Values(0, kUnderInvalidationChecking));
 
 TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   LoadTestData("fixed-position.html");
@@ -1516,7 +1512,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
   ASSERT_NE(nullptr, clip);
   EXPECT_EQ(nullptr, transform);
   EXPECT_EQ(parent_clip, clip->Parent());
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 30, 30), clip);
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 30, 30), clip);
   EXPECT_EQ(parent_transform, &clip->LocalTransformSpace());
 
   // overflow: hidden and non-zero offset and viewport scale:
@@ -1528,7 +1524,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGViewportContainer) {
   ASSERT_NE(nullptr, clip);
   ASSERT_NE(nullptr, transform);
   EXPECT_EQ(parent_clip, clip->Parent());
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 60, 60), clip);
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 60, 60), clip);
   EXPECT_EQ(transform, &clip->LocalTransformSpace());
   EXPECT_EQ(TransformationMatrix().Translate(40, 50).Scale(0.5),
             transform->Matrix());
@@ -1571,7 +1567,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGForeignObjectOverflowClip) {
   const auto* clip = properties1->OverflowClip();
   ASSERT_NE(nullptr, clip);
   EXPECT_EQ(parent_clip, clip->Parent());
-  EXPECT_CLIP_RECT(FloatRect(10, 20, 30, 40), clip);
+  EXPECT_CLIP_RECT(gfx::RectF(10, 20, 30, 40), clip);
   EXPECT_EQ(parent_transform, &clip->LocalTransformSpace());
 
   const auto* properties2 = PaintPropertiesForElement("object2");
@@ -1595,7 +1591,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipWithEmptyVisualOverflow) {
 
   const auto* clip = PaintPropertiesForElement("container")->OverflowClip();
   EXPECT_NE(nullptr, clip);
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 90, 90), clip);
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 90, 90), clip);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -1767,14 +1763,14 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
   // radius of the corner may transition from one value to the other. i.e. being
   // an ellipse.
   // The following is border box(610, 500) - border outset(110, 100).
-  FloatRect border_box_minus_border_outset(60, 45, 500, 400);
+  gfx::RectF border_box_minus_border_outset(60, 45, 500, 400);
   EXPECT_CLIP_RECT(
       FloatRoundedRect(
           border_box_minus_border_outset,
-          FloatSize(),        // (top left) = max((12, 12) - (60, 45), (0, 0))
-          FloatSize(),        // (top right) = max((34, 34) - (50, 45), (0, 0))
-          FloatSize(18, 23),  // (bot left) = max((78, 78) - (60, 55), (0, 0))
-          FloatSize(6, 1)),   // (bot right) = max((56, 56) - (50, 55), (0, 0))
+          gfx::SizeF(),        // (top left) = max((12, 12) - (60, 45), (0, 0))
+          gfx::SizeF(),        // (top right) = max((34, 34) - (50, 45), (0, 0))
+          gfx::SizeF(18, 23),  // (bot left) = max((78, 78) - (60, 55), (0, 0))
+          gfx::SizeF(6, 1)),   // (bot right) = max((56, 56) - (50, 55), (0, 0))
       &border_radius_clip);
   EXPECT_EQ(DocContentClip(), border_radius_clip.Parent());
   CHECK_EXACT_VISUAL_RECT(PhysicalRect(0, 0, 610, 500), &div,
@@ -1808,7 +1804,7 @@ TEST_P(PaintPropertyTreeBuilderTest, SubpixelBorderRadiusClip) {
   expected_layout_clip_rect.SetHasRadius();
   EXPECT_EQ(expected_layout_clip_rect, border_radius_clip->LayoutClipRect());
   EXPECT_EQ(
-      FloatRoundedRect(FloatRect(0, 1, 100, 100), FloatRoundedRect::Radii(50)),
+      FloatRoundedRect(gfx::RectF(0, 1, 100, 100), FloatRoundedRect::Radii(50)),
       border_radius_clip->PaintClipRect());
 }
 
@@ -2219,7 +2215,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
   EXPECT_EQ(DocContentClip(), clip_properties->CssClip()->Parent());
   EXPECT_EQ(DocScrollTranslation(),
             &clip_properties->CssClip()->LocalTransformSpace());
-  EXPECT_CLIP_RECT(FloatRect(absolute_clip_rect), clip_properties->CssClip());
+  EXPECT_CLIP_RECT(gfx::RectF(absolute_clip_rect), clip_properties->CssClip());
   CHECK_VISUAL_RECT(absolute_clip_rect, &clip,
                     GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace()
@@ -2278,7 +2274,7 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
   EXPECT_TRUE(DocScrollTranslation());
   EXPECT_EQ(DocScrollTranslation(),
             &clip_properties->CssClip()->LocalTransformSpace());
-  EXPECT_CLIP_RECT(FloatRect(absolute_clip_rect), clip_properties->CssClip());
+  EXPECT_CLIP_RECT(gfx::RectF(absolute_clip_rect), clip_properties->CssClip());
   CHECK_VISUAL_RECT(absolute_clip_rect, clip,
                     GetDocument().View()->GetLayoutView(),
                     // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace()
@@ -2332,9 +2328,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipSubpixel) {
   EXPECT_TRUE(DocScrollTranslation());
   EXPECT_EQ(DocScrollTranslation(),
             &clip_properties->CssClip()->LocalTransformSpace());
-  EXPECT_EQ(FloatClipRect(ToGfxRectF(FloatRect(absolute_clip_rect))),
+  EXPECT_EQ(FloatClipRect(gfx::RectF(absolute_clip_rect)),
             clip_properties->CssClip()->LayoutClipRect());
-  EXPECT_EQ(FloatRoundedRect(PixelSnappedIntRect((absolute_clip_rect))),
+  EXPECT_EQ(FloatRoundedRect(ToPixelSnappedRect((absolute_clip_rect))),
             clip_properties->CssClip()->PaintClipRect());
 }
 
@@ -2396,13 +2392,13 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
             clip_properties->CssClip()->Parent());
   EXPECT_EQ(overflow_properties->ScrollTranslation(),
             &clip_properties->CssClip()->LocalTransformSpace());
-  EXPECT_CLIP_RECT(FloatRoundedRect(FloatRect(absolute_clip_rect)),
+  EXPECT_CLIP_RECT(FloatRoundedRect(gfx::RectF(absolute_clip_rect)),
                    clip_properties->CssClip());
   EXPECT_EQ(DocContentClip(),
             clip_properties->CssClipFixedPosition()->Parent());
   EXPECT_EQ(overflow_properties->ScrollTranslation(),
             &clip_properties->CssClipFixedPosition()->LocalTransformSpace());
-  EXPECT_CLIP_RECT(FloatRoundedRect(FloatRect(absolute_clip_rect)),
+  EXPECT_CLIP_RECT(FloatRoundedRect(gfx::RectF(absolute_clip_rect)),
                    clip_properties->CssClipFixedPosition());
   CHECK_EXACT_VISUAL_RECT(PhysicalRect(), clip,
                           GetDocument().View()->GetLayoutView());
@@ -3367,7 +3363,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FlatteningIn3DContext) {
   EXPECT_EQ(a_properties->Transform()->RenderingContextId(),
             d_properties->Transform()->RenderingContextId());
   EXPECT_FALSE(d_properties->Transform()->FlattensInheritedTransform());
-  EXPECT_EQ(d_properties->Effect(), nullptr);
+  EXPECT_NE(d_properties->Effect(), nullptr);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,
@@ -3785,7 +3781,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
   LayoutObject& rounded_box = *GetLayoutObjectByElementId("roundedBox");
   const ObjectPaintProperties* rounded_box_properties =
       rounded_box.FirstFragment().PaintProperties();
-  EXPECT_CLIP_RECT(FloatRoundedRect(FloatRect(50, 50, 200, 200),
+  EXPECT_CLIP_RECT(FloatRoundedRect(gfx::RectF(50, 50, 200, 200),
                                     FloatRoundedRect::Radii(50)),
                    rounded_box_properties->InnerBorderRadiusClip());
 
@@ -4443,7 +4439,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
     const auto* fragment_clip =
         FragmentAt(flowthread, 0).PaintProperties()->FragmentClip();
     ASSERT_NE(nullptr, fragment_clip);
-    EXPECT_CLIP_RECT(FloatRect(-1000000, -1000000, 2000000, 1000030),
+    EXPECT_CLIP_RECT(gfx::RectF(-1000000, -1000000, 2000000, 1000030),
                      fragment_clip);
     EXPECT_EQ(fragment_clip,
               &FragmentAt(relpos, 0).LocalBorderBoxProperties().Clip());
@@ -4470,7 +4466,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
     const auto* fragment_clip =
         FragmentAt(flowthread, 1).PaintProperties()->FragmentClip();
     ASSERT_NE(nullptr, fragment_clip);
-    EXPECT_CLIP_RECT(FloatRect(-999900, 0, 2000000, 30), fragment_clip);
+    EXPECT_CLIP_RECT(gfx::RectF(-999900, 0, 2000000, 30), fragment_clip);
     EXPECT_EQ(fragment_clip,
               &FragmentAt(relpos, 1).LocalBorderBoxProperties().Clip());
   }
@@ -4495,7 +4491,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
     const auto* fragment_clip =
         FragmentAt(flowthread, 2).PaintProperties()->FragmentClip();
     ASSERT_NE(nullptr, fragment_clip);
-    EXPECT_CLIP_RECT(FloatRect(-1000000, 80, 2000000, 30), fragment_clip);
+    EXPECT_CLIP_RECT(gfx::RectF(-1000000, 80, 2000000, 30), fragment_clip);
     EXPECT_EQ(fragment_clip,
               &FragmentAt(relpos, 2).LocalBorderBoxProperties().Clip());
   }
@@ -4521,7 +4517,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
     const auto* fragment_clip =
         FragmentAt(flowthread, 3).PaintProperties()->FragmentClip();
     ASSERT_NE(nullptr, fragment_clip);
-    EXPECT_CLIP_RECT(FloatRect(-999900, 80, 2000000, 999910), fragment_clip);
+    EXPECT_CLIP_RECT(gfx::RectF(-999900, 80, 2000000, 999910), fragment_clip);
     EXPECT_EQ(fragment_clip,
               &FragmentAt(relpos, 3).LocalBorderBoxProperties().Clip());
   }
@@ -5605,7 +5601,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameBorderRadius) {
   const auto* properties = PaintPropertiesForElement("iframe");
   const auto* border_radius_clip = properties->OverflowClip();
   ASSERT_NE(nullptr, border_radius_clip);
-  EXPECT_CLIP_RECT(FloatRoundedRect(FloatRect(28, 28, 200, 200),
+  EXPECT_CLIP_RECT(FloatRoundedRect(gfx::RectF(28, 28, 200, 200),
                                     FloatRoundedRect::Radii(30)),
                    border_radius_clip);
   EXPECT_EQ(DocContentClip(), border_radius_clip->Parent());
@@ -5632,7 +5628,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageBorderRadius) {
   const auto* border_radius_clip = properties->OverflowClip();
   ASSERT_NE(nullptr, border_radius_clip);
   EXPECT_CLIP_RECT(
-      FloatRoundedRect(FloatRect(18, 18, 50, 50), FloatRoundedRect::Radii(20)),
+      FloatRoundedRect(gfx::RectF(18, 18, 50, 50), FloatRoundedRect::Radii(20)),
       border_radius_clip);
   EXPECT_EQ(DocContentClip(), border_radius_clip->Parent());
   EXPECT_EQ(DocScrollTranslation(), &border_radius_clip->LocalTransformSpace());
@@ -5647,15 +5643,15 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   // When not printing, both main and child frame views have content clip.
   auto* const main_frame_doc = &GetDocument();
   auto* const child_frame_doc = &ChildDocument();
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 800, 600), DocContentClip(main_frame_doc));
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 300, 150), DocContentClip(child_frame_doc));
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 800, 600), DocContentClip(main_frame_doc));
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 300, 150), DocContentClip(child_frame_doc));
 
   // When the main frame is printing, it should not have content clip.
-  FloatSize page_size(100, 100);
+  gfx::SizeF page_size(100, 100);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   EXPECT_EQ(nullptr, DocContentClip(main_frame_doc));
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 300, 150), DocContentClip(child_frame_doc));
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 300, 150), DocContentClip(child_frame_doc));
 
   GetFrame().EndPrinting();
   UpdateAllLifecyclePhasesForTest();
@@ -5665,7 +5661,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   ChildFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   ASSERT_NE(nullptr, DocContentClip(main_frame_doc));
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 800, 600), DocContentClip(main_frame_doc));
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 800, 600), DocContentClip(main_frame_doc));
   EXPECT_EQ(nullptr, DocContentClip(child_frame_doc));
 }
 
@@ -5679,7 +5675,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClip) {
   const auto* properties1 = PaintPropertiesForElement("div1");
   ASSERT_NE(nullptr, properties1);
   const auto* overflow_controls_clip = properties1->OverflowControlsClip();
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 5, 50), overflow_controls_clip);
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 5, 50), overflow_controls_clip);
 
   const auto* properties2 = PaintPropertiesForElement("div2");
   ASSERT_NE(nullptr, properties2);
@@ -6013,7 +6009,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(normal));
 
-  FloatSize page_size(300, 400);
+  gfx::SizeF page_size(300, 400);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   fixed = GetLayoutObjectByElementId("fixed");
@@ -6086,7 +6082,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
 
-  FloatSize page_size(300, 400);
+  gfx::SizeF page_size(300, 400);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   fixed = GetLayoutObjectByElementId("fixed");
@@ -6128,7 +6124,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
 TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
   // TablesNG fragmentation has not been implemented. Once it is,
   // this test still will not apply.
-  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
     return;
 
   SetBodyInnerHTML(R"HTML(
@@ -6163,7 +6159,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingTableSectionInPagedMedia) {
   EXPECT_EQ(1u, NumFragments(foot->FirstRow()));
   EXPECT_EQ(1u, NumFragments(foot->FirstRow()->FirstCell()));
 
-  FloatSize page_size(300, 400);
+  gfx::SizeF page_size(300, 400);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
   // In LayoutNG, these may be different objects
@@ -6620,14 +6616,14 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootCompositedClipPath) {
   const auto* clip_path_clip = properties->ClipPathClip();
   ASSERT_NE(nullptr, clip_path_clip);
   EXPECT_EQ(DocContentClip(), clip_path_clip->Parent());
-  EXPECT_CLIP_RECT(FloatRect(75, 0, 150, 150), clip_path_clip);
+  EXPECT_CLIP_RECT(gfx::RectF(75, 0, 150, 150), clip_path_clip);
   EXPECT_EQ(transform, &clip_path_clip->LocalTransformSpace());
   EXPECT_NE(nullptr, clip_path_clip->ClipPath());
 
   const auto* overflow_clip = properties->OverflowClip();
   ASSERT_NE(nullptr, overflow_clip);
   EXPECT_EQ(clip_path_clip, overflow_clip->Parent());
-  EXPECT_CLIP_RECT(FloatRect(0, 0, 300, 150), overflow_clip);
+  EXPECT_CLIP_RECT(gfx::RectF(0, 0, 300, 150), overflow_clip);
   EXPECT_EQ(transform, &overflow_clip->LocalTransformSpace());
 
   const auto* effect = properties->Effect();
@@ -7066,7 +7062,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OutOfFlowContainedInMulticol) {
     <div id="columns" style="columns: 2; height: 100px">
       <div id="relative"
            style="position: relative; height: 200px; transform: translateX(0)">
-        <div style="overflow: scroll">
+        <div style="overflow: clip; height: 150px">
           <div id="absolute"
                style="position: absolute; width: 100%; height: 200px"></div>
           <div id="fixed"
@@ -7086,22 +7082,23 @@ TEST_P(PaintPropertyTreeBuilderTest, OutOfFlowContainedInMulticol) {
   const auto* fixed = GetLayoutObjectByElementId("fixed");
   ASSERT_EQ(2u, NumFragments(fixed));
 
-  // For now we use the container's first fragment's transform as the parent of
-  // the transforms of all fragments of out-of-flow descendants.
-  const auto* relative_transform =
-      FragmentAt(relative, 0).PaintProperties()->Transform();
   for (unsigned i = 0; i < NumFragments(flow_thread); i++) {
     SCOPED_TRACE(testing::Message() << "Fragment " << i);
-    const auto* fragment_clip =
-        FragmentAt(flow_thread, i).PaintProperties()->FragmentClip();
+    const auto* relative_transform =
+        FragmentAt(relative, i).PaintProperties()->Transform();
     const auto& absolute_properties =
         FragmentAt(absolute, i).LocalBorderBoxProperties();
     const auto& fixed_properties =
         FragmentAt(fixed, i).LocalBorderBoxProperties();
-    EXPECT_EQ(fragment_clip, &absolute_properties.Clip());
-    EXPECT_EQ(fragment_clip, &fixed_properties.Clip());
     EXPECT_EQ(relative_transform, &absolute_properties.Transform());
     EXPECT_EQ(relative_transform, &fixed_properties.Transform());
+
+    if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+      const auto* fragment_clip =
+          FragmentAt(flow_thread, i).PaintProperties()->FragmentClip();
+      EXPECT_EQ(fragment_clip, &absolute_properties.Clip());
+      EXPECT_EQ(fragment_clip, &fixed_properties.Clip());
+    }
   }
 }
 

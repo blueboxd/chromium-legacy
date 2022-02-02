@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "base/memory/raw_ptr.h"
 
 #include <string>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
@@ -44,7 +44,7 @@ class TestFunctionDispatcherDelegate
 
   WebContents* GetAssociatedWebContents() const override { return NULL; }
 
-  Browser* browser_;
+  raw_ptr<Browser> browser_;
 };
 
 }  // namespace
@@ -121,15 +121,15 @@ std::unique_ptr<base::Value> RunFunctionAndReturnSingleResult(
     Browser* browser,
     extensions::api_test_utils::RunFunctionFlags flags) {
   scoped_refptr<ExtensionFunction> function_owner(function);
+  function->preserve_results_for_testing();
   RunFunction(function, args, browser, flags);
   EXPECT_TRUE(function->GetError().empty()) << "Unexpected error: "
       << function->GetError();
-  const base::Value* single_result = NULL;
-  if (function->GetResultList() != NULL &&
-      function->GetResultList()->Get(0, &single_result)) {
-    return single_result->CreateDeepCopy();
+  if (function->GetResultList() &&
+      !function->GetResultList()->GetList().empty()) {
+    return function->GetResultList()->GetList()[0].CreateDeepCopy();
   }
-  return NULL;
+  return nullptr;
 }
 
 bool RunFunction(ExtensionFunction* function,
@@ -154,7 +154,6 @@ bool RunFunction(ExtensionFunction* function,
       new extensions::ExtensionFunctionDispatcher(browser->profile()));
   dispatcher->set_delegate(&dispatcher_delegate);
   return extensions::api_test_utils::RunFunction(function, std::move(args),
-                                                 browser->profile(),
                                                  std::move(dispatcher), flags);
 }
 

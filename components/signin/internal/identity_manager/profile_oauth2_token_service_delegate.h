@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "build/build_config.h"
@@ -66,7 +66,7 @@ class ProfileOAuth2TokenServiceDelegate {
                                const GoogleServiceAuthError& error) {}
 
   // Returns a list of accounts for which a refresh token is maintained by
-  // |this| instance.
+  // |this| instance, in the order the refresh tokens were added.
   // Note: If tokens have not been fully loaded yet, an empty list is returned.
   // Also, see |RefreshTokenIsAvailable|.
   virtual std::vector<CoreAccountId> GetAccounts() const;
@@ -180,7 +180,7 @@ class ProfileOAuth2TokenServiceDelegate {
     ~ScopedBatchChange();
 
    private:
-    ProfileOAuth2TokenServiceDelegate* delegate_;  // Weak.
+    raw_ptr<ProfileOAuth2TokenServiceDelegate> delegate_;  // Weak.
   };
 
  private:

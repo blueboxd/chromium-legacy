@@ -38,10 +38,6 @@ void AddResources(content::WebUIDataSource* source) {
     if (ShouldIncludeResource(resource))
       source->AddResourcePath(resource.path, resource.id);
   }
-  // Mirror assert.m.js here so that it is accessible at the same path in
-  // trusted and untrusted context.
-  source->AddResourcePath("assert.m.js", IDR_WEBUI_JS_ASSERT_M_JS);
-
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER_HTML);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER_JS);
   source->AddResourcePath("test_loader_util.js",
@@ -90,11 +86,27 @@ void AddStrings(content::WebUIDataSource* source) {
         {"googlePhotosAlbumsTabLabel",
          IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB},
         {"googlePhotosPhotosTabLabel",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_PHOTOS_TAB}};
+         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_PHOTOS_TAB},
+        {"googlePhotosZeroStateMessage",
+         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ZERO_STATE_MESSAGE}};
     source->AddLocalizedStrings(kGooglePhotosLocalizedStrings);
   }
 
   source->UseStringsJs();
+}
+
+void AddBooleans(content::WebUIDataSource* source) {
+  source->AddBoolean("fullScreenPreviewEnabled",
+                     features::IsWallpaperFullScreenPreviewEnabled());
+
+  source->AddBoolean("isGooglePhotosIntegrationEnabled",
+                     features::IsWallpaperGooglePhotosIntegrationEnabled());
+
+  source->AddBoolean("isPersonalizationHubEnabled",
+                     features::IsPersonalizationHubEnabled());
+
+  source->AddBoolean("isDarkLightModeEnabled",
+                     features::IsDarkLightModeEnabled());
 }
 
 }  // namespace
@@ -125,10 +137,7 @@ PersonalizationAppUI::PersonalizationAppUI(
 
   AddResources(source.get());
   AddStrings(source.get());
-  source->AddBoolean("fullScreenPreviewEnabled",
-                     features::IsWallpaperFullScreenPreviewEnabled());
-  source->AddBoolean("isGooglePhotosIntegrationEnabled",
-                     features::IsWallpaperGooglePhotosIntegrationEnabled());
+  AddBooleans(source.get());
 
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, source.release());

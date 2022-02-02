@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -20,7 +19,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantQueryHistory {
  public:
   class Iterator {
    public:
-    Iterator(const base::circular_deque<std::string>& queries);
+    explicit Iterator(const base::circular_deque<std::string>& queries);
 
     Iterator(const Iterator&) = delete;
     Iterator& operator=(const Iterator&) = delete;

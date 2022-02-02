@@ -5,17 +5,17 @@
 #include "components/variations/service/variations_field_trial_creator.h"
 
 #include <stddef.h>
+#include <cstring>
 #include <memory>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_field_trial_list_resetter.h"
@@ -48,7 +48,7 @@
 
 #if defined(OS_ANDROID)
 #include "components/variations/seed_response.h"
-#endif  // OS_ANDROID
+#endif
 
 namespace variations {
 namespace {
@@ -70,10 +70,8 @@ const char kTestSeedSerializedData[] = "a serialized seed, 100% realistic";
 const char kTestSeedSignature[] = "a totally valid signature, I swear!";
 const int kTestSeedMilestone = 90;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
 // The content of an empty prefs file.
 const char kEmptyPrefsFile[] = "{}";
-#endif
 
 // Used for similar tests.
 struct TestParams {
@@ -133,7 +131,7 @@ std::string SerializeSeed(const VariationsSeed& seed) {
   seed.SerializeToString(&serialized_seed);
   return serialized_seed;
 }
-#endif  // OS_ANDROID
+#endif  // defined(OS_ANDROID)
 
 class TestPlatformFieldTrials : public PlatformFieldTrials {
  public:
@@ -320,7 +318,6 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
     return was_maybe_extend_variations_safe_mode_called_;
   }
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
  protected:
   void MaybeExtendVariationsSafeMode(
       metrics::MetricsStateManager* metrics_state_manager) override {
@@ -328,7 +325,6 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
     VariationsFieldTrialCreator::MaybeExtendVariationsSafeMode(
         metrics_state_manager);
   }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
  private:
   VariationsSeedStore* GetSeedStore() override { return &seed_store_; }
@@ -336,7 +332,7 @@ class TestVariationsFieldTrialCreator : public VariationsFieldTrialCreator {
 
   metrics::TestEnabledStateProvider enabled_state_provider_;
   TestVariationsSeedStore seed_store_;
-  SafeSeedManager* const safe_seed_manager_;
+  const raw_ptr<SafeSeedManager> safe_seed_manager_;
   base::Time build_time_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
   bool was_maybe_extend_variations_safe_mode_called_ = false;
@@ -380,9 +376,6 @@ class FieldTrialCreatorTest : public ::testing::Test {
   std::unique_ptr<base::FeatureList> global_feature_list_;
 };
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-// TODO(crbug/1248239): Enable Extended Variations Safe Mode on Clank.
-// TODO(crbug/1255305): Re-enable it on iOS.
 class FieldTrialCreatorSafeModeExperimentTest : public FieldTrialCreatorTest {
  public:
   FieldTrialCreatorSafeModeExperimentTest()
@@ -436,7 +429,6 @@ struct StartupVisibilityTestParams {
 class FieldTrialCreatorTestWithStartupVisibility
     : public FieldTrialCreatorSafeModeExperimentTest,
       public ::testing::WithParamInterface<StartupVisibilityTestParams> {};
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 // Verify that unexpired seeds are used.
 TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_ValidSeed_NotExpired) {
@@ -491,6 +483,8 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_ValidSeed_NotExpired) {
                                         freshness_in_minutes, 1);
     histogram_tester.ExpectUniqueSample("Variations.SeedUsage",
                                         SeedUsage::kRegularSeedUsed, 1);
+    histogram_tester.ExpectUniqueSample("Variations.AppliedSeed.Size",
+                                        strlen(kTestSeedSerializedData), 1);
 
     ResetFeatureList();
   }
@@ -875,7 +869,7 @@ TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_SafeSeedForFutureMilestone) {
 }
 
 #if defined(OS_ANDROID)
-// This is a regression test for https://crbug.com/829527
+// This is a regression test for crbug/829527.
 TEST_F(FieldTrialCreatorTest, SetUpFieldTrials_LoadsCountryOnFirstRun) {
   DisableTestingConfig();
 
@@ -939,11 +933,8 @@ TEST_F(FieldTrialCreatorTest, ClientFilterableState_HardwareClass) {
       field_trial_creator.GetClientFilterableStateForVersion(current_version);
   EXPECT_NE(client_filterable_state->hardware_class, std::string());
 }
-#endif  // OS_ANDROID
+#endif  // defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-// TODO(crbug/1248239): Enable Extended Variations Safe Mode on Clank.
-// TODO(crbug/1255305): Re-enable it on iOS.
 TEST_F(FieldTrialCreatorSafeModeExperimentTest, OptOutOfExperiment) {
   std::unique_ptr<PrefService> pref_service(CreatePrefService());
 
@@ -1032,8 +1023,15 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
   ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
       .WillByDefault(Return(false));
 
+// For desktop and iOS, the Extended Variations Safe Mode experiment is enabled
+// on pre-stable channels; for Android Chrome, on canary and dev.
+#if defined(OS_ANDROID)
   std::vector<version_info::Channel> channels = {version_info::Channel::BETA,
                                                  version_info::Channel::STABLE};
+#else
+  std::vector<version_info::Channel> channels = {version_info::Channel::STABLE};
+#endif  // defined(OS_ANDROID)
+
   for (const version_info::Channel channel : channels) {
     NiceMock<MockVariationsServiceClient> variations_service_client;
     ON_CALL(variations_service_client, GetChannel())
@@ -1158,6 +1156,5 @@ TEST_F(FieldTrialCreatorSafeModeExperimentTest,
   ASSERT_TRUE(base::ReadFileToString(prefs_file(), &pref_file_contents));
   EXPECT_EQ(kEmptyPrefsFile, pref_file_contents);
 }
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 }  // namespace variations

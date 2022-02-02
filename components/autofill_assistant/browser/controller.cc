@@ -30,6 +30,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -72,7 +73,8 @@ Controller::Controller(
     base::WeakPtr<RuntimeManagerImpl> runtime_manager,
     std::unique_ptr<Service> service,
     std::unique_ptr<AutofillAssistantTtsController> tts_controller,
-    ukm::UkmRecorder* ukm_recorder)
+    ukm::UkmRecorder* ukm_recorder,
+    AnnotateDomModelService* annotate_dom_model_service)
     : content::WebContentsObserver(web_contents),
       client_(client),
       tick_clock_(tick_clock),
@@ -82,7 +84,8 @@ Controller::Controller(
                                              client_)),
       navigating_to_new_document_(web_contents->IsWaitingForResponse()),
       tts_controller_(std::move(tts_controller)),
-      ukm_recorder_(ukm_recorder) {
+      ukm_recorder_(ukm_recorder),
+      annotate_dom_model_service_(annotate_dom_model_service) {
   user_model_.AddObserver(this);
   tts_controller_->SetTtsEventDelegate(weak_ptr_factory_.GetWeakPtr());
 }
@@ -438,6 +441,10 @@ void Controller::SetUserActions(
   SetVisibilityAndUpdateUserActions();
 }
 
+const std::vector<ScriptHandle>& Controller::GetDirectActionScripts() const {
+  return direct_action_scripts_;
+}
+
 bool Controller::ShouldChipsBeVisible() {
   return !(is_keyboard_showing_ && is_focus_on_bottom_sheet_text_input_);
 }
@@ -579,12 +586,28 @@ void Controller::SetBrowseDomainsAllowlist(std::vector<std::string> domains) {
   browse_domains_allowlist_ = std::move(domains);
 }
 
-bool Controller::PerformUserActionWithContext(
-    int index,
-    std::unique_ptr<TriggerContext> context) {
+bool Controller::PerformDirectAction(int index,
+                                     std::unique_ptr<TriggerContext> context) {
+  if (index < 0 ||
+      static_cast<size_t>(index) >= direct_action_scripts_.size()) {
+    NOTREACHED() << "Invalid direct action index: " << index;
+    return false;
+  }
+
+  ScriptHandle handle = direct_action_scripts_.at(index);
+  direct_action_scripts_.clear();
+  ExecuteScript(handle.path, handle.start_message, handle.needs_ui,
+                std::move(context),
+                state_ == AutofillAssistantState::TRACKING
+                    ? AutofillAssistantState::TRACKING
+                    : AutofillAssistantState::PROMPT);
+  return true;
+}
+
+bool Controller::PerformUserAction(int index) {
   if (!user_actions_ || index < 0 ||
       static_cast<size_t>(index) >= user_actions_->size()) {
-    NOTREACHED() << "Invalid user action index: " << index;
+    NOTREACHED() << "Invalid user_action index: " << index;
     return false;
   }
 
@@ -595,7 +618,7 @@ bool Controller::PerformUserActionWithContext(
 
   UserAction user_action = std::move((*user_actions_)[index]);
   SetUserActions(nullptr);
-  user_action.Call(std::move(context));
+  user_action.RunCallback();
   event_handler_.DispatchEvent(
       {EventProto::kOnUserActionCalled, user_action.identifier()});
   return true;
@@ -934,6 +957,10 @@ bool Controller::EnterState(AutofillAssistantState state) {
   return true;
 }
 
+AutofillAssistantState Controller::GetState() {
+  return state_;
+}
+
 void Controller::SetOverlayBehavior(
     ConfigureUiStateProto::OverlayBehavior overlay_behavior) {
   overlay_behavior_ = overlay_behavior;
@@ -1159,6 +1186,7 @@ void Controller::ExecuteScript(const std::string& script_path,
   // the script.
   script_tracker_->ClearRunnableScripts();
   SetUserActions(nullptr);
+  direct_action_scripts_.clear();
 
   script_tracker()->ExecuteScript(
       script_path, &user_data_, std::move(context),
@@ -1236,6 +1264,7 @@ void Controller::ResetState() {
   status_message_.clear();
   details_.clear();
   info_box_.reset();
+  progress_visible_ = true;
   progress_bar_error_state_ = false;
   progress_active_step_ = 0;
   step_progress_bar_configuration_ =
@@ -1266,7 +1295,7 @@ void Controller::MaybeAutostartScript(
   }
 
   if (autostart_index == -1) {
-    UpdateDirectActions(runnable_scripts);
+    SetDirectActionScripts(runnable_scripts);
     return;
   }
 
@@ -1678,22 +1707,28 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
 }
 
 void Controller::SetShippingAddress(
-    std::unique_ptr<autofill::AutofillProfile> address) {
+    std::unique_ptr<autofill::AutofillProfile> address,
+    UserDataEventType event_type) {
   if (collect_user_data_options_ == nullptr) {
     return;
   }
 
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      SHIPPING_EVENT, event_type);
   DCHECK(!collect_user_data_options_->shipping_address_name.empty());
   SetProfile(collect_user_data_options_->shipping_address_name,
              UserData::FieldChange::SHIPPING_ADDRESS, std::move(address));
 }
 
 void Controller::SetContactInfo(
-    std::unique_ptr<autofill::AutofillProfile> profile) {
+    std::unique_ptr<autofill::AutofillProfile> profile,
+    UserDataEventType event_type) {
   if (collect_user_data_options_ == nullptr) {
     return;
   }
 
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      CONTACT_EVENT, event_type);
   DCHECK(!collect_user_data_options_->contact_details_name.empty());
   SetProfile(collect_user_data_options_->contact_details_name,
              UserData::FieldChange::CONTACT_PROFILE, std::move(profile));
@@ -1701,13 +1736,15 @@ void Controller::SetContactInfo(
 
 void Controller::SetCreditCard(
     std::unique_ptr<autofill::CreditCard> card,
-    std::unique_ptr<autofill::AutofillProfile> billing_profile) {
+    std::unique_ptr<autofill::AutofillProfile> billing_profile,
+    UserDataEventType event_type) {
   if (collect_user_data_options_ == nullptr) {
     return;
   }
 
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      CREDIT_CARD_EVENT, event_type);
   DCHECK(!collect_user_data_options_->billing_address_name.empty());
-
   user_model_.SetSelectedCreditCard(std::move(card), &user_data_);
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_, UserData::FieldChange::CARD);
@@ -1727,6 +1764,20 @@ void Controller::SetProfile(
     observer.OnUserDataChanged(user_data_, field_change);
   }
   UpdateCollectUserDataActions();
+}
+
+void Controller::ReloadUserData(UserDataEventField event_field,
+                                UserDataEventType event_type) {
+  if (collect_user_data_options_ == nullptr) {
+    return;
+  }
+
+  collect_user_data_options_->selected_user_data_changed_callback.Run(
+      event_field, event_type);
+
+  auto callback = std::move(collect_user_data_options_->reload_data_callback);
+  SetCollectUserDataOptions(nullptr);
+  std::move(callback).Run(&user_data_);
 }
 
 void Controller::SetTermsAndConditions(
@@ -1752,10 +1803,6 @@ void Controller::SetLoginOption(const std::string& identifier) {
 }
 
 void Controller::UpdateCollectUserDataActions() {
-  // TODO(crbug.com/806868): This method uses #SetUserActions(), which means
-  // that updating the PR action buttons will also clear the suggestions. We
-  // should update the action buttons only if there are use cases of PR +
-  // suggestions.
   if (!collect_user_data_options_) {
     SetUserActions(nullptr);
     return;
@@ -1924,20 +1971,15 @@ void Controller::OnNoRunnableScriptsForPage() {
   }
 }
 
-void Controller::UpdateDirectActions(
+void Controller::SetDirectActionScripts(
     const std::vector<ScriptHandle>& runnable_scripts) {
-  auto user_actions = std::make_unique<std::vector<UserAction>>();
+  direct_action_scripts_.clear();
   for (const auto& script : runnable_scripts) {
     if (script.direct_action.empty())
       continue;
 
-    UserAction user_action;
-    user_action.direct_action() = script.direct_action;
-    user_action.SetCallback(base::BindOnce(
-        &Controller::OnScriptSelected, weak_ptr_factory_.GetWeakPtr(), script));
-    user_actions->emplace_back(std::move(user_action));
+    direct_action_scripts_.push_back(script);
   }
-  SetUserActions(std::move(user_actions));
 }
 
 void Controller::OnRunnableScriptsChanged(
@@ -1962,7 +2004,7 @@ void Controller::OnRunnableScriptsChanged(
       MaybeAutostartScript(runnable_scripts);
       return;
     case AutofillAssistantState::TRACKING:
-      UpdateDirectActions(runnable_scripts);
+      SetDirectActionScripts(runnable_scripts);
       return;
     default:
       // In other states we ignore the script update.
@@ -2252,7 +2294,8 @@ void Controller::OnInputTextFocusChanged(bool is_text_focused) {
 
 ElementArea* Controller::touchable_element_area() {
   if (!touchable_element_area_) {
-    touchable_element_area_ = std::make_unique<ElementArea>(this);
+    touchable_element_area_ =
+        std::make_unique<ElementArea>(&settings_, GetWebController());
     touchable_element_area_->SetOnUpdate(base::BindRepeating(
         &Controller::OnTouchableAreaChanged, weak_ptr_factory_.GetWeakPtr()));
   }

@@ -14,7 +14,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "base/macros.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/cursor/cursor.h"
@@ -22,7 +22,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -62,8 +61,8 @@ SkColor GetFolderBackgroundColor(bool is_active) {
     return SK_ColorTRANSPARENT;
 
   const AppListColorProvider* color_provider = AppListColorProvider::Get();
-  return SkColorSetA(color_provider->GetRippleAttributesBaseColor(),
-                     color_provider->GetRippleAttributesInkDropOpacity() * 255);
+  return SkColorSetA(color_provider->GetInkDropBaseColor(),
+                     color_provider->GetInkDropOpacity() * 255);
 }
 
 }  // namespace
@@ -413,13 +412,13 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
     return;
 
   folder_item_->RemoveObserver(this);
-  // Enforce the maximum folder name length in UI.
+  // Enforce the maximum folder name length in UI by trimming `new_contents`
+  // when it is longer than the max length.
   if (new_contents.length() > kMaxFolderNameChars) {
-    folder_name_view_->SetText(previous_folder_name_.value());
-    sender->SetSelectedRange(gfx::Range(previous_cursor_position_.value(),
-                                        previous_cursor_position_.value()));
+    std::u16string trimmed_new_contents = new_contents;
+    trimmed_new_contents.resize(kMaxFolderNameChars);
+    folder_name_view_->SetText(trimmed_new_contents);
   } else {
-    previous_folder_name_ = new_contents;
     delegate_->SetItemName(folder_item_, base::UTF16ToUTF8(new_contents));
   }
 
@@ -439,6 +438,11 @@ bool FolderHeaderView::ShouldNameViewClearFocus(const ui::KeyEvent& key_event) {
 bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
                                       const ui::KeyEvent& key_event) {
   if (ShouldNameViewClearFocus(key_event)) {
+    // If the user presses the escape key, we should revert the text in
+    // `folder_name_view_`.
+    if (key_event.key_code() == ui::VKEY_ESCAPE)
+      sender->SetText(previous_folder_name_);
+
     folder_name_view_->GetFocusManager()->ClearFocus();
     return true;
   }
@@ -447,22 +451,8 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
 }
 
-void FolderHeaderView::OnBeforeUserAction(views::Textfield* sender) {
-  previous_cursor_position_ = sender->GetCursorPosition();
-}
-
 void FolderHeaderView::ItemNameChanged() {
   Update();
-}
-
-void FolderHeaderView::SetPreviousCursorPositionForTest(
-    const size_t cursor_position) {
-  previous_cursor_position_ = cursor_position;
-}
-
-void FolderHeaderView::SetPreviousFolderNameForTest(
-    const std::u16string& previous_name) {
-  previous_folder_name_ = previous_name;
 }
 
 }  // namespace ash

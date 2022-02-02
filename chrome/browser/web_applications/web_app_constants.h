@@ -120,7 +120,10 @@ enum class InstallResultCode {
   // shutdown.
   kInstallTaskDestroyed = 25,
 
-  kMaxValue = kInstallTaskDestroyed,
+  // Web App update due to manifest change failed.
+  kUpdateTaskFailed = 26,
+
+  kMaxValue = kUpdateTaskFailed,
 };
 
 // Checks if InstallResultCode is not a failure.
@@ -281,10 +284,20 @@ enum class FileHandlerUpdateAction {
   kNoUpdate = 2,
 };
 
+// Reflects the user's decision to allow or disallow an API such as File
+// Handling. APIs should generally start off as kRequiresPrompt.
 enum class ApiApprovalState {
   kRequiresPrompt = 0,
   kAllowed = 1,
   kDisallowed = 2,
+};
+
+// State concerning whether a particular feature has been enabled at the OS
+// level. For example, with File Handling, this indicates whether an app should
+// be/has been registered with the OS to handle opening certain file types.
+enum class OsIntegrationState {
+  kEnabled = 0,
+  kDisabled = 1,
 };
 
 using LaunchHandler = blink::Manifest::LaunchHandler;

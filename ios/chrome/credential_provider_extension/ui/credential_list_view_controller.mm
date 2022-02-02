@@ -5,12 +5,14 @@
 #import "ios/chrome/credential_provider_extension/ui/credential_list_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
+#import "ios/chrome/credential_provider_extension/ui/credential_list_global_header_view.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_header_view.h"
 #import "ios/chrome/credential_provider_extension/ui/feature_flags.h"
 
@@ -85,9 +87,17 @@ UIColor* BackgroundColor() {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.title =
-      NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
-                        @"AutoFill Chrome Password");
+
+  if (IsPasswordManagerBrandingUpdateEnable()) {
+    self.title = NSLocalizedString(
+        @"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_BRANDED_TITLE",
+        @"Google Password Manager");
+  } else {
+    self.title =
+        NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
+                          @"AutoFill Chrome Password");
+  }
+
   self.view.backgroundColor = BackgroundColor();
   if (IsPasswordCreationEnabled()) {
     self.navigationItem.leftBarButtonItem = [self navigationCancelButton];
@@ -141,6 +151,9 @@ UIColor* BackgroundColor() {
       forHeaderFooterViewReuseIdentifier:kHeaderIdentifier];
   [self.tableView registerClass:[CredentialListHeaderView class]
       forHeaderFooterViewReuseIdentifier:CredentialListHeaderView.reuseID];
+  [self.tableView registerClass:[CredentialListGlobalHeaderView class]
+      forHeaderFooterViewReuseIdentifier:CredentialListGlobalHeaderView
+                                             .reuseID];
 }
 
 #pragma mark - CredentialListConsumer
@@ -230,6 +243,10 @@ UIColor* BackgroundColor() {
 
 - (UIView*)tableView:(UITableView*)tableView
     viewForHeaderInSection:(NSInteger)section {
+  if ([self isGlobalHeaderSection:section]) {
+    return [self.tableView dequeueReusableHeaderFooterViewWithIdentifier:
+                               CredentialListGlobalHeaderView.reuseID];
+  }
   if (IsPasswordCreationEnabled()) {
     CredentialListHeaderView* view = [self.tableView
         dequeueReusableHeaderFooterViewWithIdentifier:CredentialListHeaderView
@@ -250,6 +267,9 @@ UIColor* BackgroundColor() {
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
+  if ([self isGlobalHeaderSection:section]) {
+    return UITableViewAutomaticDimension;
+  }
   if (IsPasswordCreationEnabled() &&
       [self isSuggestedPasswordSection:section]) {
     return 0;
@@ -269,6 +289,9 @@ UIColor* BackgroundColor() {
   }
   UpdateUMACountForKey(app_group::kCredentialExtensionPasswordUseCount);
   id<Credential> credential = [self credentialForIndexPath:indexPath];
+  if (!credential) {
+    return;
+  }
   [self.delegate userSelectedCredential:credential];
 }
 
@@ -334,6 +357,9 @@ UIColor* BackgroundColor() {
                                                          toView:self.tableView];
   NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:hitPoint];
   id<Credential> credential = [self credentialForIndexPath:indexPath];
+  if (!credential) {
+    return;
+  }
   [self.delegate showDetailsForCredential:credential];
 }
 
@@ -364,11 +390,25 @@ UIColor* BackgroundColor() {
   }
 }
 
+// Returns YES if given section is for global header.
+- (BOOL)isGlobalHeaderSection:(int)section {
+  return section == 0 && IsPasswordManagerBrandingUpdateEnable() &&
+         ![self isEmptyTable];
+}
+
 // Returns the credential at the passed index.
 - (id<Credential>)credentialForIndexPath:(NSIndexPath*)indexPath {
   if ([self isSuggestedPasswordSection:indexPath.section]) {
+    if (indexPath.row >=
+        base::checked_cast<NSInteger>(self.suggestedPasswords.count)) {
+      return nil;
+    }
     return self.suggestedPasswords[indexPath.row];
   } else {
+    if (indexPath.row >=
+        base::checked_cast<NSInteger>(self.allPasswords.count)) {
+      return nil;
+    }
     return self.allPasswords[indexPath.row];
   }
 }

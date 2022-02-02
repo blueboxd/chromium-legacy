@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/ignore_result.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"

@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/ec_signing_key.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence/key_persistence_delegate.h"
@@ -169,7 +170,8 @@ bool KeyRotationManagerImpl::RotateWithAdminRights(const GURL& dm_server_url,
     return false;
   }
 
-  key_pair_.emplace(std::move(new_key_pair), new_trust_level);
+  key_pair_ = std::make_unique<SigningKeyPair>(std::move(new_key_pair),
+                                               new_trust_level);
   RecordRotationStatus(nonce, RotationStatus::SUCCESS);
   return true;
 }

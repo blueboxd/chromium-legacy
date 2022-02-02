@@ -10,10 +10,12 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_boundary.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -26,6 +28,20 @@ DisplayLockUtilities::LockCheckMemoizationScope*
     DisplayLockUtilities::memoizer_ = nullptr;
 
 namespace {
+
+void WarnOnForcedUpdateInNonActivatableContext(Document& document) {
+  if (!v8::Isolate::GetCurrent()->InContext())
+    return;
+  String message =
+      "Rendering was performed in a subtree hidden by "
+      "content-visibility:hidden.";
+  // Note that this is a verbose level message, since it can happen
+  // frequently and is not necessarily a problem if the developer is
+  // accessing content-visibility: hidden subtrees intentionally.
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::blink::ConsoleMessageSource::kJavaScript,
+      mojom::blink::ConsoleMessageLevel::kVerbose, message));
+}
 
 // Returns the nearest non-inclusive ancestor of |node| that is display
 // locked.
@@ -283,6 +299,10 @@ DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(
     }
   }
   for (DisplayLockContext* context : forced_context_set_) {
+    if (context->IsLocked() &&
+        !context->IsActivatable(DisplayLockActivationReason::kAny)) {
+      WarnOnForcedUpdateInNonActivatableContext(node_->GetDocument());
+    }
     context->NotifyForcedUpdateScopeStarted(phase_);
   }
 }
@@ -336,10 +356,26 @@ DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl(
     if (!ancestor_node)
       continue;
     if (auto* context = ancestor_node->GetDisplayLockContext()) {
+      if (context->IsLocked() &&
+          !context->IsActivatable(DisplayLockActivationReason::kAny)) {
+        WarnOnForcedUpdateInNonActivatableContext(node->GetDocument());
+      }
       context->NotifyForcedUpdateScopeStarted(phase_);
       forced_context_set_.insert(context);
     }
   }
+}
+
+void DisplayLockUtilities::ScopedForcedUpdate::Impl::EnsureMinimumForcedPhase(
+    DisplayLockContext::ForcedPhase phase) {
+  // Our `phase_` is already at least as permissive as `phase`.
+  if (static_cast<int>(phase_) >= static_cast<int>(phase))
+    return;
+  for (auto context : forced_context_set_) {
+    context->NotifyForcedUpdateScopeEnded(phase_);
+    context->NotifyForcedUpdateScopeStarted(phase);
+  }
+  phase_ = phase;
 }
 
 void DisplayLockUtilities::ScopedForcedUpdate::Impl::Destroy() {
@@ -735,6 +771,18 @@ Element* DisplayLockUtilities::LockedAncestorPreventingStyle(const Node& node) {
   });
 }
 
+#if DCHECK_IS_ON()
+bool DisplayLockUtilities::AssertStyleAllowed(const Node& node) {
+  if (node.GetDocument().IsFlatTreeTraversalForbidden() ||
+      node.GetDocument()
+          .GetSlotAssignmentEngine()
+          .HasPendingSlotAssignmentRecalc()) {
+    return true;
+  }
+  return !LockedAncestorPreventingStyle(node);
+}
+#endif
+
 bool DisplayLockUtilities::PrePaintBlockedInParentFrame(LayoutView* view) {
   auto* owner = view->GetFrameView()->GetFrame().OwnerLayoutObject();
   if (!owner)
@@ -761,7 +809,7 @@ bool DisplayLockUtilities::RevealHiddenUntilFoundAncestors(const Node& node) {
   // Since setting the open attribute fires mutation events which could mess
   // with the FlatTreeTraversal iterator, we should first iterate details
   // elements to open and then open them all.
-  VectorOf<HTMLElement> elements_to_reveal;
+  HeapVector<Member<HTMLElement>> elements_to_reveal;
 
   for (Node& parent : FlatTreeTraversal::AncestorsOf(node)) {
     if (HTMLElement* element = DynamicTo<HTMLElement>(parent)) {

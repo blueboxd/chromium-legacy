@@ -272,25 +272,7 @@ void ExtensionSettingsPolicyHandler::SanitizePolicySettings(
           invalid_keys.insert(entry.first);
           continue;
         }
-        if (GURL(update_url).is_valid()) {
-// Unless enterprise managed only extensions from the Chrome Webstore
-// can be force installed.
-#if defined(OS_WIN)
-          // We can't use IsWebstoreUpdateUrl() here since the ExtensionClient
-          // isn't set this early during startup.
-          if (!base::IsMachineExternallyManaged() &&
-              !base::LowerCaseEqualsASCII(
-                  update_url, extension_urls::kChromeWebstoreUpdateURL)) {
-            if (errors) {
-              errors->AddError(policy_name(), entry.first,
-                               IDS_POLICY_OFF_CWS_URL_ERROR,
-                               extension_urls::kChromeWebstoreUpdateURL);
-            }
-            invalid_keys.insert(entry.first);
-            continue;
-          }
-#endif
-        } else {
+        if (!GURL(update_url).is_valid()) {
           // Warns about an invalid update URL.
           if (errors) {
             errors->AddError(policy_name(), IDS_POLICY_INVALID_UPDATE_URL_ERROR,
@@ -307,11 +289,10 @@ void ExtensionSettingsPolicyHandler::SanitizePolicySettings(
     const int extension_scheme_mask =
         URLPattern::GetValidSchemeMaskForExtensions();
     for (const char* key : host_keys) {
-      const base::ListValue* unparsed_urls;
-      if (sub_dict->GetList(key, &unparsed_urls)) {
-        for (size_t i = 0; i < unparsed_urls->GetList().size(); ++i) {
-          std::string unparsed_url;
-          unparsed_urls->GetString(i, &unparsed_url);
+      const base::Value* unparsed_urls = sub_dict->FindListKey(key);
+      if (unparsed_urls != nullptr) {
+        for (const auto& url_value : unparsed_urls->GetList()) {
+          const std::string& unparsed_url = url_value.GetString();
           URLPattern pattern(extension_scheme_mask);
           URLPattern::ParseResult parse_result = pattern.Parse(unparsed_url);
           // These keys don't support paths due to how we track the initiator
@@ -348,9 +329,9 @@ void ExtensionSettingsPolicyHandler::SanitizePolicySettings(
       }
     }
 
-    const base::ListValue* runtime_blocked_hosts = nullptr;
-    if (sub_dict->GetList(schema_constants::kPolicyBlockedHosts,
-                          &runtime_blocked_hosts) &&
+    const base::Value* runtime_blocked_hosts =
+        sub_dict->FindListKey(schema_constants::kPolicyBlockedHosts);
+    if (runtime_blocked_hosts != nullptr &&
         runtime_blocked_hosts->GetList().size() >
             schema_constants::kMaxItemsURLPatternSet) {
       if (errors) {
@@ -362,9 +343,9 @@ void ExtensionSettingsPolicyHandler::SanitizePolicySettings(
       }
     }
 
-    const base::ListValue* runtime_allowed_hosts = nullptr;
-    if (sub_dict->GetList(schema_constants::kPolicyAllowedHosts,
-                          &runtime_allowed_hosts) &&
+    const base::Value* runtime_allowed_hosts =
+        sub_dict->FindListKey(schema_constants::kPolicyAllowedHosts);
+    if (runtime_allowed_hosts != nullptr &&
         runtime_allowed_hosts->GetList().size() >
             schema_constants::kMaxItemsURLPatternSet) {
       if (errors) {

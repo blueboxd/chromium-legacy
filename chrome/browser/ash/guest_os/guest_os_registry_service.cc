@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/icon_transcoder/svg_icon_transcoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -192,14 +195,13 @@ bool EqualsExcludingTimestamps(const base::Value& left,
 }
 
 void InstallIconFromFileThread(const base::FilePath& icon_path,
-                               const std::string& content_png) {
-  DCHECK(!content_png.empty());
+                               const std::string& content) {
+  DCHECK(!content.empty());
 
   base::CreateDirectory(icon_path.DirName());
 
-  int wrote =
-      base::WriteFile(icon_path, content_png.c_str(), content_png.size());
-  if (wrote != static_cast<int>(content_png.size())) {
+  int wrote = base::WriteFile(icon_path, content.c_str(), content.size());
+  if (wrote != static_cast<int>(content.size())) {
     VLOG(2) << "Failed to write Crostini icon file: "
             << icon_path.MaybeAsASCII();
     if (!base::DeleteFile(icon_path)) {
@@ -546,9 +548,9 @@ GuestOsRegistryService::GuestOsRegistryService(Profile* profile)
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       base_icon_path_(profile->GetPath().AppendASCII(kCrostiniIconFolder)),
-      clock_(base::DefaultClock::GetInstance()) {
+      clock_(base::DefaultClock::GetInstance()),
+      svg_icon_transcoder_(std::make_unique<apps::SvgIconTranscoder>(profile)) {
   RecordStartupMetrics();
-  MigrateTerminal();
 }
 
 GuestOsRegistryService::~GuestOsRegistryService() = default;
@@ -563,12 +565,12 @@ GuestOsRegistryService::GetAllRegisteredApps() const {
       prefs_->GetDictionary(guest_os::prefs::kGuestOsRegistry);
   std::map<std::string, GuestOsRegistryService::Registration> result;
   // Register Terminal by merging optional prefs with app values.
-  // TODO(crbug.com/1028898): Register Terminal as a System App rather than a
-  // crostini app.
-  result.emplace(crostini::kCrostiniTerminalSystemAppId,
-                 GetTerminalRegistration(
-                     apps->FindKeyOfType(crostini::kCrostiniTerminalSystemAppId,
-                                         base::Value::Type::DICTIONARY)));
+  if (!base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH)) {
+    result.emplace(crostini::kCrostiniTerminalSystemAppId,
+                   GetTerminalRegistration(apps->FindKeyOfType(
+                       crostini::kCrostiniTerminalSystemAppId,
+                       base::Value::Type::DICTIONARY)));
+  }
   for (const auto item : apps->DictItems()) {
     if (item.first != crostini::kCrostiniTerminalSystemAppId) {
       result.emplace(item.first, Registration(item.first, item.second.Clone()));
@@ -699,6 +701,8 @@ base::FilePath GuestOsRegistryService::GetIconPath(
       return app_path.AppendASCII("icon_200p.png");
     case ui::k300Percent:
       return app_path.AppendASCII("icon_300p.png");
+    case ui::kScaleFactorNone:
+      return app_path.AppendASCII("icon.svg");
     default:
       NOTREACHED();
       return base::FilePath();
@@ -746,21 +750,29 @@ void GuestOsRegistryService::LoadIcon(const std::string& app_id,
       icon_key.icon_effects | apps::IconEffects::kResizeAndPad);
   auto scale_factor = apps_util::GetPrimaryDisplayUIScaleFactor();
 
-  // Try loading the icon from an on-disk cache. If that fails, fall back
+  auto load_icon_from_vm_fallback = base::BindOnce(
+      &GuestOsRegistryService::LoadIconFromVM, weak_ptr_factory_.GetWeakPtr(),
+      app_id, icon_type, size_hint_in_dip, scale_factor, icon_effects,
+      fallback_icon_resource_id);
+
+  auto transcode_svg_fallback = base::BindOnce(
+      &GuestOsRegistryService::TranscodeIconFromSvg,
+      weak_ptr_factory_.GetWeakPtr(), GetIconPath(app_id, ui::kScaleFactorNone),
+      GetIconPath(app_id, scale_factor), icon_type, size_hint_in_dip,
+      icon_effects, std::move(load_icon_from_vm_fallback));
+
+  // Try loading the icon from an on-disk cache. If that fails, try to transcode
+  // the app's svg icon, and if that fails, fall back
   // to LoadIconFromVM.
   apps::LoadIconFromFileWithFallback(
       icon_type, size_hint_in_dip, GetIconPath(app_id, scale_factor),
-      icon_effects, std::move(callback),
-      base::BindOnce(&GuestOsRegistryService::LoadIconFromVM,
-                     weak_ptr_factory_.GetWeakPtr(), app_id, icon_type,
-                     size_hint_in_dip, scale_factor, icon_effects,
-                     fallback_icon_resource_id));
+      icon_effects, std::move(callback), std::move(transcode_svg_fallback));
 }
 
 void GuestOsRegistryService::ApplyContainerBadge(
     SkColor badge_color,
     apps::LoadIconCallback callback,
-    std::unique_ptr<apps::IconValue> icon) {
+    apps::IconValuePtr icon) {
   gfx::ImageSkia badge_mask =
       *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_ICON_BADGE_MASK);
@@ -776,6 +788,35 @@ void GuestOsRegistryService::ApplyContainerBadge(
       icon->uncompressed, badge_mask);
 
   std::move(callback).Run(std::move(icon));
+}
+
+void GuestOsRegistryService::TranscodeIconFromSvg(
+    base::FilePath svg_path,
+    base::FilePath png_path,
+    apps::IconType icon_type,
+    int32_t size_hint_in_dip,
+    apps::IconEffects icon_effects,
+    base::OnceCallback<void(apps::LoadIconCallback)> fallback,
+    apps::LoadIconCallback callback) {
+  svg_icon_transcoder_->Transcode(
+      std::move(svg_path), std::move(png_path), gfx::Size(128, 128),
+      base::BindOnce(
+          [](apps::IconType icon_type, int32_t size_hint_in_dip,
+             apps::IconEffects icon_effects, apps::LoadIconCallback callback,
+             base::OnceCallback<void(apps::LoadIconCallback)> fallback,
+             std::string icon_content) {
+            if (!icon_content.empty()) {
+              apps::LoadIconFromCompressedData(
+                  icon_type, size_hint_in_dip, icon_effects,
+                  std::move(icon_content), std::move(callback));
+              return;
+            }
+            if (fallback) {
+              std::move(fallback).Run(std::move(callback));
+            }
+          },
+          icon_type, size_hint_in_dip, icon_effects, std::move(callback),
+          std::move(fallback)));
 }
 
 void GuestOsRegistryService::LoadIconFromVM(
@@ -1129,6 +1170,32 @@ void GuestOsRegistryService::RequestContainerAppIcon(
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
 }
 
+void GuestOsRegistryService::InvokeActiveIconCallbacks(
+    std::string app_id,
+    ui::ResourceScaleFactor scale_factor,
+    std::string icon_content) {
+  // Invoke all active icon request callbacks with the icon.
+  auto key =
+      std::pair<std::string, ui::ResourceScaleFactor>(app_id, scale_factor);
+  auto& callbacks = active_icon_requests_[key];
+  VLOG(1) << "Invoking icon callbacks for app: " << app_id
+          << ", num callbacks: " << callbacks.size();
+  for (auto& callback : callbacks) {
+    std::move(callback).Run(icon_content);
+  }
+  active_icon_requests_.erase(key);
+}
+
+void GuestOsRegistryService::OnSvgIconTranscoded(std::string app_id,
+                                                 std::string icon_content) {
+  if (icon_content.empty()) {
+    VLOG(1) << "Failed to transcode svg icon for " << app_id;
+  }
+  for (auto scale_factor : ui::GetSupportedResourceScaleFactors()) {
+    InvokeActiveIconCallbacks(app_id, scale_factor, icon_content);
+  }
+}
+
 void GuestOsRegistryService::OnContainerAppIcon(
     const std::string& app_id,
     ui::ResourceScaleFactor scale_factor,
@@ -1143,54 +1210,32 @@ void GuestOsRegistryService::OnContainerAppIcon(
   } else if (icons.empty()) {
     VLOG(1) << "No icon in container for app: " << app_id;
   } else {
-    VLOG(1) << "Found icon in container for app: " << app_id;
-    // Now install the icon that we received.
     const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
+    bool is_svg = icons[0].format == vm_tools::cicerone::DesktopIcon::SVG;
+    VLOG(1) << "Found icon in container for app: " << app_id
+            << " path: " << icon_path << " format: " << (is_svg ? "svg" : "png")
+            << " bytes: " << icons[0].content.size();
+    // Now install the icon that we received.
+    if (is_svg) {
+      svg_icon_transcoder_->Transcode(
+          icons[0].content, std::move(icon_path), gfx::Size(128, 128),
+          base::BindOnce(&GuestOsRegistryService::OnSvgIconTranscoded,
+                         weak_ptr_factory_.GetWeakPtr(), app_id));
+      const base::FilePath svg_path = GetIconPath(app_id, ui::kScaleFactorNone);
+      base::ThreadPool::PostTask(
+          FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+          base::BindOnce(&InstallIconFromFileThread, std::move(svg_path),
+                         icons[0].content));
+      return;
+    }
+
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&InstallIconFromFileThread, icon_path,
+        base::BindOnce(&InstallIconFromFileThread, std::move(icon_path),
                        icons[0].content));
     icon_content = std::move(icons[0].content);
   }
-
-  // Invoke all active icon request callbacks with the icon.
-  auto key =
-      std::pair<std::string, ui::ResourceScaleFactor>(app_id, scale_factor);
-  auto& callbacks = active_icon_requests_[key];
-  VLOG(1) << "Invoking icon callbacks for app: " << app_id
-          << ", num callbacks: " << callbacks.size();
-  for (auto& callback : callbacks) {
-    std::move(callback).Run(icon_content);
-  }
-  active_icon_requests_.erase(key);
-}
-
-void GuestOsRegistryService::MigrateTerminal() const {
-  // Remove the old terminal from the registry.
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              guest_os::prefs::kGuestOsRegistry);
-  base::DictionaryValue* apps = update.Get();
-  apps->RemoveKey(crostini::kCrostiniDeletedTerminalId);
-
-  // Transfer item attributes from old terminal to new, and delete old terminal
-  // once AppListSyncableService is initialized.
-  auto* app_list_syncable_service =
-      app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
-  if (!app_list_syncable_service) {
-    return;
-  }
-  app_list_syncable_service->on_initialized().Post(
-      FROM_HERE,
-      base::BindOnce(
-          [](app_list::AppListSyncableService* service) {
-            if (service->GetSyncItem(crostini::kCrostiniDeletedTerminalId)) {
-              service->TransferItemAttributes(
-                  crostini::kCrostiniDeletedTerminalId,
-                  crostini::kCrostiniTerminalSystemAppId);
-              service->RemoveItem(crostini::kCrostiniDeletedTerminalId);
-            }
-          },
-          base::Unretained(app_list_syncable_service)));
+  InvokeActiveIconCallbacks(app_id, scale_factor, std::move(icon_content));
 }
 
 }  // namespace guest_os

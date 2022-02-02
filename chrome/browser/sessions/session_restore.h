@@ -12,7 +12,6 @@
 
 #include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 #include "components/history/core/browser/history_service.h"
@@ -26,6 +25,9 @@ class SessionRestoreImpl;
 namespace content {
 class WebContents;
 }
+
+struct StartupTab;
+using StartupTabs = std::vector<StartupTab>;
 
 // SessionRestore handles restoring either the last or saved session. Session
 // restore come in two variants, asynchronous or synchronous. The synchronous
@@ -66,11 +68,11 @@ class SessionRestore {
   // for details. If |browser| is non-null the tabs for the first window are
   // added to it. Returns the last active browser.
   //
-  // If |urls_to_open| is non-empty, a tab is added for each of the URLs.
+  // If |startup_tabs| is non-empty, a tab is added for each of the URLs.
   static Browser* RestoreSession(Profile* profile,
                                  Browser* browser,
                                  BehaviorBitmask behavior,
-                                 const std::vector<GURL>& urls_to_open);
+                                 const StartupTabs& startup_tabs);
 
   // Restores the last session when the last session crashed. It's a wrapper
   // of function RestoreSession.

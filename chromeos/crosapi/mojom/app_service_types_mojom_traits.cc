@@ -118,6 +118,10 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr>::Read(
   if (!data.ReadAllowUninstall(&allow_uninstall))
     return false;
 
+  apps::mojom::OptionalBool handles_intents;
+  if (!data.ReadHandlesIntents(&handles_intents))
+    return false;
+
   auto app = apps::mojom::App::New();
   app->app_type = std::move(app_type);
   app->app_id = app_id;
@@ -145,6 +149,7 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr>::Read(
   app->window_mode = window_mode;
   app->permissions = std::move(permissions);
   app->allow_uninstall = allow_uninstall;
+  app->handles_intents = handles_intents;
   *out = std::move(app);
   return true;
 }
@@ -161,11 +166,11 @@ EnumTraits<crosapi::mojom::AppType, apps::mojom::AppType>::ToMojom(
       return crosapi::mojom::AppType::kWeb;
     case apps::mojom::AppType::kSystemWeb:
       return crosapi::mojom::AppType::kSystemWeb;
-    case apps::mojom::AppType::kStandaloneBrowserExtension:
-      return crosapi::mojom::AppType::kStandaloneBrowserExtension;
+    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+      return crosapi::mojom::AppType::kStandaloneBrowserChromeApp;
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kChromeApp:
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kStandaloneBrowser:
@@ -192,8 +197,8 @@ bool EnumTraits<crosapi::mojom::AppType, apps::mojom::AppType>::FromMojom(
     case crosapi::mojom::AppType::kSystemWeb:
       *output = apps::mojom::AppType::kSystemWeb;
       return true;
-    case crosapi::mojom::AppType::kStandaloneBrowserExtension:
-      *output = apps::mojom::AppType::kStandaloneBrowserExtension;
+    case crosapi::mojom::AppType::kStandaloneBrowserChromeApp:
+      *output = apps::mojom::AppType::kStandaloneBrowserChromeApp;
       return true;
   }
 
@@ -602,37 +607,37 @@ bool StructTraits<crosapi::mojom::CapabilityAccessDataView,
 }
 
 crosapi::mojom::IconType
-EnumTraits<crosapi::mojom::IconType, apps::mojom::IconType>::ToMojom(
-    apps::mojom::IconType input) {
+EnumTraits<crosapi::mojom::IconType, apps::IconType>::ToMojom(
+    apps::IconType input) {
   switch (input) {
-    case apps::mojom::IconType::kUnknown:
+    case apps::IconType::kUnknown:
       return crosapi::mojom::IconType::kUnknown;
-    case apps::mojom::IconType::kUncompressed:
+    case apps::IconType::kUncompressed:
       return crosapi::mojom::IconType::kUncompressed;
-    case apps::mojom::IconType::kCompressed:
+    case apps::IconType::kCompressed:
       return crosapi::mojom::IconType::kCompressed;
-    case apps::mojom::IconType::kStandard:
+    case apps::IconType::kStandard:
       return crosapi::mojom::IconType::kStandard;
   }
 
   NOTREACHED();
 }
 
-bool EnumTraits<crosapi::mojom::IconType, apps::mojom::IconType>::FromMojom(
+bool EnumTraits<crosapi::mojom::IconType, apps::IconType>::FromMojom(
     crosapi::mojom::IconType input,
-    apps::mojom::IconType* output) {
+    apps::IconType* output) {
   switch (input) {
     case crosapi::mojom::IconType::kUnknown:
-      *output = apps::mojom::IconType::kUnknown;
+      *output = apps::IconType::kUnknown;
       return true;
     case crosapi::mojom::IconType::kUncompressed:
-      *output = apps::mojom::IconType::kUncompressed;
+      *output = apps::IconType::kUncompressed;
       return true;
     case crosapi::mojom::IconType::kCompressed:
-      *output = apps::mojom::IconType::kCompressed;
+      *output = apps::IconType::kCompressed;
       return true;
     case crosapi::mojom::IconType::kStandard:
-      *output = apps::mojom::IconType::kStandard;
+      *output = apps::IconType::kStandard;
       return true;
   }
 
@@ -640,11 +645,10 @@ bool EnumTraits<crosapi::mojom::IconType, apps::mojom::IconType>::FromMojom(
   return false;
 }
 
-bool StructTraits<
-    crosapi::mojom::IconValueDataView,
-    apps::mojom::IconValuePtr>::Read(crosapi::mojom::IconValueDataView data,
-                                     apps::mojom::IconValuePtr* out) {
-  apps::mojom::IconType icon_type;
+bool StructTraits<crosapi::mojom::IconValueDataView, apps::IconValuePtr>::Read(
+    crosapi::mojom::IconValueDataView data,
+    apps::IconValuePtr* out) {
+  apps::IconType icon_type;
   if (!data.ReadIconType(&icon_type))
     return false;
 
@@ -652,11 +656,11 @@ bool StructTraits<
   if (!data.ReadUncompressed(&uncompressed))
     return false;
 
-  absl::optional<std::vector<uint8_t>> compressed;
+  std::vector<uint8_t> compressed;
   if (!data.ReadCompressed(&compressed))
     return false;
 
-  auto icon_value = apps::mojom::IconValue::New();
+  auto icon_value = std::make_unique<apps::IconValue>();
   icon_value->icon_type = icon_type;
   icon_value->uncompressed = std::move(uncompressed);
   icon_value->compressed = std::move(compressed);

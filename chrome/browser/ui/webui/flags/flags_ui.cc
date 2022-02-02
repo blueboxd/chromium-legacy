@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -79,7 +78,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
       base::SysInfo::IsRunningOnChromeOS()) {
     // Set the string to show which user can actually change the flags.
     std::string owner;
-    ash::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+    ash::CrosSettings::Get()->GetString(ash::kDeviceOwner, &owner);
     source->AddString("owner-warning",
                       l10n_util::GetStringFUTF16(IDS_FLAGS_UI_OWNER_WARNING,
                                                  base::UTF8ToUTF16(owner)));
@@ -90,9 +89,6 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
 
   source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
   source->AddResourcePath(flags_ui::kFlagsCSS, IDR_FLAGS_UI_FLAGS_CSS);
-#if defined(OS_CHROMEOS)
-  source->AddResourcePath(flags_ui::kFlagsSVG, IDR_OS_FLAGS_UI_FLAGS_SVG);
-#endif
   source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   source->UseStringsJs();
   return source;

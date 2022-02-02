@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_provider.h"
-#include "chromeos/settings/cros_settings_names.h"
 
 namespace ash {
 
@@ -105,6 +105,7 @@ void StubCrosSettingsProvider::SetDefaults() {
   values_.SetValue(kAccountsPrefDeviceLocalAccounts,
                    base::Value(base::Value::Type::LIST));
   values_.SetBoolean(kDevicePeripheralDataAccessEnabled, true);
+  values_.SetBoolean(kRevenEnableDeviceHWDataUsage, false);
   // |kDeviceOwner| will be set to the logged-in user by |UserManager|.
 }
 

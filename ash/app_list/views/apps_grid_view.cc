@@ -24,6 +24,7 @@
 #include "ash/app_list/views/app_list_folder_controller.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
+#include "ash/app_list/views/apps_grid_context_menu.h"
 #include "ash/app_list/views/apps_grid_view_focus_delegate.h"
 #include "ash/app_list/views/ghost_image_view.h"
 #include "ash/app_list/views/pulsing_block_view.h"
@@ -38,7 +39,6 @@
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
 #include "base/guid.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
@@ -318,6 +318,9 @@ AppsGridView::AppsGridView(AppListA11yAnnouncer* a11y_announcer,
   bounds_animator_ = std::make_unique<views::BoundsAnimator>(
       items_container_, /*use_transforms=*/true);
   bounds_animator_->AddObserver(this);
+
+  context_menu_ = std::make_unique<AppsGridContextMenu>();
+  set_context_menu_controller(context_menu_.get());
 }
 
 AppsGridView::~AppsGridView() {
@@ -1880,7 +1883,7 @@ void AppsGridView::MoveItemInModel(AppListItem* item, const GridIndex& target) {
       if (item_list_->FindItemIndex(item_id, &final_item_list_index) &&
           final_item_list_index > 0 &&
           !item_list_->item_at(final_item_list_index - 1)->is_page_break()) {
-        item_list_->AddPageBreakItemAfter(
+        model_->AddPageBreakItemAfter(
             item_list_->item_at(final_item_list_index - 1));
       }
     }
@@ -1943,7 +1946,6 @@ void AppsGridView::ReparentItemForReorder(AppListItem* item,
   {
     ScopedModelUpdate update(this);
     model_->MoveItemToRootAt(item, target_position);
-    RemoveLastItemFromReparentItemFolderIfNecessary(source_folder_id);
   }
 }
 
@@ -1974,37 +1976,10 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItem* item,
       LOG(ERROR) << "Unable to reparent to item id: " << target_item->id();
       return false;
     }
-    RemoveLastItemFromReparentItemFolderIfNecessary(source_folder_id);
   }
 
   RecordAppMovingTypeMetrics(kMoveIntoAnotherFolder);
   return true;
-}
-
-// After moving the re-parenting item out of the folder, if there is only 1 item
-// left, remove the last item out of the folder, delete the folder and insert it
-// to the data model at the same position. Make the same change to view_model_
-// accordingly.
-void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
-    const std::string& source_folder_id) {
-  // This function should be called along with other model updates, such as
-  // moving an item out of the parent folder.
-  DCHECK(updating_model_);
-
-  AppListFolderItem* source_folder =
-      static_cast<AppListFolderItem*>(item_list_->FindItem(source_folder_id));
-  if (!source_folder || (source_folder && !source_folder->ShouldAutoRemove()))
-    return;
-
-  // For single-app folders (which can exist for system-managed folders, see
-  // crbug.com/925052) there will not be a "last item" so we can ignore the
-  // rest.
-  if (!source_folder || source_folder->item_list()->item_count() != 1)
-    return;
-
-  // Now make the data change to remove the folder item in model.
-  AppListItem* last_item = source_folder->item_list()->item_at(0);
-  model_->MoveItemToRootAt(last_item, source_folder->position());
 }
 
 void AppsGridView::CancelContextMenusOnCurrentPage() {
@@ -2196,24 +2171,6 @@ gfx::Rect AppsGridView::GetExpectedTileBounds(const GridIndex& index) const {
   tile_bounds.Offset(GetGridCenteringOffset(index.page));
   tile_bounds.Inset(-GetTilePadding(index.page));
   return tile_bounds;
-}
-
-gfx::Rect AppsGridView::GetExpectedItemBoundsInFirstPage(
-    const std::string& id) const {
-  const AppListItem* item = model_->FindItem(id);
-  if (!item)
-    return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
-
-  const int model_index = GetModelIndexOfItem(item);
-  if (model_index >= view_model_.view_size())
-    return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
-
-  const GridIndex grid_index =
-      view_structure_.GetIndexFromModelIndex(model_index);
-  if (grid_index.page != 0)
-    return gfx::Rect(GetContentsBounds().CenterPoint(), gfx::Size(1, 1));
-
-  return GetExpectedTileBounds(grid_index);
 }
 
 bool AppsGridView::IsViewHiddenForDrag(const views::View* view) const {

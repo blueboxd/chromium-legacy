@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/ignore_result.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -40,6 +41,8 @@ void InputMethodBase::OnFocus() {
 
 void InputMethodBase::OnBlur() {
 }
+
+void InputMethodBase::OnTouch(ui::EventPointerType pointerType) {}
 
 #if defined(OS_WIN)
 bool InputMethodBase::OnUntranslatedIMEMessage(
@@ -87,10 +90,9 @@ TextInputType InputMethodBase::GetTextInputType() const {
 }
 
 void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
-  for (InputMethodObserver& observer : observer_list_)
-    observer.OnShowVirtualKeyboardIfEnabled();
-  if (auto* keyboard = GetVirtualKeyboardController())
-    keyboard->DisplayVirtualKeyboard();
+  // TODO(crbug.com/1275410): Merge this into
+  // SetVirtualKeyboardVisibilityIfEnabled.
+  SetVirtualKeyboardVisibilityIfEnabled(true);
 }
 
 void InputMethodBase::SetVirtualKeyboardVisibilityIfEnabled(bool should_show) {

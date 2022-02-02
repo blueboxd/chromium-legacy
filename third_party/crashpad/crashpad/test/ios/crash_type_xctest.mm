@@ -85,12 +85,8 @@
 
 - (void)testSegv {
   [rootObject_ crashSegv];
-#if defined(NDEBUG)
-#if TARGET_OS_SIMULATOR
+#if defined(NDEBUG) && TARGET_OS_SIMULATOR
   [self verifyCrashReportException:SIGINT];
-#else
-  [self verifyCrashReportException:SIGABRT];
-#endif
 #else
   [self verifyCrashReportException:SIGHUP];
 #endif
@@ -117,12 +113,8 @@
 
 - (void)testBadAccess {
   [rootObject_ crashBadAccess];
-#if defined(NDEBUG)
-#if TARGET_OS_SIMULATOR
+#if defined(NDEBUG) && TARGET_OS_SIMULATOR
   [self verifyCrashReportException:SIGINT];
-#else
-  [self verifyCrashReportException:SIGABRT];
-#endif
 #else
   [self verifyCrashReportException:SIGHUP];
 #endif
@@ -179,11 +171,49 @@
   XCTAssertEqual([rootObject_ pendingReportCount], 0);
 }
 
+- (void)testCrashCoreAutoLayoutSinkhole {
+  [rootObject_ crashCoreAutoLayoutSinkhole];
+  [self verifyCrashReportException:crashpad::kMachExceptionFromNSException];
+  NSDictionary* dict = [rootObject_ getAnnotations];
+  XCTAssertTrue([[dict[@"objects"][0] valueForKeyPath:@"exceptionReason"]
+      containsString:@"Unable to activate constraint with anchors"]);
+  XCTAssertTrue([[dict[@"objects"][1] valueForKeyPath:@"exceptionName"]
+      isEqualToString:@"NSGenericException"]);
+}
+
 - (void)testRecursion {
   [rootObject_ crashRecursion];
   [self verifyCrashReportException:SIGHUP];
 }
 
+- (void)testClientAnnotations {
+  [rootObject_ crashKillAbort];
+
+  // Set app launch args to trigger different client annotations.
+  NSArray<NSString*>* old_args = app_.launchArguments;
+  app_.launchArguments = @[ @"--alternate-client-annotations" ];
+  [self verifyCrashReportException:SIGABRT];
+  app_.launchArguments = old_args;
+
+  // Confirm the initial crash took the standard annotations.
+  NSDictionary* dict = [rootObject_ getProcessAnnotations];
+  XCTAssertTrue([dict[@"crashpad"] isEqualToString:@"yes"]);
+  XCTAssertTrue([dict[@"plat"] isEqualToString:@"iOS"]);
+  XCTAssertTrue([dict[@"prod"] isEqualToString:@"xcuitest"]);
+  XCTAssertTrue([dict[@"ver"] isEqualToString:@"1"]);
+
+  // Confirm passing alternate client annotation args works.
+  [rootObject_ clearPendingReports];
+  [rootObject_ crashKillAbort];
+  [self verifyCrashReportException:SIGABRT];
+  dict = [rootObject_ getProcessAnnotations];
+  XCTAssertTrue([dict[@"crashpad"] isEqualToString:@"no"]);
+  XCTAssertTrue([dict[@"plat"] isEqualToString:@"macOS"]);
+  XCTAssertTrue([dict[@"prod"] isEqualToString:@"some_app"]);
+  XCTAssertTrue([dict[@"ver"] isEqualToString:@"42"]);
+}
+
+#if TARGET_OS_SIMULATOR
 - (void)testCrashWithCrashInfoMessage {
   if (@available(iOS 15.0, *)) {
     // Figure out how to test this on iOS15.
@@ -195,9 +225,10 @@
   NSString* dyldMessage = dict[@"vector"][0];
   XCTAssertTrue([dyldMessage isEqualToString:@"dyld: in dlsym()"]);
 }
+#endif
 
 // TODO(justincohen): Codesign crashy_initializer.so so it can run on devices.
-#if !TARGET_OS_SIMULATOR
+#if TARGET_OS_SIMULATOR
 - (void)testCrashWithDyldErrorString {
   if (@available(iOS 15.0, *)) {
     // iOS 15 uses dyld4, which doesn't use CRSetCrashLogMessage2

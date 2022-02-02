@@ -13,7 +13,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
@@ -35,11 +34,14 @@ class FourtyTwo {
  public:
   static const int kMagicValue = 42;
   FourtyTwo() : value_(kMagicValue) {}
+
+  FourtyTwo(const FourtyTwo&) = delete;
+  FourtyTwo& operator=(const FourtyTwo&) = delete;
+
   int value() { return value_; }
 
  private:
   int value_;
-  DISALLOW_COPY_AND_ASSIGN(FourtyTwo);
 };
 
 class EmptyClassTakingPolicy : public bpf_dsl::Policy {

@@ -18,6 +18,8 @@
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/streams/test_underlying_source.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/webcodecs/image_track.h"
+#include "third_party/blink/renderer/modules/webcodecs/image_track_list.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -474,9 +476,15 @@ TEST_F(ImageDecoderTest, DecoderReadableStream) {
   const size_t chunk_size = (data->size() + 1) / kNumChunks;
 
   const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
-  underlying_source->Enqueue(ScriptValue(
-      v8_scope.GetIsolate(), ToV8(DOMUint8Array::Create(data_ptr, chunk_size),
-                                  v8_scope.GetScriptState())));
+
+  v8::Local<v8::Value> v8_data_array;
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(),
+                  DOMUint8Array::Create(data_ptr, chunk_size))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
 
   // Ensure we have metadata.
   {
@@ -491,11 +499,14 @@ TEST_F(ImageDecoderTest, DecoderReadableStream) {
   decoder->tracks().selectedTrack().value()->setSelected(false);
 
   // Enqueue remaining data.
-  underlying_source->Enqueue(
-      ScriptValue(v8_scope.GetIsolate(),
-                  ToV8(DOMUint8Array::Create(data_ptr + chunk_size,
-                                             data->size() - chunk_size),
-                       v8_scope.GetScriptState())));
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(),
+                  DOMUint8Array::Create(data_ptr + chunk_size,
+                                        data->size() - chunk_size))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
   underlying_source->Close();
 
   // Completed will not resolve while we have no selected track.
@@ -572,9 +583,13 @@ TEST_F(ImageDecoderTest, DecoderReadableStreamAvif) {
 
   // Enqueue a single byte and ensure nothing breaks.
   const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
-  underlying_source->Enqueue(ScriptValue(
-      v8_scope.GetIsolate(),
-      ToV8(DOMUint8Array::Create(data_ptr, 1), v8_scope.GetScriptState())));
+  v8::Local<v8::Value> v8_data_array;
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(), DOMUint8Array::Create(data_ptr, 1))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
 
   auto metadata_promise = decoder->tracks().ready(v8_scope.GetScriptState());
   auto decode_promise = decoder->decode();
@@ -592,10 +607,13 @@ TEST_F(ImageDecoderTest, DecoderReadableStreamAvif) {
   EXPECT_FALSE(decode_tester.IsRejected());
 
   // Append the rest of the data.
-  underlying_source->Enqueue(
-      ScriptValue(v8_scope.GetIsolate(),
-                  ToV8(DOMUint8Array::Create(data_ptr + 1, data->size() - 1),
-                       v8_scope.GetScriptState())));
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(),
+                  DOMUint8Array::Create(data_ptr + 1, data->size() - 1))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
 
   // Ensure we have metadata.
   metadata_tester.WaitUntilSettled();
@@ -639,9 +657,15 @@ TEST_F(ImageDecoderTest, ReadableStreamAvifStillYuvDecoding) {
 
   // Append all data, but don't mark the stream as complete yet.
   const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
-  underlying_source->Enqueue(ScriptValue(
-      v8_scope.GetIsolate(), ToV8(DOMUint8Array::Create(data_ptr, data->size()),
-                                  v8_scope.GetScriptState())));
+
+  v8::Local<v8::Value> v8_data_array;
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(),
+                  DOMUint8Array::Create(data_ptr, data->size()))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
 
   // Wait for metadata so we know the append has occurred.
   {
@@ -749,10 +773,15 @@ TEST_F(ImageDecoderTest, DecodeClosedDuringReadableStream) {
   EXPECT_EQ(decoder->type(), kImageType);
 
   const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
-  underlying_source->Enqueue(
-      ScriptValue(v8_scope.GetIsolate(),
-                  ToV8(DOMUint8Array::Create(data_ptr, data->size() / 2),
-                       v8_scope.GetScriptState())));
+
+  v8::Local<v8::Value> v8_data_array;
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(),
+                  DOMUint8Array::Create(data_ptr, data->size() / 2))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
 
   // Ensure we have metadata.
   {
@@ -796,10 +825,15 @@ TEST_F(ImageDecoderTest, DecodeInvalidFileViaReadableStream) {
   EXPECT_EQ(decoder->type(), kImageType);
 
   const uint8_t* data_ptr = reinterpret_cast<const uint8_t*>(data->Data());
-  underlying_source->Enqueue(
-      ScriptValue(v8_scope.GetIsolate(),
-                  ToV8(DOMUint8Array::Create(data_ptr, data->size() / 2),
-                       v8_scope.GetScriptState())));
+
+  v8::Local<v8::Value> v8_data_array;
+  ASSERT_TRUE(ToV8Traits<DOMUint8Array>::ToV8(
+                  v8_scope.GetScriptState(),
+                  DOMUint8Array::Create(data_ptr, data->size() / 2))
+                  .ToLocal(&v8_data_array));
+  ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
+
+  underlying_source->Enqueue(ScriptValue(v8_scope.GetIsolate(), v8_data_array));
 
   // Ensure we have metadata.
   {

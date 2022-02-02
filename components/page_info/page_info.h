@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -58,7 +58,6 @@ class PageInfo {
     SITE_CONNECTION_STATUS_UNENCRYPTED,      // Connection is not encrypted.
     SITE_CONNECTION_STATUS_ENCRYPTED_ERROR,  // Connection error occurred.
     SITE_CONNECTION_STATUS_INTERNAL_PAGE,    // Internal site.
-    SITE_CONNECTION_STATUS_LEGACY_TLS,  // Connection used a legacy TLS version.
   };
 
   // Validation status of a website's identity.
@@ -290,6 +289,8 @@ class PageInfo {
 
   PageInfoUI* ui_for_testing() const { return ui_; }
 
+  void SetSiteNameForTesting(const std::u16string& site_name);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);
@@ -358,7 +359,7 @@ class PageInfo {
   // specific data (local stored objects like cookies), site-specific
   // permissions (location, pop-up, plugin, etc. permissions) and site-specific
   // information (identity, connection status, etc.).
-  PageInfoUI* ui_;
+  raw_ptr<PageInfoUI> ui_;
 
   // A web contents getter used to retrieve the associated WebContents object.
   base::WeakPtr<content::WebContents> web_contents_;
@@ -445,6 +446,8 @@ class PageInfo {
   // Whether the "About this site" data was available for the site and "About
   // this site" section was shown in the page info.
   bool was_about_this_site_shown_ = false;
+
+  std::u16string site_name_for_testing_;
 
   base::WeakPtrFactory<PageInfo> weak_factory_{this};
 };

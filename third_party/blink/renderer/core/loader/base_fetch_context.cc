@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/loader/subresource_redirect_util.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -161,7 +161,7 @@ void BaseFetchContext::AddClientHintsIfNecessary(
           network::GetClientHintToNameMap()
               .at(network::mojom::blink::WebClientHintsType::kUA)
               .c_str(),
-          ua->SerializeBrandVersionList().c_str());
+          ua->SerializeBrandMajorVersionList().c_str());
     }
 
     // We also send Sec-CH-UA-Mobile to all hints. It is a one-bit header
@@ -183,13 +183,6 @@ void BaseFetchContext::AddClientHintsIfNecessary(
   // If the frame is detached, then don't send any hints other than UA.
   if (!policy)
     return;
-
-  if (!RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
-      !base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty) &&
-      !is_1p_origin) {
-    // No client hints for 3p origins.
-    return;
-  }
 
   // The next 4 hints should be enabled if we're allowing legacy hints to third
   // parties, or if PermissionsPolicy delegation says they are allowed.
@@ -427,6 +420,17 @@ void BaseFetchContext::AddClientHintsIfNecessary(
 
     if (ShouldSendClientHint(
             ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
+            network::mojom::blink::WebClientHintsType::kUAFullVersionList,
+            hints_preferences)) {
+      request.SetHttpHeaderField(
+          network::GetClientHintToNameMap()
+              .at(network::mojom::blink::WebClientHintsType::kUAFullVersionList)
+              .c_str(),
+          ua->SerializeBrandFullVersionList().c_str());
+    }
+
+    if (ShouldSendClientHint(
+            ClientHintsMode::kStandard, policy, resource_origin, is_1p_origin,
             network::mojom::blink::WebClientHintsType::kUABitness,
             hints_preferences)) {
       request.SetHttpHeaderField(
@@ -624,22 +628,13 @@ BaseFetchContext::CanRequestInternal(
   if (IsSVGImageChromeClient() && !url.ProtocolIsData())
     return ResourceRequestBlockedReason::kOrigin;
 
-  // Measure the number of legacy URL schemes ('ftp://') and the number of
-  // embedded-credential ('http://user:password@...') resources embedded as
-  // subresources.
+  // Measure the number of embedded-credential ('http://user:password@...')
+  // resources embedded as subresources.
   const FetchClientSettingsObject& fetch_client_settings_object =
       GetResourceFetcherProperties().GetFetchClientSettingsObject();
   const SecurityOrigin* embedding_origin =
       fetch_client_settings_object.GetSecurityOrigin();
   DCHECK(embedding_origin);
-  if (SchemeRegistry::ShouldTreatURLSchemeAsLegacy(url.Protocol()) &&
-      !SchemeRegistry::ShouldTreatURLSchemeAsLegacy(
-          embedding_origin->Protocol())) {
-    CountDeprecation(WebFeature::kLegacyProtocolEmbeddedAsSubresource);
-
-    return ResourceRequestBlockedReason::kOrigin;
-  }
-
   if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))
     return ResourceRequestBlockedReason::kOrigin;
 
@@ -691,7 +686,7 @@ bool BaseFetchContext::ShouldSendClientHint(
   if (mode == ClientHintsMode::kLegacy &&
       base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty)) {
     origin_ok = true;
-  } else if (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled()) {
+  } else {
     // For subresource requests, if the parent frame has Sec-CH-UA-Reduced,
     // then send Sec-CH-UA-Reduced in the fetch request, regardless of the
     // permissions policy.
@@ -699,8 +694,6 @@ bool BaseFetchContext::ShouldSendClientHint(
                 (policy && policy->IsFeatureEnabledForOrigin(
                                GetClientHintToPolicyFeatureMap().at(type),
                                resource_origin));
-  } else {
-    origin_ok = is_1p_origin;
   }
 
   if (!origin_ok)
@@ -710,10 +703,9 @@ bool BaseFetchContext::ShouldSendClientHint(
 }
 
 void BaseFetchContext::AddBackForwardCacheExperimentHTTPHeaderIfNeeded(
-    ExecutionContext* context,
     ResourceRequest& request) {
   if (!RuntimeEnabledFeatures::BackForwardCacheExperimentHTTPHeaderEnabled(
-          context)) {
+          GetExecutionContext())) {
     return;
   }
   if (!base::FeatureList::IsEnabled(
@@ -722,7 +714,8 @@ void BaseFetchContext::AddBackForwardCacheExperimentHTTPHeaderIfNeeded(
   }
   // Send the 'Sec-bfcache-experiment' HTTP header to indicate which
   // BackForwardCacheSameSite experiment group we're in currently.
-  UseCounter::Count(context, WebFeature::kBackForwardCacheExperimentHTTPHeader);
+  UseCounter::Count(GetExecutionContext(),
+                    WebFeature::kBackForwardCacheExperimentHTTPHeader);
   auto experiment_group = base::GetFieldTrialParamValueByFeature(
       features::kBackForwardCacheABExperimentControl,
       features::kBackForwardCacheABExperimentGroup);

@@ -352,7 +352,7 @@ const Region& LayerImpl::GetAllTouchActionRegions() const {
   return *all_touch_action_regions_;
 }
 
-void LayerImpl::SetCaptureBounds(RegionCaptureBounds bounds) {
+void LayerImpl::SetCaptureBounds(viz::RegionCaptureBounds bounds) {
   if (capture_bounds_ == bounds)
     return;
   capture_bounds_ = std::move(bounds);
@@ -610,7 +610,7 @@ gfx::Rect LayerImpl::GetDamageRect() const {
   return gfx::Rect();
 }
 
-void LayerImpl::SetCurrentScrollOffset(const gfx::Vector2dF& scroll_offset) {
+void LayerImpl::SetCurrentScrollOffset(const gfx::PointF& scroll_offset) {
   DCHECK(IsActive());
   if (GetScrollTree().SetScrollOffset(element_id(), scroll_offset))
     layer_tree_impl()->DidUpdateScrollOffset(element_id());

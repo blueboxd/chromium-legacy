@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/pickle.h"
@@ -118,7 +117,7 @@ ClipboardHostImpl::ClipboardHostImpl(
       render_frame_host->GetBrowserContext()->IsOffTheRecord()
           ? nullptr
           : std::make_unique<ui::DataTransferEndpoint>(
-                render_frame_host->GetLastCommittedOrigin()));
+                render_frame_host->GetMainFrame()->GetLastCommittedOrigin()));
 }
 
 void ClipboardHostImpl::Create(
@@ -425,12 +424,18 @@ void ClipboardHostImpl::ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
 }
 
 void ClipboardHostImpl::WriteText(const std::u16string& text) {
-  clipboard_writer_->WriteText(text);
+  CopyIfAllowed(
+      text.size() * sizeof(std::u16string::value_type),
+      base::BindOnce(&ui::ScopedClipboardWriter::WriteText,
+                     base::Unretained(clipboard_writer_.get()), text));
 }
 
 void ClipboardHostImpl::WriteHtml(const std::u16string& markup,
                                   const GURL& url) {
-  clipboard_writer_->WriteHTML(markup, url.spec());
+  CopyIfAllowed(markup.size() * sizeof(std::u16string::value_type),
+                base::BindOnce(&ui::ScopedClipboardWriter::WriteHTML,
+                               base::Unretained(clipboard_writer_.get()),
+                               markup, url.spec()));
 }
 
 void ClipboardHostImpl::WriteSvg(const std::u16string& markup) {
@@ -612,6 +617,19 @@ void ClipboardHostImpl::FinishPasteIfContentAllowed(
   request.Complete(allowed);
 }
 
+void ClipboardHostImpl::CopyIfAllowed(size_t data_size_in_bytes,
+                                      CopyAllowedCallback callback) {
+  std::u16string replacement_data;
+  if (GetContentClient()->browser()->IsClipboardCopyAllowed(
+          render_frame_host()->GetBrowserContext(),
+          render_frame_host()->GetLastCommittedURL(), data_size_in_bytes,
+          replacement_data)) {
+    std::move(callback).Run();
+  } else {
+    clipboard_writer_->WriteText(replacement_data);
+  }
+}
+
 void ClipboardHostImpl::CleanupObsoleteRequests() {
   for (auto it = is_allowed_requests_.begin();
        it != is_allowed_requests_.end();) {
@@ -627,7 +645,7 @@ ClipboardHostImpl::CreateDataEndpoint() {
     return nullptr;
   }
   return std::make_unique<ui::DataTransferEndpoint>(
-      render_frame_host()->GetLastCommittedOrigin(),
+      render_frame_host()->GetMainFrame()->GetLastCommittedOrigin(),
       render_frame_host()->HasTransientUserActivation());
 }
 }  // namespace content

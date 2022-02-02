@@ -98,13 +98,15 @@ class CC_EXPORT Proxy {
   virtual void SetUkmSmoothnessDestination(
       base::WritableSharedMemoryMapping ukm_smoothness_data) = 0;
 
-  virtual void ClearHistory() = 0;
-
   virtual void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) = 0;
 
   virtual void SetEnableFrameRateThrottling(
       bool enable_frame_rate_throttling) = 0;
+
+  // Returns a percentage representing average throughput of last X seconds.
+  // Only implemenented for single threaded proxy.
+  virtual uint32_t GetAverageThroughput() const = 0;
 };
 
 }  // namespace cc

@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/bind.h"
@@ -53,7 +54,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
-#include "components/arc/arc_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -310,7 +310,10 @@ class DemoSetupTestBase : public OobeBaseTest {
 
 class DemoSetupArcSupportedTest : public DemoSetupTestBase {
  public:
-  DemoSetupArcSupportedTest() = default;
+  DemoSetupArcSupportedTest() {
+    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                             "us");
+  }
   ~DemoSetupArcSupportedTest() override = default;
 
   // DemoSetupTestBase:
@@ -368,6 +371,57 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
     // wait for it in the usual manner.
     OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
     test::OobeJS().CreateVisibilityWaiter(true, kDemoSetupErrorDialog)->Wait();
+  }
+
+  std::string GetQueryForCountrySelectOptionFromCountryCode(
+      const std::string country_code) {
+    return base::StrCat({test::GetOobeElementPath(kDemoPreferencesCountry),
+                         ".shadowRoot.querySelector('option[value=\"",
+                         country_code, "\"]').innerHTML"});
+  }
+
+ protected:
+  // Verify the country names are displayed correctly. Regression test for
+  // potential country code changes.
+  const base::flat_map<std::string, std::string> kCountryCodeToNameMap = {
+      {"us", "United States"},
+      {"be", "Belgium"},
+      {"ca", "Canada"},
+      {"dk", "Denmark"},
+      {"fi", "Finland"},
+      {"fr", "France"},
+      {"de", "Germany"},
+      {"ie", "Ireland"},
+      {"it", "Italy"},
+      {"jp", "Japan"},
+      {"lu", "Luxembourg"},
+      {"nl", "Netherlands"},
+      {"no", "Norway"},
+      {"es", "Spain"},
+      {"se", "Sweden"},
+      {"gb", "United Kingdom"},
+      {"N/A", "Please select a country"}};
+
+  system::ScopedFakeStatisticsProvider statistics_provider_;
+
+  void SelectFranceAndFinishSetup() {
+    // Select France as the Demo Mode country.
+    test::OobeJS().SelectElementInPath("fr", kDemoPreferencesCountrySelect);
+    test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+    test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+    UseOnlineModeOnNetworkScreen();
+
+    AcceptTermsAndExpectDemoSetupProgress();
+
+    // Verify the email corresponds to France.
+    EXPECT_EQ("admin-fr@cros-demo-mode.com",
+              DemoSetupController::GetSubOrganizationEmail());
+
+    OobeScreenWaiter(GetFirstSigninScreen()).Wait();
+
+    EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+    EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
   }
 };
 
@@ -484,51 +538,19 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   TriggerDemoModeOnWelcomeScreen();
 
-  // Verify the country names are displayed correctly. Regression test for
-  // potential country code changes.
-  const base::flat_map<std::string, std::string> kCountryCodeToNameMap(
-      {{"us", "United States"},
-       {"be", "Belgium"},
-       {"ca", "Canada"},
-       {"dk", "Denmark"},
-       {"fi", "Finland"},
-       {"fr", "France"},
-       {"de", "Germany"},
-       {"ie", "Ireland"},
-       {"it", "Italy"},
-       {"jp", "Japan"},
-       {"lu", "Luxembourg"},
-       {"nl", "Netherlands"},
-       {"no", "Norway"},
-       {"es", "Spain"},
-       {"se", "Sweden"},
-       {"gb", "United Kingdom"}});
   for (const std::string country_code : DemoSession::kSupportedCountries) {
     const auto it = kCountryCodeToNameMap.find(country_code);
     ASSERT_NE(kCountryCodeToNameMap.end(), it);
     const std::string query =
-        base::StrCat({test::GetOobeElementPath(kDemoPreferencesCountry),
-                      ".shadowRoot.querySelector('option[value=\"", country_code,
-                      "\"]').innerHTML"});
+        GetQueryForCountrySelectOptionFromCountryCode(country_code);
     EXPECT_EQ(it->second, test::OobeJS().GetString(query));
   }
 
-  // Select France as the Demo Mode country.
-  test::OobeJS().SelectElementInPath("fr", kDemoPreferencesCountrySelect);
-  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+  // Expect active "OK" button with "us" selected as country.
+  test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+  test::OobeJS().ExpectElementValue("us", kDemoPreferencesCountrySelect);
 
-  UseOnlineModeOnNetworkScreen();
-
-  AcceptTermsAndExpectDemoSetupProgress();
-
-  // Verify the email corresponds to France.
-  EXPECT_EQ("admin-fr@cros-demo-mode.com",
-            DemoSetupController::GetSubOrganizationEmail());
-
-  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
-
-  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
-  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  SelectFranceAndFinishSetup();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowErrorDefault) {
@@ -1196,6 +1218,130 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
+}
+
+/**
+ * Test case of device variant region code, e.g. ca.fr etc.
+ */
+class DemoSetupVariantCountryCodeRegionTest : public DemoSetupArcSupportedTest {
+ public:
+  ~DemoSetupVariantCountryCodeRegionTest() override = default;
+
+  DemoSetupVariantCountryCodeRegionTest() {
+    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                             "ca.fr");
+  }
+};
+
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_VariantCountryCodeRegionDefaultCountryIsSet \
+  DISABLED_VariantCountryCodeRegionDefaultCountryIsSet
+#else
+#define MAYBE_VariantCountryCodeRegionDefaultCountryIsSet \
+  VariantCountryCodeRegionDefaultCountryIsSet
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupVariantCountryCodeRegionTest,
+                       MAYBE_VariantCountryCodeRegionDefaultCountryIsSet) {
+  // Simulate successful online setup.
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
+  SimulateNetworkConnected();
+
+  TriggerDemoModeOnWelcomeScreen();
+
+  // Expect active "OK" button when entering the preference screen.
+  test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
+  test::OobeJS().ExpectElementValue("ca", kDemoPreferencesCountrySelect);
+  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+  UseOnlineModeOnNetworkScreen();
+
+  AcceptTermsAndExpectDemoSetupProgress();
+
+  // Verify the email corresponds to France.
+  EXPECT_EQ("admin-ca@cros-demo-mode.com",
+            DemoSetupController::GetSubOrganizationEmail());
+
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+}
+
+/**
+ * Test case of device virtual set region code, e.g. nordic etc.
+ */
+class DemoSetupVirtualSetRegionCodeTest : public DemoSetupArcSupportedTest {
+ public:
+  ~DemoSetupVirtualSetRegionCodeTest() override = default;
+
+  DemoSetupVirtualSetRegionCodeTest() {
+    statistics_provider_.SetMachineStatistic(chromeos::system::kRegionKey,
+                                             "nordic");
+  }
+};
+
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet \
+  DISABLED_VirtualSetCountryCodeRegionPlaceholderIsSet
+#else
+#define MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet \
+  VirtualSetCountryCodeRegionPlaceholderIsSet
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupVirtualSetRegionCodeTest,
+                       MAYBE_VirtualSetCountryCodeRegionPlaceholderIsSet) {
+  // Simulate successful online setup.
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
+  SimulateNetworkConnected();
+
+  TriggerDemoModeOnWelcomeScreen();
+
+  // Expect inactive "OK" button when entering the preference screen.
+  test::OobeJS().ExpectDisabledPath(kDemoPreferencesNext);
+  test::OobeJS().ExpectElementValue("N/A", kDemoPreferencesCountrySelect);
+  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+  SelectFranceAndFinishSetup();
+}
+
+/**
+ * Test case of device with VPD region not set.
+ */
+class DemoSetupRegionCodeNotExistTest : public DemoSetupArcSupportedTest {
+ public:
+  ~DemoSetupRegionCodeNotExistTest() override = default;
+
+  DemoSetupRegionCodeNotExistTest() {
+    statistics_provider_.ClearMachineStatistic(chromeos::system::kRegionKey);
+  }
+};
+
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
+  DISABLED_RegionCodeNotExistPlaceholderIsSet
+#else
+#define MAYBE_RegionCodeNotExistPlaceholderIsSet \
+  RegionCodeNotExistPlaceholderIsSet
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
+                       MAYBE_RegionCodeNotExistPlaceholderIsSet) {
+  // Simulate successful online setup.
+  enrollment_helper_.ExpectEnrollmentMode(
+      policy::EnrollmentConfig::MODE_ATTESTATION);
+  enrollment_helper_.ExpectAttestationEnrollmentSuccess();
+  SimulateNetworkConnected();
+
+  TriggerDemoModeOnWelcomeScreen();
+
+  // Expect inactive "OK" button when entering the preference screen.
+  test::OobeJS().ExpectDisabledPath(kDemoPreferencesNext);
+  test::OobeJS().ExpectElementValue("N/A", kDemoPreferencesCountrySelect);
+  test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+
+  SelectFranceAndFinishSetup();
 }
 
 }  // namespace

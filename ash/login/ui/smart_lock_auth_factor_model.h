@@ -19,10 +19,14 @@ class AuthIconView;
 // lock screen.
 class ASH_EXPORT SmartLockAuthFactorModel : public AuthFactorModel {
  public:
-  SmartLockAuthFactorModel();
+  SmartLockAuthFactorModel(
+      base::RepeatingCallback<void()> arrow_button_tap_callback);
   SmartLockAuthFactorModel(SmartLockAuthFactorModel&) = delete;
   SmartLockAuthFactorModel& operator=(SmartLockAuthFactorModel&) = delete;
   ~SmartLockAuthFactorModel() override;
+
+  // AuthFactorModel:
+  void OnArrowButtonTapOrClickEvent() override;
 
   // TODO(crbug.com/1233614): Remove this once SmartLockState is passed in
   // instead of EasyUnlockIconState.
@@ -33,14 +37,16 @@ class ASH_EXPORT SmartLockAuthFactorModel : public AuthFactorModel {
 
  private:
   // AuthFactorModel:
-  AuthFactorState GetAuthFactorState() override;
-  AuthFactorType GetType() override;
-  int GetLabelId() override;
-  bool ShouldAnnounceLabel() override;
-  int GetAccessibleNameId() override;
+  AuthFactorState GetAuthFactorState() const override;
+  AuthFactorType GetType() const override;
+  int GetLabelId() const override;
+  bool ShouldAnnounceLabel() const override;
+  int GetAccessibleNameId() const override;
   void UpdateIcon(AuthIconView* icon) override;
-  void OnTapOrClickEvent() override;
+  void DoHandleTapOrClick() override;
+  void DoHandleErrorTimeout() override;
 
+  base::RepeatingCallback<void()> arrow_button_tap_callback_;
   SmartLockState state_ = SmartLockState::kInactive;
   absl::optional<bool> auth_result_;
 };

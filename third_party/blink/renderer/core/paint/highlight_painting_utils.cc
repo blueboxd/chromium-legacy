@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
 
-#include "components/shared_highlighting/core/common/text_fragments_constants.h"
+#include "components/shared_highlighting/core/common/fragment_directives_constants.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -26,11 +26,6 @@
 namespace blink {
 
 namespace {
-
-bool NodeIsSelectable(const ComputedStyle& style, Node* node) {
-  return !node->IsInert() && !(style.UserSelect() == EUserSelect::kNone &&
-                               style.UserModify() == EUserModify::kReadOnly);
-}
 
 bool NodeIsReplaced(Node* node) {
   return node && node->GetLayoutObject() &&
@@ -202,9 +197,7 @@ scoped_refptr<const ComputedStyle> HighlightPseudoStyle(
     case kPseudoIdGrammarError:
       return style.HighlightData()->GrammarError();
     case kPseudoIdHighlight:
-      // TODO(crbug.com/1024156): implement ::highlight() case
-      return HighlightPseudoStyleWithOriginatingInheritance(node, pseudo,
-                                                            pseudo_argument);
+      return style.HighlightData()->CustomHighlight(pseudo_argument);
     default:
       NOTREACHED();
       return nullptr;
@@ -234,7 +227,7 @@ Color HighlightColor(const Document& document,
   if (pseudo == kPseudoIdSelection) {
     // If the element is unselectable, or we are only painting the selection,
     // don't override the foreground color with the selection foreground color.
-    if ((node && !NodeIsSelectable(style, node)) ||
+    if ((node && !style.IsSelectable()) ||
         (global_paint_flags & kGlobalPaintSelectionDragImageOnly)) {
       return style.VisitedDependentColor(color_property);
     }
@@ -267,7 +260,7 @@ Color HighlightPaintingUtils::HighlightBackgroundColor(
     PseudoId pseudo,
     const AtomicString& pseudo_argument) {
   if (pseudo == kPseudoIdSelection) {
-    if (node && !NodeIsSelectable(style, node))
+    if (node && !style.IsSelectable())
       return Color::kTransparent;
   }
 

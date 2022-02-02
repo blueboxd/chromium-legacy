@@ -548,7 +548,7 @@ int32_t ToAXMarkerType(DocumentMarker::MarkerType marker_type) {
     case DocumentMarker::kSuggestion:
       result = ax::mojom::blink::MarkerType::kSuggestion;
       break;
-    case DocumentMarker::kHighlight:
+    case DocumentMarker::kCustomHighlight:
       result = ax::mojom::blink::MarkerType::kHighlight;
       break;
     default:
@@ -3504,16 +3504,15 @@ bool AXObject::IsHiddenViaStyle() const {
   return cached_is_hidden_via_style;
 }
 
-// Return true if this should be removed from accessible name computations,
-// unless it is reached by following an aria-labelledby. When that happens, this
-// is not checked, because aria-labelledby can use hidden subtrees.
-// Because aria-labelledby can use hidden subtrees, when it has entered a hidden
-// subtree, it is not enough to check if the element was hidden by an ancestor.
-// In this case, return true only if the hiding style targeted the node
-// directly, as opposed to having inherited the hiding style. Using inherited
-// hiding styles is problematic because it would prevent name contributions from
-// deeper nodes in hidden aria-labelledby subtrees.
-bool AXObject::IsHiddenForTextAlternativeCalculation() const {
+// Return true if this should be removed from accessible name computations.
+// We must take into account if we are traversing an aria-labelledby or
+// describedby relation, because those can use hidden subtrees. When the target
+// node of the aria-labelledby or describedby relation is hidden, we contribute
+// all its children, because there is no way to know if they are explicitly
+// hidden or they inherited the hidden value. See:
+// https://github.com/w3c/accname/issues/57
+bool AXObject::IsHiddenForTextAlternativeCalculation(
+    const AXObject* aria_label_or_description_root) const {
   // aria-hidden=false allows hidden contents to be used in name from contents.
   if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden))
     return false;
@@ -3542,10 +3541,16 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
   if (IsA<SVGDescElement>(node))
     return false;
 
-  // If this is hidden but its parent isn't, then it appears the hiding style
-  // targeted this node directly. Do not recurse into it for name from contents.
-  return IsHiddenViaStyle() &&
-         (!ParentObject() || !ParentObject()->IsHiddenViaStyle());
+  // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
+  // When traversing an aria-labelledby relation where the targeted node is
+  // hidden, we must contribute its children. There is no way to know if they
+  // are explicitly hidden or they inherited the hidden value, so we resort to
+  // contributing them all. See also: https://github.com/w3c/accname/issues/57
+  if (aria_label_or_description_root &&
+      aria_label_or_description_root->IsHiddenViaStyle())
+    return false;
+
+  return IsHiddenViaStyle();
 }
 
 String AXObject::AriaTextAlternative(
@@ -3562,8 +3567,7 @@ String AXObject::AriaTextAlternative(
 
   // Step 2A from: http://www.w3.org/TR/accname-aam-1.1
   // If you change this logic, update AXNodeObject::nameFromLabelElement, too.
-  if (!aria_label_or_description_root &&
-      IsHiddenForTextAlternativeCalculation()) {
+  if (IsHiddenForTextAlternativeCalculation(aria_label_or_description_root)) {
     *found_text_alternative = true;
     return String();
   }
@@ -4297,7 +4301,7 @@ AXObject* AXObject::ElementAccessibilityHitTest(const gfx::Point& point) const {
   // Check if there are any mock elements that need to be handled.
   for (const auto& child : ChildrenIncludingIgnored()) {
     if (child->IsMockObject() &&
-        child->GetBoundsInFrameCoordinates().Contains(point))
+        child->GetBoundsInFrameCoordinates().Contains(LayoutPoint(point)))
       return child->ElementAccessibilityHitTest(point);
   }
 
@@ -4990,24 +4994,27 @@ gfx::Point AXObject::GetScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return gfx::Point();
-
-  return ToGfxPoint(area->ScrollOffsetInt());
+  // TODO(crbug.com/1274078): Should this be converted to scroll position, or
+  // should the result type be gfx::Vector2d?
+  return gfx::PointAtOffsetFromOrigin(area->ScrollOffsetInt());
 }
 
 gfx::Point AXObject::MinimumScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return gfx::Point();
-
-  return ToGfxPoint(area->MinimumScrollOffsetInt());
+  // TODO(crbug.com/1274078): Should this be converted to scroll position, or
+  // should the result type be gfx::Vector2d?
+  return gfx::PointAtOffsetFromOrigin(area->MinimumScrollOffsetInt());
 }
 
 gfx::Point AXObject::MaximumScrollOffset() const {
   ScrollableArea* area = GetScrollableAreaIfScrollable();
   if (!area)
     return gfx::Point();
-
-  return ToGfxPoint(area->MaximumScrollOffsetInt());
+  // TODO(crbug.com/1274078): Should this be converted to scroll position, or
+  // should the result type be gfx::Vector2d?
+  return gfx::PointAtOffsetFromOrigin(area->MaximumScrollOffsetInt());
 }
 
 void AXObject::SetScrollOffset(const gfx::Point& offset) const {
@@ -5275,10 +5282,10 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
 
       // If it's a popup, account for the popup window's offset.
       if (view->GetPage()->GetChromeClient().IsPopup()) {
-        IntRect frame_rect = view->FrameToScreen(view->FrameRect());
+        gfx::Rect frame_rect = view->FrameToScreen(view->FrameRect());
         LocalFrameView* root_view =
             AXObjectCache().GetDocument().GetFrame()->View();
-        IntRect root_frame_rect =
+        gfx::Rect root_frame_rect =
             root_view->FrameToScreen(root_view->FrameRect());
 
         // Screen coordinates are in DIP without device scale factor applied.
@@ -5288,8 +5295,8 @@ void AXObject::GetRelativeBounds(AXObject** out_container,
             view->GetPage()->GetChromeClient().WindowToViewportScalar(
                 layout_object->GetFrame(), 1.0f);
         out_bounds_in_container.set_origin(
-            FloatPoint(scale_factor * (frame_rect.x() - root_frame_rect.x()),
-                       scale_factor * (frame_rect.y() - root_frame_rect.y())));
+            gfx::PointF(scale_factor * (frame_rect.x() - root_frame_rect.x()),
+                        scale_factor * (frame_rect.y() - root_frame_rect.y())));
       }
     }
     return;
@@ -5550,7 +5557,7 @@ bool AXObject::RequestScrollToMakeVisibleAction() {
 }
 
 bool AXObject::RequestScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& subfocus,
+    const gfx::Rect& subfocus,
     blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
     blink::mojom::blink::ScrollAlignment vertical_scroll_alignment) {
   return OnNativeScrollToMakeVisibleWithSubFocusAction(
@@ -5617,7 +5624,7 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
 }
 
 bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& rect,
+    const gfx::Rect& rect,
     blink::mojom::blink::ScrollAlignment horizontal_scroll_alignment,
     blink::mojom::blink::ScrollAlignment vertical_scroll_alignment) const {
   LayoutObject* layout_object = GetLayoutObjectForNativeScrollAction();

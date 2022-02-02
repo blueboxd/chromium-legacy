@@ -12,9 +12,27 @@
 
 namespace blink {
 
+struct NamedGridLine {
+  explicit NamedGridLine(const String line_name,
+                         bool is_in_repeat = false,
+                         bool is_first_repeat = false)
+      : line_name(line_name),
+        is_in_repeat(is_in_repeat),
+        is_first_repeat(is_first_repeat) {}
+
+  bool operator==(const NamedGridLine& other) const {
+    return line_name == other.line_name && is_in_repeat == other.is_in_repeat &&
+           is_first_repeat == other.is_first_repeat;
+  }
+
+  String line_name;
+  bool is_in_repeat;
+  bool is_first_repeat;
+};
+
 using OrderedNamedGridLines =
     HashMap<size_t,
-            Vector<String>,
+            Vector<NamedGridLine>,
             WTF::IntHash<size_t>,
             WTF::UnsignedWithZeroKeyHashTraits<size_t>>;
 

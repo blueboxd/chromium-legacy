@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -21,7 +22,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/history_clusters/core/memories_features.h"
+#include "components/history_clusters/core/features.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/navigation_handle.h"
@@ -66,7 +67,7 @@ void ValidateHistoryClustersUKMEntry(const ukm::mojom::UkmEntry* entry,
 class HistoryClustersMetricsBrowserTest : public InProcessBrowserTest {
  public:
   HistoryClustersMetricsBrowserTest() {
-    feature_list_.InitWithFeatures({history_clusters::kJourneys}, {});
+    feature_list_.InitWithFeatures({history_clusters::internal::kJourneys}, {});
   }
 
  private:

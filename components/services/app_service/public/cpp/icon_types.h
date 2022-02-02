@@ -7,13 +7,12 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace apps {
 
-struct COMPONENT_EXPORT(APP_UPDATE) IconKey {
+struct COMPONENT_EXPORT(ICON_TYPES) IconKey {
   IconKey();
   IconKey(uint64_t timeline, int32_t resource_id, uint32_t icon_effects);
 
@@ -46,16 +45,16 @@ struct COMPONENT_EXPORT(APP_UPDATE) IconKey {
   // For example, if an app is disabled for some reason (so that its icon is
   // grayed out), this would result in a different timeline even though the
   // app's version is unchanged.
-  uint64_t timeline;
+  uint64_t timeline = 0;
 
   // If non-zero (or equivalently, not equal to kInvalidResourceId), the
   // compressed icon is compiled into the Chromium binary as a statically
   // available, int-keyed resource.
-  int32_t resource_id;
+  int32_t resource_id = kInvalidResourceId;
 
   // A bitmask of icon post-processing effects, such as desaturation to gray
   // and rounding the corners.
-  uint32_t icon_effects;
+  uint32_t icon_effects = 0;
 
   // When adding new fields, also update the IconLoader::Key type in
   // components/services/app_service/public/cpp/icon_loader.*
@@ -76,7 +75,7 @@ enum class IconType {
 // The return value for the App Service LoadIcon method. The icon will be
 // provided in either an uncompressed representation (gfx::ImageSkia), or a
 // compressed representation (PNG-encoded bytes) depending on |icon_type|.
-struct COMPONENT_EXPORT(APP_UPDATE) IconValue {
+struct COMPONENT_EXPORT(ICON_TYPES) IconValue {
   IconValue();
 
   IconValue(const IconValue&) = delete;
@@ -98,32 +97,40 @@ struct COMPONENT_EXPORT(APP_UPDATE) IconValue {
   bool is_placeholder_icon = false;
 };
 
-using LoadIconCallback = base::OnceCallback<void(std::unique_ptr<IconValue>)>;
+using IconValuePtr = std::unique_ptr<IconValue>;
+using LoadIconCallback = base::OnceCallback<void(IconValuePtr)>;
 
 // TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
 // AppService.
-COMPONENT_EXPORT(APP_UPDATE)
-std::unique_ptr<IconKey> ConvertMojomIconKeyToIconKey(
-    apps::mojom::IconKeyPtr mojom_icon_key);
+COMPONENT_EXPORT(ICON_TYPES)
+apps::mojom::IconKeyPtr ConvertIconKeyToMojomIconKey(const IconKey& icon_key);
 
-COMPONENT_EXPORT(APP_UPDATE)
+COMPONENT_EXPORT(ICON_TYPES)
+std::unique_ptr<IconKey> ConvertMojomIconKeyToIconKey(
+    const apps::mojom::IconKeyPtr& mojom_icon_key);
+
+COMPONENT_EXPORT(ICON_TYPES)
 apps::mojom::IconType ConvertIconTypeToMojomIconType(IconType icon_type);
 
-COMPONENT_EXPORT(APP_UPDATE)
+COMPONENT_EXPORT(ICON_TYPES)
 IconType ConvertMojomIconTypeToIconType(apps::mojom::IconType mojom_icon_type);
 
-COMPONENT_EXPORT(APP_UPDATE)
+COMPONENT_EXPORT(ICON_TYPES)
 apps::mojom::IconValuePtr ConvertIconValueToMojomIconValue(
-    std::unique_ptr<IconValue> icon_value);
+    IconValuePtr icon_value);
 
-COMPONENT_EXPORT(APP_UPDATE)
-std::unique_ptr<IconValue> ConvertMojomIconValueToIconValue(
+COMPONENT_EXPORT(ICON_TYPES)
+IconValuePtr ConvertMojomIconValueToIconValue(
     apps::mojom::IconValuePtr mojom_icon_value);
 
-COMPONENT_EXPORT(APP_UPDATE)
-base::OnceCallback<void(std::unique_ptr<IconValue>)>
-IconValueToMojomIconValueCallback(
+COMPONENT_EXPORT(ICON_TYPES)
+base::OnceCallback<void(IconValuePtr)> IconValueToMojomIconValueCallback(
     base::OnceCallback<void(apps::mojom::IconValuePtr)> callback);
+
+COMPONENT_EXPORT(ICON_TYPES)
+base::OnceCallback<void(apps::mojom::IconValuePtr)>
+MojomIconValueToIconValueCallback(
+    base::OnceCallback<void(IconValuePtr)> callback);
 
 }  // namespace apps
 

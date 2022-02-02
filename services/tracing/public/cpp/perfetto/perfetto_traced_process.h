@@ -6,6 +6,7 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_PERFETTO_TRACED_PROCESS_H_
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"
@@ -121,7 +122,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
    private:
     uint64_t data_source_id_ = 0;
     std::string name_;
-    PerfettoProducer* producer_ = nullptr;
+    raw_ptr<PerfettoProducer> producer_ = nullptr;
   };
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
@@ -206,7 +207,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
                            bool privacy_filtering_enabled);
 
   // Called on the process's main thread once the thread pool is ready.
-  void OnThreadPoolAvailable();
+  void OnThreadPoolAvailable(bool enable_consumer);
 
   // Set a callback that returns whether a system tracing session is allowed.
   // The callback will be executed on the sequence that set it. Only a single
@@ -238,17 +239,23 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
   // Can be called on any thread, but only after OnThreadPoolAvailable().
   void ActivateSystemTriggers(const std::vector<std::string>& triggers);
 
-  // Sets the task runner used by the tracing infrastructure in this process. Be
-  // sure to call TearDownForTesting to clean up at the end of the test.
+  // Sets the task runner used by the tracing infrastructure in this process.
+  // The returned handle will automatically tear down tracing when destroyed, so
+  // it should be kept valid until the test terminates.
   //
-  // Be careful when using ResetTaskRunnerForTesting. There is a PostTask in the
+  // Be careful when using SetupForTesting. There is a PostTask in the
   // constructor of PerfettoTracedProcess, so before this class is constructed
   // is the only safe time to call this.
-  static void ResetTaskRunnerForTesting(
+  struct COMPONENT_EXPORT(TRACING_CPP) TestHandle {
+    TestHandle() = default;
+    ~TestHandle();
+    TestHandle(const TestHandle&) = delete;
+    TestHandle(TestHandle&&) = default;
+    TestHandle& operator=(const TestHandle&) = delete;
+    TestHandle& operator=(TestHandle&&) = default;
+  };
+  static std::unique_ptr<TestHandle> SetupForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);
-
-  // Clean up tracing state at the end of a test.
-  static void TearDownForTesting();
 
   // Sets the ProducerClient (or SystemProducer) and returns the old pointer. If
   // tests want to restore the state of the world they should store the pointer
@@ -281,7 +288,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final
 
   // Initialize the Perfetto client library (i.e., perfetto::Tracing) for this
   // process.
-  void SetupClientLibrary();
+  // |enable_consumer| should be true if the system consumer can be enabled.
+  // Currently this is only the case if this is running in the browser process.
+  void SetupClientLibrary(bool enable_consumer);
 
   // perfetto::TracingPolicy implementation:
   void ShouldAllowConsumerSession(

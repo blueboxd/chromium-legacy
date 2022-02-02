@@ -117,7 +117,6 @@ import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.navigation_predictor.NavigationPredictorBridge;
-import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageUtils;
@@ -606,19 +605,31 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         }
                     }
 
-                    // TODO(960196) : remove this when the associated bug fix. This is a band-aid
-                    //  fix for TabGrid and closing tabs with TabGroupUi.
+                    boolean gridTabSwitcherEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled(
+                            ChromeTabbedActivity.this);
+                    boolean overviewVisible = mOverviewModeController.overviewVisible();
+                    boolean hasNextTab = !(getTabModelSelector().getTotalTabCount() == 0
+                            || (!getTabModelSelector().isIncognitoSelected()
+                                    && getTabModelSelector().getModel(false).getCount() == 0));
+
+                    // TODO(crbug.com/1046541) : Remove this when the associated bug is fixed. This
+                    //  is a band-aid fix for TabGrid and closing tabs with TabGroupUi.
                     //  If one of the following is true, then exit Chrome when TabGroupsAndroid is
                     //  enabled, and tab switcher is not shown:
                     //   1. If the very last tab is closed.
                     //   2. If normal tab model is selected and no normal tabs.
-                    if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(ChromeTabbedActivity.this)
-                            && !mOverviewModeController.overviewVisible()) {
-                        if (getTabModelSelector().getTotalTabCount() == 0
-                                || (!getTabModelSelector().isIncognitoSelected()
-                                        && getTabModelSelector().getModel(false).getCount() == 0)) {
-                            finish();
-                        }
+                    if (gridTabSwitcherEnabled && !overviewVisible && !hasNextTab && !isTablet()) {
+                        finish();
+                    }
+
+                    // TODO(crbug.com/1272821): Investigate unexpected behavior when the last tab is
+                    //  closed through grid tab switcher without this logic.
+                    //  If one of the following is true, then hide the grid tab switcher for tablets
+                    //  when TabGroupsAndroid is enabled, and tab switcher is shown:
+                    //   1. If the very last tab is closed.
+                    //   2. If normal tab model is selected and no normal tabs.
+                    if (gridTabSwitcherEnabled && overviewVisible && !hasNextTab && isTablet()) {
+                        mOverviewModeController.hideOverview(true);
                     }
                 }
 
@@ -657,26 +668,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForPhone")) {
             CompositorViewHolder compositorViewHolder = getCompositorViewHolderSupplier().get();
 
-            // TODO(1169205): Remove all GTS enabled checks after M5 is default.
+            // TODO(1239025): Remove all GTS enabled checks after GTS is enabled by default on
+            // tablets.
             if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this)) {
-                TabManagementDelegate tabManagementDelegate =
-                        TabManagementModuleProvider.getDelegate();
-                if (tabManagementDelegate != null) {
-                    StartSurface startSurface = tabManagementDelegate.createStartSurface(this,
-                            mRootUiCoordinator.getScrimCoordinator(),
-                            mRootUiCoordinator.getBottomSheetController(), mStartSurfaceSupplier,
-                            mStartSurfaceParentTabSupplier, hadWarmStart(), getWindowAndroid(),
-                            compositorViewHolder, compositorViewHolder::getDynamicResourceLoader,
-                            getTabModelSelector(), getBrowserControlsManager(),
-                            getSnackbarManager(), getShareDelegateSupplier(),
-                            getToolbarManager()::getOmniboxStub, getTabContentManager(),
-                            getModalDialogManager(),
-                            /* chromeActivityNativeDelegate= */ this, getLifecycleDispatcher(),
-                            getTabCreatorManagerSupplier().get(),
-                            getMenuOrKeyboardActionController(),
-                            getMultiWindowModeStateDispatcher(), mJankTracker,
-                            getToolbarManager()::getToolbar);
-                }
+                createStartSurface(compositorViewHolder);
             }
 
             // clang-format off
@@ -699,9 +694,17 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForTablet")) {
+            CompositorViewHolder compositorViewHolder = getCompositorViewHolderSupplier().get();
+
+            // TODO(1239025): Remove all GTS enabled checks after GTS is enabled by default on
+            // tablets.
+            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this)) {
+                createStartSurface(compositorViewHolder);
+            }
+
             // clang-format off
-            mLayoutManager = new LayoutManagerChromeTablet(getCompositorViewHolderSupplier().get(),
-                    mContentContainer, getTabContentManagerSupplier(),
+            mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder, mContentContainer,
+                    mStartSurfaceSupplier.get(), getTabContentManagerSupplier(),
                     () -> {
                         if (!getCompositorViewHolderSupplier().hasValue()) return null;
                         return getCompositorViewHolderSupplier().get().getLayerTitleCache();
@@ -711,6 +714,23 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mLayoutStateProviderOneshotSupplier.set(mLayoutManager);
             // clang-format on
             mOverviewModeController = mLayoutManager;
+        }
+    }
+
+    private void createStartSurface(CompositorViewHolder compositorViewHolder) {
+        TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
+        if (tabManagementDelegate != null) {
+            tabManagementDelegate.createStartSurface(this, mRootUiCoordinator.getScrimCoordinator(),
+                    mRootUiCoordinator.getBottomSheetController(), mStartSurfaceSupplier,
+                    mStartSurfaceParentTabSupplier, hadWarmStart(), getWindowAndroid(),
+                    compositorViewHolder, compositorViewHolder::getDynamicResourceLoader,
+                    getTabModelSelector(), getBrowserControlsManager(), getSnackbarManager(),
+                    getShareDelegateSupplier(), getToolbarManager()::getOmniboxStub,
+                    getTabContentManager(), getModalDialogManager(),
+                    /* chromeActivityNativeDelegate= */ this, getLifecycleDispatcher(),
+                    getTabCreatorManagerSupplier().get(), getMenuOrKeyboardActionController(),
+                    getMultiWindowModeStateDispatcher(), mJankTracker,
+                    getToolbarManager()::getToolbar);
         }
     }
 
@@ -873,10 +893,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public void startNativeInitialization() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity.startNativeInitialization")) {
             // This is on the critical path so don't delay.
-            if (ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
-                WebContentsDarkModeController.createInstance();
-            }
             setupCompositorContentPostNative();
 
             // All this initialization can be expensive so it's split into multiple tasks.
@@ -1084,7 +1100,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
             }
-            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this) && !isTablet()) {
+            if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(this)) {
                 mStartSurfaceSupplier.get().getController().enableRecordingFirstMeaningfulPaint(
                         getOnCreateTimestampMs());
             }
@@ -1668,12 +1684,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(this)) {
             dialogVisibilitySupplier = () -> {
                 assert mStartSurfaceSupplier.get() != null;
-                assert getToolbarManager().getTabGroupUi() != null;
                 // Return true if dialog from either tab switcher or tab strip is visible.
 
                 ToolbarManager toolbarManager = getToolbarManager();
                 TabGroupUi tabGroupUi = toolbarManager.getTabGroupUi();
-                boolean isDialogVisible = tabGroupUi.isTabGridDialogVisible();
+                boolean isDialogVisible = tabGroupUi != null && tabGroupUi.isTabGridDialogVisible();
 
                 Supplier<Boolean> tabSwitcherDialogVisibilitySupplier =
                         mStartSurfaceSupplier.get().getTabGridDialogVisibilitySupplier();
@@ -2159,11 +2174,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 // Chrome if back button is tapped again.
                 if (currentTab.isIncognito()) {
                     if (!currentTab.isClosing()) {
-                        getCurrentTabModel().closeTab(currentTab);
+                        mTabModelSelector.getModel(true).closeTab(currentTab);
                     }
                     mTabModelSelector.selectModel(/*incognito=*/false);
                 }
                 showOverview(StartSurfaceState.SHOWING_HOMEPAGE);
+                if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                        && !StartSurfaceUserData.getKeepTab(currentTab)) {
+                    getCurrentTabModel().closeTab(currentTab);
+                }
             } else {
                 // Otherwise, clicking the back button should close the tab and go back to the
                 // previous overview mode.

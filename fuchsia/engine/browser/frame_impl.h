@@ -23,10 +23,10 @@
 
 #include "base/fuchsia/scoped_fx_logger.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "components/media_control/browser/media_blocker.h"
 #include "components/on_load_script_injector/browser/on_load_script_injector_host.h"
+#include "components/url_rewrite/browser/url_request_rewrite_rules_manager.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
@@ -34,7 +34,6 @@
 #include "fuchsia/engine/browser/frame_permission_controller.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 #include "fuchsia/engine/browser/theme_manager.h"
-#include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/aura/window_tree_host.h"
@@ -85,15 +84,14 @@ class FrameImpl : public fuchsia::web::Frame,
   FrameImpl(const FrameImpl&) = delete;
   FrameImpl& operator=(const FrameImpl&) = delete;
 
-  absl::optional<uint64_t> media_session_id() const {
-    return media_session_id_;
-  }
+  uint64_t media_session_id() const { return media_session_id_; }
 
   FramePermissionController* permission_controller() {
     return &permission_controller_;
   }
 
-  UrlRequestRewriteRulesManager* url_request_rewrite_rules_manager() {
+  url_rewrite::UrlRequestRewriteRulesManager*
+  url_request_rewrite_rules_manager() {
     return &url_request_rewrite_rules_manager_;
   }
 
@@ -356,13 +354,13 @@ class FrameImpl : public fuchsia::web::Frame,
 
   EventFilter event_filter_;
   NavigationControllerImpl navigation_controller_;
-  UrlRequestRewriteRulesManager url_request_rewrite_rules_manager_;
+  url_rewrite::UrlRequestRewriteRulesManager url_request_rewrite_rules_manager_;
   FramePermissionController permission_controller_;
   std::unique_ptr<NavigationPolicyHandler> navigation_policy_handler_;
 
   // Session ID to use for fuchsia.media.AudioConsumer. Set with
   // SetMediaSessionId().
-  absl::optional<uint64_t> media_session_id_;
+  uint64_t media_session_id_ = 0;
 
   // Stored settings for web contents in the current Frame.
   fuchsia::web::ContentAreaSettings content_area_settings_;

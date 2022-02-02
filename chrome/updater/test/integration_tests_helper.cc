@@ -196,10 +196,14 @@ void AppTestHelper::FirstTaskRun() {
     {"expect_interfaces_registered",
      WithSystemScope(Wrap(&ExpectInterfacesRegistered))},
     {"expect_legacy_update3web_succeeds",
-     WithSwitch("app_id",
-                WithSystemScope(Wrap(&ExpectLegacyUpdate3WebSucceeds)))},
+     WithSwitch("expected_error_code",
+                WithSwitch("expected_final_state",
+                           WithSwitch("app_id",
+                                      WithSystemScope(Wrap(
+                                          &ExpectLegacyUpdate3WebSucceeds)))))},
     {"expect_legacy_process_launcher_succeeds",
      WithSystemScope(Wrap(&ExpectLegacyProcessLauncherSucceeds))},
+    {"run_uninstall_cmd_line", WithSystemScope(Wrap(&RunUninstallCmdLine))},
 #endif  // OS_WIN
     {"expect_version_active",
      WithSwitch("version", WithSystemScope(Wrap(&ExpectVersionActive)))},

@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
@@ -101,7 +102,7 @@ class Shell : public TabObserver,
   void DisplayedUrlChanged(const GURL& url) override;
 
   // NavigationObserver implementation:
-  void LoadStateChanged(bool is_loading, bool to_different_document) override;
+  void LoadStateChanged(bool is_loading, bool should_show_loading_ui) override;
   void LoadProgressChanged(double progress) override;
 
   // DownloadDelegate implementation:
@@ -170,7 +171,7 @@ class Shell : public TabObserver,
 #if defined(TOOLKIT_VIEWS)
   static views::ViewsDelegate* views_delegate_;
 
-  views::Widget* window_widget_;
+  raw_ptr<views::Widget> window_widget_;
 #endif  // defined(TOOLKIT_VIEWS)
 #endif  // defined(USE_AURA)
 

@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/sequence_checker.h"
@@ -75,7 +76,7 @@ class AuctionV8DevToolsSession::BreakpointHandler
     return crdtp::DispatchResponse::Success();
   }
 
-  v8_inspector::V8InspectorSession* const v8_session_;
+  const raw_ptr<v8_inspector::V8InspectorSession> v8_session_;
   std::set<std::string> instrumentation_breakpoints_;
   SEQUENCE_CHECKER(v8_sequence_checker_);
 };
@@ -103,10 +104,10 @@ class AuctionV8DevToolsSession::IOSession
   static void Create(
       mojo::PendingReceiver<blink::mojom::DevToolsSession> io_session_receiver,
       scoped_refptr<base::SequencedTaskRunner> io_session_receiver_sequence,
-      scoped_refptr<DebugCommandQueue> debug_command_queue,
+      DebugCommandQueue* debug_command_queue,
       RunDispatch v8_thread_dispatch) {
-    auto instance = base::WrapUnique(new IOSession(
-        std::move(debug_command_queue), std::move(v8_thread_dispatch)));
+    auto instance = base::WrapUnique(
+        new IOSession(debug_command_queue, std::move(v8_thread_dispatch)));
     io_session_receiver_sequence->PostTask(
         FROM_HERE,
         base::BindOnce(&IOSession::ConnectReceiver, std::move(instance),
@@ -127,7 +128,7 @@ class AuctionV8DevToolsSession::IOSession
   }
 
  private:
-  IOSession(scoped_refptr<DebugCommandQueue> debug_command_queue,
+  IOSession(DebugCommandQueue* debug_command_queue,
             RunDispatch v8_thread_dispatch)
       : debug_command_queue_(debug_command_queue),
         v8_thread_dispatch_(v8_thread_dispatch) {
@@ -144,7 +145,7 @@ class AuctionV8DevToolsSession::IOSession
                                 std::move(io_session_receiver));
   }
 
-  scoped_refptr<DebugCommandQueue> debug_command_queue_;
+  const raw_ptr<DebugCommandQueue> debug_command_queue_;
   RunDispatch v8_thread_dispatch_;
 
   SEQUENCE_CHECKER(io_session_receiver_sequence_checker_);
@@ -152,7 +153,7 @@ class AuctionV8DevToolsSession::IOSession
 
 AuctionV8DevToolsSession::AuctionV8DevToolsSession(
     AuctionV8Helper* v8_helper,
-    scoped_refptr<DebugCommandQueue> debug_command_queue,
+    DebugCommandQueue* debug_command_queue,
     int context_group_id,
     const std::string& session_id,
     bool client_expects_binary_responses,
@@ -161,7 +162,7 @@ AuctionV8DevToolsSession::AuctionV8DevToolsSession(
     mojo::PendingReceiver<blink::mojom::DevToolsSession> io_session_receiver,
     SessionDestroyedCallback on_delete_callback)
     : v8_helper_(v8_helper),
-      debug_command_queue_(std::move(debug_command_queue)),
+      debug_command_queue_(debug_command_queue),
       context_group_id_(context_group_id),
       session_id_(session_id),
       client_expects_binary_responses_(client_expects_binary_responses),
@@ -188,6 +189,15 @@ AuctionV8DevToolsSession::~AuctionV8DevToolsSession() {
   std::move(on_delete_callback_).Run(this);
   v8::Locker locker(v8_helper_->isolate());
   v8_session_.reset();
+}
+
+base::OnceClosure AuctionV8DevToolsSession::MakeAbortPauseCallback() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
+  // Note that this can be cancelled by the weak pointer only if the session
+  // got unpaused by other means, since if it's paused it's not returning
+  // control to the event loop, so Mojo won't get a chance to delete `this`.
+  return base::BindOnce(&AuctionV8DevToolsSession::AbortDebuggerPause,
+                        weak_ptr_factory_.GetWeakPtr());
 }
 
 void AuctionV8DevToolsSession::MaybeTriggerInstrumentationBreakpoint(
@@ -280,6 +290,13 @@ void AuctionV8DevToolsSession::FallThrough(int call_id,
 void AuctionV8DevToolsSession::FlushProtocolNotifications() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   NOTIMPLEMENTED();
+}
+
+void AuctionV8DevToolsSession::AbortDebuggerPause() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
+  // Note that if the session got resumed by other means before execution got
+  // here V8 will simply ignore this call.
+  v8_session_->resume(/*setTerminateOnResume=*/true);
 }
 
 void AuctionV8DevToolsSession::SendProtocolResponseImpl(

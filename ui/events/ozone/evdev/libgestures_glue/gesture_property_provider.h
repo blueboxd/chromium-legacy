@@ -18,7 +18,6 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ui {
@@ -268,7 +267,7 @@ class GesturesPropFunctionsWrapper {
 
 extern const GesturesPropProvider kGesturePropProvider;
 
-}  // namspace ui
+}  // namespace ui
 
 // GesturesProp logging function.
 std::ostream& operator<<(std::ostream& os, const GesturesProp& prop);

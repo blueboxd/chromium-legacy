@@ -27,6 +27,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/plugin_list.h"
 #include "content/browser/ppapi_plugin_process_host.h"
+#include "content/browser/process_lock.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
@@ -232,11 +233,8 @@ bool PluginServiceImpl::GetPluginInfoArray(
       url, mime_type, allow_wildcard, plugins, actual_mime_types);
 }
 
-// TODO(crbug.com/850278): Remove unused parameters.
 bool PluginServiceImpl::GetPluginInfo(int render_process_id,
-                                      int /*render_frame_id*/,
                                       const GURL& url,
-                                      const url::Origin& /*main_frame_origin*/,
                                       const std::string& mime_type,
                                       bool allow_wildcard,
                                       bool* is_stale,

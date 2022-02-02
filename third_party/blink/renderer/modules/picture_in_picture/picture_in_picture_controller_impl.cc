@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
@@ -136,6 +136,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
     ScriptPromiseResolver* resolver) {
   auto* video_element = DynamicTo<HTMLVideoElement>(*element);
   if (!video_element) {
+    DCHECK(RuntimeEnabledFeatures::PictureInPictureV2Enabled());
     // TODO(https://crbug.com/953957): Support element level pip.
     if (resolver)
       resolver->Resolve();
@@ -143,7 +144,15 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
     return;
   }
 
-  DCHECK(video_element->GetWebMediaPlayer());
+  if (!video_element->GetWebMediaPlayer()) {
+    if (resolver) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kInvalidStateError, ""));
+    }
+
+    return;
+  }
+
   DCHECK(!options);
 
   if (picture_in_picture_element_ == video_element) {

@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -264,6 +264,7 @@ class PLATFORM_EXPORT FontCache {
 #if defined(OS_ANDROID)
   static AtomicString GetGenericFamilyNameForScript(
       const AtomicString& family_name,
+      const AtomicString& generic_family_name_fallback,
       const FontDescription&);
   // Locale-specific families can use different |SkTypeface| for a family name
   // if locale is different.

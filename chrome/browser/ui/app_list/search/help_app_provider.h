@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "ash/webui/help_app_ui/search/search.mojom.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_forward.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -94,7 +94,7 @@ class HelpAppProvider : public SearchProvider,
       const std::u16string& query,
       const base::TimeTicks& start_time,
       std::vector<ash::help_app::mojom::SearchResultPtr> results);
-  void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+  void OnLoadIcon(apps::IconValuePtr icon_value);
   void LoadIcon();
 
   Profile* const profile_;

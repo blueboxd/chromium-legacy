@@ -18,7 +18,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/headless/headless_mode_util.h"
-#include "chrome/browser/lite_video/lite_video_observer.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net_benchmarking.h"
@@ -59,8 +58,13 @@
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/system_extensions/api/window_management/window_management_impl.h"
+#include "chrome/browser/ash/system_extensions/system_extension.h"
+#include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 #include "components/performance_manager/public/performance_manager.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom.h"
 #if defined(ARCH_CPU_X86_64)
 #include "chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h"
 #endif  // defined(ARCH_CPU_X86_64)
@@ -320,7 +324,7 @@ void ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     mojo::BinderMapWithContext<content::RenderFrameHost*>* map) {
   chrome::internal::PopulateChromeFrameBinders(map, render_frame_host);
-  chrome::internal::PopulateChromeWebUIFrameBinders(map);
+  chrome::internal::PopulateChromeWebUIFrameBinders(map, render_frame_host);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   const GURL& site = render_frame_host->GetSiteInstance()->GetSiteURL();
@@ -352,6 +356,36 @@ void ChromeContentBrowserClient::
 #if !defined(OS_ANDROID)
   map->Add<blink::mojom::BadgeService>(
       base::BindRepeating(&BindBadgeServiceForServiceWorker));
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(crbug.com/1253318): Only add this mapping if the System Extension type
+  // is Window Manager.
+  if (SystemExtensionsProvider::IsEnabled()) {
+    map->Add<blink::mojom::CrosWindowManagement>(base::BindRepeating(
+        [](const content::ServiceWorkerVersionBaseInfo& info,
+           mojo::PendingReceiver<blink::mojom::CrosWindowManagement> receiver) {
+          DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+          if (!SystemExtension::IsSystemExtensionOrigin(
+                  info.storage_key.origin()))
+            return;
+
+          content::RenderProcessHost* render_process_host =
+              content::RenderProcessHost::FromID(info.process_id);
+          if (!render_process_host)
+            return;
+
+          // TODO(crbug.com/1253318): Once system extensions are site-isolated,
+          // ensure that the render_process_host is origin-locked via
+          // ChildProcessSecurityPolicy::CanAccessDataForOrigin().
+
+          mojo::MakeSelfOwnedReceiver(
+              std::make_unique<ash::WindowManagementImpl>(
+                  render_process_host->GetBrowserContext()),
+              std::move(receiver));
+        }));
+  }
 #endif
 }
 
@@ -452,13 +486,6 @@ bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
     return true;
   }
 #endif
-  if (interface_name == lite_video::mojom::LiteVideoService::Name_) {
-    LiteVideoObserver::BindLiteVideoService(
-        mojo::PendingAssociatedReceiver<lite_video::mojom::LiteVideoService>(
-            std::move(*handle)),
-        render_frame_host);
-    return true;
-  }
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   if (interface_name == offline_pages::mojom::MhtmlPageNotifier::Name_) {
     offline_pages::OfflinePageTabHelper::BindHtmlPageNotifier(

@@ -53,7 +53,7 @@ public class Browser {
      *
      * @throws IllegalArgumentException If {@code value} is less than 0.
      *
-     * @since 97
+     * @since 98
      */
     public static void setMaxNavigationsPerTabForInstanceState(int value) {
         ThreadCheck.ensureOnUiThread();

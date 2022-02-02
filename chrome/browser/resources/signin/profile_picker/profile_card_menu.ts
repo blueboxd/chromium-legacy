@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/js/action_link.js';
 import './profile_picker_shared_css.js';
 import './icons.js';
 
@@ -16,7 +18,7 @@ import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 
@@ -50,6 +52,7 @@ export interface ProfileCardMenuElement {
     actionMenu: CrActionMenuElement,
     moreActionsButton: HTMLElement,
     removeConfirmationDialog: CrDialogElement,
+    removePrimaryLacrosProfileDialog: CrDialogElement,
   };
 }
 
@@ -94,13 +97,28 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
 
       removeWarningText_: {
         type: String,
+        // <if expr="lacros">
+        value() {
+          return loadTimeData.getString('removeWarningProfileLacros');
+        },
+        // </if>
+        // <if expr="not lacros">
         computed: 'computeRemoveWarningText_(profileState)',
+        // </if>
       },
 
       removeWarningTitle_: {
         type: String,
         computed: 'computeRemoveWarningTitle_(profileState)',
       },
+
+      // <if expr="lacros">
+      removePrimaryLacrosProfileWarning_: {
+        type: String,
+        computed: 'computeRemovePrimaryLacrosProfileWarning_(profileState)',
+      },
+      // </if>
+
     };
   }
 
@@ -109,6 +127,9 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
   private profileStatistics_: Array<ProfileStatistics>;
   private removeWarningText_: string;
   private removeWarningTitle_: string;
+  // <if expr="lacros">
+  private removePrimaryLacrosProfileWarning_: string;
+  // </if>
   private manageProfilesBrowserProxy_: ManageProfilesBrowserProxy =
       ManageProfilesBrowserProxyImpl.getInstance();
 
@@ -123,17 +144,36 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
         this.handleProfileStatsReceived_.bind(this));
   }
 
+  ready() {
+    super.ready();
+    // <if expr="lacros">
+    afterNextRender(this, () => {
+      this.shadowRoot!.querySelector('#removeWarningHeader a')!
+          .addEventListener('click', () => this.onAccountSettingsClicked_());
+    });
+    // </if>
+  }
+
+  // <if expr="not lacros">
   private computeRemoveWarningText_(): string {
     return this.i18n(
         this.profileState.isSyncing ? 'removeWarningSignedInProfile' :
                                       'removeWarningLocalProfile');
   }
+  // </if>
 
   private computeRemoveWarningTitle_(): string {
     return this.i18n(
         this.profileState.isSyncing ? 'removeWarningSignedInProfileTitle' :
                                       'removeWarningLocalProfileTitle');
   }
+
+  // <if expr="lacros">
+  private computeRemovePrimaryLacrosProfileWarning_(): string {
+    return this.i18n(
+        'lacrosPrimaryProfileDeletionWarning', this.profileState.userName);
+  }
+  // </if>
 
   private onMoreActionsButtonClicked_(e: Event) {
     e.stopPropagation();
@@ -149,7 +189,16 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
     this.manageProfilesBrowserProxy_.getProfileStatistics(
         this.profileState.profilePath);
     this.$.actionMenu.close();
+    // <if expr="lacros">
+    if (this.profileState.isPrimaryLacrosProfile) {
+      this.$.removePrimaryLacrosProfileDialog.showModal();
+    } else {
+      this.$.removeConfirmationDialog.showModal();
+    }
+    // </if>
+    // <if expr="not lacros">
     this.$.removeConfirmationDialog.showModal();
+    // </if>
     chrome.metricsPrivate.recordUserAction('ProfilePicker_RemoveOptionClicked');
   }
 
@@ -193,6 +242,12 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
     this.$.removeConfirmationDialog.cancel();
   }
 
+  // <if expr="lacros">
+  private onRemovePrimaryLacrosProfileCancelClicked_() {
+    this.$.removePrimaryLacrosProfileDialog.cancel();
+  }
+  // </if>
+
   /**
    * Ensure any menu is closed on profile list updated.
    */
@@ -214,6 +269,19 @@ export class ProfileCardMenuElement extends ProfileCardMenuElementBase {
     this.manageProfilesBrowserProxy_.openManageProfileSettingsSubPage(
         this.profileState.profilePath);
     this.$.actionMenu.close();
+  }
+
+  // <if expr="lacros">
+  private onAccountSettingsClicked_() {
+    this.manageProfilesBrowserProxy_.openAshAccountSettingsPage();
+    this.$.removeConfirmationDialog.close();
+  }
+  // </if>
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'profile-card-menu': ProfileCardMenuElement;
   }
 }
 

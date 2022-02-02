@@ -21,8 +21,8 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -110,8 +110,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Only include "Autofill Options" special menu item if we have Autofill
   // suggestions.
   has_autofill_suggestions_ = false;
-  for (size_t i = 0; i < suggestions.size(); ++i) {
-    if (suggestions[i].frontend_id > 0) {
+  for (auto& suggestion : suggestions) {
+    if (suggestion.frontend_id > 0) {
       has_autofill_suggestions_ = true;
       break;
     }
@@ -141,8 +141,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
           (GetPopupType() == PopupType::kAddresses ||
            GetPopupType() == PopupType::kUnspecified) &&
           suggestions[0].frontend_id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE) {
-        suggestions.push_back(Suggestion(
-            l10n_util::GetStringUTF16(IDS_AUTOFILL_HIDE_SUGGESTIONS)));
+        suggestions.emplace_back(
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_HIDE_SUGGESTIONS));
         suggestions.back().frontend_id =
             POPUP_ITEM_ID_HIDE_AUTOFILL_SUGGESTIONS;
       }
@@ -348,7 +348,7 @@ PopupType AutofillExternalDelegate::GetPopupType() const {
 
 absl::variant<AutofillDriver*, password_manager::PasswordManagerDriver*>
 AutofillExternalDelegate::GetDriver() {
-  return driver_;
+  return driver_.get();
 }
 
 int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
@@ -405,6 +405,16 @@ void AutofillExternalDelegate::PossiblyRemoveAutofillWarnings(
 void AutofillExternalDelegate::ApplyAutofillOptions(
     std::vector<Suggestion>* suggestions,
     bool is_all_server_suggestions) {
+  // Add a separator before the Autofill options unless there are no suggestions
+  // yet.
+  // TODO(crbug.com/1274134): Clean up once improvements are launched.
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillVisualImprovementsForSuggestionUi) &&
+      !suggestions->empty()) {
+    suggestions->push_back(Suggestion());
+    suggestions->back().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+  }
+
   // The form has been auto-filled, so give the user the chance to clear the
   // form.  Append the 'Clear form' menu item.
   if (query_field_.is_autofilled) {
@@ -417,6 +427,10 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
 
     suggestions->push_back(Suggestion(value));
     suggestions->back().frontend_id = POPUP_ITEM_ID_CLEAR_FORM;
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillVisualImprovementsForSuggestionUi)) {
+      suggestions->back().icon = "clearIcon";
+    }
   }
 
   // Append the 'Autofill settings' menu item, or the menu item specified in the

@@ -130,9 +130,7 @@ TEST_F(PathServiceTest, Get) {
 #elif defined(OS_FUCHSIA)
   constexpr std::array<int, 3> kUnsupportedKeys = {
       // TODO(crbug.com/1231928): Implement DIR_USER_DESKTOP.
-      DIR_USER_DESKTOP,
-      // TODO(crbug.com/1184980), Do not define FILE_MODULE and DIR_MODULE.
-      FILE_MODULE, DIR_MODULE};
+      DIR_USER_DESKTOP};
 #else
   constexpr std::array<int, 0> kUnsupportedKeys = {};
 #endif  // defined(OS_ANDROID)
@@ -154,10 +152,6 @@ TEST_F(PathServiceTest, Get) {
       EXPECT_PRED1(ReturnsValidPath, key);
     else
       EXPECT_PRED1(ReturnsInvalidPath, key);
-  }
-#elif defined(OS_FUCHSIA)
-  for (int key = PATH_FUCHSIA_START + 1; key < PATH_FUCHSIA_END; ++key) {
-    EXPECT_PRED1(ReturnsValidPath, key);
   }
 #elif defined(OS_APPLE)
   for (int key = PATH_MAC_START + 1; key < PATH_MAC_END; ++key) {
@@ -380,10 +374,6 @@ TEST_F(PathServiceTest, DIR_GEN_TEST_DATA_ROOT) {
 
 #if defined(OS_FUCHSIA)
 // On Fuchsia, some keys have fixed paths that are easy to test.
-
-TEST_F(PathServiceTest, DIR_APP_DATA) {
-  EXPECT_EQ(PathService::CheckedGet(DIR_APP_DATA).value(), "/data");
-}
 
 TEST_F(PathServiceTest, DIR_SRC_TEST_DATA_ROOT) {
   FilePath test_binary_path;

@@ -20,6 +20,8 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/timezone.h"
+#include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -31,7 +33,6 @@
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_profile_save_strike_database.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/data_model/credit_card_art_image.h"
@@ -42,6 +43,7 @@
 #include "components/autofill/core/browser/geo/country_data.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/ui/autofill_image_fetcher.h"
 #include "components/autofill/core/browser/ui/label_formatter.h"
@@ -255,7 +257,7 @@ class PersonalDatabaseHelper
   // to either profile_database_, or account_database_.
   scoped_refptr<AutofillWebDataService> server_database_;
 
-  PersonalDataManager* personal_data_manager_;
+  raw_ptr<PersonalDataManager> personal_data_manager_;
 };
 
 PersonalDataManager::PersonalDataManager(
@@ -299,7 +301,7 @@ void PersonalDataManager::Init(
   // Listen for URL deletions from browsing history.
   history_service_ = history_service;
   if (history_service_)
-    history_service_observation_.Observe(history_service_);
+    history_service_observation_.Observe(history_service_.get());
 
   // Listen for account cookie deletion by the user.
   identity_manager_ = identity_manager;
@@ -368,37 +370,30 @@ void PersonalDataManager::Shutdown() {
 
 void PersonalDataManager::OnSyncServiceInitialized(
     syncer::SyncService* sync_service) {
-  if (sync_service_ != sync_service) {
-    // Before the sync service pointer gets changed, remove the observer.
-    if (sync_service_)
-      sync_service_->RemoveObserver(this);
-
-    sync_service_ = sync_service;
-
-    if (!sync_service_) {
-      ResetFullServerCards();
-      return;
-    }
-
+  // Before the sync service pointer gets changed, remove the observer.
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
+  sync_service_ = sync_service;
+  if (sync_service_)
     sync_service_->AddObserver(this);
-    // Re-mask all server cards if the upload state is not active.
-    bool is_upload_not_active =
-        syncer::GetUploadToGoogleState(
-            sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-        syncer::UploadState::NOT_ACTIVE;
-    if (is_upload_not_active) {
-      ResetFullServerCards();
-    }
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableAccountWalletStorage)) {
-      // Use the ephemeral account storage when the user didn't enable the sync
-      // feature explicitly.
-      database_helper_->SetUseAccountStorageForServerData(
-          !sync_service->IsSyncFeatureEnabled());
-    }
 
-    MigrateUserOptedInWalletSyncTransportIfNeeded();
+  // Re-mask all server cards if the upload state is not active.
+  const bool is_upload_not_active =
+      syncer::GetUploadToGoogleState(sync_service_,
+                                     syncer::ModelType::AUTOFILL_WALLET_DATA) ==
+      syncer::UploadState::NOT_ACTIVE;
+  if (is_upload_not_active)
+    ResetFullServerCards();
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAccountWalletStorage)) {
+    // Use the ephemeral account storage when the user didn't enable the sync
+    // feature explicitly.
+    database_helper_->SetUseAccountStorageForServerData(
+        sync_service && !sync_service_->IsSyncFeatureEnabled());
   }
+
+  MigrateUserOptedInWalletSyncTransportIfNeeded();
 }
 
 void PersonalDataManager::OnURLsDeleted(
@@ -520,18 +515,23 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
     }
   }
 
-  // If all requests have responded, then all personal data is loaded.
-  // We need to check if the server database is set here, because we won't have
-  // the server data yet if we don't have the database.
-  if (!HasPendingQueries() && database_helper_->GetServerDatabase()) {
-    // On initial data load, is_data_loaded_ will be false here.
-    if (!is_data_loaded_) {
-      is_data_loaded_ = true;
-      personal_data_manager_cleaner_
-          ->CleanupDataAndNotifyPersonalDataObservers();
-    } else {
-      NotifyPersonalDataObserver();
-    }
+  if (HasPendingQueries())
+    return;
+
+  if (!database_helper_->GetServerDatabase()) {
+    DLOG(WARNING) << "There are no pending queries but the server database "
+                     "wasn't set yet, so some data might be missing. Maybe "
+                     "OnSyncServiceInitialized() wasn't called yet.";
+    return;
+  }
+
+  // All personal data is loaded, notify observers. |is_data_loaded_| is false
+  // if this is the initial load.
+  if (!is_data_loaded_) {
+    is_data_loaded_ = true;
+    personal_data_manager_cleaner_->CleanupDataAndNotifyPersonalDataObservers();
+  } else {
+    NotifyPersonalDataObserver();
   }
 }
 
@@ -980,17 +980,6 @@ void PersonalDataManager::AddServerCreditCardForTest(
 
 bool PersonalDataManager::IsUsingAccountStorageForServerDataForTest() const {
   return database_helper_->IsUsingAccountStorageForServerData();
-}
-
-void PersonalDataManager::SetSyncServiceForTest(
-    syncer::SyncService* sync_service) {
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
-
-  sync_service_ = sync_service;
-
-  if (sync_service_)
-    sync_service_->AddObserver(this);
 }
 
 void PersonalDataManager::AddOfferDataForTest(
@@ -2104,11 +2093,11 @@ bool PersonalDataManager::IsServerCard(const CreditCard* credit_card) const {
 }
 
 bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
-// The feature is only for Linux, Windows and Mac.
+// The feature is only for Linux, Windows, Mac, and Fuchsia.
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_WIN) || \
-    defined(OS_APPLE)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN) || \
+    defined(OS_APPLE) || defined(OS_FUCHSIA)
   // This option should only be shown for users that have not enabled the Sync
   // Feature and that have server credit cards available.
   if (!sync_service_ || sync_service_->IsSyncFeatureEnabled() ||
@@ -2129,8 +2118,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
   return !is_opted_in;
 #else
   return false;
-#endif  // #if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) ||
-        // defined(OS_WIN) || defined(OS_APPLE)
+#endif  // #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
+        // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_FUCHSIA)
 }
 
 void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {
@@ -2400,6 +2389,9 @@ bool PersonalDataManager::HasPendingQueries() {
 }
 
 void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
+  if (!sync_service_)
+    return;
+
   CoreAccountInfo primary_account = sync_service_->GetAccountInfo();
   if (primary_account.IsEmpty())
     return;

@@ -26,7 +26,10 @@ class CastRuntimeContentBrowserClient : public shell::CastContentBrowserClient {
       CastSystemMemoryPressureEvaluatorAdjuster* memory_pressure_adjuster,
       PrefService* pref_service,
       media::VideoPlaneController* video_plane_controller,
-      CastWindowManager* window_manager) final;
+      CastWindowManager* window_manager,
+      CastWebService* web_service,
+      DisplaySettingsManager* display_settings_manager,
+      shell::AccessibilityServiceImpl* accessibility_service) final;
   void OverrideWebkitPrefs(content::WebContents* web_contents,
                            blink::web_pref::WebPreferences* prefs) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
@@ -35,6 +38,17 @@ class CastRuntimeContentBrowserClient : public shell::CastContentBrowserClient {
   bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const network::ResourceRequest& request,
+      content::BrowserContext* browser_context,
+      const base::RepeatingCallback<content::WebContents*()>& wc_getter,
+      content::NavigationUIData* navigation_ui_data,
+      int frame_tree_node_id) override;
+
+ private:
+  std::unique_ptr<blink::URLLoaderThrottle> CreateUrlRewriteRulesThrottle(
+      content::WebContents* web_contents);
 };
 
 }  // namespace chromecast

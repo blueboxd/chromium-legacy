@@ -45,6 +45,7 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // Event listeners for an EditContext.
   DEFINE_ATTRIBUTE_EVENT_LISTENER(textupdate, kTextupdate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(textformatupdate, kTextformatupdate)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(characterboundsupdate, kCharacterboundsupdate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(compositionstart, kCompositionstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(compositionend, kCompositionend)
 
@@ -62,10 +63,22 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   // This API must be called whenever the client coordinates (i.e. relative to
   // the origin of the viewport) of the view of the EditContext have changed.
   // This includes if the viewport is scrolled or the position of the editable
-  // contents changes in response to other updates to the view. The arguments to
-  // this method describe a bounding box in client coordinates for both the
-  // editable region and also the current selection.
-  void updateBounds(DOMRect* control_bounds, DOMRect* selection_bounds);
+  // contents changes in response to other updates to the view. The argument
+  // describes a bounding box in client coordinates for the editable region.
+  void updateControlBounds(DOMRect* control_bounds);
+
+  // This API must be called whenever the client coordinates of the view of
+  // the EditContext have changed. The argument describes a bounding box in
+  // client coordinates for the current selection (or the caret if the
+  // selection is collapsed.)
+  void updateSelectionBounds(DOMRect* selection_bounds);
+
+  // This API should be called when the consumer of the EditContext receives
+  // CharacterBoundsUpdateEvent. The arguments to this method describe a
+  // sequence of bounding boxes that are requested by
+  // CharacterBoundsUpdateEvent.
+  void updateCharacterBounds(unsigned long range_start,
+                             HeapVector<Member<DOMRect>>& character_bounds);
 
   // Updates to the text driven by the webpage/javascript are performed
   // by calling this API on the EditContext. It accepts a range (start and end
@@ -91,6 +104,13 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
 
   // Returns the current selectionEnd of the EditContext.
   uint32_t selectionEnd() const;
+
+  // Returns the start position of the range of the current cached character
+  // bounds.
+  uint32_t characterBoundsRangeStart() const;
+
+  // Returns the current cached character bounds.
+  const HeapVector<Member<DOMRect>> characterBounds();
 
   // Returns the InputMode of the EditContext.
   String inputMode() const;
@@ -253,6 +273,14 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
                                uint32_t new_selection_start,
                                uint32_t new_selection_end);
 
+  // The characterboundsupdate event is fired when the range of the composition
+  // is changed. The arguments indicates the range of the composition
+  // where the character bounds are needed by Text Input Service. The consumer
+  // of the EditContext should call updateCharacterBounds() to provide the
+  // requested bounding boxes when receiving this event.
+  void DispatchCharacterBoundsUpdateEvent(uint32_t range_start,
+                                          uint32_t range_end);
+
   // EditContext member variables.
   String text_;
   uint32_t selection_start_ = 0;
@@ -263,6 +291,9 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
       EditContextInputPanelPolicy::kManual;
   gfx::Rect control_bounds_;
   gfx::Rect selection_bounds_;
+  WebVector<gfx::Rect> character_bounds_;
+  uint32_t character_bounds_range_start_ = 0;
+
   // This flag is set when the input method controller receives a
   // composition event from the IME. It keeps track of the start and
   // end composition events and fires JS events accordingly.

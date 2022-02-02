@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -23,7 +24,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/util/version_loader.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/version_info/version_info.h"
@@ -36,9 +36,8 @@ namespace ash {
 namespace {
 
 const char* const kReportingFlags[] = {
-    chromeos::kReportDeviceVersionInfo, chromeos::kReportDeviceActivityTimes,
-    chromeos::kReportDeviceBootMode, chromeos::kReportDeviceLocation,
-    chromeos::kDeviceLoginScreenSystemInfoEnforced};
+    kReportDeviceVersionInfo, kReportDeviceActivityTimes, kReportDeviceBootMode,
+    kReportDeviceLocation, kDeviceLoginScreenSystemInfoEnforced};
 
 // Strings used to generate the serial number part of the version string.
 const char kSerialNumberPrefix[] = "SN:";
@@ -119,7 +118,7 @@ void VersionInfoUpdater::StartUpdate(bool is_chrome_branded) {
 
 absl::optional<bool> VersionInfoUpdater::IsSystemInfoEnforced() const {
   bool is_system_info_enforced = false;
-  if (cros_settings_->GetBoolean(chromeos::kDeviceLoginScreenSystemInfoEnforced,
+  if (cros_settings_->GetBoolean(kDeviceLoginScreenSystemInfoEnforced,
                                  &is_system_info_enforced)) {
     return is_system_info_enforced;
   }

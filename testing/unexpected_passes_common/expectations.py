@@ -5,9 +5,14 @@
 
 from __future__ import print_function
 
+import datetime
 import logging
 import os
+import re
+import subprocess
 import sys
+
+import six
 
 from typ import expectations_parser
 from unexpected_passes_common import data_types
@@ -17,9 +22,14 @@ from unexpected_passes_common import result_output
 FINDER_DISABLE_COMMENT = 'finder:disable'
 FINDER_ENABLE_COMMENT = 'finder:enable'
 
+GIT_BLAME_REGEX = re.compile(
+    r'^[\w\s]+\(.+(?P<date>\d\d\d\d-\d\d-\d\d)[^\)]+\)(?P<content>.*)$',
+    re.DOTALL)
+EXPECTATION_LINE_REGEX = re.compile(r'^.*\[ .* \] .* \[ \w* \].*$', re.DOTALL)
+
 
 class Expectations(object):
-  def CreateTestExpectationMap(self, expectation_files, tests):
+  def CreateTestExpectationMap(self, expectation_files, tests, grace_period):
     """Creates an expectation map based off a file or list of tests.
 
     Args:
@@ -27,6 +37,9 @@ class Expectations(object):
           read from, or None. If a filepath is specified, |tests| must be None.
       tests: An iterable of strings containing test names to check. If
           specified, |expectation_file| must be None.
+      grace_period: An int specifying how many days old an expectation must
+          be in order to be parsed, i.e. how many days old an expectation must
+          be before it is a candidate for removal/modification.
 
     Returns:
       A data_types.TestExpectationMap, although all its BuilderStepMap contents
@@ -62,8 +75,8 @@ class Expectations(object):
         expectation_files = [expectation_files]
       for ef in expectation_files:
         expectation_file_name = os.path.normpath(ef)
-        with open(ef) as f:
-          content = f.read()
+        content = self._GetNonRecentExpectationContent(expectation_file_name,
+                                                       grace_period)
         AddContentToMap(content, expectation_map, expectation_file_name)
     else:
       expectation_file_name = ''
@@ -73,6 +86,57 @@ class Expectations(object):
       AddContentToMap(content, expectation_map, expectation_file_name)
 
     return expectation_map
+
+  def _GetNonRecentExpectationContent(self, expectation_file_path, num_days):
+    """Gets content from |expectation_file_path| older than |num_days| days.
+
+    Args:
+      expectation_file_path: A string containing a filepath pointing to an
+          expectation file.
+      num_days: An int containing how old an expectation in the given
+          expectation file must be to be included.
+
+    Returns:
+      The contents of the expectation file located at |expectation_file_path|
+      as a string with any recent expectations removed.
+    """
+    num_days = datetime.timedelta(days=num_days)
+    content = ''
+    # `git blame` output is normally in the format:
+    # revision optional_filename (author date time timezone lineno) line_content
+    # The --porcelain option is meant to be more machine readable, but is much
+    # more difficult to parse for what we need to do here. In order to
+    # guarantee that the filename won't be included in the output (by default,
+    # it will be shown if there is content from a renamed file), pass -c to
+    # use the same format as `git annotate`, which is:
+    # revision (author date time timezone lineno)line_content
+    # (Note the lack of space between the ) and the content).
+    cmd = ['git', 'blame', '-c', expectation_file_path]
+    with open(os.devnull, 'w') as devnull:
+      blame_output = subprocess.check_output(cmd,
+                                             stderr=devnull).decode('utf-8')
+    for line in blame_output.splitlines(True):
+      match = GIT_BLAME_REGEX.match(line)
+      assert match
+      date = match.groupdict()['date']
+      line_content = match.groupdict()['content']
+      if EXPECTATION_LINE_REGEX.match(line):
+        if six.PY2:
+          date_parts = date.split('-')
+          date = datetime.date(year=int(date_parts[0]),
+                               month=int(date_parts[1]),
+                               day=int(date_parts[2]))
+        else:
+          date = datetime.date.fromisoformat(date)
+        date_diff = datetime.date.today() - date
+        if date_diff > num_days:
+          content += line_content
+        else:
+          logging.debug('Omitting expectation %s because it is too new',
+                        line_content.rstrip())
+      else:
+        content += line_content
+    return content
 
   def RemoveExpectationsFromFile(self, expectations, expectation_file):
     """Removes lines corresponding to |expectations| from |expectation_file|.
@@ -122,7 +186,8 @@ class Expectations(object):
           in_disable_block = False
         continue
 
-      current_expectation = self._CreateExpectationFromExpectationFileLine(line)
+      current_expectation = self._CreateExpectationFromExpectationFileLine(
+          line, expectation_file)
 
       # Add any lines containing expectations that don't match any of the given
       # expectations to remove.
@@ -152,16 +217,18 @@ class Expectations(object):
 
     return removed_urls
 
-  def _CreateExpectationFromExpectationFileLine(self, line):
+  def _CreateExpectationFromExpectationFileLine(self, line, expectation_file):
     """Creates a data_types.Expectation from |line|.
 
     Args:
       line: A string containing a single line from an expectation file.
+      expectation_file: A filepath pointing to an expectation file |line| came
+          from.
 
     Returns:
       A data_types.Expectation containing the same information as |line|.
     """
-    header = self._GetExpectationFileTagHeader()
+    header = self._GetExpectationFileTagHeader(expectation_file)
     single_line_content = header + line
     list_parser = expectations_parser.TaggedTestListParser(single_line_content)
     assert len(list_parser.expectations) == 1
@@ -170,8 +237,12 @@ class Expectations(object):
                                   typ_expectation.raw_results,
                                   typ_expectation.reason)
 
-  def _GetExpectationFileTagHeader(self):
+  def _GetExpectationFileTagHeader(self, expectation_file):
     """Gets the tag header used for expectation files.
+
+    Args:
+      expectation_file: A filepath pointing to an expectation file to get the
+          tag header from.
 
     Returns:
       A string containing an expectation file header, i.e. the comment block at
@@ -202,7 +273,8 @@ class Expectations(object):
         stale_expectation_map.IterBuilderStepMaps()):
       with open(expectation_file) as infile:
         file_contents = infile.read()
-      line, line_number = self._GetExpectationLine(e, file_contents)
+      line, line_number = self._GetExpectationLine(e, file_contents,
+                                                   expectation_file)
       expectation_str = None
       if not line:
         logging.error(
@@ -247,13 +319,15 @@ class Expectations(object):
       modified_urls.add(e.bug)
     return modified_urls
 
-  def _GetExpectationLine(self, expectation, file_contents):
+  def _GetExpectationLine(self, expectation, file_contents, expectation_file):
     """Gets the line and line number of |expectation| in |file_contents|.
 
     Args:
       expectation: A data_types.Expectation.
       file_contents: A string containing the contents read from an expectation
           file.
+      expectation_file: A string containing the path to the expectation file
+          that |file_contents| came from.
 
     Returns:
       A tuple (line, line_number). |line| is a string containing the exact line
@@ -273,7 +347,8 @@ class Expectations(object):
     for line_number, line in enumerate(file_lines):
       if _IsCommentOrBlankLine(line.strip()):
         continue
-      current_expectation = self._CreateExpectationFromExpectationFileLine(line)
+      current_expectation = self._CreateExpectationFromExpectationFileLine(
+          line, expectation_file)
       if expectation == current_expectation:
         return line, line_number + 1
     return None, None

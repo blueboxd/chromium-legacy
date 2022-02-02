@@ -58,6 +58,7 @@ test("components_unittests") {
 
       # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
       "//build/config/fuchsia/test/jit_capabilities.test-cmx",
+      "//build/config/fuchsia/test/network_capabilities.test-cmx",
     ]
   }
 
@@ -275,6 +276,7 @@ test("components_unittests") {
       "//components/domain_reliability:unit_tests",
       "//components/drive:unit_tests",
       "//components/embedder_support:unit_tests",
+      "//components/enterprise/content:unit_tests",
       "//components/favicon/content:unit_tests",
       "//components/federated_learning:unit_tests",
       "//components/feed:unit_tests",
@@ -298,7 +300,7 @@ test("components_unittests") {
       "//components/optimization_guide/core:unit_tests",
       "//components/page_image_annotation/content/renderer:unit_tests",
       "//components/page_image_annotation/core:unit_tests",
-      "//components/page_info:unit_tests",
+      "//components/page_info/core:unit_tests",
       "//components/page_load_metrics/browser:unit_tests",
       "//components/page_load_metrics/browser/observers/ad_metrics:unit_tests",
       "//components/page_load_metrics/renderer:unit_tests",
@@ -342,6 +344,7 @@ test("components_unittests") {
       "//components/translate/content/browser:unit_tests",
       "//components/translate/content/renderer:unit_tests",
       "//components/ukm/content:unit_tests",
+      "//components/url_rewrite:unit_tests",
       "//components/value_store:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",
@@ -471,9 +474,11 @@ test("components_unittests") {
 
   if (is_chromeos_ash) {
     deps += [
+      # TODO(b/206686476): Move this target to //ash/components:unit_tests
+      "//ash/components/arc:unit_tests",
+      "//ash/components/arc/mojom:unit_tests",
+      "//ash/components/arc/session:unit_tests",
       "//components/arc:unit_tests",
-      "//components/arc/mojom:unit_tests",
-      "//components/arc/session:unit_tests",
       "//components/desks_storage:unit_tests",
       "//components/guest_os:unit_tests",
       "//components/metrics/structured:unit_tests",
@@ -484,11 +489,17 @@ test("components_unittests") {
   }
 
   if (is_chromeos_ash || is_chromeos_lacros) {
-    deps += [ "//components/account_manager_core:unit_tests" ]
+    deps += [
+      "//components/account_manager_core:unit_tests",
+      "//components/arc/common:unit_tests",
+    ]
   }
 
   if (is_mac) {
-    deps += [ "//components/metal_util:unit_tests" ]
+    deps += [
+      "//components/metal_util:unit_tests",
+      "//components/power_metrics:unit_tests",
+    ]
   }
 
   if (toolkit_views) {
@@ -583,7 +594,9 @@ repack("components_tests_pak") {
 
   output = "$root_out_dir/components_tests_resources.pak"
   deps = [
-    "//components/arc/input_overlay/resources:resources_grit",
+    # TODO(b/207518736): Input overlay resources will be changed to proto soon,
+    # thus not going to move this resource pak to under ash.
+    "//ash/components/arc/input_overlay/resources:resources_grit",
     "//components/autofill/core/browser:autofill_address_rewriter_resources",
     "//components/omnibox/resources:omnibox_pedal_synonyms",
     "//components/omnibox/resources:omnibox_resources",
@@ -682,6 +695,7 @@ if (!is_ios) {
       "optimization_guide/content/renderer/page_text_agent_browsertest.cc",
       "paint_preview/renderer/paint_preview_recorder_browsertest.cc",
       "ukm/content/source_url_recorder_browsertest.cc",
+      "url_rewrite/browser/url_request_rewrite_rules_manager_browsertest.cc",
     ]
 
     data = [
@@ -723,6 +737,7 @@ if (!is_ios) {
       "//components/strings",
       "//components/ukm:test_support",
       "//components/ukm/content",
+      "//components/url_rewrite/browser",
       "//content/public/browser",
       "//content/shell:content_shell_lib",
       "//content/test:browsertest_support",
@@ -768,9 +783,11 @@ if (!is_ios) {
 
     if (is_android) {
       sources += [
+        "autofill_assistant/browser/js_flow_executor_unittest.cc",
         "autofill_assistant/browser/mock_script_executor_delegate.cc",
         "autofill_assistant/browser/mock_script_executor_delegate.h",
         "autofill_assistant/browser/web/web_controller_browsertest.cc",
+        "autofill_assistant/content/renderer/autofill_assistant_agent_browsertest.cc",
         "browser_ui/client_certificate/android/ssl_client_certificate_request_browsertest.cc",
         "test/android/browsertests_apk/components_browser_tests_jni_onload.cc",
       ]
@@ -778,6 +795,8 @@ if (!is_ios) {
       deps += [
         "//components/autofill_assistant/browser",
         "//components/autofill_assistant/browser:proto",
+        "//components/autofill_assistant/content/common:mojo_interfaces",
+        "//components/autofill_assistant/content/renderer",
         "//components/browser_ui/client_certificate/android",
         "//components/browser_ui/client_certificate/android:java",
         "//components/download/internal/common:internal_java",

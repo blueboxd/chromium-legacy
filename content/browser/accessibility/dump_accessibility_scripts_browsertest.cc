@@ -26,7 +26,6 @@ constexpr const char kMacAttributes[]{"mac/attributes"};
 constexpr const char kMacSelection[]{"mac/selection"};
 constexpr const char kMacTextMarker[]{"mac/textmarker"};
 constexpr const char kMacMethods[]{"mac/methods"};
-constexpr const char kMacMathML[]{"mac/mathml"};
 
 #endif
 
@@ -142,10 +141,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Values(ui::AXApiType::kMac),
                          TestPassToString());
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXPressButton) {
-  RunTypedTest<kMacAction>("ax-press-button.html");
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXAccessKey) {
   RunTypedTest<kMacAttributes>("ax-access-key.html");
 }
@@ -158,6 +153,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIABusy) {
   RunTypedTest<kMacAttributes>("ax-aria-busy.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIAColumnCount) {
+  RunTypedTest<kMacAttributes>("ax-aria-column-count.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIAColumnIndex) {
+  RunTypedTest<kMacAttributes>("ax-aria-column-index.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIACurrent) {
   RunTypedTest<kMacAttributes>("ax-aria-current.html");
 }
@@ -166,8 +169,24 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIALive) {
   RunTypedTest<kMacAttributes>("ax-aria-live.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIASetSize) {
+  RunTypedTest<kMacAttributes>("ax-aria-set-size.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIAPosInSet) {
+  RunTypedTest<kMacAttributes>("ax-aria-pos-in-set.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIARelevant) {
   RunTypedTest<kMacAttributes>("ax-aria-relevant.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIARowCount) {
+  RunTypedTest<kMacAttributes>("ax-aria-row-count.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXARIARowIndex) {
+  RunTypedTest<kMacAttributes>("ax-aria-row-index.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXAutocompleteValue) {
@@ -180,6 +199,78 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXColumnHeaderUIElements) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDetailsElements) {
   RunTypedTest<kMacAttributes>("ax-details-elements.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXDOMIdentifier) {
+  RunTypedTest<kMacAttributes>("ax-dom-identifier.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXHasPopup) {
+  RunTypedTest<kMacAttributes>("ax-has-popup.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXInvalid) {
+  RunTypedTest<kMacAttributes>("ax-invalid.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathBase) {
+  RunTypedTest<kMacAttributes>("ax-math-base.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathFractionDenominator) {
+  RunTypedTest<kMacAttributes>("ax-math-fraction-denominator.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathFractionNumerator) {
+  RunTypedTest<kMacAttributes>("ax-math-fraction-numerator.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathOver) {
+  RunTypedTest<kMacAttributes>("ax-math-over.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathPoscripts) {
+  RunTypedTest<kMacAttributes>("ax-math-postscripts.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathPrescripts) {
+  RunTypedTest<kMacAttributes>("ax-math-prescripts.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathRootIndex) {
+  RunTypedTest<kMacAttributes>("ax-math-root-index.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathRootRadicand) {
+  RunTypedTest<kMacAttributes>("ax-math-root-radicand.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathSubscript) {
+  RunTypedTest<kMacAttributes>("ax-math-subscript.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathSuperscript) {
+  RunTypedTest<kMacAttributes>("ax-math-superscript.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXMathUnder) {
+  RunTypedTest<kMacAttributes>("ax-math-under.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXPopupValue) {
+  RunTypedTest<kMacAttributes>("ax-popup-value.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXPressButton) {
+  RunTypedTest<kMacAction>("ax-press-button.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXRequired) {
+  RunTypedTest<kMacAttributes>("ax-required.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AXURL) {
+  RunTypedTest<kMacAttributes>("ax-url.html");
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, SelectAllTextarea) {
@@ -231,29 +322,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
   RunTypedTest<kMacMethods>("accessibility-placeholder-value.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AccessibilityRoleDescription) {
+  RunTypedTest<kMacMethods>("accessibility-role-description.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AccessibilityTitle) {
   RunTypedTest<kMacMethods>("accessibility-title.html");
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, MathMLFractionAttributes) {
-  RunTypedTest<kMacMathML>(FILE_PATH_LITERAL("fraction-attributes.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, MathMLRadicalAttributes) {
-  RunTypedTest<kMacMathML>(FILE_PATH_LITERAL("radical-attributes.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, MathMLUnderOverAttributes) {
-  RunTypedTest<kMacMathML>(FILE_PATH_LITERAL("underover-attributes.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, MathMLSubSupAttributes) {
-  RunTypedTest<kMacMathML>(FILE_PATH_LITERAL("subsup-attributes.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
-                       MathMLMultiscriptsAttributes) {
-  RunTypedTest<kMacMathML>(FILE_PATH_LITERAL("multiscripts-attributes.html"));
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AccessibilityURL) {
+  RunTypedTest<kMacMethods>("accessibility-url.html");
 }
 
 #endif

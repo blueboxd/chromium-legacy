@@ -331,6 +331,7 @@ target(link_target_type, "gles2_sources") {
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
     "//third_party/zlib",
+    "//ui/base:features",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -356,6 +357,11 @@ target(link_target_type, "gles2_sources") {
     deps += [
       "//components/viz/common:vulkan_context_provider",
       "//gpu/vulkan",
+    ]
+
+    sources += [
+      "shared_image_backing_factory_angle_vulkan.cc",
+      "shared_image_backing_factory_angle_vulkan.h",
     ]
 
     if (is_linux || is_chromeos || is_fuchsia || is_android || is_win) {
@@ -400,9 +406,6 @@ target(link_target_type, "gles2_sources") {
         "shared_image_representation_dawn_ozone.cc",
         "shared_image_representation_dawn_ozone.h",
       ]
-    }
-    if (use_x11) {
-      deps += [ "//ui/base:features" ]
     }
   }
 

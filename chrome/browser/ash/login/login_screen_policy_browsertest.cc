@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/login_screen.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/user_manager.h"
@@ -82,8 +82,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenPolicyTest, PolicyInputMethodsListEmpty) {
   EXPECT_TRUE(proto.has_login_screen_input_methods());
   EXPECT_EQ(
       0, proto.login_screen_input_methods().login_screen_input_methods_size());
-  RefreshDevicePolicyAndWaitForSettingChange(
-      chromeos::kDeviceLoginScreenInputMethods);
+  RefreshDevicePolicyAndWaitForSettingChange(kDeviceLoginScreenInputMethods);
 
   ASSERT_EQ(0U, imm->GetActiveIMEState()->GetAllowedInputMethodIds().size());
 }
@@ -93,8 +92,7 @@ class LoginScreenGuestButtonPolicyTest : public LoginScreenPolicyTest {
   void SetGuestModePolicy(bool enabled) {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.mutable_guest_mode_enabled()->set_guest_mode_enabled(enabled);
-    RefreshDevicePolicyAndWaitForSettingChange(
-        chromeos::kAccountsPrefAllowGuest);
+    RefreshDevicePolicyAndWaitForSettingChange(kAccountsPrefAllowGuest);
   }
 };
 

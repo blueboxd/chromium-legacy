@@ -37,6 +37,7 @@ using EncryptionScheme = WebMediaKeySystemMediaCapability::EncryptionScheme;
 // strings are for testing purpose only.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kSupportedKeySystem[] = "keysystem.test.supported";
+const char kSupportedSubKeySystem[] = "keysystem.test.supported.sub";
 const char kUnsupportedKeySystem[] = "keysystem.test.unsupported";
 
 // Robustness strings for kSupportedKeySystem.
@@ -199,10 +200,23 @@ class FakeKeySystems : public media::KeySystems {
 
   void UpdateIfNeeded() override { ++update_count; }
 
+  std::string GetBaseKeySystemName(
+      const std::string& key_system) const override {
+    DCHECK(IsSupportedKeySystem(key_system));
+    return key_system == kSupportedSubKeySystem ? kSupportedKeySystem
+                                                : key_system;
+  }
+
   bool IsSupportedKeySystem(const std::string& key_system) const override {
     // Based on EME spec, Clear Key key system is always supported.
-    return key_system == kSupportedKeySystem ||
-           key_system == kClearKeyKeySystem;
+    return key_system == kClearKeyKeySystem ||
+           key_system == kSupportedKeySystem ||
+           key_system == kSupportedSubKeySystem;
+  }
+
+  bool ShouldUseBaseKeySystemName(
+      const std::string& key_system) const override {
+    return key_system == kSupportedSubKeySystem;
   }
 
   bool CanUseAesDecryptor(const std::string& key_system) const override {
@@ -479,7 +493,7 @@ class KeySystemConfigSelectorTest : public testing::Test {
   WebString key_system_ = WebString::FromUTF8(kSupportedKeySystem);
   std::vector<WebMediaKeySystemConfiguration> configs_;
 
-  // Holds the selected configuration and CdmConfig.
+  // Holds the selected key system, configuration and CdmConfig.
   WebMediaKeySystemConfiguration config_;
   media::CdmConfig cdm_config_;
 
@@ -590,6 +604,14 @@ TEST_F(KeySystemConfigSelectorTest, KeySystem_ClearKey) {
   key_system_ = kClearKeyKeySystem;
   configs_.push_back(UsableConfiguration());
   SelectConfigReturnsConfig();
+  DCHECK_EQ(cdm_config_.key_system, kClearKeyKeySystem);
+}
+
+TEST_F(KeySystemConfigSelectorTest, KeySystem_SubKeySystem) {
+  key_system_ = kSupportedSubKeySystem;
+  configs_.push_back(UsableConfiguration());
+  SelectConfigReturnsConfig();
+  DCHECK_EQ(cdm_config_.key_system, kSupportedKeySystem);
 }
 
 // --- Disable EncryptedMedia ---

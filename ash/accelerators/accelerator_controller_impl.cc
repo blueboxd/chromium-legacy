@@ -67,6 +67,8 @@
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_histogram_enums.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -152,6 +154,15 @@ enum class RotationAcceleratorAction {
   kAlreadyAcceptedDialog = 2,
   kMaxValue = kAlreadyAcceptedDialog,
 };
+
+static_assert(DESKS_ACTIVATE_0 == DESKS_ACTIVATE_1 - 1 &&
+                  DESKS_ACTIVATE_1 == DESKS_ACTIVATE_2 - 1 &&
+                  DESKS_ACTIVATE_2 == DESKS_ACTIVATE_3 - 1 &&
+                  DESKS_ACTIVATE_3 == DESKS_ACTIVATE_4 - 1 &&
+                  DESKS_ACTIVATE_4 == DESKS_ACTIVATE_5 - 1 &&
+                  DESKS_ACTIVATE_5 == DESKS_ACTIVATE_6 - 1 &&
+                  DESKS_ACTIVATE_6 == DESKS_ACTIVATE_7 - 1,
+              "DESKS_ACTIVATE* actions must be consecutive");
 
 void RecordRotationAcceleratorAction(const RotationAcceleratorAction& action) {
   UMA_HISTOGRAM_ENUMERATION("Ash.Accelerators.Rotation.Usage", action);
@@ -352,6 +363,43 @@ void HandleRemoveCurrentDesk() {
   desks_controller->RemoveDesk(desks_controller->active_desk(),
                                DesksCreationRemovalSource::kKeyboard);
   base::RecordAction(base::UserMetricsAction("Accel_Desks_RemoveDesk"));
+}
+
+void HandleActivateDeskAtIndex(AcceleratorAction action) {
+  DCHECK_LE(action, DESKS_ACTIVATE_7);
+  const size_t target_index = action - DESKS_ACTIVATE_0;
+  auto* desks_controller = DesksController::Get();
+  // Only 1 desk animation can occur at a time so ignore this action if there's
+  // an ongoing desk animation.
+  if (desks_controller->AreDesksBeingModified())
+    return;
+
+  const auto& desks = desks_controller->desks();
+  if (target_index < desks.size()) {
+    desks_controller->ActivateDesk(
+        desks[target_index].get(),
+        DesksSwitchSource::kIndexedDeskSwitchShortcut);
+  } else {
+    for (auto* root : Shell::GetAllRootWindows())
+      desks_animations::PerformHitTheWallAnimation(root, /*going_left=*/false);
+  }
+}
+
+void HandleToggleAssignToAllDesks() {
+  auto* active_window = window_util::GetActiveWindow();
+  if (!active_window)
+    return;
+
+  if (desks_util::IsActiveDeskContainer(active_window->parent())) {
+    // Only children of the desk container should have their assigned to all
+    // desks state toggled to avoid interfering with special windows like
+    // always-on-top windows, floated windows, etc.
+    active_window->SetProperty(
+        aura::client::kWindowWorkspaceKey,
+        desks_util::IsWindowVisibleOnAllWorkspaces(active_window)
+            ? aura::client::kWindowWorkspaceUnassignedWorkspace
+            : aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
+  }
 }
 
 void HandleRotatePaneFocus(FocusCycler::Direction direction) {
@@ -861,15 +909,20 @@ void HandleShowEmojiPicker() {
   ui::ShowEmojiPanel();
 }
 
-void HandleShowImeMenuBubble() {
+void HandleToggleImeMenuBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Ime_Menu_Bubble"));
 
   StatusAreaWidget* status_area_widget =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetStatusAreaWidget();
   if (status_area_widget) {
     ImeMenuTray* ime_menu_tray = status_area_widget->ime_menu_tray();
-    if (ime_menu_tray && ime_menu_tray->GetVisible() &&
-        !ime_menu_tray->GetBubbleView()) {
+    if (!ime_menu_tray || !ime_menu_tray->GetVisible()) {
+      // Do nothing when Ime tray is not being shown.
+      return;
+    }
+    if (ime_menu_tray->GetBubbleView()) {
+      ime_menu_tray->CloseBubble();
+    } else {
       ime_menu_tray->ShowBubble();
     }
   }
@@ -1684,6 +1737,11 @@ void AcceleratorControllerImpl::Init() {
   if (::features::IsImprovedKeyboardShortcutsEnabled()) {
     RegisterAccelerators(kEnableWithPositionalAcceleratorsData,
                          kEnableWithPositionalAcceleratorsDataLength);
+    if (ash::features::IsImprovedDesksKeyboardShortcutsEnabled()) {
+      RegisterAccelerators(
+          kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorData,
+          kEnabledWithImprovedDesksKeyboardShortcutsAcceleratorDataLength);
+    }
   } else if (::features::IsNewShortcutMappingEnabled()) {
     RegisterAccelerators(kEnableWithNewMappingAcceleratorData,
                          kEnableWithNewMappingAcceleratorDataLength);
@@ -1779,7 +1837,17 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case DESKS_MOVE_ACTIVE_ITEM_RIGHT:
     case DESKS_NEW_DESK:
     case DESKS_REMOVE_CURRENT_DESK:
+    case DESKS_ACTIVATE_0:
+    case DESKS_ACTIVATE_1:
+    case DESKS_ACTIVATE_2:
+    case DESKS_ACTIVATE_3:
+    case DESKS_ACTIVATE_4:
+    case DESKS_ACTIVATE_5:
+    case DESKS_ACTIVATE_6:
+    case DESKS_ACTIVATE_7:
+    case DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS:
       return true;
+    case DEBUG_KEYBOARD_BACKLIGHT_TOGGLE:
     case DEBUG_MICROPHONE_MUTE_TOGGLE:
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
@@ -1889,6 +1957,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case FOCUS_NEXT_PANE:
     case FOCUS_PREVIOUS_PANE:
     case FOCUS_SHELF:
+    case KEYBOARD_BACKLIGHT_TOGGLE:
     case KEYBOARD_BRIGHTNESS_DOWN:
     case KEYBOARD_BRIGHTNESS_UP:
     case LAUNCH_APP_0:
@@ -1924,7 +1993,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case RESTORE_TAB:
     case ROTATE_WINDOW:
     case SHOW_EMOJI_PICKER:
-    case SHOW_IME_MENU_BUBBLE:
+    case TOGGLE_IME_MENU_BUBBLE:
     case SHOW_SHORTCUT_VIEWER:
     case SHOW_TASK_MANAGER:
     case SUSPEND:
@@ -2002,10 +2071,21 @@ void AcceleratorControllerImpl::PerformAction(
     case DESKS_REMOVE_CURRENT_DESK:
       HandleRemoveCurrentDesk();
       break;
-    case DEBUG_MICROPHONE_MUTE_TOGGLE:
-      base::RecordAction(base::UserMetricsAction("Accel_Microphone_Mute"));
-      accelerators::MicrophoneMuteToggle();
+    case DESKS_ACTIVATE_0:
+    case DESKS_ACTIVATE_1:
+    case DESKS_ACTIVATE_2:
+    case DESKS_ACTIVATE_3:
+    case DESKS_ACTIVATE_4:
+    case DESKS_ACTIVATE_5:
+    case DESKS_ACTIVATE_6:
+    case DESKS_ACTIVATE_7:
+      HandleActivateDeskAtIndex(action);
       break;
+    case DESKS_TOGGLE_ASSIGN_TO_ALL_DESKS:
+      HandleToggleAssignToAllDesks();
+      break;
+    case DEBUG_KEYBOARD_BACKLIGHT_TOGGLE:
+    case DEBUG_MICROPHONE_MUTE_TOGGLE:
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
@@ -2058,6 +2138,10 @@ void AcceleratorControllerImpl::PerformAction(
     case FOCUS_PIP:
       base::RecordAction(base::UserMetricsAction("Accel_Focus_Pip"));
       accelerators::FocusPip();
+      break;
+    case KEYBOARD_BACKLIGHT_TOGGLE:
+      base::RecordAction(base::UserMetricsAction("Accel_Keyboard_Backlight"));
+      accelerators::ToggleKeyboardBacklight();
       break;
     case KEYBOARD_BRIGHTNESS_DOWN: {
       KeyboardBrightnessControlDelegate* delegate =
@@ -2238,8 +2322,8 @@ void AcceleratorControllerImpl::PerformAction(
     case SHOW_EMOJI_PICKER:
       HandleShowEmojiPicker();
       break;
-    case SHOW_IME_MENU_BUBBLE:
-      HandleShowImeMenuBubble();
+    case TOGGLE_IME_MENU_BUBBLE:
+      HandleToggleImeMenuBubble();
       break;
     case SHOW_SHORTCUT_VIEWER:
       HandleShowKeyboardShortcutViewer();

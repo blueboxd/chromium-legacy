@@ -10,10 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "content/common/content_export.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -27,7 +25,7 @@ class VirtualFidoDiscoveryFactory;
 // Implements the Mojo interface representing a virtual authenticator manager
 // for the Web Authentication API. Allows setting up and configurating virtual
 // authenticator devices for testing.
-class CONTENT_EXPORT VirtualAuthenticatorManagerImpl
+class VirtualAuthenticatorManagerImpl
     : public blink::test::mojom::VirtualAuthenticatorManager {
  public:
   class Observer : public base::CheckedObserver {

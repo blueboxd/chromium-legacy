@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/task/single_thread_task_runner.h"
@@ -104,12 +103,14 @@ DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
+    base::WeakPtr<ClientSessionEvents> client_session_events,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
     const DesktopEnvironmentOptions& options)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
       client_session_control_(client_session_control),
+      client_session_events_(client_session_events),
       desktop_session_connector_(desktop_session_connector),
       ipc_file_operations_factory_(this),
       pending_capture_frame_requests_(0),
@@ -302,6 +303,10 @@ bool DesktopSessionProxy::AttachToDesktop(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!desktop_channel_);
 
+  if (client_session_events_) {
+    client_session_events_->OnDesktopAttached(session_id);
+  }
+
   // Ignore the attach notification if the client session has been disconnected
   // already.
   if (!client_session_control_.get())
@@ -343,6 +348,10 @@ void DesktopSessionProxy::DetachFromDesktop() {
     --pending_capture_frame_requests_;
     video_capturer_->OnCaptureResult(
         webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
+  }
+
+  if (client_session_events_) {
+    client_session_events_->OnDesktopDetached();
   }
 }
 
@@ -419,53 +428,33 @@ void DesktopSessionProxy::InjectClipboardEvent(
 void DesktopSessionProxy::InjectKeyEvent(const protocol::KeyEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::KeyEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectKeyEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectKeyEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectTextEvent(const protocol::TextEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::TextEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectTextEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectTextEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectMouseEvent(const protocol::MouseEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::MouseEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectMouseEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectMouseEvent(serialized_event));
 }
 
 void DesktopSessionProxy::InjectTouchEvent(const protocol::TouchEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  std::string serialized_event;
-  if (!event.SerializeToString(&serialized_event)) {
-    LOG(ERROR) << "Failed to serialize protocol::TouchEvent.";
-    return;
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectTouchEvent(event);
   }
-
-  SendToDesktop(
-      new ChromotingNetworkDesktopMsg_InjectTouchEvent(serialized_event));
 }
 
 void DesktopSessionProxy::StartInputInjector(

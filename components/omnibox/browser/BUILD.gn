@@ -48,10 +48,6 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "drive_video.icon",
     "extension_app.icon",
     "find_in_page.icon",
-    "google_calendar.icon",
-    "google_keep_note.icon",
-    "google_sites.icon",
-    "google_super_g.icon",
     "http.icon",
     "https_valid_in_chip.icon",
     "incognito.icon",
@@ -187,6 +183,8 @@ static_library("browser") {
     "omnibox_triggered_feature_service.h",
     "omnibox_view.cc",
     "omnibox_view.h",
+    "omnibox_watcher.cc",
+    "omnibox_watcher.h",
     "on_device_head_model.cc",
     "on_device_head_model.h",
     "on_device_head_provider.cc",
@@ -331,6 +329,7 @@ static_library("location_bar") {
   ]
   deps = [
     ":buildflags",
+    "//build:chromeos_buildflags",
     "//components/dom_distiller/core:core",
     "//components/search_engines",
     "//components/strings",
@@ -341,6 +340,10 @@ static_library("location_bar") {
     "//ui/base",
     "//ui/gfx",
   ]
+
+  if (is_chromeos_lacros) {
+    deps += [ "//chromeos/crosapi/cpp:cpp" ]
+  }
 
   if ((!is_android || enable_vr) && !is_ios) {
     deps += [ ":vector_icons" ]

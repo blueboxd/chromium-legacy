@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
-import {assertNotReached} from '../chrome_util.js';
+import {assertNotReached} from '../assert.js';
 import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
   VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
@@ -73,6 +73,9 @@ export class CameraIntent extends Camera {
       },
       finishSaveVideo: async (video) => {
         this.videoResultFile_ = await video.endWrite();
+      },
+      saveGif: () => {
+        assertNotReached();
       },
     });
     super(

@@ -450,10 +450,6 @@ const std::string SerializeHeaderString(const T& value) {
       .value_or(std::string());
 }
 
-bool IsPermissionsPolicyForClientHintsEnabled() {
-  return base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints);
-}
-
 bool IsSameOrigin(const GURL& url1, const GURL& url2) {
   return url::Origin::Create(url1).IsSameOriginWith(url::Origin::Create(url2));
 }
@@ -586,7 +582,7 @@ struct ClientHintsExtendedData {
 
 bool IsClientHintAllowed(const ClientHintsExtendedData& data,
                          WebClientHintsType type) {
-  if (!IsPermissionsPolicyForClientHintsEnabled() || data.is_main_frame)
+  if (data.is_main_frame)
     return data.is_1p_origin;
   return (data.is_embedder_ua_reduced &&
           type == WebClientHintsType::kUAReduced) ||
@@ -662,7 +658,7 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     // https://wicg.github.io/client-hints-infrastructure/#abstract-opdef-append-client-hints-to-request
     if (ShouldAddClientHint(data, WebClientHintsType::kUA)) {
       AddUAHeader(headers, WebClientHintsType::kUA,
-                  ua_metadata->SerializeBrandVersionList());
+                  ua_metadata->SerializeBrandMajorVersionList());
     }
     // The `Sec-CH-UA-Mobile client hint was also deemed "low entropy" and can
     // safely be sent with every request. Similarly to UA, ShouldAddClientHints
@@ -704,6 +700,10 @@ void UpdateNavigationRequestClientUaHeadersImpl(
       AddUAHeader(headers, WebClientHintsType::kUAReduced,
                   SerializeHeaderString(true));
     }
+    if (ShouldAddClientHint(data, WebClientHintsType::kUAFullVersionList)) {
+      AddUAHeader(headers, WebClientHintsType::kUAFullVersionList,
+                  ua_metadata->SerializeBrandFullVersionList());
+    }
   } else if (call_type == ClientUaHeaderCallType::kAfterCreated) {
     RemoveClientHintHeader(WebClientHintsType::kUA, headers);
     RemoveClientHintHeader(WebClientHintsType::kUAMobile, headers);
@@ -714,6 +714,7 @@ void UpdateNavigationRequestClientUaHeadersImpl(
     RemoveClientHintHeader(WebClientHintsType::kUAModel, headers);
     RemoveClientHintHeader(WebClientHintsType::kUABitness, headers);
     RemoveClientHintHeader(WebClientHintsType::kUAReduced, headers);
+    RemoveClientHintHeader(WebClientHintsType::kUAFullVersionList, headers);
   }
 }
 
@@ -791,7 +792,8 @@ void AddRequestClientHintsHeaders(
   if (ShouldAddClientHint(data, WebClientHintsType::kDpr)) {
     AddDPRHeader(headers, context, url);
   }
-  if (ShouldAddClientHint(data, WebClientHintsType::kViewportWidth_DEPRECATED)) {
+  if (ShouldAddClientHint(data,
+                          WebClientHintsType::kViewportWidth_DEPRECATED)) {
     AddViewportWidthHeader(headers, context, url,
                            /*use_deprecated_version*/ true);
   }
@@ -829,7 +831,7 @@ void AddRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      network::mojom::WebClientHintsType::kViewportWidth ==
+      network::mojom::WebClientHintsType::kUAFullVersionList ==
           network::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 
@@ -951,37 +953,18 @@ ParseAndPersistAcceptCHForNavigation(
 
   const std::vector<WebClientHintsType> persisted_hints =
       enabled_hints.GetEnabledHints();
-  PersistAcceptCH(url, delegate, persisted_hints,
-                  &parsed_headers->accept_ch_lifetime);
+  PersistAcceptCH(url, delegate, persisted_hints);
   return persisted_hints;
 }
 
 void PersistAcceptCH(const GURL& url,
                      ClientHintsControllerDelegate* delegate,
-                     const std::vector<WebClientHintsType>& hints,
-                     base::TimeDelta* persist_duration) {
+                     const std::vector<WebClientHintsType>& hints) {
   DCHECK(delegate);
-
-  // TODO(https://crbug.com/1243060): Remove the checking and persistence of the
-  // expiration time.
-  const bool use_persist_duration =
-      persist_duration && !IsPermissionsPolicyForClientHintsEnabled();
-
-  if (use_persist_duration && persist_duration->is_zero())
-    return;
-
-  // JSON cannot store "non-finite" values (i.e. NaN or infinite) so
-  // base::TimeDelta::Max cannot be used. As this will be removed once the
-  // FeaturePolicyForClientHints feature is shipped, a reasonably large value
-  // was chosen instead.
-  base::TimeDelta duration =
-      use_persist_duration ? *persist_duration : base::Days(1000000);
-
-  delegate->PersistClientHints(url::Origin::Create(url), hints,
-                               std::move(duration));
+  delegate->PersistClientHints(url::Origin::Create(url), hints);
 }
 
-CONTENT_EXPORT std::vector<WebClientHintsType> LookupAcceptCHForCommit(
+std::vector<WebClientHintsType> LookupAcceptCHForCommit(
     const GURL& url,
     ClientHintsControllerDelegate* delegate,
     FrameTreeNode* frame_tree_node) {

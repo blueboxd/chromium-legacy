@@ -17,9 +17,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "device/fido/credential_management.h"
-#include "device/fido/credential_management_handler.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/pin.h"
+#include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/reset_request_handler.h"
 #include "device/fido/set_pin_request_handler.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -339,6 +340,11 @@ void SecurityKeysCredentialHandler::RegisterMessages() {
       base::BindRepeating(&SecurityKeysCredentialHandler::HandleDelete,
                           base::Unretained(this)));
   web_ui()->RegisterDeprecatedMessageCallback(
+      "securityKeyCredentialManagementUpdate",
+      base::BindRepeating(
+          &SecurityKeysCredentialHandler::HandleUpdateUserInformation,
+          base::Unretained(this)));
+  web_ui()->RegisterDeprecatedMessageCallback(
       "securityKeyCredentialManagementClose",
       base::BindRepeating(
           &HandleClose,
@@ -394,18 +400,56 @@ void SecurityKeysCredentialHandler::HandleDelete(const base::ListValue* args) {
 
   state_ = State::kDeletingCredentials;
   callback_id_ = args->GetList()[0].GetString();
-  std::vector<std::vector<uint8_t>> credential_ids;
+  std::vector<device::PublicKeyCredentialDescriptor> credential_ids;
   for (const base::Value& el : args->GetList()[1].GetList()) {
-    std::vector<uint8_t> credential_id;
-    if (!base::HexStringToBytes(el.GetString(), &credential_id)) {
+    std::vector<uint8_t> credential_id_bytes;
+    if (!base::HexStringToBytes(el.GetString(), &credential_id_bytes)) {
       NOTREACHED();
       continue;
     }
+    device::PublicKeyCredentialDescriptor credential_id(
+        device::CredentialType::kPublicKey, std::move(credential_id_bytes));
     credential_ids.emplace_back(std::move(credential_id));
   }
   credential_management_->DeleteCredentials(
       std::move(credential_ids),
       base::BindOnce(&SecurityKeysCredentialHandler::OnCredentialsDeleted,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SecurityKeysCredentialHandler::HandleUpdateUserInformation(
+    const base::ListValue* args) {
+  DCHECK_EQ(State::kReady, state_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(5u, args->GetList().size());
+  DCHECK(credential_management_);
+  DCHECK(callback_id_.empty());
+
+  state_ = State::kUpdatingUserInformation;
+  callback_id_ = args->GetList()[0].GetString();
+
+  std::vector<uint8_t> credential_id_bytes;
+  if (!base::HexStringToBytes(args->GetList()[1].GetString(),
+                              &credential_id_bytes)) {
+    NOTREACHED();
+  }
+  device::PublicKeyCredentialDescriptor credential_id(
+      device::CredentialType::kPublicKey, credential_id_bytes);
+
+  std::vector<uint8_t> user_handle;
+  if (!base::HexStringToBytes(args->GetList()[2].GetString(), &user_handle)) {
+    NOTREACHED();
+  }
+  std::string new_username = args->GetList()[3].GetString();
+  std::string new_displayname = args->GetList()[4].GetString();
+
+  device::PublicKeyCredentialUserEntity updated_user(
+      std::move(user_handle), std::move(new_username),
+      std::move(new_displayname), absl::nullopt);
+
+  credential_management_->UpdateUserInformation(
+      std::move(credential_id), std::move(updated_user),
+      base::BindOnce(&SecurityKeysCredentialHandler::OnUserInformationUpdated,
                      weak_factory_.GetWeakPtr()));
 }
 
@@ -430,6 +474,10 @@ void SecurityKeysCredentialHandler::OnHaveCredentials(
   DCHECK(credential_management_);
   DCHECK(!callback_id_.empty());
 
+  if (status == device::CtapDeviceResponseCode::kCtap2ErrNoCredentials) {
+    OnFinished(device::CredentialManagementStatus::kNoCredentials);
+    return;
+  }
   if (status != device::CtapDeviceResponseCode::kSuccess) {
     OnFinished(
         device::CredentialManagementStatus::kAuthenticatorResponseInvalid);
@@ -444,15 +492,16 @@ void SecurityKeysCredentialHandler::OnHaveCredentials(
   for (const auto& response : *responses) {
     for (const auto& credential : response.credentials) {
       base::DictionaryValue credential_value;
-      std::string credential_id =
-          base::HexEncode(credential.credential_id_cbor_bytes.data(),
-                          credential.credential_id_cbor_bytes.size());
+      std::string credential_id = base::HexEncode(credential.credential_id.id);
       if (credential_id.empty()) {
         NOTREACHED();
         continue;
       }
-      credential_value.SetString("id", std::move(credential_id));
+      std::string userHandle = base::HexEncode(credential.user.id);
+
+      credential_value.SetString("credentialId", std::move(credential_id));
       credential_value.SetString("relyingPartyId", response.rp.id);
+      credential_value.SetString("userHandle", std::move(userHandle));
       credential_value.SetString("userName", credential.user.name.value_or(""));
       credential_value.SetString("userDisplayName",
                                  credential.user.display_name.value_or(""));
@@ -465,19 +514,21 @@ void SecurityKeysCredentialHandler::OnHaveCredentials(
 }
 
 void SecurityKeysCredentialHandler::OnGatherPIN(
-    uint32_t min_pin_length,
-    int64_t num_retries,
+    device::CredentialManagementHandler::AuthenticatorProperties
+        authenticator_properties,
     base::OnceCallback<void(std::string)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback_id_.empty());
   DCHECK(!credential_management_provide_pin_cb_);
 
   credential_management_provide_pin_cb_ = std::move(callback);
-
-  base::Value::ListStorage response;
-  response.emplace_back(static_cast<int>(min_pin_length));
   if (state_ == State::kStart) {
     // Resolve the promise to startCredentialManagement().
+    base::DictionaryValue response;
+    response.SetIntKey("minPinLength", authenticator_properties.min_pin_length);
+    response.SetBoolKey(
+        "supportsUpdateUserInformation",
+        authenticator_properties.supports_update_user_information);
     state_ = State::kPIN;
     ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                               base::Value(std::move(response)));
@@ -486,7 +537,10 @@ void SecurityKeysCredentialHandler::OnGatherPIN(
 
   // Resolve the promise to credentialManagementProvidePIN().
   DCHECK_EQ(state_, State::kPIN);
-  response.emplace_back(static_cast<int>(num_retries));
+  base::Value::ListStorage response;
+  response.emplace_back(
+      static_cast<int>(authenticator_properties.min_pin_length));
+  response.emplace_back(static_cast<int>(authenticator_properties.pin_retries));
   ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
                             base::Value(std::move(response)));
 }
@@ -501,12 +555,40 @@ void SecurityKeysCredentialHandler::OnCredentialsDeleted(
 
   state_ = State::kReady;
 
-  ResolveJavascriptCallback(
-      base::Value(std::move(callback_id_)),
-      base::Value(l10n_util::GetStringUTF8(
+  base::DictionaryValue response;
+  response.SetBoolean("success",
+                      status == device::CtapDeviceResponseCode::kSuccess);
+  response.SetString(
+      "message",
+      l10n_util::GetStringUTF8(
           status == device::CtapDeviceResponseCode::kSuccess
-              ? IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_SUCCESS
-              : IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_FAILED)));
+              ? IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DELETE_SUCCESS
+              : IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_DELETE_FAILED));
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                            base::Value(std::move(response)));
+}
+
+void SecurityKeysCredentialHandler::OnUserInformationUpdated(
+    device::CtapDeviceResponseCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(State::kUpdatingUserInformation, state_);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(credential_management_);
+  DCHECK(!callback_id_.empty());
+
+  state_ = State::kReady;
+
+  base::DictionaryValue response;
+  response.SetBoolean("success",
+                      status == device::CtapDeviceResponseCode::kSuccess);
+  response.SetString(
+      "message",
+      l10n_util::GetStringUTF8(
+          status == device::CtapDeviceResponseCode::kSuccess
+              ? IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_UPDATE_SUCCESS
+              : IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_UPDATE_FAILED));
+  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
+                            base::Value(std::move(response)));
 }
 
 void SecurityKeysCredentialHandler::OnFinished(
@@ -521,6 +603,9 @@ void SecurityKeysCredentialHandler::OnFinished(
       break;
     case device::CredentialManagementStatus::kHardPINBlock:
       error = IDS_SETTINGS_SECURITY_KEYS_PIN_HARD_LOCK;
+      break;
+    case device::CredentialManagementStatus::kNoCredentials:
+      error = IDS_SETTINGS_SECURITY_KEYS_CREDENTIAL_MANAGEMENT_NO_CREDENTIALS;
       break;
     case device::CredentialManagementStatus::
         kAuthenticatorMissingCredentialManagement:

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,6 +69,11 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
         const std::string& engine_id,
         int context_id,
         const IMEEngineHandlerInterface::InputContext& context) = 0;
+
+    // Called on a touch within a text field. Allows for features like changing
+    // virtual keyboard layout based on touch type after onfocus (since
+    // subsequent touches within the same input field do not send onfocus),
+    virtual void OnTouch(ui::EventPointerType pointerType) = 0;
 
     // Called when a text field loses focus, and will no longer generate events.
     virtual void OnBlur(const std::string& engine_id, int context_id) = 0;
@@ -320,7 +326,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
   // The observer object recieving events for this IME.
   std::unique_ptr<InputMethodEngineBase::Observer> observer_;
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   unsigned int next_request_id_ = 1;
   std::map<std::string, PendingKeyEvent> pending_key_events_;

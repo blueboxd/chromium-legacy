@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -36,15 +37,12 @@ class AutofillPopupControllerBrowserTest : public InProcessBrowserTest,
   ~AutofillPopupControllerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(web_contents != NULL);
-    web_contents->Focus();
-    Observe(web_contents);
+    web_contents()->Focus();
+    Observe(web_contents());
 
     autofill_driver_ =
-        ContentAutofillDriverFactory::FromWebContents(web_contents)
-            ->DriverForFrame(web_contents->GetMainFrame());
+        ContentAutofillDriverFactory::FromWebContents(web_contents())
+            ->DriverForFrame(main_rfh());
     autofill_manager_ = autofill_driver_->browser_autofill_manager();
     auto autofill_external_delegate =
         std::make_unique<TestAutofillExternalDelegate>(
@@ -65,9 +63,17 @@ class AutofillPopupControllerBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  ContentAutofillDriver* autofill_driver_ = nullptr;
-  BrowserAutofillManager* autofill_manager_ = nullptr;
-  TestAutofillExternalDelegate* autofill_external_delegate_ = nullptr;
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::RenderFrameHost* main_rfh() {
+    return web_contents()->GetMainFrame();
+  }
+
+  raw_ptr<ContentAutofillDriver> autofill_driver_ = nullptr;
+  raw_ptr<BrowserAutofillManager> autofill_manager_ = nullptr;
+  raw_ptr<TestAutofillExternalDelegate> autofill_external_delegate_ = nullptr;
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> disable_animation_;
 };
 
@@ -101,6 +107,44 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
   gfx::Rect new_bounds = browser()->window()->GetBounds();
   new_bounds.Inset(1, 1);
   browser()->window()->SetBounds(new_bounds);
+
+  autofill_external_delegate_->WaitForPopupHidden();
+  EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
+}
+
+// Tests that entering fullscreen hides the popup and, in particular, does not
+// crash (crbug.com/1267047).
+IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
+                       HidePopupOnWindowEnterFullscreen) {
+  GenerateTestAutofillPopup(autofill_external_delegate_);
+
+  EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
+
+  // Enter fullscreen, which should cause the popup to hide.
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+  content::WebContentsDelegate* wcd = browser();
+  wcd->EnterFullscreenModeForTab(main_rfh(), {});
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+
+  autofill_external_delegate_->WaitForPopupHidden();
+  EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
+}
+
+// Tests that exiting fullscreen hides the popup and, in particular, does not
+// crash (crbug.com/1267047).
+IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
+                       HidePopupOnWindowExitFullscreen) {
+  content::WebContentsDelegate* wcd = browser();
+  wcd->EnterFullscreenModeForTab(main_rfh(), {});
+
+  GenerateTestAutofillPopup(autofill_external_delegate_);
+
+  EXPECT_FALSE(autofill_external_delegate_->popup_hidden());
+
+  // Exit fullscreen, which should cause the popup to hide.
+  ASSERT_TRUE(browser()->window()->IsFullscreen());
+  wcd->ExitFullscreenModeForTab(web_contents());
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
 
   autofill_external_delegate_->WaitForPopupHidden();
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden());

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/hermes/hermes_response_status.h"
@@ -149,7 +148,10 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
 
     // Called when an euicc property changes.
     virtual void OnEuiccPropertyChanged(const dbus::ObjectPath& euicc_path,
-                                        const std::string& property_name) = 0;
+                                        const std::string& property_name) {}
+
+    // Called when an Euicc reset operation completes successfully.
+    virtual void OnEuiccReset(const dbus::ObjectPath& euicc_path) {}
   };
 
   // Adds an observer for carrier profile lists changes on Hermes manager.

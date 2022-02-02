@@ -113,11 +113,6 @@ const base::Feature kBackForwardCacheMemoryControls {
 #endif
 };
 
-// Block subresource requests whose URLs contain embedded credentials (e.g.
-// `https://user:pass@example.com/resource`).
-const base::Feature kBlockCredentialedSubresources{
-    "BlockCredentialedSubresources", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When this feature is enabled, private network requests initiated from
 // non-secure contexts in the `public` address space  are blocked.
 //
@@ -285,6 +280,10 @@ const base::Feature kEmbeddingRequiresOptIn{"EmbeddingRequiresOptIn",
 const base::Feature kEnableCanvas2DLayers{"EnableCanvas2DLayers",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables canvas context to clear context when it's running in background.
+const base::Feature kEnableCanvasContextLostInBackground{
+    "EnableCanvasContextLostInBackground", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new canvas 2d api features. Enabled either with either
 // enable-experimental-canvas-features or new-canvas-2d-api runtime flags
 const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
@@ -316,9 +315,16 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
     "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether Client Hints are guarded by Permissions Policy.
-const base::Feature kFeaturePolicyForClientHints{
-    "FeaturePolicyForClientHints", base::FEATURE_ENABLED_BY_DEFAULT};
+// Whether to initialize the font manager when the renderer starts on a
+// background thread.
+const base::Feature kFontManagerEarlyInit {
+  "FontManagerEarlyInit",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
@@ -338,6 +344,13 @@ const base::Feature kForwardMemoryPressureEventsToGpuProcess {
 #endif
 };
 #endif
+
+// Enables JavaScript API to intermediate federated identity requests.
+const base::Feature kFedCm{"FedCm", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Field trial boolean parameter which indicates whether FedCM HTTP filtering is
+// enabled.
+const char kFedCmInterceptionFieldTrialParamName[] = "Interception";
 
 // Enables scrollers inside Blink to store scroll offsets in fractional
 // floating-point numbers rather than truncating to integers.
@@ -366,20 +379,6 @@ const base::Feature kHistoryPreventSandboxedNavigation{
 // or the site should obtain an Origin Trial token.
 const base::Feature kIdleDetection{"IdleDetection",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Historically most navigations required IPC from browser to renderer and
-// from renderer back to browser. This was done to check for before-unload
-// handlers on the current page and occurred regardless of whether a
-// before-unload handler was present. The navigation start time (as used in
-// various metrics) is the time the renderer initiates the IPC back to the
-// browser. If this feature is enabled, the navigation start time takes into
-// account the cost of the IPC from the browser to renderer. More specifically:
-// navigation_start = time_renderer_sends_ipc_to_browser -
-//    (time_renderer_receives_ipc - time_browser_sends_ipc)
-// Note that navigation_start does not take into account the amount of time the
-// renderer spends processing the IPC (that is, executing script).
-const base::Feature kIncludeIpcOverheadInNavigationStart{
-    "IncludeIpcOverheadInNavigationStart", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the GetInstalledRelatedApps API.
 const base::Feature kInstalledApp{"InstalledApp",
@@ -504,10 +503,16 @@ const base::Feature kMojoVideoCaptureSecondary{
 const base::Feature kMouseSubframeNoImplicitCapture{
     "MouseSubframeNoImplicitCapture", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When NavigationNetworkResponseQueue is enabled, the browser will schedule
+// some tasks related to navigation network responses in a kHighest priority
+// queue.
+const base::Feature kNavigationNetworkResponseQueue{
+    "NavigationNetworkResponseQueue", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables optimizations for renderer->browser mojo calls to avoid waiting on
 // the UI thread during navigation.
 const base::Feature kNavigationThreadingOptimizations{
-    "NavigationThreadingOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
+    "NavigationThreadingOptimizations", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess {
@@ -586,6 +591,10 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 const base::Feature kHighPriorityBeforeUnload{
     "HighPriorityBeforeUnload", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the Aggregation Service. See crbug.com/1207974.
+const base::Feature kPrivacySandboxAggregationService = {
+    "PrivacySandboxAggregationService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Requires that CORS preflight requests succeed before sending private network
 // requests. This flag implies `kPrivateNetworkAccessSendPreflights`.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
@@ -598,7 +607,7 @@ const base::Feature kPrivateNetworkAccessRespectPreflightResults = {
 // ignored.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 const base::Feature kPrivateNetworkAccessSendPreflights = {
-    "PrivateNetworkAccessSendPreflights", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrivateNetworkAccessSendPreflights", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
 // represents a set of frames that can script each other. Currently, Chrome does
@@ -943,6 +952,10 @@ const base::Feature kWebAssemblyCodeProtectionPku{
 #endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
         // defined(ARCH_CPU_X86_64)
 
+// Enable WebAssembly dynamic tiering (only tier up hot functions).
+const base::Feature kWebAssemblyDynamicTiering{
+    "WebAssemblyDynamicTiering", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable WebAssembly lazy compilation (JIT on first call).
 const base::Feature kWebAssemblyLazyCompilation{
     "WebAssemblyLazyCompilation", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -974,11 +987,6 @@ const base::Feature kWebAssemblyTrapHandler {
 const base::Feature kWebAuth{"WebAuthentication",
                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether WebAuthn assertion transport is enabled.
-const base::Feature kWebAuthAuthenticatorAttachment{
-    "WebAuthenticationAuthenticatorAttachment",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether CTAP2 devices can communicate via the WebAuthentication API
 // using pairingless BLE protocol.
 // https://w3c.github.io/webauthn
@@ -1000,7 +1008,8 @@ const base::Feature kWebAuthConditionalUI{"WebAuthenticationConditionalUI",
 
 // Controls whether Web Bluetooth should use the new permissions backend. The
 // new permissions backend uses ChooserContextBase, which is used by other
-// device APIs, such as WebUSB.
+// device APIs, such as WebUSB. When enabled, WebBluetoothWatchAdvertisements
+// and WebBluetoothGetDevices blink features are also enabled.
 const base::Feature kWebBluetoothNewPermissionsBackend{
     "WebBluetoothNewPermissionsBackend", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1026,9 +1035,6 @@ const base::Feature kWebBundlesFromNetwork{"WebBundlesFromNetwork",
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enable browser mediation API for federated identity interactions.
-const base::Feature kWebID{"WebID", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the browser process components of the Web MIDI API. This flag does not
 // control whether the API is exposed in Blink.
@@ -1066,6 +1072,12 @@ const base::Feature kWebXr{"WebXR", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kWebXrArModule{"WebXRARModule",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether service worker process priority is affected by client
+// process fore/background state change.
+const base::Feature kChangeServiceWorkerPriorityForClientForegroundStateChange{
+    "ChangeServiceWorkerPriorityForClientForegroundStateChange",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Allows the use of page zoom in place of accessibility text autosizing, and
 // updated UI to replace existing Chrome Accessibility Settings.
@@ -1093,8 +1105,13 @@ const base::Feature kBindingManagementWaiveCpu{
 const base::Feature kOnDemandAccessibilityEvents{
     "OnDemandAccessibilityEvents", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Request Desktop Site per-site setting for Android.
+// Refer to the launch bug (https://crbug.com/1244979) for more information.
+const base::Feature kRequestDesktopSiteExceptions{
+    "RequestDesktopSiteExceptions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Request Desktop Site global setting for Android.
-// Refer to the launch bug (crbug.com/1107601) for more information.
+// Refer to the launch bug (https://crbug.com/1107601) for more information.
 const base::Feature kRequestDesktopSiteGlobal{
     "RequestDesktopSiteGlobal", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1151,7 +1168,7 @@ const base::Feature kRetryGetVideoCaptureDeviceInfos{
 // exception), report that error back the crash reporting infrastructure, same
 // as we do for program crashes.
 const base::Feature kSendWebUIJavaScriptErrorReports{
-    "SendWebUIJavaScriptErrorReports", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SendWebUIJavaScriptErrorReports", base::FEATURE_ENABLED_BY_DEFAULT};
 // Parameter: Should we send the error reports to the production server? If
 // false, we send to the staging server, which is useful for developers (doesn't
 // pollute the report database).
@@ -1188,8 +1205,7 @@ VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
 // On ChromeOS the service must run in the browser process, because parts of the
 // code depend on global objects that are only available in the Browser process.
 // See https://crbug.com/891961.
-#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || \
-    BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
 #else
 #if defined(OS_WIN)

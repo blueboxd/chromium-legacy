@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/macros.h"
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -124,7 +123,7 @@ PresentationReceiverWindowView::PresentationReceiverWindowView(
   SetOwnedByWidget(false);
   RegisterDeleteDelegateCallback(base::BindOnce(
       [](PresentationReceiverWindowView* dialog) {
-        auto* const delegate = dialog->delegate_;
+        auto* const delegate = dialog->delegate_.get();
         delete dialog;
         delegate->WindowClosed();
       },
@@ -203,7 +202,7 @@ void PresentationReceiverWindowView::Init() {
   box_owner->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
   auto* box = SetLayoutManager(std::move(box_owner));
-  AddChildView(location_bar_view_);
+  AddChildView(location_bar_view_.get());
   box->SetFlexForView(location_bar_view_, 0);
   AddChildView(web_view);
   box->SetFlexForView(web_view, 1);

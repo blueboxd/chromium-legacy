@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -282,9 +283,9 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
   scoped_refptr<DecoderBuffer> fake_decoder_buffer_;
   std::unique_ptr<MockDeviceInfo> device_info_;
   std::unique_ptr<FakeCodecAllocator> codec_allocator_;
-  MockAndroidVideoSurfaceChooser* surface_chooser_;
-  gpu::MockTextureOwner* texture_owner_;
-  MockVideoFrameFactory* video_frame_factory_;
+  raw_ptr<MockAndroidVideoSurfaceChooser> surface_chooser_;
+  raw_ptr<gpu::MockTextureOwner> texture_owner_;
+  raw_ptr<MockVideoFrameFactory> video_frame_factory_;
   NiceMock<base::MockCallback<VideoDecoder::DecodeCB>> decode_cb_;
   ProvideOverlayInfoCB provide_overlay_info_cb_;
   bool restart_for_transitions_;
@@ -301,7 +302,7 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
 
   // |mcvd_raw_| lets us call PumpCodec() even after |mcvd_| is dropped, for
   // testing the teardown path.
-  MediaCodecVideoDecoder* mcvd_raw_;
+  raw_ptr<MediaCodecVideoDecoder> mcvd_raw_;
   std::unique_ptr<VideoDecoder> mcvd_;
 };
 
@@ -990,8 +991,7 @@ static std::vector<VideoCodec> GetTestList() {
   std::vector<VideoCodec> test_codecs;
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  if (MediaCodecUtil::IsMediaCodecAvailable())
-    test_codecs.push_back(VideoCodec::kH264);
+  test_codecs.push_back(VideoCodec::kH264);
 #endif
 
   if (MediaCodecUtil::IsVp8DecoderAvailable())
@@ -1004,10 +1004,8 @@ static std::vector<VideoCodec> GetTestList() {
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-static std::vector<VideoCodec> GetH264IfAvailable() {
-  return MediaCodecUtil::IsMediaCodecAvailable()
-             ? std::vector<VideoCodec>(1, VideoCodec::kH264)
-             : std::vector<VideoCodec>();
+static std::vector<VideoCodec> GetH264() {
+  return std::vector<VideoCodec>(1, VideoCodec::kH264);
 }
 #endif
 
@@ -1038,7 +1036,7 @@ INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderTest,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderH264Test,
                          MediaCodecVideoDecoderH264Test,
-                         testing::ValuesIn(GetH264IfAvailable()));
+                         testing::ValuesIn(GetH264()));
 #endif
 
 INSTANTIATE_TEST_SUITE_P(MediaCodecVideoDecoderVp8Test,

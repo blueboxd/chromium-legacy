@@ -7,6 +7,8 @@
 
 #include <string>
 #include <vector>
+
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
@@ -67,11 +69,11 @@ class NoticeCardTracker {
   int GetCount(base::StringPiece dict_key) const;
   void SetCount(base::StringPiece, int new_count);
 
-  PrefService* profile_prefs_;
+  raw_ptr<PrefService> profile_prefs_;
   std::string key_;
   base::TimeTicks last_view_time_;
 };
 
 }  // namespace feed
 
-#endif  // COMPONENTS_FEED_CORE_V2_STREAM_NOTICE_CARD_TRACKER_H_s
+#endif  // COMPONENTS_FEED_CORE_V2_STREAM_NOTICE_CARD_TRACKER_H_

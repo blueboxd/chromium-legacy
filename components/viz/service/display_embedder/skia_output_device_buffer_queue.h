@@ -12,7 +12,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "components/viz/service/display_embedder/output_presenter.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/viz_service_export.h"
@@ -89,10 +89,14 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   gfx::Size GetSwapBuffersSize();
   bool RecreateImages();
 
+  void MaybeAllocateBackgroundImages();
+  void MaybeScheduleBackgroundImage();
+  OutputPresenter::Image* GetNextBackgroundImage();
+
   std::unique_ptr<OutputPresenter> presenter_;
 
   scoped_refptr<gpu::SharedContextState> context_state_;
-  gpu::SharedImageRepresentationFactory* const representation_factory_;
+  const raw_ptr<gpu::SharedImageRepresentationFactory> representation_factory_;
   // Format of images
   gfx::ColorSpace color_space_;
   gfx::Size image_size_;
@@ -102,11 +106,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
   std::vector<std::unique_ptr<OutputPresenter::Image>> images_;
   // This image is currently used by Skia as RenderTarget. This may be nullptr
   // if there is no drawing for the current frame or if allocation failed.
-  OutputPresenter::Image* current_image_ = nullptr;
+  raw_ptr<OutputPresenter::Image> current_image_ = nullptr;
   // The last image submitted for presenting.
-  OutputPresenter::Image* submitted_image_ = nullptr;
+  raw_ptr<OutputPresenter::Image> submitted_image_ = nullptr;
   // The image currently on the screen, if any.
-  OutputPresenter::Image* displayed_image_ = nullptr;
+  raw_ptr<OutputPresenter::Image> displayed_image_ = nullptr;
   // These are free for use, and are not nullptr.
   base::circular_deque<OutputPresenter::Image*> available_images_;
   // These cancelable callbacks bind images that have been scheduled to display
@@ -145,17 +149,22 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue : public SkiaOutputDevice {
 #endif
   // Set to true if no image is to be used for the primary plane of this frame.
   bool current_frame_has_no_primary_plane_ = false;
-  // Whether the platform needs an occluded background image. Wayland needs it
-  // for opaque accelerated widgets and event wiring.
+  // Whether or not the platform needs occluded background images. Wayland needs
+  // it for opaque accelerated widgets and event wiring. Please see details on
+  // the number of background images below.
   bool needs_background_image_ = false;
+  // 4x4 small images that will be scaled to cover an opaque region.
+  // It's required to have two background images to be scheduled so that
+  // Desktop Wayland compositors are able to apply state changes to root
+  // surfaces. Otherwise, they unref the attached buffer after processing it
+  // and never update the state changes of the root surface, which leads to
+  // a broken resize opetion.
+  std::vector<std::unique_ptr<OutputPresenter::Image>> background_images_;
+  OutputPresenter::Image* current_background_image_ = nullptr;
   // Whether the platform supports non-backed solid color overlays. The Wayland
   // backend is able to delegate these overlays without buffer backings
   // depending on the availability of a certain protocol.
   bool supports_non_backed_solid_color_images_ = false;
-  // A 4x4 small image that will be scaled to cover an opaque region.
-  std::unique_ptr<OutputPresenter::Image> background_image_;
-  // Set to true if background has been scheduled in a frame.
-  bool background_image_is_scheduled_ = false;
   // Whether |SchedulePrimaryPlane| needs to wait for a paint before scheduling
   // This works around an edge case for unpromoting fullscreen quads.
   bool primary_plane_waiting_on_paint_ = false;

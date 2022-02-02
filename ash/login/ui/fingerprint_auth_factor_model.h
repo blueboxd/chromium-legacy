@@ -7,7 +7,6 @@
 
 #include "ash/login/ui/auth_factor_model.h"
 #include "ash/public/cpp/login_types.h"
-#include "base/timer/timer.h"
 
 namespace ash {
 
@@ -24,7 +23,6 @@ class FingerprintAuthFactorModel : public AuthFactorModel {
 
   void SetFingerprintState(FingerprintState state);
   void NotifyFingerprintAuthResult(bool result);
-  void SetCanUsePin(bool can_use_pin);
 
   // If |available| is false, forces |GetAuthFactorState()| to return
   // |kUnavailable|, otherwise has no effect. Used to hide Fingerprint auth
@@ -33,23 +31,18 @@ class FingerprintAuthFactorModel : public AuthFactorModel {
 
  private:
   // AuthFactorModel:
-  AuthFactorState GetAuthFactorState() override;
-  AuthFactorType GetType() override;
-  int GetLabelId() override;
-  bool ShouldAnnounceLabel() override;
-  int GetAccessibleNameId() override;
-  void OnTapOrClickEvent() override;
+  AuthFactorState GetAuthFactorState() const override;
+  AuthFactorType GetType() const override;
+  int GetLabelId() const override;
+  bool ShouldAnnounceLabel() const override;
+  int GetAccessibleNameId() const override;
+  void DoHandleTapOrClick() override;
+  void DoHandleErrorTimeout() override;
   void UpdateIcon(AuthIconView* icon) override;
-
-  void OnResetState();
 
   FingerprintState state_ = FingerprintState::AVAILABLE_DEFAULT;
   absl::optional<bool> auth_result_;
 
-  base::OneShotTimer reset_state_;
-
-  // Affects DISABLED_FROM_TIMEOUT message.
-  bool can_use_pin_ = false;
   bool available_ = true;
 };
 

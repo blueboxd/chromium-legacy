@@ -44,9 +44,9 @@ const base::FilePath::CharType kLocalStateFilename[] =
 }  // namespace
 
 HeadlessBrowserMainParts::HeadlessBrowserMainParts(
-    const content::MainFunctionParams& parameters,
+    content::MainFunctionParams parameters,
     HeadlessBrowserImpl* browser)
-    : parameters_(parameters), browser_(browser) {}
+    : parameters_(std::move(parameters)), browser_(browser) {}
 
 HeadlessBrowserMainParts::~HeadlessBrowserMainParts() = default;
 
@@ -57,22 +57,12 @@ int HeadlessBrowserMainParts::PreMainMessageLoopRun() {
   MaybeStartLocalDevToolsHttpHandler();
   browser_->PlatformInitialize();
   browser_->RunOnStartCallback();
-
-  if (parameters_.ui_task) {
-    std::move(*parameters_.ui_task).Run();
-    delete parameters_.ui_task;
-    run_message_loop_ = false;
-  }
-
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
 void HeadlessBrowserMainParts::WillRunMainMessageLoop(
     std::unique_ptr<base::RunLoop>& run_loop) {
-  if (run_message_loop_)
-    quit_main_message_loop_ = run_loop->QuitClosure();
-  else
-    run_loop.reset();
+  quit_main_message_loop_ = run_loop->QuitClosure();
 }
 
 void HeadlessBrowserMainParts::PostMainMessageLoopRun() {
@@ -138,7 +128,14 @@ void HeadlessBrowserMainParts::CreatePrefService() {
   } else {
     base::FilePath local_state_file =
         browser_->options()->user_data_dir.Append(kLocalStateFilename);
-    pref_store = base::MakeRefCounted<JsonPrefStore>(local_state_file);
+    pref_store = base::MakeRefCounted<JsonPrefStore>(
+        local_state_file,
+        /*pref_filter=*/nullptr,
+        /*file_task_runner=*/
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+        /*read_only=*/true);
     auto result = pref_store->ReadPrefs();
     base::debug::Alias(&result);
     if (result != JsonPrefStore::PREF_READ_ERROR_NONE) {

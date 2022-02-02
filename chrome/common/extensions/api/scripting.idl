@@ -59,7 +59,6 @@ namespace scripting {
 
     // The path of the JS or CSS files to inject, relative to the extension's
     // root directory.
-    // NOTE: Currently a maximum of one file is supported.
     // Exactly one of <code>files</code> and <code>func</code> must be
     // specified.
     DOMString[]? files;
@@ -83,7 +82,6 @@ namespace scripting {
 
     // The path of the CSS files to inject, relative to the extension's root
     // directory.
-    // NOTE: Currently a maximum of one file is supported.
     // Exactly one of <code>files</code> and <code>css</code> must be
     // specified.
     DOMString[]? files;
@@ -163,7 +161,9 @@ namespace scripting {
 
   interface Functions {
     // Injects a script into a target context. The script will be run at
-    // <code>document_idle</code>.
+    // <code>document_idle</code>. If the script evaluates to a promise,
+    // the browser will wait for the promise to settle and return the
+    // resulting value.
     // |injection|: The details of the script which to inject.
     // |callback|: Invoked upon completion of the injection. The resulting
     // array contains the result of execution for each frame where the

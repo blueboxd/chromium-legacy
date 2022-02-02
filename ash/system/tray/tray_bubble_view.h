@@ -11,7 +11,6 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/system/status_area_widget.h"
-#include "base/macros.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/metadata/metadata_header_macros.h"
@@ -210,7 +209,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // process accelerator as menu is currently open.
   class RerouteEventHandler : public ui::EventHandler {
    public:
-    RerouteEventHandler(TrayBubbleView* tray_bubble_view);
+    explicit RerouteEventHandler(TrayBubbleView* tray_bubble_view);
 
     RerouteEventHandler(const RerouteEventHandler&) = delete;
     RerouteEventHandler& operator=(const RerouteEventHandler&) = delete;

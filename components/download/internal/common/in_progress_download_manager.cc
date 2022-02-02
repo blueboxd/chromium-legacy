@@ -55,6 +55,7 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       entry.download_info->in_progress_info;
   if (!in_progress_info)
     return nullptr;
+
   return std::make_unique<DownloadItemImpl>(
       delegate, entry.download_info->guid, entry.download_info->id,
       in_progress_info->current_path, in_progress_info->target_path,
@@ -71,6 +72,7 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->metered, false, base::Time(),
       in_progress_info->transient, in_progress_info->received_slices,
       in_progress_info->reroute_info, in_progress_info->download_schedule,
+      in_progress_info->range_request_from, in_progress_info->range_request_to,
       std::move(download_entry));
 }
 

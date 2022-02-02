@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -106,7 +107,7 @@ class RecordHandlerImpl::ReportUploader
 
   bool need_encryption_key_;
   std::unique_ptr<std::vector<EncryptedRecord>> records_;
-  policy::CloudPolicyClient* client_;
+  raw_ptr<policy::CloudPolicyClient> client_;
 
   // Encryption key delivery callback.
   DmServerUploadService::EncryptionKeyAttachedCallback
@@ -209,7 +210,7 @@ void RecordHandlerImpl::ReportUploader::StartUpload() {
 
 void RecordHandlerImpl::ReportUploader::OnUploadComplete(
     absl::optional<base::Value> response) {
-  if (!response.has_value()) {
+  if (!response.has_value() || !response.value().is_dict()) {
     Schedule(&RecordHandlerImpl::ReportUploader::HandleFailedUpload,
              base::Unretained(this));
     return;
@@ -232,14 +233,7 @@ void RecordHandlerImpl::ReportUploader::HandleFailedUpload() {
 }
 
 void RecordHandlerImpl::ReportUploader::HandleSuccessfulUpload() {
-  if (!last_response_.is_dict()) {
-    LOG(ERROR) << "Server responded with a non-dictionary response: "
-               << last_response_;
-    Complete(
-        Status(error::FAILED_PRECONDITION, "Response is not a dictionary"));
-    return;
-  }
-
+  DCHECK(last_response_.is_dict());
   //  {
   //    "lastSucceedUploadedRecord": ... // SequenceInformation proto
   //    "firstFailedUploadedRecord": {
@@ -389,8 +383,8 @@ RecordHandlerImpl::ReportUploader::SequenceInformationValueToProto(
   // If any of the previous values don't exist, or are malformed, return error.
   int64_t seq_id;
   int64_t gen_id;
-  if (!sequencing_id || generation_id->empty() || !generation_id ||
-      generation_id->empty() || !priority_result.has_value() ||
+  if (!sequencing_id || !generation_id || generation_id->empty() ||
+      !priority_result.has_value() ||
       !Priority_IsValid(priority_result.value())) {
     return Status(error::INVALID_ARGUMENT,
                   base::StrCat({"Provided value lacks some fields required by "

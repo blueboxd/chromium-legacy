@@ -13,8 +13,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
@@ -288,8 +288,8 @@ class DragAndDropSimulator {
 
   // WebContents for where the drag and drop occurs. These can be the same if
   // the drag and drop happens within the same WebContents.
-  content::WebContents* drag_contents_;
-  content::WebContents* drop_contents_;
+  raw_ptr<content::WebContents> drag_contents_;
+  raw_ptr<content::WebContents> drop_contents_;
 
   std::unique_ptr<ui::DropTargetEvent> active_drag_event_;
   std::unique_ptr<ui::OSExchangeData> os_exchange_data_;
@@ -424,9 +424,9 @@ class DragStartWaiter : public aura::client::DragDropClient {
   }
 
  private:
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  aura::client::DragDropClient* old_client_;
+  raw_ptr<aura::client::DragDropClient> old_client_;
   base::OnceClosure callback_to_run_inside_drag_and_drop_message_loop_;
   bool suppress_passing_of_start_drag_further_;
 
@@ -1270,8 +1270,8 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
 // a drag-and-drop loop run by Windows OS.
 #define MAYBE_DragSameOriginImageBetweenFrames \
   DISABLED_DragSameOriginImageBetweenFrames
-#elif (defined(ADDRESS_SANITIZER) && defined(OS_LINUX))
-// Failing to receive final drop event on linux-asan crbug.com/1268407.
+#elif defined(OS_LINUX)
+// Failing to receive final drop event on linux crbug.com/1268407.
 #define MAYBE_DragSameOriginImageBetweenFrames \
   DISABLED_DragSameOriginImageBetweenFrames
 #else
@@ -1301,7 +1301,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
 #if defined(OS_WIN)
 #define MAYBE_DragCorsSameOriginImageBetweenFrames \
   DISABLED_DragCorsSameOriginImageBetweenFrames
-#elif (defined(ADDRESS_SANITIZER) && defined(OS_LINUX))
+#elif defined(OS_LINUX)
 #define MAYBE_DragCorsSameOriginImageBetweenFrames \
   DISABLED_DragCorsSameOriginImageBetweenFrames
 #else
@@ -1322,7 +1322,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
 #if defined(OS_WIN)
 #define MAYBE_DragCrossOriginImageBetweenFrames \
   DISABLED_DragCrossOriginImageBetweenFrames
-#elif (defined(ADDRESS_SANITIZER) && defined(OS_LINUX))
+#elif defined(OS_LINUX)
 #define MAYBE_DragCrossOriginImageBetweenFrames \
   DISABLED_DragCrossOriginImageBetweenFrames
 #else

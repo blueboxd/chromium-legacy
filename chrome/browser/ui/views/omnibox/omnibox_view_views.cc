@@ -32,6 +32,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -102,6 +103,7 @@
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -170,6 +172,7 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       latency_histogram_state_(NOT_ACTIVE),
       friendly_suggestion_text_prefix_length_(0) {
   SetID(VIEW_ID_OMNIBOX);
+  SetProperty(views::kElementIdentifierKey, kOmniboxElementId);
   SetFontList(font_list);
   set_force_text_directionality(true);
 
@@ -254,13 +257,7 @@ void OmniboxViewViews::SaveStateToTab(content::WebContents* tab) {
 }
 
 void OmniboxViewViews::OnTabChanged(content::WebContents* web_contents) {
-  // The context menu holds references to share_submenu_model_ and
-  // send_tab_to_self_sub_menu_model_; invalidate it here so we can destroy
-  // those below.
-  InvalidateContextMenu();
-
-  // These have a reference to the WebContents, which might be being destroyed
-  // here:
+  // These have a reference to the WebContents, avoid a dangling pointer.
   share_submenu_model_.reset();
   send_tab_to_self_sub_menu_model_.reset();
 
@@ -1929,7 +1926,7 @@ void OmniboxViewViews::MaybeAddShareSubmenu(
   }
 
   share_submenu_model_ = std::make_unique<share::ShareSubmenuModel>(
-      location_bar_view_->browser(),
+      web_contents,
       std::make_unique<ui::DataTransferEndpoint>(ui::EndpointType::kDefault,
                                                  false),
       share::ShareSubmenuModel::Context::PAGE, page_url,

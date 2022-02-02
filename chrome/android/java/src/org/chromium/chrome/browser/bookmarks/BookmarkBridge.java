@@ -41,6 +41,7 @@ import java.util.List;
  */
 public class BookmarkBridge {
     private final Profile mProfile;
+    private boolean mIsDestroyed;
     private boolean mIsDoingExtensiveChanges;
     private long mNativeBookmarkBridge;
     private boolean mIsNativeBookmarkModelLoaded;
@@ -296,6 +297,7 @@ public class BookmarkBridge {
      * Destroys this instance so no further calls can be executed.
      */
     public void destroy() {
+        mIsDestroyed = true;
         if (mNativeBookmarkBridge != 0) {
             BookmarkBridgeJni.get().destroy(mNativeBookmarkBridge, BookmarkBridge.this);
             mNativeBookmarkBridge = 0;
@@ -303,6 +305,11 @@ public class BookmarkBridge {
             mDelayedBookmarkCallbacks.clear();
         }
         mObservers.clear();
+    }
+
+    /** Returns whether the bridge has been destroyed. */
+    public boolean isDestroyed() {
+        return mIsDestroyed;
     }
 
     /**
@@ -410,6 +417,13 @@ public class BookmarkBridge {
     public BookmarkItem getBookmarkById(BookmarkId id) {
         ThreadUtils.assertOnUiThread();
         assert mIsNativeBookmarkModelLoaded;
+
+        if (BookmarkId.SHOPPING_FOLDER.equals(id)) {
+            return new BookmarkItem(id, /*title=*/null, /*url=*/null,
+                    /*isFolder=*/true, /*parentId=*/getRootFolderId(), /*isEditable=*/false,
+                    /*isManaged=*/false, /*dateAdded=*/0L, /*read=*/false);
+        }
+
         return BookmarkBridgeJni.get().getBookmarkByID(
                 mNativeBookmarkBridge, BookmarkBridge.this, id.getId(), id.getType());
     }
@@ -582,6 +596,9 @@ public class BookmarkBridge {
     public List<BookmarkId> getChildIDs(BookmarkId id) {
         ThreadUtils.assertOnUiThread();
         assert mIsNativeBookmarkModelLoaded;
+        if (BookmarkId.SHOPPING_FOLDER.equals(id)) {
+            return searchBookmarks("", null, PowerBookmarkType.SHOPPING, -1);
+        }
         List<BookmarkId> result = new ArrayList<BookmarkId>();
         BookmarkBridgeJni.get().getChildIDs(
                 mNativeBookmarkBridge, BookmarkBridge.this, id.getId(), id.getType(), result);
@@ -668,7 +685,8 @@ public class BookmarkBridge {
      * @param id The {@link BookmarkId} of the bookmark to fetch the meta for.
      * @return The meta or null if none exists.
      */
-    public PowerBookmarkMeta getPowerBookmarkMeta(BookmarkId id) {
+    public @Nullable PowerBookmarkMeta getPowerBookmarkMeta(@Nullable BookmarkId id) {
+        if (id == null || mNativeBookmarkBridge == 0) return null;
         byte[] protoBytes = BookmarkBridgeJni.get().getPowerBookmarkMeta(
                 mNativeBookmarkBridge, this, id.getId(), id.getType());
 

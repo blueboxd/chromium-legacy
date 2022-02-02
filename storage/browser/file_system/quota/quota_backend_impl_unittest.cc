@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -49,6 +48,9 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
         storage_modified_count_(0),
         usage_(0),
         quota_(0) {}
+
+  MockQuotaManagerProxy(const MockQuotaManagerProxy&) = delete;
+  MockQuotaManagerProxy& operator=(const MockQuotaManagerProxy&) = delete;
 
   // We don't mock them.
   void SetUsageCacheEnabled(QuotaClientType client_id,
@@ -93,8 +95,6 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   int storage_modified_count_;
   int64_t usage_;
   int64_t quota_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerProxy);
 };
 
 }  // namespace
@@ -105,6 +105,9 @@ class QuotaBackendImplTest : public testing::Test,
   QuotaBackendImplTest()
       : file_system_usage_cache_(is_incognito()),
         quota_manager_proxy_(base::MakeRefCounted<MockQuotaManagerProxy>()) {}
+
+  QuotaBackendImplTest(const QuotaBackendImplTest&) = delete;
+  QuotaBackendImplTest& operator=(const QuotaBackendImplTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -163,9 +166,6 @@ class QuotaBackendImplTest : public testing::Test,
   FileSystemUsageCache file_system_usage_cache_;
   scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   std::unique_ptr<QuotaBackendImpl> backend_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuotaBackendImplTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All, QuotaBackendImplTest, testing::Bool());

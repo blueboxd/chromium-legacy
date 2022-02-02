@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -91,6 +92,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void AnimationEnded(const gfx::Animation* animation) override;
 
   ContentSettingImageModel::ImageType GetTypeForTesting() const;
+  views::Widget* GetBubbleWidgetForTesting() const;
 
   void reset_animation_for_testing() {
     IconLabelBubbleView::ResetSlideAnimation(true);
@@ -106,9 +108,9 @@ class ContentSettingImageView : public IconLabelBubbleView,
   // Updates the image and tooltip to match the current model state.
   void UpdateImage();
 
-  Delegate* delegate_;  // Weak.
+  raw_ptr<Delegate> delegate_;  // Weak.
   std::unique_ptr<ContentSettingImageModel> content_setting_image_model_;
-  views::BubbleDialogDelegateView* bubble_view_;
+  raw_ptr<views::BubbleDialogDelegateView> bubble_view_;
   absl::optional<SkColor> icon_color_;
 
   // Observes destruction of bubble's Widgets spawned by this ImageView.

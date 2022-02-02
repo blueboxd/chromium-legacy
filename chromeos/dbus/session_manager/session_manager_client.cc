@@ -20,7 +20,6 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
@@ -55,6 +54,11 @@ using RetrievePolicyResponseType =
 constexpr char kEmptyAccountId[] = "";
 // The timeout used when starting the android container is 90 seconds
 constexpr int kStartArcTimeout = 90 * 1000;
+
+// TODO(b/205032502): Because upgrading the container from mini to full often
+// takes more than 25 seconds, increasing it to 1 minute for now. Once we have
+// the update metrics, update the timeout to a tighter value.
+constexpr int kUpgradeTimeoutMs = 60 * 1000;  // 60 seconds
 
 // 10MB. It's the current restriction enforced by session manager.
 const size_t kSharedMemoryDataSizeLimit = 10 * 1024 * 1024;
@@ -567,6 +571,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetPsmDeviceActiveSecret(
+      PsmDeviceActiveSecretCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerGetPsmDeviceActiveSecret);
+
+    session_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnGetPsmDeviceActiveSecret,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void StartArcMiniContainer(
       const login_manager::StartArcMiniContainerRequest& request,
       VoidDBusMethodCallback callback) override {
@@ -596,7 +612,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     writer.AppendProtoAsArrayOfBytes(request);
 
     session_manager_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kUpgradeTimeoutMs,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -1025,6 +1041,27 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
 
     std::move(callback).Run(state_keys);
+  }
+
+  // Called when kSessionManagerGetPsmDeviceActiveSecret method is complete.
+  void OnGetPsmDeviceActiveSecret(PsmDeviceActiveSecretCallback callback,
+                                  dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Failed to get response OnGetPsmDeviceActiveSecret.";
+      std::move(callback).Run(std::string());
+      return;
+    }
+
+    std::string psm_device_active_secret;
+    dbus::MessageReader reader(response);
+
+    if (!reader.PopString(&psm_device_active_secret)) {
+      LOG(ERROR) << "Received a non-string response from dbus.";
+      std::move(callback).Run(std::string());
+      return;
+    }
+
+    std::move(callback).Run(psm_device_active_secret);
   }
 
   void OnGetArcStartTime(DBusMethodCallback<base::TimeTicks> callback,

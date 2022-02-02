@@ -13,10 +13,12 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/views/app_list_reorder_undo_container_view.h"
 #include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/bubble/bubble_utils.h"
+#include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
 #include "ash/controls/scroll_view_gradient_helper.h"
 #include "ash/public/cpp/metrics_util.h"
@@ -26,6 +28,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/aura/window.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
@@ -40,6 +43,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 using views::BoxLayout;
 
@@ -90,9 +94,15 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   // Arrow keys are used to select app icons.
   scroll_view_->SetAllowKeyboardScrolling(false);
 
-  // Set up fade in/fade out gradients at top/bottom of scroll view.
+  // Scroll view will have a gradient mask layer.
   scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
+  // When animations are enabled the gradient helper is created in the animation
+  // end callback.
+  if (!features::IsProductivityLauncherAnimationEnabled()) {
+    gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
+    // Layout() updates the gradient zone, since the gradient helper needs to
+    // know the bounds of the scroll view and contents view.
+  }
 
   // Set up scroll bars.
   scroll_view_->SetHorizontalScrollBarMode(
@@ -113,6 +123,9 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   continue_section_ =
       scroll_contents->AddChildView(std::make_unique<ContinueSectionView>(
           view_delegate, kContinueColumnCount, /*tablet_mode=*/false));
+  // Observe changes in continue section visibility, to keep separator
+  // visibility in sync.
+  continue_section_->AddObserver(this);
 
   // Recent apps row.
   SearchModel* const search_model = AppListModelProvider::Get()->search_model();
@@ -121,6 +134,9 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
       std::make_unique<RecentAppsView>(this, view_delegate));
   recent_apps_->UpdateAppListConfig(app_list_config);
   recent_apps_->ShowResults(search_model, model);
+  // Observe changes in continue section visibility, to keep separator
+  // visibility in sync.
+  recent_apps_->AddObserver(this);
 
   // Horizontal separator.
   separator_ =
@@ -128,6 +144,13 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   separator_->SetBorder(views::CreateEmptyBorder(kSeparatorInsets));
   separator_->SetColor(ColorProvider::Get()->GetContentLayerColor(
       ColorProvider::ContentLayerType::kSeparatorColor));
+
+  // Add a empty container view. A toast view should be added to
+  // `reorder_undo_container_` when the app list starts temporary sorting.
+  if (features::IsLauncherAppSortEnabled()) {
+    reorder_undo_container_ = scroll_contents->AddChildView(
+        std::make_unique<AppListReorderUndoContainerView>());
+  }
 
   // All apps section.
   scrollable_apps_grid_view_ =
@@ -155,6 +178,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
 
 AppListBubbleAppsPage::~AppListBubbleAppsPage() {
   AppListModelProvider::Get()->RemoveObserver(this);
+  continue_section_->RemoveObserver(this);
+  recent_apps_->RemoveObserver(this);
 }
 
 void AppListBubbleAppsPage::StartShowAnimation() {
@@ -171,10 +196,6 @@ void AppListBubbleAppsPage::StartShowAnimation() {
         base::UmaHistogramPercentage(
             "Apps.ClamshellLauncher.AnimationSmoothness.OpenAppsPage", value);
       })));
-
-  // Disable the gradient mask on the scroll view to improve performance.
-  gradient_disabler_ = std::make_unique<ScopedScrollViewGradientDisabler>(
-      gradient_helper_.get());
 
   // Animate the views. Each section is initially offset down, then slides up
   // into its final position. If a section isn't visible, skip it. The further
@@ -261,15 +282,38 @@ void AppListBubbleAppsPage::StartSlideInAnimation(
       .SetTransform(view, kIdentity, gfx::Tween::LINEAR_OUT_SLOW_IN);
 }
 
+void AppListBubbleAppsPage::StartHideAnimation() {
+  // Remove the gradient mask from the scroll view to improve performance.
+  gradient_helper_.reset();
+}
+
+void AppListBubbleAppsPage::AbortAllAnimations() {
+  auto abort_animations = [](views::View* view) {
+    if (view->layer())
+      view->layer()->GetAnimator()->AbortAllAnimations();
+  };
+  abort_animations(continue_section_);
+  abort_animations(recent_apps_);
+  abort_animations(separator_);
+  abort_animations(scrollable_apps_grid_view_);
+}
+
 void AppListBubbleAppsPage::DisableFocusForShowingActiveFolder(bool disabled) {
   continue_section_->DisableFocusForShowingActiveFolder(disabled);
   recent_apps_->DisableFocusForShowingActiveFolder(disabled);
   scrollable_apps_grid_view_->DisableFocusForShowingActiveFolder(disabled);
 }
 
+void AppListBubbleAppsPage::OnTemporarySortOrderChanged(
+    const absl::optional<AppListSortOrder>& new_order) {
+  DCHECK(features::IsLauncherAppSortEnabled());
+  reorder_undo_container_->OnTemporarySortOrderChanged(new_order);
+}
+
 void AppListBubbleAppsPage::Layout() {
   views::View::Layout();
-  gradient_helper_->UpdateGradientZone();
+  if (gradient_helper_)
+    gradient_helper_->UpdateGradientZone();
 }
 
 void AppListBubbleAppsPage::OnActiveAppListModelsChanged(
@@ -281,8 +325,10 @@ void AppListBubbleAppsPage::OnActiveAppListModelsChanged(
   recent_apps_->ShowResults(search_model, model);
 }
 
-void AppListBubbleAppsPage::ChildVisibilityChanged(views::View* child) {
-  if (child == continue_section_ || child == recent_apps_)
+void AppListBubbleAppsPage::OnViewVisibilityChanged(
+    views::View* observed_view,
+    views::View* starting_view) {
+  if (starting_view == continue_section_ || starting_view == recent_apps_)
     UpdateSeparatorVisibility();
 }
 
@@ -337,8 +383,16 @@ void AppListBubbleAppsPage::DestroyLayerForView(views::View* view) {
 }
 
 void AppListBubbleAppsPage::OnAppsGridViewAnimationEnded() {
-  // Recreate the gradient mask, if necessary.
-  gradient_disabler_.reset();
+  // If the window is destroyed during an animation the animation will end, but
+  // there's no need to build the gradient mask layer.
+  if (GetWidget()->GetNativeWindow()->is_destroying())
+    return;
+
+  // Set up fade in/fade out gradients at top/bottom of scroll view. Wait until
+  // the end of the show animation because the animation performs better without
+  // the gradient mask layer.
+  gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
+  gradient_helper_->UpdateGradientZone();
 }
 
 BEGIN_METADATA(AppListBubbleAppsPage, views::View)

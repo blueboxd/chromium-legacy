@@ -6,8 +6,8 @@
 #define UI_OZONE_PLATFORM_FLATLAND_FLATLAND_WINDOW_H_
 
 #include <fuchsia/ui/composition/cpp/fidl.h>
-#include <fuchsia/ui/input/cpp/fidl.h>
 #include <fuchsia/ui/input3/cpp/fidl.h>
+#include <fuchsia/ui/views/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 
 #include <memory>
@@ -15,10 +15,9 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "ui/base/ime/fuchsia/keyboard_client.h"
-#include "ui/events/fuchsia/input_event_dispatcher.h"
 #include "ui/events/fuchsia/input_event_sink.h"
+#include "ui/events/fuchsia/pointer_events_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -36,8 +35,8 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
                                                public InputEventSink {
  public:
   // Both |window_manager| and |delegate| must outlive the FlatlandWindow.
-  //  GraphLinkToken is passed to Flatland to attach it to the scene graph.
-  // |view_ref_pair| will be associated with this window's View, and used to
+  // ViewCreationToken is passed to Flatland to attach it to the scene graph.
+  // ViewrefPair will be associated with this window's View, and used to
   // identify it when calling out to other services (e.g. the SemanticsManager).
   FlatlandWindow(FlatlandWindowManager* window_manager,
                  PlatformWindowDelegate* delegate,
@@ -87,16 +86,18 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   void SizeConstraintsChanged() override;
 
  private:
-  // Callbacks from |parent_viewport_watcher_|.
+  friend class FlatlandWindowTest;
+
+  // Hanging gets from |parent_viewport_watcher_|.
   void OnGetLayout(fuchsia::ui::composition::LayoutInfo info);
   void OnGetStatus(fuchsia::ui::composition::ParentViewportStatus status);
+
+  // Hanging gets from |view_ref_focused_|.
+  void OnViewRefFocusedWatchResult(fuchsia::ui::views::FocusState focus_state);
 
   // Called from link callbacks to handle view properties and metrics
   // changes.
   void OnViewAttachedChanged(bool is_view_attached);
-
-  // Called to handle input events.
-  void OnInputEvent(const fuchsia::ui::input::InputEvent& event);
 
   // InputEventSink implementation.
   void DispatchEvent(ui::Event* event) override;
@@ -104,14 +105,12 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   void UpdateSize();
 
   FlatlandWindowManager* const manager_;
-  PlatformWindowDelegate* const delegate_;
+  PlatformWindowDelegate* const window_delegate_;
   gfx::AcceleratedWidget const window_id_;
-
-  // Dispatches Flatland input events as Chrome ui::Events.
-  InputEventDispatcher event_dispatcher_;
 
   fuchsia::ui::input3::KeyboardPtr keyboard_service_;
   std::unique_ptr<KeyboardClient> keyboard_client_;
+  std::unique_ptr<PointerEventsHandler> pointer_handler_;
 
   // Handle to a kernel object which identifies this window's View
   // across the system. ViewRef consumers can access the handle by
@@ -128,6 +127,9 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   fuchsia::ui::composition::ContentId surface_content_id_;
 
   fuchsia::ui::composition::ParentViewportWatcherPtr parent_viewport_watcher_;
+
+  // Protocol for watching focus changes.
+  fuchsia::ui::views::ViewRefFocusedPtr view_ref_focused_;
 
   // The scale between logical pixels and physical pixels, set based on the
   // fuchsia::ui::gfx::Metrics event. It's used to calculate dimensions of the

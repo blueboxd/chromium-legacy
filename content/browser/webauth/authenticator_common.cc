@@ -83,6 +83,7 @@ enum class RequestExtension {
   kLargeBlobWrite,
   kCredBlob,
   kGetCredBlob,
+  kMinPINLength,
 };
 
 namespace {
@@ -774,7 +775,7 @@ void AuthenticatorCommon::MakeCredential(
       // UV_REQUIRED only makes sense if UV is required overall.
       (options->protection_policy ==
            blink::mojom::ProtectionPolicy::UV_REQUIRED &&
-       authenticator_selection_criteria.user_verification_requirement() !=
+       authenticator_selection_criteria.user_verification_requirement !=
            device::UserVerificationRequirement::kRequired)) {
     CompleteMakeCredentialRequest(
         blink::mojom::AuthenticatorStatus::PROTECTION_POLICY_INCONSISTENT);
@@ -865,6 +866,10 @@ void AuthenticatorCommon::MakeCredential(
   if (options->cred_blob) {
     requested_extensions_.insert(RequestExtension::kCredBlob);
     ctap_make_credential_request_->cred_blob = *options->cred_blob;
+  }
+  if (options->min_pin_length_requested) {
+    requested_extensions_.insert(RequestExtension::kMinPINLength);
+    ctap_make_credential_request_->min_pin_length_requested = true;
   }
   make_credential_options_->large_blob_support = options->large_blob_enable;
   ctap_make_credential_request_->app_id_exclude = std::move(appid_exclude);
@@ -1693,6 +1698,14 @@ AuthenticatorCommon::CreateMakeCredentialResponse(
         response->echo_cred_blob = true;
         response->cred_blob = did_store_cred_blob;
         break;
+      case RequestExtension::kMinPINLength:
+        // Ignore. The spec says[1] that there's no client (i.e. browser)
+        // extension output (as opposed to the output in the returned
+        // authenticator data). This may have been a mistake but it can always
+        // be added later.
+        // [1]
+        // https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-minpinlength-extension
+        break;
       case RequestExtension::kAppID:
       case RequestExtension::kLargeBlobRead:
       case RequestExtension::kLargeBlobWrite:
@@ -1754,7 +1767,7 @@ AuthenticatorCommon::CreateGetAssertionResponse(
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json_.begin(),
                                        client_data_json_.end());
-  common_info->raw_id = response_data.credential->id();
+  common_info->raw_id = response_data.credential->id;
   common_info->id = Base64UrlEncode(common_info->raw_id);
   response->info = std::move(common_info);
   response->info->authenticator_data =
@@ -1822,6 +1835,7 @@ AuthenticatorCommon::CreateGetAssertionResponse(
       case RequestExtension::kCredProps:
       case RequestExtension::kLargeBlobEnable:
       case RequestExtension::kCredBlob:
+      case RequestExtension::kMinPINLength:
         NOTREACHED();
         break;
     }
@@ -1881,7 +1895,7 @@ BrowserContext* AuthenticatorCommon::GetBrowserContext() const {
 device::FidoDiscoveryFactory* AuthenticatorCommon::discovery_factory() {
   DCHECK(discovery_factory_);
   return discovery_factory_testing_override_
-             ? discovery_factory_testing_override_
+             ? discovery_factory_testing_override_.get()
              : discovery_factory_.get();
 }
 

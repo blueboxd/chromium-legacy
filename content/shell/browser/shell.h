@@ -55,7 +55,7 @@ class Shell : public WebContentsDelegate, public WebContentsObserver {
   void Reload();
   void ReloadBypassingCache();
   void Stop();
-  void UpdateNavigationControls(bool to_different_document);
+  void UpdateNavigationControls(bool should_show_loading_ui);
   void Close();
   void ShowDevTools();
   void CloseDevTools();
@@ -120,7 +120,7 @@ class Shell : public WebContentsDelegate, public WebContentsObserver {
                       bool user_gesture,
                       bool* was_blocked) override;
   void LoadingStateChanged(WebContents* source,
-                           bool to_different_document) override;
+                           bool should_show_loading_ui) override;
 #if defined(OS_ANDROID)
   void SetOverlayMode(bool use_overlay_mode) override;
 #endif
@@ -213,14 +213,11 @@ class Shell : public WebContentsDelegate, public WebContentsObserver {
   void TitleWasSet(NavigationEntry* entry) override;
   void RenderFrameCreated(RenderFrameHost* frame_host) override;
 
-  void OnDevToolsWebContentsDestroyed();
-
   std::unique_ptr<JavaScriptDialogManager> dialog_manager_;
 
   std::unique_ptr<WebContents> web_contents_;
 
-  std::unique_ptr<DevToolsWebContentsObserver> devtools_observer_;
-  ShellDevToolsFrontend* devtools_frontend_ = nullptr;
+  base::WeakPtr<ShellDevToolsFrontend> devtools_frontend_;
 
   bool is_fullscreen_ = false;
 

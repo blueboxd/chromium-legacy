@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
-import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -30,7 +29,6 @@ import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
-import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -46,10 +44,10 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  * feature.
  */
 public class WebContentsDarkModeMessageController {
-    private static final String FEEDBACK_CATEGORY_TAG = "USER_INITIATED_FEEDBACK_REPORT_AUTO_DARK";
-    private static final String FEEDBACK_CONTEXT = "chrome_auto_dark";
     @VisibleForTesting
     static final String FEEDBACK_DIALOG_PARAM = "feedback_dialog";
+    @VisibleForTesting
+    static final String OPT_OUT_PARAM = "opt_out";
 
     /**
      * Checks if auto-dark theming is enabled. Also checks if the feature engagement system
@@ -57,16 +55,24 @@ public class WebContentsDarkModeMessageController {
      * should be sent. Otherwise return false.
      *
      * @param profile Profile associated with current tab.
+     * @param context {@link Context} used to check whether UI is in night mode.
      * @return Whether or not the user education message should be shown.
      */
-    private static boolean shouldSendMessage(Profile profile) {
+    private static boolean shouldSendMessage(Profile profile, Context context) {
         // Only send message if the feature is enabled and the message has not yet been shown.
         Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
-        boolean featureEnabled =
-                UserPrefs.get(profile).getBoolean(Pref.WEB_KIT_FORCE_DARK_MODE_ENABLED);
-        return featureEnabled
-                && tracker.shouldTriggerHelpUI(
-                        FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE);
+        boolean featureEnabled = WebContentsDarkModeController.isFeatureEnabled(context, profile);
+        boolean optOut = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING, OPT_OUT_PARAM, true);
+        if (optOut) {
+            return featureEnabled
+                    && tracker.shouldTriggerHelpUI(
+                            FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_FEATURE);
+        } else {
+            return !featureEnabled
+                    && tracker.shouldTriggerHelpUI(
+                            FeatureConstants.AUTO_DARK_USER_EDUCATION_MESSAGE_OPT_IN_FEATURE);
+        }
     }
 
     /**
@@ -94,10 +100,14 @@ public class WebContentsDarkModeMessageController {
      */
     public static void attemptToSendMessage(Activity activity, Profile profile,
             SettingsLauncher settingsLauncher, MessageDispatcher messageDispatcher) {
-        if (!shouldSendMessage(profile)) return;
+        if (!shouldSendMessage(profile, activity)) return;
 
         // Set the properties (icon, text, etc.) for the message.
         Resources resources = activity.getResources();
+        boolean optOut = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING, OPT_OUT_PARAM, true);
+        String messageTitle = optOut ? resources.getString(R.string.auto_dark_message_title)
+                                     : resources.getString(R.string.auto_dark_message_opt_in_title);
         PropertyModel message =
                 new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
                         .with(MessageBannerProperties.MESSAGE_IDENTIFIER,
@@ -106,8 +116,7 @@ public class WebContentsDarkModeMessageController {
                                 R.drawable.ic_brightness_medium_24dp)
                         .with(MessageBannerProperties.ICON_TINT_COLOR,
                                 MessageBannerProperties.TINT_NONE)
-                        .with(MessageBannerProperties.TITLE,
-                                resources.getString(R.string.auto_dark_message_title))
+                        .with(MessageBannerProperties.TITLE, messageTitle)
                         .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
                                 resources.getString(R.string.auto_dark_message_button))
                         .with(MessageBannerProperties.ON_PRIMARY_ACTION,
@@ -115,6 +124,11 @@ public class WebContentsDarkModeMessageController {
                         .with(MessageBannerProperties.ON_DISMISSED,
                                 (dismissReason) -> { onMessageDismissed(profile, dismissReason); })
                         .build();
+
+        if (!optOut) {
+            message.set(MessageBannerProperties.DESCRIPTION,
+                    resources.getString(R.string.auto_dark_message_opt_in_body));
+        }
 
         // Enqueue the message so that it will appear on-screen.
         messageDispatcher.enqueueWindowScopedMessage(message, false);
@@ -126,6 +140,7 @@ public class WebContentsDarkModeMessageController {
      */
     @VisibleForTesting
     static void onPrimaryAction(Activity activity, SettingsLauncher settingsLauncher) {
+        // TODO(crbug.com/1277216): Update CTA for opt-in arm.
         Bundle args = new Bundle();
         args.putInt(ThemeSettingsFragment.KEY_THEME_SETTINGS_ENTRY,
                 ThemeSettingsEntry.AUTO_DARK_MODE_MESSAGE);
@@ -224,9 +239,8 @@ public class WebContentsDarkModeMessageController {
             HelpAndFeedbackLauncher launcher, Activity activity, Profile profile, String url) {
         // TODO(crbug.com/1260152): Import ScreenshotMode instead of hardcoding value once new build
         //  target added.
-        launcher.showFeedback(activity, profile, url,
-                activity.getPackageName() + FEEDBACK_CATEGORY_TAG,
-                /* ScreenshotMode.DEFAULT */ 0, FEEDBACK_CONTEXT);
+        launcher.showFeedback(activity, profile, url, null,
+                /* ScreenshotMode.DEFAULT */ 0, null);
     }
 
     /**

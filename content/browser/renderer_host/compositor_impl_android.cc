@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
@@ -216,7 +217,7 @@ class CompositorImpl::AndroidHostDisplayClient : public viz::HostDisplayClient {
   }
 
  private:
-  CompositorImpl* compositor_;
+  raw_ptr<CompositorImpl> compositor_;
 };
 
 class CompositorImpl::ScopedCachedBackBuffer {
@@ -291,7 +292,8 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       client_(client),
       needs_animate_(false),
       pending_frames_(0U),
-      layer_tree_frame_sink_request_pending_(false) {
+      layer_tree_frame_sink_request_pending_(false),
+      lock_manager_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(client);
 
   SetRootWindow(root_window);
@@ -672,6 +674,14 @@ void CompositorImpl::DeleteUIResource(cc::UIResourceId resource_id) {
 
 bool CompositorImpl::SupportsETC1NonPowerOfTwo() const {
   return gpu_capabilities_.texture_format_etc1_npot;
+}
+
+std::unique_ptr<ui::CompositorLock> CompositorImpl::GetCompositorLock(
+    base::TimeDelta timeout) {
+  if (!host_)
+    return nullptr;
+  return lock_manager_.GetCompositorLock(/*client=*/nullptr, timeout,
+                                         host_->DeferMainFrameUpdate());
 }
 
 void CompositorImpl::DidSubmitCompositorFrame() {

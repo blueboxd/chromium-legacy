@@ -77,8 +77,8 @@
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
@@ -216,7 +216,8 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void ContextDestroyed() final;
-  void DidChangeChildren(const ContainerNode&) final;
+  void DidChangeChildren(const ContainerNode&,
+                         const ContainerNode::ChildrenChange&) final;
   void DidMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
   void DidMoveTreeToNewDocument(const Node& root) final;
   void DidSplitTextNode(const Text&) final;
@@ -247,7 +248,8 @@ void TestSynchronousMutationObserver::ContextDestroyed() {
 }
 
 void TestSynchronousMutationObserver::DidChangeChildren(
-    const ContainerNode& container) {
+    const ContainerNode& container,
+    const ContainerNode::ChildrenChange&) {
   children_changed_nodes_.push_back(&container);
 }
 
@@ -422,7 +424,7 @@ TEST_F(DocumentTest, PrintRelayout) {
     </style>
     <p><div><span></span></div></p>
   )HTML");
-  FloatSize page_size(400, 400);
+  gfx::SizeF page_size(400, 400);
   float maximum_shrink_ratio = 1.6;
 
   GetDocument().GetFrame()->StartPrinting(page_size, page_size,
@@ -1071,7 +1073,7 @@ TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
   GetDocument().GetFrame()->SetPageZoomFactor(2);
   SetBodyInnerHTML("<style>@page { margin: 50px; size: 400px 10in; }</style>");
 
-  constexpr FloatSize initial_page_size(800, 600);
+  constexpr gfx::SizeF initial_page_size(800, 600);
 
   GetDocument().GetFrame()->StartPrinting(initial_page_size, initial_page_size);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
@@ -1318,7 +1320,7 @@ class ParameterizedViewportFitDocumentTest
       html.Append("'>");
     }
 
-    GetDocument().documentElement()->setInnerHTML(html.ToString());
+    GetDocument().documentElement()->setInnerHTML(html.ReleaseString());
     UpdateAllLifecyclePhasesForTest();
   }
 };

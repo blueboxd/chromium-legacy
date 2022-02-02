@@ -9,11 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/views/chrome_test_widget.h"
@@ -74,8 +74,12 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   }
 
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{BookmarkModelFactory::GetInstance(),
-             BookmarkModelFactory::GetDefaultFactory()}};
+    TestingProfile::TestingFactories factories = {
+        {BookmarkModelFactory::GetInstance(),
+         BookmarkModelFactory::GetDefaultFactory()}};
+    IdentityTestEnvironmentProfileAdaptor::
+        AppendIdentityTestEnvironmentFactories(&factories);
+    return factories;
   }
 
  protected:
@@ -101,6 +105,8 @@ TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
       BookmarkBubbleView::bookmark_bubble()->GetFootnoteViewForTesting());
 }
 
+// TODO(https://crbug.com/1260291): Add support for Lacros.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Verifies that the sync promo is displayed for a user that is not signed in.
 TEST_F(BookmarkBubbleViewTest, SyncPromoNotSignedIn) {
   CreateBubbleView();
@@ -112,3 +118,4 @@ TEST_F(BookmarkBubbleViewTest, SyncPromoNotSignedIn) {
   EXPECT_TRUE(footnote);
 #endif
 }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)

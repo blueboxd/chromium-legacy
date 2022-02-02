@@ -5,10 +5,10 @@
 #ifndef NET_COOKIES_COOKIE_PARTITION_KEYCHAIN_H_
 #define NET_COOKIES_COOKIE_PARTITION_KEYCHAIN_H_
 
-#include <set>
 #include <vector>
 
 #include "net/base/net_export.h"
+#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_partition_key.h"
 
 namespace net {
@@ -20,7 +20,7 @@ namespace net {
 //
 // It can also represent a finite number of cookie partition keys, including
 // zero.
-// TODO(crbug.com/1225444): Consider changing the name of this class since the
+// TODO(crbug.com/1268880): Consider changing the name of this class since the
 // term "keychain" has a certain meaning for iOS and macOS.
 class NET_EXPORT CookiePartitionKeychain {
  public:
@@ -46,6 +46,14 @@ class NET_EXPORT CookiePartitionKeychain {
     return opt_key ? CookiePartitionKeychain(opt_key.value())
                    : CookiePartitionKeychain();
   }
+
+  // Takes a CookiePartitionKeychain which was created in a context that does
+  // not have access to sites' First-Party Set owners and converts it to the
+  // correct First-Party-Sets-aware CookiePartitionKeychain, replacing any
+  // CookiePartitionKeys whose sites which are members of a set with a new
+  // partition key containing the set's owner site.
+  CookiePartitionKeychain FirstPartySetify(
+      const CookieAccessDelegate* cookie_access_delegate) const;
 
   // Temporary method used to record where we need to decide how to build the
   // CookiePartitionKeychain.

@@ -43,15 +43,20 @@
 namespace blink {
 
 struct SameSizeAsElementRareData : NodeRareData {
-  IntSize scroll_offset;
+  gfx::Vector2dF scroll_offset;
   void* pointers_or_strings[4];
-  Member<void*> members[18];
+  Member<void*> members[19];
   bool flags[1];
 };
 
 ElementRareData::ElementRareData(NodeRenderingData* node_layout_data)
     : NodeRareData(ClassType::kElementRareData, node_layout_data),
-      class_list_(nullptr) {}
+      class_list_(nullptr),
+      did_attach_internals_(false),
+      should_force_legacy_layout_for_child_(false),
+      style_should_force_legacy_layout_(false),
+      has_undo_stack_(false),
+      scrollbar_pseudo_element_styles_depend_on_font_metrics_(false) {}
 
 ElementRareData::~ElementRareData() {
   DCHECK(!pseudo_element_data_);
@@ -106,6 +111,7 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(attribute_map_);
   visitor->Trace(attr_node_list_);
   visitor->Trace(element_animations_);
+  visitor->Trace(last_intrinsic_size_);
   visitor->Trace(cssom_wrapper_);
   visitor->Trace(cssom_map_wrapper_);
   visitor->Trace(pseudo_element_data_);

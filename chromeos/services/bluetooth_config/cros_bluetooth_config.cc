@@ -4,6 +4,8 @@
 
 #include "chromeos/services/bluetooth_config/cros_bluetooth_config.h"
 
+#include "chromeos/services/bluetooth_config/bluetooth_device_status_notifier_impl.h"
+#include "chromeos/services/bluetooth_config/bluetooth_power_controller.h"
 #include "chromeos/services/bluetooth_config/device_name_manager.h"
 #include "chromeos/services/bluetooth_config/device_operation_handler.h"
 #include "chromeos/services/bluetooth_config/discovery_session_manager.h"
@@ -21,6 +23,8 @@ CrosBluetoothConfig::CrosBluetoothConfig(
     FastPairDelegate* fast_pair_delegate)
     : adapter_state_controller_(
           initializer.CreateAdapterStateController(bluetooth_adapter)),
+      bluetooth_power_controller_(initializer.CreateBluetoothPowerController(
+          adapter_state_controller_.get())),
       device_name_manager_(
           initializer.CreateDeviceNameManager(bluetooth_adapter)),
       device_cache_(
@@ -31,6 +35,8 @@ CrosBluetoothConfig::CrosBluetoothConfig(
           std::make_unique<SystemPropertiesProviderImpl>(
               adapter_state_controller_.get(),
               device_cache_.get())),
+      bluetooth_device_status_notifier_(
+          initializer.CreateBluetoothDeviceStatusNotifier(device_cache_.get())),
       discovery_session_manager_(initializer.CreateDiscoverySessionManager(
           adapter_state_controller_.get(),
           bluetooth_adapter,
@@ -50,6 +56,7 @@ CrosBluetoothConfig::~CrosBluetoothConfig() {
 
 void CrosBluetoothConfig::SetPrefs(PrefService* logged_in_profile_prefs,
                                    PrefService* local_state) {
+  bluetooth_power_controller_->SetPrefs(logged_in_profile_prefs, local_state);
   device_name_manager_->SetPrefs(local_state);
 }
 
@@ -63,8 +70,14 @@ void CrosBluetoothConfig::ObserveSystemProperties(
   system_properties_provider_->Observe(std::move(observer));
 }
 
+void CrosBluetoothConfig::ObserveDeviceStatusChanges(
+    mojo::PendingRemote<mojom::BluetoothDeviceStatusObserver> observer) {
+  bluetooth_device_status_notifier_->ObserveDeviceStatusChanges(
+      std::move(observer));
+}
+
 void CrosBluetoothConfig::SetBluetoothEnabledState(bool enabled) {
-  adapter_state_controller_->SetBluetoothEnabledState(enabled);
+  bluetooth_power_controller_->SetBluetoothEnabledState(enabled);
 }
 
 void CrosBluetoothConfig::StartDiscovery(

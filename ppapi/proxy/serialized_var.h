@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
@@ -283,10 +282,12 @@ class PPAPI_PROXY_EXPORT ReceiveSerializedVarReturnValue
   //   ReceiveSerializedVarReturnValue(serialized).Return(dispatcher);
   explicit ReceiveSerializedVarReturnValue(const SerializedVar& serialized);
 
-  PP_Var Return(Dispatcher* dispatcher);
+  ReceiveSerializedVarReturnValue(const ReceiveSerializedVarReturnValue&) =
+      delete;
+  ReceiveSerializedVarReturnValue& operator=(
+      const ReceiveSerializedVarReturnValue&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ReceiveSerializedVarReturnValue);
+  PP_Var Return(Dispatcher* dispatcher);
 };
 
 // Example for API:

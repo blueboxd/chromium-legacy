@@ -9,18 +9,19 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
-#include "content/services/auction_worklet/trusted_bidding_signals.h"
 #include "content/services/auction_worklet/worklet_devtools_debug_test_util.h"
 #include "content/services/auction_worklet/worklet_test_util.h"
 #include "content/services/auction_worklet/worklet_v8_debug_test_util.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/http/http_status_code.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -112,8 +113,6 @@ class BidderWorkletTest : public testing::Test {
         url::Origin::Create(GURL("https://browser.signal.seller.test/"));
     seller_signals_ = "[\"seller_signals\"]";
     browser_signal_render_url_ = GURL("https://render_url.test/");
-    browser_signal_ad_render_fingerprint_ =
-        "browser_signal_ad_render_fingerprint";
     browser_signal_bid_ = 1;
   }
 
@@ -195,8 +194,8 @@ class BidderWorkletTest : public testing::Test {
       const std::vector<std::string>& expected_errors,
       base::OnceClosure done_closure) {
     bidder_worklet->ReportWin(
-        seller_signals_, browser_signal_render_url_,
-        browser_signal_ad_render_fingerprint_, browser_signal_bid_,
+        auction_signals_, per_buyer_signals_, browser_signal_top_window_origin_,
+        seller_signals_, browser_signal_render_url_, browser_signal_bid_,
         base::BindOnce(
             [](const absl::optional<GURL>& expected_report_url,
                const std::vector<std::string>& expected_errors,
@@ -249,18 +248,12 @@ class BidderWorkletTest : public testing::Test {
     return bidding_interest_group;
   }
 
-  int LookUpContextGroupId(BidderWorklet* worklet_impl) {
-    task_environment_.RunUntilIdle();
-    int id = worklet_impl->context_group_id_for_testing();
-    CHECK_NE(AuctionV8Helper::kNoDebugContextGroupId, id);
-    return id;
-  }
-
   // Create a BidderWorklet, returning the remote. If `out_bidder_worklet_impl`
   // is non-null, will also stash the actual implementation pointer there.
+  // if `url` is empty, uses `interest_group_bidding_url_`.
   mojo::Remote<mojom::BidderWorklet> CreateWorklet(
-      GURL url,
-      bool pause_for_debugger_on_start,
+      GURL url = GURL(),
+      bool pause_for_debugger_on_start = false,
       BidderWorklet** out_bidder_worklet_impl = nullptr) {
     CHECK(!load_script_run_loop_);
 
@@ -270,11 +263,8 @@ class BidderWorkletTest : public testing::Test {
 
     auto bidder_worklet_impl = std::make_unique<BidderWorklet>(
         v8_helper_, pause_for_debugger_on_start, std::move(url_loader_factory),
-        CreateBiddingInterestGroup(url), auction_signals_, per_buyer_signals_,
-        browser_signal_top_window_origin_, browser_signal_seller_origin_,
-        auction_start_time_,
-        base::BindOnce(&BidderWorkletTest::CreateWorkletCallback,
-                       base::Unretained(this)));
+        CreateBiddingInterestGroup(url.is_empty() ? interest_group_bidding_url_
+                                                  : url));
     if (out_bidder_worklet_impl)
       *out_bidder_worklet_impl = bidder_worklet_impl.get();
 
@@ -284,11 +274,20 @@ class BidderWorkletTest : public testing::Test {
     return bidder_worklet;
   }
 
-  // Create a BidderWorklet, waiting for the URLLoader to complete. Returns
-  // a null Remote on failure.
+  void GenerateBid(mojom::BidderWorklet* bidder_worklet) {
+    bidder_worklet->GenerateBid(
+        auction_signals_, per_buyer_signals_, browser_signal_top_window_origin_,
+        browser_signal_seller_origin_, auction_start_time_,
+        base::BindOnce(&BidderWorkletTest::GenerateBidCallback,
+                       base::Unretained(this)));
+  }
+
+  // Create a BidderWorklet and invokes GenerateBid(), waiting for the
+  // GenerateBid() callback to be invoked. Returns a null Remote on failure.
   mojo::Remote<mojom::BidderWorklet> CreateWorkletAndGenerateBid() {
-    mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet(
-        interest_group_bidding_url_, /*pause_for_debugger_on_start=*/false);
+    mojo::Remote<mojom::BidderWorklet> bidder_worklet = CreateWorklet();
+    GenerateBid(bidder_worklet.get());
+
     load_script_run_loop_ = std::make_unique<base::RunLoop>();
     load_script_run_loop_->Run();
     load_script_run_loop_.reset();
@@ -300,8 +299,8 @@ class BidderWorkletTest : public testing::Test {
   const mojom::BidderWorkletBidPtr& bid() const { return bid_; }
   const std::vector<std::string> bid_errors() const { return bid_errors_; }
 
-  void CreateWorkletCallback(mojom::BidderWorkletBidPtr bid,
-                             const std::vector<std::string>& errors) {
+  void GenerateBidCallback(mojom::BidderWorkletBidPtr bid,
+                           const std::vector<std::string>& errors) {
     bid_ = std::move(bid);
     bid_errors_ = std::move(errors);
     load_script_run_loop_->Quit();
@@ -341,7 +340,6 @@ class BidderWorkletTest : public testing::Test {
   url::Origin browser_signal_seller_origin_;
   std::string seller_signals_;
   GURL browser_signal_render_url_;
-  std::string browser_signal_ad_render_fingerprint_;
   double browser_signal_bid_;
 
   // Use a single constant start time. Only delta times are provided to scripts,
@@ -362,33 +360,17 @@ class BidderWorkletTest : public testing::Test {
 };
 
 // Test the case the BidderWorklet pipe is closed before invoking the
-// LoadBidderWorkletAndGenerateBidCallback.
-// LoadBidderWorkletAndGenerateBidCallback should be invoked, and there should
-// be no Mojo exception due to destroying the creation callback without invoking
-// it.
+// GenerateBidCallback. The invocation of the GenerateBidCallback is not
+// observed, since the callback is on the pipe that was just closed. There
+// should be no Mojo exception due to destroying the creation callback without
+// invoking it.
 TEST_F(BidderWorkletTest, PipeClosed) {
-  mojo::Remote<mojom::BidderWorklet> bidder_worklet;
-  mojo::PendingReceiver<network::mojom::URLLoaderFactory>
-      url_loader_factory_receiver;
-
-  mojo::MakeSelfOwnedReceiver(
-      std::make_unique<BidderWorklet>(
-          v8_helper_, /*pause_for_debugger_on_start=*/false,
-          url_loader_factory_receiver.InitWithNewPipeAndPassRemote(),
-          CreateBiddingInterestGroup(interest_group_bidding_url_),
-          absl::nullopt /* auction_signals_json */,
-          absl::nullopt /* per_buyer_signals_json */,
-          browser_signal_top_window_origin_, browser_signal_seller_origin_,
-          auction_start_time_,
-          base::BindOnce(&BidderWorkletTest::CreateWorkletCallback,
-                         base::Unretained(this))),
-      bidder_worklet.BindNewPipeAndPassReceiver());
-  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  auto bidder_worklet = CreateWorklet();
+  GenerateBid(bidder_worklet.get());
   bidder_worklet.reset();
 
-  load_script_run_loop_->Run();
-  load_script_run_loop_.reset();
-  EXPECT_FALSE(bid_);
+  // This should not result in a Mojo crash.
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(BidderWorkletTest, NetworkError) {
@@ -869,6 +851,353 @@ TEST_F(BidderWorkletTest, GenerateBidInterestGroupName) {
           /*ad_components=*/absl::nullopt, base::TimeDelta()));
 }
 
+// Test multiple GenerateBid calls on a single worklet, in parallel. Do this
+// twice, once before the worklet has loaded its Javascript, and once after, to
+// make sure both cases work.
+TEST_F(BidderWorkletTest, GenerateBidParallel) {
+  // Each GenerateBid call provides a different `auctionSignals` value. Use that
+  // in the result for testing.
+  const char kBidderScriptReturnValue[] = R"({
+    ad: auctionSignals,
+    bid: auctionSignals,
+    render:"https://response.test/"
+  })";
+
+  auto bidder_worklet = CreateWorklet();
+
+  // For the first loop iteration, call GenerateBid repeatedly and only then
+  // provide the bidder script. For the second loop iteration, reuse the bidder
+  // worklet from the first iteration, so the Javascript is loaded from the
+  // start.
+  for (bool generate_bid_invoked_before_worklet_script_loaded : {false, true}) {
+    SCOPED_TRACE(generate_bid_invoked_before_worklet_script_loaded);
+
+    base::RunLoop run_loop;
+    const size_t kNumGenerateBidCalls = 10;
+    size_t num_generate_bid_calls = 0;
+    for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+      size_t bid_value = i + 1;
+      bidder_worklet->GenerateBid(
+          /*auction_signals_json=*/base::NumberToString(bid_value),
+          per_buyer_signals_, browser_signal_top_window_origin_,
+          browser_signal_seller_origin_, auction_start_time_,
+          base::BindLambdaForTesting(
+              [&run_loop, &num_generate_bid_calls, bid_value](
+                  mojom::BidderWorkletBidPtr bid,
+                  const std::vector<std::string>& errors) {
+                EXPECT_EQ(bid_value, bid->bid);
+                EXPECT_EQ(base::NumberToString(bid_value), bid->ad);
+                EXPECT_EQ(GURL("https://response.test/"), bid->render_url);
+                EXPECT_TRUE(errors.empty());
+                ++num_generate_bid_calls;
+                if (num_generate_bid_calls == kNumGenerateBidCalls)
+                  run_loop.Quit();
+              }));
+    }
+
+    // If this is the first loop iteration, wait for all the Mojo calls to
+    // settle, and then provide the Javascript response body.
+    if (generate_bid_invoked_before_worklet_script_loaded == false) {
+      // Since the script hasn't loaded yet, no bids should be generated.
+      task_environment_.RunUntilIdle();
+      EXPECT_FALSE(run_loop.AnyQuitCalled());
+      EXPECT_EQ(0u, num_generate_bid_calls);
+
+      // Load script.
+      AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                            CreateGenerateBidScript(kBidderScriptReturnValue));
+    }
+
+    run_loop.Run();
+    EXPECT_EQ(kNumGenerateBidCalls, num_generate_bid_calls);
+  }
+}
+
+// Test multiple GenerateBid calls on a single worklet, in parallel, in the case
+// the script fails to load. Do this twice, once before the worklet has
+// encountered a network error, and once after, to make sure both cases work.
+TEST_F(BidderWorkletTest, GenerateBidNetworkErrorParallel) {
+  auto bidder_worklet = CreateWorklet();
+
+  // For the first loop iteration, call GenerateBid repeatedly and only then
+  // provide the network error. For the second loop iteration, reuse the bidder
+  // worklet from the first iteration, so the Javascript is loaded from the
+  // start.
+  for (bool generate_bid_invoked_before_network_error : {false, true}) {
+    SCOPED_TRACE(generate_bid_invoked_before_network_error);
+
+    base::RunLoop run_loop;
+    const size_t kNumGenerateBidCalls = 10;
+    size_t num_generate_bid_calls = 0;
+    for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+      bidder_worklet->GenerateBid(
+          auction_signals_, per_buyer_signals_,
+          browser_signal_top_window_origin_, browser_signal_seller_origin_,
+          auction_start_time_,
+          base::BindLambdaForTesting(
+              [&run_loop, &num_generate_bid_calls](
+                  mojom::BidderWorkletBidPtr bid,
+                  const std::vector<std::string>& errors) {
+                EXPECT_FALSE(bid);
+                EXPECT_EQ(errors, std::vector<std::string>{
+                                      "Failed to load https://url.test/ HTTP "
+                                      "status = 404 Not Found."});
+                ++num_generate_bid_calls;
+                if (num_generate_bid_calls == kNumGenerateBidCalls)
+                  run_loop.Quit();
+              }));
+    }
+
+    // If this is the first loop iteration, wait for all the Mojo calls to
+    // settle, and then provide the network error.
+    if (generate_bid_invoked_before_network_error == false) {
+      // Since the script hasn't loaded yet, or failed to load, no bids should
+      // be generated.
+      task_environment_.RunUntilIdle();
+      EXPECT_FALSE(run_loop.AnyQuitCalled());
+      EXPECT_EQ(0u, num_generate_bid_calls);
+
+      // Script fails to load.
+      url_loader_factory_.AddResponse(interest_group_bidding_url_.spec(),
+                                      CreateBasicGenerateBidScript(),
+                                      net::HTTP_NOT_FOUND);
+    }
+
+    run_loop.Run();
+    EXPECT_EQ(kNumGenerateBidCalls, num_generate_bid_calls);
+  }
+}
+
+// Test multiple GenerateBid calls on a single worklet, in parallel, in the case
+// there are trusted bidding signals.
+//
+// In this test, the ordering is:
+// 1) GenerateBid() calls are made.
+// 2) The worklet script load completes.
+// 3) The trusted bidding signals are loaded.
+TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallel1) {
+  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
+  interest_group_trusted_bidding_signals_keys_ =
+      std::vector<std::string>({"key"});
+
+  // Each GenerateBid call provides a different `auctionSignals` value. Use that
+  // in the result for testing.
+  const char kBidderScriptReturnValue[] = R"({
+    ad: trustedBiddingSignals.key,
+    bid: trustedBiddingSignals.key,
+    render:"https://response.test/"
+  })";
+
+  auto bidder_worklet = CreateWorklet();
+
+  // 1) GenerateBid() calls are made
+  base::RunLoop run_loop;
+  const size_t kNumGenerateBidCalls = 10;
+  size_t num_generate_bid_calls = 0;
+  for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+    size_t bid_value = i + 1;
+    // Use a different origin for each GenerateBid call, since it's the only
+    // GenerateBid parameter that affects the URL of bidding signals requests.
+    url::Origin top_window_origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%zu.test", i)));
+    bidder_worklet->GenerateBid(
+        auction_signals_, per_buyer_signals_, top_window_origin,
+        browser_signal_seller_origin_, auction_start_time_,
+        base::BindLambdaForTesting(
+            [&run_loop, &num_generate_bid_calls, bid_value](
+                mojom::BidderWorkletBidPtr bid,
+                const std::vector<std::string>& errors) {
+              EXPECT_EQ(bid_value, bid->bid);
+              EXPECT_EQ(base::NumberToString(bid_value), bid->ad);
+              EXPECT_EQ(GURL("https://response.test/"), bid->render_url);
+              EXPECT_TRUE(errors.empty());
+              ++num_generate_bid_calls;
+              if (num_generate_bid_calls == kNumGenerateBidCalls)
+                run_loop.Quit();
+            }));
+  }
+
+  // Calling GenerateBid() shouldn't cause any callbacks to be invoked - the
+  // BidderWorklet is waiting on both the trusted bidding signals and Javascript
+  // responses from the network.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(run_loop.AnyQuitCalled());
+  EXPECT_EQ(0u, num_generate_bid_calls);
+
+  // 2) The worklet script load completes.
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        CreateGenerateBidScript(kBidderScriptReturnValue));
+  // No callbacks are invoked, as the BidderWorklet is still waiting on the
+  // trusted bidding signals responses.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(run_loop.AnyQuitCalled());
+  EXPECT_EQ(0u, num_generate_bid_calls);
+
+  // 3) The trusted bidding signals are loaded.
+  for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+    AddJsonResponse(&url_loader_factory_,
+                    GURL(base::StringPrintf(
+                        "https://signals.test/?hostname=%zu.test&keys=key", i)),
+                    base::StringPrintf(R"({"key":%zu})", i + 1));
+  }
+
+  // The worklets can now generate bids.
+  run_loop.Run();
+  EXPECT_EQ(kNumGenerateBidCalls, num_generate_bid_calls);
+}
+
+// Test multiple GenerateBid calls on a single worklet, in parallel, in the case
+// there are trusted bidding signals.
+//
+// In this test, the ordering is:
+// 1) GenerateBid() calls are made
+// 2) The trusted bidding signals are loaded.
+// 3) The worklet script load completes.
+TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallel2) {
+  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
+  interest_group_trusted_bidding_signals_keys_ =
+      std::vector<std::string>({"key"});
+
+  // Each GenerateBid call provides a different `auctionSignals` value. Use that
+  // in the result for testing.
+  const char kBidderScriptReturnValue[] = R"({
+    ad: trustedBiddingSignals.key,
+    bid: trustedBiddingSignals.key,
+    render:"https://response.test/"
+  })";
+
+  auto bidder_worklet = CreateWorklet();
+
+  // 1) GenerateBid() calls are made
+  base::RunLoop run_loop;
+  const size_t kNumGenerateBidCalls = 10;
+  size_t num_generate_bid_calls = 0;
+  for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+    size_t bid_value = i + 1;
+    // Use a different origin for each GenerateBid call, since it's the only
+    // GenerateBid parameter that affects the URL of bidding signals requests.
+    url::Origin top_window_origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%zu.test", i)));
+    bidder_worklet->GenerateBid(
+        auction_signals_, per_buyer_signals_, top_window_origin,
+        browser_signal_seller_origin_, auction_start_time_,
+        base::BindLambdaForTesting(
+            [&run_loop, &num_generate_bid_calls, bid_value](
+                mojom::BidderWorkletBidPtr bid,
+                const std::vector<std::string>& errors) {
+              EXPECT_EQ(bid_value, bid->bid);
+              EXPECT_EQ(base::NumberToString(bid_value), bid->ad);
+              EXPECT_EQ(GURL("https://response.test/"), bid->render_url);
+              EXPECT_TRUE(errors.empty());
+              ++num_generate_bid_calls;
+              if (num_generate_bid_calls == kNumGenerateBidCalls)
+                run_loop.Quit();
+            }));
+  }
+
+  // Calling GenerateBid() shouldn't cause any callbacks to be invoked - the
+  // BidderWorklet is waiting on both the trusted bidding signals and Javascript
+  // responses from the network.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(run_loop.AnyQuitCalled());
+  EXPECT_EQ(0u, num_generate_bid_calls);
+
+  // 2) The trusted bidding signals are loaded.
+  for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+    AddJsonResponse(&url_loader_factory_,
+                    GURL(base::StringPrintf(
+                        "https://signals.test/?hostname=%zu.test&keys=key", i)),
+                    base::StringPrintf(R"({"key":%zu})", i + 1));
+  }
+
+  // No callbacks should have been invoked, since the worklet script hasn't
+  // loaded yet.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(run_loop.AnyQuitCalled());
+  EXPECT_EQ(0u, num_generate_bid_calls);
+
+  // 3) The worklet script load completes.
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        CreateGenerateBidScript(kBidderScriptReturnValue));
+
+  // The worklets can now generate bids.
+  run_loop.Run();
+  EXPECT_EQ(kNumGenerateBidCalls, num_generate_bid_calls);
+}
+
+// Test multiple GenerateBid calls on a single worklet, in parallel, in the case
+// there are trusted bidding signals.
+//
+// In this test, the ordering is:
+// 1) The worklet script load completes.
+// 2) GenerateBid() calls are made.
+// 3) The trusted bidding signals are loaded.
+TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallel3) {
+  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
+  interest_group_trusted_bidding_signals_keys_ =
+      std::vector<std::string>({"key"});
+
+  // Each GenerateBid call provides a different `auctionSignals` value. Use that
+  // in the result for testing.
+  const char kBidderScriptReturnValue[] = R"({
+    ad: trustedBiddingSignals.key,
+    bid: trustedBiddingSignals.key,
+    render:"https://response.test/"
+  })";
+
+  auto bidder_worklet = CreateWorklet();
+
+  // 1) The worklet script load completes.
+  AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                        CreateGenerateBidScript(kBidderScriptReturnValue));
+  task_environment_.RunUntilIdle();
+
+  // 2) GenerateBid() calls are made.
+  base::RunLoop run_loop;
+  const size_t kNumGenerateBidCalls = 10;
+  size_t num_generate_bid_calls = 0;
+  for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+    size_t bid_value = i + 1;
+    // Use a different origin for each GenerateBid call, since it's the only
+    // GenerateBid parameter that affects the URL of bidding signals requests.
+    url::Origin top_window_origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://%zu.test", i)));
+    bidder_worklet->GenerateBid(
+        auction_signals_, per_buyer_signals_, top_window_origin,
+        browser_signal_seller_origin_, auction_start_time_,
+        base::BindLambdaForTesting(
+            [&run_loop, &num_generate_bid_calls, bid_value](
+                mojom::BidderWorkletBidPtr bid,
+                const std::vector<std::string>& errors) {
+              EXPECT_EQ(bid_value, bid->bid);
+              EXPECT_EQ(base::NumberToString(bid_value), bid->ad);
+              EXPECT_EQ(GURL("https://response.test/"), bid->render_url);
+              EXPECT_TRUE(errors.empty());
+              ++num_generate_bid_calls;
+              if (num_generate_bid_calls == kNumGenerateBidCalls)
+                run_loop.Quit();
+            }));
+  }
+
+  // No callbacks should have been invoked yet, since the trusted bidding
+  // signals haven't loaded yet.
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(run_loop.AnyQuitCalled());
+  EXPECT_EQ(0u, num_generate_bid_calls);
+
+  // 3) The trusted bidding signals are loaded.
+  for (size_t i = 0; i < kNumGenerateBidCalls; ++i) {
+    AddJsonResponse(&url_loader_factory_,
+                    GURL(base::StringPrintf(
+                        "https://signals.test/?hostname=%zu.test&keys=key", i)),
+                    base::StringPrintf(R"({"key":%zu})", i + 1));
+  }
+
+  // The worklets can now generate bids.
+  run_loop.Run();
+  EXPECT_EQ(num_generate_bid_calls, kNumGenerateBidCalls);
+}
+
 TEST_F(BidderWorkletTest, GenerateBidInterestGroupUserBiddingSignals) {
   const std::string kGenerateBidBody =
       R"({ad: interestGroup.userBiddingSignals, bid:1, render:"https://response.test/"})";
@@ -1007,7 +1336,7 @@ TEST_F(BidderWorkletTest, GenerateBidBrowserSignalJoinCountBidCount) {
     // String used in JS to access the parameter.
     const char* name;
     // Pointer to location at which the integer can be modified.
-    int* value_ptr;
+    raw_ptr<int> value_ptr;
   } kIntegerTestCases[] = {
       {"browserSignals.joinCount", &browser_signal_join_count_},
       {"browserSignals.bidCount", &browser_signal_bid_count_}};
@@ -1310,13 +1639,13 @@ TEST_F(BidderWorkletTest, DeleteBeforeReportWinCallback) {
   AddJavascriptResponse(
       &url_loader_factory_, interest_group_bidding_url_,
       CreateReportWinScript(R"(sendReportTo("https://foo.test"))"));
-  auto bidder_worklet = CreateWorkletAndGenerateBid();
+  auto bidder_worklet = CreateWorklet();
   ASSERT_TRUE(bidder_worklet);
 
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
   bidder_worklet->ReportWin(
-      seller_signals_, browser_signal_render_url_,
-      browser_signal_ad_render_fingerprint_, browser_signal_bid_,
+      auction_signals_, per_buyer_signals_, browser_signal_top_window_origin_,
+      seller_signals_, browser_signal_render_url_, browser_signal_bid_,
       base::BindOnce([](const absl::optional<GURL>& report_url,
                         const std::vector<std::string>& errors) {
         ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
@@ -1324,6 +1653,110 @@ TEST_F(BidderWorkletTest, DeleteBeforeReportWinCallback) {
   base::RunLoop().RunUntilIdle();
   bidder_worklet.reset();
   event_handle->Signal();
+}
+
+// Test multiple ReportWin calls on a single worklet, in parallel. Do this
+// twice, once before the worklet has loaded its Javascript, and once after, to
+// make sure both cases work.
+TEST_F(BidderWorkletTest, ReportWinParallel) {
+  // Each ReportWin call provides a different `auctionSignals` value. Use that
+  // in the report to verify that each call's values are plumbed through
+  // correctly.
+  const char kReportWinScript[] =
+      R"(sendReportTo("https://foo.test/" + auctionSignals))";
+
+  auto bidder_worklet = CreateWorklet();
+
+  // For the first loop iteration, call ReportWin repeatedly before providing
+  // the bidder script, then provide the bidder script. For the second loop
+  // iteration, reuse the bidder worklet from the first iteration, so the
+  // Javascript is loaded from the start.
+  for (bool report_win_invoked_before_worklet_script_loaded : {false, true}) {
+    SCOPED_TRACE(report_win_invoked_before_worklet_script_loaded);
+
+    base::RunLoop run_loop;
+    const size_t kNumReportWinCalls = 10;
+    size_t num_report_win_calls = 0;
+    for (size_t i = 0; i < kNumReportWinCalls; ++i) {
+      bidder_worklet->ReportWin(
+          /*auction_signals_json=*/base::NumberToString(i), per_buyer_signals_,
+          browser_signal_top_window_origin_, seller_signals_,
+          browser_signal_render_url_, browser_signal_bid_,
+          base::BindLambdaForTesting(
+              [&run_loop, &num_report_win_calls, i](
+                  const absl::optional<GURL>& report_url,
+                  const std::vector<std::string>& errors) {
+                EXPECT_EQ(GURL(base::StringPrintf("https://foo.test/%zu", i)),
+                          report_url);
+                EXPECT_TRUE(errors.empty());
+                ++num_report_win_calls;
+                if (num_report_win_calls == kNumReportWinCalls)
+                  run_loop.Quit();
+              }));
+    }
+
+    // If this is the first loop iteration, wait for all the Mojo calls to
+    // settle, and then provide the Javascript response body.
+    if (report_win_invoked_before_worklet_script_loaded == false) {
+      task_environment_.RunUntilIdle();
+      EXPECT_FALSE(run_loop.AnyQuitCalled());
+      AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
+                            CreateReportWinScript(kReportWinScript));
+    }
+
+    run_loop.Run();
+    EXPECT_EQ(kNumReportWinCalls, num_report_win_calls);
+  }
+}
+
+// Test multiple ReportWin calls on a single worklet, in parallel, in the case
+// the worklet script fails to load. Do this twice, once before the worklet
+// script has received an error, and once after, to make sure both cases work.
+TEST_F(BidderWorkletTest, ReportWinNetworkErrorParallel) {
+  auto bidder_worklet = CreateWorklet();
+
+  // For the first loop iteration, call ReportWin repeatedly before providing
+  // the network error script, then provide the network error. For the second
+  // loop iteration, reuse the bidder worklet from the first iteration, so the
+  // network error is present from the start.
+  for (bool report_win_invoked_before_worklet_script_loaded : {false, true}) {
+    SCOPED_TRACE(report_win_invoked_before_worklet_script_loaded);
+
+    base::RunLoop run_loop;
+    const size_t kNumReportWinCalls = 10;
+    size_t num_report_win_calls = 0;
+    for (size_t i = 0; i < kNumReportWinCalls; ++i) {
+      bidder_worklet->ReportWin(
+          /*auction_signals_json=*/base::NumberToString(i), per_buyer_signals_,
+          browser_signal_top_window_origin_, seller_signals_,
+          browser_signal_render_url_, browser_signal_bid_,
+          base::BindLambdaForTesting(
+              [&run_loop, &num_report_win_calls](
+                  const absl::optional<GURL>& report_url,
+                  const std::vector<std::string>& errors) {
+                EXPECT_FALSE(report_url);
+                EXPECT_EQ(errors, std::vector<std::string>{
+                                      "Failed to load https://url.test/ "
+                                      "HTTP status = 404 Not Found."});
+                ++num_report_win_calls;
+                if (num_report_win_calls == kNumReportWinCalls)
+                  run_loop.Quit();
+              }));
+    }
+
+    // If this is the first loop iteration, wait for all the Mojo calls to
+    // settle, and then provide the Javascript response body.
+    if (report_win_invoked_before_worklet_script_loaded == false) {
+      task_environment_.RunUntilIdle();
+      EXPECT_FALSE(run_loop.AnyQuitCalled());
+      url_loader_factory_.AddResponse(interest_group_bidding_url_.spec(),
+                                      CreateBasicGenerateBidScript(),
+                                      net::HTTP_NOT_FOUND);
+    }
+
+    run_loop.Run();
+    EXPECT_EQ(kNumReportWinCalls, num_report_win_calls);
+  }
 }
 
 // Make sure Date() is not available when running reportWin().
@@ -1389,13 +1822,6 @@ TEST_F(BidderWorkletTest, ReportWinSellerSignals) {
   seller_signals_ = R"("https://interest.group.name.test/")";
   RunReportWinWithFunctionBodyExpectingResult(
       "sendReportTo(sellerSignals)", GURL("https://interest.group.name.test/"));
-}
-
-TEST_F(BidderWorkletTest, ReportWinBrowserSignalsAdRenderFingerprint) {
-  browser_signal_ad_render_fingerprint_ = "https://interest.group.name.test/";
-  RunReportWinWithFunctionBodyExpectingResult(
-      "sendReportTo(browserSignals.adRenderFingerprint)",
-      GURL(browser_signal_ad_render_fingerprint_));
 }
 
 TEST_F(BidderWorkletTest, ReportWinInterestGroupOwner) {
@@ -1477,8 +1903,8 @@ TEST_F(BidderWorkletTest, ScriptIsolation) {
   for (int i = 0; i < 3; ++i) {
     base::RunLoop run_loop;
     bidder_worklet->ReportWin(
-        seller_signals_, browser_signal_render_url_,
-        browser_signal_ad_render_fingerprint_, browser_signal_bid_,
+        auction_signals_, per_buyer_signals_, browser_signal_top_window_origin_,
+        seller_signals_, browser_signal_render_url_, browser_signal_bid_,
         base::BindLambdaForTesting(
             [&run_loop](const absl::optional<GURL>& report_url,
                         const std::vector<std::string>& errors) {
@@ -1502,8 +1928,9 @@ TEST_F(BidderWorkletTest, PauseOnStart) {
   auto worklet =
       CreateWorklet(interest_group_bidding_url_,
                     /* pause_for_debugger_on_start=*/true, &worklet_impl);
+  GenerateBid(worklet.get());
   // Grab the context group ID to be able to resume.
-  int id = LookUpContextGroupId(worklet_impl);
+  int id = worklet_impl->context_group_id_for_testing();
 
   // Give it a chance to fetch.
   task_environment_.RunUntilIdle();
@@ -1540,21 +1967,17 @@ TEST_F(BidderWorkletTest, PauseOnStartDelete) {
   auto worklet =
       CreateWorklet(interest_group_bidding_url_,
                     /*pause_for_debugger_on_start=*/true, &worklet_impl);
+  GenerateBid(worklet.get());
 
   // Give it a chance to fetch.
   task_environment_.RunUntilIdle();
 
   // Grab the context group ID.
-  int id = LookUpContextGroupId(worklet_impl);
+  int id = worklet_impl->context_group_id_for_testing();
 
-  // Delete the worklet. This should issue an error callback, so in turn it
-  // needs the event loop the callback in the fixture uses.
-  load_script_run_loop_ = std::make_unique<base::RunLoop>();
+  // Delete the worklet. No callback should be invoked.
   worklet.reset();
-  load_script_run_loop_->Run();
-  load_script_run_loop_.reset();
-
-  EXPECT_EQ(nullptr, bid_.get());
+  task_environment_.RunUntilIdle();
 
   // Try to resume post-delete. Should not crash.
   v8_helper_->v8_runner()->PostTask(
@@ -1587,13 +2010,15 @@ TEST_F(BidderWorkletTest, BasicV8Debug) {
   BidderWorklet* worklet_impl1;
   auto worklet1 = CreateWorklet(
       GURL(kUrl1), /*pause_for_debugger_on_start=*/true, &worklet_impl1);
+  GenerateBid(worklet1.get());
 
   BidderWorklet* worklet_impl2;
   auto worklet2 = CreateWorklet(
       GURL(kUrl2), /*pause_for_debugger_on_start=*/true, &worklet_impl2);
+  GenerateBid(worklet2.get());
 
-  int id1 = LookUpContextGroupId(worklet_impl1);
-  int id2 = LookUpContextGroupId(worklet_impl2);
+  int id1 = worklet_impl1->context_group_id_for_testing();
+  int id2 = worklet_impl2->context_group_id_for_testing();
 
   TestChannel* channel1 = inspector_support.ConnectDebuggerSession(id1);
   TestChannel* channel2 = inspector_support.ConnectDebuggerSession(id2);
@@ -1676,7 +2101,8 @@ TEST_F(BidderWorkletTest, ParseErrorV8Debug) {
   auto worklet =
       CreateWorklet(interest_group_bidding_url_,
                     /*pause_for_debugger_on_start=*/true, &worklet_impl);
-  int id = LookUpContextGroupId(worklet_impl);
+  GenerateBid(worklet.get());
+  int id = worklet_impl->context_group_id_for_testing();
   TestChannel* channel = inspector_support.ConnectDebuggerSession(id);
 
   channel->RunCommandAndWaitForResult(
@@ -1714,8 +2140,10 @@ TEST_F(BidderWorkletTest, BasicDevToolsDebug) {
 
   auto worklet1 =
       CreateWorklet(GURL(kUrl1), true /* pause_for_debugger_on_start */);
+  GenerateBid(worklet1.get());
   auto worklet2 =
       CreateWorklet(GURL(kUrl2), true /* pause_for_debugger_on_start */);
+  GenerateBid(worklet2.get());
 
   mojo::Remote<blink::mojom::DevToolsAgent> agent1, agent2;
   worklet1->ConnectDevToolsAgent(agent1.BindNewPipeAndPassReceiver());
@@ -1850,6 +2278,7 @@ TEST_F(BidderWorkletTest, InstrumentationBreakpoints) {
 
   auto worklet =
       CreateWorklet(GURL(kUrl), true /* pause_for_debugger_on_start */);
+  GenerateBid(worklet.get());
 
   mojo::Remote<blink::mojom::DevToolsAgent> agent;
   worklet->ConnectDevToolsAgent(agent.BindNewPipeAndPassReceiver());
@@ -1918,6 +2347,53 @@ TEST_F(BidderWorkletTest, InstrumentationBreakpoints) {
       TestDevToolsAgentClient::Channel::kIO, 7, "Debugger.resume",
       R"({"id":7,"method":"Debugger.resume","params":{}})");
   run_loop.Run();
+}
+
+TEST_F(BidderWorkletTest, UnloadWhilePaused) {
+  // Make sure things are cleaned up properly if the worklet is destroyed while
+  // paused on a breakpoint.
+  const char kUrl[] = "http://example.com/bid.js";
+
+  AddJavascriptResponse(
+      &url_loader_factory_, GURL(kUrl),
+      CreateReportWinScript(R"(sendReportTo("https://foo.test"))"));
+
+  auto worklet =
+      CreateWorklet(GURL(kUrl), /*pause_for_debugger_on_start=*/true);
+  GenerateBid(worklet.get());
+
+  mojo::Remote<blink::mojom::DevToolsAgent> agent;
+  worklet->ConnectDevToolsAgent(agent.BindNewPipeAndPassReceiver());
+
+  TestDevToolsAgentClient debug(std::move(agent), "123",
+                                /*use_binary_protocol=*/true);
+
+  debug.RunCommandAndWaitForResult(
+      TestDevToolsAgentClient::Channel::kMain, 1, "Runtime.enable",
+      R"({"id":1,"method":"Runtime.enable","params":{}})");
+  debug.RunCommandAndWaitForResult(
+      TestDevToolsAgentClient::Channel::kMain, 2, "Debugger.enable",
+      R"({"id":2,"method":"Debugger.enable","params":{}})");
+
+  // Set an instrumentation breakpoint to get it debugger paused.
+  debug.RunCommandAndWaitForResult(
+      TestDevToolsAgentClient::Channel::kMain, 3,
+      "EventBreakpoints.setInstrumentationBreakpoint",
+      MakeInstrumentationBreakpointCommand(3, "set",
+                                           "beforeBidderWorkletBiddingStart"));
+  debug.RunCommandAndWaitForResult(
+      TestDevToolsAgentClient::Channel::kMain, 4,
+      "Runtime.runIfWaitingForDebugger",
+      R"({"id":4,"method":"Runtime.runIfWaitingForDebugger","params":{}})");
+
+  // Wait for breakpoint to hit.
+  debug.WaitForMethodNotification("Debugger.paused");
+
+  // ... and destroy the worklet
+  worklet.reset();
+
+  // This won't terminate if the V8 thread is still blocked in debugger.
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace

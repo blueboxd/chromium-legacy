@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill_assistant/browser/actions/action.h"
+#include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/website_login_manager.h"
@@ -77,6 +77,7 @@ class CollectUserDataAction : public Action,
 
   void InternalProcessAction(ProcessActionCallback callback) override;
   void EndAction(const ClientStatus& status);
+  bool HasActionEnded() const;
 
   void OnGetUserData(const CollectUserDataProto& collect_user_data,
                      UserData* user_data,
@@ -87,20 +88,28 @@ class CollectUserDataAction : public Action,
   void OnTermsAndConditionsLinkClicked(int link,
                                        UserData* user_data,
                                        const UserModel* user_model);
+  void ReloadAction(UserData* user_data);
+
+  // Only used for logging purposes.
+  void OnSelectionStateChanged(UserDataEventField field,
+                               UserDataEventType event_type);
 
   void OnGetLogins(const LoginDetailsProto::LoginOptionProto& login_option,
                    std::vector<WebsiteLoginManager::Login> logins);
   void ShowToUser();
   void OnShowToUser(UserData* user_data, UserData::FieldChange* field_change);
+  void UpdateMetrics(UserData* user_data);
 
   // Creates a new instance of |CollectUserDataOptions| from |proto_|.
   bool CreateOptionsFromProto();
 
-  bool CheckInitialAutofillDataComplete(
-      const std::vector<std::unique_ptr<autofill::AutofillProfile>>& contacts,
-      const std::vector<std::unique_ptr<autofill::AutofillProfile>>& addresses,
+  void FillInitialDataStateForMetrics(
+      const std::vector<std::unique_ptr<Contact>>& contacts,
+      const std::vector<std::unique_ptr<Address>>& addresses,
       const std::vector<std::unique_ptr<PaymentInstrument>>&
           payment_instruments);
+
+  void FillInitiallySelectedDataStateForMetrics(UserData* user_data);
 
   void WriteProcessedAction(UserData* user_data, const UserModel* user_model);
   void UpdateProfileAndCardUse(UserData* user_data);
@@ -122,11 +131,10 @@ class CollectUserDataAction : public Action,
                                 UserData::FieldChange* field_change = nullptr);
   void UpdateDateTimeRangeEnd(UserData* user_data,
                               UserData::FieldChange* field_change = nullptr);
+  void MaybeLogMetrics();
 
+  UserDataMetrics metrics_data_;
   bool shown_to_user_ = false;
-  bool initially_prefilled_ = false;
-  bool personal_data_changed_ = false;
-  bool action_successful_ = false;
   std::unique_ptr<CollectUserDataOptions> collect_user_data_options_;
   ProcessActionCallback callback_;
 

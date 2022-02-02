@@ -32,6 +32,7 @@ using StageType = CompositorFrameReporter::StageType;
 using FrameReportType = CompositorFrameReporter::FrameReportType;
 using BlinkBreakdown = CompositorFrameReporter::BlinkBreakdown;
 using VizBreakdown = CompositorFrameReporter::VizBreakdown;
+using FrameFinalState = FrameInfo::FrameFinalState;
 
 constexpr int kFrameReportTypeCount =
     static_cast<int>(FrameReportType::kMaxValue) + 1;
@@ -543,7 +544,7 @@ CompositorFrameReporter::CompositorFrameReporter(
     const viz::BeginFrameArgs& args,
     bool should_report_metrics,
     SmoothThread smooth_thread,
-    FrameSequenceMetrics::ThreadType scrolling_thread,
+    FrameInfo::SmoothEffectDrivingThread scrolling_thread,
     int layer_tree_host_id,
     const GlobalMetricsTrackers& trackers)
     : should_report_metrics_(should_report_metrics),
@@ -556,7 +557,14 @@ CompositorFrameReporter::CompositorFrameReporter(
   global_trackers_.dropped_frame_counter->OnBeginFrame(
       args, IsScrollActive(active_trackers_));
   DCHECK(IsScrollActive(active_trackers_) ||
-         scrolling_thread_ == FrameSequenceMetrics::ThreadType::kUnknown);
+         scrolling_thread_ == FrameInfo::SmoothEffectDrivingThread::kUnknown);
+  if (scrolling_thread_ == FrameInfo::SmoothEffectDrivingThread::kCompositor) {
+    DCHECK(smooth_thread_ == SmoothThread::kSmoothCompositor ||
+           smooth_thread_ == SmoothThread::kSmoothBoth);
+  } else if (scrolling_thread_ == FrameInfo::SmoothEffectDrivingThread::kMain) {
+    DCHECK(smooth_thread_ == SmoothThread::kSmoothMain ||
+           smooth_thread_ == SmoothThread::kSmoothBoth);
+  }
 }
 
 std::unique_ptr<CompositorFrameReporter>
@@ -703,56 +711,36 @@ void CompositorFrameReporter::TerminateReporter() {
       std::make_unique<ProcessedVizBreakdown>(viz_start_time_, viz_breakdown_);
 
   DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
-  switch (frame_termination_status_) {
-    case FrameTerminationStatus::kPresentedFrame:
+  const FrameInfo frame_info = GenerateFrameInfo();
+  switch (frame_info.final_state) {
+    case FrameFinalState::kDropped:
+      EnableReportType(FrameReportType::kDroppedFrame);
+      break;
+
+    case FrameFinalState::kNoUpdateDesired:
+      // If this reporter was cloned, and the cloned reporter was marked as
+      // containing 'partial update' (i.e. missing desired updates from the
+      // main-thread), but this reporter terminated with 'no damage', then reset
+      // the 'partial update' flag from the cloned reporter (as well as other
+      // depending reporters).
+      while (!partial_update_dependents_.empty()) {
+        auto dependent = partial_update_dependents_.front();
+        if (dependent)
+          dependent->set_has_partial_update(false);
+        partial_update_dependents_.pop();
+      }
+      break;
+
+    case FrameFinalState::kPresentedAll:
+    case FrameFinalState::kPresentedPartialNewMain:
+    case FrameFinalState::kPresentedPartialOldMain:
       EnableReportType(FrameReportType::kNonDroppedFrame);
       if (ComputeSafeDeadlineForFrame(args_) < frame_termination_time_)
         EnableReportType(FrameReportType::kMissedDeadlineFrame);
       break;
-    case FrameTerminationStatus::kDidNotPresentFrame:
-      EnableReportType(FrameReportType::kDroppedFrame);
-      break;
-    case FrameTerminationStatus::kReplacedByNewReporter:
-      EnableReportType(FrameReportType::kDroppedFrame);
-      break;
-    case FrameTerminationStatus::kDidNotProduceFrame: {
-      const bool no_update_from_main =
-          frame_skip_reason_.has_value() &&
-          frame_skip_reason() == FrameSkippedReason::kNoDamage;
-      const bool no_update_from_compositor =
-          !has_partial_update_ && frame_skip_reason_.has_value() &&
-          frame_skip_reason() == FrameSkippedReason::kWaitingOnMain;
-      const bool draw_is_throttled =
-          frame_skip_reason_.has_value() &&
-          frame_skip_reason() == FrameSkippedReason::kDrawThrottled;
-
-      if (no_update_from_main) {
-        // If this reporter was cloned, and the cloned reporter was marked as
-        // containing 'partial update' (i.e. missing desired updates from the
-        // main-thread), but this reporter terminated with 'no damage', then
-        // reset the 'partial update' flag from the cloned reporter (as well as
-        // other depending reporters).
-        while (!partial_update_dependents_.empty()) {
-          auto dependent = partial_update_dependents_.front();
-          if (dependent)
-            dependent->set_has_partial_update(false);
-          partial_update_dependents_.pop();
-        }
-      } else if (!no_update_from_compositor) {
-        // If rather main thread has damage or compositor thread has partial
-        // damage, then it's a dropped frame.
-        EnableReportType(FrameReportType::kDroppedFrame);
-      } else if (draw_is_throttled) {
-        EnableReportType(FrameReportType::kDroppedFrame);
-      }
-
-      break;
-    }
-    case FrameTerminationStatus::kUnknown:
-      break;
   }
 
-  ReportCompositorLatencyTraceEvents();
+  ReportCompositorLatencyTraceEvents(frame_info);
   if (TestReportType(FrameReportType::kNonDroppedFrame))
     ReportEventLatencyTraceEvents();
 
@@ -782,8 +770,7 @@ void CompositorFrameReporter::TerminateReporter() {
         dropped_frame_counter->AddGoodFrame();
     }
 
-    dropped_frame_counter->OnEndFrame(args_,
-                                      IsDroppedFrameAffectingSmoothness());
+    dropped_frame_counter->OnEndFrame(args_, frame_info);
   }
 
   if (discarded_partial_update_dependents_count_ > 0)
@@ -811,16 +798,18 @@ void CompositorFrameReporter::ReportCompositorLatencyHistograms() const {
       }
     }
   }
+
+  if (global_trackers_.latency_ukm_reporter) {
+    global_trackers_.latency_ukm_reporter->ReportCompositorLatencyUkm(
+        report_types_, stage_history_, active_trackers_,
+        *processed_blink_breakdown_, *processed_viz_breakdown_);
+  }
+
   for (size_t type = 0; type < report_types_.size(); ++type) {
     if (!report_types_.test(type))
       continue;
     FrameReportType report_type = static_cast<FrameReportType>(type);
     UMA_HISTOGRAM_ENUMERATION("CompositorLatency.Type", report_type);
-    if (global_trackers_.latency_ukm_reporter) {
-      global_trackers_.latency_ukm_reporter->ReportCompositorLatencyUkm(
-          report_type, stage_history_, active_trackers_,
-          *processed_blink_breakdown_, *processed_viz_breakdown_);
-    }
     bool any_active_interaction = false;
     for (size_t fst_type = 0; fst_type < active_trackers_.size(); ++fst_type) {
       const auto tracker_type = static_cast<FrameSequenceTrackerType>(fst_type);
@@ -1052,11 +1041,12 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
   }
 }
 
-void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
+void CompositorFrameReporter::ReportCompositorLatencyTraceEvents(
+    const FrameInfo& info) const {
   if (stage_history_.empty())
     return;
 
-  if (IsDroppedFrameAffectingSmoothness()) {
+  if (info.IsDroppedAffectingSmoothness()) {
     devtools_instrumentation::DidDropSmoothnessFrame(
         layer_tree_host_id_, args_.frame_time, args_.frame_id.sequence_number,
         has_partial_update_);
@@ -1068,38 +1058,43 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
       kTraceCategory, "PipelineReporter", trace_track, args_.frame_time,
       [&](perfetto::EventContext context) {
         using perfetto::protos::pbzero::ChromeFrameReporter;
-        bool frame_dropped = TestReportType(FrameReportType::kDroppedFrame);
         ChromeFrameReporter::State state;
-        if (frame_dropped) {
-          state = ChromeFrameReporter::STATE_DROPPED;
-        } else if (frame_termination_status_ ==
-                   FrameTerminationStatus::kDidNotProduceFrame) {
-          state = ChromeFrameReporter::STATE_NO_UPDATE_DESIRED;
-        } else {
-          state = has_partial_update_
-                      ? ChromeFrameReporter::STATE_PRESENTED_PARTIAL
-                      : ChromeFrameReporter::STATE_PRESENTED_ALL;
+        switch (info.final_state) {
+          case FrameInfo::FrameFinalState::kPresentedAll:
+            state = ChromeFrameReporter::STATE_PRESENTED_ALL;
+            break;
+          case FrameInfo::FrameFinalState::kPresentedPartialNewMain:
+          case FrameInfo::FrameFinalState::kPresentedPartialOldMain:
+            state = ChromeFrameReporter::STATE_PRESENTED_PARTIAL;
+            break;
+          case FrameInfo::FrameFinalState::kNoUpdateDesired:
+            state = ChromeFrameReporter::STATE_NO_UPDATE_DESIRED;
+            break;
+          case FrameInfo::FrameFinalState::kDropped:
+            state = ChromeFrameReporter::STATE_DROPPED;
+            break;
         }
+
         auto* reporter = context.event()->set_chrome_frame_reporter();
         reporter->set_state(state);
         reporter->set_frame_source(args_.frame_id.source_id);
         reporter->set_frame_sequence(args_.frame_id.sequence_number);
         reporter->set_layer_tree_host_id(layer_tree_host_id_);
-        reporter->set_has_missing_content(has_missing_content_);
-        if (IsDroppedFrameAffectingSmoothness()) {
+        reporter->set_has_missing_content(info.has_missing_content);
+        if (info.IsDroppedAffectingSmoothness()) {
           DCHECK(state == ChromeFrameReporter::STATE_DROPPED ||
                  state == ChromeFrameReporter::STATE_PRESENTED_PARTIAL);
-          reporter->set_affects_smoothness(true);
         }
+        reporter->set_affects_smoothness(info.IsDroppedAffectingSmoothness());
         ChromeFrameReporter::ScrollState scroll_state;
-        switch (scrolling_thread_) {
-          case FrameSequenceMetrics::ThreadType::kMain:
+        switch (info.scroll_thread) {
+          case FrameInfo::SmoothEffectDrivingThread::kMain:
             scroll_state = ChromeFrameReporter::SCROLL_MAIN_THREAD;
             break;
-          case FrameSequenceMetrics::ThreadType::kCompositor:
+          case FrameInfo::SmoothEffectDrivingThread::kCompositor:
             scroll_state = ChromeFrameReporter::SCROLL_COMPOSITOR_THREAD;
             break;
-          case FrameSequenceMetrics::ThreadType::kUnknown:
+          case FrameInfo::SmoothEffectDrivingThread::kUnknown:
             scroll_state = ChromeFrameReporter::SCROLL_NONE;
             break;
         }
@@ -1337,33 +1332,6 @@ base::TimeTicks CompositorFrameReporter::Now() const {
   return tick_clock_->NowTicks();
 }
 
-bool CompositorFrameReporter::IsDroppedFrameAffectingSmoothness() const {
-  // If the frame was not shown, then it hurt smoothness only if either of the
-  // threads is affecting smoothness (e.g. running an animation, scroll, pinch,
-  // etc.).
-  if (TestReportType(FrameReportType::kDroppedFrame)) {
-    return smooth_thread_ != SmoothThread::kSmoothNone;
-  }
-
-  // If the frame includes new main-thread update, even if it's for an earlier
-  // begin-frame, then do not count it as a dropped frame affecting smoothness.
-  if (is_accompanied_by_main_thread_update_) {
-    return false;
-  }
-
-  // If the frame was shown, but included only partial updates, then it hurt
-  // smoothness only if the main-thread is affecting smoothness (e.g. running an
-  // animation, or scroll etc.).
-  if (has_partial_update_) {
-    return smooth_thread_ == SmoothThread::kSmoothMain ||
-           smooth_thread_ == SmoothThread::kSmoothBoth;
-  }
-
-  // If the frame was shown, and did not include partial updates, then this
-  // frame did not hurt smoothness.
-  return false;
-}
-
 void CompositorFrameReporter::AdoptReporter(
     std::unique_ptr<CompositorFrameReporter> reporter) {
   // If |this| reporter is dependent on another reporter to decide about partial
@@ -1405,6 +1373,89 @@ void CompositorFrameReporter::DiscardOldPartialUpdateReporters() {
 
 base::WeakPtr<CompositorFrameReporter> CompositorFrameReporter::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+FrameInfo CompositorFrameReporter::GenerateFrameInfo() const {
+  FrameFinalState final_state = FrameFinalState::kNoUpdateDesired;
+  switch (frame_termination_status_) {
+    case FrameTerminationStatus::kPresentedFrame:
+      if (has_partial_update_) {
+        final_state = is_accompanied_by_main_thread_update_
+                          ? FrameFinalState::kPresentedPartialNewMain
+                          : FrameFinalState::kPresentedPartialOldMain;
+      } else {
+        final_state = FrameFinalState::kPresentedAll;
+      }
+      break;
+
+    case FrameTerminationStatus::kDidNotPresentFrame:
+    case FrameTerminationStatus::kReplacedByNewReporter:
+      final_state = FrameFinalState::kDropped;
+      break;
+
+    case FrameTerminationStatus::kDidNotProduceFrame: {
+      const bool no_update_expected_from_main =
+          frame_skip_reason_.has_value() &&
+          frame_skip_reason() == FrameSkippedReason::kNoDamage;
+      const bool no_update_expected_from_compositor =
+          !has_partial_update_ && frame_skip_reason_.has_value() &&
+          frame_skip_reason() == FrameSkippedReason::kWaitingOnMain;
+      const bool draw_is_throttled =
+          frame_skip_reason_.has_value() &&
+          frame_skip_reason() == FrameSkippedReason::kDrawThrottled;
+
+      if (!no_update_expected_from_main &&
+          !no_update_expected_from_compositor) {
+        final_state = FrameFinalState::kDropped;
+      } else if (draw_is_throttled) {
+        final_state = FrameFinalState::kDropped;
+      } else {
+        final_state = FrameFinalState::kNoUpdateDesired;
+      }
+      break;
+    }
+
+    case FrameTerminationStatus::kUnknown:
+      break;
+  }
+
+  FrameInfo info;
+  info.final_state = final_state;
+  info.smooth_thread = smooth_thread_;
+  info.scroll_thread = scrolling_thread_;
+  info.has_missing_content = has_missing_content_;
+
+  if (frame_skip_reason_.has_value() &&
+      frame_skip_reason() == FrameSkippedReason::kNoDamage) {
+    // If the frame was explicitly skipped because of 'no damage', then that
+    // means this frame contains the response ('no damage') from the
+    // main-thread.
+    info.main_thread_response = FrameInfo::MainThreadResponse::kIncluded;
+  } else if (partial_update_dependents_.size() > 0) {
+    // Only a frame containing a response from the main-thread can have
+    // dependent reporters.
+    info.main_thread_response = FrameInfo::MainThreadResponse::kIncluded;
+  } else if (begin_main_frame_start_.is_null() ||
+             (frame_skip_reason_.has_value() &&
+              frame_skip_reason() == FrameSkippedReason::kWaitingOnMain)) {
+    // If 'begin main frame' never started, or if it started, but it
+    // had to be skipped because it was waiting on the main-thread,
+    // then the main-thread update is missing from this reporter.
+    info.main_thread_response = FrameInfo::MainThreadResponse::kMissing;
+  } else {
+    info.main_thread_response = FrameInfo::MainThreadResponse::kIncluded;
+  }
+
+  if (!stage_history_.empty()) {
+    const auto& stage = stage_history_.back();
+    if (stage.stage_type == StageType::kTotalLatency) {
+      DCHECK_EQ(frame_termination_time_ - args_.frame_time,
+                stage.end_time - stage.start_time);
+      info.total_latency = frame_termination_time_ - args_.frame_time;
+    }
+  }
+
+  return info;
 }
 
 }  // namespace cc

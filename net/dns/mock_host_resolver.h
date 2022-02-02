@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
@@ -28,6 +28,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/dns/host_resolver_results.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/dns/public/mdns_listener_update_type.h"
@@ -139,7 +140,9 @@ class MockHostResolverBase
     };
 
     using ErrorResult = Error;
-    using RuleResult = absl::variant<AddressList, ErrorResult>;
+    using RuleResult = absl::variant<AddressList,
+                                     std::vector<HostResolverEndpointResult>,
+                                     ErrorResult>;
 
     // If `default_result` is nullopt, every resolve must match an added rule.
     explicit RuleResolver(
@@ -380,14 +383,14 @@ class MockHostResolverBase
   // RemoveCancelledListener().
   RequestMap requests_;
   size_t next_request_id_;
-  ProbeRequestImpl* doh_probe_request_ = nullptr;
+  raw_ptr<ProbeRequestImpl> doh_probe_request_ = nullptr;
   std::set<MdnsListenerImpl*> listeners_;
 
   size_t num_resolve_;
   size_t num_resolve_from_cache_;
   size_t num_non_local_resolves_;
 
-  const base::TickClock* tick_clock_;
+  raw_ptr<const base::TickClock> tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
 };

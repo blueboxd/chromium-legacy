@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/compiler_specific.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/common/content_export.h"
@@ -192,10 +193,12 @@ class CONTENT_EXPORT Navigator {
   void CancelNavigation(FrameTreeNode* frame_tree_node);
 
   // Called to record the time it took to execute the beforeunload hook for the
-  // current navigation.
+  // current navigation. See RenderFrameHostImpl::SendBeforeUnload() for details
+  // on `for_legacy`.
   void LogBeforeUnloadTime(base::TimeTicks renderer_before_unload_start_time,
                            base::TimeTicks renderer_before_unload_end_time,
-                           base::TimeTicks before_unload_sent_time);
+                           base::TimeTicks before_unload_sent_time,
+                           bool for_legacy);
 
   // Called to record the time that the RenderFrameHost told the renderer to
   // commit the current navigation.
@@ -237,7 +240,7 @@ class CONTENT_EXPORT Navigator {
 
   // Used to notify the object embedding this Navigator about navigation
   // events. Can be nullptr in tests.
-  NavigatorDelegate* delegate_;
+  raw_ptr<NavigatorDelegate> delegate_;
 
   std::unique_ptr<Navigator::NavigationMetricsData> navigation_data_;
 };

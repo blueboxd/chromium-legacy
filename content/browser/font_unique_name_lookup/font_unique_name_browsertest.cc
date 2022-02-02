@@ -119,23 +119,6 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
     feature_list_.InitAndEnableFeature(features::kFontSrcLocalMatching);
   }
 
-#if defined(OS_WIN)
-  void PreRunTestOnMainThread() override {
-    DWriteFontLookupTableBuilder* table_builder =
-        DWriteFontLookupTableBuilder::GetInstance();
-    table_builder->ResetStateForTesting();
-    table_builder->SchedulePrepareFontUniqueNameTableIfNeeded();
-    DevToolsProtocolTest::PreRunTestOnMainThread();
-  }
-
-  void PostRunTestOnMainThread() override {
-    DWriteFontLookupTableBuilder* table_builder =
-        DWriteFontLookupTableBuilder::GetInstance();
-    table_builder->ResetStateForTesting();
-    DevToolsProtocolTest::PostRunTestOnMainThread();
-  }
-#endif
-
   void LoadAndWait(const std::string& url) {
     base::ScopedAllowBlockingForTesting blocking_for_load;
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -153,8 +136,16 @@ class FontUniqueNameBrowserTest : public DevToolsProtocolTest {
 #endif
 };
 
+// TODO(crbug.com/949181): Make this work on Fuchsia.
 #if !defined(OS_FUCHSIA)
-IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest, ContentLocalFontsMatching) {
+// TODO(crbug.com/1270151): Fix this on Android 11 and 12.
+#if defined(OS_ANDROID)
+#define MAYBE_ContentLocalFontsMatching DISABLED_ContentLocalFontsMatching
+#else
+#define MAYBE_ContentLocalFontsMatching ContentLocalFontsMatching
+#endif
+IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest,
+                       MAYBE_ContentLocalFontsMatching) {
   LoadAndWait("/font_src_local_matching.html");
   Attach();
 

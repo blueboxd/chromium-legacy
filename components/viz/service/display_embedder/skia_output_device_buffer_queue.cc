@@ -41,6 +41,10 @@ NOINLINE void CheckForLoopFailuresBufferQueue() {
   g_last_reshape_failure = now;
 }
 
+// See |needs_background_image| for details.
+constexpr size_t kNumberOfBackgroundImages = 2u;
+constexpr gfx::Size kBackgroundImageSize(4, 4);
+
 }  // namespace
 
 namespace viz {
@@ -154,17 +158,24 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDoubleBufferCompositing))
     capabilities_.number_of_buffers = 2;
-  capabilities_.max_frames_pending = capabilities_.number_of_buffers - 1;
+  capabilities_.pending_swap_params.max_pending_swaps =
+      capabilities_.number_of_buffers - 1;
 #if defined(OS_ANDROID)
   if (::features::IncreaseBufferCountForHighFrameRate() &&
       capabilities_.number_of_buffers == 5) {
-    capabilities_.max_frames_pending = 2;
-    capabilities_.max_frames_pending_120hz = 4;
+    capabilities_.pending_swap_params.max_pending_swaps = 2;
+    capabilities_.pending_swap_params.max_pending_swaps_90hz = 3;
+    capabilities_.pending_swap_params.max_pending_swaps_120hz = 4;
   }
 #endif
-  DCHECK_LT(capabilities_.max_frames_pending, capabilities_.number_of_buffers);
-  DCHECK_LT(capabilities_.max_frames_pending_120hz.value_or(0),
+  DCHECK_LT(capabilities_.pending_swap_params.max_pending_swaps,
             capabilities_.number_of_buffers);
+  DCHECK_LT(
+      capabilities_.pending_swap_params.max_pending_swaps_90hz.value_or(0),
+      capabilities_.number_of_buffers);
+  DCHECK_LT(
+      capabilities_.pending_swap_params.max_pending_swaps_120hz.value_or(0),
+      capabilities_.number_of_buffers);
 
   presenter_->InitializeCapabilities(&capabilities_);
 
@@ -241,16 +252,14 @@ bool SkiaOutputDeviceBufferQueue::IsPrimaryPlaneOverlay() const {
 void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
     const absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
         plane) {
-  if (background_image_ && !background_image_is_scheduled_) {
-    background_image_->BeginPresent();
-    presenter_->ScheduleBackground(background_image_.get());
-    background_image_is_scheduled_ = true;
-  }
+  // See |needs_background_image|.
+  MaybeScheduleBackgroundImage();
 
   if (plane) {
     // If the current_image_ is nullptr, it means there is no change on the
     // primary plane. So we just need to schedule the last submitted image.
-    auto* image = current_image_ ? current_image_ : submitted_image_;
+    auto* image =
+        current_image_ ? current_image_.get() : submitted_image_.get();
     // |image| can be null if there was a fullscreen overlay last frame (e.g.
     // no primary plane). If the fullscreen quad suddenly fails the fullscreen
     // overlay check this frame (e.g. TestPageFlip failing) and then gets
@@ -636,11 +645,8 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 
   overlay_transform_ = transform;
 
-  if (needs_background_image_ && !background_image_) {
-    background_image_ =
-        presenter_->AllocateSingleImage(color_space, gfx::Size(4, 4));
-    background_image_is_scheduled_ = false;
-  }
+  // See |needs_background_image|.
+  MaybeAllocateBackgroundImages();
 
   if (color_space_ == color_space && image_size_ == size)
     return true;
@@ -673,6 +679,40 @@ bool SkiaOutputDeviceBufferQueue::RecreateImages() {
 
   DCHECK(images_.empty() || images_.size() == number_to_allocate);
   return !images_.empty();
+}
+
+void SkiaOutputDeviceBufferQueue::MaybeAllocateBackgroundImages() {
+  if (!needs_background_image_ || !background_images_.empty())
+    return;
+
+  background_images_ = presenter_->AllocateImages(
+      color_space_, kBackgroundImageSize, kNumberOfBackgroundImages);
+  DCHECK(!background_images_.empty());
+
+  // Clear the background images to avoid undesired artifacts.
+  for (auto& image : background_images_) {
+    image->BeginWriteSkia();
+    image->sk_surface()->getCanvas()->clear(SkColors::kTransparent);
+    image->EndWriteSkia(/*force_flush*/ true);
+  }
+}
+
+void SkiaOutputDeviceBufferQueue::MaybeScheduleBackgroundImage() {
+  if (!needs_background_image_)
+    return;
+
+  if (current_background_image_)
+    current_background_image_->EndPresent({});
+  current_background_image_ = GetNextBackgroundImage();
+  current_background_image_->BeginPresent();
+  presenter_->ScheduleBackground(current_background_image_);
+}
+
+OutputPresenter::Image* SkiaOutputDeviceBufferQueue::GetNextBackgroundImage() {
+  DCHECK_EQ(background_images_.size(), kNumberOfBackgroundImages);
+  return current_background_image_ == background_images_.front().get()
+             ? background_images_.back().get()
+             : background_images_.front().get();
 }
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(

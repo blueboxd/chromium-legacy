@@ -359,8 +359,6 @@ struct BLINK_EXPORT WebNavigationParams {
   // document.
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
-  // The AppCache host id for this navigation.
-  base::UnguessableToken appcache_host_id;
 
   // This is `true` only for commit requests coming from
   // `RenderFrameImpl::SynchronouslyConmmitAboutBlankForBug778318`.
@@ -441,6 +439,11 @@ struct BLINK_EXPORT WebNavigationParams {
 
   // List of URLs which are preloaded by HTTP Early Hints.
   WebVector<WebURL> early_hints_preloaded_resources;
+
+  // If this is a navigation to fenced frame from an interest group auction,
+  // contains URNs mapped to the ad components returned by the winning bid.
+  // Null, otherwise.
+  absl::optional<WebVector<WebURL>> ad_auction_components;
 };
 
 }  // namespace blink

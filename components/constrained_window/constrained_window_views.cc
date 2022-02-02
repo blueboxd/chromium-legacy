@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "components/constrained_window/constrained_window_views.h"
+#include "base/memory/raw_ptr.h"
 
 #include <algorithm>
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "components/constrained_window/constrained_window_views_client.h"
@@ -87,8 +87,8 @@ class WidgetModalDialogHostObserverViews : public views::WidgetObserver,
   }
 
  private:
-  ModalDialogHost* host_;
-  views::Widget* target_widget_;
+  raw_ptr<ModalDialogHost> host_;
+  raw_ptr<views::Widget> target_widget_;
   const char* const native_window_property_;
 };
 

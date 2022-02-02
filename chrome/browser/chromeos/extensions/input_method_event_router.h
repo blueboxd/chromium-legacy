@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_EVENT_ROUTER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_INPUT_METHOD_EVENT_ROUTER_H_
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 
 namespace content {

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="102360288709523007">Saidia kuboresha Chromium kwa kutuma takwimu za matumizi na ripoti za kuacha kufanya kazi kwa Google.</translation>
+<translation id="1047130070405668746">Chagua Chromium</translation>
 <translation id="1185134272377778587">Kuhusu Chromium</translation>
 <translation id="1257458525759135959">Ili uhifadhi picha, gusa Mipangilio ili uruhusu Chromium iweke kwenye picha zako</translation>
 <translation id="1289216811211435351">Badilisha utumie Chromium</translation>
@@ -13,10 +14,12 @@
 <translation id="1531155317299575425">Huonyesha vidokezo vya kuingia katika akaunti kwenye Chromium.</translation>
 <translation id="1584569488888892906">Chromium ni rahisi, salama na yenye kasi zaidi</translation>
 <translation id="1617663976202781617">Data kutoka usawazishaji wa Chromium</translation>
+<translation id="1722370509450468186">Nenosiri lako litahifadhiwa katika Akaunti yako (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Imefuta data ya Chromium</translation>
 <translation id="1838412507805038478">Chromium imethibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii.</translation>
 <translation id="1843424232666537147">Chromium ina vipengele vinavyokusaidia kudhibiti data yako ya intaneti na kasi unayoweza kupakia nayo kurasa za wavuti.
 <ph name="BEGIN_LINK" />Pata maelezo zaidi<ph name="END_LINK" /></translation>
+<translation id="1867772173333403444">4. Chagua Chromium</translation>
 <translation id="2006345422933397527">Chromium imeshindwa kukagua kama kuna masasisho. Jaribu kuangalia muunganisho wako wa Intaneti.</translation>
 <translation id="2054703085270098503">Kaa Salama Kwa Kutumia Chromium</translation>
 <translation id="2168108852149185974">Baadhi ya programu jalizi husababisha Chromium iache kufanya kazi. Tafadhali ondoa:</translation>
@@ -78,6 +81,7 @@
 <translation id="7099326575020694068">Chromium imeshindwa kutumia kamera yako katika hali ya Mwonekano wa Madirisha Mawili</translation>
 <translation id="7108914401277488191">Fanya Mengi Zaidi kwa kutumia Chromium</translation>
 <translation id="7118091470949186573">Sasa unaweza kutumia Chromium wakati wowote unapogusa viungo katika ujumbe, hati na programu zingine.</translation>
+<translation id="7175400662502680481">Nenosiri lako limefichuliwa katika tukio la ufichuzi haramu wa data. Kidhibiti cha Manenosiri kinapendekeza ulibadilishe sasa hivi.</translation>
 <translation id="7208566199746267865">Chromium inaokoa muda wako kwa kuleta akaunti zako kwenye wavuti. Unaweza kuongeza au kuondoa akaunti katika Mipangilio.</translation>
 <translation id="725427773388857052">Chromium inaweza kukusaidia ulinde akaunti yako dhidi ya ufichuzi haramu wa data, tovuti ambazo si salama na zaidi.</translation>
 <translation id="7269362888766543920">Baadhi ya programu jalizi husababisha Chromium iache kufanya kazi. Tafadhali jaribu kuziondoa.</translation>

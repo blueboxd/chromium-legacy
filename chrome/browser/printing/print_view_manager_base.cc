@@ -21,6 +21,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
@@ -86,11 +87,10 @@ using PrintSettingsCallback =
     base::OnceCallback<void(std::unique_ptr<PrinterQuery>)>;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-crosapi::mojom::PrintJobPtr PrintJobToMojom(
-    const JobEventDetails& event_details,
-    PrintJob::Source source,
-    const std::string& source_id) {
-  PrintedDocument* document = event_details.document();
+crosapi::mojom::PrintJobPtr PrintJobToMojom(int job_id,
+                                            PrintedDocument* document,
+                                            PrintJob::Source source,
+                                            const std::string& source_id) {
   std::u16string title = SimplifyDocumentTitle(document->name());
   if (title.empty()) {
     title = SimplifyDocumentTitle(
@@ -102,8 +102,7 @@ crosapi::mojom::PrintJobPtr PrintJobToMojom(
   DCHECK(duplex < 3);
   return crosapi::mojom::PrintJob::New(
       base::UTF16ToUTF8(settings.device_name()), base::UTF16ToUTF8(title),
-      event_details.job_id(), document->page_count(), source, source_id,
-      settings.color(),
+      job_id, document->page_count(), source, source_id, settings.color(),
       static_cast<crosapi::mojom::PrintJob::DuplexMode>(duplex),
       settings.requested_media().size_microns,
       settings.requested_media().vendor_id, settings.copies());
@@ -204,26 +203,7 @@ mojom::PrintPagesParamsPtr CreateEmptyPrintPagesParamsPtr() {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #if defined(OS_WIN)
-content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
-                                                   int render_frame_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::RenderFrameHost* frame =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return frame ? content::WebContents::FromRenderFrameHost(frame) : nullptr;
-}
-
-PrintViewManager* GetPrintViewManager(int render_process_id,
-                                      int render_frame_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::WebContents* web_contents =
-      GetWebContentsForRenderFrame(render_process_id, render_frame_id);
-  return web_contents ? PrintViewManager::FromWebContents(web_contents)
-                      : nullptr;
-}
-
-void NotifySystemDialogCancelled(int render_process_id, int routing_id) {
-  PrintViewManager* manager =
-      GetPrintViewManager(render_process_id, routing_id);
+void NotifySystemDialogCancelled(base::WeakPtr<PrintViewManagerBase> manager) {
   if (manager)
     manager->SystemDialogCancelled();
 }
@@ -233,8 +213,7 @@ void UpdatePrintSettingsReplyOnIO(
     scoped_refptr<PrintQueriesQueue> queue,
     std::unique_ptr<PrinterQuery> printer_query,
     mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-    int process_id,
-    int routing_id) {
+    base::WeakPtr<PrintViewManagerBase> manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(printer_query);
   mojom::PrintPagesParamsPtr params = CreateEmptyPrintPagesParamsPtr();
@@ -249,7 +228,7 @@ void UpdatePrintSettingsReplyOnIO(
   if (canceled) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE,
-        base::BindOnce(&NotifySystemDialogCancelled, process_id, routing_id));
+        base::BindOnce(&NotifySystemDialogCancelled, std::move(manager)));
   }
 #endif
 
@@ -269,8 +248,7 @@ void UpdatePrintSettingsOnIO(
     mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
     scoped_refptr<PrintQueriesQueue> queue,
     base::Value job_settings,
-    int process_id,
-    int routing_id) {
+    base::WeakPtr<PrintViewManagerBase> manager) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<PrinterQuery> printer_query = queue->PopPrinterQuery(cookie);
   if (!printer_query) {
@@ -281,8 +259,8 @@ void UpdatePrintSettingsOnIO(
   printer_query_ptr->SetSettings(
       std::move(job_settings),
       base::BindOnce(&UpdatePrintSettingsReplyOnIO, queue,
-                     std::move(printer_query), std::move(callback), process_id,
-                     routing_id));
+                     std::move(printer_query), std::move(callback),
+                     std::move(manager)));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -355,10 +333,6 @@ PrintViewManagerBase::~PrintViewManagerBase() {
 }
 
 bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
-  // Remember the ID for `rfh`, to enable checking that the `RenderFrameHost`
-  // is still valid after a possible inner message loop runs in
-  // `DisconnectFromCurrentPrintJob()`.
-  content::GlobalRenderFrameHostId rfh_id = rfh->GetGlobalId();
   auto weak_this = weak_ptr_factory_.GetWeakPtr();
   DisconnectFromCurrentPrintJob();
   if (!weak_this)
@@ -366,10 +340,6 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 
   // Don't print / print preview crashed tabs.
   if (IsCrashed())
-    return false;
-
-  // Don't print if `rfh` is no longer live.
-  if (!content::RenderFrameHost::FromID(rfh_id) || !rfh->IsRenderFrameLive())
     return false;
 
   // TODO(crbug.com/809738)  Register with `PrintBackendServiceManager` when
@@ -697,16 +667,14 @@ void PrintViewManagerBase::UpdatePrintSettings(
       job_settings.SetIntKey(kSettingRasterizePdfDpi, value);
   }
 
-  content::RenderFrameHost* render_frame_host = GetCurrentTargetFrame();
   auto callback_wrapper =
       base::BindOnce(&PrintViewManagerBase::UpdatePrintSettingsReply,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&UpdatePrintSettingsOnIO, cookie,
-                                std::move(callback_wrapper), queue_,
-                                std::move(job_settings),
-                                render_frame_host->GetProcess()->GetID(),
-                                render_frame_host->GetRoutingID()));
+      FROM_HERE,
+      base::BindOnce(&UpdatePrintSettingsOnIO, cookie,
+                     std::move(callback_wrapper), queue_,
+                     std::move(job_settings), weak_ptr_factory_.GetWeakPtr()));
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -715,7 +683,18 @@ void PrintViewManagerBase::ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* render_frame_host = GetCurrentTargetFrame();
-  int process_id = render_frame_host->GetProcess()->GetID();
+  content::RenderProcessHost* render_process_host =
+      render_frame_host->GetProcess();
+  if (params->is_scripted && render_frame_host->IsNestedWithinFencedFrame()) {
+    // The renderer should have checked and disallowed the request for fenced
+    // frames in ChromeClient. Ignore the request and mark it as bad if it
+    // didn't happen for some reason.
+    bad_message::ReceivedBadMessage(
+        render_process_host, bad_message::PVMB_SCRIPTED_PRINT_FENCED_FRAME);
+    std::move(callback).Run(CreateEmptyPrintPagesParamsPtr());
+    return;
+  }
+  int process_id = render_process_host->GetID();
   int routing_id = render_frame_host->GetRoutingID();
   auto callback_wrapper = base::BindOnce(
       &PrintViewManagerBase::ScriptedPrintReply, weak_ptr_factory_.GetWeakPtr(),
@@ -803,49 +782,34 @@ void PrintViewManagerBase::SystemDialogCancelled() {
 }
 #endif
 
-void PrintViewManagerBase::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_EVENT, type);
-  OnNotifyPrintJobEvent(*content::Details<JobEventDetails>(details).ptr());
-}
-
-void PrintViewManagerBase::OnNotifyPrintJobEvent(
-    const JobEventDetails& event_details) {
-  switch (event_details.type()) {
-    case JobEventDetails::FAILED: {
-      TerminatePrintJob(true);
-      break;
-    }
-    case JobEventDetails::DOC_DONE: {
+void PrintViewManagerBase::OnDocDone(int job_id, PrintedDocument* document) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-      chromeos::LacrosService* service = chromeos::LacrosService::Get();
-      if (!service->IsAvailable<crosapi::mojom::LocalPrinter>()) {
-        LOG(ERROR) << "Could not report print job queued";
-      } else {
-        service->GetRemote<crosapi::mojom::LocalPrinter>()->CreatePrintJob(
-            PrintJobToMojom(event_details, print_job_->source(),
-                            print_job_->source_id()),
-            base::DoNothing());
-      }
+  chromeos::LacrosService* service = chromeos::LacrosService::Get();
+  if (!service->IsAvailable<crosapi::mojom::LocalPrinter>()) {
+    LOG(ERROR) << "Could not report print job queued";
+  } else {
+    service->GetRemote<crosapi::mojom::LocalPrinter>()->CreatePrintJob(
+        PrintJobToMojom(job_id, document, print_job_->source(),
+                        print_job_->source_id()),
+        base::DoNothing());
+  }
 #endif
 #if defined(OS_ANDROID)
-      DCHECK_LE(number_pages(), kMaxPageCount);
-      PdfWritingDone(base::checked_cast<int>(number_pages()));
+  DCHECK_LE(number_pages(), kMaxPageCount);
+  PdfWritingDone(base::checked_cast<int>(number_pages()));
 #endif
-      break;
-    }
-    case JobEventDetails::JOB_DONE:
-      // Printing is done, we don't need it anymore.
-      // print_job_->is_job_pending() may still be true, depending on the order
-      // of object registration.
-      printing_succeeded_ = true;
-      ReleasePrintJob();
-      break;
-    default:
-      break;
-  }
+}
+
+void PrintViewManagerBase::OnJobDone() {
+  // Printing is done, we don't need it anymore.
+  // print_job_->is_job_pending() may still be true, depending on the order
+  // of object registration.
+  printing_succeeded_ = true;
+  ReleasePrintJob();
+}
+
+void PrintViewManagerBase::OnFailed() {
+  TerminatePrintJob(true);
 }
 
 bool PrintViewManagerBase::RenderAllMissingPagesNow() {
@@ -927,9 +891,8 @@ bool PrintViewManagerBase::CreateNewPrintJob(
                             : PrintJob::Source::PRINT_PREVIEW,
                         /*source_id=*/"");
 #endif
+  print_job_->AddObserver(*this);
 
-  registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                 content::Source<PrintJob>(print_job_.get()));
   printing_succeeded_ = false;
   return true;
 }
@@ -984,15 +947,11 @@ void PrintViewManagerBase::ReleasePrintJob() {
   if (!print_job_)
     return;
 
-  if (rfh) {
-    // printing_rfh_ should only ever point to a RenderFrameHost with a live
-    // RenderFrame.
-    DCHECK(rfh->IsRenderFrameLive());
+  if (rfh)
     GetPrintRenderFrame(rfh)->PrintingDone(printing_succeeded_);
-  }
 
-  registrar_.Remove(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
-                    content::Source<PrintJob>(print_job_.get()));
+  print_job_->RemoveObserver(*this);
+
   // Don't close the worker thread.
   print_job_ = nullptr;
 }
@@ -1085,10 +1044,6 @@ void PrintViewManagerBase::SetPrintingRFH(content::RenderFrameHost* rfh) {
     return;
   }
   DCHECK(!printing_rfh_);
-  // Protect against future unsafety, since printing_rfh_ is cleared by
-  // RenderFrameDeleted(), which will not be called if the render frame is not
-  // live.
-  CHECK(rfh->IsRenderFrameLive());
   printing_rfh_ = rfh;
 }
 
@@ -1115,8 +1070,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
 void PrintViewManagerBase::SendPrintingEnabled(bool enabled,
                                                content::RenderFrameHost* rfh) {
-  if (rfh->IsRenderFrameLive())
-    GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
+  GetPrintRenderFrame(rfh)->SetPrintingEnabled(enabled);
 }
 
 }  // namespace printing

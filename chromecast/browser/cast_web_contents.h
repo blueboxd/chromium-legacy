@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -124,6 +125,12 @@ class CastWebContents : public mojom::CastWebContents {
     // main frame.
     virtual void MainFrameReadyToCommitNavigation(
         content::NavigationHandle* navigation_handle) {}
+
+    // Notify that an inner WebContents was created. |inner_contents| is created
+    // in a default-initialized state with no delegate, and can be safely
+    // initialized by the delegate.
+    virtual void InnerContentsCreated(CastWebContents* inner_contents,
+                                      CastWebContents* outer_contents) {}
 
     // Sets |cast_web_contents_| to |nullptr| but does not remove the Observer
     // from the ObserverList. Called for each Observer during CastWebContents
@@ -260,15 +267,24 @@ class CastWebContents : public mojom::CastWebContents {
   // Returns true if mixer audio is enabled.
   virtual bool is_mixer_audio_enabled() = 0;
 
-  // Binds a receiver for remote control of CastWebContents.
-  void BindReceiver(mojo::PendingReceiver<mojom::CastWebContents> receiver);
+  // Binds an owning receiver for remote control of CastWebContents. When the
+  // CastWebContents is managed by CastWebService, its lifetime is scoped to the
+  // duration of the connection. Only one owner can be bound at a time.
+  void BindOwnerReceiver(
+      mojo::PendingReceiver<mojom::CastWebContents> receiver);
+
+  // Binds a non-owning receiver for CastWebContents. This can be called by
+  // multiple clients.
+  void BindSharedReceiver(
+      mojo::PendingReceiver<mojom::CastWebContents> receiver);
 
   // |cb| is called when |receiver_| is disconnected. This allows the web
   // service to destroy CastWebContents which are owned via a remote handle.
   void SetDisconnectCallback(base::OnceClosure cb);
 
  protected:
-  mojo::Receiver<mojom::CastWebContents> receiver_{this};
+  mojo::Receiver<mojom::CastWebContents> owner_receiver_{this};
+  mojo::ReceiverSet<mojom::CastWebContents> shared_receivers_;
   mojo::RemoteSet<mojom::CastWebContentsObserver> observers_;
   base::ObserverList<Observer> sync_observers_;
 

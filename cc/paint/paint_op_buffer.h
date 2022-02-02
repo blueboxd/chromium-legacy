@@ -20,6 +20,7 @@
 #include "base/containers/stack_container.h"
 #include "base/debug/alias.h"
 #include "base/memory/aligned_memory.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "cc/base/math_util.h"
@@ -29,6 +30,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skottie_frame_data.h"
 #include "cc/paint/skottie_resource_metadata.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -49,7 +51,6 @@ namespace cc {
 class ClientPaintCache;
 class ImageProvider;
 class ServicePaintCache;
-class SkottieWrapper;
 class TransferCacheDeserializeHelper;
 class TransferCacheSerializeHelper;
 
@@ -139,7 +140,10 @@ struct CC_PAINT_EXPORT PlaybackParams {
   PlaybackParams(const PlaybackParams& other);
   PlaybackParams& operator=(const PlaybackParams& other);
 
+  // `image_provider` is not a raw_ptr<...> for performance reasons (based on
+  // analysis of sampling profiler data and tab_search:top100:2020).
   ImageProvider* image_provider;
+
   SkM44 original_ctm;
   CustomDataRasterCallback custom_callback;
   DidDrawOpCallback did_draw_op_callback;
@@ -175,20 +179,22 @@ class CC_PAINT_EXPORT PaintOp {
                      sk_sp<SkColorSpace> color_space,
                      bool can_use_lcd_text,
                      bool context_supports_distance_field_text,
-                     int max_texture_size);
+                     int max_texture_size,
+                     bool raw_draw = false);
     SerializeOptions(const SerializeOptions&);
     SerializeOptions& operator=(const SerializeOptions&);
     ~SerializeOptions();
 
     // Required.
-    ImageProvider* image_provider = nullptr;
-    TransferCacheSerializeHelper* transfer_cache = nullptr;
-    ClientPaintCache* paint_cache = nullptr;
-    SkStrikeServer* strike_server = nullptr;
+    raw_ptr<ImageProvider> image_provider = nullptr;
+    raw_ptr<TransferCacheSerializeHelper> transfer_cache = nullptr;
+    raw_ptr<ClientPaintCache> paint_cache = nullptr;
+    raw_ptr<SkStrikeServer> strike_server = nullptr;
     sk_sp<SkColorSpace> color_space = nullptr;
     bool can_use_lcd_text = false;
     bool context_supports_distance_field_text = true;
     int max_texture_size = 0;
+    bool raw_draw = false;
 
     // TODO(crbug.com/1096123): Cleanup after study completion.
     //
@@ -579,9 +585,6 @@ class CC_PAINT_EXPORT DrawImageOp final : public PaintOpWithFlags {
   SkSamplingOptions sampling;
 
  private:
-  // For access to serialization helper functions.
-  friend class DrawSkottieOp;
-
   DrawImageOp();
 
   // Scale that has already been applied to the decoded image during
@@ -803,9 +806,6 @@ class CC_PAINT_EXPORT DrawRRectOp final : public PaintOpWithFlags {
 
 class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
  public:
-  // TODO(crbug.com/1266047): Override HasDiscardableImages() to reflect the
-  // contents of |images|. Feature is currently under development and just
-  // haven't gotten to it yet.
   static constexpr PaintOpType kType = PaintOpType::DrawSkottie;
   static constexpr bool kIsDrawOp = true;
   DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie,
@@ -820,6 +820,7 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
     return !!skottie && !dst.isEmpty() && t >= 0 && t <= 1.f;
   }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
+  bool HasDiscardableImages() const;
   HAS_SERIALIZATION_FUNCTIONS();
 
   scoped_refptr<SkottieWrapper> skottie;
@@ -833,14 +834,19 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
   SkottieFrameDataMap images;
 
  private:
-  static sk_sp<SkImage> GetImageAssetForRaster(
-      const SkottieFrameData& frame_data,
+  SkottieWrapper::FrameDataFetchResult GetImageAssetForRaster(
       SkCanvas* canvas,
-      const PlaybackParams& params);
+      const PlaybackParams& params,
+      SkottieResourceIdHash asset_id,
+      float t_frame,
+      sk_sp<SkImage>& image_out,
+      SkSamplingOptions& sampling_out) const;
 
   DrawSkottieOp();
 };
 
+// TODO(penghuang): Replace DrawTextBlobOp with DrawSlugOp, when GrSlug can be
+// serialized.
 class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
  public:
   static constexpr PaintOpType kType = PaintOpType::DrawTextBlob;
@@ -869,6 +875,7 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
   SkScalar y;
   // This field isn't serialized.
   NodeId node_id = kInvalidNodeId;
+  absl::optional<SkMatrix> hint;
 
  private:
   DrawTextBlobOp();
@@ -1248,8 +1255,11 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       DCHECK(!buffer->are_ops_destroyed());
     }
 
+    // `buffer_` and `ptr_` are not a raw_ptr<...> for performance reasons
+    // (based on analysis of sampling profiler data and tab_search:top100:2020).
     const PaintOpBuffer* buffer_ = nullptr;
     char* ptr_ = nullptr;
+
     size_t op_offset_ = 0;
   };
 
@@ -1313,9 +1323,13 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       DCHECK(!buffer->are_ops_destroyed());
     }
 
+    // `buffer_`, `ptr_`, and `offsets_` are not a raw_ptr<...> for performance
+    // reasons (based on analysis of sampling profiler data and
+    // tab_search:top100:2020).
     const PaintOpBuffer* buffer_ = nullptr;
     char* ptr_ = nullptr;
     const std::vector<size_t>* offsets_;
+
     size_t op_offset_ = 0;
     size_t offsets_index_ = 0;
   };
@@ -1388,7 +1402,11 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     // FIFO queue of paint ops that have been peeked at.
     base::StackVector<const PaintOp*, 3> stack_;
     DrawColorOp folded_draw_color_;
+
+    // `current_op_` is not a raw_ptr<...> for performance reasons (based on
+    // analysis of sampling profiler data and tab_search:top100:2020).
     const PaintOp* current_op_ = nullptr;
+
     uint8_t current_alpha_ = 255;
   };
 

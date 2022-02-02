@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/immediate_crash.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,8 +23,10 @@
 #include "net/dns/dns_util.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
+#include "net/dns/host_resolver_results.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/resolve_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -47,6 +48,11 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
   const absl::optional<AddressList>& GetAddressResults() const override {
     static base::NoDestructor<absl::optional<AddressList>> nullopt_result;
     return *nullopt_result;
+  }
+
+  absl::optional<std::vector<HostResolverEndpointResult>> GetEndpointResults()
+      const override {
+    return absl::nullopt;
   }
 
   const absl::optional<std::vector<std::string>>& GetTextResults()
@@ -258,6 +264,24 @@ int HostResolver::SquashErrorCode(int error) {
   } else {
     return ERR_NAME_NOT_RESOLVED;
   }
+}
+
+// static
+std::vector<HostResolverEndpointResult>
+HostResolver::AddressListToEndpointResults(const AddressList& address_list) {
+  HostResolverEndpointResult connection_endpoint;
+
+  connection_endpoint.ip_endpoints = address_list.endpoints();
+
+  // AddressList always assumes a single alias name. Not completely accurate to
+  // assume it is valid for both address families, but only as inaccurate as
+  // AddressList has always been.
+  connection_endpoint.ipv4_alias_name = address_list.GetCanonicalName();
+  connection_endpoint.ipv6_alias_name = address_list.GetCanonicalName();
+
+  std::vector<HostResolverEndpointResult> list;
+  list.push_back(std::move(connection_endpoint));
+  return list;
 }
 
 HostResolver::HostResolver() = default;

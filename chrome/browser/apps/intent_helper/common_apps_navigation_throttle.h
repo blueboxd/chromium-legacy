@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
@@ -42,10 +41,8 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
 
  private:
   bool ShouldCancelNavigation(content::NavigationHandle* handle) override;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   bool ShouldShowDisablePage(content::NavigationHandle* handle) override;
   ThrottleCheckResult MaybeShowCustomResult() override;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 }  // namespace apps

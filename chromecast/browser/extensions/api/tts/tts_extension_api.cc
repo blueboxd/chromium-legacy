@@ -219,33 +219,35 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
     }
   }
 
-  bool can_enqueue = false;
-  if (options->HasKey(constants::kEnqueueKey)) {
-    EXTENSION_FUNCTION_VALIDATE(
-        options->GetBoolean(constants::kEnqueueKey, &can_enqueue));
+  bool can_enqueue =
+      options->FindBoolKey(constants::kEnqueueKey).value_or(false);
+  if (base::Value* value = options->FindKey(constants::kEnqueueKey)) {
+    EXTENSION_FUNCTION_VALIDATE(value->is_bool());
   }
 
   std::set<content::TtsEventType> required_event_types;
   if (options->HasKey(constants::kRequiredEventTypesKey)) {
-    base::ListValue* list;
-    EXTENSION_FUNCTION_VALIDATE(
-        options->GetList(constants::kRequiredEventTypesKey, &list));
-    for (size_t i = 0; i < list->GetList().size(); ++i) {
-      std::string event_type;
-      if (list->GetString(i, &event_type))
-        required_event_types.insert(TtsEventTypeFromString(event_type.c_str()));
+    const base::Value* list =
+        options->FindListKey(constants::kRequiredEventTypesKey);
+    EXTENSION_FUNCTION_VALIDATE(list);
+    for (const base::Value& i : list->GetList()) {
+      const std::string* event_type = i.GetIfString();
+      if (event_type) {
+        required_event_types.insert(
+            TtsEventTypeFromString(event_type->c_str()));
+      }
     }
   }
 
   std::set<content::TtsEventType> desired_event_types;
   if (options->HasKey(constants::kDesiredEventTypesKey)) {
-    base::ListValue* list;
-    EXTENSION_FUNCTION_VALIDATE(
-        options->GetList(constants::kDesiredEventTypesKey, &list));
-    for (size_t i = 0; i < list->GetList().size(); ++i) {
-      std::string event_type;
-      if (list->GetString(i, &event_type))
-        desired_event_types.insert(TtsEventTypeFromString(event_type.c_str()));
+    const base::Value* list =
+        options->FindListKey(constants::kDesiredEventTypesKey);
+    EXTENSION_FUNCTION_VALIDATE(list);
+    for (const base::Value& i : list->GetList()) {
+      const std::string* event_type = i.GetIfString();
+      if (event_type)
+        desired_event_types.insert(TtsEventTypeFromString(event_type->c_str()));
     }
   }
 

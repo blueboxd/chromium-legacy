@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
+#include "base/memory/raw_ptr.h"
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -55,7 +57,8 @@ class TestHostFrameSinkManager : public HostFrameSinkManager {
 class TestFrameSinkManagerImpl : public FrameSinkManagerImpl {
  public:
   explicit TestFrameSinkManagerImpl(SharedBitmapManager* shared_bitmap_manager)
-      : FrameSinkManagerImpl(shared_bitmap_manager) {}
+      : FrameSinkManagerImpl(
+            FrameSinkManagerImpl::InitParams(shared_bitmap_manager)) {}
 
   TestFrameSinkManagerImpl(const TestFrameSinkManagerImpl&) = delete;
   TestFrameSinkManagerImpl& operator=(const TestFrameSinkManagerImpl&) = delete;
@@ -77,7 +80,7 @@ class TestFrameSinkManagerImpl : public FrameSinkManagerImpl {
   }
 
  private:
-  TestHostFrameSinkManager* host_client_ = nullptr;
+  raw_ptr<TestHostFrameSinkManager> host_client_ = nullptr;
 };
 
 }  // namespace

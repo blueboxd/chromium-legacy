@@ -287,21 +287,25 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // aren't painted by the PDF engine).
   void CalculateBackgroundParts();
 
-  // Updates the scroll position. `scroll_offset` is in CSS pixels relative to
-  // the scroll origin (which depends on the UI direction).
-  void UpdateScroll(const gfx::Vector2dF& scroll_offset);
+  // Updates the scroll position, which is in CSS pixels relative to the
+  // top-left corner.
+  void UpdateScroll(const gfx::PointF& scroll_position);
 
   // Computes document width/height in device pixels, based on current zoom and
   // device scale
   int GetDocumentPixelWidth() const;
   int GetDocumentPixelHeight() const;
 
+  // Common `pdf::mojom::PdfListener` implementations.
+  void SetCaretPosition(const gfx::PointF& position);
+  void MoveRangeSelectionExtent(const gfx::PointF& extent);
+  void SetSelectionBounds(const gfx::PointF& base, const gfx::PointF& extent);
+
   // Sets the text input type for this plugin based on `in_focus`.
   virtual void SetFormTextFieldInFocus(bool in_focus) = 0;
 
   // Sets the accessibility information about the PDF document in the renderer.
-  virtual void SetAccessibilityDocInfo(
-      const AccessibilityDocInfo& doc_info) = 0;
+  virtual void SetAccessibilityDocInfo(AccessibilityDocInfo doc_info) = 0;
 
   // Sets the accessibility information about the given `page_index` in the
   // renderer.
@@ -323,7 +327,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Sets the accessibility information about the current viewport in the
   // renderer.
   virtual void SetAccessibilityViewportInfo(
-      const AccessibilityViewportInfo& viewport_info) = 0;
+      AccessibilityViewportInfo viewport_info) = 0;
 
   // Find handlers.
   bool StartFind(const std::string& text, bool case_sensitive);
@@ -424,6 +428,12 @@ class PdfViewPluginBase : public PDFEngine::Client,
   static base::Value::DictStorage DictFromRect(const gfx::Rect& rect);
 
  private:
+  // Converts a scroll offset (which is relative to a UI direction-dependent
+  // scroll origin) to a scroll position (which is always relative to the
+  // top-left corner).
+  gfx::PointF GetScrollPositionFromOffset(
+      const gfx::Vector2dF& scroll_offset) const;
+
   // Message handlers.
   void HandleDisplayAnnotationsMessage(const base::Value& message);
   void HandleGetNamedDestinationMessage(const base::Value& message);
@@ -526,6 +536,9 @@ class PdfViewPluginBase : public PDFEngine::Client,
 
   // Called after a preview page has loaded or failed to load.
   void LoadNextPreviewPage();
+
+  // Converts `frame_coordinates` to PDF coordinates.
+  gfx::Point FrameToPdfCoordinates(const gfx::PointF& frame_coordinates) const;
 
   std::unique_ptr<PDFiumEngine> engine_;
   PaintManager paint_manager_{this};

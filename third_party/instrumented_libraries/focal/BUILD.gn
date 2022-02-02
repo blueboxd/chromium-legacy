@@ -29,36 +29,33 @@ group("locally_built") {
     ":libdbusmenu",
     ":libdbusmenu-glib4",
     ":libexpat1",
-    ":libffi6",
+    ":libffi7",
     ":libfontconfig1",
     ":libgcrypt20",
     ":libgdk-pixbuf2.0-0",
     ":libglib2.0-0",
-    ":libgnome-keyring0",
     ":libgnutls30",
     ":libgpg-error0",
     ":libgtk-3-0",
     ":libidn11",
     ":libido3-0.1-0",
     ":libindicator3-7",
-    ":libjasper1",
     ":libjpeg-turbo8",
     ":libldap-2.4-2",
-    ":libnih-dbus1",
-    ":libnih1",
+    ":libnettle7",
     ":libnspr4",
     ":libp11-kit0",
     ":libpci3",
     ":libpcre3",
     ":libpixman-1-0",
-    ":libpng12-0",
+    ":libpng16-16",
     ":librtmp1",
     ":libsasl2-2",
     ":libsecret",
     ":libtasn1-6",
     ":libudev1",
     ":libunity9",
-    ":libva1",
+    ":libva2",
     ":libwayland-client0",
     ":libx11-6",
     ":libxau6",
@@ -86,6 +83,10 @@ group("locally_built") {
 
 template("instrumented_library") {
   action(target_name) {
+    # Ignore "assignment had no effect" errors when there are no variables
+    # defined inside of the instrumented_library.
+    not_needed([ "invoker" ])
+
     script = "scripts/download_build_install.py"
     build_method = "destdir"
     if (defined(invoker.build_method)) {
@@ -119,6 +120,10 @@ template("instrumented_library") {
     if (defined(invoker.deps)) {
       deps = invoker.deps
     }
+    env = []
+    if (defined(invoker.env)) {
+      env = invoker.env
+    }
     product_dir = rebase_path(root_out_dir)
     intermediate_dir = rebase_path(target_gen_dir)
     args = [
@@ -131,6 +136,7 @@ template("instrumented_library") {
       "--product-dir=${product_dir}",
       "--cflags=${package_cflags}",
       "--ldflags=${package_ldflags}",
+      "--env=${env}",
     ]
     outputs = [ "${root_out_dir}/instrumented_libraries/${target_name}.txt" ]
     inputs = []
@@ -157,7 +163,6 @@ template("instrumented_library") {
 
 instrumented_library("atk1.0") {
   build_method = "meson"
-  package_ldflags = [ "-Wl,-z,undefs" ]
   extra_configure_flags = [ "-Dintrospection=false" ]
 }
 
@@ -229,12 +234,10 @@ instrumented_library("libasound2") {
 
 instrumented_library("libatk-bridge2.0-0") {
   build_method = "meson"
-  package_ldflags = [ "-Wl,-z,undefs" ]
 }
 
 instrumented_library("libatspi2.0-0") {
   build_method = "meson"
-  package_ldflags = [ "-Wl,-z,undefs" ]
   extra_configure_flags = [ "-Dintrospection=no" ]
 }
 
@@ -306,9 +309,9 @@ instrumented_library("libcups2") {
 }
 
 instrumented_library("libcurl3-gnutls") {
-  build_method = "custom_libcurl"
+  build_method = "debian"
 
-  # Don't generate zsh completions.
+  # Don't generate zsh or fish completions.
   patches = [ "patches/libcurl3-gnutls.diff" ]
 }
 
@@ -373,10 +376,11 @@ instrumented_library("libdbusmenu-glib4") {
 }
 
 instrumented_library("libexpat1") {
-  extra_configure_flags = [ "--disable-static" ]
+  build_method = "debian"
+  patches = [ "patches/libexpat1.diff" ]
 }
 
-instrumented_library("libffi6") {
+instrumented_library("libffi7") {
   extra_configure_flags = [ "--disable-static" ]
 }
 
@@ -405,46 +409,37 @@ instrumented_library("libgcrypt20") {
 }
 
 instrumented_library("libgdk-pixbuf2.0-0") {
+  build_method = "meson"
   extra_configure_flags = [
-    "--disable-static",
-    "--without-libjasper",
-    "--disable-introspection",
-
-    # From debian/rules.
-    "--with-x11",
+    "-Dgir=false",
+    "-Dman=false",
+    "-Dx11=true",
+    "-Djasper=false",
+    "-Dinstalled_tests=false",
 
     # Do not use loadable modules. Same as with Pango, there's no easy way
     # to make gdk-pixbuf pick instrumented versions over system-installed
     # ones.
-    "--disable-modules",
+    "-Dbuiltin_loaders='all'",
   ]
   pre_build = "scripts/pre-build/libgdk-pixbuf2.0-0.sh"
+
+  # Ignore MSAN errors during the build.  It's unclear why this only works on
+  # some binaries.
+  env = [ [
+        "MSAN_OPTIONS",
+        "halt_on_error=0 exitcode=0",
+      ] ]
 }
 
 instrumented_library("libglib2.0-0") {
+  build_method = "meson"
   extra_configure_flags = [
-    "--disable-gtk-doc",
-    "--disable-gtk-doc-html",
-    "--disable-gtk-doc-pdf",
-    "--disable-static",
-
-    # --with-pcre=system (the default) fails because the system-supplied
-    # PCRE does not support Unicode properties or UTF-8.
-    "--with-pcre=internal",
+    "-Dgdk_doc=false",
+    "-Dman=false",
   ]
   msan_ignorelist = "ignorelists/msan/libglib2.0-0.txt"
-  pre_build = "scripts/pre-build/autogen.sh"
-}
-
-instrumented_library("libgnome-keyring0") {
-  extra_configure_flags = [
-    "--disable-static",
-    "--enable-tests=no",
-
-    # Make the build less problematic.
-    "--disable-introspection",
-  ]
-  package_ldflags = [ "-Wl,--as-needed" ]
+  pre_build = "scripts/pre-build/libglib2.0-0.sh"
 }
 
 instrumented_library("libgnutls30") {
@@ -456,6 +451,7 @@ instrumented_library("libgnutls30") {
     "--disable-guile",
     "--with-libgcrypt",
     "--with-packager=Debian",
+    "--with-included-unistring",
 
     # MSAN is not compatible with instructions such as CPUID.
     # https://github.com/google/oss-fuzz/issues/578
@@ -509,7 +505,6 @@ instrumented_library("libido3-0.1-0") {
 }
 
 instrumented_library("libidn11") {
-  package_ldflags = [ "-Wl,-z,undefs" ]
   build_method = "debian"
   pre_build = "scripts/pre-build/libidn.sh"
 }
@@ -524,22 +519,8 @@ instrumented_library("libindicator3-7") {
   pre_build = "scripts/pre-build/autogen.sh"
 }
 
-instrumented_library("libjasper1") {
-  extra_configure_flags = [
-    "--disable-static",
-
-    # From debian/rules.
-    "--enable-shared=yes",
-  ]
-}
-
 instrumented_library("libjpeg-turbo8") {
-  extra_configure_flags = [
-    "--disable-static",
-
-    # From debian/rules.
-    "--with-jpeg8",
-  ]
+  build_method = "cmake"
 }
 
 instrumented_library("libldap-2.4-2") {
@@ -566,22 +547,6 @@ instrumented_library("libldap-2.4-2") {
   pre_build = "scripts/pre-build/dh_autoreconf.sh"
 }
 
-instrumented_library("libnih1") {
-  extra_configure_flags = [ "--disable-static" ]
-
-  pre_build = "scripts/pre-build/libnih1.sh"
-
-  patches = [ "patches/libnih1.diff" ]
-}
-
-instrumented_library("libnih-dbus1") {
-  extra_configure_flags = [ "--disable-static" ]
-
-  pre_build = "scripts/pre-build/libnih1.sh"
-
-  patches = [ "patches/libnih1.diff" ]
-}
-
 instrumented_library("libnspr4") {
   extra_configure_flags = [
     "--enable-64bit",
@@ -591,6 +556,9 @@ instrumented_library("libnspr4") {
     "--disable-debug",
   ]
   pre_build = "scripts/pre-build/libnspr4.sh"
+}
+
+instrumented_library("libnettle7") {
 }
 
 instrumented_library("libp11-kit0") {
@@ -625,15 +593,10 @@ instrumented_library("libpixman-1-0") {
     # Avoid a clang issue. http://crbug.com/449183
     "--disable-mmx",
   ]
-  patches = [
-    "patches/libpixman-1-0.1.diff",
-
-    # Fix an incompatibility when building with clang.
-    "patches/libpixman-1-0.2.diff",
-  ]
+  patches = [ "patches/libpixman-1-0.diff" ]
 }
 
-instrumented_library("libpng12-0") {
+instrumented_library("libpng16-16") {
   extra_configure_flags = [ "--disable-static" ]
 }
 
@@ -683,9 +646,8 @@ instrumented_library("libunity9") {
   pre_build = "scripts/pre-build/autogen.sh"
 }
 
-instrumented_library("libva1") {
-  extra_configure_flags = [ "--disable-static" ]
-  pre_build = "scripts/pre-build/libva1.sh"
+instrumented_library("libva2") {
+  build_method = "meson"
 }
 
 instrumented_library("libwayland-client0") {
@@ -717,6 +679,10 @@ instrumented_library("libxcb1") {
     "--disable-static",
   ]
   pre_build = "scripts/pre-build/autoreconf.sh"
+  env = [ [
+        "PYTHON",
+        "python3",
+      ] ]
 }
 
 instrumented_library("libxcomposite1") {
@@ -794,18 +760,12 @@ instrumented_library("nss") {
 }
 
 instrumented_library("pango1.0") {
+  build_method = "meson"
   extra_configure_flags = [
-    "--disable-static",
-
     # Avoid https://bugs.gentoo.org/show_bug.cgi?id=425620
-    "--enable-introspection=no",
-
-    # Pango is normally used with dynamically loaded modules. However,
-    # ensuring pango is able to find instrumented versions of those modules
-    # is a huge pain in the neck. Let's link them statically instead, and
-    # hope for the best.
-    "--with-included-modules=yes",
+    "-Dintrospection=false",
   ]
+  patches = [ "patches/pango1.0.diff" ]
 }
 
 instrumented_library("pulseaudio") {
@@ -830,11 +790,8 @@ instrumented_library("pulseaudio") {
 }
 
 instrumented_library("libudev1") {
-  build_method = "debian"
-  pre_build = "scripts/pre-build/udev.sh"
+  build_method = "meson"
 }
 
 instrumented_library("zlib1g") {
-  # --disable-static is not supported
-  patches = [ "patches/zlib1g.diff" ]
 }

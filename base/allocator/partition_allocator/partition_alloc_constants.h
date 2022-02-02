@@ -231,6 +231,18 @@ static constexpr internal::pool_handle kConfigurablePoolHandle = 3;
 // PROT_MTE.
 constexpr size_t kMaxMemoryTaggingSize = 1024;
 
+#if HAS_MEMORY_TAGGING
+// Returns whether the tag of a pointer/slot overflowed and slot needs to be
+// moved to quarantine.
+constexpr ALWAYS_INLINE bool HasOverflowTag(uintptr_t ptr) {
+  // The tag with which the slot is put to quarantine.
+  constexpr uintptr_t kOverflowTag = 0x0f00000000000000uLL;
+  static_assert((kOverflowTag & ~kMemTagUnmask) != 0,
+                "Overflow tag must be in tag bits");
+  return (ptr & ~kMemTagUnmask) == kOverflowTag;
+}
+#endif  // HAS_MEMORY_TAGGING
+
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 NumPartitionPagesPerSuperPage() {
   return kSuperPageSize >> PartitionPageShift();
@@ -349,10 +361,10 @@ constexpr size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 // PartitionPurgeDecommitEmptySlotSpans flag will eagerly decommit all entries
 // in the ring buffer, so with periodic purge enabled, this typically happens
 // every few seconds.
-#if defined(OS_LINUX)
-// Set to a higher value on Linux, to assess impact on performance bots. This
-// roughly halves the number of syscalls done during a speedometer 2.0 run on
-// this platform.
+#if defined(OS_LINUX) || defined(OS_APPLE)
+// Set to a higher value on Linux and macOS, to assess impact on performance
+// bots. This roughly halves the number of syscalls done during a speedometer
+// 2.0 run on these platforms.
 constexpr size_t kMaxFreeableSpans = std::numeric_limits<int8_t>::max();
 #else
 constexpr size_t kMaxFreeableSpans = 16;

@@ -14,8 +14,6 @@ import android.widget.TextView;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.google.common.primitives.UnsignedLongs;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
@@ -23,11 +21,10 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.chrome.browser.power_bookmarks.ProductPrice;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscription.CommerceSubscriptionType;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscription.SubscriptionManagementType;
-import org.chromium.chrome.browser.subscriptions.CommerceSubscription.TrackingIdType;
 import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
+import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.browser_ui.widget.RoundedCornerOutlineProvider;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.ui.widget.ChipView;
@@ -47,6 +44,7 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
     private CurrencyFormatter mCurrencyFormatter;
     private CommerceSubscription mSubscription;
     private boolean mSubscriptionChangeInProgress;
+    private SnackbarManager mSnackbarManager;
 
     /**
      * Constructor for inflating from XML.
@@ -64,10 +62,11 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
      * @param subscriptionsManager Used to manage the price-tracking subscriptions.
      */
     void init(ImageFetcher imageFetcher, BookmarkModel bookmarkModel,
-            SubscriptionsManager subscriptionsManager) {
+            SubscriptionsManager subscriptionsManager, SnackbarManager snackbarManager) {
         mImageFetcher = imageFetcher;
         mBookmarkModel = bookmarkModel;
         mSubscriptionsManager = subscriptionsManager;
+        mSnackbarManager = snackbarManager;
     }
 
     // BookmarkItemRow overrides:
@@ -77,11 +76,7 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
         PowerBookmarkMeta meta = mBookmarkModel.getPowerBookmarkMeta(bookmarkId);
         // TODO(crbug.com/1243383): Pull price updates once they're available.
         ProductPrice currentPrice = meta.getShoppingSpecifics().getCurrentPrice();
-        // Use UnsignedLongs to convert ProductClusterId to avoid overflow.
-        mSubscription = new CommerceSubscription(CommerceSubscriptionType.PRICE_TRACK,
-                UnsignedLongs.toString(meta.getShoppingSpecifics().getProductClusterId()),
-                SubscriptionManagementType.USER_MANAGED, TrackingIdType.PRODUCT_CLUSTER_ID);
-
+        mSubscription = PowerBookmarkUtils.createCommerceSubscriptionForPowerBookmarkMeta(meta);
         mCurrencyFormatter =
                 new CurrencyFormatter(currentPrice.getCurrencyCode(), Locale.getDefault());
         mSubscriptionsManager.isSubscribed(mSubscription, (subscribed) -> {
@@ -102,6 +97,10 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
             long currentPrice) {
         assert mCurrencyFormatter != null;
 
+        mStartIconView.setOutlineProvider(
+                new RoundedCornerOutlineProvider(getResources().getDimensionPixelSize(
+                        R.dimen.list_item_v2_start_icon_corner_radius)));
+        mStartIconView.setClipToOutline(true);
         mImageFetcher.fetchImage(
                 ImageFetcher.Params.create(leadImageUrl, ImageFetcher.POWER_BOOKMARKS_CLIENT_NAME,
                         mDesiredImageSize, mDesiredImageSize),
@@ -152,7 +151,7 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
         updatePriceTrackingImageForCurrentState();
         Callback<Integer> subscriptionCallback = (status) -> {
             mSubscriptionChangeInProgress = false;
-            // TODO(crbug.com/1243383): Consult UX on a fallback if this fails.
+            // TODO(crbug.com/1243383): Handle the failure edge case.
             if (status != SubscriptionsManager.StatusCode.OK) return;
             mIsPriceTrackingEnabled = !mIsPriceTrackingEnabled;
             updatePriceTrackingImageForCurrentState();
@@ -161,17 +160,15 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
             if (mSubscriptionChangeInProgress) return;
             mSubscriptionChangeInProgress = true;
 
-            if (mIsPriceTrackingEnabled) {
-                mSubscriptionsManager.unsubscribe(mSubscription, subscriptionCallback);
-            } else {
-                mSubscriptionsManager.subscribe(mSubscription, subscriptionCallback);
-            }
+            PowerBookmarkUtils.setPriceTrackingEnabledWithSnackbars(mSubscriptionsManager,
+                    mBookmarkModel, mBookmarkId, !mIsPriceTrackingEnabled, mSnackbarManager,
+                    getContext().getResources(), subscriptionCallback);
         });
     }
 
     private void updatePriceTrackingImageForCurrentState() {
         mEndStartButtonView.setImageResource(mIsPriceTrackingEnabled
-                        ? R.drawable.price_tracking_enabled
+                        ? R.drawable.price_tracking_enabled_filled
                         : R.drawable.price_tracking_disabled);
     }
 
@@ -182,5 +179,9 @@ public class PowerBookmarkShoppingItemRow extends BookmarkItemRow {
 
     void setCurrencyFormatterForTesting(CurrencyFormatter currencyFormatter) {
         mCurrencyFormatter = currencyFormatter;
+    }
+
+    View getPriceTrackingButtonForTesting() {
+        return mEndStartButtonView;
     }
 }

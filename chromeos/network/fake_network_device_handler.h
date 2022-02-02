@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/network/network_device_handler.h"
 
 namespace chromeos {
@@ -68,8 +67,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkDeviceHandler
                  base::OnceClosure callback,
                  network_handler::ErrorCallback error_callback) override;
 
-  void SetCellularAllowRoaming(bool allow_roaming,
-                               bool policy_allow_roaming) override;
+  void SetCellularPolicyAllowRoaming(bool policy_allow_roaming) override;
 
   void SetUsbEthernetMacAddressSource(const std::string& source) override;
 };

@@ -23,12 +23,20 @@ extern const base::Feature kColorProviderRedirectionForThemeProvider;
 
 extern const base::Feature kDestroyProfileOnBrowserClose;
 
+extern const base::Feature kNukeProfileBeforeCreateMultiAsync;
+
 extern const base::Feature kPromoBrowserCommands;
 extern const char kBrowserCommandIdParam[];
+
+extern const base::Feature kUseManagementService;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const base::Feature kDoubleTapToZoomInTabletMode;
 extern const base::Feature kQuickSettingsPWANotifications;
+#endif
+
+#if defined(OS_MAC)
+extern const base::Feature kEnableUniveralLinks;
 #endif
 
 #if !defined(OS_ANDROID)
@@ -38,24 +46,19 @@ extern const base::Feature kMuteNotificationSnoozeAction;
 
 extern const base::Feature kPwaUpdateDialogForNameAndIcon;
 
-#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-extern const base::Feature kUserDataSnapshot;
-#endif
-
 extern const base::Feature kSandboxExternalProtocolBlocked;
+extern const base::Feature kTabCaptureBlueBorder;
+extern const base::Feature kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT;
 extern const base::Feature kTriggerNetworkDataMigration;
-
-// Returns true if network context data should be migrated to the new data path.
-// Prefer using this function over querying the kTriggerNetworkDataMigration
-// feature directly, as there might be other platform specific factors that
-// determine whether data migration should occur or not.
-bool ShouldTriggerNetworkDataMigration();
 
 extern const base::Feature kWebUsbDeviceDetection;
 
 #if defined(OS_ANDROID)
 extern const base::Feature kCertificateTransparencyAndroid;
 #endif
+
+extern const base::Feature kLargeFaviconFromGoogle;
+extern const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip;
 
 }  // namespace features
 

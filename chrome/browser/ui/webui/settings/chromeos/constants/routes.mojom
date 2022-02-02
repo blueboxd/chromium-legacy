@@ -58,9 +58,10 @@ enum Subpage {
   kSync = 301,
   kSyncDeprecated = 302,  // Used if split-sync flag is off.
   kSyncDeprecatedAdvanced = 303,  // Used if split-sync flag is off.
-  kSecurityAndSignIn = 304,
-  kFingerprint = 305,
-  kManageOtherPeople = 306,
+  // Note: Value 304 was for kSecurityAndSignIn. Do not reuse.
+  // Note: Value 305 was for kFingerprint. Do not reuse.
+  // Note: Value 306 was for kManageOtherPeople. Do not reuse.
+
   // Note: Value 307 was for Kerberos Accounts Subpage, which has been migrated
   // to a separate section - see https://crbug.com/1186190. Do not reuse.
 
@@ -97,6 +98,7 @@ enum Subpage {
   kPluginVmUsbPreferences = 704,
   // Note: Value 705 was for deprecated kOnStartup. Do not reuse.
   kAppNotifications = 706,
+  kArcVmUsbPreferences = 707,
 
   // Crostini section.
   kCrostiniDetails = 800,
@@ -105,6 +107,7 @@ enum Subpage {
   kCrostiniBackupAndRestore = 803,
   kCrostiniDevelopAndroidApps = 804,
   kCrostiniPortForwarding = 805,
+  kCrostiniExtraContainers = 806,
 
   // Note: Deprecated Plugin VM section has no subpages.
 
@@ -177,9 +180,6 @@ const string kMyAccountsSubpagePath = "accountManager";
 const string kSyncSubpagePath = "osSync";
 const string kSyncDeprecatedSubpagePath = "syncSetup";
 const string kSyncDeprecatedAdvancedSubpagePath = "syncSetup/advanced";
-const string kSecurityAndSignInSubpagePath = "lockScreen";
-const string kFingerprintSubpagePath = "lockScreen/fingerprint";
-const string kManageOtherPeopleSubpagePath = "accounts";
 
 // Device section.
 const string kDeviceSectionPath = "device";
@@ -216,6 +216,8 @@ const string kPluginVmSharedPathsSubpagePath =
     "app-management/pluginVm/sharedPaths";
 const string kPluginVmUsbPreferencesSubpagePath =
     "app-management/pluginVm/sharedUsbDevices";
+const string kArcVmUsbPreferencesSubpagePath =
+     "androidAppsDetails/sharedUsbDevices";
 
 // Crostini section.
 const string kCrostiniSectionPath = "crostini";
@@ -225,6 +227,7 @@ const string kCrostiniUsbPreferencesSubpagePath = "crostini/sharedUsbDevices";
 const string kCrostiniBackupAndRestoreSubpagePath = "crostini/exportImport";
 const string kCrostiniDevelopAndroidAppsSubpagePath = "crostini/androidAdb";
 const string kCrostiniPortForwardingSubpagePath = "crostini/portForwarding";
+const string kCrostiniExtraContainersSubpagePath = "crostini/extraContainers";
 
 // Date and Time section.
 const string kDateAndTimeSectionPath = "dateTime";

@@ -4,11 +4,13 @@
 
 #include "ui/views/interaction/element_tracker_views.h"
 
+#include <algorithm>
 #include <list>
 #include <map>
 
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/scoped_multi_source_observation.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -130,12 +132,20 @@ class ElementTrackerViews::ElementDataViews : public ViewObserver,
     return result;
   }
 
+  ViewList GetAllViews() {
+    ViewList result;
+    std::transform(view_data_lookup_.begin(), view_data_lookup_.end(),
+                   std::back_inserter(result),
+                   [](const auto& pr) { return pr.first; });
+    return result;
+  }
+
  private:
   struct ViewData {
     explicit ViewData(View* v, ui::ElementContext initial_context)
         : view(v), context(initial_context) {}
     bool visible() const { return static_cast<bool>(element); }
-    View* const view;
+    const raw_ptr<View> view;
     ui::ElementContext context;
     std::unique_ptr<TrackedElementViews> element;
   };
@@ -188,7 +198,7 @@ class ElementTrackerViews::ElementDataViews : public ViewObserver,
            "while a view is visible.";
   }
 
-  ElementTrackerViews* const tracker_;
+  const raw_ptr<ElementTrackerViews> tracker_;
   const ui::ElementIdentifier id_;
   ViewDataList view_data_;
   std::map<View*, ViewDataList::iterator> view_data_lookup_;
@@ -269,6 +279,14 @@ ElementTrackerViews::ViewList ElementTrackerViews::GetAllMatchingViews(
   if (it == element_data_.end())
     return ViewList();
   return it->second->FindAllViewsInContext(context);
+}
+
+ElementTrackerViews::ViewList
+ElementTrackerViews::GetAllMatchingViewsInAnyContext(ui::ElementIdentifier id) {
+  const auto it = element_data_.find(id);
+  if (it == element_data_.end())
+    return ViewList();
+  return it->second->GetAllViews();
 }
 
 void ElementTrackerViews::RegisterView(ui::ElementIdentifier element_id,

@@ -6,7 +6,7 @@ import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {fakeDeviceRegions, fakeDeviceSkus} from 'chrome://shimless-rma/fake_data.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
-import {ReimagingDeviceInformationPageElement} from 'chrome://shimless-rma/reimaging_device_information_page.js';
+import {ReimagingDeviceInformationPage} from 'chrome://shimless-rma/reimaging_device_information_page.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.js';
 
@@ -26,7 +26,7 @@ function suppressedComponentOnSelectedChange_(component) {
 }
 
 export function reimagingDeviceInformationPageTest() {
-  /** @type {?ReimagingDeviceInformationPageElement} */
+  /** @type {?ReimagingDeviceInformationPage} */
   let component = null;
 
   /** @type {?FakeShimlessRmaService} */
@@ -55,11 +55,11 @@ export function reimagingDeviceInformationPageTest() {
     assertFalse(!!component);
     service.setGetOriginalSerialNumberResult(serialNumber);
     service.setGetRegionListResult(fakeDeviceRegions);
-    service.setGetOriginalRegionResult(0);
+    service.setGetOriginalRegionResult(2);
     service.setGetSkuListResult(fakeDeviceSkus);
     service.setGetOriginalSkuResult(1);
 
-    component = /** @type {!ReimagingDeviceInformationPageElement} */ (
+    component = /** @type {!ReimagingDeviceInformationPage} */ (
         document.createElement('reimaging-device-information-page'));
     assertTrue(!!component);
     document.body.appendChild(component);
@@ -69,23 +69,23 @@ export function reimagingDeviceInformationPageTest() {
 
   test('ReimagingDeviceInformationPageInitializes', async () => {
     await initializeReimagingDeviceInformationPage(fakeSerialNumber);
+    // A flush tasks is required to wait for the drop lists to render and set
+    // the initial selected index.
+    await flushTasks();
     const serialNumberComponent =
         component.shadowRoot.querySelector('#serialNumber');
-    // TODO selectedIndex does not get set correctly
-    // const regionSelectComponent =
-    //     component.shadowRoot.querySelector('#regionSelect');
-    // const skuSelectComponent =
-    //     component.shadowRoot.querySelector('#skuSelect');
+    const regionSelectComponent =
+        component.shadowRoot.querySelector('#regionSelect');
+    const skuSelectComponent = component.shadowRoot.querySelector('#skuSelect');
     const resetSerialNumberComponent =
         component.shadowRoot.querySelector('#resetSerialNumber');
     const resetRegionComponent =
         component.shadowRoot.querySelector('#resetRegion');
     const resetSkuComponent = component.shadowRoot.querySelector('#resetSku');
 
-    assertEquals(serialNumberComponent.value, fakeSerialNumber);
-    // TODO selectedIndex does not get set correctly
-    // assertEquals(regionSelectComponent.selectedIndex, 1);
-    // assertEquals(skuSelectComponent.selectedIndex, 1);
+    assertEquals(fakeSerialNumber, serialNumberComponent.value);
+    assertEquals(2, regionSelectComponent.selectedIndex);
+    assertEquals(1, skuSelectComponent.selectedIndex);
     assertTrue(resetSerialNumberComponent.disabled);
     assertTrue(resetRegionComponent.disabled);
     assertTrue(resetSkuComponent.disabled);

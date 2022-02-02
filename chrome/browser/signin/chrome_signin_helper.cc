@@ -34,6 +34,7 @@
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
@@ -70,8 +71,9 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager/account_manager_util.h"
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
@@ -163,6 +165,26 @@ bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void OnLacrosAccountsAvailableAsSecondaryFetched(
+    AccountProfileMapper* mapper,
+    const base::FilePath& profile_path,
+    const std::vector<account_manager::Account>& accounts) {
+  if (!accounts.empty()) {
+    // Pass in the current profile to signal that the user wants to select a
+    // _secondary_ account for this particular profile.
+    ProfilePicker::Show(
+        ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount, GURL(),
+        profile_path);
+    return;
+  }
+  mapper->ShowAddAccountDialog(profile_path,
+                               account_manager::AccountManagerFacade::
+                                   AccountAdditionSource::kOgbAddAccount,
+                               AccountProfileMapper::AddAccountCallback());
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
  public:
   explicit RequestDestructionObserverUserData(base::OnceClosure closure)
@@ -185,14 +207,13 @@ class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
 class ManageAccountsHeaderReceivedUserData
     : public base::SupportsUserData::Data {};
 
+#if BUILDFLAG(ENABLE_MIRROR)
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
 // opens an incognito window/tab.
 void ProcessMirrorHeader(
     ManageAccountsParams manage_accounts_params,
     const content::WebContents::Getter& web_contents_getter) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) || \
-    defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
@@ -210,8 +231,6 @@ void ProcessMirrorHeader(
   AccountReconcilor* account_reconcilor =
       AccountReconcilorFactory::GetForProfile(profile);
   account_reconcilor->OnReceivedManageAccountsResponse(service_type);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
-        // defined(OS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
@@ -318,20 +337,19 @@ void ProcessMirrorHeader(
   // 3. Displaying an account addition window.
   if (service_type == GAIA_SERVICE_TYPE_ADDSESSION) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    if (base::FeatureList::IsEnabled(kMultiProfileAccountConsistency)) {
-      g_browser_process->profile_manager()
-          ->GetAccountProfileMapper()
-          ->ShowAddAccountDialog(profile->GetPath(),
-                                 account_manager::AccountManagerFacade::
-                                     AccountAdditionSource::kOgbAddAccount,
-                                 AccountProfileMapper::AddAccountCallback());
-      return;
-    }
-#endif
-
+    AccountProfileMapper* mapper =
+        g_browser_process->profile_manager()->GetAccountProfileMapper();
+    GetAccountsAvailableAsSecondary(
+        mapper, profile->GetPath(),
+        // It's safe to bind raw `mapper`, the callback gets called iff
+        // `mapper` is still valid.
+        base::BindOnce(&OnLacrosAccountsAvailableAsSecondaryFetched, mapper,
+                       profile->GetPath()));
+#else
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowAddAccountDialog(account_manager::AccountManagerFacade::
                                    AccountAdditionSource::kOgbAddAccount);
+#endif
     return;
   }
 
@@ -371,6 +389,7 @@ void ProcessMirrorHeader(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }
+#endif  // BUILDFLAG(ENABLE_MIRROR)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -431,6 +450,7 @@ void ProcessDiceHeader(
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+#if BUILDFLAG(ENABLE_MIRROR)
 // Looks for the X-Chrome-Manage-Accounts response header, and if found,
 // tries to show the avatar bubble in the browser identified by the
 // child/route id. Must be called on IO thread.
@@ -481,6 +501,7 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
       FROM_HERE, base::BindOnce(ProcessMirrorHeader, params,
                                 response->GetWebContentsGetter()));
 }
+#endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
@@ -614,6 +635,10 @@ void FixAccountConsistencyRequestHeader(
   if (is_off_the_record)
     return;  // Account consistency is disabled in incognito.
 
+  // If new url is eligible to have the header, add it, otherwise remove it.
+
+// Mirror header:
+#if BUILDFLAG(ENABLE_MIRROR)
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
   if (incognito_availibility ==
           static_cast<int>(IncognitoModePrefs::Availability::kDisabled) ||
@@ -629,10 +654,14 @@ void FixAccountConsistencyRequestHeader(
   }
 #endif
 
-  // If new url is eligible to have the header, add it, otherwise remove it.
+  AppendOrRemoveMirrorRequestHeader(
+      request, redirect_url, gaia_id, is_child_account, account_consistency,
+      cookie_settings, profile_mode_mask, kChromeMirrorHeaderSource,
+      /*force_account_consistency=*/false);
+#endif  // BUILDFLAG(ENABLE_MIRROR)
 
+// Dice header:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // Dice header:
   bool dice_header_added = AppendOrRemoveDiceRequestHeader(
       request, redirect_url, gaia_id, is_sync_enabled, account_consistency,
       cookie_settings, signin_scoped_device_id);
@@ -648,12 +677,6 @@ void FixAccountConsistencyRequestHeader(
         &AccountReconcilorLockWrapper::DestroyAfterDelay, lock_wrapper));
   }
 #endif
-
-  // Mirror header:
-  AppendOrRemoveMirrorRequestHeader(
-      request, redirect_url, gaia_id, is_child_account, account_consistency,
-      cookie_settings, profile_mode_mask, kChromeMirrorHeaderSource,
-      /*force_account_consistency=*/false);
 }
 
 void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
@@ -662,10 +685,12 @@ void ProcessAccountConsistencyResponseHeaders(ResponseAdapter* response,
   if (!gaia::IsGaiaSignonRealm(response->GetOrigin()))
     return;
 
+#if BUILDFLAG(ENABLE_MIRROR)
   // See if the response contains the X-Chrome-Manage-Accounts header. If so
   // show the profile avatar bubble so that user can complete signin/out
   // action the native UI.
   ProcessMirrorResponseHeaderIfExists(response, is_off_the_record);
+#endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Process the Dice header: on sign-in, exchange the authorization code for a

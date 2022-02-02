@@ -43,7 +43,7 @@ bool CroshSystemAppDelegate::ShouldShowInLauncher() const {
   return false;
 }
 
-bool CroshSystemAppDelegate::ShouldBeSingleWindow() const {
+bool CroshSystemAppDelegate::ShouldReuseExistingWindow() const {
   return false;
 }
 

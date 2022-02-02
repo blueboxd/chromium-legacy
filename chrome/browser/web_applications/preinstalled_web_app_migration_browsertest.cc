@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #endif
 
 namespace {
@@ -276,7 +277,8 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     app_list_syncable_service->SetPinPosition(
         kExtensionId, syncer::StringOrdinal("testpinposition"));
     EXPECT_EQ(app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),
-              "kbmnembi { Nothing } [testapplistposition] [testpinposition]");
+              "kbmnembi { Nothing } [testapplistposition] "
+              "[testpinposition](INVALID COLOR)");
 #endif
   }
 
@@ -315,13 +317,14 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
       // Chrome OS shelf/list position should migrate.
       EXPECT_EQ(
           app_list_syncable_service->GetSyncItem(GetWebAppId())->ToString(),
-          base::StringPrintf(
-              "%s { Basic web app } [testapplistposition] [testpinposition]",
-              GetWebAppId().substr(0, 8).c_str()));
+          base::StringPrintf("%s { Basic web app } [testapplistposition] "
+                             "[testpinposition](INVALID COLOR)",
+                             GetWebAppId().substr(0, 8).c_str()));
       // Old Chrome app prefs are retained.
       EXPECT_EQ(
           app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),
-          "kbmnembi { Nothing } [testapplistposition] [testpinposition]");
+          "kbmnembi { Nothing } [testapplistposition] "
+          "[testpinposition](INVALID COLOR)");
 #endif
     }
   }
@@ -367,14 +370,14 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // Chrome OS shelf/list position should re-migrate.
-    EXPECT_EQ(
-        app_list_syncable_service->GetSyncItem(GetWebAppId())->ToString(),
-        base::StringPrintf(
-            "%s { Basic web app } [testapplistposition] [testpinposition]",
-            GetWebAppId().substr(0, 8).c_str()));
+    EXPECT_EQ(app_list_syncable_service->GetSyncItem(GetWebAppId())->ToString(),
+              base::StringPrintf("%s { Basic web app } [testapplistposition] "
+                                 "[testpinposition](INVALID COLOR)",
+                                 GetWebAppId().substr(0, 8).c_str()));
     // Old Chrome app prefs are retained.
     EXPECT_EQ(app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),
-              "kbmnembi { Nothing } [testapplistposition] [testpinposition]");
+              "kbmnembi { Nothing } [testapplistposition] "
+              "[testpinposition](INVALID COLOR)");
 #endif
   }
 }
@@ -408,7 +411,8 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     app_list_syncable_service->SetPinPosition(
         kExtensionId, syncer::StringOrdinal("testpinposition"));
     EXPECT_EQ(app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),
-              "kbmnembi { Nothing } [testapplistposition] [testpinposition]");
+              "kbmnembi { Nothing } [testapplistposition] "
+              "[testpinposition](INVALID COLOR)");
 #endif
 
     // Set chrome://apps position.
@@ -459,14 +463,14 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     // Chrome OS shelf/list position should migrate.
-    EXPECT_EQ(
-        app_list_syncable_service->GetSyncItem(GetWebAppId())->ToString(),
-        base::StringPrintf(
-            "%s { Basic web app } [testapplistposition] [testpinposition]",
-            GetWebAppId().substr(0, 8).c_str()));
+    EXPECT_EQ(app_list_syncable_service->GetSyncItem(GetWebAppId())->ToString(),
+              base::StringPrintf("%s { Basic web app } [testapplistposition] "
+                                 "[testpinposition](INVALID COLOR)",
+                                 GetWebAppId().substr(0, 8).c_str()));
     // Chrome app shelf/list position should be retained.
     EXPECT_EQ(app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),
-              "kbmnembi { Nothing } [testapplistposition] [testpinposition]");
+              "kbmnembi { Nothing } [testapplistposition] "
+              "[testpinposition](INVALID COLOR)");
 #endif
 
     // chrome://apps position should migrate.
@@ -582,6 +586,14 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     histograms.ExpectUniqueSample(
         PreinstalledWebAppManager::kHistogramAppToReplaceStillInstalledCount, 0,
         1);
+    histograms.ExpectUniqueSample(
+        PreinstalledWebAppManager::
+            kHistogramAppToReplaceStillSyncInstalledCount,
+        0, 1);
+    histograms.ExpectUniqueSample(
+        PreinstalledWebAppManager::
+            kHistogramAppToReplaceStillInstalledInShelfCount,
+        0, 1);
   }
 
   // Manually install Extension app to be replaced.
@@ -595,7 +607,35 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     histograms.ExpectUniqueSample(
         PreinstalledWebAppManager::kHistogramAppToReplaceStillInstalledCount, 1,
         1);
+    histograms.ExpectUniqueSample(
+        PreinstalledWebAppManager::
+            kHistogramAppToReplaceStillSyncInstalledCount,
+        1, 1);
+
+    // Neither app has been added to the shelf.
+    histograms.ExpectUniqueSample(
+        PreinstalledWebAppManager::
+            kHistogramAppToReplaceStillInstalledInShelfCount,
+        0, 1);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Pin both apps to the shelf.
+  PinAppWithIDToShelf(GetWebAppId());
+  PinAppWithIDToShelf(kExtensionId);
+
+  // Re-sync preinstalled web apps.
+  {
+    base::HistogramTester histograms;
+    SyncExternalWebApps(/*expect_install=*/true, /*expect_uninstall=*/false);
+
+    // Apps have been added to the shelf.
+    histograms.ExpectUniqueSample(
+        PreinstalledWebAppManager::
+            kHistogramAppToReplaceStillInstalledInShelfCount,
+        1, 1);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // Tests the migration from an extension-app to a preinstalled web app provided

@@ -10,8 +10,8 @@
 #include <unordered_map>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "content/browser/cache_storage/cache_storage.h"
+#include "content/common/content_export.h"
 
 namespace content {
 

@@ -177,6 +177,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.request_initiator;
   }
+  static const std::vector<GURL> navigation_redirect_chain(
+      const network::ResourceRequest& request) {
+    return request.navigation_redirect_chain;
+  }
   static const absl::optional<url::Origin>& isolated_world_origin(
       const network::ResourceRequest& request) {
     return request.isolated_world_origin;
@@ -205,9 +209,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static net::RequestPriority priority(
       const network::ResourceRequest& request) {
     return request.priority;
-  }
-  static bool should_reset_appcache(const network::ResourceRequest& request) {
-    return request.should_reset_appcache;
   }
   static bool is_external_request(const network::ResourceRequest& request) {
     return request.is_external_request;

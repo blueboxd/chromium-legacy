@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/inspector/node_content_visibility_state.h"
-#include "third_party/blink/renderer/core/inspector/protocol/DOM.h"
+#include "third_party/blink/renderer/core/inspector/protocol/dom.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -18,8 +18,8 @@ namespace blink {
 
 class Color;
 
-enum class ColorFormat { RGB, HEX, HSL };
-enum class ContrastAlgorithm { AA, AAA, APCA };
+enum class ColorFormat { kRgb, kHex, kHsl };
+enum class ContrastAlgorithm { kAa, kAaa, kApca };
 
 struct CORE_EXPORT LineStyle {
   USING_FAST_MALLOC(LineStyle);
@@ -170,8 +170,8 @@ struct CORE_EXPORT InspectorHighlightConfig {
   bool show_accessibility_info;
 
   String selector_list;
-  ColorFormat color_format = ColorFormat::HEX;
-  ContrastAlgorithm contrast_algorithm = ContrastAlgorithm::AA;
+  ColorFormat color_format = ColorFormat::kHex;
+  ContrastAlgorithm contrast_algorithm = ContrastAlgorithm::kAa;
 
   std::unique_ptr<InspectorGridHighlightConfig> grid_highlight_config;
   std::unique_ptr<InspectorFlexContainerHighlightConfig>

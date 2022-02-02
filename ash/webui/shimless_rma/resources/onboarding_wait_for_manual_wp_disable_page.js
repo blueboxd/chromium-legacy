@@ -5,22 +5,29 @@
 import './shimless_rma_shared_css.js';
 import './base_page.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getShimlessRmaService} from './mojo_interface_provider.js';
 import {HardwareWriteProtectionStateObserverInterface, HardwareWriteProtectionStateObserverReceiver, ShimlessRmaServiceInterface, StateResult} from './shimless_rma_types.js';
-
-// TODO(gavindodd): Update text for i18n
-const openDeviceMessage = 'Open your device and disconnect the battery.';
-const hwwpDisabledMessage = 'HWWP disabled.';
 
 /**
  * @fileoverview
  * 'onboarding-wait-for-manual-wp-disable-page' wait for the manual HWWP disable
  * to be completed.
  */
-export class OnboardingWaitForManualWpDisablePageElement extends
-    PolymerElement {
+
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const OnboardingWaitForManualWpDisablePageBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
+
+/** @polymer */
+export class OnboardingWaitForManualWpDisablePage extends
+    OnboardingWaitForManualWpDisablePageBase {
   static get is() {
     return 'onboarding-wait-for-manual-wp-disable-page';
   }
@@ -58,15 +65,6 @@ export class OnboardingWaitForManualWpDisablePageElement extends
   }
 
   /**
-   * @protected
-   * @param {boolean} hwwpEnabled
-   * @return {string}
-   */
-  getBodyText_(hwwpEnabled) {
-    return this.hwwpEnabled_ ? openDeviceMessage : hwwpDisabledMessage;
-  }
-
-  /**
    * @public
    * @param {boolean} enabled
    */
@@ -94,5 +92,5 @@ export class OnboardingWaitForManualWpDisablePageElement extends
 }
 
 customElements.define(
-    OnboardingWaitForManualWpDisablePageElement.is,
-    OnboardingWaitForManualWpDisablePageElement);
+    OnboardingWaitForManualWpDisablePage.is,
+    OnboardingWaitForManualWpDisablePage);

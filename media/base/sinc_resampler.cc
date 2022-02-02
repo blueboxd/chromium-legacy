@@ -120,8 +120,8 @@ void SincResampler::InitializeCPUSpecificFeatures() {
   convolve_proc_ = Convolve_NEON;
 #elif defined(ARCH_CPU_X86_FAMILY)
   base::CPU cpu;
-  // Using AVX2 instead of SSE2 when AVX2 supported.
-  if (cpu.has_avx2())
+  // Using AVX2 instead of SSE2 when AVX2/FMA3 supported.
+  if (cpu.has_avx2() && cpu.has_fma3())
     convolve_proc_ = Convolve_AVX2;
   else if (cpu.has_sse2())
     convolve_proc_ = Convolve_SSE;
@@ -263,7 +263,7 @@ void SincResampler::Resample(int frames, float* destination) {
 
   // Step (1) -- Prime the input buffer at the start of the input stream.
   if (!buffer_primed_ && remaining_frames) {
-    read_cb_.Run(request_frames_, r0_);
+    read_cb_.Run(request_frames_, r0_.get());
     buffer_primed_ = true;
   }
 
@@ -321,7 +321,7 @@ void SincResampler::Resample(int frames, float* destination) {
       UpdateRegions(true);
 
     // Step (5) -- Refresh the buffer with more input.
-    read_cb_.Run(request_frames_, r0_);
+    read_cb_.Run(request_frames_, r0_.get());
   }
 }
 

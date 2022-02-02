@@ -40,10 +40,12 @@ void ClientHintsPreferences::CombineWith(
   }
 }
 
-void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
+void ClientHintsPreferences::UpdateFromMetaTagAcceptCH(
     const String& header_value,
     const KURL& url,
-    Context* context) {
+    Context* context,
+    bool is_http_equiv,
+    bool is_preload_or_sync_parser) {
   // Client hints should be allowed only on secure URLs.
   if (!IsClientHintsAllowed(url))
     return;
@@ -62,9 +64,16 @@ void ClientHintsPreferences::UpdateFromHttpEquivAcceptCH(
   if (!parsed_ch.has_value())
     return;
 
-  // The renderer only handles http-equiv, so this merges.
-  for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value())
-    enabled_hints_.SetIsEnabled(newly_enabled, true);
+  // The renderer only handles meta tags, so this merges.
+  for (network::mojom::WebClientHintsType newly_enabled : parsed_ch.value()) {
+    if (!is_http_equiv && !is_preload_or_sync_parser) {
+      // TODO(https://crbug.com/1219359): Alert if javascript is injecting
+      // client hint meta tags the pre-load scanner missed. For now, just log
+      // the hint as before and move on.
+    } else {
+      enabled_hints_.SetIsEnabled(newly_enabled, true);
+    }
+  }
 
   if (context) {
     for (const auto& elem : network::GetClientHintToNameMap()) {

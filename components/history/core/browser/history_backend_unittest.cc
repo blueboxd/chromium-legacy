@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -153,7 +154,7 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
 
  private:
   // Not owned by us.
-  HistoryBackendTestBase* test_;
+  raw_ptr<HistoryBackendTestBase> test_;
 };
 
 // Exposes some of `HistoryBackend`'s private methods.
@@ -1741,17 +1742,23 @@ TEST_F(HistoryBackendTest, AddContentModelAnnotations) {
   ASSERT_EQ(1U, visits.size());
   VisitID visit_id = visits[0].visit_id;
 
-  VisitContentModelAnnotations model_annotations = {
-      0.5f,
-      {{/*id=*/"1", /*weight=*/1}, {/*id=*/"2", /*weight=*/1}},
-      123,
+  VisitContentModelAnnotations model_annotations_without_entities = {
+      0.5f, {{/*id=*/"1", /*weight=*/1}, {/*id=*/"2", /*weight=*/1}}, 123, {}};
+  backend_->AddContentModelAnnotationsForVisit(
+      visit_id, model_annotations_without_entities);
+  VisitContentModelAnnotations model_annotations_only_entities = {
+      -1.0f,
+      {},
+      -1,
       {{/*id=*/"entity1", /*weight=*/1}, {/*id=*/"entity2", /*weight=*/1}}};
-  backend_->AddContentModelAnnotationsForVisit(visit_id, model_annotations);
+  backend_->AddContentModelAnnotationsForVisit(visit_id,
+                                               model_annotations_only_entities);
 
   VisitContentAnnotations got_content_annotations;
   ASSERT_TRUE(backend_->db()->GetContentAnnotationsForVisit(
       visit_id, &got_content_annotations));
 
+  // Model annotations should be merged from both calls.
   EXPECT_EQ(VisitContentAnnotationFlag::kNone,
             got_content_annotations.annotation_flags);
   EXPECT_EQ(0.5f, got_content_annotations.model_annotations.visibility_score);

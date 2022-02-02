@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/memory_pressure_monitor.h"
@@ -455,11 +456,11 @@ media::AudioManager* BrowserMainLoop::GetAudioManager() {
 }
 
 BrowserMainLoop::BrowserMainLoop(
-    const MainFunctionParams& parameters,
+    MainFunctionParams parameters,
     std::unique_ptr<base::ThreadPoolInstance::ScopedExecutionFence>
         scoped_execution_fence)
-    : parameters_(parameters),
-      parsed_command_line_(parameters.command_line),
+    : parameters_(std::move(parameters)),
+      parsed_command_line_(*parameters_.command_line),
       result_code_(RESULT_CODE_NORMAL_EXIT),
       created_threads_(false),
       scoped_execution_fence_(std::move(scoped_execution_fence))
@@ -485,19 +486,37 @@ BrowserMainLoop::~BrowserMainLoop() {
 void BrowserMainLoop::Init() {
   TRACE_EVENT0("startup", "BrowserMainLoop::Init");
 
-  // |startup_data| is optional. If set, the thread owned by the data
-  // will be registered as BrowserThread::IO in CreateThreads() instead of
-  // creating a brand new thread.
   if (parameters_.startup_data) {
     StartupDataImpl* startup_data =
-        static_cast<StartupDataImpl*>(parameters_.startup_data);
+        static_cast<StartupDataImpl*>(parameters_.startup_data.get());
+
     // This is always invoked before |io_thread_| is initialized (i.e. never
-    // resets it).
+    // resets it). The thread owned by the data will be registered as
+    // BrowserThread::IO in CreateThreads() instead of creating a brand new
+    // thread.
+    DCHECK(!io_thread_);
     io_thread_ = std::move(startup_data->io_thread);
+
+    DCHECK(!mojo_ipc_support_);
     mojo_ipc_support_ = std::move(startup_data->mojo_ipc_support);
+
+    // The StartupDataImpl was destined to BrowserMainLoop, do not pass it
+    // forward.
+    parameters_.startup_data.reset();
   }
 
-  parts_ = GetContentClient()->browser()->CreateBrowserMainParts(parameters_);
+  // As of https://crrev.com/c/3244976 + https://crrev.com/c/3187153, embedders
+  // no longer own running `ui_task`. Some still query its boolean value
+  // however, fake it here. TODO(gab): As a follow-up, update
+  // ContentBrowserClient::CreateBrowserMainParts to take a `bool
+  // is_integration_test` instead of the entire `MainFunctionParams` which none
+  // of the parts impl use beyond ui_task's boolean value:
+  // https://bit.ly/3Eq9v36
+  MainFunctionParams fake_params(parameters_.command_line);
+  if (parameters_.ui_task)
+    fake_params.ui_task = base::DoNothing();
+  parts_ = GetContentClient()->browser()->CreateBrowserMainParts(
+      std::move(fake_params));
 }
 
 // BrowserMainLoop stages ==================================================
@@ -844,6 +863,22 @@ void BrowserMainLoop::CreateStartupTasks() {
       &BrowserMainLoop::PreMainMessageLoopRun, base::Unretained(this));
   startup_task_runner_->AddTask(std::move(pre_main_message_loop_run));
 
+// On Android, the native message loop is already running when the app is
+// entered and startup tasks are run asynchrously from it.
+// InterceptMainMessageLoopRun() thus needs to be forced instead of happening
+// from MainMessageLoopRun().
+#if defined(OS_ANDROID)
+  StartupTask intercept_main_message_loop_run = base::BindOnce(
+      [](BrowserMainLoop* self) {
+        // Lambda to ignore the return value and always keep a clean exit code
+        // for this StartupTask.
+        self->InterceptMainMessageLoopRun();
+        return self->result_code_;
+      },
+      base::Unretained(this));
+  startup_task_runner_->AddTask(std::move(intercept_main_message_loop_run));
+#endif
+
 #if defined(OS_ANDROID)
   startup_task_runner_->StartRunningTasksAsync();
 #else
@@ -936,7 +971,7 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
       ContentBrowserClient::WideColorGamutHeuristic::kUseDisplay;
   // Let screen instance be overridable by parts.
   ui::SetScreenAndroid(use_display_wide_color_gamut);
-#endif
+#endif  // defined(OS_ANDROID)
 
   if (parts_)
     result_code_ = parts_->PreMainMessageLoopRun();
@@ -949,7 +984,19 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
     content::DWriteFontLookupTableBuilder::GetInstance()
         ->SchedulePrepareFontUniqueNameTableIfNeeded();
   }
-#endif
+#endif  // defined(OS_WIN)
+
+  // Unretained(this) is safe as the main message loop expected to run it is
+  // stopped before ~BrowserMainLoop (in the event the message loop doesn't
+  // reach idle before that point).
+  base::CurrentThread::Get()->RegisterOnNextIdleCallback(base::BindOnce(
+      [](BrowserMainLoop* self) {
+        if (self->parts_)
+          self->parts_->OnFirstIdle();
+
+        self->responsiveness_watcher_->OnFirstIdle();
+      },
+      base::Unretained(this)));
 
   // If the UI thread blocks, the whole UI is unresponsive. Do not allow
   // unresponsive tasks from the UI thread and instantiate a
@@ -961,34 +1008,33 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
   return result_code_;
 }
 
+BrowserMainLoop::ProceedWithMainMessageLoopRun
+BrowserMainLoop::InterceptMainMessageLoopRun() {
+  // Embedders can request not to run the loop (also voids |ui_task|).
+  if (parts_ && !parts_->ShouldInterceptMainMessageLoopRun())
+    return ProceedWithMainMessageLoopRun(false);
+
+  // The |ui_task| can be injected by tests to replace the main message loop.
+  if (parameters_.ui_task) {
+    std::move(parameters_.ui_task).Run();
+    return ProceedWithMainMessageLoopRun(false);
+  }
+
+  return ProceedWithMainMessageLoopRun(true);
+}
+
 void BrowserMainLoop::RunMainMessageLoop() {
 #if defined(OS_ANDROID)
   // Android's main message loop is the Java message loop.
   NOTREACHED();
 #else   // defined(OS_ANDROID)
+  if (InterceptMainMessageLoopRun() != ProceedWithMainMessageLoopRun(true))
+    return;
+
   auto main_run_loop = std::make_unique<base::RunLoop>();
   if (parts_)
     parts_->WillRunMainMessageLoop(main_run_loop);
-  if (!main_run_loop)
-    return;
-
-  main_run_loop->RunUntilIdle();
-  // |parts_| may have captured a quit closure in WillRunMainMessageLoop(). If
-  // the above run is quit before it reaches idle on its own,
-  // RunMainMessageLoop() must return right away.
-  if (main_run_loop->AnyQuitCalled())
-    return;
-
-  // TODO(crbug.com/1175074): Figure out why (only) blink web tests goes through
-  // this code path multiple times...
-  static bool ran_once = false;
-  if (!ran_once) {
-    ran_once = true;
-    if (parts_)
-      parts_->OnFirstIdle();
-    responsiveness_watcher_->OnFirstIdle();
-  }
-
+  DCHECK(main_run_loop);
   main_run_loop->Run();
 #endif  // defined(OS_ANDROID)
 }

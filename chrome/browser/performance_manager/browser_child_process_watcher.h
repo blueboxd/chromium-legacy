@@ -7,9 +7,7 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_child_process_observer.h"
 

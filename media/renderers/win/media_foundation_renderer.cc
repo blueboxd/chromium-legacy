@@ -11,7 +11,9 @@
 
 #include "base/callback_helpers.h"
 #include "base/guid.h"
+#include "base/ignore_result.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
@@ -511,16 +513,19 @@ HRESULT MediaFoundationRenderer::PopulateStatistics(
     PipelineStatistics& statistics) {
   ComPtr<IMFMediaEngineEx> media_engine_ex;
   RETURN_IF_FAILED(mf_media_engine_.As(&media_engine_ex));
+
   base::win::ScopedPropVariant frames_rendered;
   RETURN_IF_FAILED(media_engine_ex->GetStatistics(
       MF_MEDIA_ENGINE_STATISTIC_FRAMES_RENDERED, frames_rendered.Receive()));
   base::win::ScopedPropVariant frames_dropped;
   RETURN_IF_FAILED(media_engine_ex->GetStatistics(
       MF_MEDIA_ENGINE_STATISTIC_FRAMES_DROPPED, frames_dropped.Receive()));
-  DVLOG_FUNC(3) << "video_frames_decoded=" << frames_rendered.get().ulVal
-                << ", video_frames_dropped=" << frames_dropped.get().ulVal;
-  statistics.video_frames_decoded = frames_rendered.get().ulVal;
+
+  statistics.video_frames_decoded =
+      frames_rendered.get().ulVal + frames_dropped.get().ulVal;
   statistics.video_frames_dropped = frames_dropped.get().ulVal;
+  DVLOG_FUNC(3) << "video_frames_decoded=" << statistics.video_frames_decoded
+                << ", video_frames_dropped=" << statistics.video_frames_dropped;
   return S_OK;
 }
 
@@ -534,13 +539,24 @@ void MediaFoundationRenderer::SendStatistics() {
   }
 
   if (statistics_ != new_stats) {
+    // OnStatisticsUpdate() expects delta values.
+    PipelineStatistics delta;
+    delta.video_frames_decoded = base::ClampSub(
+        new_stats.video_frames_decoded, statistics_.video_frames_decoded);
+    delta.video_frames_dropped = base::ClampSub(
+        new_stats.video_frames_dropped, statistics_.video_frames_dropped);
     statistics_ = new_stats;
-    renderer_client_->OnStatisticsUpdate(statistics_);
+    renderer_client_->OnStatisticsUpdate(delta);
   }
 }
 
 void MediaFoundationRenderer::StartSendingStatistics() {
   DVLOG_FUNC(2);
+
+  // Clear `statistics_` to reset the base for OnStatisticsUpdate(), this is
+  // needed since flush will clear the internal stats in MediaFoundation.
+  statistics_ = PipelineStatistics();
+
   const auto kPipelineStatsPollingPeriod = base::Milliseconds(500);
   statistics_timer_.Start(FROM_HERE, kPipelineStatsPollingPeriod, this,
                           &MediaFoundationRenderer::SendStatistics);

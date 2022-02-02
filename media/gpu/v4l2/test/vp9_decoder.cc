@@ -159,7 +159,7 @@ std::unique_ptr<Vp9Decoder> Vp9Decoder::Create(
   auto OUTPUT_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, kDriverCodecFourcc,
       gfx::Size(file_header.width, file_header.height), /*num_planes=*/1,
-      V4L2_MEMORY_MMAP);
+      V4L2_MEMORY_MMAP, /*num_buffers=*/1);
 
   // TODO(stevecho): enable V4L2_MEMORY_DMABUF memory for CAPTURE queue.
   // |num_planes| represents separate memory buffers, not planes for Y, U, V.
@@ -167,7 +167,7 @@ std::unique_ptr<Vp9Decoder> Vp9Decoder::Create(
   auto CAPTURE_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, kUncompressedFourcc,
       gfx::Size(file_header.width, file_header.height), /*num_planes=*/2,
-      V4L2_MEMORY_MMAP);
+      V4L2_MEMORY_MMAP, /*num_buffers=*/8);
 
   return base::WrapUnique(
       new Vp9Decoder(std::move(ivf_parser), std::move(v4l2_ioctl),
@@ -214,13 +214,16 @@ bool Vp9Decoder::Initialize() {
   if (!v4l2_ioctl_->QueryAndMmapQueueBuffers(CAPTURE_queue_))
     LOG(ERROR) << "QueryAndMmapQueueBuffers for CAPTURE queue failed.";
 
-  for (uint32_t i = 0; i < kRequestBufferCount; ++i) {
+  for (uint32_t i = 0; i < CAPTURE_queue_->num_buffers(); ++i) {
     if (!v4l2_ioctl_->QBuf(CAPTURE_queue_, i))
       LOG(ERROR) << "VIDIOC_QBUF failed for CAPTURE queue.";
   }
 
-  if (!v4l2_ioctl_->MediaIocRequestAlloc())
+  int media_request_fd;
+  if (!v4l2_ioctl_->MediaIocRequestAlloc(&media_request_fd))
     LOG(ERROR) << "MEDIA_IOC_REQUEST_ALLOC failed";
+
+  OUTPUT_queue_->set_media_request_fd(media_request_fd);
 
   if (!v4l2_ioctl_->StreamOn(OUTPUT_queue_->type()))
     LOG(ERROR) << "StreamOn for OUTPUT queue failed.";
@@ -229,6 +232,20 @@ bool Vp9Decoder::Initialize() {
     LOG(ERROR) << "StreamOn for CAPTURE queue failed.";
 
   return true;
+}
+
+void Vp9Decoder::RefreshReferenceSlots(const uint8_t refresh_frame_flags,
+                                       scoped_refptr<MmapedBuffer> buffer) {
+  const std::bitset<kVp9NumRefFrames> slots(refresh_frame_flags);
+
+  static_assert(kVp9NumRefFrames == sizeof(refresh_frame_flags) * CHAR_BIT,
+                "|refresh_frame_flags| size should not be larger than "
+                "|kVp9NumRefFrames|");
+
+  for (size_t i = 0; i < kVp9NumRefFrames; i++) {
+    if (slots[i])
+      ref_frames_[i] = buffer;
+  }
 }
 
 Vp9Parser::Result Vp9Decoder::ReadNextFrame(Vp9FrameHeader& vp9_frame_header,
@@ -261,16 +278,19 @@ Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
   Vp9Parser::Result parser_res = ReadNextFrame(frame_hdr, size);
   switch (parser_res) {
     case Vp9Parser::kInvalidStream:
-      LOG_ASSERT(false) << "Failed to parse frame";
+      LOG_ASSERT(false) << "Failed to parse frame.";
       return Vp9Decoder::kError;
     case Vp9Parser::kAwaitingRefresh:
-      LOG_ASSERT(false) << "Unsupported parser return value";
+      LOG_ASSERT(false) << "Unsupported parser return value.";
       return Vp9Decoder::kError;
     case Vp9Parser::kEOStream:
       return Vp9Decoder::kEOStream;
     case Vp9Parser::kOk:
       break;
   }
+
+  if (!v4l2_ioctl_->QBuf(OUTPUT_queue_, 0))
+    LOG(ERROR) << "VIDIOC_QBUF failed for OUTPUT queue.";
 
   struct v4l2_ctrl_vp9_frame_decode_params v4l2_frame_params;
   memset(&v4l2_frame_params, 0, sizeof(v4l2_frame_params));
@@ -342,6 +362,22 @@ Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
   v4l2_frame_params.render_width_minus_1 = frame_hdr.render_width - 1;
   v4l2_frame_params.render_height_minus_1 = frame_hdr.render_height - 1;
 
+  constexpr uint64_t kInvalidSurface = std::numeric_limits<uint32_t>::max();
+
+  for (size_t i = 0; i < base::size(frame_hdr.ref_frame_idx); ++i) {
+    const auto idx = frame_hdr.ref_frame_idx[i];
+
+    LOG_ASSERT(idx < kVp9NumRefFrames) << "Invalid reference frame index.\n";
+
+    static_assert(
+        base::size(frame_hdr.ref_frame_idx) ==
+            base::size(v4l2_frame_params.refs),
+        "The number of reference frames in |Vp9FrameHeader| does not match "
+        "|v4l2_ctrl_vp9_frame_decode_params|. Fix |Vp9FrameHeader|.");
+
+    v4l2_frame_params.refs[i] =
+        ref_frames_[idx] ? ref_frames_[idx]->reference_id() : kInvalidSurface;
+  }
   // TODO(stevecho): fill in the rest of |v4l2_frame_params| fields.
   FillV4L2VP9QuantizationParams(frame_hdr.quant_params,
                                 &v4l2_frame_params.quant);
@@ -353,6 +389,27 @@ Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
 
   FillV4L2VP9LoopFilterParams(lf_params, &v4l2_frame_params.lf);
   FillV4L2VP9SegmentationParams(segm_params, &v4l2_frame_params.seg);
+
+  if (!v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, v4l2_frame_params))
+    LOG(ERROR) << "VIDIOC_S_EXT_CTRLS failed.";
+
+  if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_))
+    LOG(ERROR) << "MEDIA_REQUEST_IOC_QUEUE failed.";
+
+  uint32_t index;
+
+  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &index))
+    LOG(ERROR) << "VIDIOC_DQBUF failed for CAPTURE queue.";
+
+  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &index))
+    LOG(ERROR) << "VIDIOC_DQBUF failed for OUTPUT queue.";
+
+  // TODO(stevecho): With current VP9 API, VIDIOC_G_EXT_CTRLS ioctl call is
+  // needed when forward probabilities update is used. With new VP9 API landing
+  // in kernel 5.17, VIDIOC_G_EXT_CTRLS ioctl call is no longer needed, see:
+  // https://lwn.net/Articles/855419/
+
+  // TODO(stevecho): call RefreshReferenceSlots() once decoded buffer is ready.
 
   return Vp9Decoder::kOk;
 }

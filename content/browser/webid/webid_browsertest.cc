@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -140,6 +141,7 @@ class IdpTestServer {
 
 }  // namespace
 
+// TODO(yigu): Update the tests (e.g. well-known) to cover mediation mode.
 class WebIdBrowserTest : public ContentBrowserTest {
  public:
   WebIdBrowserTest() = default;
@@ -181,7 +183,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
     // that the network shard for fetching the .well-known file is different
     // from that used for other IdP transactions, to prevent data leakage.
     features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
-    features.push_back(features::kWebID);
+    features.push_back(features::kFedCm);
     scoped_feature_list_.InitWithFeatures(features, {});
 
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
@@ -197,11 +199,16 @@ class WebIdBrowserTest : public ContentBrowserTest {
   std::string GetBasicRequestString() {
     return R"(
         (async () => {
-          var x = (await navigator.id.get({
-            provider: ')" +
+          var x = (await navigator.credentials.get({
+            federated: {
+              providers: [{
+                url: ')" +
            BaseIdpUrl() + R"(',
-            client_id: 'client_id_1',
-            nonce: '12345',
+                clientId: 'client_id_1',
+                nonce: '12345',
+              }],
+              mode: "permission",
+            }
           }));
           return x;
         }) ()
@@ -224,7 +231,7 @@ class WebIdBrowserTest : public ContentBrowserTest {
   EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   std::unique_ptr<IdpTestServer> idp_server_;
   std::unique_ptr<WebIdTestContentBrowserClient> test_browser_client_;
-  ContentBrowserClient* old_client_ = nullptr;
+  raw_ptr<ContentBrowserClient> old_client_ = nullptr;
 };
 
 // Verify a standard login flow with IdP sign-in page.
@@ -294,8 +301,8 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, WebIdNotSupported) {
   idp_server()->SetWellKnownResponseDetails({net::HTTP_NOT_FOUND, "", ""});
 
   std::string expected_error =
-      "a JavaScript error: \"NetworkError: The "
-      "indicated provider does not support WebID.\"\n";
+      "a JavaScript error: \"NotSupportedError: The "
+      "indicated provider does not support FedCM.\"\n";
   EXPECT_EQ(expected_error, EvalJs(shell(), GetBasicRequestString()).error);
 }
 
@@ -303,11 +310,15 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, WebIdNotSupported) {
 IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, FailsOnHTTP) {
   std::string script = R"(
         (async () => {
-          var x = (await navigator.id.get({
-            provider: 'http://idp.example)" +
+          var x = (await navigator.credentials.get({
+            federated: {
+              providers: [{
+                url: 'http://idp.example)" +
                        base::NumberToString(https_server().port()) + R"(',
-            client_id: 'client_id_1',
-            nonce: '12345',
+                clientId: 'client_id_1',
+                nonce: '12345',
+              }]
+            }
           }));
           return x;
         }) ()

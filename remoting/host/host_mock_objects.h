@@ -9,19 +9,21 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "net/base/ip_endpoint.h"
 #include "remoting/host/action_executor.h"
+#include "remoting/host/base/screen_controls.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/chromoting_host_services_provider.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/client_session_details.h"
+#include "remoting/host/client_session_events.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/mojom/chromoting_host_services.mojom.h"
 #include "remoting/host/remote_open_url/url_forwarder_configurator.h"
-#include "remoting/host/screen_controls.h"
-#include "remoting/host/screen_resolution.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -114,6 +116,15 @@ class MockClientSessionDetails : public ClientSessionDetails {
   MOCK_CONST_METHOD0(desktop_session_id, uint32_t());
 };
 
+class MockClientSessionEvents : public ClientSessionEvents {
+ public:
+  MockClientSessionEvents();
+  ~MockClientSessionEvents() override;
+
+  MOCK_METHOD(void, OnDesktopAttached, (uint32_t session_id), (override));
+  MOCK_METHOD(void, OnDesktopDetached, (), (override));
+};
+
 class MockClientSessionEventHandler : public ClientSession::EventHandler {
  public:
   MockClientSessionEventHandler();
@@ -150,6 +161,7 @@ class MockDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
 
   std::unique_ptr<DesktopEnvironment> Create(
       base::WeakPtr<ClientSessionControl> client_session_control,
+      base::WeakPtr<ClientSessionEvents> client_session_events,
       const DesktopEnvironmentOptions& options) override;
 };
 
@@ -244,6 +256,33 @@ class MockUrlForwarderConfigurator final : public UrlForwarderConfigurator {
               SetUpUrlForwarder,
               (const SetUpUrlForwarderCallback& callback),
               (override));
+};
+
+class MockChromotingSessionServices : public mojom::ChromotingSessionServices {
+ public:
+  MockChromotingSessionServices();
+  ~MockChromotingSessionServices() override;
+
+  MOCK_METHOD(void,
+              BindRemoteUrlOpener,
+              (mojo::PendingReceiver<mojom::RemoteUrlOpener> receiver),
+              (override));
+  MOCK_METHOD(void,
+              BindWebAuthnProxy,
+              (mojo::PendingReceiver<mojom::WebAuthnProxy> receiver),
+              (override));
+};
+
+class MockChromotingHostServicesProvider
+    : public ChromotingHostServicesProvider {
+ public:
+  MockChromotingHostServicesProvider();
+  ~MockChromotingHostServicesProvider() override;
+
+  MOCK_METHOD(mojom::ChromotingSessionServices*,
+              GetSessionServices,
+              (),
+              (const, override));
 };
 
 }  // namespace remoting

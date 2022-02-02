@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/completion_event.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
@@ -78,7 +79,10 @@ void SingleThreadProxy::Start() {
   DCHECK(settings.single_thread_proxy_scheduler ||
          !settings.enable_checker_imaging)
       << "Checker-imaging is not supported in synchronous single threaded mode";
-  host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
+  {
+    DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
+    host_impl_ = layer_tree_host_->CreateLayerTreeHostImpl(this);
+  }
   if (settings.single_thread_proxy_scheduler && !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(settings.ToSchedulerSettings());
     scheduler_settings.commit_to_active_tree = true;
@@ -92,8 +96,6 @@ void SingleThreadProxy::Start() {
         this, scheduler_settings, layer_tree_host_->GetId(),
         task_runner_provider_->MainThreadTaskRunner(),
         std::move(compositor_timing_history),
-        layer_tree_host_->TakeMainPipeline(),
-        layer_tree_host_->TakeCompositorPipeline(),
         host_impl_->compositor_frame_reporting_controller(),
         power_scheduler::PowerModeArbiter::GetInstance());
   }
@@ -203,7 +205,8 @@ void SingleThreadProxy::DoCommit(const viz::BeginFrameArgs& commit_args) {
   auto completion_event_ptr = std::make_unique<CompletionEvent>(
       base::WaitableEvent::ResetPolicy::MANUAL);
   auto* completion_event = completion_event_ptr.get();
-  auto* commit_state =
+  auto& unsafe_state = layer_tree_host_->GetUnsafeStateForCommit();
+  std::unique_ptr<CommitState> commit_state =
       layer_tree_host_->WillCommit(std::move(completion_event_ptr),
                                    /*has_updates=*/true);
   devtools_instrumentation::ScopedCommitTrace commit_task(
@@ -216,7 +219,7 @@ void SingleThreadProxy::DoCommit(const viz::BeginFrameArgs& commit_args) {
 
     host_impl_->BeginCommit(commit_state->source_frame_number);
 
-    layer_tree_host_->FinishCommitOnImplThread(host_impl_.get());
+    host_impl_->FinishCommit(*commit_state, unsafe_state);
     completion_event->Signal();
 
     if (scheduler_on_impl_thread_) {
@@ -253,7 +256,7 @@ void SingleThreadProxy::CommitComplete() {
 
   DebugScopedSetMainThread main(task_runner_provider_);
   layer_tree_host_->DidBeginMainFrame();
-  layer_tree_host_->CommitComplete();
+  layer_tree_host_->CommitComplete({base::TimeTicks(), base::TimeTicks::Now()});
 
   next_frame_is_newly_committed_frame_ = true;
 }
@@ -771,9 +774,20 @@ void SingleThreadProxy::ClearHistory() {
     scheduler_on_impl_thread_->ClearHistory();
 }
 
+size_t SingleThreadProxy::CommitDurationSampleCountForTesting() const {
+  DCHECK(scheduler_on_impl_thread_);
+  return scheduler_on_impl_thread_
+      ->CommitDurationSampleCountForTesting();  // IN-TEST
+}
+
 void SingleThreadProxy::SetRenderFrameObserver(
     std::unique_ptr<RenderFrameMetadataObserver> observer) {
   host_impl_->SetRenderFrameObserver(std::move(observer));
+}
+
+uint32_t SingleThreadProxy::GetAverageThroughput() const {
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  return host_impl_->dropped_frame_counter()->GetAverageThroughput();
 }
 
 void SingleThreadProxy::UpdateBrowserControlsState(
@@ -927,8 +941,8 @@ void SingleThreadProxy::DoPainting(const viz::BeginFrameArgs& commit_args) {
   layer_tree_host_->UpdateLayers();
   update_layers_requested_ = false;
 
-  auto& begin_main_frame_metrics =
-      layer_tree_host_->pending_commit_state()->begin_main_frame_metrics;
+  std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics =
+      layer_tree_host_->TakeBeginMainFrameMetrics();
   host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get());
 
   // TODO(enne): SingleThreadProxy does not support cancelling commits yet,

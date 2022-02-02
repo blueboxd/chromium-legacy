@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"

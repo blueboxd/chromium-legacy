@@ -26,6 +26,7 @@
 #include "components/viz/common/switches.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/profiling.h"
 #include "gpu/config/gpu_switches.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -193,25 +194,13 @@ bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   command_line->AppendSwitchASCII(::switches::kOzonePlatform, "headless");
 #endif
 
-  if (command_line->HasSwitch(::switches::kUseGL)) {
-    std::string use_gl = command_line->GetSwitchValueASCII(switches::kUseGL);
-    if (use_gl != gl::kGLImplementationEGLName) {
-      // Headless uses a software output device which will cause us to fall back
-      // to software compositing anyway, but only after attempting and failing
-      // to initialize GPU compositing. We disable GPU compositing here
-      // explicitly to preempt this attempt.
-      command_line->AppendSwitch(::switches::kDisableGpuCompositing);
-    }
-  } else {
-    if (!options()->gl_implementation.empty()) {
-      command_line->AppendSwitchASCII(::switches::kUseGL,
-                                      options()->gl_implementation);
-      if (!options()->angle_implementation.empty()) {
-        command_line->AppendSwitchASCII(::switches::kUseANGLE,
-                                        options()->angle_implementation);
-      }
-    } else {
-      command_line->AppendSwitch(::switches::kDisableGpu);
+  if (!command_line->HasSwitch(::switches::kUseGL) &&
+      !options()->gl_implementation.empty()) {
+    command_line->AppendSwitchASCII(::switches::kUseGL,
+                                    options()->gl_implementation);
+    if (!options()->angle_implementation.empty()) {
+      command_line->AppendSwitchASCII(::switches::kUseANGLE,
+                                      options()->angle_implementation);
     }
   }
 
@@ -288,7 +277,13 @@ void HeadlessContentMainDelegate::InitLogging(
 
   // Otherwise we log to where the executable is.
   if (log_path.empty()) {
+#if defined(OS_FUCHSIA)
+    // TODO(crbug.com/1262330): Use the same solution as used for LOG_DIR.
+    // Use -1 to allow this to compile.
+    if (base::PathService::Get(-1, &log_path)) {
+#else
     if (base::PathService::Get(base::DIR_MODULE, &log_path)) {
+#endif
       log_path = log_path.Append(log_filename);
     } else {
       log_path = log_filename;
@@ -378,12 +373,12 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
   InitApplicationLocale(command_line);
 }
 
-int HeadlessContentMainDelegate::RunProcess(
+absl::variant<int, content::MainFunctionParams>
+HeadlessContentMainDelegate::RunProcess(
     const std::string& process_type,
-    const content::MainFunctionParams& main_function_params) {
-
+    content::MainFunctionParams main_function_params) {
   if (!process_type.empty())
-    return -1;
+    return std::move(main_function_params);
 
   base::trace_event::TraceLog::GetInstance()->set_process_name(
       "HeadlessBrowser");
@@ -393,7 +388,7 @@ int HeadlessContentMainDelegate::RunProcess(
   std::unique_ptr<content::BrowserMainRunner> browser_runner =
       content::BrowserMainRunner::Create();
 
-  int exit_code = browser_runner->Initialize(main_function_params);
+  int exit_code = browser_runner->Initialize(std::move(main_function_params));
   DCHECK_LT(exit_code, 0) << "content::BrowserMainRunner::Initialize failed in "
                              "HeadlessContentMainDelegate::RunProcess";
 
@@ -401,7 +396,7 @@ int HeadlessContentMainDelegate::RunProcess(
   browser_runner->Shutdown();
   browser_.reset();
 
-  // Return value >=0 here to disable calling content::BrowserMain.
+  // Return an int here to disable calling content::BrowserMain.
   return 0;
 }
 

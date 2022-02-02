@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 import {kMaximumLocalImagePreviews} from 'chrome://personalization/common/constants.js';
-import {emptyState} from 'chrome://personalization/trusted/personalization_reducers.js';
-import {promisifyIframeFunctionsForTesting, WallpaperCollections} from 'chrome://personalization/trusted/wallpaper_collections_element.js';
+import {emptyState} from 'chrome://personalization/trusted/personalization_state.js';
+import {promisifyIframeFunctionsForTesting, WallpaperCollections} from 'chrome://personalization/trusted/wallpaper/wallpaper_collections_element.js';
+
 import {assertDeepEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 import {waitAfterNextRender} from '../../test_util.js';
+
 import {assertWindowObjectsEqual, baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
-import {TestWallpaperProvider} from './test_mojo_interface_provider.js';
 import {TestPersonalizationStore} from './test_personalization_store.js';
+import {TestWallpaperProvider} from './test_wallpaper_interface_provider.js';
 
 export function WallpaperCollectionsTest() {
   /** @type {?HTMLElement} */
@@ -63,7 +65,7 @@ export function WallpaperCollectionsTest() {
 
     wallpaperCollectionsElement = initElement(WallpaperCollections.is);
 
-    personalizationStore.data.googlePhotos.count = 1234;
+    personalizationStore.data.googlePhotos.count = 1234n;
     personalizationStore.data.loading.googlePhotos.count = false;
     personalizationStore.notifyObservers();
 
@@ -136,17 +138,20 @@ export function WallpaperCollectionsTest() {
       'id_1': [wallpaperProvider.images[0], wallpaperProvider.images[1]],
       'id_2': [],
       'id_3': null,
+      'id_4': [wallpaperProvider.images[0], wallpaperProvider.images[2]],
     };
     personalizationStore.data.loading.images = {
       'id_0': false,
       'id_1': false,
       'id_2': false,
       'id_3': false,
+      'id_4': false,
     };
     personalizationStore.notifyObservers();
 
     counts = (await sendImageCountsPromise)[1];
-    assertDeepEquals({'id_0': 1, 'id_1': 2, 'id_2': 0, 'id_3': null}, counts);
+    assertDeepEquals(
+        {'id_0': 1, 'id_1': 2, 'id_2': 0, 'id_3': null, 'id_4': 1}, counts);
   });
 
   test('sends local images when loaded', async () => {

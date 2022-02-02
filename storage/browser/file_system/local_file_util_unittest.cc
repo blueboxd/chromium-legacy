@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -41,6 +40,9 @@ const FileSystemType kFileSystemType = kFileSystemTypeTest;
 class LocalFileUtilTest : public testing::Test {
  public:
   LocalFileUtilTest() = default;
+
+  LocalFileUtilTest(const LocalFileUtilTest&) = delete;
+  LocalFileUtilTest& operator=(const LocalFileUtilTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -119,8 +121,6 @@ class LocalFileUtilTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
   base::ScopedTempDir data_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalFileUtilTest);
 };
 
 TEST_F(LocalFileUtilTest, CreateAndClose) {

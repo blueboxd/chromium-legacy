@@ -7,7 +7,6 @@
 
 #include <unordered_map>
 
-#include "base/macros.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/security.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -63,7 +62,6 @@ class SecurityHandler : public DevToolsDomainHandler,
   void FlushPendingCertificateErrorNotifications();
 
   // WebContentsObserver overrides
-  void DidChangeVisibleSecurityState() override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
   std::unique_ptr<Security::Frontend> frontend_;

@@ -5,28 +5,32 @@
 #include "ash/app_list/views/search_result_view.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
-#include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/legacy_remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
+#include "base/i18n/number_formatting.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -35,13 +39,15 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/accessibility_paint_checks.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/image_model_utils.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/style/typography.h"
 
 namespace ash {
@@ -51,17 +57,25 @@ namespace {
 constexpr int kPreferredWidth = 640;
 constexpr int kClassicViewHeight = 48;
 constexpr int kDefaultViewHeight = 40;
-constexpr int kInlineAnswerViewHeight = 80;
+constexpr int kAnswerCardViewHeight = 80;
 constexpr int kPreferredIconViewWidth = 56;
 constexpr int kTextTrailPadding = 16;
 // Extra margin at the right of the rightmost action icon.
 constexpr int kActionButtonRightMargin = 8;
 // Text line height in the search result.
 constexpr int kPrimaryTextHeight = 20;
-constexpr int kInlineAnswerDetailsLineHeight = 18;
+constexpr int kAnswerCardDetailsLineHeight = 18;
+
+constexpr int kAnswerCardCardBackgroundCornerRadius = 12;
+constexpr int kAnswerCardFocusBarOffset = 24;
+constexpr int kAnswerCardFocusBarHeight = 32;
 
 // Corner radius for downloaded image icons.
 constexpr int kImageIconCornerRadius = 4;
+
+constexpr int kSearchRatingStarPadding = 4;
+constexpr int kSearchRatingStarSize = 16;
+constexpr gfx::Insets kAnswerCardBorder(12, 12, 12, 12);
 }  // namespace
 
 // static
@@ -116,13 +130,22 @@ class MaskedImageView : public views::ImageView {
   SearchResult::IconShape shape_;
 };
 
-SearchResultView::SearchResultView(SearchResultListView* list_view,
-                                   AppListViewDelegate* view_delegate,
-                                   SearchResultViewType view_type)
+SearchResultView::SearchResultView(
+    SearchResultListView* list_view,
+    AppListViewDelegate* view_delegate,
+    SearchResultPageDialogController* dialog_controller,
+    SearchResultViewType view_type)
     : list_view_(list_view),
       view_delegate_(view_delegate),
+      dialog_controller_(dialog_controller),
       view_type_(view_type) {
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  // Result views are not expected to be focused - while the results UI is shown
+  // the focus is kept within the `SearchBoxView`, which manages result
+  // selection state in response to keyboard navigation keys, and forwards
+  // all relevant key events (e.g. ENTER key for result activation) to search
+  // result views as needed.
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+
   // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
   // able to submit accessibility checks, but this focusable View needs to
   // add a name so that the screen reader knows what to announce.
@@ -139,33 +162,114 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
   icon_->SetCanProcessEventsWithinSubtree(false);
   badge_icon_->SetCanProcessEventsWithinSubtree(false);
 
-  set_context_menu_controller(this);
   SetNotifyEnterExitOnChild(true);
 
-  title_label_ = AddChildView(std::make_unique<views::StyledLabel>());
-  title_label_->SetDisplayedOnBackgroundColor(SK_ColorTRANSPARENT);
+  text_container_ = AddChildView(std::make_unique<views::FlexLayoutView>());
+  text_container_->GetViewAccessibility().OverrideIsIgnored(true);
+  text_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+
+  SetSearchResultViewType(view_type);
+
+  auto setup_flex_specifications = [](views::View* view) {
+    view->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                 views::MaximumFlexSizeRule::kScaleToMaximum));
+  };
+
+  title_label_ =
+      text_container_->AddChildView(std::make_unique<views::Label>());
+  title_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_label_->SetVisible(false);
+  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  setup_flex_specifications(title_label_);
 
-  details_label_ = AddChildView(std::make_unique<views::StyledLabel>());
-  details_label_->SetDisplayedOnBackgroundColor(SK_ColorTRANSPARENT);
-  details_label_->SetVisible(false);
-
-  separator_label_ = AddChildView(std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR),
-      CONTEXT_SEARCH_RESULT_VIEW, STYLE_PRODUCTIVITY_LAUNCHER));
+  separator_label_ =
+      text_container_->AddChildView(std::make_unique<views::Label>(
+          l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR)));
   separator_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
   separator_label_->SetVisible(false);
   separator_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  setup_flex_specifications(separator_label_);
+
+  details_label_ =
+      text_container_->AddChildView(std::make_unique<views::Label>());
+  details_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  details_label_->SetVisible(false);
+  details_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  setup_flex_specifications(details_label_);
+
+  rating_ = text_container_->AddChildView(std::make_unique<views::Label>());
+  rating_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  rating_->SetVisible(false);
+  rating_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  setup_flex_specifications(rating_);
+
+  rating_star_ =
+      text_container_->AddChildView(std::make_unique<views::ImageView>());
+  rating_star_->SetCanProcessEventsWithinSubtree(false);
+  rating_star_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
+  rating_star_->SetVisible(false);
+  rating_star_->SetImage(gfx::CreateVectorIcon(
+      kBadgeRatingIcon, kSearchRatingStarSize,
+      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+          kDeprecatedSearchBoxTextDefaultColor)));
+  rating_star_->SetBorder(
+      views::CreateEmptyBorder(0, kSearchRatingStarPadding, 0, 0));
+
+  title_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
+  separator_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
+  details_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
+  rating_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
+  switch (view_type_) {
+    case SearchResultViewType::kClassic:
+      title_label_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
+      separator_label_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
+      details_label_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
+      rating_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
+      break;
+    case SearchResultViewType::kDefault:
+    case SearchResultViewType::kAnswerCard:
+      title_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
+      separator_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
+      details_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
+      rating_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
+  }
 }
 
 SearchResultView::~SearchResultView() = default;
 
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
+  // Update tile, separator, and details text visibility.
   UpdateTitleText();
   UpdateDetailsText();
+  UpdateRating();
   UpdateAccessibleName();
   SchedulePaint();
+}
+
+void SearchResultView::SetSearchResultViewType(SearchResultViewType type) {
+  view_type_ = type;
+
+  switch (view_type_) {
+    case SearchResultViewType::kDefault:
+      text_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+      SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+      break;
+    case SearchResultViewType::kClassic:
+      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+      SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+      break;
+    case SearchResultViewType::kAnswerCard:
+      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+      SetBorder(views::CreateEmptyBorder(kAnswerCardBorder));
+      break;
+  }
+}
+
+views::LayoutOrientation SearchResultView::GetLayoutOrientationForTest() {
+  return text_container_->GetOrientation();
 }
 
 int SearchResultView::PreferredHeight() const {
@@ -174,23 +278,23 @@ int SearchResultView::PreferredHeight() const {
       return kClassicViewHeight;
     case SearchResultViewType::kDefault:
       return kDefaultViewHeight;
-    case SearchResultViewType::kInlineAnswer:
-      return kInlineAnswerViewHeight;
+    case SearchResultViewType::kAnswerCard:
+      return kAnswerCardViewHeight;
   }
 }
 int SearchResultView::PrimaryTextHeight() const {
   switch (view_type_) {
     case SearchResultViewType::kClassic:
     case SearchResultViewType::kDefault:
-    case SearchResultViewType::kInlineAnswer:
+    case SearchResultViewType::kAnswerCard:
       return kPrimaryTextHeight;
   }
 }
 int SearchResultView::SecondaryTextHeight() const {
   switch (view_type_) {
     case SearchResultViewType::kClassic:
-    case SearchResultViewType::kInlineAnswer:
-      return kInlineAnswerDetailsLineHeight;
+    case SearchResultViewType::kAnswerCard:
+      return kAnswerCardDetailsLineHeight;
     case SearchResultViewType::kDefault:
       return kPrimaryTextHeight;
   }
@@ -199,101 +303,82 @@ int SearchResultView::SecondaryTextHeight() const {
 void SearchResultView::UpdateTitleText() {
   if (!result() || result()->title().empty()) {
     title_label_->SetText(std::u16string());
+    text_container_->SetVisible(false);
+    title_label_->SetVisible(false);
   } else {
     title_label_->SetText(result()->title());
     StyleTitleLabel();
+    text_container_->SetVisible(true);
+    title_label_->SetVisible(true);
   }
 }
 
 void SearchResultView::UpdateDetailsText() {
   if (!result() || result()->details().empty()) {
     details_label_->SetText(std::u16string());
+    details_label_->SetVisible(false);
+    separator_label_->SetVisible(false);
   } else {
     details_label_->SetText(result()->details());
     StyleDetailsLabel();
+    details_label_->SetVisible(true);
+    switch (view_type_) {
+      case SearchResultViewType::kDefault:
+        separator_label_->SetVisible(true);
+        break;
+      case SearchResultViewType::kClassic:
+      case SearchResultViewType::kAnswerCard:
+
+        separator_label_->SetVisible(false);
+    }
   }
+}
+
+void SearchResultView::UpdateRating() {
+  if (!result() || !result()->rating() || result()->rating() < 0) {
+    rating_->SetText(std::u16string());
+    rating_->SetVisible(false);
+    rating_star_->SetVisible(false);
+    return;
+  }
+
+  rating_->SetText(base::FormatDouble(result()->rating(), 1));
+  rating_->SetVisible(true);
+  rating_star_->SetVisible(true);
+}
+
+void SearchResultView::StyleLabel(views::Label* label,
+                                  bool is_title_label,
+                                  const SearchResult::Tags& tags) {
+  // Apply font weight styles.
+  bool is_url = false;
+  for (const auto& tag : tags) {
+    bool has_url_tag = (tag.styles & SearchResult::Tag::URL);
+    bool has_match_tag = (tag.styles & SearchResult::Tag::MATCH);
+    is_url = has_url_tag || is_url;
+    if (has_match_tag) {
+      label->SetTextStyleRange(AshTextStyle::STYLE_EMPHASIZED, tag.range);
+    }
+  }
+  // Apply font color styles.
+  label->SetEnabledColor(
+      is_url
+          ? AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorURL)
+          : is_title_label
+                ? AppListColorProvider::Get()->GetSearchBoxTextColor(
+                      kDeprecatedSearchBoxTextDefaultColor)
+                : AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+                      kDeprecatedSearchBoxTextDefaultColor));
 }
 
 void SearchResultView::StyleTitleLabel() {
-  title_label_->ClearStyleRanges();
-  views::StyledLabel::RangeStyleInfo title_style;
-
-  switch (view_type_) {
-    case SearchResultViewType::kClassic:
-      title_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-      title_label_->SetDefaultTextStyle(STYLE_CLASSIC_LAUNCHER);
-      break;
-    case SearchResultViewType::kInlineAnswer:
-    case SearchResultViewType::kDefault:
-      title_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-      title_label_->SetDefaultTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-  }
-  title_style.override_color =
-      AppListColorProvider::Get()->GetSearchBoxTextColor(
-          kDeprecatedSearchBoxTextDefaultColor);
-
-  title_style.disable_line_wrapping = true;
-  title_label_->AddStyleRange(gfx::Range(0, result()->title().size()),
-                              title_style);
-
-  // Apply styling options for title_label_.
-  const SearchResult::Tags& tags = result()->title_tags();
-  for (const auto& tag : tags) {
-    if (tag.styles & SearchResult::Tag::URL) {
-      views::StyledLabel::RangeStyleInfo url_text_color;
-      url_text_color.override_color =
-          AshColorProvider::Get()->GetContentLayerColor(
-              AshColorProvider::ContentLayerType::kTextColorURL);
-      title_label_->AddStyleRange(tag.range, url_text_color);
-    }
-    if (tag.styles & SearchResult::Tag::MATCH) {
-      views::StyledLabel::RangeStyleInfo selected_text_bold;
-      selected_text_bold.text_style = ash::AshTextStyle::STYLE_EMPHASIZED;
-      title_label_->AddStyleRange(tag.range, selected_text_bold);
-    }
-  }
+  StyleLabel(title_label_, true /*is_title_label*/, result()->title_tags());
 }
 
 void SearchResultView::StyleDetailsLabel() {
-  details_label_->ClearStyleRanges();
-  views::StyledLabel::RangeStyleInfo details_style;
-  switch (view_type_) {
-    case SearchResultViewType::kClassic:
-      details_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-      details_label_->SetDefaultTextStyle(STYLE_CLASSIC_LAUNCHER);
-      break;
-    case SearchResultViewType::kInlineAnswer:
-      details_label_->SetTextContext(
-          CONTEXT_SEARCH_RESULT_VIEW_INLINE_ANSWER_DETAILS);
-      details_label_->SetDefaultTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-      break;
-    case SearchResultViewType::kDefault:
-      details_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-      details_label_->SetDefaultTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-  }
-  details_style.override_color =
-      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-          kDeprecatedSearchBoxTextDefaultColor);
-  details_style.disable_line_wrapping = true;
-  details_label_->AddStyleRange(gfx::Range(0, details_label_->GetText().size()),
-                                details_style);
-
-  // Apply styling options for details_label_.
-  const SearchResult::Tags& tags = result()->details_tags();
-  for (const auto& tag : tags) {
-    if (tag.styles & SearchResult::Tag::URL) {
-      views::StyledLabel::RangeStyleInfo url_text_color;
-      url_text_color.override_color =
-          AshColorProvider::Get()->GetContentLayerColor(
-              AshColorProvider::ContentLayerType::kTextColorURL);
-      details_label_->AddStyleRange(tag.range, url_text_color);
-    }
-    if (tag.styles & SearchResult::Tag::MATCH) {
-      views::StyledLabel::RangeStyleInfo selected_text_bold;
-      selected_text_bold.text_style = ash::AshTextStyle::STYLE_EMPHASIZED;
-      details_label_->AddStyleRange(tag.range, selected_text_bold);
-    }
-  }
+  StyleLabel(details_label_, false /*is_title_label*/,
+             result()->details_tags());
 }
 
 void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
@@ -372,59 +457,27 @@ void SearchResultView::Layout() {
     switch (view_type_) {
       case SearchResultViewType::kDefault: {
         gfx::Size label_size(text_bounds.width(), PrimaryTextHeight());
-        gfx::Rect title_rect(text_bounds);
-        title_rect.ClampToCenteredSize(label_size);
-        title_label_->SetBoundsRect(title_rect);
-        title_label_->SetVisible(true);
-
-        // Create Separator label.
-        int title_width = title_label_->CalculatePreferredSize().width();
-        gfx::Rect separator_rect(text_bounds);
-        separator_rect.ClampToCenteredSize(label_size);
-        separator_rect.set_x(title_rect.x() + title_width);
-        separator_rect.set_width(separator_rect.width() - title_width);
-        separator_label_->SetBoundsRect(separator_rect);
-        separator_label_->SetVisible(true);
-
-        // Create details label shifted to the right.
-
-        // TODO(yulunwu) Reimplement with a layout manager.
-        int title_separator_width =
-            title_width + separator_label_->CalculatePreferredSize().width();
-        gfx::Rect details_rect(text_bounds);
-        details_rect.ClampToCenteredSize(label_size);
-        details_rect.set_x(details_rect.x() + title_separator_width);
-        details_rect.set_width(details_rect.width() - title_separator_width);
-        details_label_->SetBoundsRect(details_rect);
-        details_label_->SetVisible(true);
+        gfx::Rect centered_text_bounds(text_bounds);
+        centered_text_bounds.ClampToCenteredSize(label_size);
+        text_container_->SetBoundsRect(centered_text_bounds);
         break;
       }
       case SearchResultViewType::kClassic:
-      case SearchResultViewType::kInlineAnswer: {
+      case SearchResultViewType::kAnswerCard: {
         gfx::Size title_size(text_bounds.width(), PrimaryTextHeight());
         gfx::Size details_size(text_bounds.width(), SecondaryTextHeight());
         int total_height = title_size.height() + details_size.height();
-        int y = text_bounds.y() + (text_bounds.height() - total_height) / 2;
-
-        title_label_->SetBoundsRect(
-            gfx::Rect(gfx::Point(text_bounds.x(), y), title_size));
-        title_label_->SetVisible(true);
-
-        y += title_size.height();
-        details_label_->SetBoundsRect(
-            gfx::Rect(gfx::Point(text_bounds.x(), y), details_size));
-        details_label_->SetVisible(true);
-        separator_label_->SetVisible(false);
+        gfx::Size label_size(text_bounds.width(), total_height);
+        gfx::Rect centered_text_bounds(text_bounds);
+        centered_text_bounds.ClampToCenteredSize(label_size);
+        text_container_->SetBoundsRect(centered_text_bounds);
       }
     }
   } else if (!title_label_->GetText().empty()) {
-    gfx::Size title_size(text_bounds.width(), PrimaryTextHeight());
-    gfx::Rect centered_title_rect(text_bounds);
-    centered_title_rect.ClampToCenteredSize(title_size);
-    title_label_->SetBoundsRect(centered_title_rect);
-    title_label_->SetVisible(true);
-    details_label_->SetVisible(false);
-    separator_label_->SetVisible(false);
+    gfx::Size text_size(text_bounds.width(), PrimaryTextHeight());
+    gfx::Rect centered_text_bounds(text_bounds);
+    centered_text_bounds.ClampToCenteredSize(text_size);
+    text_container_->SetBoundsRect(centered_text_bounds);
   }
 }
 
@@ -460,15 +513,27 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::Rect content_rect(rect);
 
-  // Possibly call FillRect a second time (these colours are partially
-  // transparent, so the previous FillRect is not redundant).
   if (selected() && !actions_view()->HasSelectedAction()) {
-    // Fill search result view row item.
-    canvas->FillRect(
-        content_rect,
-        AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
-    PaintFocusBar(canvas, GetContentsBounds().origin(),
-                  /*height=*/GetContentsBounds().height());
+    switch (view_type_) {
+      case SearchResultViewType::kDefault:
+      case SearchResultViewType::kClassic:
+        canvas->FillRect(
+            content_rect,
+            AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
+        PaintFocusBar(canvas, GetContentsBounds().origin(),
+                      /*height=*/GetContentsBounds().height());
+        break;
+      case SearchResultViewType::kAnswerCard: {
+        cc::PaintFlags flags;
+        flags.setAntiAlias(true);
+        flags.setColor(
+            AppListColorProvider::Get()->GetSearchResultViewHighlightColor());
+        canvas->DrawRoundRect(content_rect,
+                              kAnswerCardCardBackgroundCornerRadius, flags);
+        PaintFocusBar(canvas, gfx::Point(0, kAnswerCardFocusBarOffset),
+                      kAnswerCardFocusBarHeight);
+      } break;
+    }
   }
 }
 
@@ -508,6 +573,13 @@ void SearchResultView::OnThemeChanged() {
   separator_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
           kDeprecatedSearchBoxTextDefaultColor));
+  rating_->SetEnabledColor(
+      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+          kDeprecatedSearchBoxTextDefaultColor));
+  rating_star_->SetImage(gfx::CreateVectorIcon(
+      kBadgeRatingIcon, kSearchRatingStarSize,
+      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+          kDeprecatedSearchBoxTextDefaultColor)));
   views::View::OnThemeChanged();
 }
 
@@ -600,20 +672,25 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
   DCHECK_LT(index, result()->actions().size());
 
   if (result()->is_omnibox_search()) {
-    SearchResultActionType button_action = GetSearchResultActionType(index);
+    SearchResultActionType button_action = result()->actions()[index].type;
 
     switch (button_action) {
       case SearchResultActionType::kRemove: {
         RecordZeroStateSearchResultUserActionHistogram(
             ZeroStateSearchResultUserActionType::kRemoveResult);
-        auto dialog = std::make_unique<RemoveQueryConfirmationDialog>(
-            result()->title(),
-            base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
-                           weak_ptr_factory_.GetWeakPtr()));
-        list_view_->app_list_main_view()
-            ->contents_view()
-            ->search_result_page_view()
-            ->ShowAnchoredDialog(std::move(dialog));
+        std::unique_ptr<views::WidgetDelegate> dialog;
+        if (features::IsProductivityLauncherEnabled()) {
+          dialog = std::make_unique<RemoveQueryConfirmationDialog>(
+              result()->title(),
+              base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                             weak_ptr_factory_.GetWeakPtr()));
+        } else {
+          dialog = std::make_unique<LegacyRemoveQueryConfirmationDialog>(
+              result()->title(),
+              base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
+                             weak_ptr_factory_.GetWeakPtr()));
+        }
+        dialog_controller_->Show(std::move(dialog));
         break;
       }
       case SearchResultActionType::kAppend:
@@ -629,56 +706,6 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
 
 bool SearchResultView::IsSearchResultHoveredOrSelected() {
   return IsMouseHovered() || selected();
-}
-
-void SearchResultView::OnMenuClosed() {
-  // Release menu since its menu model delegate (AppContextMenu) could be
-  // released as a result of menu command execution.
-  context_menu_.reset();
-}
-
-void SearchResultView::ShowContextMenuForViewImpl(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type) {
-  // |result()| could be nullptr when result list is changing.
-  if (!result())
-    return;
-
-  view_delegate_->GetSearchResultContextMenuModel(
-      result()->id(), base::BindOnce(&SearchResultView::OnGetContextMenu,
-                                     weak_ptr_factory_.GetWeakPtr(), source,
-                                     point, source_type));
-}
-
-void SearchResultView::OnGetContextMenu(
-    views::View* source,
-    const gfx::Point& point,
-    ui::MenuSourceType source_type,
-    std::unique_ptr<ui::SimpleMenuModel> menu_model) {
-  if (!menu_model || (context_menu_ && context_menu_->IsShowingMenu()))
-    return;
-
-  AppLaunchedMetricParams metric_params = {
-      AppListLaunchedFrom::kLaunchedFromSearchBox,
-      AppListLaunchType::kSearchResult};
-  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
-
-  context_menu_ = std::make_unique<AppListMenuModelAdapter>(
-      std::string(), std::move(menu_model), GetWidget(), source_type,
-      metric_params, AppListMenuModelAdapter::SEARCH_RESULT,
-      base::BindOnce(&SearchResultView::OnMenuClosed,
-                     weak_ptr_factory_.GetWeakPtr()),
-      view_delegate_->IsInTabletMode());
-  context_menu_->Run(gfx::Rect(point, gfx::Size()),
-                     views::MenuAnchorPosition::kTopLeft,
-                     views::MenuRunner::HAS_MNEMONICS);
-  source->RequestFocus();
-}
-
-bool SearchResultView::IsRichImage() const {
-  return result() &&
-         result()->omnibox_type() == SearchResultOmniboxDisplayType::kRichImage;
 }
 
 }  // namespace ash

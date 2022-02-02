@@ -24,6 +24,8 @@ class COMPONENT_EXPORT(RMAD) FakeRmadClient : public RmadClient {
   FakeRmadClient& operator=(const FakeRmadClient&) = delete;
   ~FakeRmadClient() override;
 
+  void CheckInRma(DBusMethodCallback<bool> callback) override;
+
   void GetCurrentState(
       DBusMethodCallback<rmad::GetStateReply> callback) override;
   void TransitionNextState(
@@ -62,6 +64,8 @@ class COMPONENT_EXPORT(RMAD) FakeRmadClient : public RmadClient {
   void TriggerFinalizationProgressObservation(
       rmad::FinalizeStatus::Status status,
       double progress);
+  void TriggerRoFirmwareUpdateProgressObservation(
+      rmad::UpdateRoFirmwareStatus status);
 
  private:
   const rmad::GetStateReply& GetStateReply() const;

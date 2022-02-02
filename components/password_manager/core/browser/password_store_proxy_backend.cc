@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/password_manager/core/browser/password_store_proxy_backend.h"
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -23,52 +24,78 @@ namespace password_manager {
 
 namespace {
 
+using MethodName = base::StrongAlias<struct MethodNameTag, std::string>;
+
+bool IsPasswordUniquePtrLess(const std::unique_ptr<PasswordForm>& lhs,
+                             const std::unique_ptr<PasswordForm>& rhs) {
+  return PasswordFormUniqueKey(*lhs) < PasswordFormUniqueKey(*rhs);
+}
+
+bool IsPasswordUniquePtrWithSameKeyInconsistent(
+    const std::unique_ptr<PasswordForm>& lhs,
+    const std::unique_ptr<PasswordForm>& rhs) {
+  return lhs->password_value != rhs->password_value;
+}
+
 void InvokeCallbackWithCombinedStatus(base::OnceCallback<void(bool)> completion,
                                       std::vector<bool> statuses) {
   std::move(completion).Run(base::ranges::all_of(statuses, base::identity()));
 }
 
-// Records the difference metrics between |main_result| and |backend_result|.
-void RecordMetrics(const LoginsResult& main_result,
-                   const LoginsResult& backend_result) {
-  struct IsLess {
-    bool operator()(const PasswordForm* lhs, const PasswordForm* rhs) const {
-      return PasswordFormUniqueKey(*lhs) < PasswordFormUniqueKey(*rhs);
-    }
+// Records the difference metrics between |main_result| and |backend_result|
+// when returned by |method_name|. |main_result| and |backend_result| must be
+// vectors of type T. |is_less| can be used to compare two objects of type T.
+// |is_inconsistent| can be used to compute if the two objects have inconsistent
+// password values.
+template <typename T, typename IsLess, typename IsInconsistent>
+void RecordMetrics(const MethodName& method_name,
+                   const std::vector<T>& main_result,
+                   const std::vector<T>& backend_result,
+                   IsLess is_less,
+                   IsInconsistent is_inconsistent) {
+  // Comparison is done by creating two sets that contain pointers to the
+  // objects stored in |main_result| and |backend_result|. Using the passed
+  // comparison methods, we compute and report metrics regarding the difference
+  // between both result vectors.
+  auto is_less_ptr = [is_less](const T* lhs, const T* rhs) {
+    return is_less(*lhs, *rhs);
   };
 
-  auto main_logins = base::MakeFlatSet<const PasswordForm*, IsLess>(
-      main_result, {}, &std::unique_ptr<PasswordForm>::get);
-  auto shadow_logins = base::MakeFlatSet<const PasswordForm*, IsLess>(
-      backend_result, {}, &std::unique_ptr<PasswordForm>::get);
+  auto address_of = [](const T& object) { return &object; };
 
-  auto common_logins = [&] {
-    std::vector<const PasswordForm*> vec;
-    vec.reserve(main_logins.size());
-    base::ranges::set_intersection(main_logins, shadow_logins,
-                                   std::back_inserter(vec), IsLess());
-    return base::flat_set<const PasswordForm*, IsLess>(std::move(vec));
+  auto main_elements =
+      base::MakeFlatSet<const T*>(main_result, is_less_ptr, address_of);
+  auto shadow_elements =
+      base::MakeFlatSet<const T*>(backend_result, is_less_ptr, address_of);
+
+  auto common_elements = [&] {
+    std::vector<const T*> vec;
+    vec.reserve(main_elements.size());
+    base::ranges::set_intersection(main_elements, shadow_elements,
+                                   std::back_inserter(vec), is_less_ptr);
+    return base::flat_set<const T*, decltype(is_less_ptr)>(std::move(vec),
+                                                           is_less_ptr);
   }();
 
   // The cardinalities from which we compute the metrics.
-  size_t main_minus_shadow = main_logins.size() - common_logins.size();
-  size_t shadow_minus_main = shadow_logins.size() - common_logins.size();
+  size_t main_minus_shadow = main_elements.size() - common_elements.size();
+  size_t shadow_minus_main = shadow_elements.size() - common_elements.size();
   size_t diff = main_minus_shadow + shadow_minus_main;
-  size_t total = diff + common_logins.size();
-  size_t inconsistent = base::ranges::count_if(common_logins, [&](auto* f) {
-    auto lhs = main_logins.find(f);
-    auto rhs = shadow_logins.find(f);
-    DCHECK(lhs != main_logins.end());
-    DCHECK(rhs != shadow_logins.end());
-    return (*lhs)->password_value != (*rhs)->password_value;
+  size_t total = diff + common_elements.size();
+  size_t inconsistent = base::ranges::count_if(common_elements, [&](auto* f) {
+    auto lhs = main_elements.find(f);
+    auto rhs = shadow_elements.find(f);
+    DCHECK(lhs != main_elements.end());
+    DCHECK(rhs != shadow_elements.end());
+    return (*is_inconsistent)(**lhs, **rhs);
   });
 
   // Emits a pair of absolute and relative metrics.
-  auto Emit = [](base::StringPiece metric_infix, size_t nominator,
-                 size_t denominator) {
-    std::string prefix = base::StrCat(
-        {"PasswordManager.PasswordStoreProxyBackend.GetAllLoginsAsync.",
-         metric_infix, "."});
+  auto Emit = [&method_name](base::StringPiece metric_infix, size_t nominator,
+                             size_t denominator) {
+    std::string prefix =
+        base::StrCat({"PasswordManager.PasswordStoreProxyBackend.",
+                      method_name.value(), ".", metric_infix, "."});
     base::UmaHistogramCounts1M(prefix + "Abs", nominator);
     if (denominator != 0) {
       size_t ceiling_of_percentage =
@@ -79,62 +106,82 @@ void RecordMetrics(const LoginsResult& main_result,
   Emit("Diff", diff, total);
   Emit("MainMinusShadow", main_minus_shadow, total);
   Emit("ShadowMinusMain", shadow_minus_main, total);
-  Emit("InconsistentPasswords", inconsistent, common_logins.size());
+  Emit("InconsistentPasswords", inconsistent, common_elements.size());
 }
 
-// Records the metrics of a pair of GetAllLoginsAsync() calls to the main and
+// Records the metrics of a pair of MethodName calls to the main and
 // the shadow backends once both calls are finished.
 //
 // The class is ref-counted because it is equally owned by the two parallel
-// GetAllLoginsAsync() calls: it must outlive the first returning one and shall
-// be destroyed after the second one returns.
-class GetAllLoginsAsyncMetricsRecorder
-    : public base::RefCounted<GetAllLoginsAsyncMetricsRecorder> {
+// method calls : it must outlive the first returning one and shall  be
+// destroyed after the second one returns.
+class ShadowTrafficMetricsRecorder
+    : public base::RefCounted<ShadowTrafficMetricsRecorder> {
  public:
+  explicit ShadowTrafficMetricsRecorder(MethodName method_name)
+      : method_name_(std::move(method_name)) {}
+
   // Returns the unchanged |result| so it can be passed to the main handler.
-  LoginsResult RecordMainResult(LoginsResult result) {
+  LoginsResultOrError RecordMainLoginsResultOrError(
+      LoginsResultOrError logins_or_error) {
+    if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
+      return logins_or_error;
+    }
+
+    LoginsResult logins = std::move(absl::get<LoginsResult>(logins_or_error));
     if (!first_result_) {
       first_result_ = absl::make_optional<LoginsResult>();
-      first_result_->reserve(result.size());
-      for (const auto& login : result)
+      first_result_->reserve(logins.size());
+      for (const auto& login : logins)
         first_result_->push_back(std::make_unique<PasswordForm>(*login));
     } else {
-      RecordMetrics(/*main_result=*/result, /*shadow_result=*/*first_result_);
+      RecordMetrics(method_name_, /*main_result=*/logins,
+                    /*shadow_result=*/*first_result_, &IsPasswordUniquePtrLess,
+                    &IsPasswordUniquePtrWithSameKeyInconsistent);
     }
-    return result;
+
+    return logins;
   }
 
-  void RecordShadowResult(LoginsResult result) {
+  void RecordShadowLoginsResultOrError(LoginsResultOrError logins_or_error) {
+    if (absl::holds_alternative<PasswordStoreBackendError>(logins_or_error)) {
+      return;
+    }
+
+    LoginsResult logins = std::move(absl::get<LoginsResult>(logins_or_error));
     if (!first_result_)
-      first_result_ = std::move(result);
+      first_result_ = std::move(logins);
     else
-      RecordMetrics(/*main_result=*/*first_result_, /*shadow_result=*/result);
+      RecordMetrics(method_name_, /*main_result=*/*first_result_,
+                    /*shadow_result=*/logins, &IsPasswordUniquePtrLess,
+                    &IsPasswordUniquePtrWithSameKeyInconsistent);
   }
 
  private:
-  friend class RefCounted<GetAllLoginsAsyncMetricsRecorder>;
-  ~GetAllLoginsAsyncMetricsRecorder() = default;
+  friend class RefCounted<ShadowTrafficMetricsRecorder>;
+  ~ShadowTrafficMetricsRecorder() = default;
 
   // Stores the result of the backend that returns first.
   absl::optional<LoginsResult> first_result_;
+  const MethodName method_name_;
 };
-
-void InvokeCallbackIfShadowingAllowed(base::OnceClosure callback,
-                                      bool sync_enabled) {
-  if (sync_enabled && base::FeatureList::IsEnabled(
-                          features::kUnifiedPasswordManagerShadowAndroid)) {
-    std::move(callback).Run();
-  }
-}
 
 }  // namespace
 
 PasswordStoreProxyBackend::PasswordStoreProxyBackend(
     PasswordStoreBackend* main_backend,
-    PasswordStoreBackend* shadow_backend)
-    : main_backend_(main_backend), shadow_backend_(shadow_backend) {}
+    PasswordStoreBackend* shadow_backend,
+    base::RepeatingCallback<bool()> is_syncing_passwords_callback)
+    : main_backend_(main_backend),
+      shadow_backend_(shadow_backend),
+      is_syncing_passwords_callback_(std::move(is_syncing_passwords_callback)) {
+}
 
 PasswordStoreProxyBackend::~PasswordStoreProxyBackend() = default;
+
+base::WeakPtr<PasswordStoreBackend> PasswordStoreProxyBackend::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
 
 void PasswordStoreProxyBackend::InitBackend(
     RemoteChangesReceived remote_form_changes_received,
@@ -159,26 +206,26 @@ void PasswordStoreProxyBackend::Shutdown(base::OnceClosure shutdown_completed) {
   shadow_backend_->Shutdown(pending_shutdown_calls);
 }
 
-void PasswordStoreProxyBackend::GetAllLoginsAsync(LoginsReply callback) {
-  scoped_refptr<GetAllLoginsAsyncMetricsRecorder> handler =
-      base::MakeRefCounted<GetAllLoginsAsyncMetricsRecorder>();
+void PasswordStoreProxyBackend::GetAllLoginsAsync(LoginsOrErrorReply callback) {
+  scoped_refptr<ShadowTrafficMetricsRecorder> handler =
+      base::MakeRefCounted<ShadowTrafficMetricsRecorder>(
+          MethodName("GetAllLoginsAsync"));
   main_backend_->GetAllLoginsAsync(
-      base::BindOnce(&GetAllLoginsAsyncMetricsRecorder::RecordMainResult,
-                     handler)
+      base::BindOnce(
+          &ShadowTrafficMetricsRecorder::RecordMainLoginsResultOrError, handler)
           .Then(std::move(callback)));
 
-  auto sync_status_callback = base::BindOnce(
-      &PasswordStoreBackend::GetAllLoginsAsync,
-      base::Unretained(shadow_backend_),
-      base::BindOnce(&GetAllLoginsAsyncMetricsRecorder::RecordShadowResult,
-                     handler));
-
-  GetSyncStatus(base::BindOnce(&InvokeCallbackIfShadowingAllowed,
-                               std::move(sync_status_callback)));
+  if (is_syncing_passwords_callback_.Run() &&
+      base::FeatureList::IsEnabled(
+          features::kUnifiedPasswordManagerShadowAndroid)) {
+    shadow_backend_->GetAllLoginsAsync(base::BindOnce(
+        &ShadowTrafficMetricsRecorder::RecordShadowLoginsResultOrError,
+        handler));
+  }
 }
 
 void PasswordStoreProxyBackend::GetAutofillableLoginsAsync(
-    LoginsReply callback) {
+    LoginsOrErrorReply callback) {
   main_backend_->GetAutofillableLoginsAsync(std::move(callback));
   // TODO(crbug.com/1229655): Request shadow_backend_ and compare results.
 }
@@ -252,20 +299,7 @@ FieldInfoStore* PasswordStoreProxyBackend::GetFieldInfoStore() {
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStoreProxyBackend::CreateSyncControllerDelegate() {
-  if (base::FeatureList::IsEnabled(
-          features::kUnifiedPasswordManagerSyncUsingAndroidBackendOnly)) {
-    // The shadow backend (PasswordStoreAndroidBackend) creates a controller
-    // delegate that prevents sync from actually communicating with the sync
-    // server using the built in SyncEngine.
-    return shadow_backend_->CreateSyncControllerDelegate();
-  }
-
   return main_backend_->CreateSyncControllerDelegate();
-}
-
-void PasswordStoreProxyBackend::GetSyncStatus(
-    base::OnceCallback<void(bool)> callback) {
-  return main_backend_->GetSyncStatus(std::move(callback));
 }
 
 }  // namespace password_manager

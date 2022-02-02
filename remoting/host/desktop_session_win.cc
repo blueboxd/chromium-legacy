@@ -31,14 +31,14 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/base/screen_resolution.h"
+#include "remoting/host/base/switches.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/daemon_process.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/host_main.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/sas_injector.h"
-#include "remoting/host/screen_resolution.h"
-#include "remoting/host/switches.h"
 // MIDL-generated declarations and definitions.
 #include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/host_service.h"
@@ -558,13 +558,15 @@ RdpSession::EventHandler::~EventHandler() {
     desktop_session_->OnRdpClosed();
 }
 
-ULONG STDMETHODCALLTYPE RdpSession::EventHandler::AddRef() {
+ULONG COM_DECLSPEC_NOTHROW STDMETHODCALLTYPE
+RdpSession::EventHandler::AddRef() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return ++ref_count_;
 }
 
-ULONG STDMETHODCALLTYPE RdpSession::EventHandler::Release() {
+ULONG COM_DECLSPEC_NOTHROW STDMETHODCALLTYPE
+RdpSession::EventHandler::Release() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (--ref_count_ == 0) {
@@ -575,7 +577,8 @@ ULONG STDMETHODCALLTYPE RdpSession::EventHandler::Release() {
   return ref_count_;
 }
 
-STDMETHODIMP RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
+COM_DECLSPEC_NOTHROW STDMETHODIMP
+RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (riid == IID_IUnknown ||
@@ -589,7 +592,7 @@ STDMETHODIMP RdpSession::EventHandler::QueryInterface(REFIID riid, void** ppv) {
   return E_NOINTERFACE;
 }
 
-STDMETHODIMP RdpSession::EventHandler::OnRdpConnected() {
+COM_DECLSPEC_NOTHROW STDMETHODIMP RdpSession::EventHandler::OnRdpConnected() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (desktop_session_)
@@ -598,7 +601,7 @@ STDMETHODIMP RdpSession::EventHandler::OnRdpConnected() {
   return S_OK;
 }
 
-STDMETHODIMP RdpSession::EventHandler::OnRdpClosed() {
+COM_DECLSPEC_NOTHROW STDMETHODIMP RdpSession::EventHandler::OnRdpClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!desktop_session_)
@@ -747,13 +750,9 @@ void DesktopSessionWin::OnAssociatedInterfaceRequest(
         pending_receiver(std::move(handle));
     desktop_session_request_handler_.Bind(std::move(pending_receiver));
 
-    // Set up a disconnect handler so |desktop_session_request_handler_| can be
-    // re-bound if |launcher_| spawns a new desktop process.
-    // TODO(joedow): Add a reset_on_disconnect() method on associated receiver.
-    desktop_session_request_handler_.set_disconnect_handler(base::BindOnce(
-        [](mojo::AssociatedReceiver<mojom::DesktopSessionRequestHandler>*
-               receiver) { receiver->reset(); },
-        base::Unretained(&desktop_session_request_handler_)));
+    // Reset the receiver on disconnect so |desktop_session_request_handler_|
+    // can be re-bound if |launcher_| spawns a new desktop process.
+    desktop_session_request_handler_.reset_on_disconnect();
   } else {
     LOG(ERROR) << "Unknown associated interface requested: " << interface_name
                << ", crashing the desktop process";

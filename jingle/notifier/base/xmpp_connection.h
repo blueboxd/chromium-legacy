@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -75,6 +75,9 @@ class XmppConnection : public sigslot::has_slots<> {
                  jingle_xmpp::PreXmppAuth* pre_xmpp_auth,
                  const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
+  XmppConnection(const XmppConnection&) = delete;
+  XmppConnection& operator=(const XmppConnection&) = delete;
+
   // Invalidates any weak pointers passed to the delegate by
   // OnConnect(), but does not trigger a call to the delegate's
   // OnError() function.
@@ -97,11 +100,9 @@ class XmppConnection : public sigslot::has_slots<> {
   std::unique_ptr<jingle_glue::TaskPump> task_pump_;
   base::WeakPtr<WeakXmppClient> weak_xmpp_client_;
   bool on_connect_called_;
-  Delegate* delegate_;
+  raw_ptr<Delegate> delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(XmppConnection);
 };
 
 }  // namespace notifier

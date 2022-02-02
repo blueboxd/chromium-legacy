@@ -6,7 +6,7 @@
 #define COMPONENTS_SITE_ENGAGEMENT_CONTENT_SITE_ENGAGEMENT_OBSERVER_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace content {
 class WebContents;
@@ -52,7 +52,7 @@ class SiteEngagementObserver {
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, Observers);
   friend class SiteEngagementService;
 
-  SiteEngagementService* service_;
+  raw_ptr<SiteEngagementService> service_;
 };
 
 }  // namespace site_engagement

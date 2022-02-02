@@ -2242,7 +2242,7 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void setBackgroundColor(int color) {
-        if (TRACE) Log.i(TAG, "%s setBackgroundColor=%d", this, color);
+        if (TRACE) Log.i(TAG, "%s setBackgroundColor=%x", this, color);
         mBaseBackgroundColor = color;
         mDidInitBackground = true;
         if (!isDestroyed(WARN)) {
@@ -2622,11 +2622,12 @@ public class AwContents implements SmartClipProvider {
     public String getOriginalUrl() {
         if (TRACE) Log.i(TAG, "%s getOriginalUrl", this);
         if (isDestroyed(WARN)) return null;
-        NavigationHistory history = mNavigationController.getNavigationHistory();
+        NavigationHistory history = getNavigationHistory();
         int currentIndex = history.getCurrentEntryIndex();
-        if (currentIndex >= 0 && currentIndex < history.getEntryCount()) {
+        if (!history.getEntryAtIndex(currentIndex).isInitialEntry()) {
             return history.getEntryAtIndex(currentIndex).getOriginalUrl().getSpec();
         }
+        // When there is no committed navigation, return null.
         return null;
     }
 

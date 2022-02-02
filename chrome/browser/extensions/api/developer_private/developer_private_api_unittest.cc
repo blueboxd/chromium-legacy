@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -289,10 +288,9 @@ testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(
 
   // Extract the result. We don't have to test this here, since it's verified as
   // part of the general extension api system.
-  const base::Value* response_value = nullptr;
-  CHECK(function->GetResultList()->Get(0u, &response_value));
+  const base::Value& response_value = function->GetResultList()->GetList()[0];
   std::unique_ptr<api::developer_private::PackDirectoryResponse> response =
-      api::developer_private::PackDirectoryResponse::FromValue(*response_value);
+      api::developer_private::PackDirectoryResponse::FromValue(response_value);
   CHECK(response);
 
   if (response->status != expected_status) {
@@ -329,10 +327,9 @@ void DeveloperPrivateApiUnitTest::GetProfileConfiguration(
 
   ASSERT_TRUE(function->GetResultList());
   ASSERT_EQ(1u, function->GetResultList()->GetList().size());
-  const base::Value* response_value = nullptr;
-  function->GetResultList()->Get(0u, &response_value);
+  const base::Value& response_value = function->GetResultList()->GetList()[0];
   *profile_info =
-      api::developer_private::ProfileInfo::FromValue(*response_value);
+      api::developer_private::ProfileInfo::FromValue(response_value);
 }
 
 void DeveloperPrivateApiUnitTest::RunUpdateHostAccess(
@@ -498,8 +495,13 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   function->SetRenderFrameHost(web_contents->GetMainFrame());
   EXPECT_TRUE(RunFunction(function, choose_args)) << function->GetError();
   std::string path;
-  EXPECT_TRUE(function->GetResultList() &&
-              function->GetResultList()->GetString(0, &path));
+  const base::Value* result_list = function->GetResultList();
+  ASSERT_TRUE(result_list);
+  ASSERT_TRUE(result_list->is_list());
+  base::Value::ConstListView result_list_view = result_list->GetList();
+  ASSERT_GT(result_list_view.size(), 0u);
+  ASSERT_TRUE(result_list_view[0].is_string());
+  path = result_list_view[0].GetString();
   EXPECT_EQ(path, expected_dir_path.AsUTF8Unsafe());
 
   // Try selecting a pem file.
@@ -512,8 +514,13 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   function = new api::DeveloperPrivateChoosePathFunction();
   function->SetRenderFrameHost(web_contents->GetMainFrame());
   EXPECT_TRUE(RunFunction(function, choose_args)) << function->GetError();
-  EXPECT_TRUE(function->GetResultList() &&
-              function->GetResultList()->GetString(0, &path));
+  result_list = function->GetResultList();
+  ASSERT_TRUE(result_list);
+  ASSERT_TRUE(result_list->is_list());
+  result_list_view = result_list->GetList();
+  ASSERT_GT(result_list_view.size(), 0u);
+  ASSERT_TRUE(result_list_view[0].is_string());
+  path = result_list_view[0].GetString();
   EXPECT_EQ(path, expected_file_path.AsUTF8Unsafe());
 
   // Try canceling the file dialog.
@@ -1014,11 +1021,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   file_source_args.Append(properties.ToValue());
   EXPECT_TRUE(RunFunction(function, file_source_args)) << function->GetError();
 
-  const base::Value* response_value = nullptr;
-  ASSERT_TRUE(function->GetResultList()->Get(0u, &response_value));
+  const base::Value& response_value = function->GetResultList()->GetList()[0];
   std::unique_ptr<api::developer_private::RequestFileSourceResponse> response =
       api::developer_private::RequestFileSourceResponse::FromValue(
-          *response_value);
+          response_value);
   EXPECT_FALSE(response->before_highlight.empty());
   EXPECT_EQ("\"name\": \"foo\"", response->highlight);
   EXPECT_FALSE(response->after_highlight.empty());
@@ -1875,6 +1881,7 @@ class DeveloperPrivateApiSupervisedUserUnitTest
 };
 
 // Tests trying to call loadUnpacked when the profile shouldn't be allowed to.
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 TEST_F(DeveloperPrivateApiSupervisedUserUnitTest,
        LoadUnpackedFailsForSupervisedUsers) {
   std::unique_ptr<content::WebContents> web_contents(
@@ -1883,7 +1890,7 @@ TEST_F(DeveloperPrivateApiSupervisedUserUnitTest,
   base::FilePath path = data_dir().AppendASCII("simple_with_popup");
   api::EntryPicker::SkipPickerAndAlwaysSelectPathForTest(&path);
 
-  ASSERT_TRUE(profile()->IsSupervised());
+  ASSERT_TRUE(profile()->IsChild());
 
   scoped_refptr<ExtensionFunction> function =
       base::MakeRefCounted<api::DeveloperPrivateLoadUnpackedFunction>();
@@ -1892,5 +1899,6 @@ TEST_F(DeveloperPrivateApiSupervisedUserUnitTest,
       function.get(), "[]", browser());
   EXPECT_THAT(error, testing::HasSubstr("Supervised"));
 }
+#endif
 
 }  // namespace extensions

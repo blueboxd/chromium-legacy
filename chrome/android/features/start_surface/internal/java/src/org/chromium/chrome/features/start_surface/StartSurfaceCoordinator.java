@@ -258,6 +258,9 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
                 || !mIsStartSurfaceEnabled;
+        boolean excludeQueryTiles =
+                StartSurfaceConfiguration.START_SURFACE_EXCLUDE_QUERY_TILES.getValue()
+                || !mIsStartSurfaceEnabled;
         if (!mIsStartSurfaceEnabled) {
             // Create Tab switcher directly to save one layer in the view hierarchy.
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(activity,
@@ -268,7 +271,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         } else {
             // createSwipeRefreshLayout has to be called before creating any surface.
             createSwipeRefreshLayout();
-            createAndSetStartSurface(excludeMVTiles);
+            createAndSetStartSurface(excludeMVTiles, excludeQueryTiles);
         }
 
         TabSwitcher.Controller controller =
@@ -363,19 +366,20 @@ public class StartSurfaceCoordinator implements StartSurface {
 
     @Override
     public void setOnTabSelectingListener(StartSurface.OnTabSelectingListener listener) {
+        mStartSurfaceMediator.setOnTabSelectingListener(listener);
         if (mTasksSurface != null) {
-            mTasksSurface.setOnTabSelectingListener(listener);
+            mTasksSurface.setOnTabSelectingListener(mStartSurfaceMediator);
         } else {
-            mTabSwitcher.setOnTabSelectingListener(listener);
+            mTabSwitcher.setOnTabSelectingListener(mStartSurfaceMediator);
         }
 
         // Set OnTabSelectingListener to the more tabs tasks surface as well if it has been
         // instantiated, otherwise remember it for the future instantiation.
         if (mIsStartSurfaceEnabled) {
             if (mSecondaryTasksSurface == null) {
-                mOnTabSelectingListener = listener;
+                mOnTabSelectingListener = mStartSurfaceMediator;
             } else {
-                mSecondaryTasksSurface.setOnTabSelectingListener(listener);
+                mSecondaryTasksSurface.setOnTabSelectingListener(mStartSurfaceMediator);
             }
         }
     }
@@ -488,6 +492,12 @@ public class StartSurfaceCoordinator implements StartSurface {
         }
     }
 
+    @Override
+    @Nullable
+    public TasksSurface getPrimaryTasksSurface() {
+        return mTasksSurface;
+    }
+
     @VisibleForTesting
     public boolean isInitPendingForTesting() {
         return mIsInitPending;
@@ -518,7 +528,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         return mTasksSurface.isMVTilesInitialized();
     }
 
-    private void createAndSetStartSurface(boolean excludeMVTiles) {
+    private void createAndSetStartSurface(boolean excludeMVTiles, boolean excludeQueryTiles) {
         ArrayList<PropertyKey> allProperties =
                 new ArrayList<>(Arrays.asList(TasksSurfaceProperties.ALL_KEYS));
         allProperties.addAll(Arrays.asList(StartSurfaceProperties.ALL_KEYS));
@@ -531,10 +541,10 @@ public class StartSurfaceCoordinator implements StartSurface {
         }
         mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
                 mScrimCoordinator, mPropertyModel, tabSwitcherType, mParentTabSupplier,
-                !excludeMVTiles, mWindowAndroid, mActivityLifecycleDispatcher, mTabModelSelector,
-                mSnackbarManager, mDynamicResourceLoaderSupplier, mTabContentManager,
-                mModalDialogManager, mBrowserControlsManager, mTabCreatorManager,
-                mMenuOrKeyboardActionController, mShareDelegateSupplier,
+                !excludeMVTiles, !excludeQueryTiles, mWindowAndroid, mActivityLifecycleDispatcher,
+                mTabModelSelector, mSnackbarManager, mDynamicResourceLoaderSupplier,
+                mTabContentManager, mModalDialogManager, mBrowserControlsManager,
+                mTabCreatorManager, mMenuOrKeyboardActionController, mShareDelegateSupplier,
                 mMultiWindowModeStateDispatcher, mContainerView);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
         mTasksSurface.addFakeSearchBoxShrinkAnimation();
@@ -561,14 +571,14 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
-        mSecondaryTasksSurface =
-                TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
-                        mScrimCoordinator, propertyModel, TabSwitcherType.GRID, mParentTabSupplier,
-                        /* hasMVTiles= */ false, mWindowAndroid, mActivityLifecycleDispatcher,
-                        mTabModelSelector, mSnackbarManager, mDynamicResourceLoaderSupplier,
-                        mTabContentManager, mModalDialogManager, mBrowserControlsManager,
-                        mTabCreatorManager, mMenuOrKeyboardActionController, mShareDelegateSupplier,
-                        mMultiWindowModeStateDispatcher, mContainerView);
+        mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
+                mActivity, mScrimCoordinator, propertyModel, TabSwitcherType.GRID,
+                mParentTabSupplier,
+                /* hasMVTiles= */ false, /* hasQueryTiles= */ false, mWindowAndroid,
+                mActivityLifecycleDispatcher, mTabModelSelector, mSnackbarManager,
+                mDynamicResourceLoaderSupplier, mTabContentManager, mModalDialogManager,
+                mBrowserControlsManager, mTabCreatorManager, mMenuOrKeyboardActionController,
+                mShareDelegateSupplier, mMultiWindowModeStateDispatcher, mContainerView);
         if (mIsInitializedWithNative) {
             mSecondaryTasksSurface.onFinishNativeInitialization(
                     mActivity, mOmniboxStubSupplier.get());

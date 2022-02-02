@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,7 +48,7 @@ class FullscreenWebContentsObserver : public content::WebContentsObserver {
  private:
   base::RunLoop run_loop_;
   bool found_value_ = false;
-  content::RenderFrameHost* wanted_rfh_;
+  raw_ptr<content::RenderFrameHost> wanted_rfh_;
 };
 
 }  // namespace
@@ -73,10 +74,14 @@ class FullscreenInteractiveBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// TODO(jonross): Investigate the flakiness on Linux and Mac. Sheriff if this
-// fails update (https://crbug.com/1087875).
+// https://crbug.com/1087875: Flaky on Linux and Mac.
+#if defined(OS_MAC) || defined(OS_LINUX)
+#define MAYBE_NotifyFullscreenAcquired DISABLED_NotifyFullscreenAcquired
+#else
+#define MAYBE_NotifyFullscreenAcquired NotifyFullscreenAcquired
+#endif
 IN_PROC_BROWSER_TEST_F(FullscreenInteractiveBrowserTest,
-                       NotifyFullscreenAcquired) {
+                       MAYBE_NotifyFullscreenAcquired) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

@@ -19,13 +19,13 @@ namespace chromeos {
 
 namespace {
 
-constexpr int kDialogHeightDp = 608;
-constexpr int kDialogWidthDp = 768;
+constexpr int kDialogHeightDp = 512;
+constexpr int kDialogWidthDp = 462;
 
 }  // namespace
 
 // static
-ParentAccessDialog::ShowError ParentAccessDialog::Show(gfx::NativeView parent) {
+ParentAccessDialog::ShowError ParentAccessDialog::Show() {
   ParentAccessDialog* current_instance = GetInstance();
   if (current_instance) {
     return ShowError::kDialogAlreadyVisible;
@@ -38,7 +38,7 @@ ParentAccessDialog::ShowError ParentAccessDialog::Show(gfx::NativeView parent) {
   // Note:  |current_instance|'s memory is freed when
   // SystemWebDialogDelegate::OnDialogClosed() is called.
   current_instance = new ParentAccessDialog();
-  current_instance->ShowSystemDialogForBrowserContext(profile, parent);
+  current_instance->ShowSystemDialogForBrowserContext(profile);
   return ShowError::kNone;
 }
 
@@ -61,9 +61,8 @@ bool ParentAccessDialog::ShouldCloseDialogOnEscape() const {
 }
 
 ParentAccessDialog::ParentAccessDialog()
-    : SystemWebDialogDelegate(
-          GURL(chrome::kChromeUIParentAccessURL),
-          l10n_util::GetStringUTF16(IDS_PARENT_ACCESS_PAGE_TITLE)) {}
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIParentAccessURL),
+                              /*title=*/std::u16string()) {}
 
 ParentAccessDialog::~ParentAccessDialog() = default;
 

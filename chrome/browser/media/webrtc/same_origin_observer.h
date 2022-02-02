@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_WEBRTC_SAME_ORIGIN_OBSERVER_H_
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
@@ -18,7 +19,7 @@ class WebContents;
 // This will not trigger the callback until the navigation has been committed,
 // so that WebContents::GetLastCommittedURL will return the new origin, and thus
 // allow for easier code re-use. Note that that Loading hasn't actually started
-// yet, so this is still suitable for listening to for i.e. terminating tab
+// yet, so this is still suitable for listening to for, e.g., terminating a tab
 // capture when a site is no longer the same origin.
 class SameOriginObserver : public content::WebContentsObserver {
  public:
@@ -33,7 +34,7 @@ class SameOriginObserver : public content::WebContentsObserver {
       content::NavigationHandle* navigation_handle) override;
 
  private:
-  content::WebContents* const observed_contents_;
+  const raw_ptr<content::WebContents> observed_contents_;
   const GURL reference_origin_;
   base::RepeatingCallback<void(content::WebContents*)>
       on_same_origin_state_changed_;

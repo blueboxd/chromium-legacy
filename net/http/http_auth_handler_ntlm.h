@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
 
 // This contains the portable and the SSPI implementations for NTLM.
@@ -28,7 +29,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth_handler.h"
@@ -115,7 +115,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
 
 #if defined(NTLM_SSPI)
   HttpAuthSSPI mechanism_;
-  const HttpAuthPreferences* http_auth_preferences_;
+  raw_ptr<const HttpAuthPreferences> http_auth_preferences_;
 #elif defined(NTLM_PORTABLE)
   HttpAuthNtlmMechanism mechanism_;
 #endif

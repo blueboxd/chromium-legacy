@@ -71,7 +71,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
   const KURL& Url() const override;
-  const SecurityOrigin* GetParentSecurityOrigin() const override;
   ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
@@ -104,6 +103,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier();
 
   void Trace(Visitor*) const override;
+
+  ExecutionContext* GetExecutionContext() const override;
 
  private:
   void SetFirstPartyCookie(ResourceRequest&);

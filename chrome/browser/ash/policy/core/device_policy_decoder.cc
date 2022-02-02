@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine/update_engine_client.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/external_data_manager.h"
@@ -280,63 +280,62 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       base::Value entry_dict(base::Value::Type::DICTIONARY);
       if (entry.has_type()) {
         if (entry.has_account_id()) {
-          entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
-              entry.account_id());
+          entry_dict.SetStringKey(ash::kAccountsPrefDeviceLocalAccountsKeyId,
+                                  entry.account_id());
         }
-        entry_dict.SetIntKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
+        entry_dict.SetIntKey(ash::kAccountsPrefDeviceLocalAccountsKeyType,
                              entry.type());
         if (entry.kiosk_app().has_app_id()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
+              ash::kAccountsPrefDeviceLocalAccountsKeyKioskAppId,
               entry.kiosk_app().app_id());
         }
         if (entry.kiosk_app().has_update_url()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
+              ash::kAccountsPrefDeviceLocalAccountsKeyKioskAppUpdateURL,
               entry.kiosk_app().update_url());
         }
         if (entry.android_kiosk_app().has_package_name()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
+              ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskPackage,
               entry.android_kiosk_app().package_name());
         }
         if (entry.android_kiosk_app().has_class_name()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
+              ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskClass,
               entry.android_kiosk_app().class_name());
         }
         if (entry.android_kiosk_app().has_action()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
+              ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskAction,
               entry.android_kiosk_app().action());
         }
         if (entry.android_kiosk_app().has_display_name()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
+              ash::kAccountsPrefDeviceLocalAccountsKeyArcKioskDisplayName,
               entry.android_kiosk_app().display_name());
         }
         if (entry.web_kiosk_app().has_url()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
+              ash::kAccountsPrefDeviceLocalAccountsKeyWebKioskUrl,
               entry.web_kiosk_app().url());
         }
         if (entry.web_kiosk_app().has_title()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle,
+              ash::kAccountsPrefDeviceLocalAccountsKeyWebKioskTitle,
               entry.web_kiosk_app().title());
         }
         if (entry.web_kiosk_app().has_icon_url()) {
           entry_dict.SetStringKey(
-              chromeos::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
+              ash::kAccountsPrefDeviceLocalAccountsKeyWebKioskIconUrl,
               entry.web_kiosk_app().icon_url());
         }
 
       } else if (entry.has_deprecated_public_session_id()) {
         // Deprecated public session specification.
-        entry_dict.SetStringKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyId,
+        entry_dict.SetStringKey(ash::kAccountsPrefDeviceLocalAccountsKeyId,
                                 entry.deprecated_public_session_id());
-        entry_dict.SetIntKey(chromeos::kAccountsPrefDeviceLocalAccountsKeyType,
+        entry_dict.SetIntKey(ash::kAccountsPrefDeviceLocalAccountsKeyType,
                              DeviceLocalAccount::TYPE_PUBLIC_SESSION);
       }
       account_list.Append(std::move(entry_dict));
@@ -887,6 +886,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       DecodeIntegerReportingPolicy(
           policies, key::kReportDeviceNetworkTelemetryEventCheckingRateMs,
           container.report_network_telemetry_event_checking_rate_ms());
+    }
+    if (container.has_report_device_audio_status_checking_rate_ms()) {
+      DecodeIntegerReportingPolicy(
+          policies, key::kReportDeviceAudioStatusCheckingRateMs,
+          container.report_device_audio_status_checking_rate_ms());
     }
   }
 
@@ -1682,12 +1686,11 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   }
 
   if (policy.has_tpm_firmware_update_settings()) {
-    policies->Set(
-        key::kTPMFirmwareUpdateSettings, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-        std::move(*(chromeos::tpm_firmware_update::DecodeSettingsProto(
-            policy.tpm_firmware_update_settings()))),
-        nullptr);
+    policies->Set(key::kTPMFirmwareUpdateSettings, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                  std::move(*(ash::tpm_firmware_update::DecodeSettingsProto(
+                      policy.tpm_firmware_update_settings()))),
+                  nullptr);
   }
 
   if (policy.has_device_minimum_version()) {
@@ -1781,6 +1784,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                       POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                       std::move(*value), nullptr);
       }
+    }
+  }
+
+  if (policy.has_chromad_to_cloud_migration_enabled()) {
+    const em::BooleanPolicyProto& container(
+        policy.chromad_to_cloud_migration_enabled());
+    if (container.has_value()) {
+      policies->Set(key::kChromadToCloudMigrationEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
+                    nullptr);
     }
   }
 

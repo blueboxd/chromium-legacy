@@ -6,14 +6,14 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/services/ime/public/mojom/input_engine.mojom.h"
+#include "ash/services/ime/public/mojom/input_method.mojom.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
-#include "chromeos/services/ime/public/mojom/input_method.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -50,6 +50,34 @@ using ::testing::NiceMock;
 using ::testing::StrictMock;
 
 constexpr char kEngineIdUs[] = "xkb:us::eng";
+constexpr char kEngineIdEs[] = "xkb:es::spa";
+
+class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
+ public:
+  explicit FakeSuggesterSwitch(EnabledSuggestions enabled_suggestions)
+      : enabled_suggestions_(enabled_suggestions) {}
+  ~FakeSuggesterSwitch() override = default;
+
+  // AssistiveSuggesterDelegate overrides
+  bool IsEmojiSuggestionAllowed() override {
+    return enabled_suggestions_.emoji_suggestions;
+  }
+
+  bool IsMultiWordSuggestionAllowed() override {
+    return enabled_suggestions_.multi_word_suggestions;
+  }
+
+  bool IsPersonalInfoSuggestionAllowed() override {
+    return enabled_suggestions_.personal_info_suggestions;
+  }
+
+  void GetEnabledSuggestions(GetEnabledSuggestionsCallback callback) override {
+    std::move(callback).Run(enabled_suggestions_);
+  }
+
+ private:
+  EnabledSuggestions enabled_suggestions_;
+};
 
 class MockInputMethod : public ime::mojom::InputMethod {
  public:
@@ -154,14 +182,7 @@ class TestInputMethodManager : public MockInputMethodManager {
 class NativeInputMethodEngineTest : public ::testing::Test {
  public:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAssistPersonalInfo,
-                              features::kAssistPersonalInfoEmail,
-                              features::kAssistPersonalInfoName,
-                              features::kEmojiSuggestAddition,
-                              features::kImeMojoDecoder,
-                              features::kSystemLatinPhysicalTyping},
-        /*disabled_features=*/{});
+    EnableDefaultFeatureList();
 
     // Needed by NativeInputMethodEngine to interact with the input field.
     ui::IMEBridge::Initialize();
@@ -175,17 +196,38 @@ class NativeInputMethodEngineTest : public ::testing::Test {
     chromeos::machine_learning::ServiceConnection::GetInstance()->Initialize();
   }
 
-  void EnableMultiWordFeatureFlag() {
+  void EnableFeatureList(const std::vector<base::Feature>& features) {
     feature_list_.Reset();
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kAssistPersonalInfo,
-                              features::kAssistPersonalInfoEmail,
-                              features::kAssistPersonalInfoName,
-                              features::kEmojiSuggestAddition,
-                              features::kImeMojoDecoder,
-                              features::kSystemLatinPhysicalTyping,
-                              features::kAssistMultiWord},
+        /*enabled_features=*/features,
         /*disabled_features=*/{});
+  }
+
+  void EnableDefaultFeatureList() {
+    EnableFeatureList({
+        features::kAssistPersonalInfo,
+        features::kAssistPersonalInfoEmail,
+        features::kAssistPersonalInfoName,
+    });
+  }
+
+  void EnableDefaultFeatureListWithMultiWord() {
+    EnableFeatureList({
+        features::kAssistPersonalInfo,
+        features::kAssistPersonalInfoEmail,
+        features::kAssistPersonalInfoName,
+        features::kAssistMultiWord,
+    });
+  }
+
+  void EnableDefaultFeatureListWithMultiWordAndLacros() {
+    EnableFeatureList({
+        features::kAssistPersonalInfo,
+        features::kAssistPersonalInfoEmail,
+        features::kAssistPersonalInfoName,
+        features::kAssistMultiWord,
+        features::kLacrosSupport,
+    });
   }
 
  private:
@@ -197,9 +239,11 @@ class NativeInputMethodEngineTest : public ::testing::Test {
       fake_service_connection_;
 };
 
-TEST_F(NativeInputMethodEngineTest, DoesNotLaunchImeServiceIfAutocorrectIsOff) {
+TEST_F(NativeInputMethodEngineTest,
+       DoesNotLaunchImeServiceIfAutocorrectAndPredictiveWritingAreOff) {
   TestingProfile testing_profile;
   SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
+  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, false);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -217,6 +261,86 @@ TEST_F(NativeInputMethodEngineTest, DoesNotLaunchImeServiceIfAutocorrectIsOff) {
 TEST_F(NativeInputMethodEngineTest, LaunchesImeServiceIfAutocorrectIsOn) {
   TestingProfile testing_profile;
   SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
+  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, false);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_TRUE(engine.IsConnectedForTesting());
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       PredictiveWritingDoesNotLaunchImeServiceWithMultiWordFlagDisabled) {
+  TestingProfile testing_profile;
+  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
+  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       PredictiveWritingDoesNotLaunchImeServiceWithNonEnUsEngineId) {
+  TestingProfile testing_profile;
+  EnableDefaultFeatureListWithMultiWord();
+  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
+  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdEs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       PredictiveWritingDoesNotLaunchImeServiceWithLacrosEnabled) {
+  TestingProfile testing_profile;
+  EnableDefaultFeatureListWithMultiWordAndLacros();
+  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
+  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       PredictiveWritingLaunchesImeServiceWithEnglishEngineId) {
+  TestingProfile testing_profile;
+  EnableDefaultFeatureListWithMultiWord();
+  SetPhysicalTypingAutocorrectEnabled(testing_profile, false);
+  SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
@@ -316,12 +440,13 @@ TEST_F(NativeInputMethodEngineTest,
   TestingProfile testing_profile;
   SetPhysicalTypingAutocorrectEnabled(testing_profile, true);
   SetPhysicalTypingPredictiveWritingEnabled(testing_profile, true);
-  EnableMultiWordFeatureFlag();
+  EnableDefaultFeatureListWithMultiWord();
 
   testing::StrictMock<MockInputMethod> mock_input_method;
   InputMethodManager::Initialize(
       new TestInputMethodManager(&mock_input_method));
-  NativeInputMethodEngine engine;
+  NativeInputMethodEngine engine(std::make_unique<FakeSuggesterSwitch>(
+      FakeSuggesterSwitch::EnabledSuggestions{.multi_word_suggestions = true}));
   engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
                     /*extension_id=*/"", &testing_profile);
 
@@ -586,10 +711,7 @@ class NativeInputMethodEngineWithRenderViewHostTest
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAssistPersonalInfo,
                               features::kAssistPersonalInfoEmail,
-                              features::kAssistPersonalInfoName,
-                              features::kEmojiSuggestAddition,
-                              features::kImeMojoDecoder,
-                              features::kSystemLatinPhysicalTyping},
+                              features::kAssistPersonalInfoName},
         /*disabled_features=*/{});
 
     // Needed by NativeInputMethodEngine to interact with the input field.

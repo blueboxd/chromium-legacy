@@ -9,12 +9,19 @@
 #include "base/bind.h"
 #include "base/process/process.h"
 #include "base/task/current_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 #include "ui/ozone/public/overlay_plane.h"
+
+#if defined(WAYLAND_GBM)
+#include "ui/gfx/linux/gbm_wrapper.h"  // nogncheck
+#include "ui/ozone/platform/wayland/gpu/drm_render_node_handle.h"
+#include "ui/ozone/platform/wayland/gpu/drm_render_node_path_finder.h"
+#endif
 
 namespace mojo {
 // static
@@ -37,26 +44,47 @@ TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
   wayland_overlay_config->priority_hint =
       input.overlay_plane_data.priority_hint;
 
-  const auto& rounded_corners = input.overlay_plane_data.rounded_corners;
-  wayland_overlay_config->rounded_corners.clear();
-  // Push the corners in the following order - top left, top right, bottom
-  // right, and bottom left.
-  wayland_overlay_config->rounded_corners.push_back(
-      rounded_corners.GetCornerRadii(gfx::RRectF::Corner::kUpperLeft).x());
-  wayland_overlay_config->rounded_corners.push_back(
-      rounded_corners.GetCornerRadii(gfx::RRectF::Corner::kUpperRight).x());
-  wayland_overlay_config->rounded_corners.push_back(
-      rounded_corners.GetCornerRadii(gfx::RRectF::Corner::kLowerRight).x());
-  wayland_overlay_config->rounded_corners.push_back(
-      rounded_corners.GetCornerRadii(gfx::RRectF::Corner::kLowerLeft).x());
-
+  wayland_overlay_config->rounded_clip_bounds =
+      input.overlay_plane_data.rounded_corners;
   return wayland_overlay_config;
 }
 }  // namespace mojo
 
 namespace ui {
 
-WaylandBufferManagerGpu::WaylandBufferManagerGpu() = default;
+WaylandBufferManagerGpu::WaylandBufferManagerGpu() {
+#if defined(WAYLAND_GBM)
+  // The path_finder and the handle do syscalls, which are permitted before
+  // the sandbox entry. After the gpu enters the sandbox, they fail. Thus,
+  // open the handle early and store it.
+  OpenAndStoreDrmRenderNodeFd();
+#endif
+
+  // The WaylandBufferManagerGpu takes the task runner where it was created.
+  // However, it might be null in tests and be available later after
+  // initialization is done. Though, when this code runs outside tests, a race
+  // between setting a task runner via ::Initialize and ::RegisterSurface may
+  // happen, and a surface will never be registered. Thus, the following two
+  // cases are possible:
+  // 1) The WaylandBufferManagerGpu runs normally outside tests.
+  // ThreadTaskRunnerHandle is set and it is passed during construction and
+  // never changes.
+  // 2) The WaylandBufferManagerGpu runs in unit tests and when it's created,
+  // the task runner is not available and must be set later when ::Initialize is
+  // called. In this case, there is no race between ::Initialize and
+  // ::RegisterSurface and it's fine to defer setting the task runner.
+  //
+  // TODO(msisov): think about making unit tests initialize Ozone after task
+  // runner is set that would allow to always set the task runner.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    gpu_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
+  } else {
+    // In tests, the further calls might happen on a different sequence.
+    // Otherwise, ThreadTaskRunnerHandle should have already been set.
+    DETACH_FROM_SEQUENCE(gpu_sequence_checker_);
+  }
+}
+
 WaylandBufferManagerGpu::~WaylandBufferManagerGpu() = default;
 
 void WaylandBufferManagerGpu::Initialize(
@@ -67,28 +95,29 @@ void WaylandBufferManagerGpu::Initialize(
     bool supports_viewporter,
     bool supports_acquire_fence,
     bool supports_non_backed_solid_color_buffers) {
-  supported_buffer_formats_with_modifiers_ = buffer_formats_with_modifiers;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
 
-#if defined(WAYLAND_GBM)
-  if (!supports_dma_buf)
-    set_gbm_device(nullptr);
-#endif
+  // See the comment in the constructor.
+  if (!gpu_thread_runner_)
+    gpu_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
+
+  supported_buffer_formats_with_modifiers_ = buffer_formats_with_modifiers;
   supports_viewporter_ = supports_viewporter;
   supports_acquire_fence_ = supports_acquire_fence;
   supports_non_backed_solid_color_buffers_ =
       supports_non_backed_solid_color_buffers;
+  supports_dmabuf_ = supports_dma_buf;
 
   BindHostInterface(std::move(remote_host));
-
-  io_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
                                            uint32_t buffer_id,
                                            gfx::SwapResult swap_result,
                                            gfx::GpuFenceHandle release_fence) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
   base::AutoLock scoped_lock(lock_);
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
   DCHECK_LE(commit_thread_runners_.count(widget), 1u);
   // Return back to the same thread where the commit request came from.
   auto it = commit_thread_runners_.find(widget);
@@ -105,8 +134,9 @@ void WaylandBufferManagerGpu::OnPresentation(
     gfx::AcceleratedWidget widget,
     uint32_t buffer_id,
     const gfx::PresentationFeedback& feedback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
   base::AutoLock scoped_lock(lock_);
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
   DCHECK_LE(commit_thread_runners_.count(widget), 1u);
   // Return back to the same thread where the commit request came from.
   auto it = commit_thread_runners_.find(widget);
@@ -120,13 +150,8 @@ void WaylandBufferManagerGpu::OnPresentation(
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
                                               WaylandSurfaceGpu* surface) {
-  if (!io_thread_runner_) {
-    LOG(ERROR) << "WaylandBufferManagerGpu is not initialized. Can't register "
-                  "a surface.";
-    return;
-  }
-
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WaylandBufferManagerGpu::SaveTaskRunnerForWidgetOnIOThread,
@@ -137,13 +162,8 @@ void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,
 }
 
 void WaylandBufferManagerGpu::UnregisterSurface(gfx::AcceleratedWidget widget) {
-  if (!io_thread_runner_) {
-    LOG(ERROR) << "WaylandBufferManagerGpu is not initialized. Can't register "
-                  "a surface.";
-    return;
-  }
-
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread,
@@ -172,14 +192,9 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBuffer(
     uint32_t current_format,
     uint32_t planes_count,
     uint32_t buffer_id) {
-  if (!remote_host_) {
-    LOG(ERROR) << "Interface is not bound. Can't request "
-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
-    return;
-  }
-
-  // Do the mojo call on the IO child thread.
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  // Do the mojo call on the GpuMainThread.
+  gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal,
                      base::Unretained(this), std::move(dmabuf_fd),
@@ -192,14 +207,9 @@ void WaylandBufferManagerGpu::CreateShmBasedBuffer(base::ScopedFD shm_fd,
                                                    size_t length,
                                                    gfx::Size size,
                                                    uint32_t buffer_id) {
-  if (!remote_host_) {
-    LOG(ERROR) << "Interface is not bound. Can't request "
-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
-    return;
-  }
-
-  // Do the mojo call on the IO child thread.
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  // Do the mojo call on the GpuMainThread.
+  gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandBufferManagerGpu::CreateShmBasedBufferInternal,
                      base::Unretained(this), std::move(shm_fd), length,
@@ -209,14 +219,9 @@ void WaylandBufferManagerGpu::CreateShmBasedBuffer(base::ScopedFD shm_fd,
 void WaylandBufferManagerGpu::CreateSolidColorBuffer(SkColor color,
                                                      const gfx::Size& size,
                                                      uint32_t buf_id) {
-  if (!remote_host_) {
-    LOG(ERROR) << "Interface is not bound. Can't request "
-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
-    return;
-  }
-
-  // Do the mojo call on the IO child thread.
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  // Do the mojo call on the GpuMainThread.
+  gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandBufferManagerGpu::CreateSolidColorBufferInternal,
                      base::Unretained(this), color, size, buf_id));
@@ -234,7 +239,7 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
       INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, buffer_id,
       surface_scale_factor, bounds_rect, gfx::RectF(1.f, 1.f) /* no crop */,
       damage_region, false, 1.0f /*opacity*/, gfx::GpuFenceHandle(),
-      gfx::OverlayPriorityHint::kNone, std::vector<float>()));
+      gfx::OverlayPriorityHint::kNone, gfx::RRectF()));
 
   CommitOverlays(widget, std::move(overlay_configs));
 }
@@ -242,14 +247,9 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
 void WaylandBufferManagerGpu::CommitOverlays(
     gfx::AcceleratedWidget widget,
     std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
-  if (!remote_host_) {
-    LOG(ERROR) << "Interface is not bound. Can't request "
-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
-    return;
-  }
-
-  // Do the mojo call on the IO child thread.
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  // Do the mojo call on the GpuMainThread.
+  gpu_thread_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandBufferManagerGpu::CommitOverlaysInternal,
                      base::Unretained(this), widget, std::move(overlays)));
@@ -257,17 +257,35 @@ void WaylandBufferManagerGpu::CommitOverlays(
 
 void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
                                             uint32_t buffer_id) {
-  if (!remote_host_) {
-    LOG(ERROR) << "Interface is not bound. Can't request "
-                  "WaylandBufferManagerHost to create/commit/destroy buffers.";
-    return;
-  }
-
-  // Do the mojo call on the IO child thread.
-  io_thread_runner_->PostTask(
+  DCHECK(gpu_thread_runner_);
+  // Do the mojo call on the GpuMainThread.
+  gpu_thread_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WaylandBufferManagerGpu::DestroyBufferInternal,
                                 base::Unretained(this), widget, buffer_id));
 }
+
+#if defined(WAYLAND_GBM)
+GbmDevice* WaylandBufferManagerGpu::GetGbmDevice() {
+  if (!supports_dmabuf_)
+    return nullptr;
+
+  if (gbm_device_ || use_fake_gbm_device_for_test_)
+    return gbm_device_.get();
+
+  if (!drm_render_node_fd_.is_valid()) {
+    supports_dmabuf_ = false;
+    return nullptr;
+  }
+
+  gbm_device_ = CreateGbmDevice(drm_render_node_fd_.release());
+  if (!gbm_device_) {
+    supports_dmabuf_ = false;
+    LOG(WARNING) << "Failed to initialize gbm device.";
+    return nullptr;
+  }
+  return gbm_device_.get();
+}
+#endif  // defined(WAYLAND_GBM)
 
 void WaylandBufferManagerGpu::AddBindingWaylandBufferManagerGpu(
     mojo::PendingReceiver<ozone::mojom::WaylandBufferManagerGpu> receiver) {
@@ -298,7 +316,9 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal(
     uint32_t current_format,
     uint32_t planes_count,
     uint32_t buffer_id) {
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  DCHECK(remote_host_);
   remote_host_->CreateDmabufBasedBuffer(
       mojo::PlatformHandle(std::move(dmabuf_fd)), size, strides, offsets,
       modifiers, current_format, planes_count, buffer_id);
@@ -309,7 +329,9 @@ void WaylandBufferManagerGpu::CreateShmBasedBufferInternal(
     size_t length,
     gfx::Size size,
     uint32_t buffer_id) {
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  DCHECK(remote_host_);
   remote_host_->CreateShmBasedBuffer(mojo::PlatformHandle(std::move(shm_fd)),
                                      length, size, buffer_id);
 }
@@ -318,33 +340,40 @@ void WaylandBufferManagerGpu::CreateSolidColorBufferInternal(
     SkColor color,
     const gfx::Size& size,
     uint32_t buf_id) {
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  DCHECK(remote_host_);
   remote_host_->CreateSolidColorBuffer(size, color, buf_id);
 }
 
 void WaylandBufferManagerGpu::CommitOverlaysInternal(
     gfx::AcceleratedWidget widget,
     std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  DCHECK(remote_host_);
   remote_host_->CommitOverlays(widget, std::move(overlays));
 }
 
 void WaylandBufferManagerGpu::DestroyBufferInternal(
     gfx::AcceleratedWidget widget,
     uint32_t buffer_id) {
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  DCHECK(remote_host_);
   remote_host_->DestroyBuffer(widget, buffer_id);
 }
 
 void WaylandBufferManagerGpu::BindHostInterface(
     mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  DCHECK(!remote_host_.is_bound() && !associated_receiver_.is_bound());
+  remote_host_.Bind(std::move(remote_host));
   // WaylandBufferManagerHost may bind host again after an error. See
   // WaylandBufferManagerHost::BindInterface for more details.
-  if (remote_host_.is_bound()) {
-    remote_host_.reset();
-    associated_receiver_.reset();
-  }
-  remote_host_.Bind(std::move(remote_host));
+  remote_host_.set_disconnect_handler(base::BindOnce(
+      &WaylandBufferManagerGpu::OnHostDisconnected, base::Unretained(this)));
 
   // Setup associated interface.
   mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
@@ -357,15 +386,17 @@ void WaylandBufferManagerGpu::BindHostInterface(
 void WaylandBufferManagerGpu::SaveTaskRunnerForWidgetOnIOThread(
     gfx::AcceleratedWidget widget,
     scoped_refptr<base::SingleThreadTaskRunner> origin_runner) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
   commit_thread_runners_.emplace(widget, origin_runner);
 }
 
 void WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread(
     gfx::AcceleratedWidget widget) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
-  DCHECK(io_thread_runner_->BelongsToCurrentThread());
   commit_thread_runners_.erase(widget);
 }
 
@@ -391,6 +422,36 @@ void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
   // provided.
   if (surface)
     surface->OnPresentation(buffer_id, feedback);
+}
+
+#if defined(WAYLAND_GBM)
+void WaylandBufferManagerGpu::OpenAndStoreDrmRenderNodeFd() {
+  DrmRenderNodePathFinder path_finder;
+  const base::FilePath drm_node_path = path_finder.GetDrmRenderNodePath();
+  if (drm_node_path.empty()) {
+    LOG(WARNING) << "Failed to find drm render node path.";
+    return;
+  }
+
+  DrmRenderNodeHandle handle;
+  if (!handle.Initialize(drm_node_path)) {
+    LOG(WARNING) << "Failed to initialize drm render node handle.";
+    return;
+  }
+
+  drm_render_node_fd_ = handle.PassFD();
+}
+#endif
+
+void WaylandBufferManagerGpu::OnHostDisconnected() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+
+  // WaylandBufferManagerHost may bind host again after an error. See
+  // WaylandBufferManagerHost::BindInterface for more details.
+  remote_host_.reset();
+  // When the remote host is disconnected, it also disconnects the associated
+  // receiver. Thus, reset that as well.
+  associated_receiver_.reset();
 }
 
 }  // namespace ui

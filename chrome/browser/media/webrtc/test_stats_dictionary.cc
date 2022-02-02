@@ -143,7 +143,11 @@ std::vector<std::string> TestStatsDictionary::GetSequenceString(
 
 bool TestStatsDictionary::GetBoolean(
     const std::string& key, bool* out) const {
-  return stats_->GetBoolean(key, out);
+  if (absl::optional<bool> value = stats_->FindBoolPath(key)) {
+    *out = *value;
+    return true;
+  }
+  return false;
 }
 
 bool TestStatsDictionary::GetNumber(
@@ -203,11 +207,11 @@ bool TestStatsDictionary::GetSequenceString(
   if (!stats_->GetList(key, &list))
     return false;
   std::vector<std::string> sequence;
-  std::string element;
-  for (size_t i = 0; i < list->GetList().size(); ++i) {
-    if (!list->GetString(i, &element))
+  for (const base::Value& i : list->GetList()) {
+    const std::string* element = i.GetIfString();
+    if (!element)
       return false;
-    sequence.push_back(element);
+    sequence.push_back(*element);
   }
   *out = std::move(sequence);
   return true;

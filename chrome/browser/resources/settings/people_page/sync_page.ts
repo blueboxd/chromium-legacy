@@ -32,11 +32,18 @@ import {flush, html, PolymerElement} from '//resources/polymer/v3_0/polymer/poly
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 
 import {loadTimeData} from '../i18n_setup.js';
+
+// <if expr="chromeos">
 import {SettingsPersonalizationOptionsElement} from '../privacy_page/personalization_options.js';
+// </if>
+
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {PageStatus, StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from './sync_browser_proxy.js';
+
+// <if expr="chromeos">
 import {SettingsSyncEncryptionOptionsElement} from './sync_encryption_options.js';
+// </if>
 
 // TODO(rbpotter): Remove this typedef when this file is no longer needed by OS
 // Settings.
@@ -45,6 +52,7 @@ type SyncRoutes = {
   PEOPLE: Route,
   SYNC: Route,
   SYNC_ADVANCED: Route,
+  OS_SYNC: Route,
 };
 
 function getSyncRoutes(): SyncRoutes {
@@ -165,10 +173,12 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
             'syncPrefs.trustedVaultKeysRequired)',
       },
 
+      // <if expr="not lacros">
       showSetupCancelDialog_: {
         type: Boolean,
         value: false,
       },
+      // </if>
 
       enterPassphraseLabel_: {
         type: String,
@@ -201,7 +211,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private signedIn_: boolean;
   private syncDisabledByAdmin_: boolean;
   private syncSectionDisabled_: boolean;
+  // <if expr="not lacros">
   private showSetupCancelDialog_: boolean;
+  // </if>
   private enterPassphraseLabel_: string;
   private existingPassphraseLabel_: string;
 
@@ -283,6 +295,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     }
   }
 
+  // <if expr="chromeos">
   /**
    * @return The encryption options SettingsSyncEncryptionOptionsElement.
    */
@@ -296,12 +309,23 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   getPersonalizationOptions(): SettingsPersonalizationOptionsElement|null {
     return this.shadowRoot!.querySelector('settings-personalization-options');
   }
+  // </if>
 
   // <if expr="chromeos or lacros">
   private shouldShowLacrosSideBySideWarning_(): boolean {
     return loadTimeData.getBoolean('shouldShowLacrosSideBySideWarning');
   }
   // </if>
+
+  private showActivityControls_(): boolean {
+    // <if expr="chromeos">
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled')) {
+      // Should be hidden in OS settings.
+      return !loadTimeData.getBoolean('isOSSettings');
+    }
+    // </if>
+    return true;
+  }
 
   private computeSignedIn_(): boolean {
     return !!this.syncStatus.signedIn;
@@ -320,14 +344,27 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
     return this.syncStatus !== undefined && !!this.syncStatus.managed;
   }
 
+  private getSyncAdvancedPageRoute_(): Route {
+    // <if expr="chromeos">
+    if (loadTimeData.getBoolean('syncSettingsCategorizationEnabled') &&
+        loadTimeData.getBoolean('isOSSettings')) {
+      // In OS settings on ChromeOS a different page is used to show the list of
+      // sync data types.
+      return getSyncRoutes().OS_SYNC;
+    }
+    // </if>
+
+    return getSyncRoutes().SYNC_ADVANCED;
+  }
+
   private onFocusConfigChange_() {
-    const router = Router.getInstance();
-    this.focusConfig.set(getSyncRoutes().SYNC_ADVANCED.path, () => {
+    this.focusConfig.set(this.getSyncAdvancedPageRoute_().path, () => {
       focusWithoutInk(
           assert(this.shadowRoot!.querySelector('#sync-advanced-row')!));
     });
   }
 
+  // <if expr="not lacros">
   private onSetupCancelDialogBack_() {
     this.shadowRoot!.querySelector<CrDialogElement>(
                         '#setupCancelDialog')!.cancel();
@@ -348,6 +385,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
   private onSetupCancelDialogClose_() {
     this.showSetupCancelDialog_ = false;
   }
+  // </if>
 
   currentRouteChanged() {
     const router = Router.getInstance();
@@ -369,6 +407,9 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       return;
     }
 
+    // On Lacros, turning off sync is not supported yet.
+    // TODO(https://crbug.com/1217645): Enable the cancel dialog.
+    // <if expr="not lacros">
     const userActionCancelsSetup = this.syncStatus &&
         this.syncStatus.firstSetupInProgress && this.didAbort_;
     if (userActionCancelsSetup && !this.setupCancelConfirmed_) {
@@ -389,6 +430,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
       });
       return;
     }
+    // </if>
 
     // Reset variable.
     this.setupCancelConfirmed_ = false;
@@ -605,7 +647,7 @@ export class SettingsSyncPageElement extends SettingsSyncPageElementBase {
 
   private onSyncAdvancedClick_() {
     const router = Router.getInstance();
-    router.navigateTo(getSyncRoutes().SYNC_ADVANCED);
+    router.navigateTo(this.getSyncAdvancedPageRoute_());
   }
 
   /**

@@ -13,7 +13,6 @@
 #include "ash/system/palette/palette_ids.h"
 #include "ash/system/palette/palette_tool.h"
 #include "base/callback.h"
-#include "base/macros.h"
 
 namespace aura {
 class Window;
@@ -63,7 +62,7 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   };
 
   // Creates the tool manager.
-  PaletteToolManager(Delegate* delegate);
+  explicit PaletteToolManager(Delegate* delegate);
 
   PaletteToolManager(const PaletteToolManager&) = delete;
   PaletteToolManager& operator=(const PaletteToolManager&) = delete;

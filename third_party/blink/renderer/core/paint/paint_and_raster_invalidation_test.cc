@@ -489,7 +489,7 @@ TEST_P(PaintAndRasterInvalidationTest, FullInvalidationWithHTMLTransform) {
   UpdateAllLifecyclePhasesForTest();
 
   GetDocument().View()->SetTracksRasterInvalidations(true);
-  GetDocument().View()->Resize(IntSize(500, 500));
+  GetDocument().View()->Resize(gfx::Size(500, 500));
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_THAT(
@@ -794,7 +794,7 @@ TEST_P(PaintAndRasterInvalidationTest, RecalcOverflowInvalidatesBackground) {
   UpdateAllLifecyclePhasesForTest();
 
   ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
-  ASSERT_EQ(scrollable_area->MaximumScrollOffset().height(), 0);
+  ASSERT_EQ(scrollable_area->MaximumScrollOffset().y(), 0);
   EXPECT_FALSE(
       GetDocument().GetLayoutView()->ShouldCheckForPaintInvalidation());
 
@@ -803,7 +803,7 @@ TEST_P(PaintAndRasterInvalidationTest, RecalcOverflowInvalidatesBackground) {
                           "transform: translateY(1000px);");
   GetDocument().UpdateStyleAndLayoutTree();
 
-  EXPECT_EQ(scrollable_area->MaximumScrollOffset().height(), 1000);
+  EXPECT_EQ(scrollable_area->MaximumScrollOffset().y(), 1000);
   EXPECT_TRUE(GetDocument().GetLayoutView()->ShouldCheckForPaintInvalidation());
 }
 

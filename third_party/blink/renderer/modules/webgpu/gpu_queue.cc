@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_texture.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_image_bitmap_handler.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgpu_mailbox_texture.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -100,13 +100,19 @@ bool IsExternalImageWebGLCanvas(
 bool IsValidExternalImageDestinationFormat(
     WGPUTextureFormat dawn_texture_format) {
   switch (dawn_texture_format) {
-    // Not support float target format due to unclear "srgb" definition for now.
+    case WGPUTextureFormat_R8Unorm:
+    case WGPUTextureFormat_R16Float:
+    case WGPUTextureFormat_R32Float:
+    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RG16Float:
+    case WGPUTextureFormat_RG32Float:
     case WGPUTextureFormat_RGBA8Unorm:
     case WGPUTextureFormat_RGBA8UnormSrgb:
     case WGPUTextureFormat_BGRA8Unorm:
     case WGPUTextureFormat_BGRA8UnormSrgb:
     case WGPUTextureFormat_RGB10A2Unorm:
-    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RGBA32Float:
       return true;
     default:
       return false;
@@ -132,23 +138,27 @@ bool IsValidCopyIB2TDestinationFormat(WGPUTextureFormat dawn_texture_format) {
   }
 }
 
-// TODO(crubg.com/dawn/465): Cover more formats.
 bool IsValidCopyTextureForBrowserFormats(SkColorType src_color_type,
                                          WGPUTextureFormat dst_texture_format) {
   // CopyTextureForBrowser only supports RGBA8Unorm and BGRA8Unorm src texture.
-  if (src_color_type != SkColorType::kRGBA_8888_SkColorType &&
-      src_color_type != SkColorType::kBGRA_8888_SkColorType) {
-    return false;
+  // TODO(crbug.com/dawn/856): Cover more source formats if needed.
+  if ((src_color_type == SkColorType::kRGBA_8888_SkColorType ||
+       src_color_type == SkColorType::kBGRA_8888_SkColorType) &&
+      (dst_texture_format == WGPUTextureFormat_R8Unorm ||
+       dst_texture_format == WGPUTextureFormat_R16Float ||
+       dst_texture_format == WGPUTextureFormat_R32Float ||
+       dst_texture_format == WGPUTextureFormat_RG8Unorm ||
+       dst_texture_format == WGPUTextureFormat_RG16Float ||
+       dst_texture_format == WGPUTextureFormat_RG32Float ||
+       dst_texture_format == WGPUTextureFormat_RGBA8Unorm ||
+       dst_texture_format == WGPUTextureFormat_BGRA8Unorm ||
+       dst_texture_format == WGPUTextureFormat_RGB10A2Unorm ||
+       dst_texture_format == WGPUTextureFormat_RGBA16Float ||
+       dst_texture_format == WGPUTextureFormat_RGBA32Float)) {
+    return true;
   }
 
-  // CopyTextureForBrowser() supports neither RGBA8UnormSrgb nor BGRA8UnormSrgb
-  // as dst texture format.
-  if (dst_texture_format == WGPUTextureFormat_RGBA8UnormSrgb ||
-      dst_texture_format == WGPUTextureFormat_BGRA8UnormSrgb) {
-    return false;
-  }
-
-  return true;
+  return false;
 }
 
 scoped_refptr<Image> GetImageFromExternalImage(
@@ -207,8 +217,8 @@ scoped_refptr<Image> GetImageFromExternalImage(
   // HTMLCanvasElement and OffscreenCanvas won't care image orientation. But for
   // ImageBitmap, use kRespectImageOrientation will make ElementSize() behave
   // as Size().
-  FloatSize image_size = source->ElementSize(
-      FloatSize(),  // It will be ignored and won't affect size.
+  gfx::SizeF image_size = source->ElementSize(
+      gfx::SizeF(),  // It will be ignored and won't affect size.
       kRespectImageOrientation);
 
   // TODO(crbug.com/1197369): Ensure kUnpremultiplyAlpha impl will also make
@@ -375,6 +385,7 @@ void GPUQueue::WriteBufferImpl(GPUBuffer* buffer,
   const uint8_t* data_ptr = data_base_ptr_bytes + data_byte_offset;
   GetProcs().queueWriteBuffer(GetHandle(), buffer->GetHandle(), buffer_offset,
                               data_ptr, static_cast<size_t>(write_byte_size));
+  EnsureFlush();
 }
 
 void GPUQueue::writeTexture(GPUImageCopyTexture* destination,
@@ -417,6 +428,7 @@ void GPUQueue::WriteTextureImpl(GPUImageCopyTexture* destination,
 
   GetProcs().queueWriteTexture(GetHandle(), &dawn_destination, data, data_size,
                                &dawn_data_layout, &dawn_write_size);
+  EnsureFlush();
   return;
 }
 
@@ -432,11 +444,11 @@ void GPUQueue::copyExternalImageToTexture(
   // WebGL canvas. It should follow the canvas origin but it follows WebGL
   // coords instead. Use the temporary origin config for WebGL canvas so user
   // could fix the flip issue.
-  bool is_bottom_left_origin_webgl =
+  bool copy_origin_is_bottom_left =
       copyImage->temporaryOriginBottomLeftIfWebGL() &&
       IsExternalImageWebGLCanvas(copyImage->source());
 
-  if (is_bottom_left_origin_webgl) {
+  if (copy_origin_is_bottom_left) {
     device_->AddConsoleWarning(
         "temporaryOriginBottomLeftIfWebGL is true means the top-left pixel in "
         "destination gpu texture is from"
@@ -525,41 +537,33 @@ void GPUQueue::copyExternalImageToTexture(
   }
 
   // Issue the noop copy to continue validation to destination textures
-  const bool isNoopCopy = dawn_copy_size.width == 0 ||
-                          dawn_copy_size.height == 0 ||
-                          dawn_copy_size.depthOrArrayLayers == 0;
-
-  if (isNoopCopy) {
+  if (dawn_copy_size.width == 0 || dawn_copy_size.height == 0 ||
+      dawn_copy_size.depthOrArrayLayers == 0) {
     device_->AddConsoleWarning(
         "CopyExternalImageToTexture(): It is a noop copy"
         "({width|height|depthOrArrayLayers} equals to 0).");
   }
 
-  // NOTE: IsOriginTopLeft for AcceleratedStaticBitmapImage
-  // will provide the correct orientation info.
-  bool is_origin_top_left = static_bitmap_image->IsOriginTopLeft();
-  bool flipY = is_origin_top_left == is_bottom_left_origin_webgl;
-
   // Try GPU path first and delegate noop copy to CPU path.
-  if (static_bitmap_image->IsTextureBacked() &&
-      !isNoopCopy) {  // Try GPU uploading path.
+  if (static_bitmap_image->IsTextureBacked()) {  // Try GPU uploading path.
     if (CopyContentFromGPU(static_bitmap_image.get(), origin_in_external_image,
                            dawn_copy_size, dawn_destination,
                            destination->texture()->Format(),
-                           destination->premultipliedAlpha(), flipY)) {
+                           destination->premultipliedAlpha(),
+                           static_bitmap_image->IsOriginTopLeft() ==
+                               copy_origin_is_bottom_left)) {
       return;
     }
   }
   // GPU path failed, fallback to CPU path
   static_bitmap_image = static_bitmap_image->MakeUnaccelerated();
   DCHECK_EQ(static_bitmap_image->IsOriginTopLeft(), true);
-  flipY = is_bottom_left_origin_webgl;
 
   // CPU path is the fallback path and should always work.
-  if (!CopyContentFromCPU(static_bitmap_image.get(), origin_in_external_image,
-                          dawn_copy_size, dawn_destination,
-                          destination->texture()->Format(),
-                          destination->premultipliedAlpha(), flipY)) {
+  if (!CopyContentFromCPU(
+          static_bitmap_image.get(), origin_in_external_image, dawn_copy_size,
+          dawn_destination, destination->texture()->Format(),
+          destination->premultipliedAlpha(), copy_origin_is_bottom_left)) {
     exception_state.ThrowTypeError(
         "Failed to copy content from external image.");
     return;
@@ -656,8 +660,8 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
                                   bool premultiplied_alpha,
                                   bool flipY) {
   // Prepare for uploading CPU data.
-  IntRect image_data_rect(origin.x, origin.y, copy_size.width,
-                          copy_size.height);
+  gfx::Rect image_data_rect(origin.x, origin.y, copy_size.width,
+                            copy_size.height);
 
   WebGPUImageUploadSizeInfo info = ComputeImageBitmapWebGPUUploadSizeInfo(
       image_data_rect, dest_texture_format);
@@ -737,6 +741,7 @@ bool GPUQueue::CopyContentFromGPU(StaticBitmapImage* image,
     return false;
   }
 
+  // Keep mailbox generation in noop copy to catch possible issue.
   // TODO(crbug.com/1197369): config color space based on image
   scoped_refptr<WebGPUMailboxTexture> mailbox_texture =
       WebGPUMailboxTexture::FromStaticBitmapImage(

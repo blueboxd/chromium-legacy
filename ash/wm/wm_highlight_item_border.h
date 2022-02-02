@@ -5,7 +5,6 @@
 #ifndef ASH_WM_WM_HIGHLIGHT_ITEM_BORDER_H_
 #define ASH_WM_WM_HIGHLIGHT_ITEM_BORDER_H_
 
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/border.h"
 
@@ -19,7 +18,6 @@ namespace ash {
 // paint nothing.
 class WmHighlightItemBorder : public views::Border {
  public:
-
   explicit WmHighlightItemBorder(
       int corner_radius,
       gfx::Insets padding = gfx::Insets(0));

@@ -195,6 +195,11 @@ IOSChromePasswordManagerClient::GetPasswordReuseManager() const {
       bridge_.browserState);
 }
 
+password_manager::PasswordScriptsFetcher*
+IOSChromePasswordManagerClient::GetPasswordScriptsFetcher() {
+  return nullptr;
+}
+
 void IOSChromePasswordManagerClient::NotifyUserAutoSignin(
     std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
     const url::Origin& origin) {
@@ -223,7 +228,9 @@ void IOSChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin,
     const std::u16string& username) {
-  [bridge_ showPasswordBreachForLeakType:leak_type URL:origin];
+  [bridge_ showPasswordBreachForLeakType:leak_type
+                                     URL:origin
+                                username:username];
 }
 
 bool IOSChromePasswordManagerClient::IsSavingAndFillingEnabled(

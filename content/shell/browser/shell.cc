@@ -13,7 +13,6 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,24 +58,6 @@ ShellPlatformDelegate* g_platform;
 
 std::vector<Shell*> Shell::windows_;
 base::OnceCallback<void(Shell*)> Shell::shell_created_callback_;
-
-class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
- public:
-  DevToolsWebContentsObserver(Shell* shell, WebContents* web_contents)
-      : WebContentsObserver(web_contents), shell_(shell) {}
-
-  DevToolsWebContentsObserver(const DevToolsWebContentsObserver&) = delete;
-  DevToolsWebContentsObserver& operator=(const DevToolsWebContentsObserver&) =
-      delete;
-
-  // WebContentsObserver
-  void WebContentsDestroyed() override {
-    shell_->OnDevToolsWebContentsDestroyed();
-  }
-
- private:
-  Shell* shell_;
-};
 
 Shell::Shell(std::unique_ptr<WebContents> web_contents,
              bool should_set_delegate)
@@ -333,7 +314,7 @@ void Shell::Stop() {
   web_contents_->Stop();
 }
 
-void Shell::UpdateNavigationControls(bool to_different_document) {
+void Shell::UpdateNavigationControls(bool should_show_loading_ui) {
   int current_index = web_contents_->GetController().GetCurrentEntryIndex();
   int max_index = web_contents_->GetController().GetEntryCount() - 1;
 
@@ -343,14 +324,13 @@ void Shell::UpdateNavigationControls(bool to_different_document) {
                               current_index < max_index);
   g_platform->EnableUIControl(
       this, ShellPlatformDelegate::STOP_BUTTON,
-      to_different_document && web_contents_->IsLoading());
+      should_show_loading_ui && web_contents_->IsLoading());
 }
 
 void Shell::ShowDevTools() {
   if (!devtools_frontend_) {
-    devtools_frontend_ = ShellDevToolsFrontend::Show(web_contents());
-    devtools_observer_ = std::make_unique<DevToolsWebContentsObserver>(
-        this, devtools_frontend_->frontend_shell()->web_contents());
+    auto* devtools_frontend = ShellDevToolsFrontend::Show(web_contents());
+    devtools_frontend_ = devtools_frontend->GetWeakPtr();
   }
 
   devtools_frontend_->Activate();
@@ -359,7 +339,6 @@ void Shell::ShowDevTools() {
 void Shell::CloseDevTools() {
   if (!devtools_frontend_)
     return;
-  devtools_observer_.reset();
   devtools_frontend_->Close();
   devtools_frontend_ = nullptr;
 }
@@ -458,8 +437,8 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
 }
 
 void Shell::LoadingStateChanged(WebContents* source,
-                                bool to_different_document) {
-  UpdateNavigationControls(to_different_document);
+                                bool should_show_loading_ui) {
+  UpdateNavigationControls(should_show_loading_ui);
   g_platform->SetIsLoading(this, source->IsLoading());
 }
 
@@ -722,11 +701,6 @@ void Shell::LoadProgressChanged(double progress) {
 void Shell::TitleWasSet(NavigationEntry* entry) {
   if (entry)
     g_platform->SetTitle(this, entry->GetTitle());
-}
-
-void Shell::OnDevToolsWebContentsDestroyed() {
-  devtools_observer_.reset();
-  devtools_frontend_ = nullptr;
 }
 
 }  // namespace content

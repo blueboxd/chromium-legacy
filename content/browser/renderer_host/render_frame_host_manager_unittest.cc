@@ -17,7 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/hash/hash.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
@@ -740,7 +740,7 @@ class RenderViewHostDestroyer : public WebContentsObserver {
   }
 
  private:
-  RenderViewHost* render_view_host_;
+  raw_ptr<RenderViewHost> render_view_host_;
   std::unique_ptr<WebContents> web_contents_;
 };
 
@@ -909,7 +909,8 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
   NavigationEntryImpl entry1(
       nullptr /* instance */, kUrl1, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   host = NavigateToEntry(manager, &entry1);
 
   // The RenderFrameHost created in Init will be reused.
@@ -934,7 +935,8 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
       nullptr /* instance */, kUrl2,
       Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
       kInitiatorOrigin, std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   host = NavigateToEntry(manager, &entry2);
 
   // The RenderFrameHost created in Init will be reused.
@@ -957,7 +959,8 @@ TEST_P(RenderFrameHostManagerTest, Navigate) {
       nullptr /* instance */, kUrl3,
       Referrer(kUrl2, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   host = NavigateToEntry(manager, &entry3);
 
   // A new RenderFrameHost should be created.
@@ -1000,7 +1003,8 @@ TEST_P(RenderFrameHostManagerTest, WebUI) {
   NavigationEntryImpl entry(
       nullptr /* instance */, kUrl, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* host = NavigateToEntry(manager, &entry);
 
   // We commit the pending RenderFrameHost immediately because the previous
@@ -1051,7 +1055,8 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   NavigationEntryImpl entry1(
       nullptr /* instance */, kUrl1, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* host1 = NavigateToEntry(manager1, &entry1);
 
   // We should have a pending navigation to the WebUI RenderViewHost.
@@ -1083,7 +1088,8 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   NavigationEntryImpl entry2(
       nullptr /* instance */, kUrl2, Referrer(), kInitiatorOrigin,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* host2 = NavigateToEntry(manager2, &entry2);
 
   // No cross-process transition happens because we are already in the right
@@ -1439,17 +1445,19 @@ TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.
 TEST_P(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
-  // Create a custom site URL for the SiteInstance. There is nothing special
-  // about this URL other than we expect the resulting SiteInstance to return
-  // this exact URL from its GetSiteURL() method.
-  const GURL kGuestSiteUrl("my-guest-scheme://someapp/somepath");
+  // Create a custom StoragePartitionConfig for the guest SiteInstance. The
+  // resulting SiteInstance should become associated with this
+  // StoragePartitionConfig rather than a default one.
+  const StoragePartitionConfig kGuestPartitionConfig =
+      StoragePartitionConfig::Create(browser_context(), "someapp",
+                                     "somepartition", /*in_memory=*/false);
   scoped_refptr<SiteInstance> instance =
-      SiteInstance::CreateForGuest(browser_context(), kGuestSiteUrl);
+      SiteInstance::CreateForGuest(browser_context(), kGuestPartitionConfig);
   std::unique_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
 
   EXPECT_TRUE(instance->IsGuest());
-  EXPECT_EQ(kGuestSiteUrl, instance->GetSiteURL());
+  EXPECT_EQ(kGuestPartitionConfig, instance->GetStoragePartitionConfig());
 
   RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
@@ -1460,7 +1468,8 @@ TEST_P(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   NavigationEntryImpl entry1(
       nullptr /* instance */, kUrl1, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   host = NavigateToEntry(manager, &entry1);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1484,7 +1493,8 @@ TEST_P(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
       nullptr /* instance */, kUrl2,
       Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault),
       kInitiatorOrigin, std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      true /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   host = NavigateToEntry(manager, &entry2);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1538,7 +1548,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   NavigationEntryImpl entry1(
       nullptr /* instance */, kUrl1, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* host = NavigateToEntry(manager, &entry1);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1561,7 +1572,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   NavigationEntryImpl entry2(
       nullptr /* instance */, kUrl2, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* host2 = NavigateToEntry(manager, &entry2);
 
   // A new RenderFrameHost should be created.
@@ -1862,7 +1874,8 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   NavigationEntryImpl entryA(
       nullptr /* instance */, kUrlA, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* host1 = NavigateToEntry(iframe1, &entryA);
 
   // The RenderFrameHost created in Init will be reused.
@@ -1881,7 +1894,8 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
       nullptr /* instance */, kUrlB,
       Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   host1 = NavigateToEntry(iframe1, &entryB);
   RenderFrameHostImpl* host2 = NavigateToEntry(iframe2, &entryB);
 
@@ -2017,7 +2031,8 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       nullptr /* instance */, kUrl2,
       Referrer(kUrl1, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* cross_site = NavigateToEntry(iframe, &entry);
   DidNavigateFrame(iframe, cross_site);
 
@@ -2072,7 +2087,8 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   NavigationEntryImpl webui_entry(
       nullptr /* instance */, kWebUIUrl, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostManager* main_rfhm = contents()->GetRenderManagerForTesting();
   RenderFrameHostImpl* webui_rfh = NavigateToEntry(main_rfhm, &webui_entry);
   EXPECT_EQ(webui_rfh, GetPendingFrameHost(main_rfhm));
@@ -2084,7 +2100,8 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   NavigationEntryImpl subframe_entry(
       nullptr /* instance */, kSubframeUrl, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   RenderFrameHostImpl* bar_rfh =
       NavigateToEntry(subframe_rfhm, &subframe_entry);
   EXPECT_FALSE(bar_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
@@ -2449,7 +2466,8 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       nullptr /* instance */, kUrlB,
       Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   TestRenderFrameHost* host1 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child1, &entryB));
 
@@ -2470,7 +2488,8 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
       nullptr /* instance */, kUrlC,
       Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   TestRenderFrameHost* host3 =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child3, &entryC));
 
@@ -2554,7 +2573,8 @@ TEST_P(RenderFrameHostManagerTest,
       nullptr /* instance */, kUrlB,
       Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   TestRenderFrameHost* hostB =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child, &entryB));
   DidNavigateFrame(child, hostB);
@@ -2570,7 +2590,8 @@ TEST_P(RenderFrameHostManagerTest,
       nullptr /* instance */, kUrlC,
       Referrer(kUrlA, network::mojom::ReferrerPolicy::kDefault), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_LINK,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   TestRenderFrameHost* hostC =
       static_cast<TestRenderFrameHost*>(NavigateToEntry(child, &entryC));
 
@@ -2622,7 +2643,8 @@ TEST_P(RenderFrameHostManagerTest, RestoreNavigationToWebUI) {
   NavigationEntryImpl entry(
       nullptr /* instance */, kInitUrl, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_RELOAD,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   entry.set_restore_type(RestoreType::kRestored);
   NavigateToEntry(manager, &entry);
 
@@ -2918,7 +2940,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   NavigationEntryImpl entry(
       nullptr /* instance */, kUrl, Referrer(), absl::nullopt,
       std::u16string() /* title */, ui::PAGE_TRANSITION_TYPED,
-      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */);
+      false /* is_renderer_init */, nullptr /* blob_url_loader_factory */,
+      false /* is_initial_entry */);
   FrameNavigationEntry* frame_entry = entry.root_node()->frame_entry.get();
   FrameTreeNode* frame_tree_node =
       manager->current_frame_host()->frame_tree_node();

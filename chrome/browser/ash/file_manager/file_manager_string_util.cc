@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/file_manager/file_manager_string_util.h"
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -976,8 +976,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
                    base::FeatureList::IsEnabled(chromeos::features::kFilesSWA));
   dict->SetBoolKey("FILES_TRASH_ENABLED", base::FeatureList::IsEnabled(
                                               chromeos::features::kFilesTrash));
-  dict->SetBoolKey("ZIP_UNPACK", base::FeatureList::IsEnabled(
-                                     chromeos::features::kFilesZipUnpack));
   dict->SetBoolKey(
       "DRIVE_DSS_PIN_ENABLED",
       base::FeatureList::IsEnabled(
@@ -991,6 +989,10 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->SetBoolKey(
       "FILES_BANNER_FRAMEWORK",
       base::FeatureList::IsEnabled(chromeos::features::kFilesBannerFramework));
+
+  dict->SetBoolKey(
+      "EXTRACT_ARCHIVE",
+      base::FeatureList::IsEnabled(chromeos::features::kFilesExtractArchive));
 
   dict->SetStringKey("UI_LOCALE", locale);
 }

@@ -7,10 +7,10 @@
 #include <memory>
 #include <vector>
 
+#include "ash/components/phonehub/fake_phone_hub_manager.h"
+#include "ash/components/phonehub/phone_hub_manager.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/components/phonehub/fake_phone_hub_manager.h"
-#include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_manager.h"
@@ -199,6 +199,13 @@ TEST_F(EcheFeatureStatusProviderTest, NoEligiblePhones) {
                       /*eche_host_supported=*/true,
                       /*eche_host_enabled=*/false);
   EXPECT_EQ(FeatureStatus::kIneligible, GetStatus());
+}
+
+TEST_F(EcheFeatureStatusProviderTest, NotEnabledByPhone) {
+  SetMultiDeviceState(HostStatus::kHostVerified, FeatureState::kEnabledByUser,
+                      /*eche_host_supported=*/true,
+                      /*eche_host_enabled=*/false);
+  EXPECT_EQ(FeatureStatus::kNotEnabledByPhone, GetStatus());
 }
 
 TEST_F(EcheFeatureStatusProviderTest, Disabled) {

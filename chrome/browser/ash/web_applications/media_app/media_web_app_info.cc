@@ -182,6 +182,6 @@ bool MediaSystemAppDelegate::ShouldShowNewWindowMenuOption() const {
       chromeos::features::kMediaAppHandlesAudio);
 }
 
-bool MediaSystemAppDelegate::ShouldBeSingleWindow() const {
+bool MediaSystemAppDelegate::ShouldReuseExistingWindow() const {
   return !ShouldShowNewWindowMenuOption();
 }

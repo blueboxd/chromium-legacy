@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -22,6 +23,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -245,7 +247,7 @@ struct PendingStructureChanges {
   // when the node is new and has not been initialized with node data yet.
   // This is needed to determine what children have changed between pending
   // updates.
-  const AXNodeData* last_known_data;
+  raw_ptr<const AXNodeData> last_known_data;
 };
 
 // Represents the different states when computing PendingStructureChanges
@@ -613,7 +615,7 @@ struct AXTree::OrderedSetContent {
   std::vector<const AXNode*> set_items_;
 
   // Some ordered set items may not be associated with an ordered set.
-  const AXNode* ordered_set_;
+  raw_ptr<const AXNode> ordered_set_;
 };
 
 struct AXTree::OrderedSetItemsMap {
@@ -1017,10 +1019,13 @@ const std::set<AXTreeID> AXTree::GetAllChildTreeIds() const {
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
-  event_intents_ = update.event_intents;
-  base::ScopedClosureRunner clear_event_intents(base::BindOnce(
-      [](std::vector<AXEventIntent>* event_intents) { event_intents->clear(); },
-      &event_intents_));
+  event_data_ = std::make_unique<AXEvent>();
+  event_data_->event_from = update.event_from;
+  event_data_->event_from_action = update.event_from_action;
+  event_data_->event_intents = update.event_intents;
+  base::ScopedClosureRunner clear_event_data(base::BindOnce(
+      [](std::unique_ptr<AXEvent>* event_data) { event_data->reset(); },
+      &event_data_));
 
   AXTreeUpdateState update_state(*this, update);
   const AXNodeID old_root_id = root_ ? root_->id() : kInvalidAXNodeID;

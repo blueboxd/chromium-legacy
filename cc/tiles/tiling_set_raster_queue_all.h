@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/containers/stack_container.h"
+#include "base/memory/raw_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/prioritized_tile.h"
@@ -62,8 +63,13 @@ class CC_EXPORT TilingSetRasterQueueAll {
     IsTileValidResult IsTileValid(const Tile* tile) const;
 
     PrioritizedTile current_tile_;
+
+    // `tiling_` and `tiling_data_` are not a raw_ptr<...> for performance
+    // reasons (based on analysis of sampling profiler data and
+    // tab_search:top100:2020).
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
+
     PictureLayerTiling::PriorityRectType priority_rect_type_;
     gfx::Rect pending_visible_rect_;
   };
@@ -163,6 +169,9 @@ class CC_EXPORT TilingSetRasterQueueAll {
 
     void AdvancePhase();
 
+    // `tiling_` and `tiling_data_` are not a raw_ptr<...> for performance
+    // reasons (based on analysis of sampling profiler data and
+    // tab_search:top100:2020).
     PictureLayerTiling* tiling_;
     TilingData* tiling_data_;
 
@@ -186,7 +195,7 @@ class CC_EXPORT TilingSetRasterQueueAll {
   void MakeTilingIterator(IteratorType type, PictureLayerTiling* tiling);
   void AdvanceToNextStage();
 
-  PictureLayerTilingSet* tiling_set_;
+  raw_ptr<PictureLayerTilingSet> tiling_set_;
 
   struct IterationStage {
     IterationStage(IteratorType type, TilePriority::PriorityBin bin);

@@ -111,6 +111,10 @@ WTF::TextStream& operator<<(WTF::TextStream& ts, const Color& c) {
   return ts << c.NameForLayoutTreeAsText();
 }
 
+WTF::TextStream& operator<<(WTF::TextStream& ts, const LayoutPoint& point) {
+  return ts << gfx::PointF(point);
+}
+
 WTF::TextStream& operator<<(WTF::TextStream& ts, const gfx::Point& p) {
   return ts << "(" << p.x() << "," << p.y() << ")";
 }
@@ -413,10 +417,8 @@ static void WriteTextRun(WTF::TextStream& ts,
   int logical_width = (run.X() + run.LogicalWidth()).Ceil() - x;
 
   // FIXME: Table cell adjustment is temporary until results can be updated.
-  if (o.ContainingBlock()->IsTableCell()) {
-    y -= ToInterface<LayoutNGTableCellInterface>(o.ContainingBlock())
-             ->IntrinsicPaddingBefore();
-  }
+  if (o.ContainingBlock()->IsTableCellLegacy())
+    y -= To<LayoutTableCell>(o.ContainingBlock())->IntrinsicPaddingBefore();
 
   ts << "text run at (" << x << "," << y << ") width " << logical_width;
   if (!run.IsLeftToRightDirection() || run.DirOverride()) {
@@ -609,10 +611,10 @@ static void Write(WTF::TextStream& ts,
                   int indent = 0,
                   LayoutAsTextBehavior behavior = kLayoutAsTextBehaviorNormal,
                   const PaintLayer* marked_layer = nullptr) {
-  IntRect adjusted_layout_bounds = PixelSnappedIntRect(layer_bounds);
-  IntRect adjusted_background_clip_rect =
-      PixelSnappedIntRect(background_clip_rect);
-  IntRect adjusted_clip_rect = PixelSnappedIntRect(clip_rect);
+  gfx::Rect adjusted_layout_bounds = ToPixelSnappedRect(layer_bounds);
+  gfx::Rect adjusted_background_clip_rect =
+      ToPixelSnappedRect(background_clip_rect);
+  gfx::Rect adjusted_clip_rect = ToPixelSnappedRect(clip_rect);
 
   if (marked_layer)
     ts << (marked_layer == &layer ? "*" : " ");
@@ -639,14 +641,11 @@ static void Write(WTF::TextStream& ts,
     ts << " transparent";
 
   if (layer.GetLayoutObject().IsScrollContainer()) {
-    PaintLayerScrollableArea* scrollable_area = layer.GetScrollableArea();
-    ScrollOffset adjusted_scroll_offset =
-        scrollable_area->GetScrollOffset() +
-        ToFloatSize(FloatPoint(scrollable_area->ScrollOrigin()));
-    if (adjusted_scroll_offset.width())
-      ts << " scrollX " << adjusted_scroll_offset.width();
-    if (adjusted_scroll_offset.height())
-      ts << " scrollY " << adjusted_scroll_offset.height();
+    gfx::PointF scroll_position = layer.GetScrollableArea()->ScrollPosition();
+    if (scroll_position.x())
+      ts << " scrollX " << scroll_position.x();
+    if (scroll_position.y())
+      ts << " scrollY " << scroll_position.y();
     if (layer.GetLayoutBox() &&
         layer.GetLayoutBox()->PixelSnappedClientWidth() !=
             layer.GetLayoutBox()->PixelSnappedScrollWidth())

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_share_group.h"
@@ -119,9 +119,7 @@ GLImplementationParts GetRequestedGLImplementation(
   GLImplementationParts impl = allowed_impls[0];
 
   *fallback_to_software_gl = false;
-  if (cmd->HasSwitch(switches::kOverrideUseSoftwareGLForHeadless)) {
-    impl = GetSoftwareGLImplementationForPlatform();
-  } else if (cmd->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
+  if (cmd->HasSwitch(switches::kOverrideUseSoftwareGLForTests)) {
     impl = GetSoftwareGLImplementationForPlatform();
   } else if (cmd->HasSwitch(switches::kUseGL) ||
              cmd->HasSwitch(switches::kUseANGLE)) {
@@ -143,7 +141,13 @@ GLImplementationParts GetRequestedGLImplementation(
       impl = GetNamedGLImplementation(requested_implementation_gl_name,
                                       requested_implementation_angle_name);
       if (!impl.IsAllowed(allowed_impls)) {
-        LOG(ERROR) << "Requested GL implementation is not available.";
+        std::vector<std::string> allowed_impl_strs;
+        for (const auto& allowed_impl : allowed_impls) {
+          allowed_impl_strs.push_back(allowed_impl.ToString());
+        }
+        LOG(ERROR) << "Requested GL implementation " << impl.ToString()
+                   << " not found in allowed implementations: ["
+                   << base::JoinString(allowed_impl_strs, ",") << "].";
         return GLImplementationParts(kGLImplementationNone);
       }
     }

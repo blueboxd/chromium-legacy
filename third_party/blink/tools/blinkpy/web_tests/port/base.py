@@ -135,6 +135,9 @@ class Port(object):
 
     CONTENT_SHELL_NAME = 'content_shell'
 
+    # Update the first line in third_party/blink/web_tests/TestExpectations and
+    # the documentation in docs/testing/web_test_expectations.md when this list
+    # changes.
     ALL_SYSTEMS = (
         ('mac10.12', 'x86'),
         ('mac10.13', 'x86'),
@@ -1782,7 +1785,8 @@ class Port(object):
                 self._used_expectation_files.append(flag_specific)
             for path in self.get_option('additional_expectations', []):
                 expanded_path = self._filesystem.expanduser(path)
-                self._used_expectation_files.append(expanded_path)
+                abs_path = self._filesystem.abspath(expanded_path)
+                self._used_expectation_files.append(abs_path)
         return self._used_expectation_files
 
     def extra_expectations_files(self):

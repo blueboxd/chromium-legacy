@@ -64,7 +64,7 @@ enum {
   kMaxSkiaDim = 65535  // Maximum width/height in CSS pixels.
 };
 
-bool PLATFORM_EXPORT IsValidImageSize(const IntSize&);
+bool PLATFORM_EXPORT IsValidImageSize(const gfx::Size&);
 
 SkBlendMode PLATFORM_EXPORT
     WebCoreCompositeToSkiaComposite(CompositeOperator,
@@ -113,7 +113,7 @@ inline WindRule SkFillTypeToWindRule(SkPathFillType fill_type) {
   return RULE_NONZERO;
 }
 
-inline SkPoint FloatPointToSkPoint(const FloatPoint& point) {
+inline SkPoint FloatPointToSkPoint(const gfx::PointF& point) {
   return SkPoint::Make(WebCoreFloatToSkScalar(point.x()),
                        WebCoreFloatToSkScalar(point.y()));
 }

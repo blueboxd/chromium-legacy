@@ -33,7 +33,6 @@
 
 #include <type_traits>
 
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -53,8 +52,9 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -421,7 +421,9 @@ UserMediaRequest* UserMediaRequest::Create(
 
   return MakeGarbageCollected<UserMediaRequest>(
       context, controller, media_type, audio, video,
-      options->preferCurrentTab(), callbacks, surface);
+      options->preferCurrentTab(),
+      RuntimeEnabledFeatures::RegionCaptureEnabled(context), callbacks,
+      surface);
 }
 
 UserMediaRequest* UserMediaRequest::Create(
@@ -443,7 +445,8 @@ UserMediaRequest* UserMediaRequest::CreateForTesting(
     const MediaConstraints& video) {
   return MakeGarbageCollected<UserMediaRequest>(
       nullptr, nullptr, UserMediaRequest::MediaType::kUserMedia, audio, video,
-      /*should_prefer_current_tab=*/false, nullptr, IdentifiableSurface());
+      /*should_prefer_current_tab=*/false, /*region_capture_capable=*/false,
+      nullptr, IdentifiableSurface());
 }
 
 UserMediaRequest::UserMediaRequest(ExecutionContext* context,
@@ -452,6 +455,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    MediaConstraints audio,
                                    MediaConstraints video,
                                    bool should_prefer_current_tab,
+                                   bool region_capture_capable,
                                    Callbacks* callbacks,
                                    IdentifiableSurface surface)
     : ExecutionContextLifecycleObserver(context),
@@ -459,6 +463,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
       audio_(audio),
       video_(video),
       should_prefer_current_tab_(should_prefer_current_tab),
+      region_capture_capable_(region_capture_capable),
       should_disable_hardware_noise_suppression_(
           RuntimeEnabledFeatures::DisableHardwareNoiseSuppressionEnabled(
               context)),
@@ -567,6 +572,9 @@ void UserMediaRequest::OnMediaStreamInitialized(MediaStream* stream) {
 
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(g_empty_string));
+  if (auto* window = GetWindow()) {
+    PeerConnectionTracker::From(*window).TrackGetUserMediaSuccess(this, stream);
+  }
   // After this call, the execution context may be invalid.
   callbacks_->OnSuccess(stream);
   is_resolved_ = true;
@@ -580,6 +588,10 @@ void UserMediaRequest::FailConstraint(const String& constraint_name,
     return;
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
+  if (auto* window = GetWindow()) {
+    PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
+        this, "OverConstrainedError", message);
+  }
   // After this call, the execution context may be invalid.
   callbacks_->OnError(
       nullptr, MakeGarbageCollected<V8MediaStreamError>(
@@ -625,6 +637,12 @@ void UserMediaRequest::Fail(Error name, const String& message) {
   }
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(message));
+
+  if (auto* window = GetWindow()) {
+    PeerConnectionTracker::From(*window).TrackGetUserMediaFailure(
+        this, DOMException::GetErrorName(exception_code), message);
+  }
+
   // After this call, the execution context may be invalid.
   callbacks_->OnError(nullptr, MakeGarbageCollected<V8MediaStreamError>(
                                    MakeGarbageCollected<DOMException>(

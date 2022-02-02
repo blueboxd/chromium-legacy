@@ -13,9 +13,8 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<ash::shimless_rma::mojom::RmaState,
-                  rmad::RmadState::StateCase> {
-  static ash::shimless_rma::mojom::RmaState ToMojom(
+struct EnumTraits<ash::shimless_rma::mojom::State, rmad::RmadState::StateCase> {
+  static ash::shimless_rma::mojom::State ToMojom(
       rmad::RmadState::StateCase key_status);
 };
 
@@ -60,6 +59,17 @@ struct EnumTraits<ash::shimless_rma::mojom::OsUpdateOperation,
 
   static bool FromMojom(ash::shimless_rma::mojom::OsUpdateOperation input,
                         update_engine::Operation* out);
+};
+
+template <>
+struct EnumTraits<ash::shimless_rma::mojom::WriteProtectDisableCompleteAction,
+                  rmad::WriteProtectDisableCompleteState::Action> {
+  static ash::shimless_rma::mojom::WriteProtectDisableCompleteAction ToMojom(
+      rmad::WriteProtectDisableCompleteState::Action action);
+
+  static bool FromMojom(
+      ash::shimless_rma::mojom::WriteProtectDisableCompleteAction input,
+      rmad::WriteProtectDisableCompleteState::Action* out);
 };
 
 template <>
@@ -154,6 +164,16 @@ class StructTraits<ash::shimless_rma::mojom::CalibrationComponentStatusDataView,
   static bool Read(
       ash::shimless_rma::mojom::CalibrationComponentStatusDataView data,
       rmad::CalibrationComponentStatus* out);
+};
+
+template <>
+struct EnumTraits<ash::shimless_rma::mojom::UpdateRoFirmwareStatus,
+                  rmad::UpdateRoFirmwareStatus> {
+  static ash::shimless_rma::mojom::UpdateRoFirmwareStatus ToMojom(
+      rmad::UpdateRoFirmwareStatus status);
+
+  static bool FromMojom(ash::shimless_rma::mojom::UpdateRoFirmwareStatus input,
+                        rmad::UpdateRoFirmwareStatus* out);
 };
 
 }  // namespace mojo

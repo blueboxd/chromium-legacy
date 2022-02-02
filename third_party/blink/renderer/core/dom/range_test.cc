@@ -27,8 +27,8 @@
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -342,8 +342,8 @@ static Vector<FloatQuad> GetBorderAndTextQuads(const Position& start,
   return quads;
 }
 
-static Vector<IntSize> ComputeSizesOfQuads(const Vector<FloatQuad>& quads) {
-  Vector<IntSize> sizes;
+static Vector<gfx::Size> ComputeSizesOfQuads(const Vector<FloatQuad>& quads) {
+  Vector<gfx::Size> sizes;
   for (const auto& quad : quads)
     sizes.push_back(quad.EnclosingBoundingBox().size());
   return sizes;

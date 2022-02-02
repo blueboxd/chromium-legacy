@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -111,8 +110,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) AutoConnectHandler
       bool only_managed_autoconnect,
       bool available_only);
 
-  // Disconnects the connection to the network represented by |service_path|.
-  void DisconnectNetwork(const std::string& service_path);
+  // Disconnects the connection to the |network|.
+  void DisconnectNetwork(const NetworkState* network);
 
   // Removes the network configuration for the network represented by
   // |service_path|.

@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
@@ -23,21 +22,8 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "ui/gfx/switches.h"
-
-#if defined(USE_X11) || defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"  // nogncheck
-#endif
-
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"        // nogncheck
-#include "ui/gfx/x/connection.h"       // nogncheck
-#include "ui/gfx/x/screensaver.h"      // nogncheck
-#endif
-
-#if defined(USE_OZONE)
 #include "ui/display/screen.h"
-#endif
+#include "ui/gfx/switches.h"
 
 namespace device {
 
@@ -140,19 +126,9 @@ void GetDbusStringsForApi(DBusAPI api,
 }
 
 void SetScreenSaverSuspended(bool suspend) {
-#if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    auto* const screen = display::Screen::GetScreen();
-    // The screen can be nullptr in tests.
-    if (!screen)
-      return;
+  // The screen can be nullptr in tests.
+  if (auto* const screen = display::Screen::GetScreen())
     screen->SetScreenSaverSuspended(suspend);
-    return;
-  }
-#endif
-#if defined(USE_X11)
-  ui::SuspendX11ScreenSaver(suspend);
-#endif
 }
 
 }  // namespace

@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +26,11 @@ using CopyOrMoveOptionSet = FileSystemOperation::CopyOrMoveOptionSet;
 class ObfuscatedFileUtilMemoryDelegateTest : public testing::Test {
  public:
   ObfuscatedFileUtilMemoryDelegateTest() = default;
+
+  ObfuscatedFileUtilMemoryDelegateTest(
+      const ObfuscatedFileUtilMemoryDelegateTest&) = delete;
+  ObfuscatedFileUtilMemoryDelegateTest& operator=(
+      const ObfuscatedFileUtilMemoryDelegateTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(file_system_directory_.CreateUniqueTempDir());
@@ -62,8 +66,6 @@ class ObfuscatedFileUtilMemoryDelegateTest : public testing::Test {
  private:
   base::ScopedTempDir file_system_directory_;
   std::unique_ptr<ObfuscatedFileUtilMemoryDelegate> file_util_;
-
-  DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilMemoryDelegateTest);
 };
 
 TEST_F(ObfuscatedFileUtilMemoryDelegateTest, CreateOrOpenFile) {

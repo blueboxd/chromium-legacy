@@ -6,6 +6,7 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "components/media_message_center/media_artwork_view.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_background_impl.h"
@@ -447,6 +448,10 @@ MediaNotificationViewModernImpl::MediaNotificationViewModernImpl(
         views::ImageButton::HorizontalAlignment::ALIGN_CENTER);
     mute_button->SetImageVerticalAlignment(
         views::ImageButton::VerticalAlignment::ALIGN_MIDDLE);
+    mute_button->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_MUTE));
+    mute_button->SetAccessibleName(l10n_util::GetStringUTF16(
+        IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_MUTE));
     mute_button_ = util_buttons_container->AddChildView(std::move(mute_button));
 
     AddChildView(std::move(util_buttons_container));
@@ -601,8 +606,16 @@ void MediaNotificationViewModernImpl::UpdateDeviceSelectorAvailability(
 }
 
 void MediaNotificationViewModernImpl::UpdateWithMuteStatus(bool mute) {
-  if (mute_button_)
+  if (mute_button_) {
     mute_button_->SetToggled(mute);
+    const auto mute_button_description_id =
+        mute ? IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_UNMUTE
+             : IDS_MEDIA_MESSAGE_CENTER_MEDIA_NOTIFICATION_ACTION_MUTE;
+    mute_button_->SetTooltipText(
+        l10n_util::GetStringUTF16(mute_button_description_id));
+    mute_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(mute_button_description_id));
+  }
 
   if (volume_slider_)
     volume_slider_->SetMute(mute);
@@ -624,6 +637,19 @@ void MediaNotificationViewModernImpl::UpdateActionButtonsVisibility() {
 
     if (should_invalidate)
       action_button->InvalidateLayout();
+  }
+
+  if (picture_in_picture_button_) {
+    const bool should_show_pip =
+        base::ranges::any_of(enabled_actions_, [](MediaSessionAction action) {
+          return action == MediaSessionAction::kEnterPictureInPicture ||
+                 action == MediaSessionAction::kExitPictureInPicture;
+        });
+
+    if (picture_in_picture_button_->GetVisible() != should_show_pip) {
+      picture_in_picture_button_->SetVisible(should_show_pip);
+      picture_in_picture_button_->InvalidateLayout();
+    }
   }
 
   container_->OnVisibleActionsChanged(enabled_actions_);

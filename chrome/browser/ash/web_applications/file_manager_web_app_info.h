@@ -21,7 +21,7 @@ class FileManagerSystemAppDelegate : public web_app::SystemWebAppDelegate {
   // web_app::SystemWebAppDelegate overrides:
   std::unique_ptr<WebApplicationInfo> GetWebAppInfo() const override;
   bool ShouldCaptureNavigations() const override;
-  bool ShouldBeSingleWindow() const override;
+  bool ShouldReuseExistingWindow() const override;
   bool ShouldShowNewWindowMenuOption() const override;
   bool IsAppEnabled() const override;
   std::vector<web_app::AppId> GetAppIdsToUninstallAndReplace() const override;

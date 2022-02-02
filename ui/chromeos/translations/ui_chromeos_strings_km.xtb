@@ -267,7 +267,7 @@
 <translation id="3295357220137379386">ឧបករណ៍​កំពុង​ជាប់រវល់</translation>
 <translation id="3296763833017966289">ភាសាចរជៀ</translation>
 <translation id="3307875152560779385">ភាសា​អ៊ុយក្រែន</translation>
-<translation id="3326821416087822643">កំពុងបង្ហាប់ <ph name="FILE_NAME" />...</translation>
+<translation id="3326821416087822643">កំពុងបង្រួម <ph name="FILE_NAME" />...</translation>
 <translation id="3335337277364016868">ឆ្នាំដែល​បានថត</translation>
 <translation id="3353984535370177728">ជ្រើសរើសថតឯកសារដើម្បីទាញឡើង</translation>
 <translation id="3356580349448036450">រួចរាល់</translation>
@@ -305,7 +305,6 @@
 <translation id="3620292326130836921">បានបម្រុងទុកអស់ហើយ!</translation>
 <translation id="3634507049637220048">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ព័ត៌មាន​លម្អិត</translation>
 <translation id="3645233063072417428">បានផ្លាស់ទី​ធាតុ <ph name="NUMBER_OF_ITEMS" />។</translation>
-<translation id="3645531960514756307">ដក​ខ្ទាស់ថត</translation>
 <translation id="3685122418104378273">សមកម្ម Google Drive ត្រូវបានបិទដំណើរការតាមលំនាំដើម នៅពេលប្រើទិន្នន័យចល័ត។</translation>
 <translation id="3689865792480713551">បោះបង់ <ph name="ACTIVITY_DESCRIPTION" /> ។</translation>
 <translation id="3690128548376345212">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, បានបិទដំណើរការ, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ព័ត៌មានលម្អិត</translation>
@@ -926,7 +925,6 @@
 <translation id="9110990317705400362">យើងតែងតែស្វែងរកមធ្យោបាយដើម្បីធ្វើឲ្យការរុករករបស់អ្នកមានសុវត្ថិភាពជាងមុនជានិច្ច។ កាលពីមុន គេហទំព័រទាំងឡាយអាចជម្រុញអ្នកឲ្យបន្ថែមកម្មវិធីបន្ថែមទៅក្នុងកម្មវិធីរុករករបស់អ្នក។ នៅក្នុងកំណែចុងក្រោយនៃ Google Chrome អ្នកត្រូវប្រាប់ Chrome ឲ្យច្បាស់ថាអ្នកចង់តំឡើងកម្មវិធីទាំងនេះ ដោយការបន្ថែមពួកវាតាមរយៈទំព័រកម្មវិធីបន្ថែម។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="9111102763498581341">ដោះសោរ</translation>
 <translation id="912419004897138677">កូឌិក</translation>
-<translation id="9129931661813833980">ខ្ទាស់ថត</translation>
 <translation id="9130775360844693113">សមាជិក​របស់ '<ph name="DESTINATION_NAME" />' នឹងទទួល​បានសិទិ្ធ​ចូលប្រើ​ធាតុទាំង​នេះ។</translation>
 <translation id="9131598836763251128">ជ្រើសរើសឯកសារមួយ ឬច្រើន</translation>
 <translation id="9133055936679483811">ការបង្រួមបានបរាជ័យ។ <ph name="ERROR_MESSAGE" /></translation>

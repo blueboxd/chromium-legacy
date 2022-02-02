@@ -171,6 +171,16 @@ void WebAppInstallFinalizer::FinalizeInstall(
     // promoted to |true|, but not vice versa.
     if (!web_app->is_locally_installed())
       web_app->SetIsLocallyInstalled(options.locally_installed);
+
+    // There is a chance that existing sources type(s) are user uninstallable
+    // but the newly added source type is NOT user uninstallable. In this
+    // case, the following call will unregister os uninstallation.
+    // TODO(https://crbug.com/1273270): This does NOT block installation, and
+    // there is a possible edge case here where installation completes before
+    // this os hook is written. The best place to fix this is to put this code
+    // is where OS Hooks are called - however that is currently separate from
+    // this class. See https://crbug.com/1273269.
+    MaybeUnregisterOsUninstall(web_app.get(), source, *os_integration_manager_);
   } else {
     // New app.
     web_app = std::make_unique<WebApp>(app_id);
@@ -212,11 +222,10 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetAdditionalSearchTerms(web_app_info.additional_search_terms);
   web_app->AddSource(source);
   web_app->SetIsFromSyncAndPendingInstallation(false);
+  web_app->SetParentAppId(options.parent_app_id);
 
   UpdateWebAppInstallSource(profile_->GetPrefs(), app_id,
                             static_cast<int>(options.install_source));
-
-  file_handlers_helper_->WillInstallApp(web_app_info);
 
   CommitCallback commit_callback = base::BindOnce(
       &WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall,
@@ -510,16 +519,31 @@ void WebAppInstallFinalizer::UninstallExternalWebAppOrRemoveSource(
         ConvertSourceTypeToWebAppUninstallSource(source);
     UninstallWebAppInternal(app_id, uninstall_source, std::move(callback));
   } else {
-    ScopedRegistryUpdate update(sync_bridge_);
-    WebApp* app_to_update = update->UpdateApp(app_id);
-    app_to_update->RemoveSource(source);
-    if (install_source_removed_callback_for_testing_)
-      install_source_removed_callback_for_testing_.Run(app_id);
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  /*uninstalled=*/true));
+    // There is a chance that removed source type is NOT user uninstallable
+    // but the remaining source (after removal) types are user uninstallable.
+    // In this case, the following call will register os uninstallation.
+    MaybeRegisterOsUninstall(
+        app, source, *os_integration_manager_,
+        base::BindOnce(&WebAppInstallFinalizer::OnMaybeRegisterOsUninstall,
+                       weak_ptr_factory_.GetWeakPtr(), app_id, source,
+                       std::move(callback)));
   }
+}
+
+void WebAppInstallFinalizer::OnMaybeRegisterOsUninstall(
+    const AppId& app_id,
+    Source::Type source,
+    UninstallWebAppCallback callback,
+    OsHooksErrors os_hooks_errors) {
+  ScopedRegistryUpdate update(sync_bridge_);
+  WebApp* app_to_update = update->UpdateApp(app_id);
+  app_to_update->RemoveSource(source);
+  if (install_source_removed_callback_for_testing_)
+    install_source_removed_callback_for_testing_.Run(app_id);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                /*uninstalled=*/true));
 }
 
 void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
@@ -527,8 +551,6 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
     std::unique_ptr<WebApp> web_app,
     CommitCallback commit_callback) {
   SetWebAppManifestFields(web_app_info, *web_app);
-  web_app->SetFileHandlerPermissionBlocked(
-      file_handlers_helper_->IsPermissionBlocked(web_app->scope()));
 
   AppId app_id = web_app->app_id();
 
@@ -540,10 +562,9 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
                      std::move(web_app)));
 }
 
-void WebAppInstallFinalizer::OnIconsDataWritten(
-    CommitCallback commit_callback,
-    std::unique_ptr<WebApp> web_app,
-    bool success) {
+void WebAppInstallFinalizer::OnIconsDataWritten(CommitCallback commit_callback,
+                                                std::unique_ptr<WebApp> web_app,
+                                                bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
     std::move(commit_callback).Run(success);
@@ -609,10 +630,27 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForUpdate(
 
   if (should_update_os_hooks) {
     os_integration_manager().UpdateOsHooks(
-        app_id, old_name, file_handlers_need_os_update, web_app_info);
+        app_id, old_name, file_handlers_need_os_update, web_app_info,
+        base::BindOnce(&WebAppInstallFinalizer::OnUpdateHooksFinished,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       app_id, old_name));
+  } else {
+    std::move(callback).Run(app_id,
+                            InstallResultCode::kSuccessAlreadyInstalled);
   }
+}
+
+void WebAppInstallFinalizer::OnUpdateHooksFinished(
+    InstallFinalizedCallback callback,
+    AppId app_id,
+    std::string old_name,
+    web_app::OsHooksErrors os_hooks_errors) {
   registrar().NotifyWebAppManifestUpdated(app_id, old_name);
-  std::move(callback).Run(app_id, InstallResultCode::kSuccessAlreadyInstalled);
+
+  std::move(callback).Run(app_id,
+                          os_hooks_errors.any()
+                              ? InstallResultCode::kUpdateTaskFailed
+                              : InstallResultCode::kSuccessAlreadyInstalled);
 }
 
 WebAppRegistrar& WebAppInstallFinalizer::GetWebAppRegistrar() const {

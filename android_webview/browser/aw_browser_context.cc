@@ -132,7 +132,6 @@ void MigrateProfileData(base::FilePath cache_path,
   migrate_context_storage_data("Session Storage");
 
   // These were missed in the initial migration
-  migrate_context_storage_data("Application Cache");
   migrate_context_storage_data("File System");
   migrate_context_storage_data("IndexedDB");
   migrate_context_storage_data("Local Storage");
@@ -522,6 +521,12 @@ void AwBrowserContext::ConfigureNetworkContextParams(
   // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html,
   // defer to the Android system.
   context_params->initial_ssl_config->symantec_enforcement_disabled = true;
+  // Do not enforce Legacy TLS removal if support is still enabled.
+  if (base::FeatureList::IsEnabled(
+          android_webview::features::kWebViewLegacyTlsSupport)) {
+    context_params->initial_ssl_config->version_min =
+        network::mojom::SSLVersion::kTLS1;
+  }
 
   // WebView does not currently support Certificate Transparency
   // (http://crbug.com/921750).

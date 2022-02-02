@@ -12,7 +12,6 @@
 #include "ash/ash_export.h"
 #include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -90,6 +89,8 @@ class ASH_EXPORT Desk {
   void set_last_day_visited(int last_day_visited) {
     last_day_visited_ = last_day_visited;
   }
+
+  int num_supported_windows() const { return num_supported_windows_; }
 
   bool interacted_with_this_week() const { return interacted_with_this_week_; }
   void set_interacted_with_this_week(bool interacted_with_this_week) {
@@ -244,6 +245,12 @@ class ASH_EXPORT Desk {
   // creation.
   int first_day_visited_ = -1;
   int last_day_visited_ = -1;
+
+  // The number of supported windows open on this desk. A window is supported
+  // for the Desks Templates feature if its app type is supported. Used to
+  // disable the save desk as templates button if there are no supported windows
+  // open.
+  int num_supported_windows_ = 0;
 
   // Tracks whether |this| has been interacted with this week. This value is
   // reset by the DesksController.

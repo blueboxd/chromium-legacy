@@ -77,16 +77,17 @@ bool ParseDefaultApplications(const GURL& manifest_url,
   DCHECK(dict);
   DCHECK(web_app_manifest_urls);
 
-  base::ListValue* list = nullptr;
-  if (!dict->GetList(kDefaultApplications, &list)) {
+  const base::Value* list = dict->FindListKey(kDefaultApplications);
+  if (!list) {
     // TODO(crbug.com/1065337): Move the error message strings to
     // components/payments/core/native_error_strings.cc.
     log.Error(
         base::StringPrintf("\"%s\" must be a list.", kDefaultApplications));
     return false;
   }
+  base::Value::ConstListView list_view = list->GetList();
 
-  size_t apps_number = list->GetList().size();
+  size_t apps_number = list_view.size();
   if (apps_number > kMaximumNumberOfItems) {
     log.Error(base::StringPrintf("\"%s\" must contain at most %zu entries.",
                                  kDefaultApplications, kMaximumNumberOfItems));
@@ -94,22 +95,21 @@ bool ParseDefaultApplications(const GURL& manifest_url,
   }
 
   for (size_t i = 0; i < apps_number; ++i) {
-    std::string item;
-    if (!list->GetString(i, &item) || item.empty() ||
-        !base::IsStringUTF8(item)) {
+    const std::string* item = list_view[i].GetIfString();
+    if (!item || item->empty() || !base::IsStringUTF8(*item)) {
       log.Error(base::StringPrintf("Each entry in \"%s\" must be UTF8 string.",
                                    kDefaultApplications));
       web_app_manifest_urls->clear();
       return false;
     }
 
-    GURL url = manifest_url.Resolve(item);
+    GURL url = manifest_url.Resolve(*item);
     // TODO(crbug.com/1065337): Check that |url| is the same origin with
     // |manifest_url|. Currently that's checked by callers, but the earlier this
     // is caught, the fewer resources Chrome consumes.
     if (!UrlUtil::IsValidManifestUrl(url)) {
       const std::string item_to_print =
-          ValidateAndTruncateIfNeeded(item, nullptr);
+          ValidateAndTruncateIfNeeded(*item, nullptr);
       log.Error(
           base::StringPrintf("\"%s\" entry in \"%s\" is not a valid URL with "
                              "HTTPS scheme and is "
@@ -133,14 +133,15 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
   DCHECK(dict);
   DCHECK(supported_origins);
 
-  base::ListValue* list = nullptr;
-  if (!dict->GetList(kSupportedOrigins, &list)) {
+  const base::Value* list = dict->FindListKey(kSupportedOrigins);
+  if (!list) {
     log.Error(base::StringPrintf("\"%s\" must be a list of origins.",
                                  kSupportedOrigins));
     return false;
   }
+  base::Value::ConstListView list_view = list->GetList();
 
-  size_t supported_origins_number = list->GetList().size();
+  size_t supported_origins_number = list_view.size();
   if (supported_origins_number > kMaximumNumberOfSupportedOrigins) {
     log.Error(base::StringPrintf("\"%s\" must contain at most %zu entires.",
                                  kSupportedOrigins,
@@ -149,11 +150,10 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
   }
 
   for (size_t i = 0; i < supported_origins_number; ++i) {
-    std::string item;
-    if (!list->GetString(i, &item) || item.empty() ||
-        !base::IsStringUTF8(item) ||
-        !(base::StartsWith(item, kHttpsPrefix, base::CompareCase::SENSITIVE) ||
-          base::StartsWith(item, kHttpPrefix, base::CompareCase::SENSITIVE))) {
+    const std::string* item = list_view[i].GetIfString();
+    if (!item || item->empty() || !base::IsStringUTF8(*item) ||
+        !(base::StartsWith(*item, kHttpsPrefix, base::CompareCase::SENSITIVE) ||
+          base::StartsWith(*item, kHttpPrefix, base::CompareCase::SENSITIVE))) {
       supported_origins->clear();
       log.Error(base::StringPrintf(
           "Each entry in \"%s\" must be UTF8 string that starts with \"%s\" or "
@@ -162,11 +162,11 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
       return false;
     }
 
-    GURL url(item);
+    GURL url(*item);
     if (!UrlUtil::IsValidSupportedOrigin(url)) {
       supported_origins->clear();
       const std::string item_to_print =
-          ValidateAndTruncateIfNeeded(item, nullptr);
+          ValidateAndTruncateIfNeeded(*item, nullptr);
       log.Error(base::StringPrintf(
           "\"%s\" entry in \"%s\" is not a valid origin with HTTPS scheme "
           "and "
@@ -251,15 +251,15 @@ void ParsePreferredRelatedApplicationIdentifiers(
   if (!dict.HasKey(kPreferRelatedApplications))
     return;
 
-  bool prefer_related_applications = false;
-  if (!dict.GetBoolean(kPreferRelatedApplications,
-                       &prefer_related_applications)) {
+  absl::optional<bool> prefer_related_applications =
+      dict.FindBoolKey(kPreferRelatedApplications);
+  if (!prefer_related_applications.has_value()) {
     log.Warn(base::StringPrintf("The \"%s\" field should be a boolean.",
                                 kPreferRelatedApplications));
     return;
   }
 
-  if (!prefer_related_applications)
+  if (!prefer_related_applications.value())
     return;
 
   const base::ListValue* related_applications = nullptr;
@@ -279,16 +279,19 @@ void ParsePreferredRelatedApplicationIdentifiers(
   }
 
   for (size_t i = 0; i < size; ++i) {
-    const base::DictionaryValue* related_application = nullptr;
-    if (!related_applications->GetDictionary(i, &related_application)) {
+    const base::Value& related_application_value =
+        related_applications->GetList()[i];
+    if (!related_application_value.is_dict()) {
       log.Warn(
           base::StringPrintf("Element #%zu in \"%s\" should be a dictionary.",
                              i, kRelatedApplications));
       continue;
     }
 
+    const base::DictionaryValue& related_application =
+        base::Value::AsDictionaryValue(related_application_value);
     std::string platform;
-    if (!related_application->GetString(kPlatform, &platform) ||
+    if (!related_application.GetString(kPlatform, &platform) ||
         platform != kPlay) {
       continue;
     }
@@ -302,7 +305,7 @@ void ParsePreferredRelatedApplicationIdentifiers(
     }
 
     std::string id;
-    if (!related_application->GetString(kId, &id)) {
+    if (!related_application.GetString(kId, &id)) {
       log.Warn(base::StringPrintf(
           "Elements in \"%s\" with \"%s\":\"%s\" should have \"%s\" field.",
           kRelatedApplications, kPlatform, kPlay, kId));
@@ -413,18 +416,19 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
     return false;
   }
 
-  size_t related_applications_size = list->GetList().size();
-  for (size_t i = 0; i < related_applications_size; ++i) {
-    base::DictionaryValue* related_application = nullptr;
-    if (!list->GetDictionary(i, &related_application) || !related_application) {
+  for (const base::Value& related_application_value : list->GetList()) {
+    if (!related_application_value.is_dict()) {
       log.Error(base::StringPrintf("\"%s\" must be a list of dictionaries.",
                                    kRelatedApplications));
       output->clear();
       return false;
     }
 
+    const base::DictionaryValue& related_application =
+        base::Value::AsDictionaryValue(related_application_value);
+
     std::string platform;
-    if (!related_application->GetString(kPlatform, &platform) ||
+    if (!related_application.GetString(kPlatform, &platform) ||
         platform != kPlay) {
       continue;
     }
@@ -437,9 +441,9 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
       return false;
     }
 
-    if (!related_application->HasKey(kId) ||
-        !related_application->HasKey(kMinVersion) ||
-        !related_application->HasKey(kFingerprints)) {
+    if (!related_application.HasKey(kId) ||
+        !related_application.HasKey(kMinVersion) ||
+        !related_application.HasKey(kFingerprints)) {
       log.Error(
           base::StringPrintf("Each \"%s\": \"%s\" entry in \"%s\" must contain "
                              "\"%s\", \"%s\", and \"%s\".",
@@ -451,7 +455,7 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
     WebAppManifestSection section;
     section.min_version = 0;
 
-    if (!related_application->GetString(kId, &section.id) ||
+    if (!related_application.GetString(kId, &section.id) ||
         section.id.empty() || !base::IsStringASCII(section.id)) {
       log.Error(
           base::StringPrintf("\"%s\" must be a non-empty ASCII string.", kId));
@@ -460,7 +464,7 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
     }
 
     std::string min_version;
-    if (!related_application->GetString(kMinVersion, &min_version) ||
+    if (!related_application.GetString(kMinVersion, &min_version) ||
         min_version.empty() || !base::IsStringASCII(min_version) ||
         !base::StringToInt64(min_version, &section.min_version)) {
       log.Error(base::StringPrintf(
@@ -469,8 +473,8 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
       return false;
     }
 
-    base::ListValue* fingerprints_list = nullptr;
-    if (!related_application->GetList(kFingerprints, &fingerprints_list) ||
+    const base::ListValue* fingerprints_list = nullptr;
+    if (!related_application.GetList(kFingerprints, &fingerprints_list) ||
         fingerprints_list->GetList().empty() ||
         fingerprints_list->GetList().size() > kMaximumNumberOfItems) {
       log.Error(base::StringPrintf(
@@ -480,13 +484,16 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
       return false;
     }
 
-    size_t fingerprints_size = fingerprints_list->GetList().size();
-    for (size_t j = 0; j < fingerprints_size; ++j) {
-      base::DictionaryValue* fingerprint_dict = nullptr;
+    for (const base::Value& fingerprint_dict_value :
+         fingerprints_list->GetList()) {
+      const base::DictionaryValue* fingerprint_dict = nullptr;
+      if (fingerprint_dict_value.is_dict()) {
+        fingerprint_dict =
+            &base::Value::AsDictionaryValue(fingerprint_dict_value);
+      }
       std::string fingerprint_type;
       std::string fingerprint_value;
-      if (!fingerprints_list->GetDictionary(j, &fingerprint_dict) ||
-          !fingerprint_dict ||
+      if (!fingerprint_dict ||
           !fingerprint_dict->GetString("type", &fingerprint_type) ||
           fingerprint_type != "sha256_cert" ||
           !fingerprint_dict->GetString("value", &fingerprint_value) ||
@@ -554,9 +561,10 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
     service_worker_dict->GetString(kServiceWorkerScope,
                                    &installation_info->sw_scope);
 
-    bool use_cache = false;
-    if (service_worker_dict->GetBoolean(kServiceWorkerUseCache, &use_cache)) {
-      installation_info->sw_use_cache = use_cache;
+    absl::optional<bool> use_cache =
+        service_worker_dict->FindBoolKey(kServiceWorkerUseCache);
+    if (use_cache.has_value()) {
+      installation_info->sw_use_cache = use_cache.value();
     }
   }
 

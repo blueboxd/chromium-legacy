@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "base/containers/contains.h"
-#include "base/debug/dump_without_crashing.h"
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_map.h"
@@ -113,7 +111,7 @@ class BrowserAppInstanceTracker::WebContentsObserver
   }
 
  private:
-  BrowserAppInstanceTracker* owner_;
+  BrowserAppInstanceTracker* const owner_;
 };
 
 BrowserAppInstanceTracker::BrowserAppInstanceTracker(
@@ -128,14 +126,9 @@ BrowserAppInstanceTracker::BrowserAppInstanceTracker(
 
 BrowserAppInstanceTracker::~BrowserAppInstanceTracker() {
   BrowserList::GetInstance()->RemoveObserver(this);
-  if (activation_client_observations_.GetSourcesCount() > 0) {
-    // TODO(crbug.com/1236273): Remove when confident it does not happen.
-    base::debug::DumpWithoutCrashing();
-  }
-  if (!tracked_browsers_.empty()) {
-    // TODO(crbug.com/1236273): Remove when confident it does not happen.
-    base::debug::DumpWithoutCrashing();
-  }
+  DCHECK_EQ(activation_client_observations_.GetSourcesCount(), 0u);
+  DCHECK(tracked_browsers_.empty());
+  DCHECK(observers_.empty());
 }
 
 const BrowserAppInstance* BrowserAppInstanceTracker::GetAppInstance(
@@ -223,17 +216,11 @@ void BrowserAppInstanceTracker::OnWindowActivated(ActivationReason reason,
 }
 
 void BrowserAppInstanceTracker::OnBrowserAdded(Browser* browser) {
-  // TODO(crbug.com/1236273): Remove when confident it does not happen.
-  if (base::Contains(tracked_browsers_, browser)) {
-    base::debug::DumpWithoutCrashing();
-  }
+  DCHECK(!base::Contains(tracked_browsers_, browser));
 }
 
 void BrowserAppInstanceTracker::OnBrowserRemoved(Browser* browser) {
-  // TODO(crbug.com/1236273): Remove when confident it does not happen.
-  if (base::Contains(tracked_browsers_, browser)) {
-    base::debug::DumpWithoutCrashing();
-  }
+  DCHECK(!base::Contains(tracked_browsers_, browser));
 }
 
 void BrowserAppInstanceTracker::OnAppUpdate(const AppUpdate& update) {
@@ -288,9 +275,6 @@ void BrowserAppInstanceTracker::OnTabStripModelChangeInsert(
     }
 #endif
     if (tab_is_new) {
-      webcontents_to_observer_map_[contents] =
-          std::make_unique<BrowserAppInstanceTracker::WebContentsObserver>(
-              contents, this);
       OnTabCreated(browser, contents);
     }
     OnTabAttached(browser, contents);
@@ -330,10 +314,6 @@ void BrowserAppInstanceTracker::OnTabStripModelChangeRemove(
     }
     if (tab_will_be_closed) {
       OnTabClosing(browser, contents);
-    }
-    if (tab_will_be_closed) {
-      DCHECK(base::Contains(webcontents_to_observer_map_, contents));
-      webcontents_to_observer_map_.erase(contents);
     }
   }
   // Last tab detached.
@@ -399,6 +379,10 @@ void BrowserAppInstanceTracker::OnBrowserLastTabDetached(Browser* browser) {
 
 void BrowserAppInstanceTracker::OnTabCreated(Browser* browser,
                                              content::WebContents* contents) {
+  webcontents_to_observer_map_[contents] =
+      std::make_unique<BrowserAppInstanceTracker::WebContentsObserver>(contents,
+                                                                       this);
+
   std::string app_id = GetAppId(contents);
   if (!app_id.empty()) {
     CreateAppInstance(std::move(app_id), browser, contents);
@@ -437,6 +421,8 @@ void BrowserAppInstanceTracker::OnTabUpdated(Browser* browser,
 void BrowserAppInstanceTracker::OnTabClosing(Browser* browser,
                                              content::WebContents* contents) {
   RemoveAppInstanceIfExists(contents);
+  DCHECK(base::Contains(webcontents_to_observer_map_, contents));
+  webcontents_to_observer_map_.erase(contents);
 }
 
 void BrowserAppInstanceTracker::OnWebContentsUpdated(

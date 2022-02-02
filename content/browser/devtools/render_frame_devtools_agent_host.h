@@ -9,9 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/common/content_export.h"
@@ -34,6 +32,7 @@ namespace content {
 
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
+class FencedFrame;
 class FrameTreeNode;
 class FrameAutoAttacher;
 class NavigationRequest;
@@ -88,6 +87,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void OnNavigationRequestWillBeSent(
       const NavigationRequest& navigation_request);
   void UpdatePortals();
+  void DidCreateFencedFrame(FencedFrame* fenced_frame);
 
   // DevToolsAgentHost overrides.
   void DisconnectWebContents() override;

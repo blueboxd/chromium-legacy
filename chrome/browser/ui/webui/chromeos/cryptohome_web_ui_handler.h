@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
@@ -38,7 +37,7 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
 
  private:
   // This method is called from JavaScript.
-  void OnPageLoaded(const base::ListValue* args);
+  void OnPageLoaded(base::Value::ConstListView args);
 
   void GotIsTPMTokenEnabledOnUIThread(bool is_tpm_token_enabled);
 

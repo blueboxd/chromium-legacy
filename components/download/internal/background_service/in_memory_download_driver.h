@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_IN_MEMORY_DOWNLOAD_DRIVER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_IN_MEMORY_DOWNLOAD_DRIVER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "components/download/internal/background_service/download_driver.h"
 
 #include <map>
 #include <memory>
 
-#include "base/macros.h"
 #include "base/task/single_thread_task_runner.h"
 #include "components/download/internal/background_service/in_memory_download.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -40,7 +40,7 @@ class InMemoryDownloadFactory : public InMemoryDownload::Factory {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       InMemoryDownload::Delegate* delegate) override;
 
-  network::mojom::URLLoaderFactory* url_loader_factory_;
+  raw_ptr<network::mojom::URLLoaderFactory> url_loader_factory_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 };
@@ -85,7 +85,7 @@ class InMemoryDownloadDriver : public DownloadDriver,
   void RetrieveBlobContextGetter(BlobContextGetterCallback callback) override;
 
   // The client that receives updates from low level download logic.
-  DownloadDriver::Client* client_;
+  raw_ptr<DownloadDriver::Client> client_;
 
   // The factory used to create in memory download objects.
   std::unique_ptr<InMemoryDownload::Factory> download_factory_;

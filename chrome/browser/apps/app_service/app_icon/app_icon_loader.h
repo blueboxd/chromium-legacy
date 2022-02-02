@@ -12,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
@@ -20,7 +21,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/arc/mojom/intent_helper.mojom.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace arc {
@@ -79,10 +80,9 @@ class AppIconLoader : public base::RefCounted<AppIconLoader> {
 
   AppIconLoader(int size_hint_in_dip, LoadIconCallback callback);
 
-  void ApplyIconEffects(IconEffects icon_effects,
-                        std::unique_ptr<IconValue> iv);
+  void ApplyIconEffects(IconEffects icon_effects, IconValuePtr iv);
 
-  void ApplyBadges(IconEffects icon_effects, std::unique_ptr<IconValue> iv);
+  void ApplyBadges(IconEffects icon_effects, IconValuePtr iv);
 
   void LoadWebAppIcon(const std::string& web_app_id,
                       const GURL& launch_url,
@@ -136,9 +136,9 @@ class AppIconLoader : public base::RefCounted<AppIconLoader> {
 
   void CompleteWithCompressed(std::vector<uint8_t> data);
 
-  void CompleteWithUncompressed(std::unique_ptr<IconValue> iv);
+  void CompleteWithUncompressed(IconValuePtr iv);
 
-  void CompleteWithIconValue(std::unique_ptr<IconValue> iv);
+  void CompleteWithIconValue(IconValuePtr iv);
 
   void OnReadWebAppIcon(std::map<int, SkBitmap> icon_bitmaps);
 
@@ -162,7 +162,7 @@ class AppIconLoader : public base::RefCounted<AppIconLoader> {
   // first fallback method attempted in MaybeLoadFallbackOrCompleteEmpty().
   // These members are only populated from LoadWebAppIcon or LoadExtensionIcon.
   GURL fallback_favicon_url_;
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
 
   // If |fallback_icon_resource_| is not |kInvalidIconResource|, then it is the
   // second fallback method attempted in MaybeLoadFallbackOrCompleteEmpty()

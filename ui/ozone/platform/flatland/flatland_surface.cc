@@ -46,8 +46,7 @@ zx::event DuplicateZxEvent(const zx::event& event) {
 FlatlandSurface::FlatlandSurface(
     FlatlandSurfaceFactory* flatland_surface_factory,
     gfx::AcceleratedWidget window)
-    : flatland_("Chromium FlatlandSurface",
-                FlatlandConnection::ConnectToFlatland()),
+    : flatland_("Chromium FlatlandSurface"),
       flatland_surface_factory_(flatland_surface_factory),
       window_(window) {
   // Create Flatland Allocator connection.
@@ -108,6 +107,8 @@ void FlatlandSurface::Present(
     const fuchsia::math::SizeU size = {
         static_cast<uint32_t>(collection->size().width()),
         static_cast<uint32_t>(collection->size().height())};
+    DCHECK_EQ(size.width, layout_info_.logical_size().width);
+    DCHECK_EQ(size.height, layout_info_.logical_size().height);
     fuchsia::ui::composition::ImageProperties image_properties;
     image_properties.set_size(size);
     auto image_id = flatland_.NextContentId();

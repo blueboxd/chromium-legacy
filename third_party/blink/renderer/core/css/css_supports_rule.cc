@@ -42,12 +42,12 @@ String CSSSupportsRule::cssText() const {
   StringBuilder result;
 
   result.Append("@supports ");
-  result.Append(conditionText());
+  result.Append(ConditionTextInternal());
   result.Append(" {\n");
   AppendCSSTextForItems(result);
   result.Append('}');
 
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 }  // namespace blink

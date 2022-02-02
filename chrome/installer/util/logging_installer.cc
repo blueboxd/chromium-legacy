@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
@@ -43,7 +44,7 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
       log_size > kMaxInstallerLogFileSize) {
     // Cause the old log file to be deleted when we are done with it.
     uint32_t file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-                          base::File::FLAG_SHARE_DELETE |
+                          base::File::FLAG_WIN_SHARE_DELETE |
                           base::File::FLAG_DELETE_ON_CLOSE;
     base::File old_log_file(log_file, file_flags);
 

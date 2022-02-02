@@ -6,9 +6,9 @@
 
 #include <utility>
 
+#include "ash/components/arc/mojom/process.mojom.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "components/arc/mojom/process.mojom.h"
 
 namespace arc {
 
@@ -50,23 +50,6 @@ bool IsProtectedBackgroundState(ProcessState state) {
     case ProcessState::BOUND_FOREGROUND_SERVICE:
     case ProcessState::IMPORTANT_FOREGROUND:
     case ProcessState::IMPORTANT_BACKGROUND:
-      return true;
-    default:
-      return false;
-  }
-}
-
-bool IsBackgroundState(ProcessState state) {
-  switch (state) {
-    case ProcessState::TRANSIENT_BACKGROUND:
-    case ProcessState::BACKUP:
-    case ProcessState::SERVICE:
-    case ProcessState::RECEIVER:
-    case ProcessState::TOP_SLEEPING:
-    case ProcessState::HEAVY_WEIGHT:
-    case ProcessState::HOME:
-    case ProcessState::LAST_ACTIVITY:
-    case ProcessState::CACHED_ACTIVITY:
       return true;
     default:
       return false;

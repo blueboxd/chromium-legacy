@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -39,6 +38,8 @@
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
 #include "components/services/quarantine/quarantine_impl.h"  // nogncheck
+#include "services/proxy_resolver_win/public/mojom/proxy_resolver_win.mojom.h"
+#include "services/proxy_resolver_win/windows_system_proxy_resolver_impl.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MAC)
@@ -98,14 +99,14 @@
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/services/ime/ime_service.h"
+#include "ash/services/ime/public/mojom/input_engine.mojom.h"
 #include "ash/services/quick_pair/quick_pair_service.h"
 #include "ash/services/recording/recording_service.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chromeos/assistant/buildflags.h"  // nogncheck
 #include "chromeos/components/local_search_service/local_search_service.h"
 #include "chromeos/components/local_search_service/public/mojom/local_search_service.mojom.h"
-#include "chromeos/services/ime/ime_service.h"
-#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/nearby/public/mojom/sharing.mojom.h"  // nogncheck
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "chromeos/services/tts/tts_service.h"
@@ -166,6 +167,13 @@ auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
 auto RunWindowsIconReader(
     mojo::PendingReceiver<chrome::mojom::UtilReadIcon> receiver) {
   return std::make_unique<UtilReadIcon>(std::move(receiver));
+}
+
+auto RunWindowsSystemProxyResolver(
+    mojo::PendingReceiver<proxy_resolver_win::mojom::WindowsSystemProxyResolver>
+        receiver) {
+  return std::make_unique<proxy_resolver_win::WindowsSystemProxyResolverImpl>(
+      std::move(receiver));
 }
 #endif  // defined(OS_WIN)
 
@@ -424,4 +432,7 @@ void RegisterIOThreadServices(mojo::ServiceFactory& services) {
 #if !defined(OS_ANDROID)
   services.Add(RunProxyResolver);
 #endif
+#if defined(OS_WIN)
+  services.Add(RunWindowsSystemProxyResolver);
+#endif  // defined(OS_WIN)
 }

@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "sandbox/win/src/crosscall_params.h"
 #include "sandbox/win/src/ipc_tags.h"
 
@@ -61,6 +61,9 @@ class CrossCallParamsEx : public CrossCallParams {
                                              uint32_t buffer_size,
                                              uint32_t* output_size);
 
+  CrossCallParamsEx(const CrossCallParamsEx&) = delete;
+  CrossCallParamsEx& operator=(const CrossCallParamsEx&) = delete;
+
   // Provides IPCinput parameter raw access:
   // index : the parameter to read; 0 is the first parameter
   // returns nullptr if the parameter is non-existent. If it exists it also
@@ -92,7 +95,6 @@ class CrossCallParamsEx : public CrossCallParams {
   CrossCallParamsEx();
 
   ParamInfo param_info_[1];
-  DISALLOW_COPY_AND_ASSIGN(CrossCallParamsEx);
 };
 
 // Simple helper function that sets the members of CrossCallReturn
@@ -113,7 +115,7 @@ struct ClientInfo {
 // All IPC-related information to be passed to the IPC handler.
 struct IPCInfo {
   IpcTag ipc_tag;
-  const ClientInfo* client_info;
+  raw_ptr<const ClientInfo> client_info;
   CrossCallReturn return_info;
 };
 

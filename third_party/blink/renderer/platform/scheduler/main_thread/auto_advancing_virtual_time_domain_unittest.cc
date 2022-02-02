@@ -43,13 +43,12 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     auto_advancing_time_domain_ =
         std::make_unique<AutoAdvancingVirtualTimeDomain>(
             initial_time_, initial_time_ticks_, scheduler_helper_.get());
-    scheduler_helper_->RegisterTimeDomain(auto_advancing_time_domain_.get());
-    task_queue_->SetTimeDomain(auto_advancing_time_domain_.get());
+    scheduler_helper_->SetTimeDomain(auto_advancing_time_domain_.get());
   }
 
   void TearDown() override {
     task_queue_->ShutdownTaskQueue();
-    scheduler_helper_->UnregisterTimeDomain(auto_advancing_time_domain_.get());
+    scheduler_helper_->ResetTimeDomain();
   }
 
   base::Time initial_time_;
@@ -190,7 +189,9 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest,
 
   // Task at t+10ms should be run immediately.
   EXPECT_TRUE(
-      auto_advancing_time_domain_->GetNextDelayedTaskTime(nullptr).is_null());
+      auto_advancing_time_domain_
+          ->GetNextDelayedTaskTime(*sequence_manager_->GetNextWakeUp(), nullptr)
+          .is_null());
 }
 
 }  // namespace auto_advancing_virtual_time_domain_unittest

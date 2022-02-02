@@ -9,11 +9,11 @@
 
 #include <memory>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "remoting/base/session_options.h"
-#include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "remoting/protocol/video_stream.h"
 #include "remoting/protocol/webrtc_video_track_source.h"
@@ -35,7 +35,6 @@ class WebrtcTransport;
 
 class WebrtcVideoStream : public VideoStream,
                           public webrtc::DesktopCapturer::Callback,
-                          public HostVideoStatsDispatcher::EventHandler,
                           public VideoChannelStateObserver {
  public:
   explicit WebrtcVideoStream(const SessionOptions& options);
@@ -44,6 +43,11 @@ class WebrtcVideoStream : public VideoStream,
   WebrtcVideoStream& operator=(const WebrtcVideoStream&) = delete;
 
   ~WebrtcVideoStream() override;
+
+  void set_video_stats_dispatcher(
+      base::WeakPtr<HostVideoStatsDispatcher> video_stats_dispatcher) {
+    video_stats_dispatcher_ = video_stats_dispatcher;
+  }
 
   void Start(std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer,
              WebrtcTransport* webrtc_transport,
@@ -59,10 +63,8 @@ class WebrtcVideoStream : public VideoStream,
   void SelectSource(int id) override;
 
   // VideoChannelStateObserver interface.
-  void OnEncoderReady() override;
   void OnKeyFrameRequested() override;
   void OnTargetBitrateChanged(int bitrate_kbps) override;
-  void OnRttUpdate(base::TimeDelta rtt) override;
   void OnFrameEncoded(WebrtcVideoEncoder::EncodeResult encode_result,
                       const WebrtcVideoEncoder::EncodedFrame* frame) override;
   void OnEncodedFrameSent(
@@ -76,12 +78,11 @@ class WebrtcVideoStream : public VideoStream,
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
                        std::unique_ptr<webrtc::DesktopFrame> frame) override;
 
-  // HostVideoStatsDispatcher::EventHandler interface.
-  void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
-  void OnChannelClosed(ChannelDispatcherBase* channel_dispatcher) override;
-
   // Called by the |scheduler_|.
   void CaptureNextFrame();
+
+  // Called by |video_track_source_|.
+  void OnSinkAddedOrUpdated(const rtc::VideoSinkWants& wants);
 
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;
@@ -93,7 +94,7 @@ class WebrtcVideoStream : public VideoStream,
 
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 
-  HostVideoStatsDispatcher video_stats_dispatcher_;
+  base::WeakPtr<HostVideoStatsDispatcher> video_stats_dispatcher_;
 
   // Stats of the frame that's being captured.
   std::unique_ptr<FrameStats> current_frame_stats_;
@@ -102,7 +103,7 @@ class WebrtcVideoStream : public VideoStream,
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
-  Observer* observer_ = nullptr;
+  raw_ptr<Observer> observer_ = nullptr;
 
   base::ThreadChecker thread_checker_;
 

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
@@ -58,11 +58,13 @@ class TestingTailoredSecurityService : public TailoredSecurityService {
 
   std::string GetExpectedTailoredSecurityServiceValue();
 
-  void SetTailoredSecurityServiceCallback(bool is_enabled);
+  void SetTailoredSecurityServiceCallback(bool is_enabled,
+                                          base::Time previous_update);
 
-  void GetTailoredSecurityServiceCallback(bool is_enabled);
+  void GetTailoredSecurityServiceCallback(bool is_enabled,
+                                          base::Time previous_update);
 
-  void MultipleRequestsCallback(bool is_enabled);
+  void MultipleRequestsCallback(bool is_enabled, base::Time previous_update);
 
   void SetExpectedURL(const GURL& expected_url) {
     expected_url_ = expected_url;
@@ -147,7 +149,7 @@ class TestRequest : public TailoredSecurityService::Request {
   }
 
  private:
-  TestingTailoredSecurityService* tailored_security_service_;
+  raw_ptr<TestingTailoredSecurityService> tailored_security_service_;
   GURL url_;
   TailoredSecurityService::CompletionCallback callback_;
   int response_code_;
@@ -174,16 +176,20 @@ base::Value TestingTailoredSecurityService::ReadResponse(Request* request) {
 }
 
 void TestingTailoredSecurityService::SetTailoredSecurityServiceCallback(
-    bool is_enabled) {
+    bool is_enabled,
+    base::Time previous_update) {
   EXPECT_EQ(expected_tailored_security_service_value_, is_enabled);
 }
 
 void TestingTailoredSecurityService::GetTailoredSecurityServiceCallback(
-    bool is_enabled) {
+    bool is_enabled,
+    base::Time previous_update) {
   EXPECT_EQ(expected_tailored_security_service_value_, is_enabled);
 }
 
-void TestingTailoredSecurityService::MultipleRequestsCallback(bool is_enabled) {
+void TestingTailoredSecurityService::MultipleRequestsCallback(
+    bool is_enabled,
+    base::Time previous_update) {
   EXPECT_EQ(expected_tailored_security_service_value_, is_enabled);
 }
 

@@ -64,6 +64,10 @@ class GpuIntegrationTest(
   # on assumptions about retries, etc. if possible.
   _flaky_test_tries = collections.Counter()
 
+  # Keeps track of the first test that is run on a shard for a flakiness
+  # workaround. See crbug.com/1079244.
+  _first_run_test = None
+
   def __init__(self, *args, **kwargs):
     super(GpuIntegrationTest, self).__init__(*args, **kwargs)
     if self.artifacts is None:
@@ -307,9 +311,24 @@ class GpuIntegrationTest(
       network_controller_backend.Close()
       network_controller_backend.Open(wpr_mode)
 
+  def _ShouldForceRetryOnFailureFirstTest(self):
+    return False
+
   def _RunGpuTest(self, url, test_name, *args):
     expected_results, should_retry_on_failure = (
         self.GetExpectationsForTest()[:2])
+    # This is a temporary workaround for flaky GPU process startup in WebGL
+    # conformance tests in the first test run on a shard. This should not be
+    # kept in long-term. See crbug.com/1079244.
+    if self._ShouldForceRetryOnFailureFirstTest():
+      if GpuIntegrationTest._first_run_test is None:
+        GpuIntegrationTest._first_run_test = test_name
+      if GpuIntegrationTest._first_run_test == test_name:
+        logging.warning('Forcing RetryOnFailure in test %s', test_name)
+        # Internal bookkeeping.
+        should_retry_on_failure = True
+        # Notify typ that it should retry this test if necessary.
+        self.retryOnFailure = True  # pylint: disable=attribute-defined-outside-init
     try:
       # TODO(nednguyen): For some reason the arguments are getting wrapped
       # in another tuple sometimes (like in the WebGL extension tests).

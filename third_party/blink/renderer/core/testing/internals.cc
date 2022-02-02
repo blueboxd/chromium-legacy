@@ -174,13 +174,12 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -200,6 +199,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -1660,9 +1660,9 @@ String Internals::viewportAsText(Document* document,
   Page* page = document->GetPage();
 
   // Update initial viewport size.
-  IntSize initial_viewport_size(available_width, available_height);
+  gfx::Size initial_viewport_size(available_width, available_height);
   document->GetPage()->DeprecatedLocalMainFrame()->View()->SetFrameRect(
-      IntRect(gfx::Point(), initial_viewport_size));
+      gfx::Rect(gfx::Point(), initial_viewport_size));
 
   ViewportDescription description = page->GetViewportDescription();
   PageScaleConstraints constraints =
@@ -2175,7 +2175,7 @@ unsigned Internals::pointerEventHandlerCount(Document* document) const {
 // of rects returned by an SkRegion (which have been split apart for sorting
 // purposes). No attempt is made to do this efficiently (eg. by relying on the
 // sort criteria of SkRegion).
-static void MergeRects(Vector<IntRect>& rects) {
+static void MergeRects(Vector<gfx::Rect>& rects) {
   for (wtf_size_t i = 0; i < rects.size(); ++i) {
     if (rects[i].IsEmpty())
       continue;
@@ -2189,25 +2189,25 @@ static void MergeRects(Vector<IntRect>& rects) {
         if (rects[i].y() == rects[j].y() &&
             rects[i].height() == rects[j].height()) {
           if (rects[i].x() + rects[i].width() == rects[j].x()) {
-            rects[i].Expand(rects[j].width(), 0);
-            rects[j] = IntRect();
+            rects[i].set_width(rects[i].width() + rects[j].width());
+            rects[j] = gfx::Rect();
             updated = true;
           } else if (rects[i].x() == rects[j].x() + rects[j].width()) {
             rects[i].set_x(rects[j].x());
-            rects[i].Expand(rects[j].width(), 0);
-            rects[j] = IntRect();
+            rects[i].set_width(rects[i].width() + rects[j].width());
+            rects[j] = gfx::Rect();
             updated = true;
           }
         } else if (rects[i].x() == rects[j].x() &&
                    rects[i].width() == rects[j].width()) {
           if (rects[i].y() + rects[i].height() == rects[j].y()) {
-            rects[i].Expand(0, rects[j].height());
-            rects[j] = IntRect();
+            rects[i].set_height(rects[i].height() + rects[j].height());
+            rects[j] = gfx::Rect();
             updated = true;
           } else if (rects[i].y() == rects[j].y() + rects[j].height()) {
             rects[i].set_y(rects[j].y());
-            rects[i].Expand(0, rects[j].height());
-            rects[j] = IntRect();
+            rects[i].set_height(rects[i].height() + rects[j].height());
+            rects[j] = gfx::Rect();
             updated = true;
           }
         }
@@ -2234,15 +2234,16 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
         layer->touch_action_region();
     if (!touch_action_region.GetAllRegions().IsEmpty()) {
       const auto& offset = layer->offset_to_transform_parent();
-      IntRect layer_rect(RoundedIntPoint(FloatPoint(offset.x(), offset.y())),
-                         IntSize(layer->bounds()));
+      gfx::Rect layer_rect(
+          gfx::ToRoundedPoint(gfx::PointAtOffsetFromOrigin(offset)),
+          layer->bounds());
 
-      Vector<IntRect> layer_hit_test_rects;
+      Vector<gfx::Rect> layer_hit_test_rects;
       for (auto hit_test_rect : touch_action_region.GetAllRegions())
-        layer_hit_test_rects.push_back(IntRect(hit_test_rect));
+        layer_hit_test_rects.push_back(hit_test_rect);
       MergeRects(layer_hit_test_rects);
 
-      for (const IntRect& hit_test_rect : layer_hit_test_rects) {
+      for (const gfx::Rect& hit_test_rect : layer_hit_test_rects) {
         if (!hit_test_rect.IsEmpty()) {
           hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
                                  DOMRectReadOnly::FromIntRect(hit_test_rect));
@@ -2327,8 +2328,8 @@ StaticNodeList* Internals::nodesFromRect(
                     LayoutUnit(height)};
   if (ignore_clipping) {
     hit_type |= HitTestRequest::kIgnoreClipping;
-  } else if (!IntRect(gfx::Point(), frame->View()->Size())
-                  .Intersects(EnclosingIntRect(rect))) {
+  } else if (!gfx::Rect(gfx::Point(), frame->View()->Size())
+                  .Intersects(ToEnclosingRect(rect))) {
     return nullptr;
   }
   if (allow_child_frame_content)
@@ -2539,7 +2540,7 @@ DOMRectList* Internals::nonFastScrollableRects(
   // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
   layer_tree_host->UpdateLayers();
 
-  Vector<IntRect> layer_non_fast_scrollable_rects;
+  Vector<gfx::Rect> layer_non_fast_scrollable_rects;
   for (auto* layer : *layer_tree_host) {
     const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
     for (gfx::Rect non_fast_rect : non_fast_region) {
@@ -2554,8 +2555,7 @@ DOMRectList* Internals::nonFastScrollableRects(
           transform_tree.ToScreen(layer->transform_tree_index());
       to_screen.TransformRect(&layer_rect);
 
-      layer_non_fast_scrollable_rects.push_back(
-          IntRect(ToEnclosingRect(layer_rect)));
+      layer_non_fast_scrollable_rects.push_back(ToEnclosingRect(layer_rect));
     }
   }
 
@@ -2586,8 +2586,8 @@ int Internals::pageNumber(Element* element,
     return 0;
   }
 
-  return PrintContext::PageNumberForElement(element,
-                                            FloatSize(page_width, page_height));
+  return PrintContext::PageNumberForElement(
+      element, gfx::SizeF(page_width, page_height));
 }
 
 Vector<String> Internals::IconURLs(Document* document,
@@ -2629,7 +2629,7 @@ int Internals::numberOfPages(float page_width,
   }
 
   return PrintContext::NumberOfPages(GetFrame(),
-                                     FloatSize(page_width, page_height));
+                                     gfx::SizeF(page_width, page_height));
 }
 
 String Internals::pageProperty(String property_name,
@@ -3553,14 +3553,13 @@ String Internals::selectedTextForClipboard() {
 void Internals::setVisualViewportOffset(int x, int y) {
   if (!GetFrame())
     return;
-  FloatPoint offset(x, y);
+  gfx::PointF offset(x, y);
 
   // `setVisualViewportOffset()` inputs are in physical pixels, but
   // `SetLocation()` gets positions in DIPs when --use-zoom-for-dsf disabled.
-  GetFrame()->GetPage()->GetVisualViewport().SetLocation(
-      Platform::Current()->IsUseZoomForDSFEnabled()
-          ? offset
-          : offset.ScaledBy(1 / GetFrame()->DevicePixelRatio()));
+  if (!Platform::Current()->IsUseZoomForDSFEnabled())
+    offset.Scale(1 / GetFrame()->DevicePixelRatio());
+  GetFrame()->GetPage()->GetVisualViewport().SetLocation(offset);
 }
 
 bool Internals::isUseCounted(Document* document, uint32_t feature) {
@@ -3954,13 +3953,14 @@ ScriptValue Internals::createWritableStreamAndSink(
   object
       ->Set(script_state->GetContext(),
             V8String(script_state->GetIsolate(), "stream"),
-            ToV8(stream, script_state))
-
+            ToV8Traits<WritableStream>::ToV8(script_state, stream)
+                .ToLocalChecked())
       .Check();
   object
       ->Set(script_state->GetContext(),
             V8String(script_state->GetIsolate(), "sink"),
-            ToV8(resolver->Promise(), script_state))
+            ToV8Traits<IDLPromise>::ToV8(script_state, resolver->Promise())
+                .ToLocalChecked())
       .Check();
   return ScriptValue(script_state->GetIsolate(), object);
 }

@@ -21,7 +21,7 @@ class MediaSystemAppDelegate : public web_app::SystemWebAppDelegate {
   bool ShouldCaptureNavigations() const override;
   bool ShouldShowInSearch() const override;
   bool ShouldShowNewWindowMenuOption() const override;
-  bool ShouldBeSingleWindow() const override;
+  bool ShouldReuseExistingWindow() const override;
 };
 
 // Return a WebApplicationInfo used to install the app.

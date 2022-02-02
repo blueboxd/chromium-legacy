@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/task/sequenced_task_runner_helpers.h"
@@ -70,7 +69,6 @@ class DownloadProtectionService;
 #endif
 class PasswordProtectionService;
 class SafeBrowsingDatabaseManager;
-class SafeBrowsingNetworkContext;
 class SafeBrowsingServiceFactory;
 class SafeBrowsingUIManager;
 class TriggerManager;
@@ -134,7 +132,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
       content::BrowserContext* browser_context);
 
   // Flushes above two interfaces to avoid races in tests.
-  void FlushNetworkInterfaceForTesting();
+  void FlushNetworkInterfaceForTesting(
+      content::BrowserContext* browser_context);
 
   const scoped_refptr<SafeBrowsingUIManager>& ui_manager() const;
 
@@ -272,10 +271,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   void RecordCookieMetrics(Profile* profile);
 
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
-
-  // This owns the URLRequestContext inside the network service. This is used by
-  // SimpleURLLoader for safe browsing requests.
-  std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 
   // Provides phishing and malware statistics. Accessed on UI thread.
   std::unique_ptr<PingManager> ping_manager_;

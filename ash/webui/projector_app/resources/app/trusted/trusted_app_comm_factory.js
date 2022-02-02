@@ -21,11 +21,11 @@ export class UntrustedAppClient extends PostMessageAPIClient {
 
   /**
    * Notfies the app whether it can start a new session or not.
-   * @param {!boolean} canStart
+   * @param {!projectorApp.NewScreencastPreconditionState} newState
    * @return {Promise<boolean>}
    */
-  onNewScreencastPreconditionChanged(canStart) {
-    return this.callApiFn('onNewScreencastPreconditionChanged', [canStart]);
+  onNewScreencastPreconditionChanged(newState) {
+    return this.callApiFn('onNewScreencastPreconditionChanged', [newState]);
   }
 
   /**
@@ -72,8 +72,8 @@ export class TrustedAppRequestHandler extends RequestHandler {
     this.registerMethod('getAccounts', (args) => {
       return this.browserProxy_.getAccounts();
     });
-    this.registerMethod('canStartProjectorSession', (args) => {
-      return this.browserProxy_.canStartProjectorSession();
+    this.registerMethod('getNewScreencastPreconditionState', (args) => {
+      return this.browserProxy_.getNewScreencastPreconditionState();
     });
     this.registerMethod('startProjectorSession', (storageDir) => {
       if (!storageDir || storageDir.length != 1) {
@@ -90,7 +90,7 @@ export class TrustedAppRequestHandler extends RequestHandler {
     this.registerMethod('onError', (msg) => {
       this.browserProxy_.onError(msg);
     });
-    this.registerMethod('sendXhr',(values) => {
+    this.registerMethod('sendXhr', (values) => {
       if (!values || values.length != 4) {
         return {
           success: false,
@@ -100,9 +100,6 @@ export class TrustedAppRequestHandler extends RequestHandler {
       return this.browserProxy_.sendXhr(
           values[0], values[1], values[2], values[3]);
     });
-    this.registerMethod('shouldShowNewScreencastButton', (args) => {
-      return this.browserProxy_.shouldShowNewScreencastButton();
-    });
     this.registerMethod('shouldDownloadSoda', (args) => {
       return this.browserProxy_.shouldDownloadSoda();
     });
@@ -111,6 +108,18 @@ export class TrustedAppRequestHandler extends RequestHandler {
     });
     this.registerMethod('getPendingScreencasts', (args) => {
       return this.browserProxy_.getPendingScreencasts();
+    });
+    this.registerMethod('getUserPref', (args) => {
+      if (!args || args.length != 1) {
+        return;
+      }
+      return this.browserProxy_.getUserPref(args[0]);
+    });
+    this.registerMethod('setUserPref', (args) => {
+      if (!args || args.length != 2) {
+        return;
+      }
+      return this.browserProxy_.setUserPref(args[0], args[1]);
     });
   }
 }

@@ -9,13 +9,12 @@
 #include "third_party/blink/public/mojom/webid/federated_auth_response.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 
 namespace blink {
 
 class WebIdLogoutRequest;
-class WebIdRequestOptions;
 class ExceptionState;
 class ExecutionContext;
 class ScriptPromise;
@@ -28,7 +27,6 @@ class WebId final : public ScriptWrappable, public ExecutionContextClient {
   explicit WebId(ExecutionContext&);
 
   // WebID IDL interface.
-  ScriptPromise get(ScriptState*, const WebIdRequestOptions*, ExceptionState&);
   ScriptPromise provide(ScriptState*, String id_token);
   ScriptPromise logout(ScriptState*,
                        const HeapVector<Member<WebIdLogoutRequest>>&,
@@ -41,6 +39,10 @@ class WebId final : public ScriptWrappable, public ExecutionContextClient {
   void BindRemote(HeapMojoRemote<Interface>& remote);
   void OnConnectionError();
 
+  // TODO(yigu): This request is for logout only at the moment. When migrating
+  // logout to use CredentialManagement API, we should differentiate it with
+  // the existing fedcm_get_request_ to avoid potential resource contention in
+  // the browser process.
   HeapMojoRemote<mojom::blink::FederatedAuthRequest> auth_request_;
   HeapMojoRemote<mojom::blink::FederatedAuthResponse> auth_response_;
 };

@@ -7,13 +7,12 @@
 
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "ui/base/page_transition_types.h"
 
 namespace breadcrumbs {
-
-class BreadcrumbManagerKeyedService;
 
 // Name of DidStartNavigation event (see
 // WebStateObserver/WebContentsObserver::DidStartNavigation).
@@ -139,10 +138,8 @@ class BreadcrumbManagerTabHelper : public infobars::InfoBarManager::Observer {
   // Logs the breadcrumb event for a renderer process being terminated.
   void LogRenderProcessGone();
 
-  // Logs the given |event| for the associated tab. |service| must be provided
-  // by the platform-specific implementation.
-  void LogEvent(const std::string& event,
-                BreadcrumbManagerKeyedService* service);
+  // Logs the given |event| for the associated tab.
+  void LogEvent(const std::string& event);
 
   // Returns true if event that was sequentially emitted |count| times should be
   // logged. Some events (e.g., infobars replacements or scrolling) are emitted
@@ -151,7 +148,9 @@ class BreadcrumbManagerTabHelper : public infobars::InfoBarManager::Observer {
   bool ShouldLogRepeatedEvent(int count);
 
  private:
-  // Logs the given |event| for the associated tab.
+  // Logs the given |event| for the associated tab by retrieving the breadcrumb
+  // manager from WebState (iOS) or WebContents (desktop). This should not be
+  // used directly to log events; use LogEvent() instead.
   virtual void PlatformLogEvent(const std::string& event) = 0;
 
   // infobars::InfoBarManager::Observer:
@@ -165,7 +164,7 @@ class BreadcrumbManagerTabHelper : public infobars::InfoBarManager::Observer {
   // identify events associated with the underlying tab.
   int unique_id_ = -1;
 
-  infobars::InfoBarManager* infobar_manager_ = nullptr;
+  raw_ptr<infobars::InfoBarManager> infobar_manager_ = nullptr;
   // A counter which is incremented for each |OnInfoBarReplaced| call. This
   // value is reset when any other infobars::InfoBarManager::Observer callback
   // is received.

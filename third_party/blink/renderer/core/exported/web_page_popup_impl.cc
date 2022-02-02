@@ -69,8 +69,8 @@
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
@@ -122,7 +122,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
  public:
   explicit PagePopupChromeClient(WebPagePopupImpl* popup) : popup_(popup) {}
 
-  void SetWindowRect(const IntRect& rect, LocalFrame&) override {
+  void SetWindowRect(const gfx::Rect& rect, LocalFrame&) override {
     popup_->SetWindowRect(rect);
   }
 
@@ -135,19 +135,19 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     popup_->ClosePopup();
   }
 
-  IntRect RootWindowRect(LocalFrame&) override {
+  gfx::Rect RootWindowRect(LocalFrame&) override {
     // There is only one frame/widget in a WebPagePopup, so we can ignore the
     // param.
-    return IntRect(popup_->WindowRectInScreen());
+    return popup_->WindowRectInScreen();
   }
 
-  IntRect ViewportToScreen(const IntRect& rect,
-                           const LocalFrameView*) const override {
+  gfx::Rect ViewportToScreen(const gfx::Rect& rect,
+                             const LocalFrameView*) const override {
     gfx::Rect window_rect = popup_->WindowRectInScreen();
     gfx::Rect rect_in_dips =
-        popup_->widget_base_->BlinkSpaceToEnclosedDIPs(ToGfxRect(rect));
+        popup_->widget_base_->BlinkSpaceToEnclosedDIPs(rect);
     rect_in_dips.Offset(window_rect.x(), window_rect.y());
-    return IntRect(rect_in_dips);
+    return rect_in_dips;
   }
 
   float WindowToViewportScalar(LocalFrame*,
@@ -216,7 +216,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     return popup_->GetScreenInfos();
   }
 
-  IntSize MinimumWindowSize() const override { return IntSize(0, 0); }
+  gfx::Size MinimumWindowSize() const override { return gfx::Size(0, 0); }
 
   void SetEventListenerProperties(
       LocalFrame* frame,
@@ -430,7 +430,7 @@ void WebPagePopupImpl::Initialize(WebViewImpl* opener_web_view,
   popup_owner_client_rect_ =
       popup_client_->OwnerElement().getBoundingClientRect();
   popup_widget_host_->ShowPopup(
-      initial_rect_, ToGfxRect(GetAnchorRectInScreen()),
+      initial_rect_, GetAnchorRectInScreen(),
       WTF::Bind(&WebPagePopupImpl::DidShowPopup, WTF::Unretained(this)));
   should_defer_setting_window_rect_ = false;
   widget_base_->SetPendingWindowRect(initial_rect_);
@@ -480,10 +480,9 @@ void WebPagePopupImpl::SetHandlingInputEvent(bool handling) {
 }
 
 void WebPagePopupImpl::ProcessInputEventSynchronouslyForTesting(
-    const WebCoalescedInputEvent& event,
-    HandledEventCallback callback) {
+    const WebCoalescedInputEvent& event) {
   widget_base_->input_handler().HandleInputEvent(event, nullptr,
-                                                 std::move(callback));
+                                                 base::DoNothing());
 }
 
 void WebPagePopupImpl::UpdateTextInputState() {
@@ -578,7 +577,7 @@ void WebPagePopupImpl::Update() {
 
   popup_client_->Update(forced_update);
   if (forced_update)
-    SetWindowRect(IntRect(WindowRectInScreen()));
+    SetWindowRect(WindowRectInScreen());
 }
 
 void WebPagePopupImpl::DestroyPage() {
@@ -600,9 +599,9 @@ AXObject* WebPagePopupImpl::RootAXObject() {
   return To<AXObjectCacheBase>(cache)->GetOrCreate(document->GetLayoutView());
 }
 
-void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
+void WebPagePopupImpl::SetWindowRect(const gfx::Rect& rect_in_screen) {
   if (ShouldCheckPopupPositionForTelemetry()) {
-    IntRect owner_window_rect_in_screen = OwnerWindowRectInScreen();
+    gfx::Rect owner_window_rect_in_screen = OwnerWindowRectInScreen();
     Document& document = popup_client_->OwnerElement().GetDocument();
     if (owner_window_rect_in_screen.Contains(rect_in_screen)) {
       UseCounter::Count(document,
@@ -616,7 +615,7 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
     }
   }
 
-  gfx::Rect window_rect = ToGfxRect(rect_in_screen);
+  gfx::Rect window_rect = rect_in_screen;
 
   // Popups aren't emulated, but the WidgetScreenRect and WindowScreenRect
   // given to them are. When they set the WindowScreenRect it is based on those
@@ -665,11 +664,11 @@ void WebPagePopupImpl::Resize(const gfx::Size& new_size_in_viewport) {
   // TODO(bokan): We should only call into this if the bounds actually changed
   // but this reveals a bug in Aura. crbug.com/633140.
   window_rect_in_dips.set_size(new_size_in_dips);
-  SetWindowRect(IntRect(window_rect_in_dips));
+  SetWindowRect(window_rect_in_dips);
 
   if (page_) {
-    MainFrame().View()->Resize(IntSize(new_size_in_viewport));
-    page_->GetVisualViewport().SetSize(IntSize(new_size_in_viewport));
+    MainFrame().View()->Resize(new_size_in_viewport);
+    page_->GetVisualViewport().SetSize(new_size_in_viewport);
   }
 }
 
@@ -751,7 +750,7 @@ WebInputEventResult WebPagePopupImpl::HandleGestureEvent(
   }
   if (RuntimeEnabledFeatures::ScrollUnificationEnabled()) {
     if (event.GetType() == WebInputEvent::Type::kGestureScrollBegin) {
-      HitTestLocation locationScroll(FloatPoint(event.PositionInWidget()));
+      HitTestLocation locationScroll(event.PositionInWidget());
       HitTestResult resultScroll =
           MainFrame().GetEventHandler().HitTestResultAtLocation(locationScroll);
       scrollable_node_ = FindFirstScroller(resultScroll.InnerNode());
@@ -851,19 +850,19 @@ void WebPagePopupImpl::CheckScreenPointInOwnerWindowAndCount(
   if (!ShouldCheckPopupPositionForTelemetry())
     return;
 
-  IntRect owner_window_rect = OwnerWindowRectInScreen();
+  gfx::Rect owner_window_rect = OwnerWindowRectInScreen();
   if (!owner_window_rect.Contains(point_in_screen.x(), point_in_screen.y()))
     UseCounter::Count(popup_client_->OwnerElement().GetDocument(), feature);
 }
 
-IntRect WebPagePopupImpl::OwnerWindowRectInScreen() const {
+gfx::Rect WebPagePopupImpl::OwnerWindowRectInScreen() const {
   LocalFrameView* view = popup_client_->OwnerElement().GetDocument().View();
   DCHECK(view);
-  IntRect frame_rect = view->FrameRect();
+  gfx::Rect frame_rect = view->FrameRect();
   return view->FrameToScreen(frame_rect);
 }
 
-IntRect WebPagePopupImpl::GetAnchorRectInScreen() const {
+gfx::Rect WebPagePopupImpl::GetAnchorRectInScreen() const {
   LocalFrameView* view = popup_client_->OwnerElement().GetDocument().View();
   DCHECK(view);
   return popup_client_->GetChromeClient().ViewportToScreen(

@@ -15,7 +15,6 @@
 #include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
@@ -125,7 +124,7 @@ bool IsExtensionMessageSupportedInBackForwardCache() {
     return false;
   static const bool is_extension_message_supported =
       base::FeatureParam<bool>(&features::kBackForwardCache,
-                               "extension_message_supported", false)
+                               "extension_message_supported", true)
           .Get();
   return is_extension_message_supported;
 }

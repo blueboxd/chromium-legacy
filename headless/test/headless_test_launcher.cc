@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/macros.h"
 #include "base/test/launcher/test_launcher.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -32,10 +31,11 @@ class HeadlessBrowserImplForTest : public HeadlessBrowserImpl {
                                            base::Unretained(this)),
                             std::move(options)) {}
 
-  void OnStart(HeadlessBrowser* browser) { EXPECT_EQ(this, browser); }
+  HeadlessBrowserImplForTest(const HeadlessBrowserImplForTest&) = delete;
+  HeadlessBrowserImplForTest& operator=(const HeadlessBrowserImplForTest&) =
+      delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImplForTest);
+  void OnStart(HeadlessBrowser* browser) { EXPECT_EQ(this, browser); }
 };
 
 class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {

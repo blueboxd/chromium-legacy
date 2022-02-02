@@ -364,6 +364,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   HashSet<KURL> GetEarlyHintsPreloadedResources();
 
+  const absl::optional<Vector<KURL>>& AdAuctionComponents() const {
+    return ad_auction_components_;
+  }
+
  protected:
   // Based on its MIME type, if the main document's response corresponds to an
   // MHTML archive, then every resources will be loaded from this archive.
@@ -594,8 +598,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // See WebNavigationParams for definition.
   const bool was_discarded_ = false;
 
-  bool listing_ftp_directory_ = false;
-
   // True when loading the main document from the MHTML archive. It implies an
   // |archive_| to be created. Nested documents will also inherit from the same
   // |archive_|, but won't have |loading_main_document_from_mhtml_archive_| set.
@@ -645,6 +647,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   std::unique_ptr<CodeCacheHost> code_cache_host_;
 
   HashSet<KURL> early_hints_preloaded_resources_;
+
+  // If this is a navigation to fenced frame from an interest group auction,
+  // contains URNs to the ad components returned by the winning bid. Null,
+  // otherwise.
+  absl::optional<Vector<KURL>> ad_auction_components_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

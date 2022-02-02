@@ -9,8 +9,10 @@
 #include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
@@ -88,6 +90,10 @@
 #include "ui/shell_dialogs/select_file_dialog_factory.h"
 #include "url/gurl.h"
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/common/pepper_plugin.mojom.h"
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 using ::testing::Exactly;
 
 namespace content {
@@ -108,6 +114,10 @@ std::string ToString(const testing::TestParamInfo<BackForwardCacheType>& info) {
     case BackForwardCacheType::kEnabledWithSameSite:
       return "EnabledWithSameSite";
   }
+}
+
+int32_t InterfaceNameHasher(const std::string& interface_name) {
+  return static_cast<int32_t>(base::HashMetricNameAs32Bits(interface_name));
 }
 
 RenderFrameHost* FindRenderFrameHost(Page& page, const GURL& url) {
@@ -894,7 +904,8 @@ IN_PROC_BROWSER_TEST_F(
     AssertPrerenderHistoryLength(host_id, prerender_frame_host);
     EXPECT_EQ("state1", EvalJs(prerender_frame_host, "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(capturer.did_replace_entry());
   }
@@ -912,7 +923,8 @@ IN_PROC_BROWSER_TEST_F(
     AssertPrerenderHistoryLength(host_id, prerender_frame_host);
     EXPECT_EQ("state2", EvalJs(prerender_frame_host, "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(capturer.did_replace_entry());
   }
@@ -933,7 +945,8 @@ IN_PROC_BROWSER_TEST_F(
     // history.state should be replaced with a fragment navigation.
     EXPECT_EQ(nullptr, EvalJs(prerender_frame_host, "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_TRUE(capturer.is_same_document());
     EXPECT_TRUE(capturer.did_replace_entry());
   }
@@ -1082,7 +1095,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SessionHistoryAfterActivation) {
     TestNavigationHistory(k2ndUrl, 1, 3);
     EXPECT_EQ(nullptr, EvalJs(web_contents(), "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
   }
 
@@ -1094,7 +1108,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SessionHistoryAfterActivation) {
     TestNavigationHistory(kPrerenderingUrl, 2, 3);
     EXPECT_EQ("teststate", EvalJs(web_contents(), "history.state"));
 
-    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_ENTRY, capturer.navigation_type());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
     EXPECT_FALSE(capturer.is_same_document());
   }
 }
@@ -1744,12 +1759,12 @@ class MojoCapabilityControlTestContentBrowserClient
 
   void RegisterMojoBinderPoliciesForSameOriginPrerendering(
       MojoBinderPolicyMap& policy_map) override {
-    policy_map.SetPolicy<mojom::TestInterfaceForGrant>(
-        MojoBinderPolicy::kGrant);
-    policy_map.SetPolicy<mojom::TestInterfaceForCancel>(
-        MojoBinderPolicy::kCancel);
-    policy_map.SetPolicy<mojom::TestInterfaceForUnexpected>(
-        MojoBinderPolicy::kUnexpected);
+    policy_map.SetNonAssociatedPolicy<mojom::TestInterfaceForGrant>(
+        MojoBinderNonAssociatedPolicy::kGrant);
+    policy_map.SetNonAssociatedPolicy<mojom::TestInterfaceForCancel>(
+        MojoBinderNonAssociatedPolicy::kCancel);
+    policy_map.SetNonAssociatedPolicy<mojom::TestInterfaceForUnexpected>(
+        MojoBinderNonAssociatedPolicy::kUnexpected);
   }
 
   void BindDeferInterface(
@@ -1900,6 +1915,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface",
       PrerenderCancelledInterface::kUnknown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledUnknownInterface",
+      InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
   SetBrowserClientForTesting(old_browser_client);
 }
 
@@ -1948,6 +1966,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderCancelledInterface",
       PrerenderCancelledInterface::kUnknown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledUnknownInterface",
+      InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
 }
 
 // Tests that mojo capability control will crash the prerender if the browser
@@ -2262,9 +2283,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RenderFrameHostLifecycleState) {
   EXPECT_TRUE(rfh_a->IsInPrimaryMainFrame());
   EXPECT_FALSE(rfh_b->IsInPrimaryMainFrame());
 
-  // "Navigation.TimeToActivatePrerender" histogram should be recorded on every
-  // prerender activation.
-  histogram_tester.ExpectTotalCount("Navigation.TimeToActivatePrerender", 1u);
+  // "Navigation.TimeToActivatePrerender.SpeculationRule" histogram should be
+  // recorded on every prerender activation.
+  histogram_tester.ExpectTotalCount(
+      "Navigation.TimeToActivatePrerender.SpeculationRule", 1u);
 }
 
 // Test that prerender activation is deferred and resumed after the ongoing
@@ -2669,7 +2691,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
       prerender_helper());
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
-      PrerenderHost::FinalStatus::kPlugin, 1);
+      PrerenderHost::FinalStatus::kMojoBinderPolicy, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledInterface",
+      PrerenderCancelledInterface::kUnknown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledUnknownInterface",
+      InterfaceNameHasher(mojom::PepperHost::Name_), 1);
 
   // TODO(https://crbug.com/1215031): Remove this reload after fixing the issue.
   // Now a document cannot trigger prerendering twice, even if the first started
@@ -2681,7 +2709,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PluginsCancelPrerendering) {
       prerender_helper());
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus",
-      PrerenderHost::FinalStatus::kPlugin, 2);
+      PrerenderHost::FinalStatus::kMojoBinderPolicy, 2);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledInterface",
+      PrerenderCancelledInterface::kUnknown, 2);
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderCancelledUnknownInterface",
+      InterfaceNameHasher(mojom::PepperHost::Name_), 2);
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
@@ -3454,6 +3488,48 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);
 }
 
+// Test that WebContentsObserver::DocumentAvailableInMainFrame is not
+// invoked when the page gets loaded while prerendering but it is deferred and
+// invoked on prerender activation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DocumentAvailableInMainFrameInvokedAfterActivation) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Initialize a MockWebContentsObserver and ensure that
+  // DocumentAvailableInMainFrame is not invoked while prerendering.
+  testing::NiceMock<MockWebContentsObserver> observer(shell()->web_contents());
+  EXPECT_CALL(observer, DocumentAvailableInMainFrame(testing::_)).Times(0);
+
+  // AddPrerender() below waits until WebContentsObserver::DidStopLoading() is
+  // called and RenderFrameHostImpl::DocumentAvailableInMainFrame() call is
+  // expected before it returns.
+  int prerender_host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHostImpl* prerender_frame_host =
+      GetPrerenderedMainFrameHost(prerender_host_id);
+  EXPECT_EQ(prerender_frame_host->child_count(), 1u);
+  ASSERT_NE(prerender_host_id, RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Verify and clear all expectations on the mock observer before setting new
+  // ones.
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  testing::InSequence s;
+
+  // Activate the prerendered page. This should result in invoking
+  // DocumentOnLoadCompletedInMainFrame only for main RenderFrameHost.
+  // Verify that DidFinishNavigation is invoked before
+  // DocumentAvailableInMainFrame on activation.
+  EXPECT_CALL(observer, DidFinishNavigation(testing::_));
+
+  EXPECT_CALL(observer, DocumentAvailableInMainFrame(prerender_frame_host))
+      .Times(1);
+  NavigatePrimaryPage(kPrerenderingUrl);
+  EXPECT_EQ(web_contents()->GetURL(), kPrerenderingUrl);
+}
+
 // Test that WebContentsObserver::LoadProgressChanged is not invoked when the
 // page gets loaded while prerendering but is invoked on prerender activation.
 // Check that LoadProgressChanged is only called once for
@@ -3710,7 +3786,7 @@ class ScopedDataSaverTestContentBrowserClient
   }
 
  private:
-  ContentBrowserClient* old_client;
+  raw_ptr<ContentBrowserClient> old_client;
 };
 
 // Tests that the data saver doesn't prevent image load in a prerendered page.
@@ -4380,6 +4456,61 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, SkipCrossOriginPrerender) {
       PrerenderHost::FinalStatus::kCrossOriginNavigation, 1);
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    CancelEmbedderTriggeredPrerenderingSameOriginRedirection) {
+  base::HistogramTester histogram_tester;
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  const GURL kRedirectedUrl = GetUrl("/empty.html?prerender");
+  const GURL kPrerenderingUrl =
+      GetUrl("/server-redirect?" + kRedirectedUrl.spec());
+
+  RedirectChainObserver redirect_chain_observer(*shell()->web_contents(),
+                                                kRedirectedUrl);
+
+  // Start prerendering by embedder triggered prerendering.
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      web_contents_impl()->StartPrerendering(
+          kPrerenderingUrl, PrerenderTriggerType::kEmbedder, "_DirectURLInput");
+  EXPECT_TRUE(prerender_handle);
+  test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
+      *shell()->web_contents(), kPrerenderingUrl);
+  ASSERT_EQ(2u, redirect_chain_observer.redirect_chain().size());
+
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kEmbedderTriggeredAndSameOriginRedirected, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    CancelEmbedderTriggeredPrerenderingCrossOriginRedirection) {
+  base::HistogramTester histogram_tester;
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  const GURL kRedirectedUrl = GetCrossOriginUrl("/empty.html?prerender");
+  const GURL kPrerenderingUrl =
+      GetUrl("/server-redirect?" + kRedirectedUrl.spec());
+
+  RedirectChainObserver redirect_chain_observer(*shell()->web_contents(),
+                                                kRedirectedUrl);
+
+  // Start prerendering by embedder triggered prerendering.
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      web_contents_impl()->StartPrerendering(
+          kPrerenderingUrl, PrerenderTriggerType::kEmbedder, "_DirectURLInput");
+  EXPECT_TRUE(prerender_handle);
+  test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
+      *shell()->web_contents(), kPrerenderingUrl);
+  ASSERT_EQ(2u, redirect_chain_observer.redirect_chain().size());
+
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus",
+      PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected,
+      1);
+}
+
 namespace {
 
 class FrameDisplayStateChangedObserver : public WebContentsObserver {
@@ -4409,7 +4540,7 @@ class FrameDisplayStateChangedObserver : public WebContentsObserver {
   }
 
   int changed_count_ = 0;
-  RenderFrameHost* const target_host_;
+  const raw_ptr<RenderFrameHost> target_host_;
   base::OnceClosure callback_;
 };
 
@@ -5151,6 +5282,48 @@ IN_PROC_BROWSER_TEST_F(
   // Clean up test dialog manager.
   web_contents_impl()->SetDelegate(nullptr);
   web_contents_impl()->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
+// Tests that NavigationHandle::GetNavigatingFrameType() returns the correct
+// type in prerendering and after activation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, NavigationHandleFrameType) {
+  {
+    const GURL kInitialUrl = GetUrl("/empty.html");
+    DidFinishNavigationObserver observer(
+        web_contents(),
+        base::BindLambdaForTesting([](NavigationHandle* navigation_handle) {
+          EXPECT_TRUE(navigation_handle->IsInPrimaryMainFrame());
+          DCHECK_EQ(navigation_handle->GetNavigatingFrameType(),
+                    NavigatingFrameType::kPrimaryMainFrame);
+        }));
+    // Navigate to an initial page.
+    ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  }
+
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+  {
+    DidFinishNavigationObserver observer(
+        web_contents(),
+        base::BindLambdaForTesting([](NavigationHandle* navigation_handle) {
+          EXPECT_TRUE(navigation_handle->IsInPrerenderedMainFrame());
+          DCHECK_EQ(navigation_handle->GetNavigatingFrameType(),
+                    NavigatingFrameType::kPrerenderMainFrame);
+        }));
+    // Start prerendering.
+    AddPrerender(kPrerenderingUrl);
+  }
+
+  {
+    DidFinishNavigationObserver observer(
+        web_contents(),
+        base::BindLambdaForTesting([](NavigationHandle* navigation_handle) {
+          EXPECT_TRUE(navigation_handle->IsInPrimaryMainFrame());
+          EXPECT_TRUE(navigation_handle->IsPrerenderedPageActivation());
+          DCHECK_EQ(navigation_handle->GetNavigatingFrameType(),
+                    NavigatingFrameType::kPrimaryMainFrame);
+        }));
+    NavigatePrimaryPage(kPrerenderingUrl);
+  }
 }
 
 }  // namespace content

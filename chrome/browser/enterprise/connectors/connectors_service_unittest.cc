@@ -5,7 +5,9 @@
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/policy/dm_token_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -105,7 +107,7 @@ class ConnectorsServiceTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfileManager profile_manager_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile> profile_;
 };
 
 class ConnectorsServiceAnalysisNoFeatureTest
@@ -138,11 +140,10 @@ TEST_P(ConnectorsServiceAnalysisNoFeatureTest, AnalysisConnectors) {
                   .empty());
 }
 
-INSTANTIATE_TEST_CASE_P(,
-                        ConnectorsServiceAnalysisNoFeatureTest,
-                        testing::Values(FILE_ATTACHED,
-                                        FILE_DOWNLOADED,
-                                        BULK_DATA_ENTRY));
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ConnectorsServiceAnalysisNoFeatureTest,
+    testing::Values(FILE_ATTACHED, FILE_DOWNLOADED, BULK_DATA_ENTRY, PRINT));
 
 // Tests to make sure getting reporting settings work with both the feature flag
 // and the OnSecurityEventEnterpriseConnector policy. The parameter for these

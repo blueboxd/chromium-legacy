@@ -6,7 +6,6 @@
 #define GPU_IPC_SERVICE_GPU_WATCHDOG_THREAD_H_
 
 #include "base/atomicops.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/native_widget_types.h"
@@ -124,6 +124,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   // For gpu testing only. Return status for the watchdog tests
   bool IsGpuHangDetectedForTesting();
 
+  void WaitForPowerObserverAddedForTesting();
+
   // Implements base::Thread.
   void Init() override;
   void CleanUp() override;
@@ -192,7 +194,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   bool WithinOneMinFromPowerResumed();
   bool WithinOneMinFromForegrounded();
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
   void UpdateActiveTTY();
 #endif
   // The watchdog continues when it's not on the TTY of our host X11 server.
@@ -264,7 +266,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
   bool less_than_full_thread_time_after_capped_ = false;
 #endif
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !BUILDFLAG(IS_CHROMECAST)
   FILE* tty_file_ = nullptr;
   int host_tty_ = -1;
   int active_tty_ = -1;
@@ -283,6 +285,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread
 
   // The GPU watchdog is paused. The timeout task is temporarily stopped.
   bool is_paused_ = false;
+
+  // Whether the watchdog thread has added the power monitor observer.
+  // Read/Write by the watchdog thread only.
+  bool is_power_observer_added_ = false;
 
   // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
   bool is_watchdog_start_histogram_recorded = false;

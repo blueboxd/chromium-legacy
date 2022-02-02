@@ -20,11 +20,12 @@
 
 #include <memory>
 
+#include "base/allocator/early_zone_registration_mac.h"
 #include "chrome/common/chrome_version.h"
 
 #if defined(HELPER_EXECUTABLE)
 #include "sandbox/mac/seatbelt_exec.h"  // nogncheck
-#endif  // defined(HELPER_EXECUTABLE)
+#endif
 
 extern "C" {
 // abort_report_np() records the message in a special section that both the
@@ -33,7 +34,6 @@ extern "C" {
 // Crashpad directly.
 void abort_report_np(const char* fmt, ...) API_AVAILABLE(macos(10.11));
 }
-
 namespace {
 
 typedef int (*ChromeMainPtr)(int, char**);
@@ -55,6 +55,8 @@ typedef int (*ChromeMainPtr)(int, char**);
 }  // namespace
 
 __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
+  partition_alloc::EarlyMallocZoneRegistration();
+
   uint32_t exec_path_size = 0;
   int rv = _NSGetExecutablePath(NULL, &exec_path_size);
   if (rv != -1) {

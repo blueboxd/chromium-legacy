@@ -5,7 +5,10 @@
 #include "extensions/browser/extension_navigation_throttle.h"
 
 #include <memory>
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/content_browser_client.h"
@@ -68,7 +71,29 @@ class ExtensionNavigationThrottleUnitTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     original_client_ = content::SetBrowserClientForTesting(&client_);
-    AddExtension();
+
+    // Constructs an extension with accessible.html and accessible_dir/* as
+    // accessible resources.
+    DictionaryBuilder manifest;
+    manifest.Set("name", "ext")
+        .Set("description", "something")
+        .Set("version", "0.1")
+        .Set("manifest_version", 2)
+        .Set("web_accessible_resources",
+             ListBuilder().Append(kAccessible).Append(kAccessibleDir).Build());
+    extension_ = ExtensionBuilder()
+                     .SetManifest(manifest.Build())
+                     .SetID(crx_file::id_util::GenerateId("foo"))
+                     .Build();
+    ASSERT_TRUE(extension_);
+
+    // Simulate installing/adding the extension.
+    TestExtensionSystem* extension_system =
+        static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
+    ExtensionService* extension_service =
+        extension_system->CreateExtensionService(
+            base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
+    extension_service->AddExtension(extension_.get());
   }
 
   void TearDown() override {
@@ -172,27 +197,9 @@ class ExtensionNavigationThrottleUnitTest
   }
 
  private:
-  // Constructs an extension with accessible.html and accessible_dir/* as
-  // accessible resources.
-  void AddExtension() {
-    DictionaryBuilder manifest;
-    manifest.Set("name", "ext")
-        .Set("description", "something")
-        .Set("version", "0.1")
-        .Set("manifest_version", 2)
-        .Set("web_accessible_resources",
-             ListBuilder().Append(kAccessible).Append(kAccessibleDir).Build());
-    extension_ = ExtensionBuilder()
-                     .SetManifest(manifest.Build())
-                     .SetID(crx_file::id_util::GenerateId("foo"))
-                     .Build();
-    ASSERT_TRUE(extension_);
-    ExtensionRegistry::Get(browser_context())->AddEnabled(extension_.get());
-  }
-
   scoped_refptr<const Extension> extension_;
   MockBrowserClient client_;
-  content::ContentBrowserClient* original_client_;
+  raw_ptr<content::ContentBrowserClient> original_client_ = nullptr;
 };
 
 // Tests the basic case of an external web page embedding an extension resource.

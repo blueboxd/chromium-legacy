@@ -14,6 +14,7 @@
 #include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -96,7 +97,7 @@ class ToolbarActionsModelTestObserver : public ToolbarActionsModel::Observer {
     last_pinned_action_ids_ = model_->pinned_action_ids();
   }
 
-  ToolbarActionsModel* const model_;
+  const raw_ptr<ToolbarActionsModel> model_;
 
   size_t inserted_count_;
   size_t removed_count_;
@@ -188,7 +189,7 @@ class ToolbarActionsModelUnitTest
       const extensions::ExtensionList& extensions);
 
   // The toolbar model associated with the testing profile.
-  ToolbarActionsModel* toolbar_model_;
+  raw_ptr<ToolbarActionsModel> toolbar_model_;
 
   // The test observer to track events. Must come after toolbar_model_ so that
   // it is destroyed and removes itself as an observer first.
@@ -1027,6 +1028,70 @@ TEST_F(ToolbarActionsModelUnitTest, ForcePinnedByPolicy) {
   EXPECT_TRUE(toolbar_model()->IsActionPinned(extension->id()));
   auto* prefs = extensions::ExtensionPrefs::Get(profile());
   EXPECT_FALSE(base::Contains(prefs->GetPinnedExtensions(), extension_id));
+
+  // Pin all other extensions, to allow moving them around.
+  ASSERT_TRUE(AddBrowserActionExtensions());
+  const auto& id_a = browser_action_a()->id();
+  const auto& id_b = browser_action_b()->id();
+  const auto& id_c = browser_action_c()->id();
+  toolbar_model()->SetActionVisibility(id_a, true);
+  toolbar_model()->SetActionVisibility(id_b, true);
+  toolbar_model()->SetActionVisibility(id_c, true);
+
+  // Force-pinned extensions aren't saved in the pref.
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_a, id_b, id_c));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_a, id_b, id_c, extension_id));
+
+  // Try to move the force-pinned extension. This shouldn't do anything because
+  // they can't be moved. See crbug.com/1266952.
+  toolbar_model()->MovePinnedAction(extension_id, 1);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_a, id_b, id_c));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_a, id_b, id_c, extension_id));
+
+  // Try to move other extensions. This should work fine.
+  toolbar_model()->MovePinnedAction(id_a, 1);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_b, id_a, id_c));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_b, id_a, id_c, extension_id));
+
+  toolbar_model()->MovePinnedAction(id_a, 2);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_b, id_c, id_a));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_b, id_c, id_a, extension_id));
+
+  toolbar_model()->MovePinnedAction(id_a, 0);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_a, id_b, id_c));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_a, id_b, id_c, extension_id));
+
+  // Try to move an extension to the right of the force-pinned one. This will
+  // not work, and the force-pinned one will stay to the right. But the other
+  // extension will still get moved as far right as it can.
+  toolbar_model()->MovePinnedAction(id_a, 3);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_b, id_c, id_a));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_b, id_c, id_a, extension_id));
+
+  // Again, but using an index greater than the rightmost index (mostly to check
+  // for crashes).
+  toolbar_model()->MovePinnedAction(id_a, 0);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_a, id_b, id_c));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_a, id_b, id_c, extension_id));
+  toolbar_model()->MovePinnedAction(id_a, 4);
+  EXPECT_THAT(prefs->GetPinnedExtensions(),
+              testing::ElementsAre(id_b, id_c, id_a));
+  EXPECT_THAT(toolbar_model()->pinned_action_ids(),
+              testing::ElementsAre(id_b, id_c, id_a, extension_id));
 }
 
 // Tests that the pin state (and position) for extensions that are unloaded

@@ -34,9 +34,9 @@ export class ProjectorBrowserProxy {
 
   /**
    * Checks whether the SWA can trigger a new Projector session.
-   * @return {Promise<boolean>}
+   * @return {Promise<!projectorApp.NewScreencastPreconditionState>}
    */
-  canStartProjectorSession() {}
+  getNewScreencastPreconditionState() {}
 
   /**
    * Launches the Projector recording session. Returns true if a projector
@@ -74,12 +74,6 @@ export class ProjectorBrowserProxy {
   sendXhr(url, method, requestBody, useCredentials) {}
 
   /**
-   * Return true if the "new screencast" button should be shown to the user.
-   * @return {!Promise<boolean>}
-   */
-  shouldShowNewScreencastButton() {}
-
-  /**
    * Returns true if the "install speech recognition" button should be shown to
    * the user.
    * @return {!Promise<boolean>}
@@ -101,6 +95,25 @@ export class ProjectorBrowserProxy {
   // TODO(b/204372280): return
   // "Promise<!Array<!projectorApp.PendingScreencast>>"
   getPendingScreencasts() {}
+
+  /**
+   * Returns the value associated with the user preference if it is supported;
+   * If the `userPref` is not supported the returned promise will be rejected.
+   * @param {string} userPref
+   * @return {!Promise<Object>}
+   */
+  getUserPref(userPref) {}
+
+  /**
+   * Sets the user preference  if the preference is supported and the value is
+   * valid. If the `userPref` is not supported or the `value` is not the correct
+   * type, the returned promise will be rejected.
+   * @param {string} userPref
+   * @param {Object} value A preference can store multiple types (dictionaries,
+   *     lists, Boolean, etc..); therefore, accept a generic Object value.
+   * @return {!Promise} Promise resolved when the request was handled.
+   */
+  setUserPref(userPref, value) {}
 }
 
 /**
@@ -124,12 +137,12 @@ export class ProjectorBrowserProxyImpl {
   }
 
   /** @override */
-  canStartProjectorSession() {
-    return sendWithPromise('canStartProjectorSession');
+  getNewScreencastPreconditionState() {
+    return sendWithPromise('getNewScreencastPreconditionState');
   }
 
   /** @override */
-  startProjectorSession(storageDir ) {
+  startProjectorSession(storageDir) {
     return sendWithPromise('startProjectorSession', [storageDir]);
   }
 
@@ -140,18 +153,13 @@ export class ProjectorBrowserProxyImpl {
 
   /** @override */
   onError(msg) {
-    return chrome.send("onError", msg);
+    return chrome.send('onError', msg);
   }
 
   /** @override */
   sendXhr(url, method, requestBody, useCredentials) {
     return sendWithPromise(
         'sendXhr', [url, method, requestBody, useCredentials]);
-  }
-
-  /** @override */
-  shouldShowNewScreencastButton() {
-    return sendWithPromise('shouldShowNewScreencastButton');
   }
 
   /** @override */
@@ -163,9 +171,20 @@ export class ProjectorBrowserProxyImpl {
   installSoda() {
     return sendWithPromise('installSoda');
   }
+
   /** @override */
   getPendingScreencasts() {
     return sendWithPromise('getPendingScreencasts');
+  }
+
+  /** @override */
+  getUserPref(userPref) {
+    return sendWithPromise('getUserPref', [userPref]);
+  }
+
+  /** @override */
+  setUserPref(userPref, value) {
+    return sendWithPromise('setUserPref', [userPref, value]);
   }
 }
 

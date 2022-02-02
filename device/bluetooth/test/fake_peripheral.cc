@@ -207,13 +207,6 @@ bool FakePeripheral::IsConnecting() const {
   return false;
 }
 
-#if defined(OS_CHROMEOS)
-bool FakePeripheral::IsBlockedByPolicy() const {
-  NOTREACHED();
-  return false;
-}
-#endif
-
 bool FakePeripheral::ExpectingPinCode() const {
   NOTREACHED();
   return false;
@@ -368,7 +361,7 @@ void FakePeripheral::DispatchDiscoveryResponse() {
 void FakePeripheral::DisconnectGatt() {
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void FakePeripheral::ExecuteWrite(base::OnceClosure callback,
                                   ExecuteWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();
@@ -378,6 +371,6 @@ void FakePeripheral::AbortWrite(base::OnceClosure callback,
                                 AbortWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();
 }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace bluetooth

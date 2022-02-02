@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/bit_cast.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/resolver.h"
 #include "sandbox/win/src/sandbox_utils.h"
@@ -30,7 +30,7 @@ class ResolverThunkTest {
 
  protected:
   // Holds the address of the fake target.
-  void* fake_target_;
+  raw_ptr<void> fake_target_;
 };
 
 // This is the concrete resolver used to perform service-call type functions
@@ -41,6 +41,9 @@ class ResolverThunkTestImpl : public T, public ResolverThunkTest {
   // The service resolver needs a child process to write to.
   explicit ResolverThunkTestImpl(bool relaxed)
       : T(::GetCurrentProcess(), relaxed) {}
+
+  ResolverThunkTestImpl(const ResolverThunkTestImpl&) = delete;
+  ResolverThunkTestImpl& operator=(const ResolverThunkTestImpl&) = delete;
 
   sandbox::ServiceResolverThunk* resolver() { return this; }
 
@@ -63,8 +66,6 @@ class ResolverThunkTestImpl : public T, public ResolverThunkTest {
 
     return ret;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ResolverThunkTestImpl);
 };
 
 typedef ResolverThunkTestImpl<sandbox::ServiceResolverThunk> WinXpResolverTest;

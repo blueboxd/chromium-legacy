@@ -9,8 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
-
 namespace google_breakpad {
 class LibcurlWrapper;
 }
@@ -33,6 +31,7 @@ struct CastCrashdumpData {
   std::string crash_server;
   std::string proxy_host;
   std::string proxy_userpassword;
+  std::string upload_filename;
 };
 
 class CastCrashdumpUploader {

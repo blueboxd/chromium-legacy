@@ -261,6 +261,7 @@ class TableLayout::Row : public LayoutElement {
 // Identifies the location in the grid of a particular view, along with
 // placement information and size information.
 struct TableLayout::ViewState {
+  ViewState() = default;
   ViewState(View* view,
             size_t start_col,
             size_t start_row,
@@ -280,13 +281,13 @@ struct TableLayout::ViewState {
     DCHECK_GT(row_span, 0u);
   }
 
-  View* view;
-  size_t start_col;
-  size_t start_row;
-  size_t col_span;
-  size_t row_span;
-  LayoutAlignment h_align;
-  LayoutAlignment v_align;
+  View* view = nullptr;
+  size_t start_col = 0;
+  size_t start_row = 0;
+  size_t col_span = 0;
+  size_t row_span = 0;
+  LayoutAlignment h_align = LayoutAlignment::kStart;
+  LayoutAlignment v_align = LayoutAlignment::kStart;
 
   // The preferred size, only set during the preferred size pass
   // (SizeCalculationType::kPreferred).
@@ -369,17 +370,21 @@ TableLayout& TableLayout::SetMinimumSize(const gfx::Size& size) {
   return *this;
 }
 
+TableLayout& TableLayout::SetIncludeHidden(bool include_hidden) {
+  include_hidden_ = include_hidden;
+  OnLayoutChanged();
+  return *this;
+}
+
 ProposedLayout TableLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   ProposedLayout layout;
   layout.host_size = SizeRowsAndColumns(size_bounds);
   layout.host_size.SetToMax(minimum_size_);
 
-  // Hiding all children here and then re-showing all the sized ones below has
-  // the effect of leaving any excess children invisible.
   for (View* child : GetChildViewsInPaintOrder(host_view())) {
     if (!IsChildViewIgnoredByLayout(child))
-      layout.child_layouts.push_back({child, false, {}, {}});
+      layout.child_layouts.push_back({child, true, {}, {}});
   }
 
   // Size each view.
@@ -407,7 +412,6 @@ ProposedLayout TableLayout::CalculateProposedLayout(
                                  &ChildLayout::child_view);
     DCHECK(it != layout.child_layouts.cend());
     it->bounds = gfx::Rect(x, y, width, height);
-    it->visible = true;
     it->available_size = SizeBounds(width, height);
   }
 
@@ -421,7 +425,7 @@ void TableLayout::SetViewStates() const {
   size_t col = 0, row = 0;
   std::vector<ViewState*> row_spans;
   for (View* child : GetChildViewsInPaintOrder(host_view())) {
-    if (!IsChildIncludedInLayout(child))
+    if (!IsChildIncludedInLayout(child, include_hidden_))
       continue;
 
     // Move (col, row) to next open cell.
@@ -444,8 +448,11 @@ void TableLayout::SetViewStates() const {
         break;
       col = 0;
     }
-    if (row == rows_.size())
+    if (row == rows_.size()) {
+      NOTREACHED() << "There're not enough cells for layout. Did you forget to "
+                      "call AddRows()?";
       break;
+    }
 
     // Construct a ViewState for this `child`.
     const gfx::Size* span = child->GetProperty(kTableColAndRowSpanKey);
@@ -500,7 +507,7 @@ gfx::Size TableLayout::SizeRowsAndColumns(const SizeBounds& bounds) const {
   // Calculate the preferred width of each of the columns. Some views'
   // preferred heights are derived from their width, as such we need to
   // calculate the size of the columns first.
-  CalculateSize(SizeCalculationType::kPreferred);
+  CalculateSize(SizeCalculationType::kPreferred, view_states_by_col_span_);
   const gfx::Insets& insets = host_view()->GetInsets();
   pref.set_width(LayoutWidth() + insets.width());
 
@@ -678,9 +685,11 @@ int TableLayout::LayoutWidth() const {
       [](int size, const auto& elem) { return size + elem.size(); });
 }
 
-void TableLayout::CalculateSize(SizeCalculationType type) const {
+void TableLayout::CalculateSize(
+    SizeCalculationType type,
+    const std::vector<ViewState*>& view_states) const {
   // Reset the size and remaining sizes.
-  for (auto* view_state : view_states_by_col_span_) {
+  for (auto* view_state : view_states) {
     gfx::Size size;
     if (type == SizeCalculationType::kMinimum && CanUseMinimum(*view_state)) {
       // If the min size is bigger than the preferred, use the preferred.
@@ -702,8 +711,8 @@ void TableLayout::CalculateSize(SizeCalculationType type) const {
   ResetSizes(columns_);
 
   // Distribute the size of each view with a col span == 1.
-  auto view_state_iterator = view_states_by_col_span_.begin();
-  for (; view_state_iterator != view_states_by_col_span_.end() &&
+  auto view_state_iterator = view_states.begin();
+  for (; view_state_iterator != view_states.end() &&
          (*view_state_iterator)->col_span == 1;
        ++view_state_iterator) {
     ViewState* view_state = *view_state_iterator;
@@ -716,8 +725,7 @@ void TableLayout::CalculateSize(SizeCalculationType type) const {
   UnifyLinkedColumnSizes();
 
   // Distribute the size of each view with a column span > 1.
-  for (; view_state_iterator != view_states_by_col_span_.end();
-       ++view_state_iterator) {
+  for (; view_state_iterator != view_states.end(); ++view_state_iterator) {
     ViewState* view_state = *view_state_iterator;
 
     // Update the remaining_width from columns this view_state touches.
@@ -767,8 +775,17 @@ void TableLayout::ResizeUsingMin(int total_delta) const {
   for (size_t i = 0; i < columns_.size(); ++i)
     preferred_column_sizes[i] = columns_[i].size();
 
-  // Recalculate the sizes using the min.
-  CalculateSize(SizeCalculationType::kMinimum);
+  // Recalculate the sizes using the min.  We don't want to touch the proposed
+  // widths and heights, so copy the ViewStates to a temporary location so
+  // modifications to them aren't reflected in the members.
+  const size_t num_states = view_states_by_col_span_.size();
+  std::vector<ViewState> view_states(num_states);
+  std::vector<ViewState*> view_state_ptrs(num_states);
+  for (size_t i = 0; i < num_states; ++i) {
+    view_states[i] = *view_states_by_col_span_[i];
+    view_state_ptrs[i] = &view_states[i];
+  }
+  CalculateSize(SizeCalculationType::kMinimum, view_state_ptrs);
 
   // Build up the set of columns that can be shrunk in |resize_data|, this
   // iteration also resets the size of the column back to the preferred size.

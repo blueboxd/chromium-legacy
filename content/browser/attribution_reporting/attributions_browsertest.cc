@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -20,6 +19,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
@@ -38,9 +38,9 @@ namespace content {
 
 namespace {
 
-namespace {
+using ::testing::Return;
+
 constexpr char kBaseDataDir[] = "content/test/data/";
-}
 
 // Waits for the a given |report_url| to be received by the test server. Wraps a
 // ControllableHttpResponse so that it can wait for the server request in a
@@ -99,6 +99,12 @@ struct ExpectedReportWaiter {
     base::Value body = base::test::ParseJson(request.content);
     EXPECT_THAT(body, base::test::DictionaryHasValues(expected_body));
 
+    // The report ID is random, so just test that the field exists here and is a
+    // valid GUID.
+    std::string* report_id = body.FindStringKey("report_id");
+    EXPECT_TRUE(report_id);
+    EXPECT_TRUE(base::GUID::ParseLowercase(*report_id).is_valid());
+
     // Clear the port as it is assigned by the EmbeddedTestServer at runtime.
     replace_host.SetPortStr("");
 
@@ -140,9 +146,6 @@ class AttributionsBrowserTest : public ContentBrowserTest {
   WebContents* web_contents() { return shell()->web_contents(); }
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
-
- protected:
-  AttributionDisallowingContentBrowserClient disallowed_browser_client_;
 
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -571,8 +574,10 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
                        ConversionRegisteredWithEmbedderDisallow_NoData) {
-  ContentBrowserClient* old_browser_client =
-      SetBrowserClientForTesting(&disallowed_browser_client_);
+  MockAttributionReportingContentBrowserClient browser_client;
+  EXPECT_CALL(browser_client, IsConversionMeasurementOperationAllowed)
+      .WillRepeatedly(Return(false));
+  ScopedContentBrowserClientSetting setting(&browser_client);
 
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
@@ -616,8 +621,6 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
       FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
   run_loop.Run();
   EXPECT_FALSE(expected_report.HasRequest());
-
-  SetBrowserClientForTesting(old_browser_client);
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,

@@ -45,6 +45,15 @@ export class InputController {
   }
 
   /**
+   * Whether this is the active IME and has a focused input.
+   * @return {boolean}
+   */
+  isActive() {
+    return this.activeImeContextId_ !==
+        InputController.NO_ACTIVE_IME_CONTEXT_ID_;
+  }
+
+  /**
    * Connect as the active Input Method Manager.
    * @param {function():void} callback The callback to run after IME is
    *     connected.
@@ -94,35 +103,21 @@ export class InputController {
     return this.currentComposition_.length > 0;
   }
 
-  /**
-   * Sets the composition text for the current IME context.
-   * @param {string} text
-   */
-  setCompositionText(text) {
-    if (this.activeImeContextId_ ===
-        InputController.NO_ACTIVE_IME_CONTEXT_ID_) {
+  /** Displays current composition text for the current IME context. */
+  displayCurrentComposition() {
+    if (!this.isActive()) {
       return;
     }
+
     // Set the composition text for interim results.
     // Later we will do this in Chrome OS UI so that if the
     // result will become a command it will not appear and
     // disappear from the composition text.
-    chrome.input.ime.setComposition(
-        {contextID: this.activeImeContextId_, cursor: text.length, text});
-    this.currentComposition_ = text;
-  }
-
-  /**
-   * Clears the current composition.
-   * @param {function():void} callback
-   */
-  clearCompositionText(callback) {
-    if (this.activeImeContextId_ ===
-        InputController.NO_ACTIVE_IME_CONTEXT_ID_) {
-      return;
-    }
-    chrome.input.ime.clearComposition(
-        {contextID: this.activeImeContextId_}, callback);
+    chrome.input.ime.setComposition({
+      contextID: this.activeImeContextId_,
+      cursor: this.currentComposition_.length,
+      text: this.currentComposition_
+    });
   }
 
   /**
@@ -130,12 +125,11 @@ export class InputController {
    * @param {string} text The text to commit
    */
   commitText(text) {
-    if (this.activeImeContextId_ ===
-        InputController.NO_ACTIVE_IME_CONTEXT_ID_) {
+    if (!this.isActive()) {
       return;
     }
     chrome.input.ime.commitText({contextID: this.activeImeContextId_, text});
-    this.currentComposition_ = '';
+    this.setCurrentComposition('');
   }
 
   /**
@@ -204,6 +198,11 @@ export class InputController {
       this.activeImeContextId_ = InputController.NO_ACTIVE_IME_CONTEXT_ID_;
       this.stopDictationCallback_();
     }
+  }
+
+  /** @param {string} text */
+  setCurrentComposition(text) {
+    this.currentComposition_ = text;
   }
 }
 

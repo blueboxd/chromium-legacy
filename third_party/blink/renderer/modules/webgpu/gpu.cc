@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
@@ -25,7 +26,8 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_supported_features.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/dawn_control_client_holder.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/privacy_budget/identifiability_digest_helpers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -99,8 +101,8 @@ std::unique_ptr<WebGraphicsContext3DProvider> CreateContextProvider(
   return context_provider;
 }
 
-void AddConsoleWarning(ExecutionContext* execution_context,
-                       const char* message) {
+ALLOW_UNUSED_TYPE void AddConsoleWarning(ExecutionContext* execution_context,
+                                         const char* message) {
   if (execution_context) {
     auto* console_message = MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kRendering,
@@ -236,22 +238,6 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
     }
   }
 
-  bool forceFallbackAdapter = options->forceFallbackAdapter();
-
-  if (options->hasForceSoftware()) {
-    AddConsoleWarning(
-        ExecutionContext::From(script_state),
-        "forceSoftware is deprecated. Use forceFallbackAdapter instead.");
-
-    forceFallbackAdapter = options->forceSoftware();
-  }
-
-  // Software adapters are not currently supported.
-  if (forceFallbackAdapter) {
-    resolver->Resolve(v8::Null(script_state->GetIsolate()));
-    return promise;
-  }
-
   // For now we choose kHighPerformance by default.
   gpu::webgpu::PowerPreference power_preference =
       gpu::webgpu::PowerPreference::kHighPerformance;
@@ -263,7 +249,7 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
   auto context_provider = dawn_control_client_->GetContextProviderWeakPtr();
   DCHECK(context_provider);
   context_provider->ContextProvider()->WebGPUInterface()->RequestAdapterAsync(
-      power_preference,
+      power_preference, options->forceFallbackAdapter(),
       WTF::Bind(&GPU::OnRequestAdapterCallback, WrapPersistent(this),
                 WrapPersistent(script_state), WrapPersistent(options),
                 WrapPersistent(resolver)));

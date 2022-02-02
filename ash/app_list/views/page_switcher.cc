@@ -11,9 +11,9 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -21,7 +21,6 @@
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -63,11 +62,9 @@ class PageSwitcherButton : public views::Button {
               AppListColorProvider::Get();
           auto highlight = std::make_unique<views::InkDropHighlight>(
               gfx::SizeF(host->size()),
-              color_provider->GetRippleAttributesBaseColor(
-                  host->background_color_));
+              color_provider->GetInkDropBaseColor(host->background_color_));
           highlight->set_visible_opacity(
-              color_provider->GetRippleAttributesHighlightOpacity(
-                  host->background_color_));
+              color_provider->GetInkDropOpacity(host->background_color_));
           return highlight;
         },
         this));
@@ -85,10 +82,8 @@ class PageSwitcherButton : public views::Button {
           return std::make_unique<views::FloodFillInkDropRipple>(
               host->size(), host->GetLocalBounds().InsetsFrom(bounds),
               views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
-              color_provider->GetRippleAttributesBaseColor(
-                  host->background_color_),
-              color_provider->GetRippleAttributesInkDropOpacity(
-                  host->background_color_));
+              color_provider->GetInkDropBaseColor(host->background_color_),
+              color_provider->GetInkDropOpacity(host->background_color_));
         },
         this));
 

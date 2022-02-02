@@ -5,7 +5,7 @@
 #ifndef UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
 #define UI_GFX_SYS_COLOR_CHANGE_LISTENER_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -32,7 +32,7 @@ class GFX_EXPORT ScopedSysColorChangeListener {
   ~ScopedSysColorChangeListener();
 
  private:
-  SysColorChangeListener* listener_;
+  raw_ptr<SysColorChangeListener> listener_;
 };
 
 }  // namespace gfx;

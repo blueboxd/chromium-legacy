@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -144,6 +143,26 @@ TransportRoute::RouteType CandidateTypeToTransportRouteType(
   } else {
     LOG(ERROR) << "Unknown candidate type: " << candidate_type;
     return TransportRoute::DIRECT;
+  }
+}
+
+// Initializes default parameters for a sender that may be different from
+// WebRTC's defaults.
+void SetDefaultSenderParameters(
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> sender) {
+  if (sender->media_type() == cricket::MEDIA_TYPE_VIDEO) {
+    webrtc::RtpParameters parameters = sender->GetParameters();
+    if (parameters.encodings.empty()) {
+      LOG(ERROR) << "No encodings found for sender " << sender->id();
+      return;
+    }
+
+    for (auto& encoding : parameters.encodings) {
+      encoding.max_framerate = kTargetFrameRate;
+    }
+
+    webrtc::RTCError result = sender->SetParameters(parameters);
+    DCHECK(result.ok()) << "SetParameters() failed: " << result.message();
   }
 }
 
@@ -781,6 +800,11 @@ void WebrtcTransport::OnVideoTransceiverCreated(
   int min_bitrate_bps, max_bitrate_bps;
   std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
   SetSenderBitrates(min_bitrate_bps, max_bitrate_bps);
+
+  // Sender is always present, regardless of the direction of media
+  // (see rtp_transceiver_interface.h).
+  auto sender = transceiver->sender();
+  SetDefaultSenderParameters(sender);
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
@@ -862,6 +886,14 @@ void WebrtcTransport::OnLocalDescriptionSet(bool success,
   }
 
   AddPendingCandidatesIfPossible();
+
+  // The sender "encodings" parameters are initialized after the local
+  // description is set. At this point, it is possible to set parameters such as
+  // maximum framerate.
+  auto senders = peer_connection()->GetSenders();
+  for (const auto& sender : senders) {
+    SetDefaultSenderParameters(sender);
+  }
 }
 
 void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
@@ -873,7 +905,7 @@ void WebrtcTransport::OnRemoteDescriptionSet(bool send_answer,
     return;
 
   if (!success) {
-    LOG(ERROR) << "Failed to set local description: " << error;
+    LOG(ERROR) << "Failed to set remote description: " << error;
     Close(CHANNEL_CONNECTION_ERROR);
     return;
   }

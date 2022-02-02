@@ -10,13 +10,19 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/document_service_internal.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "url/origin.h"
 
 namespace content {
+
+enum class DocumentServiceDestructionReason : int {
+  // The mojo connection terminated.
+  kConnectionTerminated,
+  // The document pointed to by `render_frame_host()` is being destroyed.
+  kEndOfDocumentLifetime,
+};
 
 // Helper to provide the safe equivalent of the mojo::MakeStrongReceiver<T>(...)
 // pattern for document-scoped Mojo interface implementations. Use of this
@@ -62,7 +68,11 @@ class DocumentService : public Interface, public internal::DocumentServiceBase {
         receiver_(this, std::move(pending_receiver)) {
     // |this| owns |receiver_|, so unretained is safe.
     receiver_.set_disconnect_handler(base::BindOnce(
-        [](DocumentServiceBase* document_service) { delete document_service; },
+        [](DocumentServiceBase* document_service) {
+          document_service->WillBeDestroyed(
+              DocumentServiceDestructionReason::kConnectionTerminated);
+          delete document_service;
+        },
         base::Unretained(this)));
   }
 
@@ -75,6 +85,9 @@ class DocumentService : public Interface, public internal::DocumentServiceBase {
   const url::Origin& origin() const {
     return render_frame_host()->GetLastCommittedOrigin();
   }
+
+  mojo::Receiver<Interface>* receiver() { return &receiver_; }
+  const mojo::Receiver<Interface>* receiver() const { return &receiver_; }
 
   // Returns the RenderFrameHost tracked by this object. Guaranteed to never be
   // null.

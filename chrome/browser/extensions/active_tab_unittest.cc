@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -61,6 +61,7 @@
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/account_id/account_id.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #endif
@@ -498,7 +499,7 @@ class ActiveTabDelegateTest : public ActiveTabTest {
     ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
   }
 
-  ActiveTabPermissionGranterTestDelegate* test_delegate_;
+  raw_ptr<ActiveTabPermissionGranterTestDelegate> test_delegate_;
 };
 
 // Test that the custom platform delegate works as expected.
@@ -531,6 +532,10 @@ class ActiveTabManagedSessionTest : public ActiveTabTest {
 
   void SetUp() override {
     ActiveTabTest::SetUp();
+
+    // These tests need a real user manager.
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        ash::ChromeUserManagerImpl::CreateChromeUserManager());
 
     // Necessary to prevent instantiation of SyncService, which messes
     // with our signin state below.
@@ -578,9 +583,12 @@ class ActiveTabManagedSessionTest : public ActiveTabTest {
     ash::ChromeUserManagerImpl::ResetPublicAccountDelegatesForTesting();
     ash::ChromeUserManager::Get()->Shutdown();
 
+    scoped_user_manager_.reset();
+
     ActiveTabTest::TearDown();
   }
 
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<ScopedTestingLocalState> local_state_;
   TestWallpaperController test_wallpaper_controller_;
   std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;

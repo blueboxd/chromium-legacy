@@ -12,14 +12,15 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/share/share_submenu_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/renderer_context_menu/context_menu_content_type.h"
 #include "components/renderer_context_menu/render_view_context_menu_base.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
@@ -86,8 +87,9 @@ class DlpRulesManager;
 }  // namespace policy
 #endif
 
-class RenderViewContextMenu : public RenderViewContextMenuBase,
-                              public ProtocolHandlerRegistry::Observer {
+class RenderViewContextMenu
+    : public RenderViewContextMenuBase,
+      public custom_handlers::ProtocolHandlerRegistry::Observer {
  public:
   using ExecutePluginActionCallback =
       base::OnceCallback<void(content::RenderFrameHost*,
@@ -300,7 +302,8 @@ class RenderViewContextMenu : public RenderViewContextMenuBase,
 
   // Returns a list of registered ProtocolHandlers that can handle the clicked
   // on URL.
-  ProtocolHandlerRegistry::ProtocolHandlerList GetHandlersForLinkUrl();
+  custom_handlers::ProtocolHandlerRegistry::ProtocolHandlerList
+  GetHandlersForLinkUrl();
 
   // ProtocolHandlerRegistry::Observer:
   void OnProtocolHandlerRegistryChanged() override;
@@ -317,10 +320,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase,
   // - The submenu containing the installed protocol handlers.
   ui::SimpleMenuModel protocol_handler_submenu_model_;
   // - The registry with the protocols.
-  ProtocolHandlerRegistry* protocol_handler_registry_;
+  raw_ptr<custom_handlers::ProtocolHandlerRegistry> protocol_handler_registry_;
   // - The observation of the registry.
-  base::ScopedObservation<ProtocolHandlerRegistry,
-                          ProtocolHandlerRegistry::Observer>
+  base::ScopedObservation<custom_handlers::ProtocolHandlerRegistry,
+                          custom_handlers::ProtocolHandlerRegistry::Observer>
       protocol_handler_registry_observation_{this};
   // - Whether or not the registered protocols have changed since the menu was
   //   built.
@@ -361,7 +364,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase,
   // In the case of a MimeHandlerView this will point to the WebContents that
   // embeds the MimeHandlerViewGuest. Otherwise this will be the same as
   // |source_web_contents_|.
-  content::WebContents* const embedder_web_contents_;
+  const raw_ptr<content::WebContents> embedder_web_contents_;
 
   // Send tab to self submenu.
   std::unique_ptr<send_tab_to_self::SendTabToSelfSubMenuModel>
@@ -379,7 +382,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase,
       shared_clipboard_context_menu_observer_;
 
   // The system app (if any) associated with the WebContents we're in.
-  const web_app::SystemWebAppDelegate* system_app_ = nullptr;
+  raw_ptr<const web_app::SystemWebAppDelegate> system_app_ = nullptr;
 
   // A one-time callback that will be called the next time a plugin action is
   // executed from a given render frame.

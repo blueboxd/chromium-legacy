@@ -212,7 +212,8 @@ uint32_t RenderWidgetHostViewChildFrame::GetCaptureSequenceNumber() const {
   return frame_connector_->capture_sequence_number();
 }
 
-void RenderWidgetHostViewChildFrame::Show() {
+void RenderWidgetHostViewChildFrame::ShowWithVisibility(
+    PageVisibilityState /*page_visibility*/) {
   if (!host()->is_hidden())
     return;
 
@@ -324,6 +325,21 @@ RenderWidgetHostViewChildFrame::GetDisplayFeature() {
 
 void RenderWidgetHostViewChildFrame::SetDisplayFeatureForTesting(
     const DisplayFeature*) {
+  NOTREACHED();
+}
+
+void RenderWidgetHostViewChildFrame::NotifyHostAndDelegateOnWasShown(
+    blink::mojom::RecordContentToVisibleTimeRequestPtr) {
+  NOTREACHED();
+}
+
+void RenderWidgetHostViewChildFrame::RequestPresentationTimeFromHostOrDelegate(
+    blink::mojom::RecordContentToVisibleTimeRequestPtr) {
+  NOTREACHED();
+}
+
+void RenderWidgetHostViewChildFrame::
+    CancelPresentationTimeRequestForHostAndDelegate() {
   NOTREACHED();
 }
 
@@ -482,6 +498,7 @@ void RenderWidgetHostViewChildFrame::UpdateViewportIntersection(
         !intersection_state.viewport_intersection.IsEmpty());
 
     // Do not send viewport intersection to main frames.
+    DCHECK(!visual_properties.has_value() || !host()->owner_delegate());
     if (!host()->owner_delegate()) {
       host()->GetAssociatedFrameWidget()->SetViewportIntersection(
           intersection_state.Clone(), visual_properties);

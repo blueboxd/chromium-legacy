@@ -9,7 +9,7 @@
 #include "ash/grit/ash_media_app_resources.h"
 #include "ash/webui/media_app_ui/media_app_page_handler.h"
 #include "ash/webui/media_app_ui/url_constants.h"
-#include "chromeos/components/web_applications/webui_test_prod_util.h"
+#include "ash/webui/web_applications/webui_test_prod_util.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -108,7 +108,6 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   allowlist->RegisterAutoGrantedPermissions(
       host_origin, {
                        ContentSettingsType::COOKIES,
-                       ContentSettingsType::FILE_HANDLING,
                        ContentSettingsType::FILE_SYSTEM_READ_GUARD,
                        ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
                        ContentSettingsType::IMAGES,

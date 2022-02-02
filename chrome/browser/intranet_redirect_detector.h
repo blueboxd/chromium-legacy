@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -93,8 +92,8 @@ class IntranetRedirectDetector
   void SetupDnsConfigClient();
   void OnDnsConfigClientConnectionError();
 
-  // Whether the IntranetRedirectDetector is enabled, or, through policy,
-  // disabled.
+  // Whether the IntranetRedirectDetector is enabled by policy. Disabled by
+  // default.
   bool IsEnabledByPolicy();
 
   GURL redirect_origin_;

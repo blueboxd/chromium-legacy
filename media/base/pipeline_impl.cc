@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
@@ -33,6 +34,10 @@
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
+
+#if defined(OS_WIN)
+#include "media/base/win/mf_feature_checks.h"
+#endif  // defined(OS_WIN)
 
 static const double kDefaultPlaybackRate = 0.0;
 static const float kDefaultVolume = 1.0f;
@@ -184,12 +189,12 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
 
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  MediaLog* const media_log_;
+  const raw_ptr<MediaLog> media_log_;
 
   // A weak pointer to PipelineImpl. Must only use on the main task runner.
   base::WeakPtr<PipelineImpl> weak_pipeline_;
 
-  Demuxer* demuxer_;
+  raw_ptr<Demuxer> demuxer_;
 
   // Optional default renderer to be used during Start() and Resume(). If not
   // available, or if a different Renderer is needed,
@@ -199,7 +204,7 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   double playback_rate_;
   float volume_;
   absl::optional<base::TimeDelta> latency_hint_;
-  CdmContext* cdm_context_;
+  raw_ptr<CdmContext> cdm_context_;
 
   // By default, apply pitch adjustments.
   bool preserves_pitch_ = true;
@@ -586,8 +591,17 @@ void PipelineImpl::RendererWrapper::CreateRendererInternal(
   absl::optional<RendererType> renderer_type;
 
 #if defined(OS_WIN)
-  if (cdm_context_ && cdm_context_->RequiresMediaFoundationRenderer())
-    renderer_type = RendererType::kMediaFoundation;
+  if (cdm_context_) {
+    if (cdm_context_->RequiresMediaFoundationRenderer()) {
+      renderer_type = RendererType::kMediaFoundation;
+    } else if (media::SupportMediaFoundationClearPlayback()) {
+      // When MediaFoundation for Clear is enabled, the base renderer
+      // type is set to MediaFoundation. In order to ensure DRM systems
+      // built on non-Media Foundation pipelines continue to work we
+      // explicitly set renderer_type to Default.
+      renderer_type = RendererType::kDefault;
+    }
+  }
 #endif  // defined(OS_WIN)
 
   // TODO(xhwang): During Resume(), the |default_renderer_| might already match

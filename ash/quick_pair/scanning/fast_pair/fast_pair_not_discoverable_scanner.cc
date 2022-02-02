@@ -14,11 +14,12 @@
 #include "ash/quick_pair/common/device.h"
 #include "ash/quick_pair/common/fast_pair/fast_pair_decoder.h"
 #include "ash/quick_pair/common/logging.h"
+#include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/common/protocol.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_lookup.h"
 #include "ash/quick_pair/repository/fast_pair/device_metadata.h"
 #include "ash/quick_pair/repository/fast_pair/pairing_metadata.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
-#include "ash/quick_pair/scanning/range_tracker.h"
 #include "ash/services/quick_pair/public/cpp/account_key_filter.h"
 #include "ash/services/quick_pair/public/cpp/not_discoverable_advertisement.h"
 #include "ash/services/quick_pair/quick_pair_process.h"
@@ -27,16 +28,49 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
-#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth//bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
+
 constexpr int kMaxParseAdvertisementRetryCount = 5;
+
+device::BluetoothDevice::BatteryInfo GetBatteryInfo(
+    const ash::quick_pair::BatteryInfo& battery_info,
+    const device::BluetoothDevice::BatteryType& battery_type) {
+  return device::BluetoothDevice::BatteryInfo(
+      battery_type, battery_info.percentage,
+      battery_info.is_charging
+          ? device::BluetoothDevice::BatteryInfo::ChargeState::kCharging
+          : device::BluetoothDevice::BatteryInfo::ChargeState::kDischarging);
+}
+
+void SetBatteryInfo(
+    device::BluetoothDevice* device,
+    const ash::quick_pair::BatteryNotification& battery_notification) {
+  device::BluetoothDevice::BatteryInfo left_bud_info =
+      GetBatteryInfo(/*battery_info=*/battery_notification.left_bud_info,
+                     /*battery_type=*/device::BluetoothDevice::BatteryType::
+                         kLeftBudTrueWireless);
+  device->SetBatteryInfo(left_bud_info);
+
+  device::BluetoothDevice::BatteryInfo right_bud_info =
+      GetBatteryInfo(/*battery_info=*/battery_notification.right_bud_info,
+                     /*battery_type=*/device::BluetoothDevice::BatteryType::
+                         kRightBudTrueWireless);
+  device->SetBatteryInfo(right_bud_info);
+
+  device::BluetoothDevice::BatteryInfo case_info = GetBatteryInfo(
+      /*battery_info=*/battery_notification.case_info,
+      /*battery_type=*/device::BluetoothDevice::BatteryType::kCaseTrueWireless);
+  device->SetBatteryInfo(case_info);
+}
+
 }  // namespace
 
 namespace ash {
@@ -44,11 +78,11 @@ namespace quick_pair {
 
 FastPairNotDiscoverableScanner::FastPairNotDiscoverableScanner(
     scoped_refptr<FastPairScanner> scanner,
-    std::unique_ptr<RangeTracker> range_tracker,
+    scoped_refptr<device::BluetoothAdapter> adapter,
     DeviceCallback found_callback,
     DeviceCallback lost_callback)
     : scanner_(scanner),
-      range_tracker_(std::move(range_tracker)),
+      adapter_(std::move(adapter)),
       found_callback_(std::move(found_callback)),
       lost_callback_(std::move(lost_callback)) {
   observation_.Observe(scanner.get());
@@ -87,8 +121,6 @@ void FastPairNotDiscoverableScanner::OnDeviceLost(
   // the result is ignored.
   advertisement_parse_attempts_.erase(device->GetAddress());
 
-  range_tracker_->StopTracking(device);
-
   auto it = notified_devices_.find(device->GetAddress());
 
   // Don't invoke callback if we didn't notify this device.
@@ -111,7 +143,15 @@ void FastPairNotDiscoverableScanner::OnAdvertisementParsed(
 
   advertisement_parse_attempts_.erase(it);
 
-  if (!advertisement || !advertisement->show_ui)
+  if (!advertisement)
+    return;
+
+  // Set the battery notification if the advertisement contains battery
+  // notification information
+  if (advertisement->battery_notification)
+    SetBatteryInfo(device, advertisement->battery_notification.value());
+
+  if (!advertisement->show_ui)
     return;
 
   auto filter_iterator =
@@ -128,9 +168,9 @@ void FastPairNotDiscoverableScanner::OnAdvertisementParsed(
 }
 
 void FastPairNotDiscoverableScanner::OnAccountKeyFilterCheckResult(
-    device::BluetoothDevice* device,
+    device::BluetoothDevice* bluetooth_device,
     absl::optional<PairingMetadata> metadata) {
-  account_key_filters_.erase(device->GetAddress());
+  account_key_filters_.erase(bluetooth_device->GetAddress());
 
   QP_LOG(VERBOSE) << __func__ << " Metadata: " << (metadata ? "yes" : "no");
 
@@ -139,37 +179,50 @@ void FastPairNotDiscoverableScanner::OnAccountKeyFilterCheckResult(
 
   auto& details = metadata->device_metadata->GetDetails();
 
-  QP_LOG(INFO) << __func__
-               << ": Checking if device is in range, and waiting if not.  "
-                  "trigger_distance="
-               << details.trigger_distance();
-
   // Convert the integer model id to uppercase hex string.
   std::stringstream model_id_stream;
   model_id_stream << std::uppercase << std::hex << details.id();
+  std::string model_id = model_id_stream.str();
 
-  int tx_power = details.ble_tx_power();
-
-  range_tracker_->Track(
-      device, details.trigger_distance(),
-      base::BindRepeating(&FastPairNotDiscoverableScanner::NotifyDeviceFound,
-                          weak_pointer_factory_.GetWeakPtr(),
-                          model_id_stream.str(), metadata->account_key),
-      tx_power == 0 ? absl::nullopt : absl::make_optional(tx_power));
-}
-
-void FastPairNotDiscoverableScanner::NotifyDeviceFound(
-    const std::string model_id,
-    std::vector<uint8_t> account_key,
-    device::BluetoothDevice* bluetooth_device) {
   QP_LOG(VERBOSE) << __func__ << ": Id: " << model_id;
   auto device = base::MakeRefCounted<Device>(
       model_id, bluetooth_device->GetAddress(), Protocol::kFastPairSubsequent);
   device->SetAdditionalData(Device::AdditionalDataType::kAccountKey,
-                            account_key);
+                            metadata->account_key);
 
-  notified_devices_[bluetooth_device->GetAddress()] = device;
+  FastPairHandshakeLookup::GetInstance()->Create(
+      adapter_, std::move(device),
+      base::BindOnce(&FastPairNotDiscoverableScanner::OnHandshakeComplete,
+                     weak_pointer_factory_.GetWeakPtr()));
+}
 
+void FastPairNotDiscoverableScanner::OnHandshakeComplete(
+    scoped_refptr<Device> device,
+    absl::optional<PairFailure> failure) {
+  if (failure) {
+    QP_LOG(WARNING) << __func__ << ": Handshake failed with " << device
+                    << " because: " << failure.value();
+    return;
+  }
+
+  device::BluetoothDevice* classic_device =
+      device->classic_address()
+          ? adapter_->GetDevice(device->classic_address().value())
+          : nullptr;
+
+  device::BluetoothDevice* ble_device =
+      adapter_->GetDevice(device->ble_address);
+
+  bool is_already_paired =
+      (classic_device != nullptr ? classic_device->IsPaired() : false) ||
+      ble_device->IsPaired();
+
+  if (is_already_paired) {
+    QP_LOG(INFO) << __func__ << ": Already paired with " << device;
+    return;
+  }
+
+  notified_devices_[device->ble_address] = device;
   found_callback_.Run(device);
 }
 
@@ -180,8 +233,8 @@ void FastPairNotDiscoverableScanner::OnUtilityProcessStopped(
   if (current_retry_count > kMaxParseAdvertisementRetryCount) {
     QP_LOG(WARNING) << "Failed to parse advertisement from device more than "
                     << kMaxParseAdvertisementRetryCount << " times.";
-    // Clean up the state here which enables trying again in the future if this
-    // device is re-discovered.
+    // Clean up the state here which enables trying again in the future if
+    // this device is re-discovered.
     advertisement_parse_attempts_.erase(device->GetAddress());
     return;
   }

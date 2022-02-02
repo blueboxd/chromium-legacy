@@ -551,7 +551,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     public static int getMaxNavigationsPerTabForInstanceState() {
         try {
-            return (WebLayerFactoryImpl.getClientMajorVersion() >= 97)
+            return (WebLayerFactoryImpl.getClientMajorVersion() >= 98)
                     ? sClient.getMaxNavigationsPerTabForInstanceState()
                     : 0;
         } catch (RemoteException e) {

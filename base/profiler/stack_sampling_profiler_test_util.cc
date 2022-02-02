@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/profiler/stack_sampling_profiler_test_util.h"
+#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
@@ -79,7 +80,7 @@ class TestProfileBuilder : public ProfileBuilder {
   }
 
  private:
-  ModuleCache* const module_cache_;
+  const raw_ptr<ModuleCache> module_cache_;
   CompletedCallback callback_;
   std::vector<Frame> sample_;
 };
@@ -394,8 +395,13 @@ NativeLibrary LoadOtherLibrary() {
   // macros in a function returning non-null.
   const auto load = [](NativeLibrary* library) {
     FilePath other_library_path;
+#if defined(OS_FUCHSIA)
+    // TODO(crbug.com/1262430): Find a solution that works across platforms.
+    ASSERT_TRUE(PathService::Get(DIR_ASSETS, &other_library_path));
+#else
     // The module is next to the test module rather than with test data.
     ASSERT_TRUE(PathService::Get(DIR_MODULE, &other_library_path));
+#endif  // defined(OS_FUCHSIA)
     other_library_path = other_library_path.AppendASCII(
         GetLoadableModuleName("base_profiler_test_support_library"));
     NativeLibraryLoadError load_error;

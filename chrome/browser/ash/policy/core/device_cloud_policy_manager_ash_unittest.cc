@@ -10,12 +10,12 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -35,7 +35,6 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -101,7 +100,7 @@ void CopyLockResult(base::RunLoop* loop,
 }
 
 void CertCallbackSuccess(
-    chromeos::attestation::AttestationFlow::CertificateCallback callback) {
+    ash::attestation::AttestationFlow::CertificateCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback),
@@ -301,7 +300,7 @@ class DeviceCloudPolicyManagerAshTest
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   bool set_empty_system_salt_ = false;
   ServerBackedStateKeysBroker state_keys_broker_;
-  StrictMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
+  StrictMock<ash::attestation::MockAttestationFlow> mock_attestation_flow_;
 
   DeviceCloudPolicyStoreAsh* store_;
   SchemaRegistry schema_registry_;

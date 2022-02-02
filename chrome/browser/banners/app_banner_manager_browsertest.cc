@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -703,7 +703,7 @@ class AppBannerManagerBrowserTestWithFailableInstallableManager
   }
 
  protected:
-  FailingInstallableManager* installable_manager_ = nullptr;
+  raw_ptr<FailingInstallableManager> installable_manager_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -845,7 +845,9 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerFencedFrameBrowserTest,
   EXPECT_EQ(manager->state(), AppBannerManager::State::INACTIVE);
 
   // Create a fenced frame.
-  const GURL fenced_frame_url = GetBannerURL();
+  GURL fenced_frame_url = embedded_test_server()->GetURL(
+      "/banners/fenced_frames/manifest_test_page.html?manifest=/banners/"
+      "manifest.json");
   content::RenderFrameHost* fenced_frame_host =
       fenced_frame_test_helper().CreateFencedFrame(
           GetWebContents()->GetMainFrame(), fenced_frame_url);

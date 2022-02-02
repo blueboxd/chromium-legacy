@@ -6,7 +6,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
@@ -19,6 +18,10 @@
 #include "components/performance_manager/public/graph/page_node.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -175,7 +178,8 @@ class StartupObserver
 
   // PageNodeObserver overrides
   void OnLoadingStateChanged(
-      const performance_manager::PageNode* page_node) override {
+      const performance_manager::PageNode* page_node,
+      performance_manager::PageNode::LoadingState previous_state) override {
     // Only interested in visible PageNodes
     if (page_node->IsVisible()) {
       if (page_node->GetLoadingState() ==
@@ -228,6 +232,17 @@ void AfterStartupTaskUtils::StartMonitoringStartup() {
   // For Lacros, there may not be a Browser created at startup.
   if (chromeos::LacrosService::Get()->init_params()->initial_browser_action ==
       crosapi::mojom::InitialBrowserAction::kDoNotOpenWindow) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&SetBrowserStartupIsComplete));
+    return;
+  }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // If we are on a login screen which does not expect WebUI to be loaded,
+  // Browser won't be created at startup.
+  if (ash::LoginDisplayHost::default_host() &&
+      !ash::LoginDisplayHost::default_host()->IsWebUIStarted()) {
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&SetBrowserStartupIsComplete));
     return;

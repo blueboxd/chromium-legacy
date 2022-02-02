@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -202,12 +202,12 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
-  extensions::TestEventRouter* event_router_ = nullptr;
+  raw_ptr<extensions::TestEventRouter> event_router_ = nullptr;
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
   scoped_refptr<TestPasswordStore> account_store_ =
       CreateAndUseTestAccountPasswordStore(&profile_);
-  ui::TestClipboard* test_clipboard_ =
+  raw_ptr<ui::TestClipboard> test_clipboard_ =
       ui::TestClipboard::CreateForCurrentThread();
 
  private:
@@ -340,6 +340,14 @@ TEST_F(PasswordsPrivateDelegateImplTest,
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, AddPassword) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
+  auto* client =
+      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
+  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
   PasswordsPrivateDelegateImpl delegate(&profile_);
   // Spin the loop to allow PasswordStore tasks posted on the creation of
   // |delegate| to be completed.
@@ -352,10 +360,12 @@ TEST_F(PasswordsPrivateDelegateImplTest, AddPassword) {
   delegate.GetSavedPasswordsList(callback.Get());
 
   EXPECT_TRUE(delegate.AddPassword("example1.com", u"username1", u"password1",
-                                   /*use_account_store=*/true));
+                                   /*use_account_store=*/true,
+                                   web_contents.get()));
   EXPECT_TRUE(delegate.AddPassword("http://example2.com/login?param=value",
                                    /*username=*/u"", u"password2",
-                                   /*use_account_store=*/false));
+                                   /*use_account_store=*/false,
+                                   web_contents.get()));
   // Spin the loop to allow PasswordStore tasks posted when adding the
   // password to be completed.
   base::RunLoop().RunUntilIdle();
@@ -374,6 +384,42 @@ TEST_F(PasswordsPrivateDelegateImplTest, AddPassword) {
                   PasswordUiEntryDataEquals(testing::ByRef(expected_entry1)),
                   PasswordUiEntryDataEquals(testing::ByRef(expected_entry2)))));
   delegate.GetSavedPasswordsList(callback.Get());
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, AddPasswordUpdatesDefaultStore) {
+  // This enables uses of TestWebContents.
+  content::RenderViewHostTestEnabler test_render_host_factories;
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(&profile_, nullptr);
+  auto* client =
+      MockPasswordManagerClient::CreateForWebContentsAndGet(web_contents.get());
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  // NOT update default store if not opted-in for account storage.
+  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+      .WillByDefault(Return(false));
+  EXPECT_CALL(*(client->GetPasswordFeatureManager()), SetDefaultPasswordStore)
+      .Times(0);
+  EXPECT_TRUE(delegate.AddPassword("example1.com", u"username1", u"password1",
+                                   /*use_account_store=*/false,
+                                   web_contents.get()));
+
+  // Updates the default store if opted-in and operation succeeded.
+  ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+      .WillByDefault(Return(true));
+  EXPECT_CALL(*(client->GetPasswordFeatureManager()),
+              SetDefaultPasswordStore(
+                  password_manager::PasswordForm::Store::kAccountStore));
+  EXPECT_TRUE(delegate.AddPassword("example2.com", u"username2", u"password2",
+                                   /*use_account_store=*/true,
+                                   web_contents.get()));
+
+  // NOT update default store if opted-in, but operation failed.
+  EXPECT_CALL(*(client->GetPasswordFeatureManager()), SetDefaultPasswordStore)
+      .Times(0);
+  EXPECT_FALSE(delegate.AddPassword("", u"", u"",
+                                    /*use_account_store=*/false,
+                                    web_contents.get()));
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {

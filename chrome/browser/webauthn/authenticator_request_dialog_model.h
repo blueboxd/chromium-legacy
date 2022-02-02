@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
@@ -157,9 +158,9 @@ class AuthenticatorRequestDialogModel {
     using WindowsAPI = base::StrongAlias<class WindowsAPITag,
                                          bool /* unused, but cannot be void */>;
     using Phone = base::StrongAlias<class PhoneTag, std::string>;
-    using OtherPhone = base::StrongAlias<class OtherPhoneTag,
-                                         bool /* unused, but cannot be void */>;
-    using Type = absl::variant<Transport, WindowsAPI, Phone, OtherPhone>;
+    using AddPhone = base::StrongAlias<class AddPhoneTag,
+                                       bool /* unused, but cannot be void */>;
+    using Type = absl::variant<Transport, WindowsAPI, Phone, AddPhone>;
 
     Mechanism(Type type,
               std::u16string name,
@@ -174,7 +175,7 @@ class AuthenticatorRequestDialogModel {
 
     const std::u16string name;
     const std::u16string short_name;
-    const gfx::VectorIcon* const icon;
+    const raw_ptr<const gfx::VectorIcon> icon;
     const base::RepeatingClosure callback;
     // priority is true if this mechanism should be activated immediately.
     // Only a single Mechanism in a list should have priority.
@@ -576,7 +577,7 @@ class AuthenticatorRequestDialogModel {
                                    size_t mechanism_index);
 
   // Starts the flow for adding an unlisted phone by showing a QR code.
-  void StartGuidedFlowForOtherPhone(size_t mechanism_index);
+  void StartGuidedFlowForAddPhone(size_t mechanism_index);
 
   // Displays a resident-key warning if needed and then calls
   // |HideDialogAndDispatchToNativeWindowsApi|.

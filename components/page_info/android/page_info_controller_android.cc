@@ -14,7 +14,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/page_info/android/jni_headers/PageInfoController_jni.h"
 #include "components/page_info/android/page_info_client.h"
-#include "components/page_info/features.h"
+#include "components/page_info/core/features.h"
 #include "components/page_info/page_info.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/security_state/core/security_state.h"
@@ -49,7 +49,7 @@ PageInfoControllerAndroid::PageInfoControllerAndroid(
   // Important to use GetVisibleEntry to match what's showing in the omnibox.
   content::NavigationEntry* nav_entry =
       web_contents->GetController().GetVisibleEntry();
-  if (nav_entry == nullptr)
+  if (nav_entry->IsInitialEntry())
     return;
 
   url_ = nav_entry->GetURL();

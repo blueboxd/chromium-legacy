@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_HEADER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -31,8 +32,7 @@ class TabGroupHeader : public TabSlotView,
  public:
   METADATA_HEADER(TabGroupHeader);
 
-  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(TabGroupHeader,
-                                         kTabGroupHeaderIdentifier);
+  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kTabGroupHeaderIdentifier);
 
   TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
   TabGroupHeader(const TabGroupHeader&) = delete;
@@ -52,6 +52,7 @@ class TabGroupHeader : public TabSlotView,
   TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
   std::u16string GetTooltipText(const gfx::Point& p) const override;
+  gfx::Rect GetAnchorBoundsInScreen() const override;
 
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -79,10 +80,10 @@ class TabGroupHeader : public TabSlotView,
   // collapsed.
   void LogCollapseTime();
 
-  TabStrip* const tab_strip_;
+  const raw_ptr<TabStrip> tab_strip_;
 
-  views::View* title_chip_;
-  views::Label* title_;
+  raw_ptr<views::View> title_chip_;
+  raw_ptr<views::Label> title_;
 
   // Time used for logging the last time the group was collapsed or expanded.
   base::TimeTicks last_modified_expansion_;
@@ -103,7 +104,7 @@ class TabGroupHeader : public TabSlotView,
 
    private:
     bool is_open_ = false;
-    views::Widget* widget_;
+    raw_ptr<views::Widget> widget_;
   };
 
   EditorBubbleTracker editor_bubble_tracker_;

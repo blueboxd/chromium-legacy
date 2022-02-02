@@ -9,6 +9,7 @@
 #include "base/android/jni_array.h"
 #include "base/bind.h"
 #include "base/i18n/icu_util.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/task/post_task.h"

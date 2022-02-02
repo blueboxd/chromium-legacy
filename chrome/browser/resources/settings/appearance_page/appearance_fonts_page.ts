@@ -12,7 +12,6 @@ import {SliderTick} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js'
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
-import {loadTimeData} from '../i18n_setup.js';
 
 import {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from './fonts_browser_proxy.js';
 
@@ -34,13 +33,17 @@ function ticksWithLabels(ticks: number[]): SliderTick[] {
  * settings.
  */
 
-interface SettingsAppearanceFontsPageElement {
+export interface SettingsAppearanceFontsPageElement {
   $: {
+    fixedFontPreview: HTMLElement,
     minimumSizeFontPreview: HTMLElement,
+    sansSerifFontPreview: HTMLElement,
+    serifFontPreview: HTMLElement,
+    standardFontPreview: HTMLElement,
   };
 }
 
-class SettingsAppearanceFontsPageElement extends PolymerElement {
+export class SettingsAppearanceFontsPageElement extends PolymerElement {
   static get is() {
     return 'settings-appearance-fonts-page';
   }
@@ -83,6 +86,7 @@ class SettingsAppearanceFontsPageElement extends PolymerElement {
     ];
   }
 
+  prefs: Object;
   private fontOptions_: DropdownMenuOptionList;
   private fontSizeRange_: SliderTick[];
   private minimumFontSizeRange_: SliderTick[];
@@ -113,6 +117,12 @@ class SettingsAppearanceFontsPageElement extends PolymerElement {
 
   private onMinimumSizeChange_() {
     this.$.minimumSizeFontPreview.hidden = this.computeMinimumFontSize_() <= 0;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-appearance-fonts-page': SettingsAppearanceFontsPageElement;
   }
 }
 

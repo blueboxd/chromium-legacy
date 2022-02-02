@@ -42,8 +42,8 @@ grit("resources") {
   if (is_chromeos_ash) {
     deps += [
       "//ash/components/enhanced_network_tts/mojom:mojom_js",
+      "//ash/services/ime/public/mojom:mojom_js",
       "//chromeos/components/remote_apps/mojom:mojom_js",
-      "//chromeos/services/ime/public/mojom:mojom_js",
       "//chromeos/services/tts/public/mojom:mojom_js",
     ]
   }
@@ -65,12 +65,6 @@ static_library("renderer") {
     "chrome_render_thread_observer.h",
     "custom_menu_commands.h",
     "instant_restricted_id_cache.h",
-    "lite_video/lite_video_hint_agent.cc",
-    "lite_video/lite_video_hint_agent.h",
-    "lite_video/lite_video_url_loader_throttle.cc",
-    "lite_video/lite_video_url_loader_throttle.h",
-    "lite_video/lite_video_util.cc",
-    "lite_video/lite_video_util.h",
     "loadtimes_extension_bindings.cc",
     "loadtimes_extension_bindings.h",
     "media/chrome_key_systems.cc",
@@ -97,8 +91,6 @@ static_library("renderer") {
     "plugins/pdf_plugin_placeholder.h",
     "plugins/plugin_uma.cc",
     "plugins/plugin_uma.h",
-    "previews/resource_loading_hints_agent.cc",
-    "previews/resource_loading_hints_agent.h",
     "subresource_redirect/login_robots_compression_metrics.cc",
     "subresource_redirect/login_robots_compression_metrics.h",
     "subresource_redirect/login_robots_decider_agent.cc",
@@ -389,6 +381,8 @@ static_library("renderer") {
 
   if (is_chromeos_ash || is_chromeos_lacros) {
     sources += [
+      "extensions/file_browser_handler_custom_bindings.cc",
+      "extensions/file_browser_handler_custom_bindings.h",
       "extensions/platform_keys_natives.cc",
       "extensions/platform_keys_natives.h",
     ]
@@ -396,8 +390,6 @@ static_library("renderer") {
 
   if (is_chromeos_ash) {
     sources += [
-      "extensions/file_browser_handler_custom_bindings.cc",
-      "extensions/file_browser_handler_custom_bindings.h",
       "extensions/file_manager_private_custom_bindings.cc",
       "extensions/file_manager_private_custom_bindings.h",
     ]

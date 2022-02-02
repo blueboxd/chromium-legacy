@@ -39,8 +39,6 @@ Scheduler::Scheduler(
     int layer_tree_host_id,
     base::SingleThreadTaskRunner* task_runner,
     std::unique_ptr<CompositorTimingHistory> compositor_timing_history,
-    gfx::RenderingPipeline* main_thread_pipeline,
-    gfx::RenderingPipeline* compositor_thread_pipeline,
     CompositorFrameReportingController* compositor_frame_reporting_controller,
     power_scheduler::PowerModeArbiter* power_mode_arbiter)
     : settings_(settings),
@@ -52,8 +50,6 @@ Scheduler::Scheduler(
           compositor_frame_reporting_controller),
       begin_impl_frame_tracker_(FROM_HERE),
       state_machine_(settings),
-      main_thread_pipeline_(main_thread_pipeline),
-      compositor_thread_pipeline_(compositor_thread_pipeline),
       power_mode_voter_(
           power_mode_arbiter->NewVoter("PowerModeVoter.MainThreadAnimation")) {
   TRACE_EVENT1("cc", "Scheduler::Scheduler", "settings", settings_.AsValue());
@@ -215,8 +211,6 @@ void Scheduler::NotifyReadyToCommit(
 }
 
 void Scheduler::DidCommit() {
-  if (main_thread_pipeline_)
-    main_thread_pipeline_->NotifyFrameFinished();
   compositor_timing_history_->DidCommit();
   compositor_frame_reporting_controller_->DidCommit();
 }
@@ -230,8 +224,6 @@ void Scheduler::BeginMainFrameAborted(CommitEarlyOutReason reason) {
                                                                 reason);
 
   state_machine_.BeginMainFrameAborted(reason);
-  if (main_thread_pipeline_)
-    main_thread_pipeline_->NotifyFrameFinished();
   ProcessScheduledActions();
 }
 
@@ -325,8 +317,6 @@ void Scheduler::StartOrStopBeginFrames() {
     devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                      false);
     client_->WillNotReceiveBeginFrame();
-    main_thread_pipeline_active_.reset();
-    compositor_thread_pipeline_active_.reset();
   }
 }
 
@@ -398,8 +388,9 @@ bool Scheduler::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
 
   // Trace this begin frame time through the Chrome stack
   TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
-                         "viz::BeginFrameArgs", TRACE_EVENT_FLAG_FLOW_OUT,
-                         args.frame_time.since_origin().InMicroseconds());
+                         "viz::BeginFrameArgs",
+                         args.frame_time.since_origin().InMicroseconds(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   if (settings_.using_synchronous_renderer_compositor) {
     BeginImplFrameSynchronous(args);
@@ -567,29 +558,6 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
   state_machine_.set_should_defer_invalidation_for_fast_main_frame(
       main_thread_response_expected_before_deadline);
 
-  // A pipeline is activated if it's subscribed to BeginFrame callbacks. For the
-  // compositor this implies BeginImplFrames while for the main thread it would
-  // be BeginMainFrames.
-  // TODO(crbug.com/1157620) : For now this also includes cases where the
-  // rendering loop doesn't lead to any visual updates, for example a rAF
-  // callback updating content offscreen. These can be treated differently from
-  // a scheduling perspective (Idle vs Animating).
-  if (compositor_thread_pipeline_) {
-    if (!compositor_thread_pipeline_active_)
-      compositor_thread_pipeline_active_.emplace(compositor_thread_pipeline_);
-    compositor_thread_pipeline_->SetTargetDuration(adjusted_args.interval);
-  }
-
-  if (main_thread_pipeline_) {
-    // TODO(crbug.com/1157620) : We need a heuristic to mark the main pipeline
-    // inactive if it stops subscribing to main frames. For instance after a
-    // composited animation is committed.
-    if (state_machine_.did_commit_during_frame() &&
-        !main_thread_pipeline_active_)
-      main_thread_pipeline_active_.emplace(main_thread_pipeline_);
-    main_thread_pipeline_->SetTargetDuration(adjusted_args.interval);
-  }
-
   BeginImplFrame(adjusted_args, now);
 }
 
@@ -669,9 +637,6 @@ void Scheduler::FinishImplFrame() {
 
   if (begin_frame_source_)
     begin_frame_source_->DidFinishFrame(this);
-
-  if (compositor_thread_pipeline_)
-    compositor_thread_pipeline_->NotifyFrameFinished();
 }
 
 void Scheduler::SendDidNotProduceFrame(const viz::BeginFrameArgs& args,
@@ -1020,6 +985,11 @@ void Scheduler::UpdateCompositorTimingHistoryRecordingEnabled() {
 bool Scheduler::IsBeginMainFrameSent() const {
   return state_machine_.begin_main_frame_state() ==
          SchedulerStateMachine::BeginMainFrameState::SENT;
+}
+
+size_t Scheduler::CommitDurationSampleCountForTesting() const {
+  return compositor_timing_history_
+      ->CommitDurationSampleCountForTesting();  // IN-TEST
 }
 
 viz::BeginFrameAck Scheduler::CurrentBeginFrameAckForActiveTree() const {

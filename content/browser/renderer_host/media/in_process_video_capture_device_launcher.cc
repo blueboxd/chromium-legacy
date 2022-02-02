@@ -82,7 +82,7 @@ const int kMaxNumberOfBuffers = media::kVideoCaptureDefaultMaxBufferPoolSize;
 
 #if defined(OS_MAC)
 const base::Feature kDesktopCaptureMacV2{"DesktopCaptureMacV2",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif
 
@@ -265,8 +265,8 @@ InProcessVideoCaptureDeviceLauncher::CreateDeviceClient(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool =
-      new media::VideoCaptureBufferPoolImpl(
-          requested_buffer_type, buffer_pool_max_buffer_count);
+      new media::VideoCaptureBufferPoolImpl(requested_buffer_type,
+                                            buffer_pool_max_buffer_count);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return std::make_unique<media::VideoCaptureDeviceClient>(
@@ -336,12 +336,16 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDeviceCaptureOnDeviceThread(
   DCHECK(device_task_runner_->BelongsToCurrentThread());
   DCHECK(video_capture_system_);
 
-  std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
-      video_capture_system_->CreateDevice(device_id);
+  auto device_status = video_capture_system_->CreateDevice(device_id);
 
-  if (video_capture_device)
+  if (device_status.ok()) {
+    std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
+        device_status.ReleaseDevice();
     video_capture_device->AllocateAndStart(params, std::move(device_client));
-  std::move(result_callback).Run(std::move(video_capture_device));
+    std::move(result_callback).Run(std::move(video_capture_device));
+  } else {
+    std::move(result_callback).Run(nullptr);
+  }
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
@@ -476,7 +480,8 @@ void InProcessVideoCaptureDeviceLauncher::OnFakeDevicesEnumerated(
     return;
   }
   auto video_capture_device =
-      fake_device_factory_->CreateDevice(devices_info.front().descriptor);
+      fake_device_factory_->CreateDevice(devices_info.front().descriptor)
+          .ReleaseDevice();
   video_capture_device->AllocateAndStart(params, std::move(device_client));
   std::move(result_callback).Run(std::move(video_capture_device));
 }

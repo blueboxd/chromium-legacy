@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -49,6 +48,11 @@ class ContentSettingsStore
         const std::string& extension_id,
         bool incognito) = 0;
   };
+
+  static constexpr char kContentSettingKey[] = "setting";
+  static constexpr char kContentSettingsTypeKey[] = "type";
+  static constexpr char kPrimaryPatternKey[] = "primaryPattern";
+  static constexpr char kSecondaryPatternKey[] = "secondaryPattern";
 
   ContentSettingsStore();
 

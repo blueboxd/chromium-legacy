@@ -19,7 +19,7 @@
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/time/time.h"
@@ -124,7 +124,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void Focus() override;
   bool HasFocus() override;
-  void Show() override;
   void Hide() override;
   bool IsShowing() override;
   gfx::Rect GetViewBounds() override;
@@ -144,6 +143,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void RenderProcessGone() override;
+  void ShowWithVisibility(PageVisibilityState page_visibility) final;
   void Destroy() override;
   void UpdateTooltipUnderCursor(const std::u16string& tooltip_text) override;
   void UpdateTooltipFromKeyboard(const std::u16string& tooltip_text,
@@ -304,7 +304,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // once we have a reliable way to get it through RenderFrameMetadata.
   void FrameTokenChangedForSynchronousCompositor(
       uint32_t frame_token,
-      const gfx::Vector2dF& root_scroll_offset);
+      const gfx::PointF& root_scroll_offset);
 
   void SetSynchronousCompositorClient(SynchronousCompositorClient* client);
 
@@ -348,7 +348,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnLocalSurfaceIdChanged(
       const cc::RenderFrameMetadata& metadata) override {}
   void OnRootScrollOffsetChanged(
-      const gfx::Vector2dF& root_scroll_offset) override;
+      const gfx::PointF& root_scroll_offset) override;
 
   void WasEvicted();
 
@@ -402,6 +402,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   absl::optional<DisplayFeature> GetDisplayFeature() override;
   void SetDisplayFeatureForTesting(
       const DisplayFeature* display_feature) override;
+  void NotifyHostAndDelegateOnWasShown(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr) final;
+  void RequestPresentationTimeFromHostOrDelegate(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr) final;
+  void CancelPresentationTimeRequestForHostAndDelegate() final;
 
  private:
   friend class RenderWidgetHostViewAndroidTest;
@@ -499,10 +504,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Specifies whether touch selection handles are hidden due to text selection.
   bool handles_hidden_by_selection_ui_ = false;
 
-  ImeAdapterAndroid* ime_adapter_android_;
-  SelectionPopupController* selection_popup_controller_;
-  TextSuggestionHostAndroid* text_suggestion_host_;
-  GestureListenerManager* gesture_listener_manager_;
+  raw_ptr<ImeAdapterAndroid> ime_adapter_android_;
+  raw_ptr<SelectionPopupController> selection_popup_controller_;
+  raw_ptr<TextSuggestionHostAndroid> text_suggestion_host_;
+  raw_ptr<GestureListenerManager> gesture_listener_manager_;
 
   mutable ui::ViewAndroid view_;
 
@@ -545,8 +550,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;
   uint32_t sync_compositor_last_frame_token_ = 0u;
 
-
-  SynchronousCompositorClient* synchronous_compositor_client_;
+  raw_ptr<SynchronousCompositorClient> synchronous_compositor_client_;
 
   bool observing_root_window_;
 
@@ -617,7 +621,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // A cached copy of the most up to date RenderFrameMetadata.
   absl::optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
-  WebContentsAccessibilityAndroid* web_contents_accessibility_ = nullptr;
+  raw_ptr<WebContentsAccessibilityAndroid> web_contents_accessibility_ =
+      nullptr;
 
   SurfaceIdChangedCallbackList surface_id_changed_callbacks_;
 

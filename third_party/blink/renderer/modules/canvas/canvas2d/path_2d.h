@@ -28,7 +28,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_path2d_string.h"
@@ -88,17 +87,21 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
 
   void Trace(Visitor*) const override;
 
-  explicit Path2D(ExecutionContext* context) {
+  ExecutionContext* GetTopExecutionContext() const override { return context_; }
+
+  explicit Path2D(ExecutionContext* context) : context_(context) {
     identifiability_study_helper_.SetExecutionContext(context);
   }
-  Path2D(ExecutionContext* context, const Path& path) : CanvasPath(path) {
+  Path2D(ExecutionContext* context, const Path& path)
+      : CanvasPath(path), context_(context) {
     identifiability_study_helper_.SetExecutionContext(context);
   }
   Path2D(ExecutionContext* context, Path2D* path)
-      : CanvasPath(path->GetPath()) {
+      : CanvasPath(path->GetPath()), context_(context) {
     identifiability_study_helper_.SetExecutionContext(context);
   }
-  Path2D(ExecutionContext* context, const String& path_data) {
+  Path2D(ExecutionContext* context, const String& path_data)
+      : context_(context) {
     identifiability_study_helper_.SetExecutionContext(context);
     BuildPathFromString(path_data, path_);
   }
@@ -107,6 +110,9 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
   Path2D& operator=(const Path2D&) = delete;
 
   ~Path2D() override = default;
+
+ private:
+  Member<ExecutionContext> context_;
 };
 
 }  // namespace blink

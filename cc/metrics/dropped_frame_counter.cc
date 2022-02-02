@@ -6,12 +6,14 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
+#include "cc/metrics/frame_info.h"
 #include "cc/metrics/frame_sorter.h"
 #include "cc/metrics/total_frame_counter.h"
 #include "cc/metrics/ukm_smoothness_data.h"
@@ -63,6 +65,27 @@ uint32_t SlidingWindowHistogram::GetPercentDroppedFramePercentile(
   return current_index;
 }
 
+double SlidingWindowHistogram::GetPercentDroppedFrameVariance() const {
+  double sum = 0;
+  size_t bin_count = sizeof(histogram_bins_) / sizeof(uint32_t);
+  for (size_t i = 0; i < bin_count; ++i) {
+    sum += histogram_bins_[i] * i;
+  }
+  double average = sum / total_count_;
+  sum = 0;  // Sum is reset to be used for variance calculation
+
+  for (size_t i = 0; i < bin_count; ++i) {
+    sum += histogram_bins_[i] * (i - average) * (i - average);
+    // histogram_bins_[i] is the number of PDFs which were in the range of
+    // [i,i+1) so i is used as the actual value which is repeated for
+    // histogram_bins_[i] times.
+  }
+
+  if (total_count_ <= 1)
+    return 0;
+  return sum / (total_count_ - 1);
+}
+
 std::vector<double> SlidingWindowHistogram::GetPercentDroppedFrameBuckets()
     const {
   if (total_count_ == 0)
@@ -102,7 +125,7 @@ DroppedFrameCounter::~DroppedFrameCounter() = default;
 uint32_t DroppedFrameCounter::GetAverageThroughput() const {
   size_t good_frames = 0;
   for (auto it = --end(); it; --it) {
-    if (**it == kFrameStateComplete)
+    if (**it == kFrameStateComplete || **it == kFrameStatePartial)
       ++good_frames;
   }
   double throughput = 100. * good_frames / ring_buffer_.BufferSize();
@@ -190,40 +213,43 @@ void DroppedFrameCounter::OnBeginFrame(const viz::BeginFrameArgs& args,
 }
 
 void DroppedFrameCounter::OnEndFrame(const viz::BeginFrameArgs& args,
-                                     bool is_dropped) {
+                                     const FrameInfo& frame_info) {
+  const bool is_dropped = frame_info.IsDroppedAffectingSmoothness();
   if (!args.interval.is_zero())
     total_frames_in_window_ = kSlidingWindowInterval / args.interval;
 
   // Don't measure smoothness for frames that start before FCP is received, or
   // that have already been reported as dropped.
   if (is_dropped && fcp_received_ && args.frame_time >= time_fcp_received_ &&
-      !frame_sorter_.IsFrameDropped(args.frame_id)) {
+      !frame_sorter_.IsAlreadyReportedDropped(args.frame_id)) {
     ++total_smoothness_dropped_;
 
     if (report_for_ui_)
       ReportFramesForUI();
     else
       ReportFrames();
-  }
-  auto iter = scroll_start_per_frame_.find(args.frame_id);
-  if (iter != scroll_start_per_frame_.end()) {
-    ScrollStartInfo& scroll_start = iter->second;
-    if (args.frame_id.source_id == scroll_start.frame_id.source_id) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Graphics.Smoothness.Diagnostic.DroppedFrameAfterScrollStart.Time",
-          (args.frame_time - scroll_start.timestamp), base::Milliseconds(1),
-          base::Seconds(4), 50);
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Graphics.Smoothness.Diagnostic.DroppedFrameAfterScrollStart.Frames",
-          (args.frame_id.sequence_number -
-           scroll_start.frame_id.sequence_number),
-          1, 250, 50);
+
+    auto iter = scroll_start_per_frame_.find(args.frame_id);
+    if (iter != scroll_start_per_frame_.end()) {
+      ScrollStartInfo& scroll_start = iter->second;
+      if (args.frame_id.source_id == scroll_start.frame_id.source_id) {
+        UMA_HISTOGRAM_CUSTOM_TIMES(
+            "Graphics.Smoothness.Diagnostic.DroppedFrameAfterScrollStart2.Time",
+            (args.frame_time - scroll_start.timestamp), base::Milliseconds(1),
+            base::Seconds(4), 50);
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Graphics.Smoothness.Diagnostic.DroppedFrameAfterScrollStart2."
+            "Frames",
+            (args.frame_id.sequence_number -
+             scroll_start.frame_id.sequence_number),
+            1, 250, 50);
+      }
+      scroll_start_per_frame_.erase(iter);
     }
-    scroll_start_per_frame_.erase(iter);
   }
 
   if (fcp_received_)
-    frame_sorter_.AddFrameResult(args, is_dropped);
+    frame_sorter_.AddFrameResult(args, frame_info);
 }
 
 void DroppedFrameCounter::ReportFrames() {
@@ -268,6 +294,13 @@ void DroppedFrameCounter::ReportFrames() {
         static_cast<double>(total_smoothness_dropped_) * 100 / total_frames;
     smoothness_data.worst_smoothness = sliding_window_max_percent_dropped_;
     smoothness_data.percentile_95 = sliding_window_95pct_percent_dropped;
+    smoothness_data.median_smoothness = SlidingWindowMedianPercentDropped();
+
+    uint32_t default_variance =
+        static_cast<uint32_t>(SlidingWindowPercentDroppedVariance());
+    DCHECK_GE(default_variance, 0u);
+    DCHECK_LE(default_variance, 5000u);
+    smoothness_data.variance = default_variance;
 
     std::vector<double> sliding_window_buckets =
         sliding_window_histogram_.GetPercentDroppedFrameBuckets();
@@ -293,6 +326,10 @@ void DroppedFrameCounter::ReportFrames() {
 void DroppedFrameCounter::ReportFramesForUI() {
   DCHECK(report_for_ui_);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  UMA_HISTOGRAM_PERCENTAGE(
+      "Ash.Smoothness.MaxPercentDroppedFrames_1sWindow.Uniform",
+      sliding_window_max_percent_dropped_);
+
   if (sliding_window_max_percent_dropped_ !=
       last_reported_metrics_.max_window) {
     UMA_HISTOGRAM_PERCENTAGE("Ash.Smoothness.MaxPercentDroppedFrames_1sWindow",
@@ -350,7 +387,7 @@ base::TimeDelta DroppedFrameCounter::ComputeCurrentWindowSize() const {
 }
 
 void DroppedFrameCounter::NotifyFrameResult(const viz::BeginFrameArgs& args,
-                                            bool is_dropped) {
+                                            const FrameInfo& frame_info) {
   // Entirely disregard the frames with interval larger than the window --
   // these are violating the assumptions in the below code and should
   // only occur with external frame control, where dropped frame stats
@@ -358,6 +395,7 @@ void DroppedFrameCounter::NotifyFrameResult(const viz::BeginFrameArgs& args,
   if (args.interval >= kSlidingWindowInterval)
     return;
 
+  const bool is_dropped = frame_info.IsDroppedAffectingSmoothness();
   sliding_window_.push({args, is_dropped});
 
   if (is_dropped)

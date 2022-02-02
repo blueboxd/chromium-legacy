@@ -12,12 +12,24 @@ js_type_check("closure_compile") {
                     "js_module_root=./gen/chrome/test/data/webui/",
                   ]
   deps = [
+    ":fake_update_controller_test",
     ":fake_update_provider_test",
+    ":firmware_update_dialog_test",
     ":firmware_update_test",
     ":firmware_update_unified_test",
     ":peripheral_updates_list_test",
     ":update_card_test",
   ]
+}
+
+js_library("fake_update_controller_test") {
+  deps = [
+    "../..:chai_assert",
+    "//ash/webui/firmware_update_ui/resources:fake_data",
+    "//ash/webui/firmware_update_ui/resources:fake_update_controller",
+    "//ash/webui/firmware_update_ui/resources:firmware_update_types",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
 js_library("fake_update_provider_test") {
@@ -30,13 +42,31 @@ js_library("fake_update_provider_test") {
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
 
+js_library("firmware_update_dialog_test") {
+  deps = [
+    "../..:chai_assert",
+    "../..:test_util",
+    "//ash/webui/firmware_update_ui/resources:firmware_update_dialog",
+    "//ash/webui/firmware_update_ui/resources:firmware_update_types",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
 js_library("firmware_update_test") {
   deps = [
     "../..:chai_assert",
+    "../..:test_util",
+    "//ash/webui/firmware_update_ui/resources:fake_data",
+    "//ash/webui/firmware_update_ui/resources:fake_update_controller",
     "//ash/webui/firmware_update_ui/resources:fake_update_provider",
     "//ash/webui/firmware_update_ui/resources:firmware_update_app",
+    "//ash/webui/firmware_update_ui/resources:firmware_update_dialog",
     "//ash/webui/firmware_update_ui/resources:firmware_update_types",
     "//ash/webui/firmware_update_ui/resources:mojo_interface_provider",
+    "//ash/webui/firmware_update_ui/resources:update_card",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }
@@ -61,7 +91,6 @@ js_library("update_card_test") {
     "../..:test_util",
     "//ash/webui/firmware_update_ui/resources:firmware_update_types",
     "//ash/webui/firmware_update_ui/resources:update_card",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

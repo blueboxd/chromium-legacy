@@ -34,6 +34,7 @@ const char kBaseScriptName[] = "base_js";
 const char kCommonScriptName[] = "common_js";
 const char kMessageScriptName[] = "message_js";
 const char kPluginPlaceholderScriptName[] = "plugin_placeholder_js";
+const char kShareWorkaroundScriptName[] = "share_workaround_js";
 
 const char kMainFrameDescription[] = "Main frame";
 const char kIframeDescription[] = "Iframe";
@@ -101,6 +102,20 @@ JavaScriptFeature* GetPluginPlaceholderJavaScriptFeature() {
   return plugin_placeholder_feature.get();
 }
 
+JavaScriptFeature* GetShareWorkaroundJavaScriptFeature() {
+  // Static storage is ok for |share_workaround_feature| as it holds no state.
+  static base::NoDestructor<JavaScriptFeature> share_workaround_feature(
+      JavaScriptFeature::ContentWorld::kPageContentWorld,
+      std::vector<const JavaScriptFeature::FeatureScript>(
+          {JavaScriptFeature::FeatureScript::CreateWithFilename(
+              kShareWorkaroundScriptName,
+              JavaScriptFeature::FeatureScript::InjectionTime::kDocumentStart,
+              JavaScriptFeature::FeatureScript::TargetFrames::kAllFrames,
+              JavaScriptFeature::FeatureScript::ReinjectionBehavior::
+                  kInjectOncePerWindow)}));
+  return share_workaround_feature.get();
+}
+
 }  // namespace
 
 namespace java_script_features {
@@ -112,6 +127,7 @@ std::vector<JavaScriptFeature*> GetBuiltInJavaScriptFeatures(
       FindInPageJavaScriptFeature::GetInstance(),
       GetFaviconJavaScriptFeature(),
       GetScrollHelperJavaScriptFeature(),
+      GetShareWorkaroundJavaScriptFeature(),
       GetWindowErrorJavaScriptFeature(),
       NavigationJavaScriptFeature::GetInstance(),
       ScriptCommandJavaScriptFeature::GetInstance(),

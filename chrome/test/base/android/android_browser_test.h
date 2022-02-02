@@ -5,7 +5,6 @@
 #ifndef CHROME_TEST_BASE_ANDROID_ANDROID_BROWSER_TEST_H_
 #define CHROME_TEST_BASE_ANDROID_ANDROID_BROWSER_TEST_H_
 
-#include "base/macros.h"
 #include "base/files/scoped_temp_dir.h"
 #include "content/public/test/browser_test_base.h"
 
@@ -53,9 +52,5 @@ class AndroidBrowserTest : public content::BrowserTestBase {
 // When including either android_browser_test.h or in_process_browser_test.h
 // depending on the platform, use this type alias as the test base class.
 using PlatformBrowserTest = AndroidBrowserTest;
-
-// When including either identity_browser_test_base.h or android_browser_test.h
-// depending on the platform, use this type alias as the test base class.
-using IdentityPlatformBrowserTest = AndroidBrowserTest;
 
 #endif  // CHROME_TEST_BASE_ANDROID_ANDROID_BROWSER_TEST_H_

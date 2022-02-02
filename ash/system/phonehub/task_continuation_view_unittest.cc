@@ -4,22 +4,22 @@
 
 #include "ash/system/phonehub/task_continuation_view.h"
 
+#include "ash/components/phonehub/fake_user_action_recorder.h"
+#include "ash/components/phonehub/mutable_phone_model.h"
+#include "ash/components/phonehub/phone_model_test_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "ash/system/phonehub/continue_browsing_chip.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/components/phonehub/fake_user_action_recorder.h"
-#include "chromeos/components/phonehub/mutable_phone_model.h"
-#include "chromeos/components/phonehub/phone_model_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/views/test/button_test_api.h"
 
 namespace ash {
 
-using BrowserTabsModel = chromeos::phonehub::BrowserTabsModel;
-
 namespace {
+
+using BrowserTabsModel = phonehub::BrowserTabsModel;
 
 class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
  public:
@@ -62,13 +62,13 @@ class TaskContinuationViewTest : public AshTestBase {
 
  protected:
   TaskContinuationView* task_view() { return task_continuation_view_.get(); }
-  chromeos::phonehub::MutablePhoneModel* phone_model() { return &phone_model_; }
+  phonehub::MutablePhoneModel* phone_model() { return &phone_model_; }
   MockNewWindowDelegate& new_window_delegate() { return *new_window_delegate_; }
 
  private:
   std::unique_ptr<TaskContinuationView> task_continuation_view_;
-  chromeos::phonehub::FakeUserActionRecorder fake_user_action_recorder_;
-  chromeos::phonehub::MutablePhoneModel phone_model_;
+  phonehub::FakeUserActionRecorder fake_user_action_recorder_;
+  phonehub::MutablePhoneModel phone_model_;
   base::test::ScopedFeatureList feature_list_;
   MockNewWindowDelegate* new_window_delegate_;
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
@@ -87,7 +87,7 @@ TEST_F(TaskContinuationViewTest, TaskViewVisibility) {
   EXPECT_FALSE(task_view()->GetVisible());
 
   BrowserTabsModel::BrowserTabMetadata metadata =
-      chromeos::phonehub::CreateFakeBrowserTabMetadata();
+      phonehub::CreateFakeBrowserTabMetadata();
 
   std::vector<BrowserTabsModel::BrowserTabMetadata> tabs = {metadata};
 
@@ -103,7 +103,7 @@ TEST_F(TaskContinuationViewTest, TaskViewVisibility) {
 
 TEST_F(TaskContinuationViewTest, TaskChipsView) {
   BrowserTabsModel::BrowserTabMetadata metadata =
-      chromeos::phonehub::CreateFakeBrowserTabMetadata();
+      phonehub::CreateFakeBrowserTabMetadata();
 
   std::vector<BrowserTabsModel::BrowserTabMetadata> tabs = {metadata};
 

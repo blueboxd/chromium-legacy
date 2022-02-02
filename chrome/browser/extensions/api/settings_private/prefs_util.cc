@@ -58,7 +58,8 @@
 #include "extensions/common/extension.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/quick_answers/public/cpp/quick_answers_prefs.h"
+#include "ash/components/arc/arc_prefs.h"
+#include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
@@ -75,10 +76,9 @@
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/account_manager_core/pref_names.h"
-#include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
 #endif
 
@@ -90,7 +90,7 @@ bool IsPrivilegedCrosSetting(const std::string& pref_name) {
     return false;
   if (!ash::system::PerUserTimezoneEnabled()) {
     // kSystemTimezone should be changeable by all users.
-    if (pref_name == chromeos::kSystemTimezone)
+    if (pref_name == ash::kSystemTimezone)
       return false;
   }
   // Cros settings are considered privileged and are either policy
@@ -129,7 +129,7 @@ bool IsSettingReadOnly(const std::string& pref_name) {
     return true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // System timezone is never directly changeable by the user.
-  if (pref_name == chromeos::kSystemTimezone)
+  if (pref_name == ash::kSystemTimezone)
     return ash::system::PerUserTimezoneEnabled();
   // enable_screen_lock and pin_unlock_autosubmit_enabled
   // must be changed through the quickUnlockPrivate API.
@@ -274,6 +274,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 
   // Privacy Review
   (*s_allowlist)[::prefs::kPrivacyReviewShowWelcomeCard] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::prefs::kPrivacyGuideViewed] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Privacy Sandbox page
@@ -454,13 +456,13 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Accounts / Users / People.
-  (*s_allowlist)[chromeos::kAccountsPrefAllowGuest] =
+  (*s_allowlist)[ash::kAccountsPrefAllowGuest] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kAccountsPrefShowUserNamesOnSignIn] =
+  (*s_allowlist)[ash::kAccountsPrefShowUserNamesOnSignIn] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kAccountsPrefAllowNewUser] =
+  (*s_allowlist)[ash::kAccountsPrefAllowNewUser] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kAccountsPrefUsers] =
+  (*s_allowlist)[ash::kAccountsPrefUsers] =
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)
       [::account_manager::prefs::kSecondaryGoogleAccountSigninAllowed] =
@@ -646,25 +648,27 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[ash::prefs::kTapDraggingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kStatsReportingPref] =
+  (*s_allowlist)[ash::kStatsReportingPref] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::chromeos::prefs::kSuggestedContentEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kAttestationForContentProtectionEnabled] =
+  (*s_allowlist)[ash::kAttestationForContentProtectionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[prefs::kRestoreLastLockScreenNote] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kDevicePeripheralDataAccessEnabled] =
+  (*s_allowlist)[ash::kDevicePeripheralDataAccessEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kLocalStateDevicePeripheralDataAccessEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::kRevenEnableDeviceHWDataUsage] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Bluetooth & Internet settings.
-  (*s_allowlist)[chromeos::kAllowBluetooth] =
+  (*s_allowlist)[ash::kAllowBluetooth] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[proxy_config::prefs::kUseSharedProxies] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[::chromeos::kSignedDataRoamingEnabled] =
+  (*s_allowlist)[::ash::kSignedDataRoamingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kUserBluetoothAdapterEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -684,17 +688,17 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
 
   // Timezone settings.
-  (*s_allowlist)[chromeos::kSystemTimezone] =
+  (*s_allowlist)[ash::kSystemTimezone] =
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[prefs::kUserTimezone] =
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_allowlist)[settings_private::kResolveTimezoneByGeolocationOnOff] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[chromeos::kPerUserTimezoneEnabled] =
+  (*s_allowlist)[ash::kPerUserTimezoneEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[settings_private::kResolveTimezoneByGeolocationMethodShort] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[chromeos::kFineGrainedTimeZoneResolveEnabled] =
+  (*s_allowlist)[ash::kFineGrainedTimeZoneResolveEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[prefs::kSystemTimezoneAutomaticDetectionPolicy] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
@@ -790,15 +794,21 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::ash::prefs::kXkbAutoRepeatInterval] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[chromeos::kDeviceDisplayResolution] =
+  (*s_allowlist)[ash::kDeviceDisplayResolution] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
-  (*s_allowlist)[chromeos::kDisplayRotationDefault] =
+  (*s_allowlist)[ash::kDisplayRotationDefault] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_allowlist)[arc::prefs::kArcVisibleExternalStorages] =
       settings_api::PrefType::PREF_TYPE_LIST;
 
   // Native Printing settings.
   (*s_allowlist)[::prefs::kUserPrintersAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+
+  // Privacy settings.
+  (*s_allowlist)[::ash::prefs::kSnoopingProtectionEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::ash::prefs::kPowerQuickDimEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
 #else
@@ -1110,7 +1120,7 @@ settings_private::SetPrefResult PrefsUtil::SetCrosSettingsPref(
     const std::string& pref_name,
     const base::Value* value) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (pref_name == chromeos::kSystemTimezone) {
+  if (pref_name == ash::kSystemTimezone) {
     const std::string* string_value = value->GetIfString();
     if (!string_value)
       return settings_private::SetPrefResult::PREF_TYPE_MISMATCH;
@@ -1176,17 +1186,16 @@ bool PrefsUtil::IsPrefEnterpriseManaged(const std::string& pref_name) {
     return false;
   if (IsPrivilegedCrosSetting(pref_name))
     return true;
-  if (pref_name == chromeos::kSystemTimezone ||
-      pref_name == prefs::kUserTimezone) {
+  if (pref_name == ash::kSystemTimezone || pref_name == prefs::kUserTimezone) {
     return ash::system::IsTimezonePrefsManaged(pref_name);
   }
   return false;
 }
 
 bool PrefsUtil::IsPrefOwnerControlled(const std::string& pref_name) {
-  // chromeos::kSystemTimezone is global display-only preference and
+  // ash::kSystemTimezone is global display-only preference and
   // it should appear as disabled, but not owned.
-  if (pref_name == chromeos::kSystemTimezone)
+  if (pref_name == ash::kSystemTimezone)
     return false;
 
   if (IsPrivilegedCrosSetting(pref_name)) {
@@ -1197,10 +1206,9 @@ bool PrefsUtil::IsPrefOwnerControlled(const std::string& pref_name) {
 }
 
 bool PrefsUtil::IsPrefPrimaryUserControlled(const std::string& pref_name) {
-  // chromeos::kSystemTimezone is read-only, but for the non-primary users
+  // ash::kSystemTimezone is read-only, but for the non-primary users
   // it should have "primary user controlled" attribute.
-  if (pref_name == prefs::kUserTimezone ||
-      pref_name == chromeos::kSystemTimezone) {
+  if (pref_name == prefs::kUserTimezone || pref_name == ash::kSystemTimezone) {
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     const user_manager::User* user =
         chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
@@ -1232,7 +1240,7 @@ bool PrefsUtil::IsPrefSupervisorControlled(const std::string& pref_name) {
       pref_name != prefs::kBrowserAddPersonEnabled) {
     return false;
   }
-  return profile_->IsSupervised();
+  return profile_->IsChild();
 }
 
 bool PrefsUtil::IsPrefUserModifiable(const std::string& pref_name) {

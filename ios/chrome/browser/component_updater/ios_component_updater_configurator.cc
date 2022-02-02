@@ -27,7 +27,6 @@
 #include "components/update_client/update_query_params.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/public/provider/chrome/browser/app_distribution/app_distribution_api.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace component_updater {
@@ -48,7 +47,6 @@ class IOSConfigurator : public update_client::Configurator {
   std::string GetProdId() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
-  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   base::flat_map<std::string, std::string> ExtraRequestParams() const override;
@@ -60,7 +58,6 @@ class IOSConfigurator : public update_client::Configurator {
   scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
   scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
   bool EnabledDeltas() const override;
-  bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
   bool EnabledCupSigning() const override;
   PrefService* GetPrefService() const override;
@@ -125,10 +122,6 @@ std::string IOSConfigurator::GetChannel() const {
   return GetChannelString();
 }
 
-std::string IOSConfigurator::GetBrand() const {
-  return ios::provider::GetBrandCode();
-}
-
 std::string IOSConfigurator::GetLang() const {
   return GetApplicationContext()->GetApplicationLocale();
 }
@@ -187,10 +180,6 @@ IOSConfigurator::GetPatcherFactory() {
 
 bool IOSConfigurator::EnabledDeltas() const {
   return configurator_impl_.EnabledDeltas();
-}
-
-bool IOSConfigurator::EnabledComponentUpdates() const {
-  return configurator_impl_.EnabledComponentUpdates();
 }
 
 bool IOSConfigurator::EnabledBackgroundDownloader() const {

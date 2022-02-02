@@ -57,6 +57,9 @@ class APP_LIST_MODEL_EXPORT SearchModel {
 
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
+  std::vector<ash::AppListSearchResultCategory>* ordered_categories() {
+    return &ordered_categories_;
+  }
 
   void PublishResults(
       std::vector<std::unique_ptr<SearchResult>> new_results,
@@ -77,6 +80,7 @@ class APP_LIST_MODEL_EXPORT SearchModel {
  private:
   std::unique_ptr<SearchBoxModel> search_box_;
   std::unique_ptr<SearchResults> results_;
+  std::vector<ash::AppListSearchResultCategory> ordered_categories_;
 };
 
 }  // namespace ash

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/layer_tree_host.h"
@@ -108,10 +109,10 @@ class CC_EXPORT ProxyMain : public Proxy {
   void SetSourceURL(ukm::SourceId source_id, const GURL& url) override;
   void SetUkmSmoothnessDestination(
       base::WritableSharedMemoryMapping ukm_smoothness_data) override;
-  void ClearHistory() override;
   void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) override;
   void SetEnableFrameRateThrottling(bool enable_frame_rate_throttling) override;
+  uint32_t GetAverageThroughput() const override;
 
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.
@@ -121,12 +122,16 @@ class CC_EXPORT ProxyMain : public Proxy {
   bool IsImplThread() const;
   base::SingleThreadTaskRunner* ImplThreadTaskRunner();
 
-  void InitializeOnImplThread(CompletionEvent* completion_event);
+  void InitializeOnImplThread(
+      CompletionEvent* completion_event,
+      int id,
+      const LayerTreeSettings* settings,
+      RenderingStatsInstrumentation* rendering_stats_instrumentation);
   void DestroyProxyImplOnImplThread(CompletionEvent* completion_event);
 
-  LayerTreeHost* layer_tree_host_;
+  raw_ptr<LayerTreeHost> layer_tree_host_;
 
-  TaskRunnerProvider* task_runner_provider_;
+  raw_ptr<TaskRunnerProvider> task_runner_provider_;
 
   const int layer_tree_host_id_;
 

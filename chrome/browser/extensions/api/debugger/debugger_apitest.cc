@@ -8,9 +8,11 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/extensions/api/debugger/debugger_api.h"
@@ -21,11 +23,13 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -65,7 +69,7 @@ class DebuggerApiTest : public ExtensionApiTest {
 
   // The command-line for the test process, preserved in order to modify
   // mid-test.
-  base::CommandLine* command_line_;
+  raw_ptr<base::CommandLine> command_line_;
 
   // A basic extension with the debugger permission.
   scoped_refptr<const Extension> extension_;
@@ -121,12 +125,13 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   const base::ListValue& targets = base::Value::AsListValue(*value);
 
   std::string debugger_target_id;
-  for (size_t i = 0; i < targets.GetList().size(); ++i) {
-    const base::DictionaryValue* target_dict = nullptr;
-    EXPECT_TRUE(targets.GetDictionary(i, &target_dict));
-    absl::optional<int> id = target_dict->FindIntKey("tabId");
+  for (const base::Value& target_value : targets.GetList()) {
+    EXPECT_TRUE(target_value.is_dict());
+    absl::optional<int> id = target_value.FindIntKey("tabId");
     if (id == tab_id) {
-      EXPECT_TRUE(target_dict->GetString("id", &debugger_target_id));
+      const base::DictionaryValue& target_dict =
+          base::Value::AsDictionaryValue(target_value);
+      EXPECT_TRUE(target_dict.GetString("id", &debugger_target_id));
       break;
     }
   }
@@ -483,6 +488,27 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, NavigateToForbiddenUrl) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
   ASSERT_TRUE(RunExtensionTest("debugger_navigate_to_forbidden_url"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, IsDeveloperModeTrueHistogram) {
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  base::HistogramTester histograms;
+  const char* histogram_name = "Extensions.Debugger.UserIsInDeveloperMode";
+
+  ASSERT_TRUE(RunExtensionTest("debugger_is_developer_mode")) << message_;
+
+  histograms.ExpectBucketCount(histogram_name, true, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest,
+                       IsDeveloperModeFalseHistogram) {
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
+  base::HistogramTester histograms;
+  const char* histogram_name = "Extensions.Debugger.UserIsInDeveloperMode";
+
+  ASSERT_TRUE(RunExtensionTest("debugger_is_developer_mode")) << message_;
+
+  histograms.ExpectBucketCount(histogram_name, false, 1);
 }
 
 class SitePerProcessDebuggerExtensionApiTest : public DebuggerExtensionApiTest {

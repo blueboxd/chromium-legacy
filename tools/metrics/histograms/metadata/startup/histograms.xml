@@ -66,8 +66,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Startup.Android.Cold.FirstNavigationCommitOccurredPreForeground"
+    units="Boolean" expires_after="2022-09-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records whether the first navigation commit after a cold start occurred
+    before UmaUtils.hasComeToForeground() became true. Recorded only for
+    startups in which startup metrics were being tracked.
+  </summary>
+</histogram>
+
+<histogram name="Startup.Android.Cold.FirstPaintOccurredPreForeground"
+    units="Boolean" expires_after="2022-09-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Records whether the first paint of StartupPaintPreview after a cold start
+    occurred before UmaUtils.hasComeToForeground() became true. Recorded only
+    for startups in which startup metrics were being tracked.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2022-03-20">
+    units="ms" expires_after="2022-05-22">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -80,7 +103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2022-03-20">
+    units="ms" expires_after="2022-05-22">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -94,20 +117,61 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToFirstVisibleContent" units="ms"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>yfriedman@chromium.org</owner>
+  <owner>pasko@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
   <summary>
-    The time from the activity creation point to the moment Chrome appears
-    ready. The intent is to reflect Clank's perceived cold start performance
-    regardless of different launch paths. The recorded value is the minimum of
+    The time from Chrome tabbed activity creation to the moment the Chrome first
+    appears ready.
+
+    This metric captures when the omnibox is painted and either a navigation has
+    committed or a Paint Preview is shown. The intent is to reflect Clank's
+    perceived cold start performance regardless of different launch paths, while
+    controlling for the factors that we have the most direct influence over and
+    minimizing external factors. Note that network connectivity is mostly but
+    not entirely omitted as it does impact the initial response time for a site
+    which impacts the omnibox UX and loading metric.
+
+    This metric captures the value of the first emitted metric out of the
     'Startup.Android.Cold.TimeToFirstNavigationCommit.Tabbed' and
-    'Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap' metric values.
+    'Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap' metrics and emits the
+    value.
+
+    This metric is only recorded once per application lifetime during cold
+    startup i.e. when Chrome's native library is not loaded at first activity
+    creation. Specifically, it is recorded for the first foreground committed
+    http(s) URL in the primary frame if that first navigation is not: an error,
+    same-document navigation, or fragment navigation.
+
+    This metric is expected be stable from milestone to milestone. Updating
+    Chrome or the Android system image on the device are expected to result in a
+    noticeable slowdown on the first cold startup after. The total counts
+    changes for this histogram are not of significant importance; however, a
+    non-trivial increase in total counts could signal more background kills, for
+    example.
+
+    This metric is not recorded:
+
+    - If another navigation occurs before the first navigation commit and the
+    Paint Preview show.
+
+    - If the navigation is pre-warmed, is a background navigation, or fails to
+    be committed (e.g. cancelled, network error, or error due to lack of
+    connectivity).
+
+    - If the activity was ever backgrounded between activity creation and this
+    metric reporting.
+
+    - If the app opens to the Chrome Start page.
+
+    - For WebApps, PWAs or WebApks.
   </summary>
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
-    expires_after="2022-04-03">
+    expires_after="2022-06-05">
   <owner>yashard@chromium.org</owner>
   <owner>ckitagawa@chromium.org</owner>
   <summary>
@@ -117,6 +181,11 @@ chromium-metrics-reviews@google.com.
     page. The recorded value is the minimum of
     'Startup.Android.Cold.TimeToFirstContentfulPaint.Tabbed' and
     'Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap' metric values.
+
+    Not to be mistaken with the Startup.Android.Cold.TimeToFirstVisibleContent
+    histogram, as this metric is intended for the use of the Paint Preview
+    owners and the other is intended to track Clank's perceived cold start
+    performance.
   </summary>
 </histogram>
 
@@ -206,7 +275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.SingleTabTitleAvailableTime"
-    units="ms" expires_after="2022-02-20">
+    units="ms" expires_after="2022-06-05">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -229,6 +298,20 @@ chromium-metrics-reviews@google.com.
     Records whether the Start surface homepage is showing at a cold startup when
     the Start surface is enabled. This histogram is recorded in a deferred
     startup task after Chrome is launched.
+  </summary>
+</histogram>
+
+<histogram name="Startup.Android.StartupTabPreloader.LoadDecisionReason"
+    enum="StartupTabPreloaderLoadDecisionCause" expires_after="2022-09-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Android: Gives the reason for StartupTabPreloader's decision of whether to
+    load a tab at startup. As reasons for not doing a startup tab preload are
+    not necessarily orthogonal, gives highest-priority reason (see computation
+    of metric in the codebase). Recorded when a profile is created, assuming a
+    StartupTabPreloader has been constructed for intents with a url and either
+    regular Chrome or a Custom Tab will be loaded.
   </summary>
 </histogram>
 
@@ -317,7 +400,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BringToForegroundReason"
-    enum="BooleanBringToForegroundReason" expires_after="2022-04-03">
+    enum="BooleanBringToForegroundReason" expires_after="2022-06-05">
   <owner>peter@chromium.org</owner>
   <summary>
     Records the cause, each time Chrome is brought to the foreground. Currently
@@ -552,6 +635,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Startup.ConsecutiveDidFinishLaunchingWithoutLaunch"
+    units="count" expires_after="2022-09-30">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>ajuma@chromium.org</owner>
+  <summary>
+    [IOS] The number of time [UIApplicationDelegate
+    application:didFinishLaynching] was called but no scene was activated.
+    Recorded when first scene is becomes active.
+  </summary>
+</histogram>
+
 <histogram name="Startup.ConsecutiveLoadsWithoutLaunch" units="count"
     expires_after="2022-09-30">
   <owner>olivierrobin@chromium.org</owner>
@@ -706,7 +800,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2022-03-13">
+    enum="MobileSessionStartAction" expires_after="2022-05-15">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -716,7 +810,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartFromApps"
-    enum="MobileSessionCallerApp" expires_after="2022-04-03">
+    enum="MobileSessionCallerApp" expires_after="2022-06-05">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>The calling application (if any).</summary>

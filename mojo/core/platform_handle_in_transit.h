@@ -5,7 +5,6 @@
 #ifndef MOJO_CORE_PLATFORM_HANDLE_IN_TRANSIT_H_
 #define MOJO_CORE_PLATFORM_HANDLE_IN_TRANSIT_H_
 
-#include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -57,8 +56,7 @@ class PlatformHandleInTransit {
   void CompleteTransit();
 
   // Transfers ownership of this (local) handle to |target_process|.
-  bool TransferToProcess(base::Process target_process,
-                         bool check_on_failure = true);
+  bool TransferToProcess(base::Process target_process);
 
 #if defined(OS_WIN)
   HANDLE remote_handle() const { return remote_handle_; }

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "content/browser/isolation_context.h"
 #include "content/browser/site_info.h"
@@ -33,9 +34,9 @@ namespace content {
 
 class AgentSchedulingGroupHost;
 class BrowsingInstance;
-class ProcessLock;
 class RenderProcessHostFactory;
 class SiteInstanceGroup;
+class StoragePartitionConfig;
 class StoragePartitionImpl;
 struct UrlInfo;
 
@@ -75,7 +76,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
       const UrlInfo& url_info);
   static scoped_refptr<SiteInstanceImpl> CreateForGuest(
       BrowserContext* browser_context,
-      const GURL& guest_site_url);
+      const StoragePartitionConfig& partition_config);
 
   // Creates a SiteInstance that will be use for a service worker.
   // `url_info` - The UrlInfo for the service worker. It contains the URL and
@@ -136,6 +137,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   RenderProcessHost* GetProcess() override;
   BrowserContext* GetBrowserContext() override;
   const GURL& GetSiteURL() override;
+  const StoragePartitionConfig& GetStoragePartitionConfig() override;
   scoped_refptr<SiteInstance> GetRelatedSiteInstance(const GURL& url) override;
   bool IsRelatedSiteInstance(const SiteInstance* instance) override;
   size_t GetRelatedActiveContentsCount() override;
@@ -144,6 +146,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool IsGuest() override;
   SiteInstanceProcessAssignment GetLastProcessAssignmentOutcome() override;
   void WriteIntoTrace(perfetto::TracedValue context) override;
+  int EstimateOriginAgentClusterOverheadForMetrics() override;
 
   // Write a representation of this object into a trace.
   void WriteIntoTrace(
@@ -285,11 +288,6 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // SiteInstance. It should be refactored and/or renamed to make its behavior
   // more obvious.
   SiteInfo DeriveSiteInfo(const UrlInfo& url_info, bool is_related = false);
-
-  // Returns a ProcessLock that can be used with SetProcessLock to lock a
-  // process to this SiteInstance's SiteInfo. The ProcessLock relies heavily on
-  // the SiteInfo's process_lock_url() for security decisions.
-  const ProcessLock GetProcessLock() const;
 
   // Helper function that returns the storage partition domain for this
   // object.
@@ -564,8 +562,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // well) will only change once the RenderProcessHost is destructed. They will
   // still remain the same even if the process crashes, since in that scenario
   // the RenderProcessHost remains the same.
-  RenderProcessHost* process_;
-  AgentSchedulingGroupHost* agent_scheduling_group_;
+  raw_ptr<RenderProcessHost> process_;
+  raw_ptr<AgentSchedulingGroupHost> agent_scheduling_group_;
 
   // Describes the desired behavior when GetProcess() method needs to find a new
   // process to associate with the current SiteInstanceImpl.  If |false|, then

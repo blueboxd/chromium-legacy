@@ -20,6 +20,7 @@
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/common/process_type.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/request_destination.h"
@@ -148,20 +149,6 @@ const char kHistogramLargestContentfulPaintMainFrameContentType[] =
 const char kHistogramLargestContentfulPaintCrossSiteSubFrame[] =
     "PageLoad.PaintTiming.NavigationToLargestContentfulPaint2."
     "CrossSiteSubFrame";
-// TODO(crbug.com/1045640): Stop reporting these obsolete versions after some
-// time.
-const char kDeprecatedHistogramLargestContentfulPaint[] =
-    "PageLoad.PaintTiming.NavigationToLargestContentfulPaint";
-const char kHistogramExperimentalLargestContentfulPaintContentType[] =
-    "PageLoad.Internal.PaintTiming.ExperimentalLargestContentfulPaint."
-    "ContentType";
-const char kDeprecatedHistogramLargestContentfulPaintMainFrame[] =
-    "PageLoad.PaintTiming.NavigationToLargestContentfulPaint."
-    "MainFrame";
-const char kHistogramExperimentalLargestContentfulPaintMainFrameContentType[] =
-    "PageLoad.Internal.PaintTiming.ExperimentalLargestContentfulPaint."
-    "MainFrame."
-    "ContentType";
 
 const char kHistogramAverageUserInteractionLatencyOverBudgetMaxEventDuration[] =
     "PageLoad.InteractiveTiming.AverageUserInteractionLatencyOverBudget."
@@ -1076,7 +1063,7 @@ void UmaPageLoadMetricsObserver::RecordTimingHistograms(
                         main_frame_largest_contentful_paint.Time().value());
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramLargestContentfulPaintMainFrameContentType,
-        main_frame_largest_contentful_paint.Type());
+        main_frame_largest_contentful_paint.TextOrImage());
   }
 
   const page_load_metrics::ContentfulPaintTimingInfo&
@@ -1110,54 +1097,12 @@ void UmaPageLoadMetricsObserver::RecordTimingHistograms(
             all_frames_largest_contentful_paint.Time().value()));
     UMA_HISTOGRAM_ENUMERATION(
         internal::kHistogramLargestContentfulPaintContentType,
-        all_frames_largest_contentful_paint.Type());
+        all_frames_largest_contentful_paint.TextOrImage());
     TRACE_EVENT_MARK_WITH_TIMESTAMP1(
         "loading", "NavStartToLargestContentfulPaint::AllFrames::UMA",
         GetDelegate().GetNavigationStart() +
             all_frames_largest_contentful_paint.Time().value(),
         "data", all_frames_largest_contentful_paint.DataAsTraceValue());
-  }
-
-  const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_experimental_largest_contentful_paint =
-          GetDelegate()
-              .GetExperimentalLargestContentfulPaintHandler()
-              .MainFrameLargestContentfulPaint();
-  if (main_frame_experimental_largest_contentful_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_experimental_largest_contentful_paint.Time(),
-          GetDelegate())) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kDeprecatedHistogramLargestContentfulPaintMainFrame,
-        main_frame_experimental_largest_contentful_paint.Time().value());
-    UMA_HISTOGRAM_ENUMERATION(
-        internal::
-            kHistogramExperimentalLargestContentfulPaintMainFrameContentType,
-        main_frame_experimental_largest_contentful_paint.Type());
-  }
-
-  const page_load_metrics::ContentfulPaintTimingInfo&
-      all_frames_experimental_largest_contentful_paint =
-          GetDelegate()
-              .GetExperimentalLargestContentfulPaintHandler()
-              .MergeMainFrameAndSubframes();
-  if (all_frames_experimental_largest_contentful_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          all_frames_experimental_largest_contentful_paint.Time(),
-          GetDelegate())) {
-    PAGE_LOAD_HISTOGRAM(
-        internal::kDeprecatedHistogramLargestContentfulPaint,
-        all_frames_experimental_largest_contentful_paint.Time().value());
-    UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramExperimentalLargestContentfulPaintContentType,
-        all_frames_experimental_largest_contentful_paint.Type());
-    TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-        "loading",
-        "NavStartToExperimentalLargestContentfulPaint::AllFrames::UMA",
-        GetDelegate().GetNavigationStart() +
-            all_frames_experimental_largest_contentful_paint.Time().value(),
-        "data",
-        all_frames_experimental_largest_contentful_paint.DataAsTraceValue());
   }
 
   if (main_frame_timing.paint_timing->first_paint &&

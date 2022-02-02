@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -39,7 +41,7 @@ RootCompositorFrameSinkImpl::Create(
     uint32_t restart_id,
     bool run_all_compositor_stages_before_draw,
     const DebugRendererSettings* debug_settings,
-    gfx::RenderingPipeline* gpu_pipeline) {
+    HintSessionFactory* hint_session_factory) {
   // First create an output surface.
   mojo::Remote<mojom::DisplayClient> display_client(
       std::move(params->display_client));
@@ -128,13 +130,10 @@ RootCompositorFrameSinkImpl::Create(
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
 
   const auto& capabilities = output_surface->capabilities();
-  int max_frames_pending = capabilities.max_frames_pending;
-  DCHECK_GT(max_frames_pending, 0);
-
+  DCHECK_GT(capabilities.pending_swap_params.max_pending_swaps, 0);
   auto scheduler = std::make_unique<DisplayScheduler>(
-      begin_frame_source, task_runner.get(), max_frames_pending,
-      capabilities.max_frames_pending_120hz,
-      run_all_compositor_stages_before_draw, gpu_pipeline);
+      begin_frame_source, task_runner.get(), capabilities.pending_swap_params,
+      hint_session_factory, run_all_compositor_stages_before_draw);
 
 #if !defined(OS_APPLE)
   auto* output_surface_ptr = output_surface.get();
@@ -437,6 +436,14 @@ void RootCompositorFrameSinkImpl::InitializeCompositorFrameSinkType(
   support_->InitializeCompositorFrameSinkType(type);
 }
 
+#if defined(OS_ANDROID)
+void RootCompositorFrameSinkImpl::SetThreadIds(
+    const std::vector<int32_t>& thread_ids) {
+  support_->SetThreadIds(/*from_untrusted_client=*/false,
+                         base::MakeFlatSet<base::PlatformThreadId>(thread_ids));
+}
+#endif
+
 RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
     FrameSinkManagerImpl* frame_sink_manager,
     const FrameSinkId& frame_sink_id,
@@ -502,10 +509,13 @@ base::ScopedClosureRunner RootCompositorFrameSinkImpl::GetCacheBackBufferCb() {
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
+  if (last_ca_layer_params_ == ca_layer_params)
+    return;
 #if defined(OS_APPLE)
   // If |ca_layer_params| should have content only when there exists a client
   // to send it to.
   DCHECK(ca_layer_params.is_empty || display_client_);
+  last_ca_layer_params_ = ca_layer_params;
   if (display_client_)
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 #else

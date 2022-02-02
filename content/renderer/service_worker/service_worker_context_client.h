@@ -15,10 +15,8 @@
 #include "base/callback.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -72,8 +70,7 @@ class WebServiceWorkerFetchContext;
 //
 // Unless otherwise noted (here or in base class documentation), all methods
 // are called on the worker thread.
-class CONTENT_EXPORT ServiceWorkerContextClient
-    : public blink::WebServiceWorkerContextClient {
+class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient {
  public:
   // Called on the initiator thread.
   // - |is_starting_installed_worker| is true if the script is already installed

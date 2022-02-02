@@ -12,7 +12,6 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
-#include "base/macros.h"
 
 namespace ui {
 class SimpleMenuModel;
@@ -52,15 +51,19 @@ class AppListTestModel : public AppListModel, public AppListModelDelegate {
 
   AppListTestModel(const AppListTestModel&) = delete;
   AppListTestModel& operator=(const AppListTestModel&) = delete;
+  ~AppListTestModel() override;
 
   // AppListModelDelegate:
   void RequestPositionUpdate(std::string id,
                              const syncer::StringOrdinal& new_position,
                              RequestPositionUpdateReason reason) override;
   void RequestMoveItemToFolder(std::string id,
-                               const std::string& folder_id) override;
+                               const std::string& folder_id,
+                               RequestMoveToFolderReason reason) override;
   void RequestMoveItemToRoot(std::string id,
                              syncer::StringOrdinal target_position) override;
+  void RequestAppListSort(AppListSortOrder order) override;
+  void RequestAppListSortRevert() override;
 
   // Raw pointer version convenience versions of AppListModel methods.
   AppListItem* AddItem(AppListItem* item);
@@ -98,12 +101,19 @@ class AppListTestModel : public AppListModel, public AppListModelDelegate {
   int activate_count() { return activate_count_; }
   AppListItem* last_activated() { return last_activated_; }
 
+  AppListSortOrder requested_sort_order() const {
+    return requested_sort_order_.value_or(AppListSortOrder::kCustom);
+  }
+
  private:
   void ItemActivated(AppListTestItem* item);
 
   int activate_count_ = 0;
   AppListItem* last_activated_ = nullptr;
   int naming_index_ = 0;
+
+  // The last sort order requested using `RequestAppListSort()`.
+  absl::optional<AppListSortOrder> requested_sort_order_;
 };
 
 }  // namespace test

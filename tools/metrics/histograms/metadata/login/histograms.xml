@@ -86,7 +86,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Login.InvalidCombinationsOfAllowedUsersPolicies"
     enum="AllowedUsersPoliciesInvalidState" expires_after="2022-04-17">
   <owner>emaamari@google.com</owner>
-  <owner>src/chromeos/policy/OWNERS</owner>
+  <owner>src/ash/components/policy/OWNERS</owner>
   <summary>
     Chrome OS histogram that keeps track of cases where devices have an invalid
     combination of allow_new_users and user_allowlist policies. This is emitted
@@ -204,7 +204,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PasswordStoreSites.InitializedBeforeQuery"
-    enum="Boolean" expires_after="2022-04-03">
+    enum="Boolean" expires_after="2022-06-05">
   <owner>rajendrant@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -216,8 +216,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PolicyFilesStatePerBoot" enum="LoginPolicyFilesState"
-    expires_after="M81">
-  <owner>cmasone@chromium.org</owner>
+    expires_after="M100">
+  <owner>mpolzer@google.com</owner>
   <summary>The state of Chrome OS owner key and device policy files.</summary>
 </histogram>
 
@@ -241,6 +241,21 @@ chromium-metrics-reviews@google.com.
     Time from first display of the login prompt until the existing user
     completes signing in.
   </summary>
+</histogram>
+
+<histogram name="Login.ReauthToken.FetchDuration.{Result}" units="ms"
+    expires_after="2022-06-01">
+  <owner>yunkez@chromium.org</owner>
+  <owner>cros-oac@google.com</owner>
+  <summary>
+    Records the fetch duration of the reauth request token from the recovery
+    service when it {Result}. This is recorded on the GAIA reauth screen when
+    Cryptohome recovery is deemed to be needed in high probablity.
+  </summary>
+  <token key="Result">
+    <variant name="Failure" summary="fails to fetch"/>
+    <variant name="Success" summary="successfully fetches"/>
+  </token>
 </histogram>
 
 <histogram name="Login.SessionExitType" enum="LoginSessionExitType"

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
@@ -235,7 +236,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
 
   std::unique_ptr<VideoDecoder> decoder_;
-  D3D11VideoDecoder* d3d11_decoder_raw_ = nullptr;
+  raw_ptr<D3D11VideoDecoder> d3d11_decoder_raw_ = nullptr;
   gpu::GpuPreferences gpu_preferences_;
   gpu::GpuDriverBugWorkarounds gpu_workarounds_;
   MockD3D11VideoDecoderImpl* impl_ = nullptr;
@@ -344,17 +345,6 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptedConfig) {
       TestVideoConfig::NormalCodecProfile(VideoCodec::kH264, H264PROFILE_MAIN);
   encrypted_config.SetIsEncrypted(true);
   InitializeDecoder(encrypted_config, false);
-}
-
-TEST_F(D3D11VideoDecoderTest, IgnoreWorkaroundsIgnoresWorkaround) {
-  // k...IgnoreWorkarounds should enable the decoder even if it's turned off
-  // for gpu workarounds.
-  EnableFeature(kD3D11VideoDecoderIgnoreWorkarounds);
-  gpu_workarounds_.disable_d3d11_video_decoder = true;
-  CreateDecoder();
-  InitializeDecoder(
-      TestVideoConfig::NormalCodecProfile(VideoCodec::kH264, H264PROFILE_MAIN),
-      true);
 }
 
 TEST_F(D3D11VideoDecoderTest, WorkaroundTurnsOffDecoder) {

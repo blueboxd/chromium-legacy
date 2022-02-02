@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/viz/client/frame_evictor.h"
@@ -116,6 +117,14 @@ class CONTENT_EXPORT DelegatedFrameHost
                 const gfx::Size& dip_size,
                 blink::mojom::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request);
+
+  // Called to request the presentation time for the next frame or cancel any
+  // requests when the RenderWidget's visibility state is not changing. If the
+  // visibility state is changing call WasHidden or WasShown instead.
+  void RequestPresentationTimeForNextFrame(
+      blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request);
+  void CancelPresentationTimeRequest();
+
   void EmbedSurface(const viz::LocalSurfaceId& local_surface_id,
                     const gfx::Size& dip_size,
                     cc::DeadlinePolicy deadline_policy);
@@ -210,9 +219,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       FrameEvictionState frame_eviction_state);
 
   const viz::FrameSinkId frame_sink_id_;
-  DelegatedFrameHostClient* const client_;
+  const raw_ptr<DelegatedFrameHostClient> client_;
   const bool should_register_frame_sink_id_;
-  ui::Compositor* compositor_ = nullptr;
+  raw_ptr<ui::Compositor> compositor_ = nullptr;
 
   // The LocalSurfaceId of the currently embedded surface.
   viz::LocalSurfaceId local_surface_id_;
@@ -225,7 +234,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // TODO(ccameron): The meaning of "current" should be made more clear here.
   gfx::Size current_frame_size_in_dip_;
 
-  viz::HostFrameSinkManager* const host_frame_sink_manager_;
+  const raw_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
 
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 

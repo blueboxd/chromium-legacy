@@ -53,6 +53,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_paths.h"
 #include "base/path_service.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_external_loader.h"
@@ -65,7 +66,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_external_policy_loader.h"
 #include "chrome/browser/chromeos/extensions/signin_screen_extensions_external_loader.h"
-#include "components/arc/arc_util.h"
 #include "extensions/common/constants.h"
 #else
 #include "chrome/browser/extensions/preinstalled_apps.h"
@@ -83,6 +83,8 @@ namespace extensions {
 namespace {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+
+const char kCameraAppId[] = "hfhhnacclhffhdffklopdkcgdhifgngh";
 
 // Certain pre-installed extensions are no longer needed on ARC devices as they
 // were replaced by their ARC counterparts.
@@ -247,7 +249,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     const base::DictionaryValue* extension_dict = nullptr;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (extension_id == extension_misc::kCameraAppId) {
+    if (extension_id == kCameraAppId) {
       unsupported_extensions.insert(extension_id);
       install_stage_tracker->ReportFailure(
           extension_id,
@@ -338,19 +340,19 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       l10n_util::GetParentLocales(g_browser_process->GetApplicationLocale(),
                                   &browser_locales);
 
-      size_t num_locales = supported_locales->GetList().size();
       bool locale_supported = false;
-      for (size_t j = 0; j < num_locales; j++) {
-        std::string current_locale;
-        if (supported_locales->GetString(j, &current_locale) &&
-            l10n_util::IsValidLocaleSyntax(current_locale)) {
-          current_locale = l10n_util::NormalizeLocale(current_locale);
-          if (base::Contains(browser_locales, current_locale)) {
+      for (const base::Value& locale : supported_locales->GetList()) {
+        const std::string* current_locale = locale.GetIfString();
+        if (current_locale && l10n_util::IsValidLocaleSyntax(*current_locale)) {
+          std::string normalized_locale =
+              l10n_util::NormalizeLocale(*current_locale);
+          if (base::Contains(browser_locales, normalized_locale)) {
             locale_supported = true;
             break;
           }
         } else {
-          LOG(WARNING) << "Unrecognized locale '" << current_locale
+          LOG(WARNING) << "Unrecognized locale '"
+                       << (current_locale ? *current_locale : "(Not a string)")
                        << "' found as supported locale for extension: "
                        << extension_id;
         }
@@ -369,14 +371,14 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     }
 
     int creation_flags = creation_flags_;
-    bool is_bookmark_app;
-    if (extension_dict->GetBoolean(kIsBookmarkApp, &is_bookmark_app) &&
-        is_bookmark_app) {
+    absl::optional<bool> is_bookmark_app =
+        extension_dict->FindBoolKey(kIsBookmarkApp);
+    if (is_bookmark_app.value_or(false)) {
       creation_flags |= Extension::FROM_BOOKMARK;
     }
-    bool is_from_webstore = false;
-    if (extension_dict->GetBoolean(kIsFromWebstore, &is_from_webstore) &&
-        is_from_webstore) {
+    absl::optional<bool> is_from_webstore =
+        extension_dict->FindBoolKey(kIsFromWebstore);
+    if (is_from_webstore.value_or(false)) {
       creation_flags |= Extension::FROM_WEBSTORE;
     }
 
@@ -410,14 +412,14 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       }
     }
 
-    bool was_installed_by_oem = false;
-    if (extension_dict->GetBoolean(kWasInstalledByOem, &was_installed_by_oem) &&
-        was_installed_by_oem) {
+    absl::optional<bool> was_installed_by_oem =
+        extension_dict->FindBoolKey(kWasInstalledByOem);
+    if (was_installed_by_oem.value_or(false)) {
       creation_flags |= Extension::WAS_INSTALLED_BY_OEM;
     }
-    bool may_be_untrusted = false;
-    if (extension_dict->GetBoolean(kMayBeUntrusted, &may_be_untrusted) &&
-        may_be_untrusted) {
+    absl::optional<bool> may_be_untrusted =
+        extension_dict->FindBoolKey(kMayBeUntrusted);
+    if (may_be_untrusted.value_or(false)) {
       creation_flags |= Extension::MAY_BE_UNTRUSTED;
     }
 
@@ -600,10 +602,9 @@ bool ExternalProviderImpl::HandleDoNotInstallForEnterprise(
     const base::DictionaryValue* extension,
     const std::string& extension_id,
     std::set<std::string>* unsupported_extensions) {
-  bool do_not_install_for_enterprise = false;
-  if (extension->GetBoolean(kDoNotInstallForEnterprise,
-                            &do_not_install_for_enterprise) &&
-      do_not_install_for_enterprise) {
+  absl::optional<bool> do_not_install_for_enterprise =
+      extension->FindBoolKey(kDoNotInstallForEnterprise);
+  if (do_not_install_for_enterprise.value_or(false)) {
     const policy::ProfilePolicyConnector* const connector =
         profile_->GetProfilePolicyConnector();
     if (connector->IsManaged()) {

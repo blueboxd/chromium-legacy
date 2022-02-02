@@ -174,7 +174,7 @@ void ValidationMessageClientImpl::CheckAnchorStatus(TimerBase*) {
     return;
   }
 
-  IntRect new_anchor_rect_in_viewport =
+  gfx::Rect new_anchor_rect_in_viewport =
       current_anchor_->VisibleBoundsInVisualViewport();
   if (new_anchor_rect_in_viewport.IsEmpty()) {
     // In a remote frame, VisibleBoundsInVisualViewport() returns an empty
@@ -211,8 +211,11 @@ void ValidationMessageClientImpl::LayoutOverlay() {
 }
 
 void ValidationMessageClientImpl::UpdatePrePaint() {
-  if (overlay_)
+  if (overlay_) {
     overlay_->UpdatePrePaint();
+    DCHECK(overlay_delegate_);
+    overlay_delegate_->UpdateFrameViewState(*overlay_);
+  }
 }
 
 void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {

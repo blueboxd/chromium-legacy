@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/task_environment.h"
@@ -35,13 +36,15 @@ using blink::mojom::LogoutRequestPtr;
 using blink::mojom::LogoutStatus;
 using blink::mojom::RequestIdTokenStatus;
 using blink::mojom::RequestMode;
+using blink::mojom::RevokeStatus;
 using AccountsResponse = content::IdpNetworkRequestManager::AccountsResponse;
 using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
 using LogoutResponse = content::IdpNetworkRequestManager::LogoutResponse;
 using SigninResponse = content::IdpNetworkRequestManager::SigninResponse;
 using TokenResponse = content::IdpNetworkRequestManager::TokenResponse;
+using RevokeResponse = content::IdpNetworkRequestManager::RevokeResponse;
 using UserApproval = content::IdentityRequestDialogController::UserApproval;
-using AccountList = content::IdentityRequestDialogController::AccountList;
+using AccountList = content::IdpNetworkRequestManager::AccountList;
 using LoginState = content::IdentityRequestAccount::LoginState;
 using SignInMode = content::IdentityRequestAccount::SignInMode;
 using ::testing::_;
@@ -62,6 +65,7 @@ constexpr char kAccountsEndpoint[] = "https://idp.example/accounts";
 constexpr char kTokenEndpoint[] = "https://idp.example/token";
 constexpr char kClientIdMetadataEndpoint[] =
     "https://idp.example/client_id_metadata";
+constexpr char kRevokeEndpoint[] = "https://idp.example/revoke";
 constexpr char kPrivacyPolicyUrl[] = "https://rp.example/pp";
 constexpr char kTermsOfServiceUrl[] = "https://rp.example/tos";
 constexpr char kSigninUrl[] = "https://idp.example/signin";
@@ -187,7 +191,7 @@ static const AuthRequestTestCase kPermissionTestCases[]{
 
     {"Wellknown file not found",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kPermission},
-     {RequestIdTokenStatus::kErrorWebIdNotSupportedByProvider, kEmptyToken},
+     {RequestIdTokenStatus::kErrorFedCmNotSupportedByProvider, kEmptyToken},
      {kToken, UserApproval::kApproved, FetchStatus::kWebIdNotSupported,
       absl::nullopt, "", "", "", "", kPermissionNoop, kMediatedNoop}},
 
@@ -400,6 +404,44 @@ class LogoutRequestCallbackHelper {
   LogoutStatus status_;
 };
 
+// Helper class for receiving the Revoke method callback.
+class RevokeRequestCallbackHelper {
+ public:
+  RevokeRequestCallbackHelper() = default;
+  ~RevokeRequestCallbackHelper() = default;
+
+  RevokeRequestCallbackHelper(const RevokeRequestCallbackHelper&) = delete;
+  RevokeRequestCallbackHelper& operator=(const RevokeRequestCallbackHelper&) =
+      delete;
+
+  RevokeStatus status() const { return status_; }
+
+  // This can only be called once per lifetime of this object.
+  base::OnceCallback<void(RevokeStatus)> callback() {
+    return base::BindOnce(&RevokeRequestCallbackHelper::ReceiverMethod,
+                          base::Unretained(this));
+  }
+
+  // Returns when callback() is called, which can be immediately if it has
+  // already been called.
+  void WaitForCallback() {
+    if (was_called_)
+      return;
+    wait_for_callback_loop_.Run();
+  }
+
+ private:
+  void ReceiverMethod(RevokeStatus status) {
+    status_ = status;
+    was_called_ = true;
+    wait_for_callback_loop_.Quit();
+  }
+
+  bool was_called_ = false;
+  base::RunLoop wait_for_callback_loop_;
+  RevokeStatus status_;
+};
+
 LogoutRequestPtr MakeLogoutRequest(const std::string& endpoint,
                                    const std::string& account_id) {
   auto request = LogoutRequest::New();
@@ -468,6 +510,14 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
                             logout_helper.callback());
     logout_helper.WaitForCallback();
     return logout_helper.status();
+  }
+
+  RevokeStatus PerformRevokeRequest(const char* account_id) {
+    RevokeRequestCallbackHelper revoke_helper;
+    request_remote_->Revoke(GURL(kIdpEndpoint), kClientId, account_id,
+                            revoke_helper.callback());
+    revoke_helper.WaitForCallback();
+    return revoke_helper.status();
   }
 
   void SetPermissionMockExpectations(const MockPermissionConfiguration& conf,
@@ -541,12 +591,14 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
           .WillOnce(Invoke(
               [&](content::WebContents* rp_web_contents,
                   content::WebContents* idp_web_contents,
-                  const GURL& idp_signin_url, AccountList accounts,
+                  const GURL& idp_signin_url,
+                  base::span<const content::IdentityRequestAccount> accounts,
                   const IdentityProviderMetadata& idp_metadata,
                   const ClientIdData& client_id_data, SignInMode sign_in_mode,
                   IdentityRequestDialogController::AccountSelectionCallback
                       on_selected) {
-                displayed_accounts_ = accounts;
+                displayed_accounts_ =
+                    AccountList(accounts.begin(), accounts.end());
                 std::move(on_selected).Run(accounts[0].sub);
               }));
     }
@@ -644,20 +696,23 @@ class FederatedAuthRequestImplTest : public RenderViewHostTestHarness {
     return logout_session_permissions_;
   }
 
-  const AccountList& displayed_accounts() const { return displayed_accounts_; }
+  base::span<const content::IdentityRequestAccount> displayed_accounts() const {
+    return displayed_accounts_;
+  }
   MockIdentityRequestDialogController* mock_dialog_controller() const {
     return mock_dialog_controller_;
   }
 
- private:
+ protected:
   mojo::Remote<blink::mojom::FederatedAuthRequest> request_remote_;
   // Note: `auth_request_service_` owns itself, and will generally be deleted
   // with the TestRenderFrameHost is torn down at `TearDown()` time.
-  FederatedAuthRequestService* auth_request_service_;
+  raw_ptr<FederatedAuthRequestService> auth_request_service_;
 
   // Owned by `auth_request_service_`.
-  NiceMock<MockIdpNetworkRequestManager>* mock_request_manager_;
-  NiceMock<MockIdentityRequestDialogController>* mock_dialog_controller_;
+  raw_ptr<NiceMock<MockIdpNetworkRequestManager>> mock_request_manager_;
+  raw_ptr<NiceMock<MockIdentityRequestDialogController>>
+      mock_dialog_controller_;
 
   std::unique_ptr<NiceMock<MockRequestPermissionDelegate>>
       mock_request_permission_delegate_;
@@ -909,13 +964,14 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInForReturningUser) {
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents,
               content::WebContents* idp_web_contents,
-              const GURL& idp_signin_url, AccountList accounts,
+              const GURL& idp_signin_url,
+              base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
                   on_selected) {
             EXPECT_EQ(sign_in_mode, SignInMode::kAuto);
-            displayed_accounts = accounts;
+            displayed_accounts = AccountList(accounts.begin(), accounts.end());
             std::move(on_selected).Run(accounts[0].sub);
           }));
 
@@ -938,13 +994,14 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInForFirstTimeUser) {
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents,
               content::WebContents* idp_web_contents,
-              const GURL& idp_signin_url, AccountList accounts,
+              const GURL& idp_signin_url,
+              base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
                   on_selected) {
             EXPECT_EQ(sign_in_mode, SignInMode::kExplicit);
-            displayed_accounts = accounts;
+            displayed_accounts = AccountList(accounts.begin(), accounts.end());
             std::move(on_selected).Run(accounts[0].sub);
           }));
 
@@ -986,14 +1043,15 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
       .WillOnce(Invoke(
           [&](content::WebContents* rp_web_contents,
               content::WebContents* idp_web_contents,
-              const GURL& idp_signin_url, AccountList accounts,
+              const GURL& idp_signin_url,
+              base::span<const content::IdentityRequestAccount> accounts,
               const IdentityProviderMetadata& idp_metadata,
               const ClientIdData& client_id_data, SignInMode sign_in_mode,
               IdentityRequestDialogController::AccountSelectionCallback
                   on_selected) {
             // Auto sign in replaced by explicit sign in if screen reader is on.
             EXPECT_EQ(sign_in_mode, SignInMode::kExplicit);
-            displayed_accounts = accounts;
+            displayed_accounts = AccountList(accounts.begin(), accounts.end());
             std::move(on_selected).Run(accounts[0].sub);
           }));
 
@@ -1005,6 +1063,59 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
   ASSERT_FALSE(displayed_accounts.empty());
   EXPECT_EQ(displayed_accounts[0].login_state, LoginState::kSignIn);
   EXPECT_EQ(auth_response.second.value(), kToken);
+}
+
+TEST_F(FederatedAuthRequestImplTest, Revoke) {
+  constexpr char kAccountId[] = "foo@bar.com";
+
+  auto& auth_request = CreateAuthRequest(GURL(kIdpEndpoint));
+  auth_request.SetRequestPermissionDelegateForTests(
+      mock_request_permission_delegate_.get());
+
+  // Pretend the request permission has been granted for this account.
+  EXPECT_CALL(
+      *mock_request_permission_delegate_,
+      HasRequestPermission(_, url::Origin::Create(GURL(kIdpTestOrigin))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(
+      *mock_request_permission_delegate_,
+      RevokeRequestPermission(_, url::Origin::Create(GURL(kIdpTestOrigin))));
+
+  EXPECT_CALL(*mock_request_manager_, FetchIdpWellKnown(_))
+      .WillOnce(Invoke(
+          [&](IdpNetworkRequestManager::FetchWellKnownCallback callback) {
+            IdpNetworkRequestManager::Endpoints endpoints;
+            endpoints.revoke = kRevokeEndpoint;
+            std::move(callback).Run(FetchStatus::kSuccess, endpoints);
+          }));
+  EXPECT_CALL(*mock_request_manager_, SendRevokeRequest(_, _, _, _))
+      .WillOnce(Invoke([&](const GURL& revoke_url, const std::string& client_id,
+                           const std::string& account_id,
+                           IdpNetworkRequestManager::RevokeCallback callback) {
+        EXPECT_EQ(kRevokeEndpoint, revoke_url.spec());
+        EXPECT_EQ(kClientId, client_id);
+        EXPECT_EQ(kAccountId, account_id);
+        std::move(callback).Run(RevokeResponse::kSuccess);
+      }));
+  auto status = PerformRevokeRequest(kAccountId);
+  EXPECT_EQ(RevokeStatus::kSuccess, status);
+}
+
+TEST_F(FederatedAuthRequestImplTest, RevokeNoPermission) {
+  constexpr char kAccountId[] = "foo@bar.com";
+
+  auto& auth_request = CreateAuthRequest(GURL(kIdpEndpoint));
+  auth_request.SetRequestPermissionDelegateForTests(
+      mock_request_permission_delegate_.get());
+
+  // Pretend the request permission has been denied for this account.
+  EXPECT_CALL(
+      *mock_request_permission_delegate_,
+      HasRequestPermission(_, url::Origin::Create(GURL(kIdpTestOrigin))))
+      .WillOnce(Return(false));
+
+  auto status = PerformRevokeRequest(kAccountId);
+  EXPECT_EQ(RevokeStatus::kError, status);
 }
 
 }  // namespace content

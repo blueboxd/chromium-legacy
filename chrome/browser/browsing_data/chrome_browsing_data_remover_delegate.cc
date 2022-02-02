@@ -25,7 +25,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
-#include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
@@ -33,7 +32,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/crash_upload_list/crash_upload_list.h"
-#include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -45,8 +43,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
-#include "chrome/browser/lite_video/lite_video_keyed_service.h"
-#include "chrome/browser/lite_video/lite_video_keyed_service_factory.h"
 #include "chrome/browser/login_detection/login_detection_prefs.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
@@ -96,6 +92,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/crash/core/app/crashpad.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
@@ -549,13 +546,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (optimization_guide_keyed_service)
       optimization_guide_keyed_service->ClearData();
 
-    AvailabilityProber::ClearData(prefs);
-
-    LiteVideoKeyedService* lite_video_keyed_service =
-        LiteVideoKeyedServiceFactory::GetForProfile(profile_);
-    if (lite_video_keyed_service)
-      lite_video_keyed_service->ClearData(delete_begin_, delete_end_);
-
     PrefetchProxyService* prefetch_proxy_service =
         PrefetchProxyServiceFactory::GetForProfile(profile_);
     if (prefetch_proxy_service) {
@@ -821,10 +811,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             GetPaymentManifestWebDataServiceForBrowserContext(
                 profile_, ServiceAccessType::EXPLICIT_ACCESS);
     if (web_data_service) {
-      web_data_service->ClearSecurePaymentConfirmationInstruments(
+      web_data_service->ClearSecurePaymentConfirmationCredentials(
           delete_begin_, delete_end_,
           CreateTaskCompletionClosure(
-              TracingDataType::kSecurePaymentConfirmationInstruments));
+              TracingDataType::kSecurePaymentConfirmationCredentials));
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

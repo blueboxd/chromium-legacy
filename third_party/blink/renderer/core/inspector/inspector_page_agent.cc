@@ -40,7 +40,6 @@
 #include "third_party/blink/public/mojom/ad_tagging/ad_evidence.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -62,7 +61,6 @@
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Page.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -489,7 +487,6 @@ InspectorPageAgent::InspectorPageAgent(
       sans_serif_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       cursive_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       fantasy_font_family_(&agent_state_, /*default_value=*/WTF::String()),
-      pictograph_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       standard_font_size_(&agent_state_, /*default_value=*/0),
       fixed_font_size_(&agent_state_, /*default_value=*/0) {}
 
@@ -527,11 +524,6 @@ void InspectorPageAgent::Restore() {
     }
     if (!fantasy_font_family_.Get().IsNull()) {
       family_settings.UpdateFantasy(AtomicString(fantasy_font_family_.Get()));
-      notifyGenericFontFamilyChange = true;
-    }
-    if (!pictograph_font_family_.Get().IsNull()) {
-      family_settings.UpdatePictograph(
-          AtomicString(pictograph_font_family_.Get()));
       notifyGenericFontFamilyChange = true;
     }
     if (notifyGenericFontFamilyChange)
@@ -954,13 +946,11 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
             v8_inspector::V8ContextInfo::executionContextId(
                 script_state->GetContext()));
         DCHECK(scope);
-        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
-            ->RunScript(window,
-                        ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+        ClassicScript::CreateUnspecifiedScript(source)->RunScript(
+            window, ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
       } else {
-        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
-            ->RunScript(window,
-                        ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+        ClassicScript::CreateUnspecifiedScript(source)->RunScript(
+            window, ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
       }
       continue;
     }
@@ -982,17 +972,16 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
           v8_inspector::V8ContextInfo::executionContextId(
               script_state->GetContext()));
       DCHECK(scope);
-      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+      ClassicScript::CreateUnspecifiedScript(source)
           ->RunScriptInIsolatedWorldAndReturnValue(window, world->GetWorldId());
     } else {
-      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+      ClassicScript::CreateUnspecifiedScript(source)
           ->RunScriptInIsolatedWorldAndReturnValue(window, world->GetWorldId());
     }
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
-    ClassicScript::CreateUnspecifiedScript(
-        ScriptSourceCode(script_to_evaluate_on_load_once_))
+    ClassicScript::CreateUnspecifiedScript(script_to_evaluate_on_load_once_)
         ->RunScript(frame->DomWindow(),
                     ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
   }
@@ -1372,18 +1361,20 @@ std::unique_ptr<protocol::Page::AdFrameStatus> BuildAdFrameStatus(
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     LocalFrame* frame) {
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
+  // There are some rare cases where no DocumentLoader is set. We use an empty
+  // Url and MimeType in those cases. See e.g. https://crbug.com/1270184.
+  const KURL url = loader ? loader->Url() : KURL();
+  const String mime_type = loader ? loader->MimeType() : String();
   std::unique_ptr<protocol::Page::Frame> frame_object =
       protocol::Page::Frame::create()
           .setId(IdentifiersFactory::FrameId(frame))
           .setLoaderId(IdentifiersFactory::LoaderId(loader))
-          .setUrl(UrlWithoutFragment(loader->Url()).GetString())
+          .setUrl(UrlWithoutFragment(url).GetString())
           .setDomainAndRegistry(blink::network_utils::GetDomainAndRegistry(
-              loader->Url().Host(),
-              blink::network_utils::PrivateRegistryFilter::
-                  kIncludePrivateRegistries))
-          .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
-          .setSecurityOrigin(
-              SecurityOrigin::Create(loader->Url())->ToRawString())
+              url.Host(), blink::network_utils::PrivateRegistryFilter::
+                              kIncludePrivateRegistries))
+          .setMimeType(mime_type)
+          .setSecurityOrigin(SecurityOrigin::Create(url)->ToRawString())
           .setSecureContextType(CreateProtocolSecureContextType(
               frame->DomWindow()
                   ->GetSecurityContext()
@@ -1392,8 +1383,8 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
               CreateProtocolCrossOriginIsolatedContextType(frame->DomWindow()))
           .setGatedAPIFeatures(CreateGatedAPIFeaturesArray(frame->DomWindow()))
           .build();
-  if (loader->Url().HasFragmentIdentifier())
-    frame_object->setUrlFragment("#" + loader->Url().FragmentIdentifier());
+  if (url.HasFragmentIdentifier())
+    frame_object->setUrlFragment("#" + url.FragmentIdentifier());
   Frame* parent_frame = frame->Tree().Parent();
   if (parent_frame) {
     frame_object->setParentId(IdentifiersFactory::FrameId(parent_frame));
@@ -1511,7 +1502,7 @@ Response InspectorPageAgent::getLayoutMetrics(
   main_frame->GetDocument()->UpdateStyleAndLayout(
       DocumentUpdateReason::kInspector);
 
-  IntRect visible_contents =
+  gfx::Rect visible_contents =
       main_frame->View()->LayoutViewport()->VisibleContentRect();
   *out_layout_viewport = protocol::Page::LayoutViewport::create()
                              .setPageX(visible_contents.x())
@@ -1523,7 +1514,7 @@ Response InspectorPageAgent::getLayoutMetrics(
   // `visible_contents` is in DIP or DP depending on the
   // `enable-use-zoom-for-dsf` flag. Normlisation needed to convert it to CSS
   // pixels. Details: https://crbug.com/1181313
-  IntRect css_visible_contents =
+  gfx::Rect css_visible_contents =
       main_frame->GetPage()->GetChromeClient().ViewportToScreen(
           visible_contents, main_frame->View());
   *out_css_layout_viewport = protocol::Page::LayoutViewport::create()
@@ -1536,7 +1527,7 @@ Response InspectorPageAgent::getLayoutMetrics(
   LocalFrameView* frame_view = main_frame->View();
   ScrollOffset page_offset = frame_view->GetScrollableArea()->GetScrollOffset();
 
-  IntSize content_size = frame_view->GetScrollableArea()->ContentsSize();
+  gfx::Size content_size = frame_view->GetScrollableArea()->ContentsSize();
   *out_content_size = protocol::DOM::Rect::create()
                           .setX(0)
                           .setY(0)
@@ -1547,9 +1538,9 @@ Response InspectorPageAgent::getLayoutMetrics(
   // `content_size` is in DIP or DP depending on the
   // `enable-use-zoom-for-dsf` flag. Normlisation needed to convert it to CSS
   // pixels. Details: https://crbug.com/1181313
-  IntRect css_content_size =
+  gfx::Rect css_content_size =
       main_frame->GetPage()->GetChromeClient().ViewportToScreen(
-          IntRect(gfx::Point(0, 0), content_size), main_frame->View());
+          gfx::Rect(content_size), main_frame->View());
   *out_css_content_size = protocol::DOM::Rect::create()
                               .setX(css_content_size.x())
                               .setY(css_content_size.y())
@@ -1565,7 +1556,7 @@ Response InspectorPageAgent::getLayoutMetrics(
       page_zoom /
       main_frame->GetPage()->GetChromeClient().WindowToViewportScalar(
           main_frame, 1);
-  FloatRect visible_rect = visual_viewport.VisibleRect();
+  gfx::RectF visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
   *out_visual_viewport = protocol::Page::VisualViewport::create()
                              .setOffsetX(AdjustForAbsoluteZoom::AdjustScroll(
@@ -1573,9 +1564,9 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setOffsetY(AdjustForAbsoluteZoom::AdjustScroll(
                                  visible_rect.y(), page_zoom))
                              .setPageX(AdjustForAbsoluteZoom::AdjustScroll(
-                                 page_offset.width(), page_zoom))
+                                 page_offset.x(), page_zoom))
                              .setPageY(AdjustForAbsoluteZoom::AdjustScroll(
-                                 page_offset.height(), page_zoom))
+                                 page_offset.y(), page_zoom))
                              .setClientWidth(visible_rect.width())
                              .setClientHeight(visible_rect.height())
                              .setScale(scale)
@@ -1588,10 +1579,10 @@ Response InspectorPageAgent::getLayoutMetrics(
               AdjustForAbsoluteZoom::AdjustScroll(visible_rect.x(), page_zoom))
           .setOffsetY(
               AdjustForAbsoluteZoom::AdjustScroll(visible_rect.y(), page_zoom))
-          .setPageX(AdjustForAbsoluteZoom::AdjustScroll(page_offset.width(),
-                                                        page_zoom))
-          .setPageY(AdjustForAbsoluteZoom::AdjustScroll(page_offset.height(),
-                                                        page_zoom))
+          .setPageX(
+              AdjustForAbsoluteZoom::AdjustScroll(page_offset.x(), page_zoom))
+          .setPageY(
+              AdjustForAbsoluteZoom::AdjustScroll(page_offset.y(), page_zoom))
           .setClientWidth(AdjustForAbsoluteZoom::AdjustScroll(
               visible_rect.width(), page_zoom))
           .setClientHeight(AdjustForAbsoluteZoom::AdjustScroll(
@@ -1656,11 +1647,6 @@ Response InspectorPageAgent::setFontFamilies(
       fantasy_font_family_.Set(font_families->getFantasy(String()));
       family_settings.UpdateFantasy(AtomicString(fantasy_font_family_.Get()));
     }
-    if (font_families->hasPictograph()) {
-      pictograph_font_family_.Set(font_families->getPictograph(String()));
-      family_settings.UpdatePictograph(
-          AtomicString(pictograph_font_family_.Get()));
-    }
     settings->NotifyGenericFontFamilyChange();
   }
 
@@ -1686,17 +1672,18 @@ Response InspectorPageAgent::setFontSizes(
 }
 
 void InspectorPageAgent::ApplyCompilationModeOverride(
-    const ScriptSourceCode& source,
+    const ClassicScript& classic_script,
     v8::ScriptCompiler::CachedData** cached_data,
     v8::ScriptCompiler::CompileOptions* compile_options) {
-  if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
+  if (classic_script.SourceLocationType() !=
+      ScriptSourceLocationType::kExternalFile)
     return;
-  if (source.Url().IsEmpty())
+  if (classic_script.SourceUrl().IsEmpty())
     return;
-  auto it = compilation_cache_.find(source.Url().GetString());
+  auto it = compilation_cache_.find(classic_script.SourceUrl().GetString());
   if (it == compilation_cache_.end()) {
-    auto requested =
-        requested_compilation_cache_.find(source.Url().GetString());
+    auto requested = requested_compilation_cache_.find(
+        classic_script.SourceUrl().GetString());
     if (requested != requested_compilation_cache_.end() && requested->value)
       *compile_options = v8::ScriptCompiler::kEagerCompile;
     return;
@@ -1708,9 +1695,9 @@ void InspectorPageAgent::ApplyCompilationModeOverride(
 }
 
 void InspectorPageAgent::DidProduceCompilationCache(
-    const ScriptSourceCode& source,
+    const ClassicScript& classic_script,
     v8::Local<v8::Script> script) {
-  KURL url = source.Url();
+  KURL url = classic_script.SourceUrl();
   if (url.IsEmpty())
     return;
   String url_string = url.GetString();
@@ -1718,13 +1705,14 @@ void InspectorPageAgent::DidProduceCompilationCache(
   if (requested == requested_compilation_cache_.end())
     return;
   requested_compilation_cache_.erase(requested);
-  if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
+  if (classic_script.SourceLocationType() !=
+      ScriptSourceLocationType::kExternalFile)
     return;
   // TODO(caseq): should we rather issue updates if compiled code differs?
   if (compilation_cache_.Contains(url_string))
     return;
   static const int kMinimalCodeLength = 1024;
-  if (source.Source().length() < kMinimalCodeLength)
+  if (classic_script.SourceText().length() < kMinimalCodeLength)
     return;
   std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
       v8::ScriptCompiler::CreateCodeCache(script->GetUnboundScript()));

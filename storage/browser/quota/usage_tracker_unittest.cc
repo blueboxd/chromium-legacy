@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
@@ -44,6 +43,10 @@ void DidGetGlobalUsage(bool* done,
 class UsageTrackerTestQuotaClient : public mojom::QuotaClient {
  public:
   UsageTrackerTestQuotaClient() = default;
+
+  UsageTrackerTestQuotaClient(const UsageTrackerTestQuotaClient&) = delete;
+  UsageTrackerTestQuotaClient& operator=(const UsageTrackerTestQuotaClient&) =
+      delete;
 
   void GetStorageKeyUsage(const StorageKey& storage_key,
                           StorageType type,
@@ -110,8 +113,6 @@ class UsageTrackerTestQuotaClient : public mojom::QuotaClient {
 
  private:
   std::map<StorageKey, int64_t> storage_key_usage_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(UsageTrackerTestQuotaClient);
 };
 
 }  // namespace

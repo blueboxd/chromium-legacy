@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
@@ -145,6 +145,11 @@ class TestingProfile : public Profile {
     // Set the value to be returned by Profile::IsNewProfile().
     void SetIsNewProfile(bool is_new_profile);
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Set the value to be returned by Profile::IsMainProfile().
+    void SetIsMainProfile(bool is_main_profile);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
     // Sets the supervised user ID (which is empty by default). If it is set to
     // a non-empty string, the profile is supervised.
     void SetSupervisedUserId(const std::string& supervised_user_id);
@@ -189,10 +194,13 @@ class TestingProfile : public Profile {
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy_;
 #endif
     base::FilePath path_;
-    Delegate* delegate_ = nullptr;
+    raw_ptr<Delegate> delegate_ = nullptr;
     bool guest_session_ = false;
     bool allows_browser_windows_ = true;
     bool is_new_profile_ = false;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    bool is_main_profile_ = false;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
     std::string supervised_user_id_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     std::unique_ptr<policy::UserCloudPolicyManagerAsh>
@@ -232,6 +240,9 @@ class TestingProfile : public Profile {
       bool guest_session,
       bool allows_browser_windows,
       bool is_new_profile,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      bool is_main_profile,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       const std::string& supervised_user_id,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       std::unique_ptr<policy::UserCloudPolicyManagerAsh> policy_manager,
@@ -257,13 +268,17 @@ class TestingProfile : public Profile {
   // TODO(crbug.com/1106699): Remove this API and adopt the Builder instead.
   void CreateWebDataService();
 
+  // Note: Calling the Builder methods instead is preferred.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Allow setting the return value of IsMainProfile().
+  void SetIsMainProfile(bool is_main_profile);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   // Allow setting a profile as Guest after-the-fact to simplify some tests.
   void SetGuestSession(bool guest);
 
   // Allow setting the return value of IsNewProfile.
   void SetIsNewProfile(bool is_new_profile);
-
-  sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
   // Called on the parent of an OffTheRecord |otr_profile|. Usually called from
   // the constructor of an OffTheRecord TestingProfile, but can also be used by
@@ -272,6 +287,8 @@ class TestingProfile : public Profile {
   void SetOffTheRecordProfile(std::unique_ptr<Profile> otr_profile);
 
   void SetSupervisedUserId(const std::string& id);
+
+  sync_preferences::TestingPrefServiceSyncable* GetTestingPrefService();
 
   // content::BrowserContext
   base::FilePath GetPath() override;
@@ -286,7 +303,6 @@ class TestingProfile : public Profile {
   bool IsOffTheRecord() const final;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   bool IsMainProfile() const override;
-  void SetIsMainProfile(bool is_main_profile);
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   const OTRProfileID& GetOTRProfileID() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
@@ -320,7 +336,6 @@ class TestingProfile : public Profile {
   bool HasAnyOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;
-  bool IsSupervised() const override;
   bool IsChild() const override;
   bool AllowsBrowserWindows() const override;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -397,7 +412,8 @@ class TestingProfile : public Profile {
 
   std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs_;
   // ref only for right type, lifecycle is managed by prefs_
-  sync_preferences::TestingPrefServiceSyncable* testing_prefs_ = nullptr;
+  raw_ptr<sync_preferences::TestingPrefServiceSyncable> testing_prefs_ =
+      nullptr;
 
   // Profile implementation.
   bool IsSignedIn() override;
@@ -431,7 +447,7 @@ class TestingProfile : public Profile {
       extensions_cookie_store_;
 
   std::map<OTRProfileID, std::unique_ptr<Profile>> otr_profiles_;
-  TestingProfile* original_profile_ = nullptr;
+  raw_ptr<TestingProfile> original_profile_ = nullptr;
 
   bool guest_session_ = false;
 
@@ -463,14 +479,14 @@ class TestingProfile : public Profile {
   // We keep a weak pointer to the dependency manager we want to notify on our
   // death. Defaults to the Singleton implementation but overridable for
   // testing.
-  SimpleDependencyManager* simple_dependency_manager_{
+  raw_ptr<SimpleDependencyManager> simple_dependency_manager_{
       SimpleDependencyManager::GetInstance()};
-  BrowserContextDependencyManager* browser_context_dependency_manager_{
+  raw_ptr<BrowserContextDependencyManager> browser_context_dependency_manager_{
       BrowserContextDependencyManager::GetInstance()};
 
   // Owned, but must be deleted on the IO thread so not placing in a
   // std::unique_ptr<>.
-  content::MockResourceContext* resource_context_ = nullptr;
+  raw_ptr<content::MockResourceContext> resource_context_ = nullptr;
 
   std::unique_ptr<policy::SchemaRegistryService> schema_registry_service_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -481,7 +497,7 @@ class TestingProfile : public Profile {
   std::unique_ptr<policy::ProfilePolicyConnector> profile_policy_connector_;
 
   // Weak pointer to a delegate for indicating that a profile was created.
-  Delegate* delegate_ = nullptr;
+  raw_ptr<Delegate> delegate_ = nullptr;
 
   std::string profile_name_{kDefaultProfileUserName};
 
@@ -503,7 +519,7 @@ class TestingProfile : public Profile {
   std::unique_ptr<policy::PolicyService> policy_service_;
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  TestingPrefStore* supervised_user_pref_store_ = nullptr;
+  raw_ptr<TestingPrefStore> supervised_user_pref_store_ = nullptr;
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 };
 

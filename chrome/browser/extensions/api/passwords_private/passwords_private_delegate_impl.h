@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/password_check_delegate.h"
@@ -60,7 +60,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   bool AddPassword(const std::string& url,
                    const std::u16string& username,
                    const std::u16string& password,
-                   bool use_account_store) override;
+                   bool use_account_store,
+                   content::WebContents* web_contents) override;
   bool ChangeSavedPassword(const std::vector<int>& ids,
                            const std::u16string& new_username,
                            const std::u16string& new_password) override;
@@ -181,7 +182,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
           callback);
 
   // Not owned by this class.
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
 
   // Used to communicate with the password store.
   std::unique_ptr<PasswordManagerPresenter> password_manager_presenter_;
@@ -228,7 +229,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   // The WebContents used when invoking this API. Used to fetch the
   // NativeWindow for the window where the API was called.
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
 
   base::WeakPtrFactory<PasswordsPrivateDelegateImpl> weak_ptr_factory_{this};
 };

@@ -137,6 +137,7 @@ WebGPUSwapBufferProvider::NewOrRecycledSwapBuffer(
       std::move(unused_swap_buffers_.back());
   unused_swap_buffers_.pop_back();
 
+  DCHECK_EQ(swap_buffer->size, size);
   return swap_buffer;
 }
 
@@ -150,7 +151,7 @@ void WebGPUSwapBufferProvider::RecycleSwapBuffer(
   unused_swap_buffers_.push_back(std::move(swap_buffer));
 }
 
-WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const IntSize& size) {
+WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const gfx::Size& size) {
   DCHECK(!current_swap_buffer_);
   auto context_provider = GetContextProviderWeakPtr();
   if (!context_provider) {
@@ -163,7 +164,7 @@ WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const IntSize& size) {
   // Create a new swap buffer.
   current_swap_buffer_ = NewOrRecycledSwapBuffer(
       context_provider->ContextProvider()->SharedImageInterface(),
-      context_provider, ToGfxSize(size));
+      context_provider, size);
 
   // Ensure the shared image is allocated and not in use service-side before
   // working with it
@@ -188,6 +189,20 @@ WGPUTexture WebGPUSwapBufferProvider::GetNewTexture(const IntSize& size) {
   layer_->SetNeedsDisplay();
 
   return reservation.texture;
+}
+
+WebGPUSwapBufferProvider::WebGPUMailboxTextureAndSize
+WebGPUSwapBufferProvider::GetLastWebGPUMailboxTextureAndSize() const {
+  auto context_provider = GetContextProviderWeakPtr();
+  if (!last_swap_buffer_ || !context_provider)
+    return WebGPUMailboxTextureAndSize(nullptr, gfx::Size());
+
+  return WebGPUMailboxTextureAndSize(
+      WebGPUMailboxTexture::FromExistingMailbox(
+          dawn_control_client_, device_, usage_, last_swap_buffer_->mailbox,
+          last_swap_buffer_->access_finished_token,
+          gpu::webgpu::WEBGPU_MAILBOX_NONE),
+      last_swap_buffer_->size);
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -265,8 +280,14 @@ void WebGPUSwapBufferProvider::MailboxReleased(
   // immediately destroy this buffer.
   swap_buffer->access_finished_token = sync_token;
 
-  if (!lost_resource)
-    RecycleSwapBuffer(std::move(swap_buffer));
+  if (lost_resource)
+    return;
+
+  if (last_swap_buffer_) {
+    RecycleSwapBuffer(std::move(last_swap_buffer_));
+  }
+
+  last_swap_buffer_ = std::move(swap_buffer);
 }
 
 WebGPUSwapBufferProvider::SwapBuffer::SwapBuffer(

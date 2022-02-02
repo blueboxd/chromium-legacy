@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "ipc/ipc_channel_factory.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
@@ -22,6 +21,9 @@ class PlatformChannelFactory : public ChannelFactory {
         mode_(mode),
         ipc_task_runner_(ipc_task_runner),
         quota_checker_(mojo::internal::MessageQuotaChecker::MaybeCreate()) {}
+
+  PlatformChannelFactory(const PlatformChannelFactory&) = delete;
+  PlatformChannelFactory& operator=(const PlatformChannelFactory&) = delete;
 
   std::unique_ptr<Channel> BuildChannel(Listener* listener) override {
 #if defined(OS_NACL_SFI)
@@ -48,8 +50,6 @@ class PlatformChannelFactory : public ChannelFactory {
   Channel::Mode mode_;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
   scoped_refptr<mojo::internal::MessageQuotaChecker> quota_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformChannelFactory);
 };
 
 } // namespace

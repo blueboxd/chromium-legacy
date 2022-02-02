@@ -18,7 +18,8 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
@@ -425,7 +426,7 @@ class CaptivePortalObserver {
   bool waiting_for_result_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  captive_portal::CaptivePortalService* captive_portal_service_;
+  raw_ptr<captive_portal::CaptivePortalService> captive_portal_service_;
 
   base::CallbackListSubscription subscription_;
 
@@ -492,7 +493,7 @@ class SSLInterstitialTimerObserver {
  private:
   void OnTimerStarted(content::WebContents* web_contents);
 
-  const content::WebContents* web_contents_;
+  raw_ptr<const content::WebContents> web_contents_;
   SSLErrorHandler::TimerStartedCallback callback_;
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -948,7 +949,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 #if defined(OS_WIN)
   base::win::ScopedDomainStateForTesting scoped_domain_;
 #endif
-  const BrowserList* browser_list_;
+  raw_ptr<const BrowserList> browser_list_;
   bool intercept_bad_cert_ = true;
 };
 
@@ -2825,8 +2826,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Status511) {
 // The second check finds no captive portal. The reloader triggers a reload at
 // the same time SSL error handler tries to show an interstitial. Should result
 // in an SSL interstitial.
+// TODO(crbug.com/1271739): Flaky on all platforms.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       InterstitialTimerCertErrorAfterSlowLoad) {
+                       DISABLED_InterstitialTimerCertErrorAfterSlowLoad) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
 
   GURL cert_error_url;

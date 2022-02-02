@@ -47,6 +47,7 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     'UnescapedEntity',
     'NonCanonicalType',
     'AlmostJavadoc',
+    'ReturnValueIgnored',
     # The following are added for errorprone update: https://crbug.com/1216032
     'InlineMeSuggester',
     'DoNotClaimAnnotations',
@@ -59,6 +60,8 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     'StaticMockMember',
     'MissingSuperCall',
     'ToStringReturnsNull',
+    # If possible, this should be automatically fixed if turned on:
+    'MalformedInlineTag',
     # TODO(crbug.com/834807): Follow steps in bug
     'DoubleBraceInitialization',
     # TODO(crbug.com/834790): Follow steps in bug.
@@ -181,6 +184,9 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     'RemoveUnusedImports',
     # We do not care about unnecessary parenthesis enough to check for them.
     'UnnecessaryParentheses',
+    # The only time we trigger this is when it is better to be explicit in a
+    # list of unicode characters, e.g. FindAddress.java
+    'UnicodeEscape',
 ]
 
 # Full list of checks: https://errorprone.info/bugpatterns
@@ -267,7 +273,7 @@ def _ProcessJavaFileForInfo(java_file):
   return java_file, package_name, class_names
 
 
-class _InfoFileContext(object):
+class _InfoFileContext:
   """Manages the creation of the class->source file .info file."""
 
   def __init__(self, chromium_code, excluded_globs):
@@ -325,14 +331,16 @@ class _InfoFileContext(object):
     if self._pool is None:
       return {}
     ret = {}
-    for result in self._results:
-      for java_file, package_name, class_names in result:
-        source = self._srcjar_files.get(java_file, java_file)
-        for fully_qualified_name in self._ProcessInfo(java_file, package_name,
-                                                      class_names, source):
-          if self._ShouldIncludeInJarInfo(fully_qualified_name):
-            ret[fully_qualified_name] = java_file
-    self._pool.terminate()
+    try:
+      for result in self._results:
+        for java_file, package_name, class_names in result:
+          source = self._srcjar_files.get(java_file, java_file)
+          for fully_qualified_name in self._ProcessInfo(java_file, package_name,
+                                                        class_names, source):
+            if self._ShouldIncludeInJarInfo(fully_qualified_name):
+              ret[fully_qualified_name] = java_file
+    finally:
+      self._pool.terminate()
     return ret
 
   def __del__(self):

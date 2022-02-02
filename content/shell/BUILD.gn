@@ -366,7 +366,7 @@ static_library("content_shell_lib") {
   if (is_chromeos_lacros) {
     deps += [
       "//chromeos/dbus/constants",
-      "//chromeos/lacros",
+      "//chromeos/lacros/dbus",
     ]
   }
 
@@ -427,6 +427,7 @@ repack("pak") {
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ax_strings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
 
@@ -486,10 +487,18 @@ if (is_android) {
     output_name = content_shell_product_name
     sources = [ "app/shell_main_mac.cc" ]
     defines = [ "SHELL_PRODUCT_NAME=\"$content_shell_product_name\"" ]
+
+    # Must have minimal dependencies. In particular cannot depend on //base.
+    # Depending on //base leads to loading //base twice (once in the exe, once
+    # in the main framework).
     deps = [
       ":content_shell_framework_bundle_data",
       ":content_shell_resources_bundle_data",
-      "//sandbox",
+
+      # Despite its path, this does not add a //base dependency, see comments in
+      # the .cc file.
+      "//base/allocator:early_zone_registration_mac",
+      "//sandbox/mac:seatbelt",
     ]
     info_plist_target = ":content_shell_plist"
     data_deps = [ ":content_shell_app" ]
@@ -727,7 +736,10 @@ if (is_mac) {
         "CONTENT_SHELL_HELPER_SUFFIX=${invoker.helper_name_suffix}",
         "CONTENT_SHELL_HELPER_BUNDLE_ID_SUFFIX=${invoker.helper_bundle_id_suffix}",
       ]
-      deps = [ "//sandbox/mac:seatbelt" ]
+      deps = [
+        "//base/allocator:early_zone_registration_mac",
+        "//sandbox/mac:seatbelt",
+      ]
 
       info_plist_target = ":content_shell_helper_plist"
 

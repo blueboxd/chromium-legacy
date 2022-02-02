@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/common/content_export.h"
 
 namespace content {
 class BrowserAccessibilityAuraLinux;

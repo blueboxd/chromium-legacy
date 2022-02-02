@@ -7,6 +7,14 @@
 
 namespace features {
 
+// Enable code space compaction when finalizing a full GC with stack
+const base::Feature kV8CompactCodeSpaceWithStack{
+    "V8CompactCodeSpaceWithStack", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enable compaction when finalizing a full GC with stack.
+const base::Feature kV8CompactWithStack{"V8CompactWithStack",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables optimization of JavaScript in V8.
 const base::Feature kV8OptimizeJavascript{"V8OptimizeJavascript",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -65,6 +73,12 @@ const base::Feature kV8Turboprop{"V8Turboprop",
 // manually overridden; otherwise it defers to whatever the V8 default is.
 const base::Feature kV8Sparkplug{"V8Sparkplug",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the concurrent Sparkplug compiler.
+const base::Feature kV8ConcurrentSparkplug{"V8ConcurrentSparkplug",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kV8ConcurrentSparkplugMaxThreads{
+    &kV8ConcurrentSparkplug, "V8ConcurrentSparkplugMaxThreads", 0};
 
 // Makes sure the experimental Sparkplug compiler is only enabled if short
 // builtin calls are enabled too.

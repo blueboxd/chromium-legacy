@@ -14,8 +14,8 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Audits.h"
-#include "third_party/blink/renderer/core/inspector/protocol/Network.h"
+#include "third_party/blink/renderer/core/inspector/protocol/audits.h"
+#include "third_party/blink/renderer/core/inspector/protocol/network.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
@@ -153,6 +153,21 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kAttributionUntrustworthyOrigin:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           AttributionUntrustworthyOrigin;
+    case AttributionReportingIssueType::kInvalidAttributionSourceExpiry:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidAttributionSourceExpiry;
+    case AttributionReportingIssueType::kInvalidAttributionSourcePriority:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidAttributionSourcePriority;
+    case AttributionReportingIssueType::kInvalidEventSourceTriggerData:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidEventSourceTriggerData;
+    case AttributionReportingIssueType::kInvalidTriggerPriority:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidTriggerPriority;
+    case AttributionReportingIssueType::kInvalidTriggerDedupKey:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          InvalidTriggerDedupKey;
   }
 }
 

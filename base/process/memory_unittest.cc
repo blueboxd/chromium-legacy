@@ -16,7 +16,7 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/macros.h"
+#include "base/ignore_result.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/page_size.h"
 #include "build/build_config.h"
@@ -450,15 +450,6 @@ TEST_F(OutOfMemoryDeathTest, PosixMemalignPurgeable) {
 // it's likely that they'll fail because they would require a preposterous
 // amount of (virtual) memory.
 
-TEST_F(OutOfMemoryDeathTest, CFAllocatorSystemDefault) {
-  ASSERT_OOM_DEATH({
-    SetUpInDeathAssert();
-    while ((value_ =
-                base::AllocateViaCFAllocatorSystemDefault(signed_test_size_))) {
-    }
-  });
-}
-
 TEST_F(OutOfMemoryDeathTest, CFAllocatorMalloc) {
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
@@ -467,7 +458,36 @@ TEST_F(OutOfMemoryDeathTest, CFAllocatorMalloc) {
   });
 }
 
-TEST_F(OutOfMemoryDeathTest, CFAllocatorMallocZone) {
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+// PartitionAlloc-Everywhere does not intercept other malloc zones than the
+// default (the top) malloc zone.  Plus,
+// CFAllocatorAllocate(kCFAllocatorSystemDefault, size, 0) does not call the
+// default (the top) malloc zone on macOS 10.xx (does call it on macOS 11 and
+// later though).
+#define MAYBE_CFAllocatorSystemDefault DISABLED_CFAllocatorSystemDefault
+#else
+#define MAYBE_CFAllocatorSystemDefault CFAllocatorSystemDefault
+#endif
+TEST_F(OutOfMemoryDeathTest, MAYBE_CFAllocatorSystemDefault) {
+  ASSERT_OOM_DEATH({
+    SetUpInDeathAssert();
+    while ((value_ =
+                base::AllocateViaCFAllocatorSystemDefault(signed_test_size_))) {
+    }
+  });
+}
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+// PartitionAlloc-Everywhere does not intercept other malloc zones than the
+// default (the top) malloc zone.  Plus,
+// CFAllocatorAllocate(kCFAllocatorMallocZone, size, 0) does not call the
+// default (the top) malloc zone on macOS 10.xx (does call it on macOS 11 and
+// later though).
+#define MAYBE_CFAllocatorMallocZone DISABLED_CFAllocatorMallocZone
+#else
+#define MAYBE_CFAllocatorMallocZone CFAllocatorMallocZone
+#endif
+TEST_F(OutOfMemoryDeathTest, MAYBE_CFAllocatorMallocZone) {
   ASSERT_OOM_DEATH({
     SetUpInDeathAssert();
     while (

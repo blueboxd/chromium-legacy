@@ -501,7 +501,7 @@ class BBJSONGenerator(object):
     arr = self.merge_command_line_args(arr, '--test-launcher-filter-file=', ';')
     return arr
 
-  def substitute_magic_args(self, test_config):
+  def substitute_magic_args(self, test_config, tester_name):
     """Substitutes any magic substitution args present in |test_config|.
 
     Substitutions are done in-place.
@@ -512,6 +512,8 @@ class BBJSONGenerator(object):
     Args:
       test_config: A dict containing a configuration for a specific test on
           a specific builder, e.g. the output of update_and_cleanup_test.
+      tester_name: A string containing the name of the tester that |test_config|
+          came from.
     """
     substituted_array = []
     for arg in test_config.get('args', []):
@@ -520,7 +522,7 @@ class BBJSONGenerator(object):
             magic_substitutions.MAGIC_SUBSTITUTION_PREFIX, '')
         if hasattr(magic_substitutions, function):
           substituted_array.extend(
-              getattr(magic_substitutions, function)(test_config))
+              getattr(magic_substitutions, function)(test_config, tester_name))
         else:
           raise BBGenErr(
               'Magic substitution function %s does not exist' % function)
@@ -793,7 +795,7 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -829,7 +831,7 @@ class BBJSONGenerator(object):
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
     self.add_common_test_properties(result, tester_config)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
 
     if not result.get('merge'):
       # TODO(https://crbug.com/958376): Consider adding the ability to not have
@@ -857,7 +859,7 @@ class BBJSONGenerator(object):
     }
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
     return result
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
@@ -873,7 +875,7 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(
         result, test_name, tester_name, tester_config, waterfall)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
     return result
 
   def generate_skylab_test(self, waterfall, tester_name, tester_config,
@@ -888,7 +890,7 @@ class BBJSONGenerator(object):
     self.initialize_args_for_test(result, tester_config)
     result = self.update_and_cleanup_test(result, test_name, tester_name,
                                           tester_config, waterfall)
-    self.substitute_magic_args(result)
+    self.substitute_magic_args(result, tester_name)
     return result
 
   def substitute_gpu_args(self, tester_config, swarming_config, args):
@@ -1144,6 +1146,11 @@ class BBJSONGenerator(object):
         if isinstance(variant, str):
           variant = self.variants[variant]
 
+        # If 'enabled' is set to False, we will not use this variant;
+        # otherwise if the variant doesn't include 'enabled' variable or
+        # 'enabled' is set to True, we will use this variant
+        if not variant.get('enabled', True):
+          continue
         # Clone a copy of test_config so that we can have a uniquely updated
         # version of it per variant
         cloned_config = copy.deepcopy(test_config)
@@ -1178,6 +1185,11 @@ class BBJSONGenerator(object):
         skylab_config = cloned_variant.get('skylab')
         if skylab_config:
           for k, v in skylab_config.items():
+            # cros_chrome_version is the ash chrome version in the cros img
+            # in the variant of cros_board. We don't want to include it in
+            # the final json files; so remove it.
+            if k == 'cros_chrome_version':
+              continue
             cloned_config[k] = v
 
         # The identifier is used to make the name of the test unique.
@@ -1543,7 +1555,6 @@ class BBJSONGenerator(object):
         'mac11.0.arm64-blink-rel-dummy',
         'win7-blink-rel-dummy',
         'win10.20h2-blink-rel-dummy',
-        'WebKit Linux composite_after_paint Dummy Builder',
         'WebKit Linux layout_ng_disabled Builder',
         # chromium, due to https://crbug.com/878915
         'win-dbg',

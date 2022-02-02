@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "jingle/notifier/listener/xml_element_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,12 +24,14 @@ class PushNotificationsSubscribeTaskTest : public testing::Test {
     EXPECT_NE(jid_.Str(), jid_.BareJid().Str());
   }
 
+  PushNotificationsSubscribeTaskTest(
+      const PushNotificationsSubscribeTaskTest&) = delete;
+  PushNotificationsSubscribeTaskTest& operator=(
+      const PushNotificationsSubscribeTaskTest&) = delete;
+
  protected:
   const jingle_xmpp::Jid jid_;
   const std::string task_id_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PushNotificationsSubscribeTaskTest);
 };
 
 TEST_F(PushNotificationsSubscribeTaskTest, MakeSubscriptionMessage) {

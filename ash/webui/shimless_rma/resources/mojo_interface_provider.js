@@ -4,9 +4,9 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {fakeCalibrationComponents, fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeLog, fakeRsuChallengeCode, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
+import {fakeCalibrationComponents, fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeDeviceWhiteLabels, fakeLog, fakeRsuChallengeCode, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
 import {FakeShimlessRmaService} from './fake_shimless_rma_service.js';
-import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface, WriteProtectDisableCompleteState} from './shimless_rma_types.js';
+import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface, WriteProtectDisableCompleteAction} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -52,7 +52,7 @@ function setupFakeShimlessRmaService_() {
   service.automaticallyTriggerOsUpdateObservation();
 
   service.setGetComponentListResult(fakeComponents);
-  service.setReimageRequiredResult(false);
+  service.automaticallyTriggerUpdateRoFirmwareObservation();
   service.automaticallyTriggerDisableWriteProtectionObservation();
   service.automaticallyTriggerCalibrationObservation();
 
@@ -61,14 +61,19 @@ function setupFakeShimlessRmaService_() {
   service.setGetRsuDisableWriteProtectChallengeQrCodeResponse(
       fakeRsuChallengeQrCode);
 
-  service.setGetWriteProtectDisableCompleteState(
-      WriteProtectDisableCompleteState.kCompleteAssembleDevice);
+  service.setGetWriteProtectDisableCompleteAction(
+      WriteProtectDisableCompleteAction.kCompleteAssembleDevice);
+
+  service.setGetWriteProtectManuallyDisabledInstructionsResult(
+      'g.co/help', fakeRsuChallengeQrCode);
 
   service.setGetOriginalSerialNumberResult('serial# 0001');
   service.setGetRegionListResult(fakeDeviceRegions);
   service.setGetOriginalRegionResult(1);
   service.setGetSkuListResult(fakeDeviceSkus);
   service.setGetOriginalSkuResult(1);
+  service.setGetWhiteLabelListResult(fakeDeviceWhiteLabels);
+  service.setGetOriginalWhiteLabelResult(1);
 
   service.setGetCalibrationSetupInstructionsResult(
       CalibrationSetupInstruction.kCalibrationInstructionPlaceLidOnFlatSurface);
@@ -77,6 +82,7 @@ function setupFakeShimlessRmaService_() {
   service.automaticallyTriggerProvisioningObservation();
   service.automaticallyTriggerFinalizationObservation();
 
+  service.automaticallyTriggerPowerCableStateObservation();
   service.setGetLogResult(fakeLog);
 
   // Set the fake service.

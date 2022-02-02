@@ -42,10 +42,11 @@ class DocumentScannerServiceClient {
 
   void DoPostProcessing(base::ReadOnlySharedMemoryRegion jpeg_image,
                         const std::vector<gfx::PointF>& corners,
+                        chromeos::machine_learning::mojom::Rotation rotation,
                         DoPostProcessingCallback callback);
 
  protected:
-  explicit DocumentScannerServiceClient();
+  DocumentScannerServiceClient();
 
  private:
   void OnInitialized(chromeos::machine_learning::mojom::LoadModelResult result);

@@ -85,6 +85,7 @@ generate_grd("build_oobe_grd") {
     "$target_gen_dir/$existing_unconditional_files_manifest",
   ]
   input_files = [
+    "images/arc_sideloading_illustration.svg",
     "images/browser_sync.svg",
     "images/device-disabled.svg",
     "images/encryption_migration.svg",
@@ -93,10 +94,17 @@ generate_grd("build_oobe_grd") {
     "images/kids_turn.svg",
     "images/parental_control.svg",
     "images/powerwash.svg",
+    "images/pin_illustration.svg",
     "images/settings_gear.svg",
     "images/sync-consent.svg",
     "images/update_boot.svg",
     "images/cfm/welcome.svg",
+    "images/update-antivirus.svg",
+    "images/update-apps.svg",
+    "images/update-charge.svg",
+    "images/update-no-waiting.svg",
+    "images/updating.svg",
+    "images/google-accounts.svg",
   ]
   input_files_base_dir = rebase_path(".", "//")
 }
@@ -160,44 +168,75 @@ preprocess_if_expr("preprocess_unconditional_existing") {
     "components/oobe_slide/oobe_slide.js",
     "components/progress_list_item/progress_list_item.html",
     "components/progress_list_item/progress_list_item.js",
-    "components/throbber_notice/throbber_notice.html",
-    "components/throbber_notice/throbber_notice.js",
+    "components/throbber_notice.html",
+    "components/throbber_notice.js",
     "components/hd_iron_icon.html",
     "components/hd_iron_icon.js",
     "components/html_echo.html",
     "components/html_echo.js",
+    "components/gaia_header.html",
+    "components/gaia_header.js",
+    "components/gaia_input_form.html",
+    "components/gaia_input_form.js",
+    "components/gaia_button.html",
+    "components/gaia_button.js",
     "components/long_touch_detector.html",
     "components/long_touch_detector.js",
     "components/network_select_login.html",
     "components/network_select_login.js",
     "components/oobe_a11y_option.html",
     "components/oobe_a11y_option.js",
+    "components/oobe_cr_lottie.html",
+    "components/oobe_cr_lottie.js",
     "components/oobe_icons.html",
     "components/oobe_i18n_dropdown.html",
     "components/oobe_i18n_dropdown.js",
     "components/oobe_select.html",
     "components/oobe_types.html",
     "components/web_view_helper.html",
+    "components/web_view_loader.html",
+    "screens/common/adb_sideloading.html",
+    "screens/common/adb_sideloading.js",
     "screens/common/app_downloading.html",
     "screens/common/app_downloading.js",
+    "screens/common/app_launch_splash.html",
+    "screens/common/app_launch_splash.js",
+    "screens/common/arc_terms_of_service.html",
+    "screens/common/arc_terms_of_service.js",
     "screens/common/autolaunch.html",
     "screens/common/autolaunch.js",
+    "screens/common/consolidated_consent.html",
+    "screens/common/consolidated_consent.js",
     "screens/common/device_disabled.html",
     "screens/common/device_disabled.js",
+    "screens/common/enable_kiosk.html",
+    "screens/common/enable_kiosk.js",
+    "screens/common/error_message.html",
+    "screens/common/error_message.js",
     "screens/common/family_link_notice.html",
     "screens/common/family_link_notice.js",
     "screens/common/fingerprint_setup.html",
     "screens/common/fingerprint_setup.js",
     "screens/common/gesture_navigation.html",
     "screens/common/gesture_navigation.js",
+    "screens/common/guest_tos.html",
+    "screens/common/guest_tos.js",
+    "screens/common/hw_data_collection.html",
+    "screens/common/hw_data_collection.js",
+    "screens/common/managed_terms_of_service.html",
+    "screens/common/managed_terms_of_service.js",
     "screens/common/marketing_opt_in.html",
     "screens/common/marketing_opt_in.js",
+    "screens/common/offline_ad_login.html",
+    "screens/common/offline_ad_login.js",
     "screens/oobe/oobe_eula.html",
     "screens/oobe/oobe_eula.js",
     "screens/common/oobe_reset.html",
     "screens/common/oobe_reset.js",
     "screens/common/parental_handoff.html",
     "screens/common/parental_handoff.js",
+    "screens/common/pin_setup.html",
+    "screens/common/pin_setup.js",
     "screens/common/signin_fatal_error.html",
     "screens/common/signin_fatal_error.js",
     "screens/common/sync_consent.html",
@@ -216,18 +255,30 @@ preprocess_if_expr("preprocess_unconditional_existing") {
     "screens/login/gaia_password_changed.js",
     "screens/login/lacros_data_migration.html",
     "screens/login/lacros_data_migration.js",
+    "screens/login/offline_login.html",
+    "screens/login/offline_login.js",
     "screens/login/management_transition.html",
     "screens/login/management_transition.js",
+    "screens/login/checking_downloading_update.html",
+    "screens/login/checking_downloading_update.js",
+    "screens/login/update_required_card.html",
+    "screens/login/update_required_card.js",
     "screens/oobe/auto_enrollment_check.html",
     "screens/oobe/auto_enrollment_check.js",
     "screens/oobe/demo_preferences.html",
     "screens/oobe/demo_preferences.js",
     "screens/oobe/demo_setup.html",
     "screens/oobe/demo_setup.js",
+    "screens/oobe/enable_debugging.html",
+    "screens/oobe/enable_debugging.js",
     "screens/oobe/hid_detection.html",
     "screens/oobe/hid_detection.js",
+    "screens/oobe/update.html",
+    "screens/oobe/update.js",
     "screens/oobe/packaged_license.html",
     "screens/oobe/packaged_license.js",
+    "screens/oobe/quick_start.html",
+    "screens/oobe/quick_start.js",
     "screens/oobe/welcome.html",
     "screens/oobe/welcome.js",
     "screens/oobe/welcome_dialog.html",
@@ -274,38 +325,56 @@ preprocess_if_expr("preprocess_unconditional_autogenerated_modules") {
     "components/buttons/oobe_icon_button.m.js",
     "components/buttons/oobe_next_button.m.js",
     "components/buttons/oobe_text_button.m.js",
-    "components/common_styles/common_styles.m.js",
-    "components/common_styles/cr_card_radio_group_styles.m.js",
-    "components/common_styles/oobe_dialog_host_styles.m.js",
-    "components/common_styles/oobe_flex_layout_styles.m.js",
     "components/dialogs/oobe_adaptive_dialog.m.js",
     "components/dialogs/oobe_content_dialog.m.js",
     "components/dialogs/oobe_loading_dialog.m.js",
     "components/dialogs/oobe_modal_dialog.m.js",
+    "components/common_styles/common_styles.m.js",
+    "components/common_styles/cr_card_radio_group_styles.m.js",
+    "components/common_styles/oobe_dialog_host_styles.m.js",
+    "components/common_styles/oobe_flex_layout_styles.m.js",
+    "components/oobe_carousel/oobe_carousel.m.js",
+    "components/oobe_slide/oobe_slide.m.js",
+    "components/oobe_vars/oobe_shared_vars_css.m.js",
     "components/display_manager_types.m.js",
     "components/hd_iron_icon.m.js",
     "components/html_echo.m.js",
     "components/long_touch_detector.m.js",
+    "components/gaia_header.m.js",
+    "components/gaia_button.m.js",
+    "components/gaia_input_form.m.js",
     "components/network_select_login.m.js",
     "components/oobe_a11y_option.m.js",
+    "components/oobe_cr_lottie.m.js",
     "components/oobe_i18n_dropdown.m.js",
     "components/oobe_icons.m.js",
     "components/oobe_select.m.js",
     "components/oobe_types.m.js",
-    "components/oobe_vars/oobe_shared_vars_css.m.js",
     "components/progress_list_item/progress_list_item.m.js",
+    "components/throbber_notice.m.js",
     "components/web_view_helper.m.js",
     "components/web_view_loader.m.js",
     "debug/debug.m.js",
+    "screens/common/adb_sideloading.m.js",
     "screens/common/app_downloading.m.js",
+    "screens/common/app_launch_splash.m.js",
+    "screens/common/arc_terms_of_service.m.js",
     "screens/common/autolaunch.m.js",
+    "screens/common/consolidated_consent.m.js",
     "screens/common/device_disabled.m.js",
+    "screens/common/enable_kiosk.m.js",
+    "screens/common/error_message.m.js",
     "screens/common/family_link_notice.m.js",
     "screens/common/fingerprint_setup.m.js",
     "screens/common/gesture_navigation.m.js",
+    "screens/common/guest_tos.m.js",
+    "screens/common/hw_data_collection.m.js",
+    "screens/common/managed_terms_of_service.m.js",
     "screens/common/marketing_opt_in.m.js",
+    "screens/common/offline_ad_login.m.js",
     "screens/common/oobe_reset.m.js",
     "screens/common/parental_handoff.m.js",
+    "screens/common/pin_setup.m.js",
     "screens/common/signin_fatal_error.m.js",
     "screens/common/sync_consent.m.js",
     "screens/common/tpm_error.m.js",
@@ -316,12 +385,18 @@ preprocess_if_expr("preprocess_unconditional_autogenerated_modules") {
     "screens/login/gaia_password_changed.m.js",
     "screens/login/lacros_data_migration.m.js",
     "screens/login/management_transition.m.js",
+    "screens/login/offline_login.m.js",
+    "screens/login/checking_downloading_update.m.js",
+    "screens/login/update_required_card.m.js",
     "screens/oobe/auto_enrollment_check.m.js",
     "screens/oobe/demo_preferences.m.js",
     "screens/oobe/demo_setup.m.js",
+    "screens/oobe/enable_debugging.m.js",
     "screens/oobe/hid_detection.m.js",
     "screens/oobe/oobe_eula.m.js",
+    "screens/oobe/update.m.js",
     "screens/oobe/packaged_license.m.js",
+    "screens/oobe/quick_start.m.js",
     "screens/oobe/welcome.m.js",
     "screens/oobe/welcome_dialog.m.js",
 
@@ -349,7 +424,6 @@ group("closure_compile") {
     ":closure_compile_local_with_externs",
     "components:closure_compile",
     "screens/common:closure_compile",
-    "screens/login:closure_compile",
     "screens/oobe:closure_compile",
     "test_api:closure_compile",
   ]
@@ -385,22 +459,11 @@ js_type_check("closure_compile_module_local") {
 js_type_check("closure_compile_local") {
   uses_legacy_modules = true
   deps = [
-    ":arc_terms_of_service",
-    ":gaia_buttons",
-    ":gaia_header",
-    ":gaia_input_form",
-    ":guest_tos",
-    ":managed_terms_of_service",
     ":multidevice_setup_first_run",
     ":notification_card",
-    ":offline_ad_login",
-    ":oobe_enable_kiosk",
     ":oobe_screen_assistant_optin_flow",
-    ":oobe_update",
-    ":pin_setup",
     ":recommend_apps",
     ":saml_confirm_password",
-    ":screen_error_message",
   ]
 }
 
@@ -411,7 +474,8 @@ js_type_check("closure_compile_local") {
 js_type_check("closure_compile_local_with_externs") {
   uses_legacy_modules = true
   deps = [
-    ":enterprise_enrollment",
+    #   TODO(crbug.com/1184731) - Uncomment once this screen is migrated.
+    #":enterprise_enrollment",
     ":gaia_dialog",
   ]
 }
@@ -424,7 +488,8 @@ js_library("login_ui_tools") {
 
 js_library("enterprise_enrollment") {
   deps = [
-    ":offline_ad_login",
+    #   TODO(crbug.com/1184731) - Uncomment once this screen is migrated.
+    #   ":offline_ad_login",
     "../keyboard:keyboard_utils",
     "components:display_manager_types",
     "components:fake_authenticator",
@@ -435,21 +500,6 @@ js_library("enterprise_enrollment") {
     "components/buttons:oobe_next_button",
     "components/buttons:oobe_text_button",
     "//ui/webui/resources/js:cr",
-  ]
-}
-
-js_library("offline_ad_login") {
-  deps = [
-    "components:oobe_select",
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_next_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "//ui/webui/resources/cr_elements/cr_input:cr_input",
-    "//ui/webui/resources/js:load_time_data",
   ]
 }
 
@@ -464,41 +514,6 @@ js_library("multidevice_setup_first_run") {
   ]
 }
 
-js_library("arc_terms_of_service") {
-  deps = [
-    "components:oobe_select",
-    "components:web_view_helper",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "components/dialogs:oobe_loading_dialog",
-    "components/dialogs:oobe_modal_dialog",
-  ]
-}
-
-js_library("consolidated_consent") {
-  deps = [
-    "components:web_view_helper",
-    "components:web_view_loader",
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:multi_step_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_next_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "components/dialogs:oobe_loading_dialog",
-    "components/dialogs:oobe_modal_dialog",
-    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
-  ]
-}
-
-js_library("gaia_buttons") {
-}
-
 js_library("gaia_dialog") {
   deps = [
     "components:fake_authenticator",
@@ -511,46 +526,7 @@ js_library("gaia_dialog") {
   ]
 }
 
-js_library("gaia_header") {
-}
-
-js_library("gaia_input_form") {
-}
-
-js_library("managed_terms_of_service") {
-  deps = [
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:multi_step_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "components/dialogs:oobe_loading_dialog",
-  ]
-}
-
 js_library("notification_card") {
-}
-
-js_library("oobe_adb_sideloading_screen") {
-  deps = [
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:multi_step_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-  ]
-}
-
-js_library("oobe_enable_kiosk") {
-  deps = [
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-  ]
 }
 
 js_library("oobe_screen_assistant_optin_flow") {
@@ -558,33 +534,6 @@ js_library("oobe_screen_assistant_optin_flow") {
     "components/behaviors:login_screen_behavior",
     "components/behaviors:oobe_dialog_host_behavior",
     "components/behaviors:oobe_i18n_behavior",
-  ]
-}
-
-js_library("oobe_update") {
-  deps = [
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_next_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "components/dialogs:oobe_loading_dialog",
-  ]
-}
-
-js_library("pin_setup") {
-  deps = [
-    "components:oobe_types",
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:multi_step_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_next_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "//ui/webui/resources/cr_components/chromeos/quick_unlock:setup_pin_keyboard",
   ]
 }
 
@@ -613,37 +562,6 @@ js_library("saml_confirm_password") {
   ]
 }
 
-js_library("screen_error_message") {
-  deps = [
-    "components:display_manager_types",
-
-    # TODO(crbug.com/251576): Restore when migrate to Polymer 3.
-    # "components:network_select_login",
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-  ]
-}
-
-js_library("guest_tos") {
-  deps = [
-    "components:web_view_helper",
-    "components:web_view_loader",
-    "components/behaviors:login_screen_behavior",
-    "components/behaviors:multi_step_behavior",
-    "components/behaviors:oobe_dialog_host_behavior",
-    "components/behaviors:oobe_i18n_behavior",
-    "components/buttons:oobe_back_button",
-    "components/buttons:oobe_next_button",
-    "components/buttons:oobe_text_button",
-    "components/dialogs:oobe_adaptive_dialog",
-    "components/dialogs:oobe_loading_dialog",
-  ]
-}
-
 js_library("i18n_setup") {
   deps = [ "//ui/webui/resources/js:load_time_data.m" ]
 }
@@ -652,6 +570,7 @@ js_library("cr_ui.m") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/chromeos/login/cr_ui.m.js" ]
   deps = [
+    ":demo_mode_test_helper.m",
     ":display_manager.m",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:load_time_data.m",

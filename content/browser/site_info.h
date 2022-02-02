@@ -48,8 +48,9 @@ class CONTENT_EXPORT SiteInfo {
       BrowserContext* browser_context,
       const StoragePartitionConfig storage_partition_config,
       const WebExposedIsolationInfo& web_exposed_isolation_info);
-  static SiteInfo CreateForGuest(BrowserContext* browser_context,
-                                 const GURL& guest_site_url);
+  static SiteInfo CreateForGuest(
+      BrowserContext* browser_context,
+      const StoragePartitionConfig& partition_config);
 
   // This function returns a SiteInfo with the appropriate site_url and
   // process_lock_url computed. This function can only be called on the UI
@@ -113,7 +114,7 @@ class CONTENT_EXPORT SiteInfo {
   // accordingly.
   SiteInfo(const GURL& site_url,
            const GURL& process_lock_url,
-           bool is_origin_keyed,
+           bool requires_origin_keyed_process,
            const StoragePartitionConfig storage_partition_config,
            const WebExposedIsolationInfo& web_exposed_isolation_info,
            bool is_guest,
@@ -123,6 +124,13 @@ class CONTENT_EXPORT SiteInfo {
   SiteInfo() = delete;
   SiteInfo(const SiteInfo& rhs);
   ~SiteInfo();
+
+  // This function returns a new SiteInfo which is equivalent to the original,
+  // except that (1) is_origin_keyed is false, and (2) the remaining SiteInfo
+  // state is used to compute a new SiteInfo from a UrlInfo reconstructed from
+  // the original SiteInfo, minus any OAC opt-in request.
+  SiteInfo GetNonOriginKeyedEquivalentForMetrics(
+      const IsolationContext& isolation_context) const;
 
   // Returns the site URL associated with all of the documents and workers in
   // this principal, as described above.
@@ -157,8 +165,8 @@ class CONTENT_EXPORT SiteInfo {
   //                if the SiteInstance's process isn't going to be locked.
   const GURL& process_lock_url() const { return process_lock_url_; }
 
-  // Returns whether this SiteInfo is specific to an origin rather than a site,
-  // such as due to opt-in origin isolation. This resolves an ambiguity of
+  // Returns whether this SiteInfo requires an origin-keyed process, such as for
+  // an OriginAgentCluster response header. This resolves an ambiguity of
   // whether a process with a lock_url() like "https://foo.example" is allowed
   // to include "https://sub.foo.example" or not. In opt-in isolation, it is
   // possible for example.com to be isolated, and sub.example.com not be
@@ -166,7 +174,9 @@ class CONTENT_EXPORT SiteInfo {
   // example.com, then sub.example.com is also (automatically) isolated.
   // Also note that opt-in isolated origins will include ports (if non-default)
   // in their site urls.
-  bool is_origin_keyed() const { return is_origin_keyed_; }
+  bool requires_origin_keyed_process() const {
+    return requires_origin_keyed_process_;
+  }
 
   // Returns the web-exposed isolation status of pages hosted by the
   // SiteInstance. The level of isolation which a page opts-into has
@@ -297,11 +307,12 @@ class CONTENT_EXPORT SiteInfo {
   // a site URL that is computed without the use of effective URLs.
   GURL process_lock_url_;
 
-  // Indicates whether this SiteInfo is specific to a single origin, rather than
-  // including all subdomains of that origin. Only used for opt-in origin
-  // isolation. In contrast, the site-level URLs that are typically used in
-  // SiteInfo include subdomains, as do command-line isolated origins.
-  bool is_origin_keyed_ = false;
+  // Indicates whether this SiteInfo is specific to a single origin and requires
+  // an origin-keyed process, rather than including all subdomains of that
+  // origin. Only used for OriginAgentCluster header opt-ins. In contrast, the
+  // site-level URLs that are typically used in SiteInfo include subdomains, as
+  // do command-line isolated origins.
+  bool requires_origin_keyed_process_ = false;
 
   // The StoragePartitionConfig to use when loading content belonging to this
   // SiteInfo.

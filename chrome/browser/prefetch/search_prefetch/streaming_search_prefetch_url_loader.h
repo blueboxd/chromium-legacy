@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/prefetch/search_prefetch/search_prefetch_url_loader.h"
@@ -39,8 +40,7 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
       StreamingSearchPrefetchRequest* streaming_prefetch_request,
       Profile* profile,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      const net::NetworkTrafficAnnotationTag& network_traffic_annotation,
-      base::OnceClosure stop_prefetch_closure);
+      const net::NetworkTrafficAnnotationTag& network_traffic_annotation);
 
   ~StreamingSearchPrefetchURLLoader() override;
 
@@ -106,9 +106,6 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
   // Clears |producer_handle_| and |handle_watcher_|.
   void Finish();
 
-  // Post a task to delete this object by running stop_prefetch_closure_.
-  void PostTaskToStopPrefetchAndDeleteSelf();
-
   // Sets up mojo forwarding to the navigation path. Resumes
   // |network_url_loader_| calls. Serves the start of the response to the
   // navigation path. After this method is called, |this| manages its own
@@ -137,7 +134,7 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
 
   // The initiating prefetch request. Cleared when handing this request off to
   // the navigation stack.
-  StreamingSearchPrefetchRequest* streaming_prefetch_request_;
+  raw_ptr<StreamingSearchPrefetchRequest> streaming_prefetch_request_;
 
   // Whether we are serving from |bdoy_content_|.
   bool serving_from_data_ = false;
@@ -167,9 +164,6 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
 
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
-
-  // Closure to cancel this prefetch. Running this callback will destroy |this|.
-  base::OnceClosure stop_prefetch_closure_;
 
   base::WeakPtrFactory<StreamingSearchPrefetchURLLoader> weak_factory_{this};
 };

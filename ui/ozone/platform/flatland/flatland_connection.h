@@ -16,18 +16,13 @@ namespace ui {
 // Present. By limiting the number of Present calls, FlatlandConnection ensures
 // that the Flatland will not be shut down, thus, users of FlatlandConnection
 // should not call Flatland::Present on their own.
-class FlatlandConnection {
+class FlatlandConnection final {
  public:
-  FlatlandConnection(
-      const std::string& debug_name,
-      fidl::InterfaceHandle<fuchsia::ui::composition::Flatland> flatland);
+  explicit FlatlandConnection(const std::string& debug_name);
   ~FlatlandConnection();
 
   FlatlandConnection(const FlatlandConnection&) = delete;
   FlatlandConnection& operator=(const FlatlandConnection&) = delete;
-
-  static fidl::InterfaceHandle<fuchsia::ui::composition::Flatland>
-  ConnectToFlatland();
 
   fuchsia::ui::composition::Flatland* flatland() { return flatland_.get(); }
 
@@ -55,6 +50,7 @@ class FlatlandConnection {
   uint64_t next_transform_id_ = 0;
   uint64_t next_content_id_ = 0;
   uint32_t present_credits_ = 1;
+  bool present_after_receiving_credits_ = false;
 
   std::vector<zx::event> previous_present_release_fences_;
   base::queue<OnFramePresentedCallback> presented_callbacks_;

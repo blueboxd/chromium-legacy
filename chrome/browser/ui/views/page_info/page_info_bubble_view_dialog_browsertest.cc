@@ -19,10 +19,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
-#include "components/page_info/about_this_site_service.h"
-#include "components/page_info/features.h"
+#include "components/page_info/core/about_this_site_service.h"
+#include "components/page_info/core/features.h"
+#include "components/page_info/core/proto/about_this_site_metadata.pb.h"
 #include "components/page_info/page_info.h"
-#include "components/page_info/proto/about_this_site_metadata.pb.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_test_util.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -297,7 +297,7 @@ class PageInfoBubbleViewDialogBrowserTest : public DialogBrowserTest {
   PageInfo* GetPresenter() {
     return static_cast<PageInfoBubbleView*>(
                PageInfoBubbleView::GetPageInfoBubbleForTesting())
-        ->presenter_.get();
+        ->presenter_for_testing();
   }
 
  private:
@@ -445,7 +445,7 @@ class PageInfoBubbleViewAboutThisSiteDialogBrowserTest
   void SetUpOnMainThread() override {
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    ASSERT_TRUE(https_server_.Start(434343));
+    ASSERT_TRUE(https_server_.Start());
 
     host_resolver()->AddRule("*", "127.0.0.1");
 
@@ -486,21 +486,22 @@ class PageInfoBubbleViewAboutThisSiteDialogBrowserTest
         ui_test_utils::NavigateToURL(browser(), GetUrl(kAboutThisSiteUrl)));
     OpenPageInfoBubble(browser());
 
+    auto* bubble_view = static_cast<PageInfoBubbleView*>(
+        PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    bubble_view->presenter_for_testing()->SetSiteNameForTesting(
+        u"Example site");
+
     if (name == "AboutThisSite") {
       // No further action needed, default case.
     }
 
     if (name == "AboutThisSiteSubpage") {
-      PageInfoBubbleView* bubble_view = static_cast<PageInfoBubbleView*>(
-          PageInfoBubbleView::GetPageInfoBubbleForTesting());
       auto* service =
           AboutThisSiteServiceFactory::GetForProfile(browser()->profile());
+      auto source_id = ukm::GetSourceIdForWebContentsDocument(
+          browser()->tab_strip_model()->GetActiveWebContents());
       bubble_view->OpenAboutThisSitePage(
-          service
-              ->GetAboutThisSiteInfo(
-                  GetUrl(kAboutThisSiteUrl),
-                  ukm::GetSourceIdForWebContentsDocument(
-                      browser()->tab_strip_model()->GetActiveWebContents()))
+          service->GetAboutThisSiteInfo(GetUrl(kAboutThisSiteUrl), source_id)
               .value());
     }
   }

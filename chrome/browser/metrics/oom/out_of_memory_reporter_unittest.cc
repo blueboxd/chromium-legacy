@@ -14,14 +14,13 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -142,7 +141,7 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
 #if defined(OS_ANDROID)
     process()->SimulateRenderProcessExit(base::TERMINATION_STATUS_OOM_PROTECTED,
                                          0);
-#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#elif defined(OS_CHROMEOS)
     process()->SimulateRenderProcessExit(
         base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM, 0);
 #else
@@ -199,7 +198,7 @@ class OutOfMemoryReporterTest : public ChromeRenderViewHostTestHarness,
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
  private:
-  base::SimpleTestTickClock* test_tick_clock_;
+  raw_ptr<base::SimpleTestTickClock> test_tick_clock_;
 };
 
 TEST_F(OutOfMemoryReporterTest, SimpleOOM) {

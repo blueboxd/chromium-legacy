@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/ignore_result.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"

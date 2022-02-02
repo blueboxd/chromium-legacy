@@ -106,6 +106,43 @@ class Context : public media::RenderableGpuMemoryBufferVideoFramePool::Context {
 
 }  // namespace
 
+WebRtcVideoFrameAdapter::VectorBufferPool::VectorBufferPool()
+    : tick_clock_(base::DefaultTickClock::GetInstance()) {}
+
+std::unique_ptr<std::vector<uint8_t>>
+WebRtcVideoFrameAdapter::VectorBufferPool::Allocate() {
+  base::AutoLock autolock(buffer_lock_);
+  if (!free_buffers_.empty()) {
+    auto buffer = std::move(free_buffers_.back().buffer);
+    free_buffers_.pop_back();
+    return buffer;
+  }
+
+  return std::make_unique<std::vector<uint8_t>>();
+}
+
+void WebRtcVideoFrameAdapter::VectorBufferPool::Return(
+    std::unique_ptr<std::vector<uint8_t>> buffer) {
+  base::AutoLock autolock(buffer_lock_);
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  free_buffers_.push_back({now, std::move(buffer)});
+
+  // After this loop, |stale_index| is pointing to the first non-stale buffer.
+  // Such an index must exist because |buffer| is never stale.
+  constexpr base::TimeDelta kStaleBufferLimit = base::Seconds(10);
+  for (size_t stale_index = 0; stale_index < free_buffers_.size();
+       ++stale_index) {
+    if (now - free_buffers_[stale_index].last_use_time < kStaleBufferLimit) {
+      DCHECK_LT(stale_index, free_buffers_.size());
+      if (stale_index > 0) {
+        free_buffers_.erase(free_buffers_.begin(),
+                            free_buffers_.begin() + stale_index);
+      }
+      break;
+    }
+  }
+}
+
 scoped_refptr<media::VideoFrame>
 WebRtcVideoFrameAdapter::SharedResources::CreateFrame(
     media::VideoPixelFormat format,
@@ -117,15 +154,14 @@ WebRtcVideoFrameAdapter::SharedResources::CreateFrame(
                            timestamp);
 }
 
-scoped_refptr<media::VideoFrame>
-WebRtcVideoFrameAdapter::SharedResources::CreateTemporaryFrame(
-    media::VideoPixelFormat format,
-    const gfx::Size& coded_size,
-    const gfx::Rect& visible_rect,
-    const gfx::Size& natural_size,
-    base::TimeDelta timestamp) {
-  return pool_for_tmp_frames_.CreateFrame(format, coded_size, visible_rect,
-                                          natural_size, timestamp);
+std::unique_ptr<std::vector<uint8_t>>
+WebRtcVideoFrameAdapter::SharedResources::CreateTemporaryVectorBuffer() {
+  return pool_for_tmp_vectors_.Allocate();
+}
+
+void WebRtcVideoFrameAdapter::SharedResources::ReleaseTemporaryVectorBuffer(
+    std::unique_ptr<std::vector<uint8_t>> buffer) {
+  pool_for_tmp_vectors_.Return(std::move(buffer));
 }
 
 scoped_refptr<viz::RasterContextProvider>
@@ -169,9 +205,12 @@ const base::Feature kWebRTCGpuMemoryBufferReadback {
 #endif
 };
 
-bool CanUseGpuMemoryBufferReadback(media::VideoPixelFormat format) {
+bool CanUseGpuMemoryBufferReadback(
+    media::VideoPixelFormat format,
+    media::GpuVideoAcceleratorFactories* gpu_factories) {
   // GMB readback only works with NV12, so only opaque buffers can be used.
-  return (format == media::PIXEL_FORMAT_XBGR ||
+  return gpu_factories &&
+         (format == media::PIXEL_FORMAT_XBGR ||
           format == media::PIXEL_FORMAT_XRGB) &&
          base::FeatureList::IsEnabled(kWebRTCGpuMemoryBufferReadback);
 }
@@ -189,7 +228,7 @@ WebRtcVideoFrameAdapter::SharedResources::ConstructVideoFrameFromTexture(
   viz::RasterContextProvider::ScopedRasterContextLock scoped_context(
       raster_context_provider.get());
 
-  if (CanUseGpuMemoryBufferReadback(source_frame->format())) {
+  if (CanUseGpuMemoryBufferReadback(source_frame->format(), gpu_factories_)) {
     if (!accelerated_frame_pool_) {
       accelerated_frame_pool_ =
           media::RenderableGpuMemoryBufferVideoFramePool::Create(

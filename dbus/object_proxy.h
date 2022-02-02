@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/task/sequenced_task_runner.h"
@@ -47,6 +46,9 @@ class CHROME_DBUS_EXPORT ObjectProxy
               const std::string& service_name,
               const ObjectPath& object_path,
               int options);
+
+  ObjectProxy(const ObjectProxy&) = delete;
+  ObjectProxy& operator=(const ObjectProxy&) = delete;
 
   // Options to be OR-ed together when calling Bus::GetObjectProxyWithOptions().
   // Set the IGNORE_SERVICE_UNKNOWN_ERRORS option to silence logging of
@@ -249,10 +251,6 @@ class CHROME_DBUS_EXPORT ObjectProxy
     // This must be called on the origin thread.
     ResponseOrErrorCallback ReleaseCallback();
 
-    // Whether |callback_| is null.
-    // TODO(http://crbug/1211451): Remove after fix.
-    bool IsNullCallback() const;
-
    private:
     scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
     ResponseOrErrorCallback callback_;
@@ -365,8 +363,6 @@ class CHROME_DBUS_EXPORT ObjectProxy
   std::string service_name_owner_;
 
   std::set<DBusPendingCall*> pending_calls_;
-
-  DISALLOW_COPY_AND_ASSIGN(ObjectProxy);
 };
 
 }  // namespace dbus

@@ -530,8 +530,6 @@ class BASE_EXPORT Value {
   // If the current object can be converted into the given type, the value is
   // returned through the `out_value` parameter and true is returned;
   // otherwise, false is returned and `out_value` is unchanged.
-  // DEPRECATED, use `GetIfBool()` instead.
-  bool GetAsBoolean(bool* out_value) const;
   // DEPRECATED, use `GetIfString()` instead.
   bool GetAsString(std::string* out_value) const;
   bool GetAsString(std::u16string* out_value) const;
@@ -647,10 +645,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED, use `Value::FindKey(key)` instead.
   bool HasKey(StringPiece key) const;
 
-  // Clears any current contents of this dictionary.
-  // DEPRECATED, use `Value::DictClear()` instead.
-  void Clear();
-
   // Sets the Value associated with the given path starting from this object.
   // A path has the form "<key>" or "<key>.<key>.[...]", where "." indexes
   // into the next DictionaryValue down.  Obviously, "." can't be used
@@ -703,9 +697,6 @@ class BASE_EXPORT DictionaryValue : public Value {
   // and the return value will be true if the path is valid and the value at
   // the end of the path can be returned in the form specified.
   // `out_value` is optional and will only be set if non-NULL.
-  // DEPRECATED, use `Value::FindBoolKey(key)` or `Value::FindBoolPath(path)`
-  // instead.
-  bool GetBoolean(StringPiece path, bool* out_value) const;
   // DEPRECATED, use `Value::FindIntKey(key)` or `Value::FindIntPath(path)`
   // instead.
   bool GetInteger(StringPiece path, int* out_value) const;
@@ -815,8 +806,6 @@ class BASE_EXPORT ListValue : public Value {
   // only if the index is valid and the Value at that index can be returned
   // in the specified form.
   // `out_value` is optional and will only be set if non-NULL.
-  // DEPRECATED, use `GetList()::operator[]::GetBool()` instead.
-  bool GetBoolean(size_t index, bool* out_value) const;
   // DEPRECATED, use `GetList()::operator[]::GetString()` instead.
   bool GetString(size_t index, std::string* out_value) const;
   bool GetString(size_t index, std::u16string* out_value) const;

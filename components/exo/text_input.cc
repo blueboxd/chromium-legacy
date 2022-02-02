@@ -86,6 +86,11 @@ void TextInput::SetSurroundingText(const std::u16string& text,
                                    const gfx::Range& cursor_pos) {
   surrounding_text_ = text;
   cursor_pos_ = cursor_pos;
+
+  // TODO(b/206068262): Consider introducing an API to notify surrounding text
+  // update explicitly.
+  if (input_method_)
+    input_method_->OnCaretBoundsChanged(this);
 }
 
 void TextInput::SetTypeModeFlags(ui::TextInputType type,
@@ -141,16 +146,10 @@ void TextInput::InsertText(const std::u16string& text,
                            InsertTextCursorBehavior cursor_behavior) {
   // TODO(crbug.com/1155331): Handle |cursor_behavior| correctly.
   delegate_->Commit(text);
+  composition_ = ui::CompositionText();
 }
 
 void TextInput::InsertChar(const ui::KeyEvent& event) {
-  char16_t ch = event.GetCharacter();
-  if (u_isprint(ch)) {
-    InsertText(
-        std::u16string(1, ch),
-        ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
-    return;
-  }
   // TextInput is currently used only for Lacros, and this is the
   // short term workaround not to duplicate KeyEvent there.
   // This is what we do for ARC, which is being removed in the near

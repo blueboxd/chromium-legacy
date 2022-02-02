@@ -9,11 +9,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
+#include "components/page_load_metrics/common/page_visit_final_status.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "net/base/url_util.h"
@@ -125,9 +127,9 @@ GURL GetViewerUrlFromCacheUrl(const GURL& url) {
   // (&viewerURL=<URL>). net::QueryIterator only operates on the query string,
   // so we copy the fragment into the query string, then iterate over the
   // parameters below.
-  std::string ref = url.ref();
+  base::StringPiece ref = url.ref_piece();
   GURL::Replacements replacements;
-  replacements.SetQuery(ref.c_str(), url::Component(0, ref.length()));
+  replacements.SetQueryStr(ref);
   GURL modified_url = url.ReplaceComponents(replacements);
   for (net::QueryIterator it(modified_url); !it.IsAtEnd(); it.Advance()) {
     if (it.GetKey() == "viewerUrl")
@@ -298,6 +300,8 @@ void AMPPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   MaybeRecordAmpDocumentMetrics();
   current_main_frame_nav_info_ = nullptr;
+  page_load_metrics::RecordPageVisitFinalStatusForTiming(
+      timing, GetDelegate(), GetDelegate().GetPageUkmSourceId());
 }
 
 void AMPPageLoadMetricsObserver::ProcessMainFrameNavigation(
@@ -468,15 +472,15 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
 
     absl::optional<base::TimeDelta> largest_content_paint_time;
     uint64_t largest_content_paint_size;
-    page_load_metrics::ContentfulPaintTimingInfo::LargestContentType
-        largest_content_type;
+    page_load_metrics::ContentfulPaintTimingInfo::LargestContentTextOrImage
+        largest_content_text_or_image;
     const page_load_metrics::mojom::PaintTimingPtr& paint_timing =
         subframe_info.timing->paint_timing;
     if (page_load_metrics::LargestContentfulPaintHandler::
             AssignTimeAndSizeForLargestContentfulPaint(
                 *paint_timing->largest_contentful_paint,
                 &largest_content_paint_time, &largest_content_paint_size,
-                &largest_content_type)) {
+                &largest_content_text_or_image)) {
       builder.SetSubFrame_PaintTiming_NavigationToLargestContentfulPaint2(
           largest_content_paint_time.value().InMilliseconds());
 
@@ -495,16 +499,6 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
                     kHistogramAMPSubframeLargestContentfulPaintFullNavigation),
             largest_content_paint_time.value());
       }
-    }
-    // TODO(crbug.com/1045640): Stop reporting the experimental obsolete
-    // version.
-    if (page_load_metrics::LargestContentfulPaintHandler::
-            AssignTimeAndSizeForLargestContentfulPaint(
-                *paint_timing->experimental_largest_contentful_paint,
-                &largest_content_paint_time, &largest_content_paint_size,
-                &largest_content_type)) {
-      builder.SetSubFrame_PaintTiming_NavigationToLargestContentfulPaint(
-          largest_content_paint_time.value().InMilliseconds());
     }
 
     if (subframe_info.timing->interactive_timing->first_input_delay

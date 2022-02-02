@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
@@ -113,8 +114,11 @@ class PersonalDataManager : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  // Called once the sync service is known to be instantiated. Note that it may
-  // not be started, but it's preferences can be queried.
+  // Wires the circular sync service dependency. |sync_service| is either null
+  // (sync disabled by CLI) or outlives this object. This method is called once
+  // in production code, but may be called again in tests to replace the real
+  // service with a stub. |sync_service| may not have started yet but its
+  // preferences can already be queried.
   virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service);
 
   // history::HistoryServiceObserver
@@ -238,10 +242,6 @@ class PersonalDataManager : public KeyedService,
   // Returns whether server credit cards are stored in account (i.e. ephemeral)
   // storage.
   bool IsUsingAccountStorageForServerDataForTest() const;
-
-  // Sets which SyncService to use and observe in a test. |sync_service| is not
-  // owned by this class and must outlive |this|.
-  void SetSyncServiceForTest(syncer::SyncService* sync_service);
 
   // Adds the offer data to local cache for tests. This does not affect data in
   // the real database.
@@ -845,12 +845,12 @@ class PersonalDataManager : public KeyedService,
   mutable std::string experiment_country_code_;
 
   // The PrefService that this instance uses. Must outlive this instance.
-  PrefService* pref_service_ = nullptr;
+  raw_ptr<PrefService> pref_service_ = nullptr;
 
   // The HistoryService to be observed by the personal data manager. Must
   // outlive this instance. This unowned pointer is retained so the PDM can
   // remove itself from the history service's observer list on shutdown.
-  history::HistoryService* history_service_ = nullptr;
+  raw_ptr<history::HistoryService> history_service_ = nullptr;
 
   // Pref registrar for managing the change observers.
   PrefChangeRegistrar pref_registrar_;
@@ -870,16 +870,16 @@ class PersonalDataManager : public KeyedService,
       ongoing_profile_changes_;
 
   // The client side profile validator.
-  AutofillProfileValidator* client_profile_validator_ = nullptr;
+  raw_ptr<AutofillProfileValidator> client_profile_validator_ = nullptr;
 
   // The identity manager that this instance uses. Must outlive this instance.
-  signin::IdentityManager* identity_manager_ = nullptr;
+  raw_ptr<signin::IdentityManager> identity_manager_ = nullptr;
 
   // The sync service this instances uses. Must outlive this instance.
-  syncer::SyncService* sync_service_ = nullptr;
+  raw_ptr<syncer::SyncService> sync_service_ = nullptr;
 
   // The image fetcher to fetch customized images for Autofill data.
-  AutofillImageFetcher* image_fetcher_ = nullptr;
+  raw_ptr<AutofillImageFetcher> image_fetcher_ = nullptr;
 
   // Whether the user is currently operating in an off-the-record context.
   // Default value is false.

@@ -72,18 +72,24 @@ struct BatteryProperties {
   uint8 battery_percentage;
 };
 
-// Battery info belonging to a device. Initially contains an optional
-// "default" set of properties, but will eventually contain information
-// about multiple batteries per device (e.g., Pixel Buds include battery
-// info about the left earbud, right earbud, and case).
+// Battery info belonging to a device. Contains an optional "default" set of
+// properties, and may contain information about multiple batteries per device
+// (e.g., Pixel Buds include battery info about the left earbud, right earbud,
+// and case).
 struct DeviceBatteryInfo {
   BatteryProperties? default_properties;
+  BatteryProperties? left_bud_info;
+  BatteryProperties? right_bud_info;
+  BatteryProperties? case_info;
 };
 
 // Properties belonging to a Bluetooth device.
 struct BluetoothDeviceProperties {
   // Unique identifier for this device, which is stable across device reboots.
   string id;
+
+  // The Bluetooth address of this device.
+  string address;
 
   // Publicly-visible name provided by the device. If no name is provided by
   // the device, the device address is used as a name.
@@ -100,6 +106,9 @@ struct BluetoothDeviceProperties {
   DeviceBatteryInfo? battery_info;
 
   DeviceConnectionState connection_state;
+
+  // Indicates if the device is blocked by an admin policy.
+  bool is_blocked_by_policy;
 };
 
 // Properties belonging to a Bluetooth device which has been paired to this
@@ -128,6 +137,20 @@ interface SystemPropertiesObserver {
   // Invoked whenever any property changes, including whenever a property of a
   // paired device changes (e.g., from connected to disconnected).
   OnPropertiesUpdated(BluetoothSystemProperties properties);
+};
+
+// Observer for changes to Bluetooth device status.
+// Clients include:
+// * Ash system UI; implemented in C++ as part of the browser process
+interface BluetoothDeviceStatusObserver {
+  // Invoked when a device has been newly-paired.
+  OnDevicePaired(PairedBluetoothDeviceProperties device);
+
+  // Invoked when a device has been connected.
+  OnDeviceConnected(PairedBluetoothDeviceProperties device);
+
+  // Invoked when a device has been disconnected.
+  OnDeviceDisconnected(PairedBluetoothDeviceProperties device);
 };
 
 // Provided to the pairing UI to handle keys that have been entered
@@ -237,6 +260,11 @@ interface CrosBluetoothConfig {
   // is first added, then again whenever properties are updated. To stop
   // observing, disconnect |observer|.
   ObserveSystemProperties(pending_remote<SystemPropertiesObserver> observer);
+
+  // Invokes OnDevicePaired() when a device is newly paired, connected or
+  // disconnected. To stop observing, disconnect |observer|.
+  ObserveDeviceStatusChanges(
+    pending_remote<BluetoothDeviceStatusObserver> observer);
 
   // Turns Bluetooth on or off. If Bluetooth is unavailable or if it is
   // not currently modifiable, this function is a no-op.

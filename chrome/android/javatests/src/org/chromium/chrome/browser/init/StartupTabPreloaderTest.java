@@ -17,17 +17,18 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
 /**
@@ -52,6 +53,12 @@ public class StartupTabPreloaderTest {
             "Startup.Android.Cold.TimeToFirstVisibleContent";
     private static final String VISIBLE_CONTENT_HISTOGRAM =
             "Startup.Android.Cold.TimeToVisibleContent";
+    private static final String ACTIVITY_START_TO_PRELOAD_TRIGGER =
+            "Android.StartupTabPreloader.ActivityStartToLoadDecision";
+    private static final String PRELOAD_TRIGGER_TO_MATCH_DECISION_PRELOAD =
+            "Android.StartupTabPreloader.LoadDecisionToMatchDecision.Load";
+    private static final String PRELOAD_TRIGGER_TO_MATCH_DECISION_NO_PRELOAD =
+            "Android.StartupTabPreloader.LoadDecisionToMatchDecision.NoLoad";
     private static final String PRELOAD_TRIGGER_TO_FIRST_NAVIGATION_START_PRELOAD =
             "Android.StartupTabPreloader.LoadDecisionToFirstNavigationStart.Load";
     private static final String PRELOAD_TRIGGER_TO_FIRST_NAVIGATION_START_NO_PRELOAD =
@@ -80,6 +87,8 @@ public class StartupTabPreloaderTest {
             "Android.StartupTabPreloader.LoadDecisionToFirstContentfulPaint.LoadAndMismatch";
     private static final String PRELOAD_TRIGGER_TO_FIRST_CONTENTFUL_PAINT_NO_PRELOAD =
             "Android.StartupTabPreloader.LoadDecisionToFirstContentfulPaint.NoLoad";
+    private static final String LOAD_DECISION_REASON =
+            "Startup.Android.StartupTabPreloader.LoadDecisionReason";
 
     // Used for verifying expected histogram counts.
     private static final int NO_PRELOAD = 0;
@@ -99,12 +108,23 @@ public class StartupTabPreloaderTest {
         int noPreload = 1 - preload;
         int preloadMismatch = (preload == 1 && preloadMatch == 0) ? 1 : 0;
 
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ACTIVITY_START_TO_PRELOAD_TRIGGER));
+
         Assert.assertEquals(preload,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         PRELOAD_TRIGGER_TO_FIRST_NAVIGATION_START_PRELOAD));
         Assert.assertEquals(noPreload,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         PRELOAD_TRIGGER_TO_FIRST_NAVIGATION_START_NO_PRELOAD));
+
+        Assert.assertEquals(preload,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        PRELOAD_TRIGGER_TO_MATCH_DECISION_PRELOAD));
+        Assert.assertEquals(noPreload,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        PRELOAD_TRIGGER_TO_MATCH_DECISION_NO_PRELOAD));
 
         Assert.assertEquals(preloadMatch,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -162,14 +182,23 @@ public class StartupTabPreloaderTest {
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.ALL_SATISFIED));
     }
 
     @Test
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/1271158")
     @DisableFeatures(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP)
     public void testStartupTabPreloaderStartupLoadingMetricsRecordedWhenTabTaken()
             throws Exception {
+        // Force the browser to regard itself as being in the foreground to work around the
+        // fact that the navigation here can happen before ChromeActivity records the
+        // browser as being in the foreground, in which case startup metrics are erroneously
+        // not recorded. TODO(crbug.com/1273097): Eliminate this call when we fix startup
+        // metrics to be recorded in this case.
+        TestThreadUtils.runOnUiThreadBlocking(() -> UmaUtils.recordForegroundStartTime());
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         mActivityRule.startMainActivityFromIntent(
@@ -180,6 +209,9 @@ public class StartupTabPreloaderTest {
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.ALL_SATISFIED));
 
         // First contentful paint should be recorded.
         CriteriaHelper.pollUiThread(()
@@ -201,16 +233,25 @@ public class StartupTabPreloaderTest {
 
     @Test
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/1271158")
     @DisableFeatures(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP)
     public void testStartupTabPreloaderStartupLoadingMetricsRecordedWhenTabDropped()
             throws Exception {
+        // Force the browser to regard itself as being in the foreground to work around the
+        // fact that the navigation here can happen before ChromeActivity records the
+        // browser as being in the foreground, in which case startup metrics are erroneously
+        // not recorded. TODO(crbug.com/1273097): Eliminate this call when we fix startup
+        // metrics to be recorded in this case.
+        TestThreadUtils.runOnUiThreadBlocking(() -> UmaUtils.recordForegroundStartTime());
+
         StartupTabPreloader.failNextTabMatchForTesting();
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         mActivityRule.startMainActivityFromIntent(
                 intent, mServerRule.getServer().getURL(TEST_PAGE));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.ALL_SATISFIED));
 
         // The StartupTabPreloader should have loaded a url, but it should not have been taken.
         Assert.assertEquals(
@@ -239,10 +280,16 @@ public class StartupTabPreloaderTest {
 
     @Test
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/1271158")
     @DisableFeatures(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP)
     public void testStartupTabPreloaderStartupLoadingMetricsRecordedWhenTabNotPreloaded()
             throws Exception {
+        // Force the browser to regard itself as being in the foreground to work around the
+        // fact that the navigation here can happen before ChromeActivity records the
+        // browser as being in the foreground, in which case startup metrics are erroneously
+        // not recorded. TODO(crbug.com/1273097): Eliminate this call when we fix startup
+        // metrics to be recorded in this case.
+        TestThreadUtils.runOnUiThreadBlocking(() -> UmaUtils.recordForegroundStartTime());
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.putExtra(StartupTabPreloader.EXTRA_DISABLE_STARTUP_TAB_PRELOADER, true);
@@ -254,6 +301,9 @@ public class StartupTabPreloaderTest {
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.DISABLED_BY_INTENT));
 
         // First contentful paint should be recorded.
         CriteriaHelper.pollUiThread(()
@@ -275,11 +325,17 @@ public class StartupTabPreloaderTest {
 
     @Test
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/1271158")
     @EnableFeatures(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP)
     public void
     testStartupTabPreloaderStartupLoadingMetricsRecordedWhenTabWouldBeTakenIfNotPreventedByFeature()
             throws Exception {
+        // Force the browser to regard itself as being in the foreground to work around the
+        // fact that the navigation here can happen before ChromeActivity records the
+        // browser as being in the foreground, in which case startup metrics are erroneously
+        // not recorded. TODO(crbug.com/1273097): Eliminate this call when we fix startup
+        // metrics to be recorded in this case.
+        TestThreadUtils.runOnUiThreadBlocking(() -> UmaUtils.recordForegroundStartTime());
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         mActivityRule.startMainActivityFromIntent(
@@ -290,6 +346,9 @@ public class StartupTabPreloaderTest {
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.DISABLED_BY_FEATURE));
 
         // First contentful paint should be recorded.
         CriteriaHelper.pollUiThread(()
@@ -313,11 +372,17 @@ public class StartupTabPreloaderTest {
 
     @Test
     @LargeTest
-    @FlakyTest(message = "https://crbug.com/1271158")
     @EnableFeatures(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP)
     public void
     testStartupTabPreloaderStartupLoadingMetricsRecordedWhenTabWouldBeDroppedIfNotPreventedByFeature()
             throws Exception {
+        // Force the browser to regard itself as being in the foreground to work around the
+        // fact that the navigation here can happen before ChromeActivity records the
+        // browser as being in the foreground, in which case startup metrics are erroneously
+        // not recorded. TODO(crbug.com/1273097): Eliminate this call when we fix startup
+        // metrics to be recorded in this case.
+        TestThreadUtils.runOnUiThreadBlocking(() -> UmaUtils.recordForegroundStartTime());
+
         StartupTabPreloader.failNextTabMatchForTesting();
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -330,6 +395,9 @@ public class StartupTabPreloaderTest {
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.DISABLED_BY_FEATURE));
 
         // First contentful paint should be recorded.
         CriteriaHelper.pollUiThread(()
@@ -384,6 +452,9 @@ public class StartupTabPreloaderTest {
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        LOAD_DECISION_REASON, StartupTabPreloader.LoadDecisionReason.INCOGNITO));
     }
 
     @Test
@@ -400,6 +471,9 @@ public class StartupTabPreloaderTest {
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.ALL_SATISFIED));
     }
 
     @Test
@@ -415,6 +489,9 @@ public class StartupTabPreloaderTest {
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 0, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        LOAD_DECISION_REASON, StartupTabPreloader.LoadDecisionReason.NO_URL));
     }
 
     @Test
@@ -431,6 +508,18 @@ public class StartupTabPreloaderTest {
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.ALL_SATISFIED));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ACTIVITY_START_TO_PRELOAD_TRIGGER));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        PRELOAD_TRIGGER_TO_MATCH_DECISION_PRELOAD));
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        PRELOAD_TRIGGER_TO_MATCH_DECISION_NO_PRELOAD));
 
         Tab currentTab = mActivityRule.getActivity().getActivityTab();
 
@@ -447,6 +536,18 @@ public class StartupTabPreloaderTest {
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_LOADED_HISTOGRAM, 1));
         Assert.assertEquals(
                 1, RecordHistogram.getHistogramValueCountForTesting(TAB_TAKEN_HISTOGRAM, 1));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(LOAD_DECISION_REASON,
+                        StartupTabPreloader.LoadDecisionReason.ALL_SATISFIED));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        ACTIVITY_START_TO_PRELOAD_TRIGGER));
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        PRELOAD_TRIGGER_TO_MATCH_DECISION_PRELOAD));
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        PRELOAD_TRIGGER_TO_MATCH_DECISION_NO_PRELOAD));
     }
 
     @Test

@@ -12,12 +12,15 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
@@ -181,21 +184,19 @@ class ProfileManager : public Profile::Delegate {
   // otherwise return null.
   Profile* GetProfileByPath(const base::FilePath& path) const;
 
-  // Creates a new profile in the next available multiprofile directory.
-  // Directories are named "profile_1", "profile_2", etc., in sequence of
-  // creation. (Because directories can be removed, however, it may be the case
-  // that at some point the list of numbered profiles is not continuous.)
-  // |callback| may be invoked multiple times (for CREATE_STATUS_INITIALIZED
-  // and CREATE_STATUS_CREATED) so binding parameters with bind::Passed() is
-  // prohibited. Returns the file path to the profile that will be created
-  // asynchronously.
-  // If |is_hidden| is true, the new profile will be created as ephemeral
-  // (removed on the next startup) and omitted (not visible in the list of
-  // profiles).
-  static base::FilePath CreateMultiProfileAsync(const std::u16string& name,
-                                                size_t icon_index,
-                                                bool is_hidden,
-                                                const CreateCallback& callback);
+  // Asynchronously creates a new profile in the next available multiprofile
+  // directory. Directories are named "profile_1", "profile_2", etc., in
+  // sequence of creation. (Because directories can be removed, however, it may
+  // be the case that at some point the list of numbered profiles is not
+  // continuous.) |callback| may be invoked multiple times (for
+  // CREATE_STATUS_INITIALIZED and CREATE_STATUS_CREATED) so binding parameters
+  // with bind::Passed() is prohibited. If |is_hidden| is true, the new profile
+  // will be created as ephemeral (removed on the next startup) and omitted (not
+  // visible in the list of profiles).
+  static void CreateMultiProfileAsync(const std::u16string& name,
+                                      size_t icon_index,
+                                      bool is_hidden,
+                                      const CreateCallback& callback);
 
   // Returns the full path to be used for guest profiles.
   static base::FilePath GetGuestProfilePath();
@@ -235,6 +236,10 @@ class ProfileManager : public Profile::Delegate {
   // that case the callback will be called when profile creation is complete.
   void ScheduleProfileForDeletion(const base::FilePath& profile_dir,
                                   ProfileLoadedCallback callback);
+
+  // Schedules the ephemeral profile at the given path to be deleted on
+  // shutdown. New profiles will not be created.
+  void ScheduleEphemeralProfileForDeletion(const base::FilePath& profile_dir);
 
   // Deletes Guest profile's browsing data.
   static void CleanUpGuestProfile();
@@ -280,6 +285,20 @@ class ProfileManager : public Profile::Delegate {
   // |origin|.
   bool HasKeepAliveForTesting(const Profile* profile,
                               ProfileKeepAliveOrigin origin);
+
+  // Returns true if there's at least one profile in a "zombie" state, which
+  // means either:
+  //
+  //   - this profile was destroyed from memory,
+  //   - this profile has a refcount of 0, meaning it's safe to destroy.
+  //
+  // Looks at the list of profiles that were loaded during this browsing
+  // session, to determine if they're all still loaded in memory and look at
+  // their refcount.
+  //
+  // This is used for an A/B test, that measures the impact of the
+  // DestroyProfileOnBrowserClose variation on memory usage.
+  bool HasZombieProfile() const;
 
  protected:
   // Creates a new profile by calling into the profile's profile creation
@@ -351,7 +370,7 @@ class ProfileManager : public Profile::Delegate {
     ProfileInfo();
 
     // The Profile pointed to by this ProfileInfo.
-    Profile* unowned_profile_ = nullptr;
+    raw_ptr<Profile> unowned_profile_ = nullptr;
 
     // For when the Profile is owned, via FromOwnedProfile() or
     // TakeOwnershipOfProfile().
@@ -488,7 +507,7 @@ class ProfileManager : public Profile::Delegate {
     void OnBrowserSetLastActive(Browser* browser) override;
 
    private:
-    ProfileManager* profile_manager_;
+    raw_ptr<ProfileManager> profile_manager_;
   };
 
   // If the |loaded_profile| has been loaded successfully (according to
@@ -502,11 +521,6 @@ class ProfileManager : public Profile::Delegate {
       ProfileLoadedCallback* callback,
       Profile* loaded_profile,
       Profile::CreateStatus status);
-
-  // Schedules the forced ephemeral profile at the given path to be deleted on
-  // shutdown. New profiles will not be created.
-  void ScheduleForcedEphemeralProfileForDeletion(
-      const base::FilePath& profile_dir);
 
   void OnClosingAllBrowsersChanged(bool closing);
 #endif  // !defined(OS_ANDROID)
@@ -561,6 +575,15 @@ class ProfileManager : public Profile::Delegate {
   std::vector<Profile*> active_profiles_;
   bool closing_all_browsers_ = false;
 
+  // Becomes true once the refcount for any profile hits 0. This is used to
+  // measure how often DestroyProfileOnBrowserClose logic triggers.
+  bool could_have_destroyed_profile_ = false;
+
+  // Set of profile dirs that were loaded during this browsing session at some
+  // point (or are currently loaded). This is used to measure memory savings
+  // from DestroyProfileOnBrowserClose.
+  std::set<base::FilePath> ever_loaded_profiles_;
+
   // Controls whether to initialize some services. Only disabled for testing.
   bool do_final_services_init_ = true;
 
@@ -570,6 +593,8 @@ class ProfileManager : public Profile::Delegate {
   // enough to do as part of the mass refactor CL which introduced
   // |thread_checker_|, ref. https://codereview.chromium.org/2907253003/#msg37.
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<ProfileManager> weak_factory_{this};
 };
 
 // Same as the ProfileManager, but doesn't initialize some services of the

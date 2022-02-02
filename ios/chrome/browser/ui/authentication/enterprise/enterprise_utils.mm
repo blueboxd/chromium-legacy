@@ -9,10 +9,12 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,13 +52,6 @@ bool IsForceSignInEnabled() {
   return policy_mode == BrowserSigninMode::kForced;
 }
 
-bool IsSyncTypesListEnabled() {
-  const base::ListValue* value =
-      GetApplicationContext()->GetLocalState()->GetList(
-          policy::key::kSyncTypesListDisabled);
-  return value->GetList().size();
-}
-
 bool IsManagedSyncDataType(ChromeBrowserState* browserState,
                            SyncSetupService::SyncableDatatype dataType) {
   return browserState->GetPrefs()
@@ -75,11 +70,21 @@ bool HasManagedSyncDataType(ChromeBrowserState* browserState) {
   return false;
 }
 
-EnterpriseSignInRestrictions GetEnterpriseSignInRestrictions() {
+EnterpriseSignInRestrictions GetEnterpriseSignInRestrictions(
+    ChromeBrowserState* browserState) {
   EnterpriseSignInRestrictions restrictions = kNoEnterpriseRestriction;
   if (IsForceSignInEnabled())
     restrictions |= kEnterpriseForceSignIn;
   if (IsRestrictAccountsToPatternsEnabled())
     restrictions |= kEnterpriseRestrictAccounts;
+  if (HasManagedSyncDataType(browserState))
+    restrictions |= kEnterpriseSyncTypesListDisabled;
   return restrictions;
+}
+
+bool IsSyncDisabledByPolicy(ChromeBrowserState* browserState) {
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browserState);
+  return syncService->GetDisableReasons().Has(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 }

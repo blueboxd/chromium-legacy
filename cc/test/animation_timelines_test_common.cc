@@ -35,7 +35,7 @@ void TestLayer::ClearMutatedProperties() {
   opacity_ = 0;
   filters_ = FilterOperations();
   backdrop_filters_ = FilterOperations();
-  scroll_offset_ = gfx::Vector2dF();
+  scroll_offset_ = gfx::PointF();
 
   has_potential_animation_.reset();
   is_currently_animating_.reset();
@@ -141,7 +141,7 @@ void TestHostClient::SetElementTransformMutated(
 void TestHostClient::SetElementScrollOffsetMutated(
     ElementId element_id,
     ElementListType list_type,
-    const gfx::Vector2dF& scroll_offset) {
+    const gfx::PointF& scroll_offset) {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   if (layer)
     layer->set_scroll_offset(scroll_offset);
@@ -176,13 +176,9 @@ void TestHostClient::MaximumScaleChanged(ElementId element_id,
 }
 
 void TestHostClient::SetScrollOffsetForAnimation(
-    const gfx::Vector2dF& scroll_offset) {
-  scroll_offset_ = scroll_offset;
-}
-
-gfx::Vector2dF TestHostClient::GetScrollOffsetForAnimation(
-    ElementId element_id) const {
-  return scroll_offset_;
+    const gfx::PointF& scroll_offset,
+    ElementId element_id) {
+  property_trees_.scroll_tree.SetScrollOffset(element_id, scroll_offset);
 }
 
 void TestHostClient::RegisterElementId(ElementId element_id,
@@ -247,9 +243,8 @@ gfx::Transform TestHostClient::GetTransform(ElementId element_id,
   return layer->transform();
 }
 
-gfx::Vector2dF TestHostClient::GetScrollOffset(
-    ElementId element_id,
-    ElementListType list_type) const {
+gfx::PointF TestHostClient::GetScrollOffset(ElementId element_id,
+                                            ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
   return layer->scroll_offset();
@@ -418,11 +413,9 @@ AnimationTimelinesTest::AnimationTimelinesTest()
       host_impl_(nullptr),
       timeline_id_(AnimationIdProvider::NextTimelineId()),
       animation_id_(AnimationIdProvider::NextAnimationId()),
-      next_test_layer_id_(0) {
+      element_id_(1) {
   host_ = client_.host();
   host_impl_ = client_impl_.host();
-
-  element_id_ = ElementId(NextTestLayerId());
 }
 
 AnimationTimelinesTest::~AnimationTimelinesTest() = default;
@@ -470,7 +463,7 @@ void AnimationTimelinesTest::AttachTimelineAnimationLayer() {
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndAnimation() {
-  host_->PushPropertiesTo(host_impl_);
+  host_->PushPropertiesTo(host_impl_, client_.GetPropertyTrees());
   GetImplTimelineAndAnimationByID();
 }
 
@@ -526,11 +519,6 @@ KeyframeEffect* AnimationTimelinesTest::GetImplKeyframeEffectForLayerId(
              : nullptr;
 }
 
-int AnimationTimelinesTest::NextTestLayerId() {
-  next_test_layer_id_++;
-  return next_test_layer_id_;
-}
-
 bool AnimationTimelinesTest::CheckKeyframeEffectTimelineNeedsPushProperties(
     bool needs_push_properties) const {
   DCHECK(animation_);
@@ -554,7 +542,7 @@ bool AnimationTimelinesTest::CheckKeyframeEffectTimelineNeedsPushProperties(
 }
 
 void AnimationTimelinesTest::PushProperties() {
-  host_->PushPropertiesTo(host_impl_);
+  host_->PushPropertiesTo(host_impl_, client_.GetPropertyTrees());
 }
 
 }  // namespace cc

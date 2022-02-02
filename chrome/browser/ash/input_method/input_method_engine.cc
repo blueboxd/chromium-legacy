@@ -89,6 +89,13 @@ void InputMethodEngine::FocusIn(
   observer_->OnFocus(active_component_id_, context_id_, input_context);
 }
 
+void InputMethodEngine::OnTouch(ui::EventPointerType pointerType) {
+  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
+  observer_->OnTouch(pointerType);
+}
+
 void InputMethodEngine::FocusOut() {
   if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
@@ -467,9 +474,10 @@ void InputMethodEngine::UpdateComposition(
     bool is_visible) {
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
+  if (input_context) {
     input_context->UpdateCompositionText(composition_text, cursor_pos,
                                          is_visible);
+  }
 }
 
 bool InputMethodEngine::SetCompositionRange(

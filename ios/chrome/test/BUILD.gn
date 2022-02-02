@@ -14,10 +14,16 @@ import("//third_party/protobuf/proto_library.gni")
 group("all_tests") {
   testonly = true
   deps = [
+    ":all_fuzzer_tests",
     ":ios_chrome_unittests",
     "//ios/chrome/test/xcuitest:ios_chrome_device_check_xcuitests_module",
     "//ios/chrome/test/xcuitest:ios_chrome_xcuitests",
   ]
+}
+
+group("all_fuzzer_tests") {
+  testonly = true
+  deps = [ "//ios/chrome/browser/crash_report:crashpad_fuzzer_tests" ]
 }
 
 source_set("test_support") {
@@ -116,6 +122,7 @@ source_set("ios_chrome_unit_test_suite") {
     "//ios/chrome/browser:chrome_paths",
     "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/browser/web/web_performance_metrics:unit_tests",
     "//ios/chrome/test:test_support",
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser",
@@ -243,6 +250,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/authentication/signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/add_account_signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin:unit_tests",
+    "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin/user_signin:unit_tests",
     "//ios/chrome/browser/ui/authentication/signin_sync:unit_tests",
@@ -317,13 +325,16 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/safe_mode:unit_tests",
     "//ios/chrome/browser/ui/settings:unit_tests",
     "//ios/chrome/browser/ui/settings/autofill:unit_tests",
+    "//ios/chrome/browser/ui/settings/bandwidth:unit_tests",
     "//ios/chrome/browser/ui/settings/cells:unit_tests",
     "//ios/chrome/browser/ui/settings/clear_browsing_data:unit_tests",
+    "//ios/chrome/browser/ui/settings/content_settings:unit_tests",
     "//ios/chrome/browser/ui/settings/default_browser:unit_tests",
     "//ios/chrome/browser/ui/settings/google_services:unit_tests",
     "//ios/chrome/browser/ui/settings/language:unit_tests",
     "//ios/chrome/browser/ui/settings/password:unit_tests",
     "//ios/chrome/browser/ui/settings/password/password_details:unit_tests",
+    "//ios/chrome/browser/ui/settings/password/passwords_in_other_apps:unit_tests",
     "//ios/chrome/browser/ui/settings/privacy:unit_tests",
     "//ios/chrome/browser/ui/settings/safety_check:unit_tests",
     "//ios/chrome/browser/ui/settings/sync:unit_tests",

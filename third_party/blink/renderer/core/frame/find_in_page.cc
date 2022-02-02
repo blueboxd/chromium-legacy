@@ -256,7 +256,7 @@ void FindInPage::SetClient(
 void FindInPage::GetNearestFindResult(const gfx::PointF& point,
                                       GetNearestFindResultCallback callback) {
   float distance;
-  EnsureTextFinder().NearestFindMatch(FloatPoint(point), &distance);
+  EnsureTextFinder().NearestFindMatch(point, &distance);
   std::move(callback).Run(distance);
 }
 
@@ -282,9 +282,9 @@ void WebLocalFrameImpl::SetTickmarks(const WebElement& target,
 
 void FindInPage::SetTickmarks(const WebElement& target,
                               const WebVector<gfx::Rect>& tickmarks) {
-  Vector<IntRect> tickmarks_converted(SafeCast<wtf_size_t>(tickmarks.size()));
+  Vector<gfx::Rect> tickmarks_converted(SafeCast<wtf_size_t>(tickmarks.size()));
   for (wtf_size_t i = 0; i < tickmarks.size(); ++i)
-    tickmarks_converted[i] = IntRect(tickmarks[i]);
+    tickmarks_converted[i] = tickmarks[i];
 
   LayoutBox* box;
   if (target.IsNull())

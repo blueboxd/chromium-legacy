@@ -19,18 +19,14 @@ class MODULES_EXPORT ScreenDetailed final : public Screen {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  ScreenDetailed(LocalDOMWindow* window, int64_t display_id);
+  ScreenDetailed(LocalDOMWindow* window,
+                 int64_t display_id,
+                 bool label_is_internal,
+                 uint32_t label_idx);
 
-  // Web-exposed interface (Screen overrides):
-  int height() const override;
-  int width() const override;
-  unsigned colorDepth() const override;
-  unsigned pixelDepth() const override;
-  int availLeft() const override;
-  int availTop() const override;
-  int availHeight() const override;
-  int availWidth() const override;
-  bool isExtended() const override;
+  static bool AreWebExposedScreenDetailedPropertiesEqual(
+      const display::ScreenInfo& prev,
+      const display::ScreenInfo& current);
 
   // Web-exposed interface (additional per-screen information):
   int left() const;
@@ -38,14 +34,14 @@ class MODULES_EXPORT ScreenDetailed final : public Screen {
   bool isPrimary() const;
   bool isInternal() const;
   float devicePixelRatio() const;
-  const String& label() const;
+  String label() const;
 
-  // Not web-exposed; for internal usage only (see Screen).
-  int64_t DisplayId() const override;
-  void UpdateDisplayId(int64_t display_id) { display_id_ = display_id; }
+  uint32_t label_idx() const { return label_idx_; }
+  bool label_is_internal() const { return label_is_internal_; }
 
  private:
-  int64_t display_id_;
+  uint32_t label_idx_;
+  bool label_is_internal_;
 };
 
 }  // namespace blink

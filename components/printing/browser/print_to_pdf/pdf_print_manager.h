@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "components/printing/browser/print_manager.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "printing/print_settings.h"
 
@@ -62,9 +62,6 @@ class PdfPrintManager : public printing::PrintManager,
   explicit PdfPrintManager(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PdfPrintManager>;
 
-  // WebContentsObserver overrides (via PrintManager):
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-
   // printing::mojom::PrintManagerHost:
   void DidPrintDocument(printing::mojom::DidPrintDocumentParamsPtr params,
                         DidPrintDocumentCallback callback) override;
@@ -99,7 +96,7 @@ class PdfPrintManager : public printing::PrintManager,
   void Reset();
   void ReleaseJob(PrintResult result);
 
-  content::RenderFrameHost* printing_rfh_ = nullptr;
+  raw_ptr<content::RenderFrameHost> printing_rfh_ = nullptr;
   std::string page_ranges_;
   bool ignore_invalid_page_ranges_ = false;
   printing::mojom::PrintPagesParamsPtr print_pages_params_;

@@ -23,8 +23,11 @@
 #include "chrome/browser/sharesheet/sharesheet_service_factory.h"
 #include "chrome/browser/visibility_timer_tab_helper.h"
 #include "chrome/browser/webshare/prepare_directory_task.h"
+#include "chrome/browser/webshare/prepare_subdirectory_task.h"
 #include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/browser/webshare/store_files_task.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,19 +42,29 @@ namespace {
 constexpr base::FilePath::CharType kWebShareDirname[] =
     FILE_PATH_LITERAL(".WebShare");
 
-// We don't use |supplied_name| as it may contain special characters, and it may
-// not be unique. The suffix has been checked by
+constexpr char kDefaultShareName[] = "share";
+
+// Note that the suffix of |suggested_name| has been checked by
 // ShareServiceImpl::IsDangerousFilename().
-base::FilePath GenerateFileName(const base::FilePath& directory,
-                                const std::string& supplied_name) {
+base::FilePath GenerateFileName(content::WebContents* web_contents,
+                                const base::FilePath& directory,
+                                const std::string& suggested_name) {
   static unsigned counter = 0;
 
   ++counter;
+  std::string dirname = base::StringPrintf("share%u", counter);
 
-  size_t suffix_pos = supplied_name.find_last_of('.');
-  std::string filename = base::StringPrintf("share%u%s", counter,
-                                            supplied_name.c_str() + suffix_pos);
-  return directory.Append(filename);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  std::string referrer_charset =
+      profile->GetPrefs()->GetString(prefs::kDefaultCharset);
+
+  base::FilePath filename = net::GenerateFileName(
+      web_contents->GetLastCommittedURL(),
+      /*content_disposition=*/std::string(), referrer_charset, suggested_name,
+      /*mime_type=*/std::string(), kDefaultShareName);
+
+  return directory.Append(dirname).Append(filename);
 }
 
 blink::mojom::ShareError SharesheetResultToShareError(
@@ -64,6 +77,17 @@ blink::mojom::ShareError SharesheetResultToShareError(
     case sharesheet::SharesheetResult::kErrorWindowClosed:
       return blink::mojom::ShareError::CANCELED;
   }
+}
+
+// Deletes immediate parent directories of specified |file_paths|, after waiting
+// |delay|.
+void ScheduleSharedFileDirectoryDeletion(std::vector<base::FilePath> file_paths,
+                                         base::TimeDelta delay) {
+  for (size_t i = 0; i < file_paths.size(); ++i)
+    file_paths[i] = file_paths[i].DirName();
+
+  webshare::PrepareDirectoryTask::ScheduleSharedFileDeletion(
+      std::move(file_paths), delay);
 }
 
 }  // namespace
@@ -121,7 +145,7 @@ void SharesheetClient::Share(
   current_share_ = CurrentShare();
   current_share_->files = std::move(files);
   current_share_->directory =
-      file_manager::util::GetMyFilesFolderForProfile(profile).Append(
+      file_manager::util::GetShareCacheFilePath(profile).Append(
           kWebShareDirname);
   if (share_url.is_valid()) {
     if (text.empty())
@@ -143,6 +167,13 @@ void SharesheetClient::Share(
                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
+
+  // Previously, shared files were stored in MyFiles/.WebShare. We remove this
+  // obsolete directory.
+  PrepareDirectoryTask::ScheduleSharedFileDeletion(
+      {file_manager::util::GetMyFilesFolderForProfile(profile).Append(
+          kWebShareDirname)},
+      /*delay=*/base::TimeDelta());
 
   current_share_->prepare_directory_task =
       std::make_unique<PrepareDirectoryTask>(
@@ -171,9 +202,28 @@ void SharesheetClient::OnPrepareDirectory(blink::mojom::ShareError error) {
 
   for (const auto& file : current_share_->files) {
     current_share_->content_types.push_back(file->blob->content_type);
-    current_share_->file_paths.push_back(
-        GenerateFileName(current_share_->directory, file->name));
+    current_share_->file_paths.push_back(GenerateFileName(
+        web_contents(), current_share_->directory, file->name));
     current_share_->file_sizes.push_back(file->blob->size);
+  }
+
+  current_share_->prepare_subdirectory_task =
+      std::make_unique<PrepareSubDirectoryTask>(
+          current_share_->file_paths,
+          base::BindOnce(&SharesheetClient::OnPrepareSubdirectory,
+                         weak_ptr_factory_.GetWeakPtr()));
+  current_share_->prepare_subdirectory_task->Start();
+}
+
+void SharesheetClient::OnPrepareSubdirectory(blink::mojom::ShareError error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!current_share_.has_value())
+    return;
+
+  if (!web_contents() || error != blink::mojom::ShareError::OK) {
+    std::move(current_share_->callback).Run(error);
+    current_share_ = absl::nullopt;
+    return;
   }
 
   std::unique_ptr<StoreFilesTask> store_files_task =
@@ -194,8 +244,8 @@ void SharesheetClient::OnStoreFiles(blink::mojom::ShareError error) {
 
   if (!web_contents() || error != blink::mojom::ShareError::OK) {
     std::move(current_share_->callback).Run(error);
-    PrepareDirectoryTask::ScheduleSharedFileDeletion(
-        std::move(current_share_->file_paths), base::Minutes(0));
+    ScheduleSharedFileDirectoryDeletion(std::move(current_share_->file_paths),
+                                        base::Minutes(0));
     current_share_ = absl::nullopt;
     return;
   }
@@ -212,7 +262,7 @@ void SharesheetClient::OnShowSharesheet(sharesheet::SharesheetResult result) {
     return;
 
   std::move(current_share_->callback).Run(SharesheetResultToShareError(result));
-  PrepareDirectoryTask::ScheduleSharedFileDeletion(
+  ScheduleSharedFileDirectoryDeletion(
       std::move(current_share_->file_paths),
       PrepareDirectoryTask::kSharedFileLifetime);
   current_share_ = absl::nullopt;

@@ -25,13 +25,17 @@
 #include "content/browser/attribution_reporting/storable_trigger.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
 
 namespace {
+
+using CreateReportResult = ::content::AttributionStorage::CreateReportResult;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -41,8 +45,6 @@ enum class ConversionReportSendOutcome {
   kDropped = 2,
   kMaxValue = kDropped
 };
-
-const size_t kMaxSentReportsToStore = 100;
 
 // The shared-task runner for all attribution storage operations. Note that
 // different AttributionManagerImpl perform operations on the same task
@@ -71,8 +73,7 @@ bool IsOriginSessionOnly(
   return false;
 }
 
-void RecordCreateReportStatus(
-    AttributionStorage::CreateReportResult::Status status) {
+void RecordCreateReportStatus(CreateReportResult::Status status) {
   base::UmaHistogramEnumeration("Conversions.CreateReportStatus", status);
 }
 
@@ -83,20 +84,20 @@ void RecordDeleteEvent(AttributionManagerImpl::DeleteEvent event) {
 }
 
 ConversionReportSendOutcome ConvertToConversionReportSendOutcome(
-    SentReportInfo::Status status) {
+    SentReport::Status status) {
   switch (status) {
-    case SentReportInfo::Status::kSent:
+    case SentReport::Status::kSent:
       return ConversionReportSendOutcome::kSent;
-    case SentReportInfo::Status::kTransientFailure:
-    case SentReportInfo::Status::kFailure:
+    case SentReport::Status::kTransientFailure:
+    case SentReport::Status::kFailure:
       return ConversionReportSendOutcome::kFailed;
-    case SentReportInfo::Status::kOffline:
-    case SentReportInfo::Status::kRemovedFromQueue:
+    case SentReport::Status::kOffline:
+    case SentReport::Status::kRemovedFromQueue:
       // Offline reports and reports removed from the queue before being sent
       // should never record an outcome.
       NOTREACHED();
       return ConversionReportSendOutcome::kFailed;
-    case SentReportInfo::Status::kDropped:
+    case SentReport::Status::kDropped:
       return ConversionReportSendOutcome::kDropped;
   }
 }
@@ -125,11 +126,10 @@ AttributionManagerImpl::CreateForTesting(
     std::unique_ptr<AttributionPolicy> policy,
     const base::Clock* clock,
     const base::FilePath& user_data_directory,
-    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
-    size_t max_sent_reports_to_store) {
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
   return base::WrapUnique<AttributionManagerImpl>(new AttributionManagerImpl(
       std::move(reporter), std::move(policy), clock, user_data_directory,
-      std::move(special_storage_policy), max_sent_reports_to_store));
+      std::move(special_storage_policy)));
 }
 
 AttributionManagerImpl::AttributionManagerImpl(
@@ -149,16 +149,14 @@ AttributionManagerImpl::AttributionManagerImpl(
                   switches::kConversionsDebugMode)),
           base::DefaultClock::GetInstance(),
           user_data_directory,
-          std::move(special_storage_policy),
-          kMaxSentReportsToStore) {}
+          std::move(special_storage_policy)) {}
 
 AttributionManagerImpl::AttributionManagerImpl(
     std::unique_ptr<AttributionReporter> reporter,
     std::unique_ptr<AttributionPolicy> policy,
     const base::Clock* clock,
     const base::FilePath& user_data_directory,
-    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
-    size_t max_sent_reports_to_store)
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
     : debug_mode_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kConversionsDebugMode)),
       clock_(clock),
@@ -168,7 +166,6 @@ AttributionManagerImpl::AttributionManagerImpl(
           user_data_directory,
           std::make_unique<AttributionStorageDelegateImpl>(debug_mode_),
           clock_)),
-      session_storage_(max_sent_reports_to_store),
       attribution_policy_(std::move(policy)),
       special_storage_policy_(std::move(special_storage_policy)),
       weak_factory_(this) {
@@ -204,12 +201,52 @@ AttributionManagerImpl::~AttributionManagerImpl() {
                 std::move(session_only_origin_predicate));
 }
 
+void AttributionManagerImpl::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AttributionManagerImpl::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void AttributionManagerImpl::HandleSource(StorableSource source) {
+  // Process attributions in the order in which they were received, processing
+  // the new one after any background attributions are flushed.
+  GetContentClient()->browser()->FlushBackgroundAttributions(
+      base::BindOnce(&AttributionManagerImpl::HandleSourceInternal,
+                     weak_factory_.GetWeakPtr(), std::move(source)));
+}
+
+void AttributionManagerImpl::HandleSourceInternal(StorableSource source) {
+  // Only retrieve deactivated sources if an observer is there to hear it.
+  // Technically, an observer could be registered between the time the async
+  // call is made and the time the response is received, but this is unlikely.
+  int deactivated_source_return_limit = observers_.empty() ? 0 : 50;
   attribution_storage_.AsyncCall(&AttributionStorage::StoreSource)
-      .WithArgs(std::move(source));
+      .WithArgs(std::move(source), deactivated_source_return_limit)
+      .Then(base::BindOnce(
+          [](base::WeakPtr<AttributionManagerImpl> manager,
+             std::vector<AttributionStorage::DeactivatedSource>
+                 deactivated_sources) {
+            if (!manager)
+              return;
+
+            manager->NotifySourcesChanged();
+
+            for (const auto& source : deactivated_sources) {
+              manager->NotifySourceDeactivated(source);
+            }
+          },
+          weak_factory_.GetWeakPtr()));
 }
 
 void AttributionManagerImpl::HandleTrigger(StorableTrigger trigger) {
+  GetContentClient()->browser()->FlushBackgroundAttributions(
+      base::BindOnce(&AttributionManagerImpl::HandleTriggerInternal,
+                     weak_factory_.GetWeakPtr(), std::move(trigger)));
+}
+
+void AttributionManagerImpl::HandleTriggerInternal(StorableTrigger trigger) {
   attribution_storage_.AsyncCall(&AttributionStorage::MaybeCreateAndStoreReport)
       .WithArgs(std::move(trigger))
       .Then(base::BindOnce(&AttributionManagerImpl::OnReportStored,
@@ -221,13 +258,26 @@ void AttributionManagerImpl::HandleTrigger(StorableTrigger trigger) {
     GetAndQueueReportsForNextInterval();
 }
 
-void AttributionManagerImpl::OnReportStored(
-    AttributionStorage::CreateReportResult result) {
+void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
   RecordCreateReportStatus(result.status());
+
+  if (result.status() != CreateReportResult::Status::kInternalError) {
+    // Sources are changed here because storing a report can cause sources to be
+    // deleted or become associated with a dedup key.
+    NotifySourcesChanged();
+    NotifyReportsChanged();
+  }
+
   if (!result.dropped_report().has_value())
     return;
 
-  session_storage_.AddDroppedReport(std::move(result));
+  if (absl::optional<AttributionStorage::DeactivatedSource> source =
+          result.GetDeactivatedSource()) {
+    NotifySourceDeactivated(*source);
+  }
+
+  for (Observer& observer : observers_)
+    observer.OnReportDropped(result);
 }
 
 void AttributionManagerImpl::GetActiveSourcesForWebUI(
@@ -239,15 +289,10 @@ void AttributionManagerImpl::GetActiveSourcesForWebUI(
 }
 
 void AttributionManagerImpl::GetPendingReportsForWebUI(
-    base::OnceCallback<void(std::vector<AttributionReport>)> callback,
-    base::Time max_report_time) {
+    base::OnceCallback<void(std::vector<AttributionReport>)> callback) {
   const int kMaxReports = 1000;
-  GetAndHandleReports(std::move(callback), max_report_time, kMaxReports);
-}
-
-const AttributionSessionStorage& AttributionManagerImpl::GetSessionStorage()
-    const {
-  return session_storage_;
+  GetAndHandleReports(std::move(callback),
+                      /*max_report_time=*/base::Time::Max(), kMaxReports);
 }
 
 void AttributionManagerImpl::SendReportsForWebUI(base::OnceClosure done) {
@@ -266,16 +311,18 @@ void AttributionManagerImpl::ClearData(
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter,
     base::OnceClosure done) {
-  session_storage_.Reset();
   reporter_->RemoveAllReportsFromQueue();
   attribution_storage_.AsyncCall(&AttributionStorage::ClearData)
       .WithArgs(delete_begin, delete_end, std::move(filter))
       .Then(base::BindOnce(
           [](base::OnceClosure done,
              base::WeakPtr<AttributionManagerImpl> manager) {
-            std::move(done).Run();
-            if (manager)
+            if (manager) {
               manager->GetAndQueueReportsForNextInterval();
+              manager->NotifySourcesChanged();
+              manager->NotifyReportsChanged();
+            }
+            std::move(done).Run();
           },
           std::move(done), weak_factory_.GetWeakPtr()));
 }
@@ -378,7 +425,7 @@ void AttributionManagerImpl::AddReportsToReporter(
   reporter_->AddReportsToQueue(std::move(reports));
 }
 
-void AttributionManagerImpl::OnReportSent(SentReportInfo info) {
+void AttributionManagerImpl::OnReportSent(SentReport info) {
   DCHECK(info.report.conversion_id.has_value());
 
   // If there was a transient failure, and another attempt is allowed,
@@ -386,7 +433,7 @@ void AttributionManagerImpl::OnReportSent(SentReportInfo info) {
   // from storage if it wasn't skipped due to the browser being offline.
 
   bool should_retry = false;
-  if (info.status == SentReportInfo::Status::kTransientFailure) {
+  if (info.status == SentReport::Status::kTransientFailure) {
     info.report.failed_send_attempts++;
     const absl::optional<base::TimeDelta> delay =
         attribution_policy_->GetFailedReportDelay(
@@ -414,10 +461,12 @@ void AttributionManagerImpl::OnReportSent(SentReportInfo info) {
               // using `AddReportsToReporter()` to avoid having to remove and
               // then immediately re-add the report ID to the set.
               manager->reporter_->AddReportsToQueue({std::move(report)});
+
+              manager->NotifyReportsChanged();
             },
             weak_factory_.GetWeakPtr(), info.report));
-  } else if (info.status == SentReportInfo::Status::kOffline ||
-             info.status == SentReportInfo::Status::kRemovedFromQueue) {
+  } else if (info.status == SentReport::Status::kOffline ||
+             info.status == SentReport::Status::kRemovedFromQueue) {
     // Remove the ID from the set so that subsequent attempts will not be
     // deduplicated.
     size_t num_removed = queued_reports_.erase(info.report.conversion_id);
@@ -437,6 +486,8 @@ void AttributionManagerImpl::OnReportSent(SentReportInfo info) {
                 // in order to avoid duplicates.
                 size_t num_removed = manager->queued_reports_.erase(report_id);
                 DCHECK_EQ(num_removed, 1u);
+
+                manager->NotifyReportsChanged();
               }
             },
             weak_factory_.GetWeakPtr(), *info.report.conversion_id));
@@ -460,11 +511,30 @@ void AttributionManagerImpl::OnReportSent(SentReportInfo info) {
   }
 
   // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
-  if (info.status != SentReportInfo::Status::kSent &&
-      info.status != SentReportInfo::Status::kFailure)
+  if (info.status != SentReport::Status::kSent &&
+      info.status != SentReport::Status::kFailure &&
+      info.status != SentReport::Status::kDropped) {
     return;
+  }
 
-  session_storage_.AddSentReport(std::move(info));
+  for (Observer& observer : observers_)
+    observer.OnReportSent(info);
+}
+
+void AttributionManagerImpl::NotifySourcesChanged() {
+  for (Observer& observer : observers_)
+    observer.OnSourcesChanged();
+}
+
+void AttributionManagerImpl::NotifyReportsChanged() {
+  for (Observer& observer : observers_)
+    observer.OnReportsChanged();
+}
+
+void AttributionManagerImpl::NotifySourceDeactivated(
+    const AttributionStorage::DeactivatedSource& source) {
+  for (Observer& observer : observers_)
+    observer.OnSourceDeactivated(source);
 }
 
 }  // namespace content

@@ -406,6 +406,16 @@ CommandHandler.onCommand = function(command) {
       speechProps['phoneticCharacters'] = true;
       current = current.move(cursors.Unit.CHARACTER, dir);
       break;
+    case 'nativeNextCharacter':
+    case 'nativePreviousCharacter':
+      if (DesktopAutomationHandler.instance.textEditHandler) {
+        DesktopAutomationHandler.instance.textEditHandler.injectInferredIntents(
+            [{
+              command: chrome.automation.IntentCommandType.MOVE_SELECTION,
+              textBoundary: chrome.automation.IntentTextBoundaryType.CHARACTER
+            }]);
+      }
+      return true;
     case 'nextWord':
       shouldSetSelection = true;
       didNavigate = true;
@@ -417,6 +427,16 @@ CommandHandler.onCommand = function(command) {
       didNavigate = true;
       current = current.move(cursors.Unit.WORD, dir);
       break;
+    case 'nativeNextWord':
+    case 'nativePreviousWord':
+      if (DesktopAutomationHandler.instance.textEditHandler) {
+        DesktopAutomationHandler.instance.textEditHandler.injectInferredIntents(
+            [{
+              command: chrome.automation.IntentCommandType.MOVE_SELECTION,
+              textBoundary: chrome.automation.IntentTextBoundaryType.WORD_END
+            }]);
+      }
+      return true;
     case 'forward':
     case 'nextLine':
       didNavigate = true;
@@ -586,19 +606,15 @@ CommandHandler.onCommand = function(command) {
       pred = AutomationPredicate.landmark;
       predErrorMsg = 'no_previous_landmark';
       break;
-    case 'right':
-    case 'nextObject':
-      didNavigate = true;
-      current = current.move(cursors.Unit.NODE, Dir.FORWARD);
-      current = CommandHandler.skipLabelOrDescriptionFor_(current, Dir.FORWARD);
-      break;
     case 'left':
     case 'previousObject':
       dir = Dir.BACKWARD;
+      // Falls through.
+    case 'right':
+    case 'nextObject':
       didNavigate = true;
       current = current.move(cursors.Unit.NODE, dir);
-      current =
-          CommandHandler.skipLabelOrDescriptionFor_(current, Dir.BACKWARD);
+      current = CommandHandler.skipLabelOrDescriptionFor_(current, dir);
       break;
     case 'previousGroup':
       skipSync = true;
@@ -773,14 +789,7 @@ CommandHandler.onCommand = function(command) {
       }
       return false;
     case 'contextMenu':
-      if (ChromeVoxState.instance.currentRange) {
-        let actionNode = ChromeVoxState.instance.currentRange.start.node;
-        if (actionNode.role === RoleType.INLINE_TEXT_BOX) {
-          actionNode = actionNode.parent;
-        }
-        actionNode.showContextMenu();
-        return false;
-      }
+      EventGenerator.sendKeyPress(KeyCode.APPS);
       break;
     case 'showHeadingsList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
@@ -893,6 +902,8 @@ CommandHandler.onCommand = function(command) {
       return false;
     // Table commands.
     case 'previousRow': {
+      skipSync = true;
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       const tableOpts = {row: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
@@ -902,6 +913,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'previousCol': {
+      skipSync = true;
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       const tableOpts = {col: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
@@ -911,6 +924,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'nextRow': {
+      skipSync = true;
+      shouldSetSelection = true;
       const tableOpts = {row: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
@@ -919,6 +934,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'nextCol': {
+      skipSync = true;
+      shouldSetSelection = true;
       const tableOpts = {col: true, dir};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
@@ -928,6 +945,8 @@ CommandHandler.onCommand = function(command) {
     } break;
     case 'goToRowFirstCell':
     case 'goToRowLastCell': {
+      skipSync = true;
+      shouldSetSelection = true;
       while (node && node.role !== RoleType.ROW) {
         node = node.parent;
       }
@@ -942,6 +961,8 @@ CommandHandler.onCommand = function(command) {
       }
     } break;
     case 'goToColFirstCell': {
+      skipSync = true;
+      shouldSetSelection = true;
       while (node && node.role !== RoleType.TABLE) {
         node = node.parent;
       }
@@ -958,6 +979,8 @@ CommandHandler.onCommand = function(command) {
       shouldWrap = false;
     } break;
     case 'goToColLastCell': {
+      skipSync = true;
+      shouldSetSelection = true;
       dir = Dir.BACKWARD;
       while (node && node.role !== RoleType.TABLE) {
         node = node.parent;
@@ -986,6 +1009,8 @@ CommandHandler.onCommand = function(command) {
     } break;
     case 'goToFirstCell':
     case 'goToLastCell': {
+      skipSync = true;
+      shouldSetSelection = true;
       while (node && node.role !== RoleType.TABLE) {
         node = node.parent;
       }

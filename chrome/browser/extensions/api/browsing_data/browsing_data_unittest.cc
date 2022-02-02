@@ -4,6 +4,7 @@
 
 #include "base/callback.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -38,14 +39,14 @@ enum OriginTypeMask {
   EXTENSION = chrome_browsing_data_remover::ORIGIN_TYPE_EXTENSION
 };
 
+// TODO(http://crbug.com/1266606): appcache is a noop and should be removed.
 const char kRemoveEverythingArguments[] =
     R"([{"since": 1000}, {
-    "appcache": true, "cache": true, "cookies": true,
-    "downloads": true, "fileSystems": true, "formData": true,
-    "history": true, "indexedDB": true, "localStorage": true,
-    "serverBoundCertificates": true, "passwords": true,
-    "pluginData": true, "serviceWorkers": true, "cacheStorage": true,
-    "webSQL": true
+    "appcache": true, "cache": true, "cookies": true, "downloads": true,
+    "fileSystems": true, "formData": true, "history": true, "indexedDB": true,
+    "localStorage": true, "serverBoundCertificates": true, "passwords": true,
+    "pluginData": true, "serviceWorkers": true, "cacheStorage": true, "webSQL":
+    true
     }])";
 
 class BrowsingDataApiTest : public ExtensionServiceTestBase {
@@ -84,9 +85,9 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
   uint64_t GetAsMask(const base::DictionaryValue* dict,
                      std::string path,
                      uint64_t mask_value) {
-    bool result;
-    EXPECT_TRUE(dict->GetBoolean(path, &result)) << "for " << path;
-    return result ? mask_value : 0;
+    absl::optional<bool> result = dict->FindBoolPath(path);
+    EXPECT_TRUE(result.has_value()) << "for " << path;
+    return result.value() ? mask_value : 0;
   }
 
   void RunBrowsingDataRemoveFunctionAndCompareRemovalMask(
@@ -247,8 +248,6 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     base::DictionaryValue* data_to_remove;
     EXPECT_TRUE(result->GetDictionary("dataToRemove", &data_to_remove));
     uint64_t removal_mask =
-        GetAsMask(data_to_remove, "appcache",
-                  content::BrowsingDataRemover::DATA_TYPE_APP_CACHE) |
         GetAsMask(data_to_remove, "cache",
                   content::BrowsingDataRemover::DATA_TYPE_CACHE) |
         GetAsMask(data_to_remove, "cacheStorage",
@@ -326,7 +325,7 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
  private:
   std::unique_ptr<TestBrowserWindow> browser_window_;
   std::unique_ptr<Browser> browser_;
-  content::BrowsingDataRemover* remover_;
+  raw_ptr<content::BrowsingDataRemover> remover_;
   content::MockBrowsingDataRemoverDelegate delegate_;
 };
 
@@ -336,7 +335,6 @@ TEST_F(BrowsingDataApiTest, RemovalProhibited) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAllowDeletingBrowserHistory, false);
 
-  CheckRemovalPermitted("{\"appcache\": true}", true);
   CheckRemovalPermitted("{\"cache\": true}", true);
   CheckRemovalPermitted("{\"cacheStorage\": true}", true);
   CheckRemovalPermitted("{\"cookies\": true}", true);
@@ -416,8 +414,6 @@ TEST_F(BrowsingDataApiTest, BrowsingDataOriginTypeMask) {
 
 TEST_F(BrowsingDataApiTest, BrowsingDataRemovalMask) {
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
-      "appcache", content::BrowsingDataRemover::DATA_TYPE_APP_CACHE);
-  RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "cache", content::BrowsingDataRemover::DATA_TYPE_CACHE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "cacheStorage", content::BrowsingDataRemover::DATA_TYPE_CACHE_STORAGE);
@@ -447,9 +443,8 @@ TEST_F(BrowsingDataApiTest, BrowsingDataRemovalMask) {
 // Test an arbitrary combination of data types.
 TEST_F(BrowsingDataApiTest, BrowsingDataRemovalMaskCombination) {
   RunBrowsingDataRemoveFunctionAndCompareRemovalMask(
-      "{\"appcache\": true, \"cookies\": true, \"history\": true}",
-      content::BrowsingDataRemover::DATA_TYPE_APP_CACHE |
-          content::BrowsingDataRemover::DATA_TYPE_COOKIES |
+      "{\"cookies\": true, \"history\": true}",
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES |
           chrome_browsing_data_remover::DATA_TYPE_HISTORY);
 }
 
@@ -500,8 +495,6 @@ TEST_F(BrowsingDataApiTest, BrowsingDataRemovalInputFromSettings) {
 }
 
 TEST_F(BrowsingDataApiTest, ShortcutFunctionRemovalMask) {
-  RunAndCompareRemovalMask<BrowsingDataRemoveAppcacheFunction>(
-      content::BrowsingDataRemover::DATA_TYPE_APP_CACHE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCacheFunction>(
       content::BrowsingDataRemover::DATA_TYPE_CACHE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCacheStorageFunction>(

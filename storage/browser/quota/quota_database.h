@@ -16,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -91,16 +90,17 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
 
   ~QuotaDatabase();
 
-  // Returns whether the record could be found.
-  bool GetHostQuota(const std::string& host,
-                    blink::mojom::StorageType type,
-                    int64_t* quota);
+  // Returns quota if entry is found. Returns QuotaError::kNotFound no entry if
+  // found.
+  QuotaErrorOr<int64_t> GetHostQuota(const std::string& host,
+                                     blink::mojom::StorageType type);
 
   // Returns whether the operation succeeded.
-  bool SetHostQuota(const std::string& host,
-                    blink::mojom::StorageType type,
-                    int64_t quota);
-  bool DeleteHostQuota(const std::string& host, blink::mojom::StorageType type);
+  QuotaError SetHostQuota(const std::string& host,
+                          blink::mojom::StorageType type,
+                          int64_t quota);
+  QuotaError DeleteHostQuota(const std::string& host,
+                             blink::mojom::StorageType type);
 
   // Gets the bucket with `bucket_name` for the `storage_key` for StorageType
   // kTemporary and returns the BucketInfo. If one doesn't exist, it creates
@@ -182,11 +182,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   bool GetBucketInfo(BucketId bucket_id, BucketTableEntry* entry);
 
   // Removes all buckets for `storage_key` with `type`.
-  bool DeleteStorageKeyInfo(const blink::StorageKey& storage_key,
-                            blink::mojom::StorageType type);
+  QuotaError DeleteStorageKeyInfo(const blink::StorageKey& storage_key,
+                                  blink::mojom::StorageType type);
 
   // Deletes the specified bucket.
-  bool DeleteBucketInfo(BucketId bucket_id);
+  QuotaError DeleteBucketInfo(BucketId bucket_id);
 
   // Returns the BucketLocator for the least recently used bucket. Will exclude
   // buckets with ids in `bucket_exceptions` and origins that have the special
@@ -263,17 +263,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   bool EnsureDatabaseVersion();
   bool ResetSchema();
   bool UpgradeSchema(int current_version);
-  bool InsertOrReplaceHostQuota(const std::string& host,
-                                blink::mojom::StorageType type,
-                                int64_t quota);
 
   bool CreateSchema();
   bool CreateTable(const TableSchema& table);
   bool CreateIndex(const IndexSchema& index);
 
+  // Dumps table entries for chrome://quota-internals page.
   // `callback` may return false to stop reading data.
-  bool DumpQuotaTable(const QuotaTableCallback& callback);
-  bool DumpBucketTable(const BucketTableCallback& callback);
+  QuotaError DumpQuotaTable(const QuotaTableCallback& callback);
+  QuotaError DumpBucketTable(const BucketTableCallback& callback);
 
   // Adds a new bucket entry in the buckets table. Will return a
   // QuotaError::kDatabaseError if the query fails.

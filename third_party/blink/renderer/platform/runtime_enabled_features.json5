@@ -33,7 +33,7 @@
     // shipped stable can have its runtime flag removed soon after.
     status: {
       valid_values: ["stable", "experimental", "test"],
-      valid_keys: ["Android", "Win", "ChromeOS", "Mac", "Lacros"]
+      valid_keys: ["Android", "Win", "ChromeOS", "Mac", "Lacros", "Linux"]
     },
 
     // "implied_by" or "depends_on" specifies relationship to other features:
@@ -159,6 +159,9 @@
       implied_by: ["Fledge", "Parakeet"],
     },
     {
+      name: "AdInterestGroupAPIRestrictedPolicyByDefault",
+    },
+    {
       name: "AdTagging",
       status: "test",
     },
@@ -191,16 +194,6 @@
     {
       name: "AOMAriaRelationshipProperties",
       status: "experimental",
-    },
-    {
-      // Force disabled if blink::features::kAppCache is disabled, and this
-      // will override any origin trial setting.
-      // Disabled if blink::features::kAppCacheRequireOriginTrial is enabled,
-      // but can be turned back on by the origin trial.
-      // Otherwise, on by default.
-      name: "AppCache",
-      status: "stable",
-      origin_trial_feature_name: "AppCache",
     },
     {
       name: "AppHistory",
@@ -293,6 +286,7 @@
         // platforms. See //services/shape_detection.
         "Android": "stable",
         "ChromeOS": "stable",
+        "Lacros": "stable",
         "Mac": "stable",
         "default": "test",
       },
@@ -313,11 +307,14 @@
       name: "BidiCaretAffinity",
     },
     {
-      name: "BlinkRuntimeCallStats",
+      name: "BlinkExtensionChromeOS",
     },
     {
-      name: "BlockCredentialedSubresources",
-      status: "stable",
+      name: "BlinkExtensionChromeOSWindowManagement",
+      depends_on: ["BlinkExtensionChromeOS"],
+    },
+    {
+      name: "BlinkRuntimeCallStats",
     },
     {
       name: "BlockingFocusWithoutUserActivation",
@@ -356,7 +353,14 @@
       status: "experimental",
     },
     {
+      name: "CanvasContextLostInBackground",
+    },
+    {
       name: "CanvasFormattedText",
+      status: "experimental",
+    },
+    {
+      name: "CanvasHDR",
       status: "experimental",
     },
     {
@@ -391,6 +395,14 @@
       status: "experimental",
     },
     {
+      name: "ClientHintsMetaHTTPEquivAcceptCH",
+      status: "stable",
+    },
+    {
+      name: "ClientHintsMetaNameAcceptCH",
+      status: "experimental",
+    },
+    {
       name: "ClipboardCustomFormats",
       status: "experimental",
     },
@@ -408,10 +420,6 @@
     },
     {
       name: "COLRV1Fonts",
-      status: "experimental",
-    },
-    {
-      name: "CompositeAfterPaint",
       status: "stable",
     },
     {
@@ -462,7 +470,7 @@
     },
     {
       name: "ContainIntrinsicSizeAuto",
-      status: "test",
+      status: "stable",
     },
     {
       name: "ContentIndex",
@@ -554,7 +562,7 @@
       // Support the 'only' keyword for the color-scheme property.
       name: "CSSColorSchemeOnly",
       origin_trial_feature_name: "AutoDarkMode",
-      status: "test",
+      status: "stable",
     },
     {
       name: "CSSColorTypedOM",
@@ -570,6 +578,7 @@
     {
       // https://drafts.csswg.org/css-contain-3/#container-queries
       name: "CSSContainerQueries",
+      status: "test"
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-lengths
@@ -692,6 +701,12 @@
       implied_by: ["MathMLCore"],
     },
     {
+      // Support for Media Queries Level 4 syntax.
+      //
+      // https://drafts.csswg.org/mediaqueries-4/#mq-syntax
+      name: "CSSMediaQueries4",
+    },
+    {
       name: "CSSModules",
       status: "stable",
     },
@@ -762,6 +777,10 @@
       status: "experimental",
     },
     {
+      name: "CSSSelectorFragmentAnchor",
+      status: "experimental",
+    },
+    {
       name: "CSSSnapSize",
       status: "experimental",
     },
@@ -798,10 +817,6 @@
     {
       name: "CSSVariables2TransformValues",
       status: "test",
-    },
-    {
-      name: "CullRectUpdate",
-      implied_by: ["CompositeAfterPaint"],
     },
     {
       name: "CustomElementDefaultStyle",
@@ -994,6 +1009,13 @@
       depends_on: ["DocumentPolicy"],
       status: "experimental"
     },
+    // Prototype implementation of web snapshots - blink integration. Suitable
+    // for local testing, *not* suitable for origin trials. Replacing the
+    // current implementation with the real Blink integration is expected
+    // before M102. See crbug.com/1173534.
+    {
+      name: "ExperimentalWebSnapshots",
+    },
     {
       name: "ExtendedTextMetrics",
       status: "experimental",
@@ -1004,9 +1026,12 @@
     {
       name: "EyeDropperAPI",
       status: {
-        // EyeDropper UI is available only on desktop operating systems.
-        "Android": "test",
-        "default": "stable",
+        // EyeDropper UI is available only on Windows, Mac, and Linux. This list
+        // should match the supported operating systems for the kEyeDropper
+        // base::Feature.
+        "Mac": "stable",
+        "Win": "stable",
+        "Linux": "stable",
       },
     },
     {
@@ -1016,10 +1041,6 @@
     {
       name: "FakeNoAllocDirectCallForTesting",
       status: "test",
-    },
-    {
-      name: "FeaturePolicyForClientHints",
-      status: "stable",
     },
     {
       name: "FeaturePolicyReporting",
@@ -1127,7 +1148,7 @@
     },
     {
       name: "ForceTallerSelectPopup",
-      status: {"ChromeOS": "stable"},
+      status: {"ChromeOS": "stable", "Lacros": "stable"},
     },
     {
       name: "FractionalLineHeight",
@@ -1255,12 +1276,13 @@
       // provides a convenient way for testing legacy layout code path in blink
       // unit tests.
       name: "LayoutNG",
-      implied_by: ["BidiCaretAffinity", "CSSContainerQueries"],
+      implied_by: ["BidiCaretAffinity"],
       status: "stable",
     },
     {
       name: "LayoutNGBlockFragmentation",
-      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting"],
+      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
+      status: "test",
     },
     {
       name: "LayoutNGBlockInInline",
@@ -1306,9 +1328,15 @@
       name: "LayoutNGPrinting",
     },
     {
-      name: "LayoutNGTable",
+      name: "LayoutNGSubgrid",
+      depends_on: ["LayoutNGGrid"],
+      status: "test"
+    },
+    {
+      // Block fragmentation support in the table layout algorithm.
+      // https://drafts.csswg.org/css-tables-3/#fragmentation
+      name: "LayoutNGTableFragmentation",
       depends_on: ["LayoutNG"],
-      status: "stable"
     },
     {
       name: "LayoutNGTextCombine",
@@ -1516,10 +1544,6 @@
       name: "NavigatorLanguageInInsecureContext",
       settable_from_internals: true,
       status: "stable",
-    },
-    {
-      // Controlled by blink::features::kNavigatorPluginsFixed.
-      name: "NavigatorPluginsFixed",
     },
     {
       name: "NetInfoDownlinkMax",
@@ -1887,6 +1911,7 @@
     },
     {
       name: "RegionCapture",
+      origin_trial_feature_name: "RegionCapture",
       status: "experimental",
     },
     {
@@ -1902,6 +1927,11 @@
     {
       name: "RemoveMobileViewportDoubleTap",
       status: "stable"
+    },
+    {
+      // The renderpriority attribute feature.
+      // https://github.com/WICG/display-locking/blob/main/explainers/update-rendering.md
+      name: "RenderPriorityAttribute"
     },
     {
       // See https://crbug.com/1012063
@@ -2043,9 +2073,16 @@
     {
       name: "ScrollUnification",
     },
+    // SecurePaymentConfirmation has shipped on some platforms, but its
+    // availability is controlled by the browser process (via the
+    // SecurePaymentConfirmationBrowser feature), as it requires browser
+    // support to function. See //content/public/common/content_features.cc
+    //
+    // The status is set to 'test' here to enable some WPT tests that only
+    // require blink-side support to function.
     {
       name: "SecurePaymentConfirmation",
-      status: "stable",
+      status: "test",
     },
     {
       name: "SecurePaymentConfirmationDebug",
@@ -2221,10 +2258,6 @@
       status: {"Android": "stable"},
     },
     {
-      name: "ThirdPartyOriginTrials",
-      status: "stable",
-    },
-    {
       name: "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
       status: "experimental",
     },
@@ -2245,12 +2278,6 @@
       name: "TouchEventFeatureDetection",
       origin_trial_feature_name: "ForceTouchEventFeatureDetectionForInspector",
       status: "stable",
-    },
-    {
-      name: "TransferableStreams",
-      status: "stable",
-      origin_trial_feature_name: "RTCInsertableStreams",
-      implied_by: ["RTCInsertableStreams"],
     },
     // This is conditionally set if the platform supports translation.
     {
@@ -2319,6 +2346,10 @@
     },
     {
       name: "UserAgentClientHint",
+      status: "stable",
+    },
+    {
+      name: "UserAgentClientHintFullVersionList",
       status: "stable",
     },
     {
@@ -2393,7 +2424,16 @@
       status: "experimental",
     },
     {
+      name: "WebAppDarkMode",
+      status: "experimental",
+    },
+    {
+      name: "WebAppHandleLinks",
+      status: "experimental",
+    },
+    {
       name: "WebAppLaunchHandler",
+      origin_trial_feature_name: "Launch Handler",
       status: "experimental",
     },
     {
@@ -2405,8 +2445,6 @@
     },
     {
       name: "WebAppLinkCapturing",
-      origin_trial_feature_name: "WebAppLinkCapturing",
-      origin_trial_os: ["chromeos"],
     },
     {
       // This flag enables the Manifest parser to handle id field.
@@ -2677,6 +2715,11 @@
     {
       name: "WebXRViewportScale",
       depends_on: ["WebXRARModule"],
+      status: "stable",
+    },
+    // New behavior for window.open's interpretation of the windowFeatures parameter.
+    {
+      name: "WindowOpenNewPopupBehavior",
       status: "stable",
     },
     // Extends window placement functionality for multi-screen devices. Also

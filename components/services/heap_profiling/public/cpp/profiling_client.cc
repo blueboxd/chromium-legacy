@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/lazy_instance.h"
+#include "base/notreached.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -65,10 +67,9 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params,
       {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce([]() {
-        bool can_unwind =
-            base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
-                ->can_unwind_stack_frames();
-        DCHECK(can_unwind);
+        base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
+            ->can_unwind_stack_frames();
+        // Ignore failures since the default unwind tables are used as backup.
       }),
       base::BindOnce(&ProfilingClient::StartProfilingInternal,
                      base::Unretained(this), std::move(params),
@@ -132,6 +133,9 @@ mojom::AllocatorType ConvertType(
       return mojom::AllocatorType::kMalloc;
     case base::PoissonAllocationSampler::AllocatorType::kPartitionAlloc:
       return mojom::AllocatorType::kPartitionAlloc;
+    case base::PoissonAllocationSampler::AllocatorType::kManualForTesting:
+      NOTREACHED();
+      return mojom::AllocatorType::kMalloc;
   }
 }
 

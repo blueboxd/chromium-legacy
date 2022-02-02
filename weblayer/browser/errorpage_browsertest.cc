@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "base/macros.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -116,7 +116,7 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
     }
 
    private:
-    NavigationController* controller_;
+    raw_ptr<NavigationController> controller_;
   };
 };
 

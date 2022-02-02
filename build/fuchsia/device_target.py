@@ -180,15 +180,17 @@ class DeviceTarget(target.Target):
             '1',  # Exit early as soon as a host is found.
             self._node_name
         ]
-        proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=devnull)
+        proc = subprocess.Popen(command,
+                                stdout=subprocess.PIPE,
+                                stderr=devnull,
+                                text=True)
       else:
         proc = self.RunFFXCommand(['target', 'list', '-f', 'simple'],
                                   stdout=subprocess.PIPE,
-                                  stderr=devnull)
+                                  stderr=devnull,
+                                  text=True)
 
-    # TODO(crbug.com/1198733): Switch to encoding='utf-8' once we drop Python 2
-    # support.
-    output = set(proc.communicate()[0].decode('utf-8').strip().split('\n'))
+    output = set(proc.communicate()[0].strip().split('\n'))
     if proc.returncode != 0:
       return False
 
@@ -259,7 +261,7 @@ class DeviceTarget(target.Target):
     return (self.GetFileAsString(_ON_DEVICE_PRODUCT_FILE).strip(),
             self.GetFileAsString(_ON_DEVICE_VERSION_FILE).strip())
 
-  def _GetSdkHash():
+  def _GetSdkHash(self):
     """Read version of hash in pre-installed package directory.
     Returns:
       Tuple of (product, version) of image to be installed.
@@ -316,7 +318,7 @@ class DeviceTarget(target.Target):
     # number of attempts. If a device isn't found, wait
     # |BOOT_DISCOVERY_DELAY_SECS| before searching again.
     logging.info('Waiting for device to join network.')
-    for _ in xrange(BOOT_DISCOVERY_ATTEMPTS):
+    for _ in range(BOOT_DISCOVERY_ATTEMPTS):
       if self._Discover():
         break
       time.sleep(BOOT_DISCOVERY_DELAY_SECS)
@@ -342,7 +344,7 @@ class DeviceTarget(target.Target):
     ]
     if self._node_name:
       pave_command.extend(['-n', self._node_name, '-1'])
-    logging.warning(' '.join(pave_command))
+    logging.info(' '.join(pave_command))
     return_code, stdout, stderr = SubprocessCallWithTimeout(pave_command,
                                                             timeout_secs=300)
     if return_code != 0:

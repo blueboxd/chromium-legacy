@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class ZoomControllerTest;
 
@@ -159,6 +160,7 @@ class ZoomController : public content::WebContentsObserver,
   void WebContentsDestroyed() override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
+  void OnPageScaleFactorChanged(float page_scale_factor) override;
 
  protected:
   // Protected for testing.
@@ -195,11 +197,18 @@ class ZoomController : public content::WebContentsObserver,
   // Observer receiving notifications on state changes.
   base::ObserverList<ZoomObserver>::Unchecked observers_;
 
-  content::BrowserContext* browser_context_;
+  raw_ptr<content::BrowserContext> browser_context_;
   // Keep track of the HostZoomMap we're currently subscribed to.
-  content::HostZoomMap* host_zoom_map_;
+  raw_ptr<content::HostZoomMap> host_zoom_map_;
 
   base::CallbackListSubscription zoom_subscription_;
+
+  // Whether the page scale factor was one the last time we notified our
+  // observers of a change to PageScaleFactorIsOne.
+  bool last_page_scale_factor_was_one_ = true;
+
+  // If set, this value is returned in PageScaleFactorIsOne.
+  absl::optional<bool> page_scale_factor_is_one_for_testing_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

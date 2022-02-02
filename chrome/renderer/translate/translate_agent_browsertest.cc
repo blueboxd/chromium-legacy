@@ -9,7 +9,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -40,7 +39,7 @@ namespace {
 
 std::string UpdateGURLScheme(GURL url, const char scheme[]) {
   GURL::Replacements replacements;
-  replacements.SetScheme(scheme, url::Component(0, strlen(scheme)));
+  replacements.SetSchemeStr(scheme);
   return url.ReplaceComponents(replacements).spec();
 }
 
@@ -574,14 +573,6 @@ TEST_F(TranslateAgentBrowserTest, UnsupportedTranslateSchemes) {
   LoadHTMLWithUrlOverride(
       "<html><body>A random page with random content.</body></html>",
       UpdateGURLScheme(url, content::kChromeUIScheme).c_str());
-
-  base::RunLoop().RunUntilIdle();
-  ASSERT_FALSE(fake_translate_driver_.called_new_page_);
-  EXPECT_FALSE(fake_translate_driver_.page_level_translation_critiera_met_);
-
-  LoadHTMLWithUrlOverride(
-      "<html><body>A random page with random content.</body></html>",
-      UpdateGURLScheme(url, url::kFtpScheme).c_str());
 
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(fake_translate_driver_.called_new_page_);

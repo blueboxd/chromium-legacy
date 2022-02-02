@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
@@ -21,17 +22,21 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/audio/snoopable.h"
+#include "services/audio/buildflags.h"
 #include "services/audio/stream_monitor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 class AudioBus;
 class AudioInputStream;
 class AudioManager;
+class Snoopable;
 class UserInputMonitor;
 }  // namespace media
 
 namespace audio {
+class AudioProcessor;
+class DeviceOutputListener;
 class InputStreamActivityMonitor;
 
 // Only do power monitoring for non-mobile platforms to save resources.
@@ -142,6 +147,7 @@ class InputController final : public StreamMonitor {
       SyncWriter* sync_writer,
       media::UserInputMonitor* user_input_monitor,
       InputStreamActivityMonitor* activity_monitor,
+      DeviceOutputListener* device_output_listener,
       const media::AudioParameters& params,
       const std::string& device_id,
       bool agc_is_enabled);
@@ -190,6 +196,7 @@ class InputController final : public StreamMonitor {
                   SyncWriter* sync_writer,
                   media::UserInputMonitor* user_input_monitor,
                   InputStreamActivityMonitor* activity_monitor,
+                  DeviceOutputListener* device_output_listener,
                   const media::AudioParameters& params,
                   StreamType type);
 
@@ -245,23 +252,27 @@ class InputController final : public StreamMonitor {
 
   // Contains the InputController::EventHandler which receives state
   // notifications from this class.
-  EventHandler* const handler_;
+  const raw_ptr<EventHandler> handler_;
 
   // Pointer to the audio input stream object.
   // Only used on the audio thread.
-  media::AudioInputStream* stream_ = nullptr;
+  raw_ptr<media::AudioInputStream> stream_ = nullptr;
 
   // SyncWriter is used only in low-latency mode for synchronous writing.
-  SyncWriter* const sync_writer_;
+  const raw_ptr<SyncWriter> sync_writer_;
 
   StreamType type_;
 
   double max_volume_ = 0.0;
 
-  media::UserInputMonitor* const user_input_monitor_;
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+  std::unique_ptr<AudioProcessor> audio_processor_;
+#endif
+
+  const raw_ptr<media::UserInputMonitor> user_input_monitor_;
 
   // Notified when the stream starts/stops recording.
-  InputStreamActivityMonitor* const activity_monitor_;
+  const raw_ptr<InputStreamActivityMonitor> activity_monitor_;
 
 #if defined(AUDIO_POWER_MONITORING)
   // Whether the silence state and microphone levels should be checked and sent

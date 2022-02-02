@@ -9,7 +9,6 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
-@class BubblePresenter;
 @class ContentSuggestionsSectionInformation;
 @protocol ContentSuggestionsActionHandler;
 @protocol ContentSuggestionsCommands;
@@ -17,11 +16,8 @@
 @protocol ContentSuggestionsHeaderControlling;
 @protocol ContentSuggestionsMenuProvider;
 @protocol ContentSuggestionsViewControllerAudience;
-@protocol DiscoverFeedHeaderChanging;
-@protocol DiscoverFeedMenuCommands;
 @protocol SnackbarCommands;
 @protocol SuggestedContent;
-@protocol ThemeChangeDelegate;
 
 // CollectionViewController to display the suggestions items.
 @interface ContentSuggestionsViewController : CollectionViewController
@@ -43,11 +39,6 @@
 @property(nonatomic, readonly)
     CollectionViewModel<CollectionViewItem<SuggestedContent>*>*
         collectionViewModel;
-// Delegate for handling theme changes (dark/light theme).
-@property(nonatomic, weak) id<ThemeChangeDelegate> themeChangeDelegate;
-@property(nonatomic, weak) id<DiscoverFeedMenuCommands> discoverFeedMenuHandler;
-@property(nonatomic, weak, readonly) id<DiscoverFeedHeaderChanging>
-    discoverFeedHeaderDelegate;
 // Whether or not the contents section should be hidden completely.
 @property(nonatomic, assign) BOOL contentSuggestionsEnabled;
 // Provides information about the content suggestions header. Used to get the
@@ -60,9 +51,6 @@
 @property(nonatomic, weak) id<ContentSuggestionsActionHandler> handler;
 // Provider of menu configurations for the contentSuggestions component.
 @property(nonatomic, weak) id<ContentSuggestionsMenuProvider> menuProvider;
-
-// Bubble presenter for displaying IPH bubbles relating to the NTP.
-@property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
 - (void)setDataSource:(id<ContentSuggestionsDataSource>)dataSource;
 - (void)setDispatcher:(id<SnackbarCommands>)dispatcher;

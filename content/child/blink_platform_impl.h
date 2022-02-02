@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -27,12 +26,12 @@ class WebCryptoImpl;
 class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
  public:
   BlinkPlatformImpl();
-  explicit BlinkPlatformImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+  BlinkPlatformImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
+      base::PlatformThreadId io_thread_id);
   ~BlinkPlatformImpl() override;
 
   // blink::Platform implementation.
-  bool IsURLSupportedForAppCache(const blink::WebURL& url) override;
   bool IsURLSavableForSavableResource(const blink::WebURL& url) override;
   size_t MaxDecodedImageBytes() override;
   bool IsLowEndDevice() override;
@@ -52,11 +51,13 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   blink::ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker()
       override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;
+  base::PlatformThreadId GetIOThreadId() const override;
   std::unique_ptr<NestedMessageLoopRunner> CreateNestedMessageLoopRunner()
       const override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+  base::PlatformThreadId io_thread_id_;
   const scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_proxy_;
   webcrypto::WebCryptoImpl web_crypto_;

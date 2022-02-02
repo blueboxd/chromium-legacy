@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
@@ -19,10 +19,13 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "media/base/media_switches.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
+
+using ::testing::Optional;
 
 base::Time GetReferenceTime() {
   base::Time::Exploded exploded_reference_time;
@@ -59,7 +62,7 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
   base::SimpleTestClock test_clock;
 
  protected:
-  MediaEngagementScore* score_;
+  raw_ptr<MediaEngagementScore> score_;
 
   void VerifyScore(MediaEngagementScore* score,
                    int expected_visits,
@@ -124,6 +127,18 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(details->last_media_playback_time,
               score->last_media_playback_time().ToJsTime());
   }
+};
+
+class MediaEngagementScoreWithOverrideFieldTrialsTest
+    : public MediaEngagementScoreTest {
+ public:
+  void SetUp() override {
+    MediaEngagementScoreTest::SetUp();
+    SetScore(20, 16);
+    // Raise the upper threshold. Since the score was already considered high
+    // it should still be considered high.
+    OverrideFieldTrial(5, 0.7, 0.9);
+  }
 
   void OverrideFieldTrial(int min_visits,
                           double lower_threshold,
@@ -151,6 +166,8 @@ class MediaEngagementScoreTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
+  // Has to be initialized at the test harness level, not at the level of
+  // individual tests.
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
@@ -270,7 +287,6 @@ TEST_F(MediaEngagementScoreTest, ContentSettings) {
   int stored_visits;
   int stored_media_playbacks;
   absl::optional<double> stored_last_media_playback_time;
-  bool stored_has_high_score;
   std::unique_ptr<base::DictionaryValue> values =
       base::DictionaryValue::From(settings_map->GetWebsiteSetting(
           origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
@@ -280,8 +296,9 @@ TEST_F(MediaEngagementScoreTest, ContentSettings) {
                      &stored_media_playbacks);
   stored_last_media_playback_time =
       values->FindDoubleKey(MediaEngagementScore::kLastMediaPlaybackTimeKey);
-  values->GetBoolean(MediaEngagementScore::kHasHighScoreKey,
-                     &stored_has_high_score);
+
+  EXPECT_THAT(values->FindBoolPath(MediaEngagementScore::kHasHighScoreKey),
+              Optional(true));
   EXPECT_EQ(stored_visits, example_num_visits + 1);
   EXPECT_EQ(stored_media_playbacks, example_media_playbacks + 2);
   EXPECT_EQ(*stored_last_media_playback_time,
@@ -385,10 +402,8 @@ TEST_F(MediaEngagementScoreTest, HighScoreUpdated) {
             origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
             nullptr));
 
-    bool stored_high_score = false;
-    dict->GetBoolean(MediaEngagementScore::kHasHighScoreKey,
-                     &stored_high_score);
-    EXPECT_FALSE(stored_high_score);
+    EXPECT_THAT(dict->FindBoolPath(MediaEngagementScore::kHasHighScoreKey),
+                Optional(false));
   }
 }
 
@@ -417,7 +432,7 @@ TEST_F(MediaEngagementScoreTest, HighScoreThreshold) {
   EXPECT_FALSE(score_->high_score());
 }
 
-TEST_F(MediaEngagementScoreTest, OverrideFieldTrial) {
+TEST_F(MediaEngagementScoreTest, DefaultValues) {
   EXPECT_EQ(20, MediaEngagementScore::GetScoreMinVisits());
   EXPECT_EQ(0.2, MediaEngagementScore::GetHighScoreLowerThreshold());
   EXPECT_EQ(0.3, MediaEngagementScore::GetHighScoreUpperThreshold());
@@ -425,10 +440,16 @@ TEST_F(MediaEngagementScoreTest, OverrideFieldTrial) {
   SetScore(20, 16);
   EXPECT_EQ(0.8, score_->actual_score());
   EXPECT_TRUE(score_->high_score());
+}
 
-  // Raise the upper threshold, since the score was already considered high we
-  // should still be high.
-  OverrideFieldTrial(5, 0.7, 0.9);
+// TODO(crbug.com/1276910): Consistently failing on Linux TSan Tests.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_OverrideFieldTrial DISABLED_OverrideFieldTrial
+#else
+#define MAYBE_OverrideFieldTrial OverrideFieldTrial
+#endif
+TEST_F(MediaEngagementScoreWithOverrideFieldTrialsTest,
+       MAYBE_OverrideFieldTrial) {
   EXPECT_TRUE(score_->high_score());
   EXPECT_EQ(0.7, MediaEngagementScore::GetHighScoreLowerThreshold());
   EXPECT_EQ(0.9, MediaEngagementScore::GetHighScoreUpperThreshold());
@@ -445,12 +466,17 @@ TEST_F(MediaEngagementScoreTest, OverrideFieldTrial) {
   EXPECT_EQ(25, MediaEngagementScore::GetScoreMinVisits());
 }
 
+class MediaEngagementScoreWithHTTPSOnlyTest : public MediaEngagementScoreTest {
+ private:
+  // Has to be initialized at the test harness level, not at the level of
+  // individual tests.
+  base::test::ScopedFeatureList scoped_feature_list_{
+      /*enable_feature=*/media::kMediaEngagementHTTPSOnly};
+};
+
 // Test that scores are read / written correctly from / to populated score
 // dictionaries.
-TEST_F(MediaEngagementScoreTest, PopulatedDictionary_HTTPSOnly) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(media::kMediaEngagementHTTPSOnly);
-
+TEST_F(MediaEngagementScoreWithHTTPSOnlyTest, PopulatedDictionary_HTTPSOnly) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetInteger(MediaEngagementScore::kVisitsKey, 20);
   dict->SetInteger(MediaEngagementScore::kMediaPlaybacksKey, 12);

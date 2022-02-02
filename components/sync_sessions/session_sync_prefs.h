@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -32,7 +32,7 @@ class SessionSyncPrefs {
   void SetLegacySyncSessionsGUIDForTesting(const std::string& guid);
 
  private:
-  PrefService* const pref_service_;
+  const raw_ptr<PrefService> pref_service_;
 };
 
 }  // namespace sync_sessions

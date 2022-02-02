@@ -22,7 +22,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
-#include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
@@ -231,11 +230,6 @@ ClockState GetClockState(
   } else if (now_system > build_time + base::Days(365)) {
     build_time_state = CLOCK_STATE_FUTURE;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.network3",
-                            network_state, NETWORK_CLOCK_STATE_MAX);
-  UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.clockstate.build_time",
-                            build_time_state, CLOCK_STATE_MAX);
 
   switch (network_state) {
     case NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST:

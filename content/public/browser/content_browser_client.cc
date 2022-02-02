@@ -78,7 +78,7 @@
 namespace content {
 
 std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
-    const MainFunctionParams& parameters) {
+    MainFunctionParams parameters) {
   return nullptr;
 }
 
@@ -261,6 +261,10 @@ bool ContentBrowserClient::ShouldSubframesTryToReuseExistingProcess(
   return true;
 }
 
+bool ContentBrowserClient::ShouldAllowNoLongerUsedProcessToExit() {
+  return true;
+}
+
 bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
     const GURL& current_effective_url,
@@ -370,6 +374,11 @@ AllowServiceWorkerResult ContentBrowserClient::AllowServiceWorker(
     BrowserContext* context) {
   return AllowServiceWorkerResult::Yes();
 }
+
+void ContentBrowserClient::WillStartServiceWorker(
+    BrowserContext* context,
+    const GURL& script_url,
+    RenderProcessHost* render_process_host) {}
 
 bool ContentBrowserClient::AllowSharedWorker(
     const GURL& worker_url,
@@ -874,7 +883,7 @@ void ContentBrowserClient::ConfigureNetworkContextParams(
     network::mojom::NetworkContextParams* network_context_params,
     cert_verifier::mojom::CertVerifierCreationParams*
         cert_verifier_creation_params) {
-  network_context_params->user_agent = GetUserAgent();
+  network_context_params->user_agent = GetUserAgentBasedOnPolicy(context);
   network_context_params->accept_language = "en-us,en";
 }
 
@@ -1066,6 +1075,11 @@ std::string ContentBrowserClient::GetUserAgent() {
   return std::string();
 }
 
+std::string ContentBrowserClient::GetUserAgentBasedOnPolicy(
+    content::BrowserContext* content) {
+  return GetUserAgent();
+}
+
 std::string ContentBrowserClient::GetReducedUserAgent() {
   return GetUserAgent();
 }
@@ -1177,6 +1191,14 @@ void ContentBrowserClient::IsClipboardPasteContentAllowed(
   std::move(callback).Run(ClipboardPasteContentAllowed(true));
 }
 
+bool ContentBrowserClient::IsClipboardCopyAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url,
+    size_t data_size_in_bytes,
+    std::u16string& replacement_data) {
+  return true;
+}
+
 bool ContentBrowserClient::CanEnterFullscreenWithoutUserActivation() {
   return false;
 }
@@ -1265,6 +1287,13 @@ void ContentBrowserClient::ShowDirectSocketsConnectionDialog(
 bool ContentBrowserClient::IsFindInPageDisabledForOrigin(
     const url::Origin& origin) {
   return false;
+}
+
+void ContentBrowserClient::OnWebContentsCreated(WebContents* web_contents) {}
+
+void ContentBrowserClient::FlushBackgroundAttributions(
+    base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 }  // namespace content

@@ -23,12 +23,8 @@ public class PaymentFeatureList {
     public static final String GPAY_APP_DYNAMIC_UPDATE = "GPayAppDynamicUpdate";
     public static final String SECURE_PAYMENT_CONFIRMATION = "SecurePaymentConfirmationBrowser";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
-    public static final String STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT =
-            "StrictHasEnrolledAutofillInstrument";
     public static final String PAYMENT_REQUEST_BASIC_CARD = "PaymentRequestBasicCard";
     public static final String WEB_PAYMENTS = "WebPayments";
-    public static final String WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP =
-            "AlwaysAllowJustInTimePaymentApp";
     public static final String WEB_PAYMENTS_APP_STORE_BILLING = "AppStoreBilling";
     public static final String WEB_PAYMENTS_APP_STORE_BILLING_DEBUG = "AppStoreBillingDebug";
     public static final String WEB_PAYMENTS_EXPERIMENTAL_FEATURES =

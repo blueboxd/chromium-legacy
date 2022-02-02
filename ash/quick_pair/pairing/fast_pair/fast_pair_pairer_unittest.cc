@@ -12,16 +12,21 @@
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/common/pair_failure.h"
 #include "ash/quick_pair/common/protocol.h"
-#include "ash/quick_pair/pairing/fast_pair/fake_fast_pair_gatt_service_client.h"
-#include "ash/quick_pair/pairing/fast_pair/fast_pair_data_encryptor.h"
-#include "ash/quick_pair/pairing/fast_pair/fast_pair_data_encryptor_impl.h"
-#include "ash/quick_pair/pairing/fast_pair/fast_pair_gatt_service_client.h"
-#include "ash/quick_pair/pairing/fast_pair/fast_pair_gatt_service_client_impl.h"
+#include "ash/quick_pair/fast_pair_handshake/fake_fast_pair_data_encryptor.h"
+#include "ash/quick_pair/fast_pair_handshake/fake_fast_pair_gatt_service_client.h"
+#include "ash/quick_pair/fast_pair_handshake/fake_fast_pair_handshake.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_data_encryptor.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_data_encryptor_impl.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_gatt_service_client.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_gatt_service_client_impl.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake.h"
+#include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_lookup.h"
 #include "ash/quick_pair/repository/fake_fast_pair_repository.h"
 #include "ash/services/quick_pair/public/cpp/decrypted_passkey.h"
 #include "ash/services/quick_pair/public/cpp/decrypted_response.h"
 #include "ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -127,7 +132,7 @@ class FakeBluetoothAdapter
 class FakeBluetoothDevice
     : public testing::NiceMock<device::MockBluetoothDevice> {
  public:
-  FakeBluetoothDevice(FakeBluetoothAdapter* adapter)
+  explicit FakeBluetoothDevice(FakeBluetoothAdapter* adapter)
       : testing::NiceMock<device::MockBluetoothDevice>(
             adapter,
             0,
@@ -170,122 +175,12 @@ class FakeBluetoothDevice
 namespace ash {
 namespace quick_pair {
 
-class FastPairFakeDataEncryptor : public FastPairDataEncryptor {
- public:
-  const std::array<uint8_t, kBlockSizeBytes> EncryptBytes(
-      const std::array<uint8_t, kBlockSizeBytes>& bytes_to_encrypt) override {
-    return encrypted_bytes_;
-  }
-
-  const absl::optional<std::array<uint8_t, 64>>& GetPublicKey() override {
-    if (public_key_) {
-      static absl::optional<std::array<uint8_t, 64>> val = kPublicKey;
-      return val;
-    }
-
-    static absl::optional<std::array<uint8_t, 64>> val = absl::nullopt;
-    return val;
-  }
-
-  void SetPublicKey() { public_key_ = true; }
-
-  void ParseDecryptedResponse(
-      const std::vector<uint8_t>& encrypted_response_bytes,
-      base::OnceCallback<void(const absl::optional<DecryptedResponse>&)>
-          callback) override {
-    std::move(callback).Run(response_);
-  }
-
-  void ParseDecryptedPasskey(
-      const std::vector<uint8_t>& encrypted_passkey_bytes,
-      base::OnceCallback<void(const absl::optional<DecryptedPasskey>&)>
-          callback) override {
-    std::move(callback).Run(passkey_);
-  }
-
-  FastPairFakeDataEncryptor() = default;
-  ~FastPairFakeDataEncryptor() override = default;
-
-  void SetEncryptedBytes(std::array<uint8_t, kBlockSizeBytes> encrypted_bytes) {
-    encrypted_bytes_ = std::move(encrypted_bytes);
-  }
-
-  void SetDecryptedResponse(const absl::optional<DecryptedResponse> response) {
-    response_ = response;
-  }
-
-  void SetDecryptedPasskey(const absl::optional<DecryptedPasskey> passkey) {
-    passkey_ = passkey;
-  }
-
- private:
-  bool public_key_ = false;
-  std::array<uint8_t, kBlockSizeBytes> encrypted_bytes_ = {};
-  absl::optional<DecryptedResponse> response_ = absl::nullopt;
-  absl::optional<DecryptedPasskey> passkey_ = absl::nullopt;
-};
-
-class FastPairFakeDataEncryptorImplFactory
-    : public FastPairDataEncryptorImpl::Factory {
- public:
-  void CreateInstance(
-      scoped_refptr<Device> device,
-      base::OnceCallback<void(std::unique_ptr<FastPairDataEncryptor>)>
-          on_get_instance_callback) override {
-    if (!successful_retrieval_) {
-      std::move(on_get_instance_callback).Run(nullptr);
-      return;
-    }
-
-    auto data_encryptor = base::WrapUnique(new FastPairFakeDataEncryptor());
-    data_encryptor_ = data_encryptor.get();
-    std::move(on_get_instance_callback).Run(std::move(data_encryptor));
-  }
-
-  FastPairFakeDataEncryptor* data_encryptor() { return data_encryptor_; }
-
-  ~FastPairFakeDataEncryptorImplFactory() override = default;
-
-  void SetFailedRetrieval() { successful_retrieval_ = false; }
-
- private:
-  FastPairFakeDataEncryptor* data_encryptor_ = nullptr;
-  bool successful_retrieval_ = true;
-};
-
-class FakeFastPairGattServiceClientImplFactory
-    : public FastPairGattServiceClientImpl::Factory {
- public:
-  ~FakeFastPairGattServiceClientImplFactory() override = default;
-
-  FakeFastPairGattServiceClient* fake_fast_pair_gatt_service_client() {
-    return fake_fast_pair_gatt_service_client_;
-  }
-
- private:
-  // FastPairGattServiceClientImpl::Factory:
-  std::unique_ptr<FastPairGattServiceClient> CreateInstance(
-      device::BluetoothDevice* device,
-      scoped_refptr<device::BluetoothAdapter> adapter,
-      base::OnceCallback<void(absl::optional<PairFailure>)>
-          on_initialized_callback) override {
-    auto fake_fast_pair_gatt_service_client =
-        std::make_unique<FakeFastPairGattServiceClient>(
-            device, adapter, std::move(on_initialized_callback));
-    fake_fast_pair_gatt_service_client_ =
-        fake_fast_pair_gatt_service_client.get();
-    return fake_fast_pair_gatt_service_client;
-  }
-
-  FakeFastPairGattServiceClient* fake_fast_pair_gatt_service_client_ = nullptr;
-};
-
 class FastPairPairerTest : public AshTestBase {
  public:
-  void SuccessfulDataEncryptorSetUp(bool fast_pair_v1 = false) {
-    device_ = base::MakeRefCounted<Device>(kMetadataId,
-                                           kBluetoothCanonicalizedAddress,
-                                           Protocol::kFastPairInitial);
+  void SuccessfulDataEncryptorSetUp(bool fast_pair_v1, Protocol protocol) {
+    device_ = base::MakeRefCounted<Device>(
+        kMetadataId, kBluetoothCanonicalizedAddress, protocol);
+    device_->set_classic_address(kBluetoothCanonicalizedAddress);
 
     if (fast_pair_v1) {
       device_->SetAdditionalData(Device::AdditionalDataType::kFastPairVersion,
@@ -302,95 +197,64 @@ class FastPairPairerTest : public AshTestBase {
     fake_bluetooth_device_ptr_ = fake_bluetooth_device_.get();
     adapter_->AddMockDevice(std::move(fake_bluetooth_device_));
 
-    FastPairGattServiceClientImpl::Factory::SetFactoryForTesting(
-        &fast_pair_gatt_service_factory_);
+    gatt_service_client_ = new FakeFastPairGattServiceClient(
+        fake_bluetooth_device_ptr_, adapter_, base::DoNothing());
 
-    FastPairDataEncryptorImpl::Factory::SetFactoryForTesting(
-        &fast_pair_data_encryptor_factory);
+    data_encryptor_ = new FakeFastPairDataEncryptor();
+
+    FastPairHandshakeLookup::SetCreateFunctionForTesting(base::BindRepeating(
+        &FastPairPairerTest::CreateHandshake, base::Unretained(this)));
+    FastPairHandshakeLookup::GetInstance()->Create(adapter_, device_,
+                                                   base::DoNothing());
   }
 
-  void FailedDataEncryptorSetUp() {
-    device_ = base::MakeRefCounted<Device>(kMetadataId,
-                                           kBluetoothCanonicalizedAddress,
-                                           Protocol::kFastPairInitial);
-    adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
+  std::unique_ptr<FastPairHandshake> CreateHandshake(
+      scoped_refptr<Device> device,
+      FastPairHandshake::OnCompleteCallback callback) {
+    auto fake = std::make_unique<FakeFastPairHandshake>(
+        adapter_, device, std::move(callback),
+        base::WrapUnique(data_encryptor_),
+        base::WrapUnique(gatt_service_client_));
 
-    // Need to add a matching mock device to the bluetooth adapter with the
-    // same address to mock the relationship between Device and
-    // device::BluetoothDevice.
-    fake_bluetooth_device_ =
-        std::make_unique<FakeBluetoothDevice>(adapter_.get());
-    adapter_->AddMockDevice(std::move(fake_bluetooth_device_));
+    fake->InvokeCallback();
 
-    FastPairGattServiceClientImpl::Factory::SetFactoryForTesting(
-        &fast_pair_gatt_service_factory_);
-
-    fast_pair_data_encryptor_factory.SetFailedRetrieval();
-
-    FastPairDataEncryptorImpl::Factory::SetFactoryForTesting(
-        &fast_pair_data_encryptor_factory);
-  }
-
-  void RunOnGattClientInitializedCallback(
-      absl::optional<PairFailure> failure = absl::nullopt) {
-    fast_pair_gatt_service_factory_.fake_fast_pair_gatt_service_client()
-        ->RunOnGattClientInitializedCallback(failure);
+    return fake;
   }
 
   void SetDecryptResponseForIncorrectMessageType() {
     DecryptedResponse response(FastPairMessageType::kSeekersPasskey,
                                kAddressBytes, kRequestSaltBytes);
-    fast_pair_data_encryptor_factory.data_encryptor()->SetDecryptedResponse(
-        response);
+    data_encryptor_->response(response);
   }
 
   void SetDecryptPasskeyForIncorrectMessageType() {
     DecryptedPasskey passkey(FastPairMessageType::kKeyBasedPairingResponse,
                              kValidPasskey, kPasskeySaltBytes);
-    fast_pair_data_encryptor_factory.data_encryptor()->SetDecryptedPasskey(
-        passkey);
+    data_encryptor_->passkey(passkey);
   }
 
   void SetDecryptPasskeyForPasskeyMismatch() {
     DecryptedPasskey passkey(FastPairMessageType::kProvidersPasskey,
                              kInvalidPasskey, kPasskeySaltBytes);
-    fast_pair_data_encryptor_factory.data_encryptor()->SetDecryptedPasskey(
-        passkey);
+    data_encryptor_->passkey(passkey);
   }
 
   void SetDecryptPasskeyForSuccess() {
     DecryptedPasskey passkey(FastPairMessageType::kProvidersPasskey,
                              kValidPasskey, kPasskeySaltBytes);
-    fast_pair_data_encryptor_factory.data_encryptor()->SetDecryptedPasskey(
-        passkey);
-  }
-
-  void SetDecryptResponseForSuccess() {
-    DecryptedResponse response(FastPairMessageType::kKeyBasedPairingResponse,
-                               kAddressBytes, kRequestSaltBytes);
-    fast_pair_data_encryptor_factory.data_encryptor()->SetDecryptedResponse(
-        response);
-  }
-
-  void RunWriteResponseCallback(
-      std::vector<uint8_t> data,
-      absl::optional<PairFailure> failure = absl::nullopt) {
-    fast_pair_gatt_service_factory_.fake_fast_pair_gatt_service_client()
-        ->RunWriteResponseCallback(data, failure);
+    data_encryptor_->passkey(passkey);
   }
 
   void RunWritePasskeyCallback(
       std::vector<uint8_t> data,
       absl::optional<PairFailure> failure = absl::nullopt) {
-    fast_pair_gatt_service_factory_.fake_fast_pair_gatt_service_client()
-        ->RunWritePasskeyCallback(data, failure);
+    gatt_service_client_->RunWritePasskeyCallback(data, failure);
   }
 
   void RunWriteAccountKeyCallback(
       absl::optional<device::BluetoothGattService::GattErrorCode> error =
           absl::nullopt) {
-    fast_pair_gatt_service_factory_.fake_fast_pair_gatt_service_client()
-        ->RunWriteAccountKeyCallback(error);
+    gatt_service_client_->RunWriteAccountKeyCallback(error);
   }
 
   void PairFailedCallback(scoped_refptr<Device> device, PairFailure failure) {
@@ -418,9 +282,7 @@ class FastPairPairerTest : public AshTestBase {
         fake_bluetooth_device_ptr_->GetAddress());
   }
 
-  void SetPublicKey() {
-    fast_pair_data_encryptor_factory.data_encryptor()->SetPublicKey();
-  }
+  void SetPublicKey() { data_encryptor_->public_key(kPublicKey); }
 
  protected:
   // This is done on-demand to enable setting up mock expectations first.
@@ -444,108 +306,115 @@ class FastPairPairerTest : public AshTestBase {
       account_key_failure_callback_;
   base::MockCallback<base::OnceCallback<void(scoped_refptr<Device>)>>
       pairing_procedure_complete_;
-  FakeFastPairGattServiceClientImplFactory fast_pair_gatt_service_factory_;
-  FastPairFakeDataEncryptorImplFactory fast_pair_data_encryptor_factory;
   FakeFastPairRepository fast_pair_repository_;
   std::unique_ptr<FastPairPairer> pairer_;
+
+  FakeFastPairGattServiceClient* gatt_service_client_ = nullptr;
+  FakeFastPairDataEncryptor* data_encryptor_ = nullptr;
+
   base::WeakPtrFactory<FastPairPairerTest> weak_ptr_factory_{this};
 };
 
-TEST_F(FastPairPairerTest, NoCallbackIsInvokedOnGattSuccess) {
-  SuccessfulDataEncryptorSetUp();
+TEST_F(FastPairPairerTest, NoCallbackIsInvokedOnGattSuccess_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
   CreatePairer();
-  RunOnGattClientInitializedCallback();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
 }
 
-TEST_F(FastPairPairerTest, PairFailedCallbackIsInvokedOnGattFailure) {
-  SuccessfulDataEncryptorSetUp();
+TEST_F(FastPairPairerTest, NoCallbackIsInvokedOnGattSuccess_Retroactive) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairRetroactive);
   CreatePairer();
-  RunOnGattClientInitializedCallback(PairFailure::kCreateGattConnection);
-  EXPECT_EQ(GetPairFailure(), PairFailure::kCreateGattConnection);
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
 }
 
-TEST_F(FastPairPairerTest, PairFailedCallbackWriteResponseFailed) {
-  SuccessfulDataEncryptorSetUp();
+TEST_F(FastPairPairerTest, NoCallbackIsInvokedOnGattSuccess_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   CreatePairer();
-  RunOnGattClientInitializedCallback();
-  RunWriteResponseCallback({}, PairFailure::kKeyBasedPairingResponseTimeout);
-  EXPECT_EQ(GetPairFailure(), PairFailure::kKeyBasedPairingResponseTimeout);
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
 }
 
-TEST_F(FastPairPairerTest,
-       PairFailedCallbackWriteResponseSuccess) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  RunWriteResponseCallback(kResponseBytes);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(GetPairFailure(),
-            PairFailure::kKeybasedPairingResponseDecryptFailure);
-}
-
-TEST_F(FastPairPairerTest, PairFailedCallbackIncorrectMessageType) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForIncorrectMessageType();
-  RunWriteResponseCallback(kResponseBytes);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(GetPairFailure(),
-            PairFailure::kIncorrectKeyBasedPairingResponseType);
-}
-
-TEST_F(FastPairPairerTest, SuccessfulDecryptedResponsePairFailure) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest, SuccessfulDecryptedResponsePairFailure_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
   SetPairFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), PairFailure::kPairingConnect);
 }
 
-TEST_F(FastPairPairerTest, SuccessfulDecryptedResponsePairSuccess) {
-  SuccessfulDataEncryptorSetUp();
+TEST_F(FastPairPairerTest, SuccessfulDecryptedResponsePairFailure_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
+  SetPairFailure();
   CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
-  RunWriteResponseCallback(kResponseBytes);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), PairFailure::kPairingConnect);
+}
+
+TEST_F(FastPairPairerTest, SuccessfulDecryptedResponsePairSuccess_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
 }
 
-TEST_F(FastPairPairerTest, SuccessfulDecryptedResponseConnectFailure) {
-  SuccessfulDataEncryptorSetUp();
+TEST_F(FastPairPairerTest, SuccessfulDecryptedResponsePairSuccess_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+}
+
+TEST_F(FastPairPairerTest, SuccessfulDecryptedResponseConnectFailure_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
   SetGetDeviceFailure();
   SetConnectFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), PairFailure::kAddressConnect);
 }
 
-TEST_F(FastPairPairerTest, SuccessfulDecryptedResponseConnectSuccess) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest,
+       SuccessfulDecryptedResponseConnectFailure_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   SetGetDeviceFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  SetConnectFailure();
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), PairFailure::kAddressConnect);
+}
+
+TEST_F(FastPairPairerTest, SuccessfulDecryptedResponseConnectSuccess_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
 }
 
-TEST_F(FastPairPairerTest, ParseDecryptedPasskeyFailure) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest,
+       SuccessfulDecryptedResponseConnectSuccess_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   SetGetDeviceFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+}
+
+TEST_F(FastPairPairerTest, ParseDecryptedPasskeyFailure_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   NotifyConfirmPasskey();
@@ -554,13 +423,24 @@ TEST_F(FastPairPairerTest, ParseDecryptedPasskeyFailure) {
   EXPECT_EQ(GetPairFailure(), PairFailure::kPasskeyPairingCharacteristicWrite);
 }
 
-TEST_F(FastPairPairerTest, ParseDecryptedPasskeyIncorrectMessageType) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest, ParseDecryptedPasskeyFailure_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   SetGetDeviceFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  NotifyConfirmPasskey();
+  base::RunLoop().RunUntilIdle();
+  RunWritePasskeyCallback({}, PairFailure::kPasskeyPairingCharacteristicWrite);
+  EXPECT_EQ(GetPairFailure(), PairFailure::kPasskeyPairingCharacteristicWrite);
+}
+
+TEST_F(FastPairPairerTest, ParseDecryptedPasskeyIncorrectMessageType_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   SetDecryptPasskeyForIncorrectMessageType();
@@ -570,13 +450,26 @@ TEST_F(FastPairPairerTest, ParseDecryptedPasskeyIncorrectMessageType) {
   EXPECT_EQ(GetPairFailure(), PairFailure::kIncorrectPasskeyResponseType);
 }
 
-TEST_F(FastPairPairerTest, ParseDecryptedPasskeyMismatch) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest,
+       ParseDecryptedPasskeyIncorrectMessageType_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   SetGetDeviceFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  SetDecryptPasskeyForIncorrectMessageType();
+  NotifyConfirmPasskey();
+  base::RunLoop().RunUntilIdle();
+  RunWritePasskeyCallback(kResponseBytes);
+  EXPECT_EQ(GetPairFailure(), PairFailure::kIncorrectPasskeyResponseType);
+}
+
+TEST_F(FastPairPairerTest, ParseDecryptedPasskeyMismatch_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   SetDecryptPasskeyForPasskeyMismatch();
@@ -586,13 +479,25 @@ TEST_F(FastPairPairerTest, ParseDecryptedPasskeyMismatch) {
   EXPECT_EQ(GetPairFailure(), PairFailure::kPasskeyMismatch);
 }
 
-TEST_F(FastPairPairerTest, PairedDeviceLost) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest, ParseDecryptedPasskeyMismatch_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   SetGetDeviceFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  SetDecryptPasskeyForPasskeyMismatch();
+  NotifyConfirmPasskey();
+  base::RunLoop().RunUntilIdle();
+  RunWritePasskeyCallback(kResponseBytes);
+  EXPECT_EQ(GetPairFailure(), PairFailure::kPasskeyMismatch);
+}
+
+TEST_F(FastPairPairerTest, PairedDeviceLost_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   SetDecryptPasskeyForSuccess();
@@ -602,13 +507,25 @@ TEST_F(FastPairPairerTest, PairedDeviceLost) {
   EXPECT_EQ(GetPairFailure(), PairFailure::kPairingDeviceLost);
 }
 
-TEST_F(FastPairPairerTest, PairSuccess) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest, PairedDeviceLost_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
   SetGetDeviceFailure();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  SetDecryptPasskeyForSuccess();
+  NotifyConfirmPasskey();
+  base::RunLoop().RunUntilIdle();
+  RunWritePasskeyCallback(kResponseBytes);
+  EXPECT_EQ(GetPairFailure(), PairFailure::kPairingDeviceLost);
+}
+
+TEST_F(FastPairPairerTest, PairSuccess_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   EXPECT_CALL(paired_callback_, Run);
@@ -621,14 +538,29 @@ TEST_F(FastPairPairerTest, PairSuccess) {
   EXPECT_TRUE(IsDevicePaired());
 }
 
-TEST_F(FastPairPairerTest, WriteAccountKey) {
-  SuccessfulDataEncryptorSetUp();
+TEST_F(FastPairPairerTest, PairSuccess_Subsequent) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairSubsequent);
+  SetGetDeviceFailure();
   CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  EXPECT_CALL(paired_callback_, Run);
+  SetDecryptPasskeyForSuccess();
+  SetGetDeviceSuccess();
+  NotifyConfirmPasskey();
+  base::RunLoop().RunUntilIdle();
+  RunWritePasskeyCallback(kResponseBytes);
+  EXPECT_EQ(GetPairFailure(), absl::nullopt);
+  EXPECT_TRUE(IsDevicePaired());
+}
+
+TEST_F(FastPairPairerTest, WriteAccountKey_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
   SetGetDeviceFailure();
   SetPublicKey();
-  RunWriteResponseCallback(kResponseBytes);
+  CreatePairer();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   EXPECT_CALL(paired_callback_, Run);
@@ -644,14 +576,22 @@ TEST_F(FastPairPairerTest, WriteAccountKey) {
   EXPECT_TRUE(IsAccountKeySavedToFootprints());
 }
 
-TEST_F(FastPairPairerTest, WriteAccountKeyFailure) {
-  SuccessfulDataEncryptorSetUp();
-  CreatePairer();
-  RunOnGattClientInitializedCallback();
-  SetDecryptResponseForSuccess();
+TEST_F(FastPairPairerTest, WriteAccountKey_Retroactive) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairRetroactive);
   SetGetDeviceFailure();
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(pairing_procedure_complete_, Run);
+  RunWriteAccountKeyCallback();
+}
+
+TEST_F(FastPairPairerTest, WriteAccountKeyFailure_Initial) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairInitial);
+  SetGetDeviceFailure();
+  CreatePairer();
   SetPublicKey();
-  RunWriteResponseCallback(kResponseBytes);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetPairFailure(), absl::nullopt);
   EXPECT_CALL(paired_callback_, Run);
@@ -668,9 +608,21 @@ TEST_F(FastPairPairerTest, WriteAccountKeyFailure) {
 }
 
 TEST_F(FastPairPairerTest, FastPairVersionOne) {
-  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/true);
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/true,
+                               /*protocol=*/Protocol::kFastPairInitial);
   CreatePairer();
   EXPECT_EQ(GetSystemTrayClient()->show_bluetooth_pairing_dialog_count(), 1);
+}
+
+TEST_F(FastPairPairerTest, WriteAccountKeyFailure_Retroactive) {
+  SuccessfulDataEncryptorSetUp(/*fast_pair_v1=*/false,
+                               /*protocol=*/Protocol::kFastPairRetroactive);
+  SetGetDeviceFailure();
+  CreatePairer();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_CALL(account_key_failure_callback_, Run);
+  RunWriteAccountKeyCallback(
+      device::BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED);
 }
 
 }  // namespace quick_pair

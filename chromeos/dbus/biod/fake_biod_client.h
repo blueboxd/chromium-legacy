@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/biod/biod_client.h"
 #include "dbus/object_path.h"
@@ -38,6 +37,9 @@ class COMPONENT_EXPORT(BIOD_CLIENT) FakeBiodClient : public BiodClient {
 
   // Emulates the biod daemon by sending events which the daemon normally sends.
   // Notifies |observers_| about various events. These will be used in tests.
+
+  // Emulates biod service restarted.
+  void SendRestarted();
 
   // Emulates a scan that occurs during enrolling a new fingerprint.
   // |fingerprint| is the fake data of the finger as a string. If |is_complete|

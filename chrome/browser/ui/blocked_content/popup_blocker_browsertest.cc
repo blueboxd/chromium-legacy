@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -830,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsDisableBackForwardCache) {
       browser(), embedded_test_server()->GetURL("b.com", "/title1.html")));
 
   // Because the original RFH is not cacheable it will be deleted.
-  rfh.WaitUntilRenderFrameDeleted();
+  ASSERT_TRUE(rfh.WaitUntilRenderFrameDeleted());
 }
 
 #if defined(OS_WIN)

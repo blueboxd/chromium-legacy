@@ -37,6 +37,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace ash {
 namespace {
@@ -1887,6 +1888,7 @@ TEST_F(WorkspaceWindowResizerTest, DragToSnapMaximize) {
   // and sized to fit the whole work area.
   resizer->Drag(gfx::PointF(200.f, 2.f), 0);
   DwellCountdownTimerFireNow();
+  EXPECT_TRUE(!snap_phantom_window_controller()->GetMaximizeCueForTesting());
   resizer->CompleteDrag();
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_EQ(gfx::Rect(800, 600), window_->bounds());
@@ -2271,17 +2273,15 @@ TEST_F(PortraitWorkspaceWindowResizerTest, MultiDisplaySnapPhantom) {
   // Drag to snap left in landscape display should show left phantom window.
   resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
   EXPECT_TRUE(snap_phantom_window_controller());
-  EXPECT_EQ(
-      gfx::Rect(0, 0, work_area.width() / 2, work_area.height()),
-      snap_phantom_window_controller()->GetTargetWindowBoundsForTesting());
+  EXPECT_EQ(gfx::Rect(0, 0, work_area.width() / 2, work_area.height()),
+            snap_phantom_window_controller()->GetTargetWindowBounds());
 
   // Drag to snap right in landscape display should show right phantom window.
   resizer->Drag(CalculateDragPoint(*resizer, 799, 0), 0);
   EXPECT_TRUE(snap_phantom_window_controller());
-  EXPECT_EQ(
-      gfx::Rect(work_area.width() / 2, 0, work_area.width() / 2,
-                work_area.height()),
-      snap_phantom_window_controller()->GetTargetWindowBoundsForTesting());
+  EXPECT_EQ(gfx::Rect(work_area.width() / 2, 0, work_area.width() / 2,
+                      work_area.height()),
+            snap_phantom_window_controller()->GetTargetWindowBounds());
 
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestPoint(gfx::Point(810, 0));
@@ -2294,19 +2294,17 @@ TEST_F(PortraitWorkspaceWindowResizerTest, MultiDisplaySnapPhantom) {
   resizer->Drag(CalculateDragPoint(*resizer, 1100, 2), 0);
   resizer->Drag(CalculateDragPoint(*resizer, 1100, 1), 0);
   EXPECT_TRUE(snap_phantom_window_controller());
-  EXPECT_EQ(
-      gfx::Rect(800, 0, work_area.width(), work_area.height() / 2),
-      snap_phantom_window_controller()->GetTargetWindowBoundsForTesting());
+  EXPECT_EQ(gfx::Rect(800, 0, work_area.width(), work_area.height() / 2),
+            snap_phantom_window_controller()->GetTargetWindowBounds());
 
   // Move the window to the portrait display. Now the snap bottom should show
   // bottom phantom window.
   resizer->Drag(CalculateDragPoint(*resizer, 1100, 780), 0);
   resizer->Drag(CalculateDragPoint(*resizer, 1100, 781), 0);
   EXPECT_TRUE(snap_phantom_window_controller());
-  EXPECT_EQ(
-      gfx::Rect(800, work_area.height() / 2, work_area.width(),
-                work_area.height() / 2),
-      snap_phantom_window_controller()->GetTargetWindowBoundsForTesting());
+  EXPECT_EQ(gfx::Rect(800, work_area.height() / 2, work_area.width(),
+                      work_area.height() / 2),
+            snap_phantom_window_controller()->GetTargetWindowBounds());
 }
 
 // Tests that dragging window to top triggers top snap.
@@ -2323,18 +2321,17 @@ TEST_F(PortraitWorkspaceWindowResizerTest, SnapTop) {
   // Drag to a top-snap region should snap top.
   resizer->Drag(
       gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop + 1), 0);
+  EXPECT_FALSE(snap_phantom_window_controller());
   resizer->Drag(gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop),
                 0);
-  EXPECT_FALSE(snap_phantom_window_controller());
-  resizer->Drag(
-      gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop - 1), 0);
   auto* phantom_controller = snap_phantom_window_controller();
   ASSERT_TRUE(phantom_controller);
 
   const gfx::Rect expected_snapped_bounds(work_area.width(),
                                           work_area.height() / 2);
   EXPECT_EQ(expected_snapped_bounds,
-            phantom_controller->GetTargetWindowBoundsForTesting());
+            phantom_controller->GetTargetWindowBounds());
+  EXPECT_TRUE(!!snap_phantom_window_controller()->GetMaximizeCueForTesting());
   resizer->CompleteDrag();
   EXPECT_TRUE(WindowState::Get(window_.get())->IsSnapped());
   EXPECT_EQ(expected_snapped_bounds, window_->bounds());
@@ -2371,6 +2368,51 @@ TEST_F(PortraitWorkspaceWindowResizerTest, SnapBottom) {
   resizer->CompleteDrag();
   EXPECT_TRUE(WindowState::Get(window_.get())->IsSnapped());
   EXPECT_EQ(expected_snapped_bounds, window_->bounds());
+}
+
+// Tests that in portrait display, holding a window at top position longer can
+// transform top-snap phantom to maximize phantom window. Moreover, top snap
+// phantom displays the maximize cue widget and hides the cue as soon as it
+// transforms to maximize phantom.
+TEST_F(PortraitWorkspaceWindowResizerTest, SnapTopTransitionToMaximize) {
+  const gfx::Rect restore_bounds(50, 50, 100, 100);
+  window_->SetBounds(restore_bounds);
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get());
+  const float work_area_center_x = work_area.CenterPoint().x();
+
+  constexpr int kScreenEdgeInsetForSnappingTop = 8;
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window_.get(), gfx::Point(0, 100), HTCAPTION));
+  // Drag to a top-snap region.
+  resizer->Drag(
+      gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop + 1), 0);
+  EXPECT_FALSE(snap_phantom_window_controller());
+  resizer->Drag(gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop),
+                0);
+  auto* phantom_controller = snap_phantom_window_controller();
+  ASSERT_TRUE(phantom_controller);
+
+  // During dragging to snap top, the top phantom window should show up along
+  // with the maximize cue widget.
+  const gfx::Rect expected_top_snapped_bounds(work_area.width(),
+                                              work_area.height() / 2);
+  EXPECT_EQ(expected_top_snapped_bounds,
+            phantom_controller->GetTargetWindowBounds());
+  auto* maximize_cue_widget = phantom_controller->GetMaximizeCueForTesting();
+  EXPECT_TRUE(!!maximize_cue_widget);
+  EXPECT_TRUE(maximize_cue_widget->IsVisible());
+  EXPECT_EQ(1.f, maximize_cue_widget->GetLayer()->opacity());
+  EXPECT_TRUE(IsDwellCountdownTimerRunning());
+
+  // Once the count down ends, the maximize cue widget is hidden from the view
+  // and the top-snap phantom turns into maximize phantom window.
+  DwellCountdownTimerFireNow();
+  EXPECT_EQ(0.f, maximize_cue_widget->GetLayer()->opacity());
+  EXPECT_EQ(work_area, phantom_controller->GetTargetWindowBounds());
+  resizer->CompleteDrag();
+  EXPECT_TRUE(WindowState::Get(window_.get())->IsMaximized());
+  EXPECT_EQ(work_area, window_->bounds());
 }
 
 // Verifies the behavior of resizing a vertically snapped window.

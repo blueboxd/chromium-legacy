@@ -87,10 +87,15 @@ void NGBoxFragmentBuilder::AddResult(
     absl::optional<LogicalOffset> relative_offset,
     const NGInlineContainer<LogicalOffset>* inline_container) {
   const auto& fragment = child_layout_result.PhysicalFragment();
-  const NGLayoutResult* child_box_layout_result = nullptr;
-  if (fragment.IsBox()) {
-    child_box_layout_result = &child_layout_result;
-  } else if (items_builder_) {
+
+  // We'll normally propagate info from child_layout_result here, but if that's
+  // a line box with a block inside, we'll use the result for that block
+  // instead. The fact that we create a line box at all in such cases is just an
+  // implementation detail -- anything of interest is stored on the child block
+  // fragment.
+  const NGLayoutResult* result_for_propagation = &child_layout_result;
+
+  if (!fragment.IsBox() && items_builder_) {
     if (const NGPhysicalLineBoxFragment* line =
             DynamicTo<NGPhysicalLineBoxFragment>(&fragment)) {
       if (UNLIKELY(line->IsBlockInInline() && has_block_fragmentation_)) {
@@ -98,8 +103,8 @@ void NGBoxFragmentBuilder::AddResult(
         // from the block-in-inline.
         const NGLogicalLineItems& line_items =
             items_builder_->LogicalLineItems(*line);
-        child_box_layout_result = line_items.BlockInInlineLayoutResult();
-        DCHECK(child_box_layout_result);
+        result_for_propagation = line_items.BlockInInlineLayoutResult();
+        DCHECK(result_for_propagation);
       }
 
       items_builder_->AddLine(*line, offset);
@@ -120,8 +125,8 @@ void NGBoxFragmentBuilder::AddResult(
            child_layout_result.IsSelfCollapsing(), relative_offset,
            inline_container, adjustment_for_oof_propagation);
 
-  if (UNLIKELY(has_block_fragmentation_ && child_box_layout_result))
-    PropagateBreakInfo(*child_box_layout_result);
+  if (UNLIKELY(has_block_fragmentation_))
+    PropagateBreakInfo(*result_for_propagation, offset);
 }
 
 void NGBoxFragmentBuilder::AddChild(
@@ -285,6 +290,24 @@ void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
                                        /* relative_offset */ LogicalOffset()));
 }
 
+void NGBoxFragmentBuilder::RemoveOldLegacyOOFFlexItem(
+    const LayoutObject& object) {
+  // While what this method does should "work" for any child fragment in
+  // general, it's only expected to be called under very specific legacy
+  // circumstances, and besides it's evil.
+  DCHECK(object.IsOutOfFlowPositioned());
+  DCHECK(object.Parent()->IsFlexibleBox());
+  DCHECK(object.Parent()->IsOutOfFlowPositioned());
+  for (wtf_size_t idx = 0; idx < children_.size(); idx++) {
+    const ChildWithOffset& child = children_[idx];
+    if (child.fragment->GetLayoutObject() == &object) {
+      children_.EraseAt(idx);
+      return;
+    }
+  }
+  NOTREACHED();
+}
+
 NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {
   if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox)
     return box_type_;
@@ -347,19 +370,33 @@ void NGBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
 }
 
 void NGBoxFragmentBuilder::PropagateBreakInfo(
-    const NGLayoutResult& child_layout_result) {
+    const NGLayoutResult& child_layout_result,
+    LogicalOffset offset) {
   DCHECK(has_block_fragmentation_);
-  const auto& child_fragment =
-      To<NGPhysicalBoxFragment>(child_layout_result.PhysicalFragment());
-  if (const auto* token = child_fragment.BreakToken()) {
+
+  // Include the bounds of this child (in the block direction).
+  LayoutUnit block_end_in_container =
+      offset.block_offset -
+      child_layout_result.AnnotationBlockOffsetAdjustment() +
+      BlockSizeForFragmentation(child_layout_result, writing_direction_);
+
+  block_size_for_fragmentation_ =
+      std::max(block_size_for_fragmentation_, block_end_in_container);
+
+  const auto* child_box_fragment =
+      DynamicTo<NGPhysicalBoxFragment>(&child_layout_result.PhysicalFragment());
+  if (!child_box_fragment)
+    return;
+
+  if (const auto* token = child_box_fragment->BreakToken()) {
     // Figure out if this child break is in the same flow as this parent. If
     // it's an out-of-flow positioned box, it's not. If it's in a parallel flow,
     // it's also not.
     if (!token->IsBlockType() ||
         !To<NGBlockBreakToken>(token)->IsAtBlockEnd()) {
-      if (child_fragment.IsFloating())
+      if (child_box_fragment->IsFloating())
         has_float_break_inside_ = true;
-      else if (!child_fragment.IsOutOfFlowPositioned())
+      else if (!child_box_fragment->IsOutOfFlowPositioned())
         has_inflow_child_break_inside_ = true;
     }
 
@@ -412,11 +449,29 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
                node_.IsBlockInInline()))
     SetIsBlockInInline();
 
-  if (UNLIKELY(has_block_fragmentation_ && !break_token_ && node_)) {
-    if (last_inline_break_token_)
-      child_break_tokens_.push_back(std::move(last_inline_break_token_));
-    if (DidBreakSelf() || HasChildBreakInside())
-      break_token_ = NGBlockBreakToken::Create(this);
+  if (UNLIKELY(has_block_fragmentation_ && node_)) {
+    if (!break_token_) {
+      if (last_inline_break_token_)
+        child_break_tokens_.push_back(std::move(last_inline_break_token_));
+      if (DidBreakSelf() || HasChildBreakInside())
+        break_token_ = NGBlockBreakToken::Create(this);
+    }
+
+    OverflowClipAxes block_axis =
+        GetWritingDirection().IsHorizontal() ? kOverflowClipY : kOverflowClipX;
+    if ((To<NGBlockNode>(node_).GetOverflowClipAxes() & block_axis) ||
+        MustStayInCurrentFragmentainer()) {
+      // If block-axis overflow is clipped, ignore child overflow and just use
+      // the border-box size of the fragment itself. Also do this if the node
+      // was forced to stay in the current fragmentainer. We'll ignore overflow
+      // in such cases, because children are allowed to overflow without
+      // affecting fragmentation then.
+      block_size_for_fragmentation_ = FragmentBlockSize();
+    } else {
+      // Include the border-box size of the fragment itself.
+      block_size_for_fragmentation_ =
+          std::max(block_size_for_fragmentation_, FragmentBlockSize());
+    }
   }
 
   if (!has_floating_descendants_for_paint_ && items_builder_) {

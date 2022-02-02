@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -85,7 +86,6 @@ class CORE_EXPORT HitTestResult {
   // FIXME: Make these less error-prone for rect-based hit tests (center point
   // or fail).
   Node* InnerNode() const { return inner_node_.Get(); }
-  Node* InertNode() const { return inert_node_.Get(); }
   Node* InnerPossiblyPseudoNode() const {
     return inner_possibly_pseudo_node_.Get();
   }
@@ -141,7 +141,6 @@ class CORE_EXPORT HitTestResult {
   const HitTestRequest& GetHitTestRequest() const { return hit_test_request_; }
 
   void SetInnerNode(Node*);
-  void SetInertNode(Node*);
   HTMLAreaElement* ImageAreaForImage() const;
   void SetURLElement(Element*);
   void SetScrollbar(Scrollbar*);
@@ -154,7 +153,7 @@ class CORE_EXPORT HitTestResult {
   const AtomicString& AltDisplayString() const;
   static Image* GetImage(const Node* node);
   Image* GetImage() const;
-  IntRect ImageRect() const;
+  gfx::Rect ImageRect() const;
   static KURL AbsoluteImageURL(const Node* node);
   KURL AbsoluteImageURL() const;
   KURL AbsoluteMediaURL() const;
@@ -213,7 +212,6 @@ class CORE_EXPORT HitTestResult {
   bool cacheable_;
 
   Member<Node> inner_node_;
-  Member<Node> inert_node_;
   // This gets calculated in the first call to InnerElement function.
   Member<Element> inner_element_;
   Member<Node> inner_possibly_pseudo_node_;

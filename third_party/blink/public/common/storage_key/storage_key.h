@@ -43,6 +43,8 @@ class BLINK_COMMON_EXPORT StorageKey {
   // StorageKey without a top-level site specified. Eventually these will all
   // merge into a static function(s) that will require the caller to explicitly
   // specify that they do not want a top-level site.
+  // TODO(https://crbug.com/1271615): Remove or mark as test-only most of these
+  // constructors and factory methods.
   explicit StorageKey(const url::Origin& origin)
       : StorageKey(origin, net::SchemefulSite(origin), nullptr) {}
 
@@ -58,6 +60,12 @@ class BLINK_COMMON_EXPORT StorageKey {
   // the `origin`'s site.
   static StorageKey CreateWithNonce(const url::Origin& origin,
                                     const base::UnguessableToken& nonce);
+
+  // Same to the above, but this method does take a top-level site.
+  static StorageKey CreateWithOptionalNonce(
+      const url::Origin& origin,
+      const net::SchemefulSite& top_level_site,
+      const base::UnguessableToken* nonce);
 
   // Copyable and Moveable.
   StorageKey(const StorageKey& other) = default;
@@ -81,14 +89,6 @@ class BLINK_COMMON_EXPORT StorageKey {
   // SerializeForLocalStorage(), as it can handle both formats.
   static absl::optional<StorageKey> Deserialize(base::StringPiece in);
 
-  // Returns a newly constructed StorageKey from, a previously serialized, `in`
-  // (which was created using SerializeForServiceWorker()). If `in` is invalid
-  // then the return value will be nullopt. If this returns a non-nullopt value,
-  // it will be a valid, non-opaque StorageKey. A deserialized StorageKey will
-  // be equivalent to the StorageKey that was initially serialized.
-  static absl::optional<StorageKey> DeserializeForServiceWorker(
-      base::StringPiece in);
-
   // Transforms a string into a StorageKey if possible (and an opaque StorageKey
   // if not). Currently calls Deserialize, but this may change in future.
   // For use in tests only.
@@ -98,18 +98,13 @@ class BLINK_COMMON_EXPORT StorageKey {
   static bool IsThirdPartyStoragePartitioningEnabled();
 
   // Serializes the `StorageKey` into a string.
-  // This function will return the spec url of the underlying Origin. Do not
-  // call if `this` is opaque.
+  // Do not call if `this` is opaque.
   std::string Serialize() const;
 
   // Serializes into a string in the format used for localStorage (without
   // trailing slashes). Prefer Serialize() for uses other than localStorage. Do
   // not call if `this` is opaque.
   std::string SerializeForLocalStorage() const;
-
-  // Serializes the `StorageKey` into the format used for ServiceWorkerDatabase.
-  // Do not call if `this` is opaque.
-  std::string SerializeForServiceWorker() const;
 
   // `IsThirdPartyContext` returns true if the StorageKey is for a context that
   // is "third-party", i.e. the StorageKey's top-level site and origin have
@@ -145,6 +140,15 @@ class BLINK_COMMON_EXPORT StorageKey {
   const net::SiteForCookies ToNetSiteForCookies() const;
 
  private:
+  // This enum represents the different type of encodable partitioning
+  // attributes.
+  enum class EncodedAttribute : uint8_t {
+    kTopLevelSite = 0,
+    kNonceHigh = 1,
+    kNonceLow = 2,
+    kMax
+  };
+
   StorageKey(const url::Origin& origin,
              const net::SchemefulSite& top_level_site,
              const base::UnguessableToken* nonce)
@@ -153,6 +157,16 @@ class BLINK_COMMON_EXPORT StorageKey {
                             ? top_level_site
                             : net::SchemefulSite(origin)),
         nonce_(nonce ? absl::make_optional(*nonce) : absl::nullopt) {}
+
+  // Converts the attribute type into the separator + uint8_t byte
+  // serialization. E.x.: kTopLevelSite becomes "^0"
+  static std::string SerializeAttributeSeparator(const EncodedAttribute type);
+
+  // Converts the serialized separator into an EncodedAttribute enum.
+  // E.x.: "^0" becomes kTopLevelSite.
+  // Expects `in` to have a length of 2.
+  static EncodedAttribute DeserializeAttributeSeparator(
+      const base::StringPiece& in);
 
   BLINK_COMMON_EXPORT
   friend bool operator==(const StorageKey& lhs, const StorageKey& rhs);

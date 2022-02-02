@@ -6,7 +6,7 @@
 #define COMPONENTS_SAFE_BROWSING_CORE_BROWSER_SAFE_BROWSING_METRICS_COLLECTOR_H_
 
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -145,10 +145,14 @@ class SafeBrowsingMetricsCollector : public KeyedService {
   // For pref listeners.
   void OnEnhancedProtectionPrefChanged();
   void LogEnhancedProtectionDisabledMetrics();
+  void LogThrottledEnhancedProtectionDisabledMetrics();
 
   // Helper functions for Safe Browsing events in pref.
   void AddSafeBrowsingEventAndUserStateToPref(UserState user_state,
                                               EventType event_type);
+  // Keep the possible returned values of GetTimesDisabledSuffix in sync with
+  // MetricsCollectorTimesDisabledEnabledDuration in histograms.xml.
+  std::string GetTimesDisabledSuffix();
 
   // Gets the latest event timestamp for events filtered by |event_type_filter|.
   // Returns nullopt if none of the events happened in the past.
@@ -165,7 +169,7 @@ class SafeBrowsingMetricsCollector : public KeyedService {
                          base::Time since_time);
   UserState GetUserState();
 
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   base::OneShotTimer metrics_collector_timer_;
 };

@@ -8,8 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
 #include "ui/android/view_android.h"
 
@@ -24,7 +23,7 @@ class PasswordGenerationEditingPopupViewAndroid
  public:
   // Builds the UI for the |controller|.
   explicit PasswordGenerationEditingPopupViewAndroid(
-      PasswordGenerationPopupController* controller);
+      base::WeakPtr<PasswordGenerationPopupController> controller);
 
   PasswordGenerationEditingPopupViewAndroid(
       const PasswordGenerationEditingPopupViewAndroid&) = delete;
@@ -46,7 +45,7 @@ class PasswordGenerationEditingPopupViewAndroid
   void PasswordSelectionUpdated() override;
 
   // Weak pointer to the controller.
-  PasswordGenerationPopupController* controller_;
+  base::WeakPtr<PasswordGenerationPopupController> controller_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

@@ -34,6 +34,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.test.util.browser.Features;
@@ -49,8 +50,9 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
 public class FirstRunFlowSequencerTest {
-    private static final String ADULT_ACCOUNT = "adult.account@gmail.com";
-    private static final String CHILD_ACCOUNT = "child.account@gmail.com";
+    private static final String ADULT_ACCOUNT_NAME = "adult.account@gmail.com";
+    private static final String CHILD_ACCOUNT_NAME =
+            AccountManagerTestRule.generateChildEmail(/*baseName=*/"account@gmail.com");
 
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -71,13 +73,7 @@ public class FirstRunFlowSequencerTest {
             extends FirstRunFlowSequencer.FirstRunFlowSequencerDelegate {
         public boolean isSyncAllowed;
         public boolean shouldSkipFirstUseHints;
-        public boolean shouldShowDataReductionPage;
         public boolean shouldShowSearchEnginePage;
-
-        @Override
-        public boolean shouldShowDataReductionPage() {
-            return shouldShowDataReductionPage;
-        }
 
         @Override
         public boolean shouldShowSearchEnginePage() {
@@ -118,6 +114,9 @@ public class FirstRunFlowSequencerTest {
     }
 
     @Mock
+    private DataReductionProxySettings mDataReductionProxySettingsMock;
+
+    @Mock
     private UmaRecorder mUmaRecorderMock;
 
     @Mock
@@ -136,6 +135,12 @@ public class FirstRunFlowSequencerTest {
                 .thenReturn(mIdentityManagerMock);
         when(mIdentityManagerMock.hasPrimaryAccount(ConsentLevel.SYNC)).thenReturn(false);
 
+        // Show data reduction page by default.
+        when(mDataReductionProxySettingsMock.isDataReductionProxyManaged()).thenReturn(false);
+        when(mDataReductionProxySettingsMock.isDataReductionProxyFREPromoAllowed())
+                .thenReturn(true);
+        DataReductionProxySettings.setInstanceForTesting(mDataReductionProxySettingsMock);
+
         mActivityController = Robolectric.buildActivity(Activity.class);
         Activity activity = mActivityController.setup().get();
         mDelegate = new TestFirstRunFlowSequencerDelegate();
@@ -153,9 +158,10 @@ public class FirstRunFlowSequencerTest {
     @Test
     @Feature({"FirstRun"})
     public void testStandardFlowTosNotSeen() {
+        when(mDataReductionProxySettingsMock.isDataReductionProxyFREPromoAllowed())
+                .thenReturn(false);
         mDelegate.isSyncAllowed = true;
         mDelegate.shouldSkipFirstUseHints = false;
-        mDelegate.shouldShowDataReductionPage = false;
 
         mSequencer.start();
 
@@ -175,10 +181,11 @@ public class FirstRunFlowSequencerTest {
     @Test
     @Feature({"FirstRun"})
     public void testStandardFlowOneChildAccount() {
-        mAccountManagerTestRule.addAccount(CHILD_ACCOUNT);
+        mAccountManagerTestRule.addAccount(CHILD_ACCOUNT_NAME);
+        when(mDataReductionProxySettingsMock.isDataReductionProxyFREPromoAllowed())
+                .thenReturn(false);
         mDelegate.isSyncAllowed = true;
         mDelegate.shouldSkipFirstUseHints = false;
-        mDelegate.shouldShowDataReductionPage = false;
 
         mSequencer.start();
 
@@ -198,11 +205,10 @@ public class FirstRunFlowSequencerTest {
     @Test
     @Feature({"FirstRun"})
     public void testStandardFlowShowDataReductionPage() {
-        mAccountManagerTestRule.addAccount(ADULT_ACCOUNT);
+        mAccountManagerTestRule.addAccount(ADULT_ACCOUNT_NAME);
         mAccountManagerTestRule.addAccount("second.test.account@gmail.com");
         mDelegate.isSyncAllowed = true;
         mDelegate.shouldSkipFirstUseHints = false;
-        mDelegate.shouldShowDataReductionPage = true;
         mDelegate.shouldShowSearchEnginePage = false;
 
         mSequencer.start();
@@ -225,7 +231,6 @@ public class FirstRunFlowSequencerTest {
     public void testStandardFlowShowSearchEnginePage() {
         mDelegate.isSyncAllowed = true;
         mDelegate.shouldSkipFirstUseHints = false;
-        mDelegate.shouldShowDataReductionPage = true;
         mDelegate.shouldShowSearchEnginePage = true;
 
         mSequencer.start();
@@ -250,7 +255,6 @@ public class FirstRunFlowSequencerTest {
         when(mIdentityManagerMock.hasPrimaryAccount(ConsentLevel.SIGNIN)).thenReturn(false);
         mDelegate.isSyncAllowed = true;
         mDelegate.shouldSkipFirstUseHints = false;
-        mDelegate.shouldShowDataReductionPage = true;
         mDelegate.shouldShowSearchEnginePage = false;
 
         mSequencer.start();
@@ -271,11 +275,10 @@ public class FirstRunFlowSequencerTest {
     @Feature({"FirstRun"})
     @CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
     public void testFlowShowSyncConsentPageWhenUserIsSignedIn() {
-        mAccountManagerTestRule.addAccount(ADULT_ACCOUNT);
+        mAccountManagerTestRule.addAccount(ADULT_ACCOUNT_NAME);
         when(mIdentityManagerMock.hasPrimaryAccount(ConsentLevel.SIGNIN)).thenReturn(true);
         mDelegate.isSyncAllowed = true;
         mDelegate.shouldSkipFirstUseHints = false;
-        mDelegate.shouldShowDataReductionPage = true;
         mDelegate.shouldShowSearchEnginePage = false;
 
         mSequencer.start();

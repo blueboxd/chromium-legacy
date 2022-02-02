@@ -20,7 +20,6 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
@@ -86,9 +85,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                     int event_flags,
                     ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(const std::string& id,
+                           bool add_sort_options,
                            GetContextMenuModelCallback callback) override;
-  void SortAppList(AppListSortOrder order) override {}
-  void RevertAppListSort() override {}
   ui::ImplicitAnimationObserver* GetAnimationObserver(
       ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,

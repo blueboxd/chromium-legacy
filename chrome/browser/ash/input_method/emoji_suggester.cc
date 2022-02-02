@@ -6,6 +6,8 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/services/ime/constants.h"
+#include "ash/services/ime/public/cpp/suggestions.h"
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/field_trial_params.h"
@@ -21,8 +23,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/services/ime/constants.h"
-#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,7 +42,7 @@ constexpr char kEmojiSuggesterShowSettingCount[] =
 const int kMaxCandidateSize = 5;
 const char kSpaceChar = ' ';
 constexpr char kTrimLeadingChars[] = "(";
-constexpr char kEmojiMapFilePathTemplateName[] = "/emoji/emoji-map%s.csv";
+constexpr char kEmojiMapFilePathName[] = "/emoji/emoji-map.csv";
 const int kMaxSuggestionIndex = 31;
 const int kMaxSuggestionSize = kMaxSuggestionIndex + 1;
 const int kNoneHighlighted = -1;
@@ -53,11 +53,7 @@ std::string ReadEmojiDataFromFile() {
 
   std::string emoji_data;
   base::FilePath::StringType path(ime::kBundledInputMethodsDirPath);
-  std::string value = base::GetFieldTrialParamValueByFeature(
-      features::kEmojiSuggestAddition, "map");
-  std::string file_path =
-      base::StringPrintf(kEmojiMapFilePathTemplateName, value.c_str());
-  path.append(FILE_PATH_LITERAL(file_path));
+  path.append(FILE_PATH_LITERAL(kEmojiMapFilePathName));
   if (!base::ReadFileToString(base::FilePath(path), &emoji_data))
     LOG(WARNING) << "Emoji map file missing.";
   return emoji_data;

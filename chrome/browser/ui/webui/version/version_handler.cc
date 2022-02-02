@@ -57,6 +57,10 @@ VersionHandler::VersionHandler() {}
 
 VersionHandler::~VersionHandler() {}
 
+void VersionHandler::OnJavascriptDisallowed() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
 void VersionHandler::RegisterMessages() {
   web_ui()->RegisterDeprecatedMessageCallback(
       version_ui::kRequestVersionInfo,
@@ -85,11 +89,10 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
 void VersionHandler::HandleRequestVariationInfo(const base::ListValue* args) {
   AllowJavascript();
 
-  std::string callback_id;
-  bool include_variations_cmd;
-  CHECK_EQ(2U, args->GetList().size());
-  CHECK(args->GetString(0, &callback_id));
-  CHECK(args->GetBoolean(1, &include_variations_cmd));
+  const auto& list = args->GetList();
+  CHECK_EQ(2U, list.size());
+  const std::string& callback_id = list[0].GetString();
+  const bool include_variations_cmd = list[1].GetBool();
 
   base::Value response(base::Value::Type::DICTIONARY);
   response.SetKey(version_ui::kKeyVariationsList,
@@ -104,9 +107,8 @@ void VersionHandler::HandleRequestVariationInfo(const base::ListValue* args) {
 void VersionHandler::HandleRequestPathInfo(const base::ListValue* args) {
   AllowJavascript();
 
-  std::string callback_id;
   CHECK_EQ(1U, args->GetList().size());
-  CHECK(args->GetString(0, &callback_id));
+  const std::string& callback_id = args->GetList()[0].GetString();
 
   // Grab the executable path on the FILE thread. It is returned in
   // OnGotFilePaths.

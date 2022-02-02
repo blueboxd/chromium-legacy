@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "base/macros.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "url/origin.h"
 

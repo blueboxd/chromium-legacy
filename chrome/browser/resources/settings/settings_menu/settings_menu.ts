@@ -19,17 +19,21 @@ import '../icons.js';
 import '../settings_shared_css.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {loadTimeData} from '../i18n_setup.js';
 import {PageVisibility} from '../page_visibility.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 export interface SettingsMenuElement {
   $: {
+    autofill: HTMLLinkElement,
+    advancedButton: HTMLElement,
+    advancedSubmenu: IronCollapseElement,
     topMenu: IronSelectorElement,
     subMenu: IronSelectorElement,
+    people: HTMLLinkElement,
   };
 }
 
@@ -57,18 +61,11 @@ export class SettingsMenuElement extends SettingsMenuElementBase {
        * Dictionary defining page visibility.
        */
       pageVisibility: Object,
-
-      enableLandingPageRedesign_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('enableLandingPageRedesign'),
-      },
-
     };
   }
 
   advancedOpened: boolean;
   pageVisibility: PageVisibility;
-  private enableLandingPageRedesign_: boolean;
 
   currentRouteChanged(newRoute: Route) {
     // Focus the initially selected path.
@@ -140,6 +137,12 @@ export class SettingsMenuElement extends SettingsMenuElementBase {
 
   private boolToString_(bool: boolean): string {
     return bool.toString();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-menu': SettingsMenuElement;
   }
 }
 

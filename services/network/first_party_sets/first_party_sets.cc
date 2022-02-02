@@ -10,11 +10,15 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "net/base/schemeful_site.h"
@@ -66,13 +70,22 @@ net::SamePartyContext::Type ContextTypeFromBool(bool is_same_party) {
                        : net::SamePartyContext::Type::kCrossParty;
 }
 
+std::string ReadSetsFile(base::File sets_file) {
+  std::string raw_sets;
+  base::ScopedFILE file(FileToFILE(std::move(sets_file), "r"));
+  return base::ReadStreamToString(file.get(), &raw_sets) ? raw_sets : "";
+}
+
 }  // namespace
 
 FirstPartySets::FirstPartySets() = default;
 
-FirstPartySets::~FirstPartySets() = default;
+FirstPartySets::~FirstPartySets() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!net::cookie_util::IsFirstPartySetsEnabled())
     return;
 
@@ -84,16 +97,38 @@ void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
   ClearSiteDataOnChangedSetsIfReady();
 }
 
-base::flat_map<net::SchemefulSite, net::SchemefulSite>*
-FirstPartySets::ParseAndSet(base::StringPiece raw_sets) {
+void FirstPartySets::ParseAndSet(base::File sets_file) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!net::cookie_util::IsFirstPartySetsEnabled())
-    return &sets_;
+    return;
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&ReadSetsFile, std::move(sets_file)),
+      base::BindOnce(&FirstPartySets::OnReadSetsFile,
+                     weak_factory_.GetWeakPtr()));
+}
 
-  sets_ = FirstPartySetParser::ParseSetsFromComponentUpdater(raw_sets);
+void FirstPartySets::OnReadSetsFile(const std::string& raw_sets) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!net::cookie_util::IsFirstPartySetsEnabled())
+    return;
+
+  bool is_v1_format = raw_sets.find('[') < raw_sets.find('{');
+  if (is_v1_format) {
+    // The file is a single list of records; V1 format.
+    sets_ = FirstPartySetParser::ParseSetsFromComponentUpdater(raw_sets);
+  } else {
+    // The file is invalid, or is a newline-delimited sequence of
+    // records; V2 format.
+    std::istringstream stream(raw_sets);
+    sets_ = FirstPartySetParser::ParseSetsFromStream(stream);
+  }
+  base::UmaHistogramBoolean("Cookie.FirstPartySets.ComponentIsV1Format",
+                            is_v1_format);
+
   ApplyManuallySpecifiedSet();
   component_sets_ready_ = true;
   ClearSiteDataOnChangedSetsIfReady();
-  return &sets_;
 }
 
 bool FirstPartySets::IsContextSamePartyWithSite(
@@ -101,6 +136,7 @@ bool FirstPartySets::IsContextSamePartyWithSite(
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
     bool infer_singleton_sets) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const absl::optional<net::SchemefulSite> site_owner =
       FindOwner(site, infer_singleton_sets);
   if (!site_owner.has_value())
@@ -124,6 +160,7 @@ net::SamePartyContext FirstPartySets::ComputeContext(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::ElapsedTimer timer;
 
   net::SamePartyContext::Type context_type = ContextTypeFromBool(
@@ -147,6 +184,7 @@ net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
     const net::SchemefulSite& site,
     const absl::optional<net::SchemefulSite>& top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   constexpr bool infer_singleton_sets = true;
   const absl::optional<net::SchemefulSite> site_owner =
       FindOwner(site, infer_singleton_sets);
@@ -173,6 +211,7 @@ net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
 const absl::optional<net::SchemefulSite> FirstPartySets::FindOwner(
     const net::SchemefulSite& site,
     bool infer_singleton_sets) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::ElapsedTimer timer;
 
   net::SchemefulSite normalized_site = site;
@@ -192,13 +231,20 @@ const absl::optional<net::SchemefulSite> FirstPartySets::FindOwner(
   return owner;
 }
 
+const absl::optional<net::SchemefulSite> FirstPartySets::FindOwner(
+    const net::SchemefulSite& site) const {
+  return FindOwner(site, /*infer_singleton_sets=*/false);
+}
+
 bool FirstPartySets::IsInNontrivialFirstPartySet(
     const net::SchemefulSite& site) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return FindOwner(site, /*infer_singleton_sets=*/false).has_value();
 }
 
 base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
 FirstPartySets::Sets() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>> sets;
 
   for (const auto& pair : sets_) {
@@ -216,6 +262,7 @@ FirstPartySets::Sets() const {
 }
 
 void FirstPartySets::ApplyManuallySpecifiedSet() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!manually_specified_set_)
     return;
 
@@ -255,6 +302,7 @@ void FirstPartySets::ApplyManuallySpecifiedSet() {
 }
 
 void FirstPartySets::SetPersistedSets(base::StringPiece raw_sets) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   raw_persisted_sets_ = std::string(raw_sets);
   persisted_sets_ready_ = true;
   ClearSiteDataOnChangedSetsIfReady();
@@ -262,12 +310,15 @@ void FirstPartySets::SetPersistedSets(base::StringPiece raw_sets) {
 
 void FirstPartySets::SetOnSiteDataCleared(
     base::OnceCallback<void(const std::string&)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   on_site_data_cleared_ = std::move(callback);
   ClearSiteDataOnChangedSetsIfReady();
 }
 
 base::flat_set<net::SchemefulSite> FirstPartySets::ComputeSetsDiff(
-    const base::flat_map<net::SchemefulSite, net::SchemefulSite>& old_sets) {
+    const base::flat_map<net::SchemefulSite, net::SchemefulSite>& old_sets)
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (old_sets.empty())
     return {};
 
@@ -286,6 +337,7 @@ base::flat_set<net::SchemefulSite> FirstPartySets::ComputeSetsDiff(
 }
 
 void FirstPartySets::ClearSiteDataOnChangedSetsIfReady() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!persisted_sets_ready_ || !component_sets_ready_ || !manual_sets_ready_ ||
       on_site_data_cleared_.is_null())
     return;

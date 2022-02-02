@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "apps/launcher.h"
+#include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
@@ -17,7 +19,6 @@
 #include "ash/public/cpp/window_properties.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
@@ -62,15 +63,14 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/custom_tab.h"
-#include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -96,7 +96,7 @@ namespace {
 
 constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
     {{ChromePage::ACCOUNTS,
-      chromeos::settings::mojom::kManageOtherPeopleSubpagePath},
+      chromeos::settings::mojom::kManageOtherPeopleSubpagePathV2},
      {ChromePage::BLUETOOTH,
       chromeos::settings::mojom::kBluetoothDevicesSubpagePath},
      {ChromePage::BLUETOOTHDEVICES,
@@ -115,7 +115,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::OSLANGUAGESLANGUAGES,
       chromeos::settings::mojom::kLanguagesSubpagePath},
      {ChromePage::LOCKSCREEN,
-      chromeos::settings::mojom::kSecurityAndSignInSubpagePath},
+      chromeos::settings::mojom::kSecurityAndSignInSubpagePathV2},
      {ChromePage::MAIN, ""},
      {ChromePage::MANAGEACCESSIBILITY,
       chromeos::settings::mojom::kManageAccessibilitySubpagePath},
@@ -191,12 +191,6 @@ std::string GetPathAndQuery(const GURL& url) {
   return result;
 }
 
-// Remove directory components from |file_name|. E.g.,
-// StripPathComponents("../directory/file.jpg") returns "file.jpg".
-std::string StripPathComponents(const std::string& file_name) {
-  return base::FilePath(file_name).BaseName().AsUTF8Unsafe();
-}
-
 apps::mojom::IntentPtr ConvertLaunchIntent(
     const arc::mojom::LaunchIntentPtr& launch_intent) {
   apps::mojom::IntentPtr intent = apps::mojom::Intent::New();
@@ -219,7 +213,12 @@ apps::mojom::IntentPtr ConvertLaunchIntent(
 
       file->url = arc::ArcUrlToExternalFileUrl(file_info->content_uri);
       file->mime_type = file_info->type;
-      file->file_name = StripPathComponents(file_info->name);
+      file->file_name = file_info->name;
+      if (!file->file_name.has_value()) {
+        // TODO(crbug.com/1238215): Remove fallback to deprecated field.
+        file->file_name =
+            base::SafeBaseName::Create(file_info->deprecated_name);
+      }
       file->file_size = file_info->size;
       intent->files->push_back(std::move(file));
       mime_types.push_back(file_info->type);
@@ -264,13 +263,15 @@ bool OpenFilesSwa(Profile* const profile,
   }
 
   std::u16string title;
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.allowed_paths =
+      ui::SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL;
   GURL files_swa_url =
       ::file_manager::util::GetFileManagerMainPageUrlWithParams(
           ui::SelectFileDialog::SELECT_NONE, title,
           /*current_directory_url=*/directory_url,
           /*selection_url=*/{},
-          /*target_name=*/{},
-          /*file_types=*/nullptr,
+          /*target_name=*/{}, &file_type_info,
           /*file_type_index=*/0,
           /*search_query=*/{},
           /*show_android_picker_apps=*/false);
@@ -594,7 +595,7 @@ void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
 
   // Add a flag to remember this tab originated in the ARC context.
   tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
-                   std::make_unique<arc::ArcWebContentsData>());
+                   std::make_unique<arc::ArcWebContentsData>(tab));
 
   apps::IntentHandlingMetrics::RecordOpenBrowserMetrics(
       apps::IntentHandlingMetrics::AppType::kArc);
@@ -694,8 +695,8 @@ void ChromeNewWindowClient::OpenArcCustomTab(
       std::move(web_contents), /* foreground= */ true);
 
   // TODO(crbug.com/955171): Remove this temporary conversion to InterfacePtr
-  // once OnOpenCustomTab from //components/arc/mojom/intent_helper.mojom could
-  // take pending_remote directly. Refer to crrev.com/c/1868870.
+  // once OnOpenCustomTab from //ash/components/arc/mojom/intent_helper.mojom
+  // could take pending_remote directly. Refer to crrev.com/c/1868870.
   auto custom_tab_remote(
       CustomTabSessionImpl::Create(std::move(custom_tab), custom_tab_browser));
   std::move(callback).Run(std::move(custom_tab_remote));
@@ -824,12 +825,12 @@ void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries,
   DCHECK(IsCameraAppEnabled());
   ChromeCameraAppUIDelegate::CameraAppDialog::ShowIntent(
       queries, arc::GetArcWindow(task_id));
-  apps::RecordAppLaunch(extension_misc::kCameraAppId,
+  apps::RecordAppLaunch(web_app::kCameraAppId,
                         apps::mojom::LaunchSource::kFromArc);
 }
 
 void ChromeNewWindowClient::CloseCameraApp() {
-  const ash::ShelfID shelf_id(extension_misc::kCameraAppId);
+  const ash::ShelfID shelf_id(web_app::kCameraAppId);
   AppWindowShelfItemController* const app_controller =
       ChromeShelfController::instance()
           ->shelf_model()

@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_split.h"
@@ -92,6 +93,10 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/constants.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if defined(OS_WIN)
+#include "chrome/browser/net/chrome_mojo_proxy_resolver_win.h"
+#endif
 
 namespace {
 
@@ -252,7 +257,7 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
   ~URLLoaderFactoryForSystem() override = default;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  SystemNetworkContextManager* manager_;
+  raw_ptr<SystemNetworkContextManager> manager_;
 };
 
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
@@ -517,6 +522,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
       network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
       log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
       log_info->name = ct_log.log_name;
+      log_info->current_operator = ct_log.current_operator;
 
       std::string log_id = crypto::SHA256HashString(log_info->public_key);
       log_info->operated_by_google =
@@ -530,6 +536,16 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
       if (it != std::end(disqualified_logs) && it->first == log_id) {
         log_info->disqualified_at = it->second;
       }
+
+      for (size_t i = 0; i < ct_log.previous_operators_length; i++) {
+        const auto& op = ct_log.previous_operators[i];
+        network::mojom::PreviousOperatorEntryPtr previous_operator =
+            network::mojom::PreviousOperatorEntry::New();
+        previous_operator->name = op.name;
+        previous_operator->end_time = op.end_time;
+        log_info->previous_operators.push_back(std::move(previous_operator));
+      }
+
       log_list_mojo.push_back(std::move(log_info));
     }
     network_service->UpdateCtLogList(
@@ -588,16 +604,15 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   SCTReportingService::ReconfigureAfterNetworkRestart();
 
   component_updater::FirstPartySetsComponentInstallerPolicy::
-      ReconfigureAfterNetworkRestart(
-          base::BindRepeating([](const std::string& raw_sets) {
-            // We use a fresh pointer here (instead of using `network_service`
-            // from the enclosing scope) to avoid use-after-free bugs, since
-            // `network_service` is not guaranteed to live until the
-            // invocation of this callback.
-            network::mojom::NetworkService* network_service =
-                content::GetNetworkService();
-            network_service->SetFirstPartySets(raw_sets);
-          }));
+      ReconfigureAfterNetworkRestart(base::BindOnce([](base::File sets_file) {
+        // We use a fresh pointer here (instead of using `network_service`
+        // from the enclosing scope) to avoid use-after-free bugs, since
+        // `network_service` is not guaranteed to live until the
+        // invocation of this callback.
+        network::mojom::NetworkService* network_service =
+            content::GetNetworkService();
+        network_service->SetFirstPartySets(std::move(sets_file));
+      }));
 
   UpdateExplicitlyAllowedNetworkPorts();
 }
@@ -672,6 +687,13 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
     }
   }
 
+#if defined(OS_WIN)
+  if (command_line.HasSwitch(switches::kUseSystemProxyResolver)) {
+    network_context_params->windows_system_proxy_resolver =
+        ChromeMojoProxyResolverWin::CreateWithSelfOwnedReceiver();
+  }
+#endif
+
   network_context_params->pac_quick_check_enabled =
       local_state_->GetBoolean(prefs::kQuickCheckEnabled);
 
@@ -729,6 +751,8 @@ SystemNetworkContextManager::GetNetExportFileWriter() {
 // static
 bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
 #if defined(OS_WIN)
+  if (!sandbox::policy::features::IsWinNetworkServiceSandboxSupported())
+    return false;
   auto* local_state = g_browser_process->local_state();
   if (local_state &&
       local_state->HasPrefPath(prefs::kNetworkServiceSandboxEnabled)) {

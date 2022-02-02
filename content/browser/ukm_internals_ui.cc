@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "components/ukm/debug/ukm_debug_data_extractor.h"
 #include "components/ukm/ukm_service.h"
 #include "content/grit/content_resources.h"
@@ -53,7 +54,7 @@ class UkmMessageHandler : public WebUIMessageHandler {
  private:
   void HandleRequestUkmData(const base::ListValue* args);
 
-  const ukm::UkmService* ukm_service_;
+  raw_ptr<const ukm::UkmService> ukm_service_;
 };
 
 UkmMessageHandler::UkmMessageHandler(const ukm::UkmService* ukm_service)
@@ -62,11 +63,13 @@ UkmMessageHandler::UkmMessageHandler(const ukm::UkmService* ukm_service)
 UkmMessageHandler::~UkmMessageHandler() {}
 
 void UkmMessageHandler::HandleRequestUkmData(const base::ListValue* args) {
+  base::Value::ConstListView args_list = args->GetList();
   AllowJavascript();
 
   // Identifies the callback, used for when resolving.
   std::string callback_id;
-  args->GetString(0, &callback_id);
+  if (0u < args_list.size() && args_list[0].is_string())
+    callback_id = args_list[0].GetString();
 
   base::Value ukm_debug_data =
       ukm::debug::UkmDebugDataExtractor::GetStructuredData(ukm_service_);

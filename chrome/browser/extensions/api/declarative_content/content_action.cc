@@ -7,7 +7,6 @@
 #include <map>
 
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
@@ -278,15 +277,20 @@ bool RequestContentScript::InitScriptData(const base::DictionaryValue* dict,
     }
   }
   if (dict->HasKey(declarative_content_constants::kAllFrames)) {
-    if (!dict->GetBoolean(declarative_content_constants::kAllFrames,
-                          &script_data->all_frames))
+    absl::optional<bool> all_frames =
+        dict->FindBoolKey(declarative_content_constants::kAllFrames);
+    if (!all_frames.has_value())
       return false;
+
+    script_data->all_frames = all_frames.value();
   }
   if (dict->HasKey(declarative_content_constants::kMatchAboutBlank)) {
-    if (!dict->GetBoolean(declarative_content_constants::kMatchAboutBlank,
-                          &script_data->match_about_blank)) {
+    absl::optional<bool> match_about_blank =
+        dict->FindBoolKey(declarative_content_constants::kMatchAboutBlank);
+    if (!match_about_blank.has_value())
       return false;
-    }
+
+    script_data->match_about_blank = match_about_blank.value();
   }
 
   return true;
@@ -302,7 +306,7 @@ RequestContentScript::RequestContentScript(
   script_loader_ = ExtensionSystem::Get(browser_context)
                        ->user_script_manager()
                        ->GetUserScriptLoaderForExtension(extension->id());
-  scoped_observation_.Observe(script_loader_);
+  scoped_observation_.Observe(script_loader_.get());
   AddScript();
 }
 

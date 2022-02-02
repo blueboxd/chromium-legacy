@@ -10,6 +10,7 @@
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -47,6 +48,7 @@
 #include "fuchsia/engine/browser/media_player_impl.h"
 #include "fuchsia/engine/browser/navigation_policy_handler.h"
 #include "fuchsia/engine/browser/receiver_session_client.h"
+#include "fuchsia/engine/browser/url_request_rewrite_type_converters.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "fuchsia/engine/common/cast_streaming.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -292,7 +294,6 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
                                                : std::string()),
       params_for_popups_(std::move(params)),
       navigation_controller_(web_contents_.get()),
-      url_request_rewrite_rules_manager_(web_contents_.get()),
       permission_controller_(web_contents_.get()),
       binding_(this, std::move(frame_request)),
       media_blocker_(web_contents_.get()),
@@ -311,6 +312,8 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
   web_contents_->SetDelegate(this);
   web_contents_->SetPageBaseBackgroundColor(SK_AlphaTRANSPARENT);
   Observe(web_contents_.get());
+
+  url_request_rewrite_rules_manager_.AddWebContents(web_contents_.get());
 
   binding_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
@@ -589,7 +592,8 @@ void FrameImpl::MaybeStartCastStreaming(
   if (!context_->has_cast_streaming_enabled() || !receiver_session_client_)
     return;
 
-  mojo::AssociatedRemote<mojom::CastStreamingReceiver> cast_streaming_receiver;
+  mojo::AssociatedRemote<cast_streaming::mojom::CastStreamingReceiver>
+      cast_streaming_receiver;
   navigation_handle->GetRenderFrameHost()
       ->GetRemoteAssociatedInterfaces()
       ->GetInterface(&cast_streaming_receiver);
@@ -866,11 +870,14 @@ void FrameImpl::SetPopupFrameCreationListener(
 void FrameImpl::SetUrlRequestRewriteRules(
     std::vector<fuchsia::web::UrlRequestRewriteRule> rules,
     SetUrlRequestRewriteRulesCallback callback) {
-  zx_status_t error = url_request_rewrite_rules_manager_.OnRulesUpdated(
-      std::move(rules), std::move(callback));
-  if (error != ZX_OK) {
-    CloseAndDestroyFrame(error);
-    return;
+  auto mojom_rules =
+      mojo::ConvertTo<url_rewrite::mojom::UrlRequestRewriteRulesPtr>(
+          std::move(rules));
+  if (url_request_rewrite_rules_manager_.OnRulesUpdated(
+          std::move(mojom_rules))) {
+    std::move(callback)();
+  } else {
+    CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
   }
 }
 
@@ -1287,7 +1294,7 @@ void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
 void FrameImpl::RenderFrameCreated(content::RenderFrameHost* frame_host) {
   // The top-level frame is given a transparent background color.
   // GetView() is guaranteed to be non-null until |frame_host| teardown.
-  if (frame_host == web_contents()->GetMainFrame()) {
+  if (!frame_host->GetParentOrOuterDocument()) {
     frame_host->GetView()->SetBackgroundColor(SK_AlphaTRANSPARENT);
   }
 }

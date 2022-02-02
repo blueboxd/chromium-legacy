@@ -109,7 +109,8 @@ CaretDisplayItemClient::ComputeCaretRectAndPainterBlock(
     return {};
 
   // First compute a rect local to the layoutObject at the selection start.
-  const LocalCaretRect& caret_rect = LocalCaretRectOfPosition(caret_position);
+  const LocalCaretRect& caret_rect =
+      LocalCaretRectOfPosition(caret_position, kCannotCrossEditingBoundary);
   if (!caret_rect.layout_object)
     return {};
 
@@ -262,13 +263,13 @@ void CaretDisplayItemClient::PaintCaret(
                                                     display_item_type))
       return;
     recorder.emplace(context, *this, display_item_type,
-                     ToGfxRect(EnclosingIntRect(drawing_rect)));
+                     ToEnclosingRect(drawing_rect));
   }
 
-  IntRect paint_rect = PixelSnappedIntRect(drawing_rect);
+  gfx::Rect paint_rect = ToPixelSnappedRect(drawing_rect);
   context.FillRect(paint_rect, is_visible_if_active_ ? color_ : Color(),
                    PaintAutoDarkMode(layout_block_->StyleRef(),
-                                     DarkModeFilter::ElementRole::kText));
+                                     DarkModeFilter::ElementRole::kForeground));
 }
 
 void CaretDisplayItemClient::RecordSelection(
@@ -276,7 +277,7 @@ void CaretDisplayItemClient::RecordSelection(
     const PhysicalOffset& paint_offset) {
   PhysicalRect drawing_rect = local_rect_;
   drawing_rect.Move(paint_offset);
-  gfx::Rect paint_rect = ToGfxRect(PixelSnappedIntRect(drawing_rect));
+  gfx::Rect paint_rect = ToPixelSnappedRect(drawing_rect);
 
   // For the caret, the start and selection selection bounds are recorded as
   // the same edges, with the type marked as CENTER.

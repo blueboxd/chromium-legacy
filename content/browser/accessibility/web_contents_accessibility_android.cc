@@ -12,12 +12,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
-#include "base/macros.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl_android.h"
@@ -29,6 +27,7 @@
 #include "content/public/android/content_jni_headers/WebContentsAccessibilityImpl_jni.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "net/base/data_url.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/events/android/motion_event_android.h"
@@ -613,6 +612,19 @@ void WebContentsAccessibilityAndroid::ClearNodeInfoCacheForGivenId(
                                                                  unique_id);
 }
 
+std::u16string
+WebContentsAccessibilityAndroid::GenerateAccessibilityNodeInfoString(
+    int32_t unique_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return nullptr;
+
+  return base::android::ConvertJavaStringToUTF16(
+      Java_WebContentsAccessibilityImpl_generateAccessibilityNodeInfoString(
+          env, obj, unique_id));
+}
+
 base::android::ScopedJavaLocalRef<jstring>
 WebContentsAccessibilityAndroid::GetSupportedHtmlElementTypes(
     JNIEnv* env,
@@ -840,7 +852,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       node->CanScrollLeft(), node->CanScrollRight(), node->IsClickable(),
       node->IsTextField(), node->IsEnabled(), node->IsFocusable(),
       node->IsFocused(), node->IsCollapsed(), node->IsExpanded(),
-      node->HasNonEmptyValue(), !node->GetInnerText().empty(),
+      node->HasNonEmptyValue(), !node->GetTextContentUTF16().empty(),
       node->IsSeekControl(), node->IsFormDescendant());
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoBaseAttributes(
@@ -875,7 +887,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoText(
       env, obj, info,
-      base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetTextContentUTF16()),
       node->IsLink(), node->IsTextField(),
       GetCanonicalJNIString(env, node->GetInheritedString16Attribute(
                                      ax::mojom::StringAttribute::kLanguage)),
@@ -893,7 +905,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoOAttributes(
-      env, obj, info, node->HasCharacterLocations(),
+      env, obj, info, node->HasCharacterLocations(), node->HasImage(),
       base::android::ConvertUTF16ToJavaString(env, node->GetHint()));
 
   if (node->IsCollection()) {
@@ -953,7 +965,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityEvent(
   switch (event_type) {
     case ANDROID_ACCESSIBILITY_EVENT_TEXT_CHANGED: {
       std::u16string before_text = node->GetTextChangeBeforeText();
-      std::u16string text = node->GetInnerText();
+      std::u16string text = node->GetTextContentUTF16();
       Java_WebContentsAccessibilityImpl_setAccessibilityEventTextChangedAttrs(
           env, obj, event, node->GetTextChangeFromIndex(),
           node->GetTextChangeAddedCount(), node->GetTextChangeRemovedCount(),
@@ -962,7 +974,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityEvent(
       break;
     }
     case ANDROID_ACCESSIBILITY_EVENT_TEXT_SELECTION_CHANGED: {
-      std::u16string text = node->GetInnerText();
+      std::u16string text = node->GetTextContentUTF16();
       Java_WebContentsAccessibilityImpl_setAccessibilityEventSelectionAttrs(
           env, obj, event, node->GetSelectionStart(), node->GetSelectionEnd(),
           node->GetEditableTextLength(),
@@ -1021,7 +1033,7 @@ void WebContentsAccessibilityAndroid::ScrollToMakeNodeVisible(
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (node) {
     node->manager()->ScrollToMakeVisible(
-        *node, gfx::Rect(node->GetClippedFrameBoundsRect().size()));
+        *node, gfx::Rect(node->GetUnclippedFrameBoundsRect().size()));
   }
 }
 
@@ -1187,7 +1199,7 @@ jboolean WebContentsAccessibilityAndroid::NextAtGranularity(
   int end_index = -1;
   if (root_manager->NextAtGranularity(granularity, cursor_index, node,
                                       &start_index, &end_index)) {
-    std::u16string text = node->GetInnerText();
+    std::u16string text = node->GetTextContentUTF16();
     Java_WebContentsAccessibilityImpl_finishGranularityMoveNext(
         env, obj, base::android::ConvertUTF16ToJavaString(env, text),
         extend_selection, start_index, end_index);
@@ -1203,7 +1215,7 @@ jint WebContentsAccessibilityAndroid::GetTextLength(
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (!node)
     return -1;
-  std::u16string text = node->GetInnerText();
+  std::u16string text = node->GetTextContentUTF16();
   return text.size();
 }
 
@@ -1222,7 +1234,7 @@ void WebContentsAccessibilityAndroid::AddSpellingErrorForTesting(
   }
 
   CHECK(node->GetRole() == ax::mojom::Role::kStaticText);
-  std::u16string text = node->GetInnerText();
+  std::u16string text = node->GetTextContentUTF16();
   CHECK_LT(start_offset, static_cast<int>(text.size()));
   CHECK_LE(end_offset, static_cast<int>(text.size()));
 
@@ -1259,7 +1271,8 @@ jboolean WebContentsAccessibilityAndroid::PreviousAtGranularity(
                                           &start_index, &end_index)) {
     Java_WebContentsAccessibilityImpl_finishGranularityMovePrevious(
         env, obj,
-        base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()),
+        base::android::ConvertUTF16ToJavaString(env,
+                                                node->GetTextContentUTF16()),
         extend_selection, start_index, end_index);
     return true;
   }
@@ -1463,6 +1476,50 @@ WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
   }
   return base::android::ToJavaIntArray(env, coords,
                                        static_cast<size_t>(4 * len));
+}
+
+jboolean WebContentsAccessibilityAndroid::GetImageData(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& info,
+    jint unique_id,
+    jboolean has_sent_previous_request) {
+  BrowserAccessibilityManagerAndroid* root_manager =
+      GetRootBrowserAccessibilityManager();
+  if (!root_manager)
+    return false;
+
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return false;
+
+  // If this is a valid node, try to get an image data url for it.
+  std::string image_data_url =
+      node->GetStringAttribute(ax::mojom::StringAttribute::kImageDataUrl);
+  std::string mimetype;
+  std::string charset;
+  std::string image_data;
+  bool success = net::DataURL::Parse(GURL(image_data_url), &mimetype, &charset,
+                                     &image_data);
+
+  if (!success) {
+    // If getting the image data url was not successful, then request that the
+    // information be added to the node asynchronously (if it has not previously
+    // been requested), and return false.
+    if (!has_sent_previous_request) {
+      root_manager->GetImageData(*node, kMaxImageSize);
+    }
+
+    return false;
+  }
+
+  // If the image data has been retrieved from the image data url successfully,
+  // then convert it to a Java byte array and add it in the Bundle extras of
+  // the node, and return true.
+  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoImageData(
+      env, obj, info, base::android::ToJavaByteArray(env, image_data));
+
+  return true;
 }
 
 BrowserAccessibilityManagerAndroid*

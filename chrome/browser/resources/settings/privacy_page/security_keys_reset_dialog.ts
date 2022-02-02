@@ -12,12 +12,11 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../settings_shared_css.js';
+import '../i18n_setup.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {loadTimeData} from '../i18n_setup.js';
 
 import {SecurityKeysResetBrowserProxy, SecurityKeysResetBrowserProxyImpl} from './security_keys_browser_proxy.js';
 
@@ -30,15 +29,17 @@ export enum ResetDialogPage {
   RESET_NOT_ALLOWED = 'resetNotAllowed',
 }
 
-interface SettingsSecurityKeysResetDialogElement {
+export interface SettingsSecurityKeysResetDialogElement {
   $: {
+    button: HTMLElement,
     dialog: CrDialogElement,
+    resetFailed: HTMLElement,
   };
 }
 
 const SettingsSecurityKeysResetDialogElementBase = I18nMixin(PolymerElement);
 
-class SettingsSecurityKeysResetDialogElement extends
+export class SettingsSecurityKeysResetDialogElement extends
     SettingsSecurityKeysResetDialogElementBase {
   static get is() {
     return 'settings-security-keys-reset-dialog';
@@ -162,6 +163,13 @@ class SettingsSecurityKeysResetDialogElement extends
    */
   private maybeActionButton_(complete: boolean): string {
     return complete ? 'action-button' : 'cancel-button';
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-security-keys-reset-dialog':
+        SettingsSecurityKeysResetDialogElement;
   }
 }
 

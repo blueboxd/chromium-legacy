@@ -5,6 +5,7 @@
 #include "ash/app_list/views/app_list_item_view.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
+#include "ash/app_list/views/apps_grid_context_menu.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -323,7 +325,12 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
               base::UTF8ToUTF16(item->name()));
   item->AddObserver(this);
 
-  set_context_menu_controller(this);
+  if (is_folder_) {
+    context_menu_for_folder_ = std::make_unique<AppsGridContextMenu>();
+    set_context_menu_controller(context_menu_for_folder_.get());
+  } else {
+    set_context_menu_controller(this);
+  }
 
   SetAnimationDuration(base::TimeDelta());
 
@@ -545,11 +552,11 @@ void AppListItemView::OnDragEnded() {
 }
 
 void AppListItemView::CancelContextMenu() {
-  if (!context_menu_)
+  if (!item_menu_model_adapter_)
     return;
 
   menu_close_initiated_from_drag_ = true;
-  context_menu_->Cancel();
+  item_menu_model_adapter_->Cancel();
 }
 
 gfx::Point AppListItemView::GetDragImageOffset() {
@@ -579,10 +586,16 @@ void AppListItemView::SetItemName(const std::u16string& display_name,
   const std::u16string folder_name_placeholder =
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
           IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER);
-  if (is_folder_ && display_name.empty())
+  if (is_folder_ && display_name.empty()) {
     title_->SetText(folder_name_placeholder);
-  else
-    title_->SetText(display_name);
+  } else {
+    std::u16string title_text;
+    // TODO(crbug.com/1272817): Use a view for the dot.
+    if (item() && item()->is_new_install())
+      title_text = u"• ";
+    title_text += display_name;
+    title_->SetText(title_text);
+  }
 
   tooltip_text_ = display_name == full_name ? std::u16string() : full_name;
 
@@ -624,7 +637,7 @@ void AppListItemView::OnContextMenuModelReceived(
     ui::MenuSourceType source_type,
     std::unique_ptr<ui::SimpleMenuModel> menu_model) {
   waiting_for_context_menu_options_ = false;
-  if (!menu_model || (context_menu_ && context_menu_->IsShowingMenu()))
+  if (!menu_model || IsShowingAppMenu())
     return;
 
   // GetContextMenuModel is asynchronous and takes a nontrivial amount of time
@@ -652,32 +665,41 @@ void AppListItemView::OnContextMenuModelReceived(
   // Anchor the menu to the same rect that is used for selection highlight.
   AdaptBoundsForSelectionHighlight(&anchor_rect);
 
-  AppLaunchedMetricParams metric_params = {
-      AppListLaunchedFrom::kLaunchedFromGrid};
-  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
-
-  // Assign the correct app type to `context_menu_` according to the parent view
-  // of the app list item view.
+  // Assign the correct app type to `item_menu_model_adapter_` according to the
+  // parent view of the app list item view.
   AppListMenuModelAdapter::AppListViewAppType app_type;
+  AppLaunchedMetricParams metric_params;
   switch (context_) {
     case Context::kAppsGridView:
       app_type = features::IsProductivityLauncherEnabled()
                      ? AppListMenuModelAdapter::PRODUCTIVITY_LAUNCHER_APP_GRID
                      : AppListMenuModelAdapter::FULLSCREEN_APP_GRID;
+      metric_params.launched_from = AppListLaunchedFrom::kLaunchedFromGrid;
+      metric_params.launch_type = AppListLaunchType::kApp;
       break;
     case Context::kRecentAppsView:
       app_type = AppListMenuModelAdapter::PRODUCTIVITY_LAUNCHER_RECENT_APP;
+      metric_params.launched_from =
+          AppListLaunchedFrom::kLaunchedFromRecentApps;
+      metric_params.launch_type = AppListLaunchType::kAppSearchResult;
       break;
   }
+  view_delegate_->GetAppLaunchedMetricParams(&metric_params);
 
-  context_menu_ = std::make_unique<AppListMenuModelAdapter>(
+  item_menu_model_adapter_ = std::make_unique<AppListMenuModelAdapter>(
       item_weak_->GetMetadata()->id, std::move(menu_model), GetWidget(),
       source_type, metric_params, app_type,
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()),
       view_delegate_->IsInTabletMode());
-  context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
-                     run_types);
+
+  item_menu_model_adapter_->Run(
+      anchor_rect, views::MenuAnchorPosition::kBubbleRight, run_types);
+
+  if (!context_menu_shown_callback_.is_null()) {
+    context_menu_shown_callback_.Run();
+  }
+
   grid_delegate_->SetSelectedView(this);
 }
 
@@ -685,7 +707,7 @@ void AppListItemView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  if (context_menu_ && context_menu_->IsShowingMenu())
+  if (IsShowingAppMenu())
     return;
   // Prevent multiple requests for context menus before the current request
   // completes. If a second request is sent before the first one can respond,
@@ -694,8 +716,14 @@ void AppListItemView::ShowContextMenuForViewImpl(
   if (waiting_for_context_menu_options_)
     return;
   waiting_for_context_menu_options_ = true;
+
+  // If this item view is in the AppsGridView with the app sort feature enabled,
+  // request the context menu model to add sort options that can sort the app
+  // list.
+  bool add_sort_options = features::IsLauncherAppSortEnabled() &&
+                          context_ == Context::kAppsGridView;
   view_delegate_->GetContextMenuModel(
-      item_weak_->id(),
+      item_weak_->id(), add_sort_options,
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
 }
@@ -716,8 +744,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   // TODO(ginko) focus and selection should be unified.
   if ((grid_delegate_->IsSelectedView(this) || HasFocus()) &&
       (view_delegate_->KeyboardTraversalEngaged() ||
-       waiting_for_context_menu_options_ ||
-       (context_menu_ && context_menu_->IsShowingMenu()))) {
+       waiting_for_context_menu_options_ || IsShowingAppMenu())) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     if (view_delegate_->KeyboardTraversalEngaged()) {
@@ -729,9 +756,9 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
       const SkColor bg_color = grid_delegate_->IsInFolder()
                                    ? color_provider->GetFolderBackgroundColor()
                                    : gfx::kPlaceholderColor;
-      flags.setColor(SkColorSetA(
-          color_provider->GetRippleAttributesBaseColor(bg_color),
-          color_provider->GetRippleAttributesHighlightOpacity(bg_color) * 255));
+      flags.setColor(
+          SkColorSetA(color_provider->GetInkDropBaseColor(bg_color),
+                      color_provider->GetInkDropOpacity(bg_color) * 255));
       flags.setStyle(cc::PaintFlags::kFill_Style);
     }
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
@@ -902,7 +929,7 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_END:
       touch_drag_timer_.Stop();
       SetTouchDragging(false);
-      if (context_menu_ && context_menu_->IsShowingMenu())
+      if (IsShowingAppMenu())
         grid_delegate_->SetSelectedView(this);
       break;
     case ui::ET_GESTURE_TWO_FINGER_TAP:
@@ -994,8 +1021,17 @@ bool AppListItemView::FireTouchDragTimerForTest() {
   return true;
 }
 
+bool AppListItemView::IsShowingAppMenu() const {
+  return item_menu_model_adapter_ && item_menu_model_adapter_->IsShowingMenu();
+}
+
 bool AppListItemView::IsNotificationIndicatorShownForTest() const {
   return notification_indicator_ && notification_indicator_->GetVisible();
+}
+
+void AppListItemView::SetContextMenuShownCallbackForTest(
+    base::RepeatingClosure closure) {
+  context_menu_shown_callback_ = std::move(closure);
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
@@ -1010,7 +1046,7 @@ void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
 void AppListItemView::OnMenuClosed() {
   // Release menu since its menu model delegate (AppContextMenu) could be
   // released as a result of menu command execution.
-  context_menu_.reset();
+  item_menu_model_adapter_.reset();
 
   if (!menu_close_initiated_from_drag_) {
     // If the menu was not closed due to a drag sequence(e.g. multi touch) reset
@@ -1127,6 +1163,13 @@ void AppListItemView::ItemBadgeVisibilityChanged() {
 void AppListItemView::ItemBadgeColorChanged() {
   if (notification_indicator_)
     notification_indicator_->SetColor(item_weak_->notification_badge_color());
+}
+
+void AppListItemView::ItemIsNewInstallChanged() {
+  // TODO(crbug.com/1272817): Use a view for the dot. For now, just refresh the
+  // label to add or remove the bullet from the name.
+  SetItemName(base::UTF8ToUTF16(item_weak_->GetDisplayName()),
+              base::UTF8ToUTF16(item_weak_->name()));
 }
 
 void AppListItemView::ItemBeingDestroyed() {

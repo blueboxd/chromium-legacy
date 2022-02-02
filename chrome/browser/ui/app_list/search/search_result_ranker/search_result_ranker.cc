@@ -12,7 +12,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder.h"
-#include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
@@ -145,8 +143,7 @@ SearchResultRanker::~SearchResultRanker() {
   }
 }
 
-void SearchResultRanker::InitializeRankers(
-    SearchController* search_controller) {
+void SearchResultRanker::InitializeRankers() {
   if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
     zero_state_item_coeff_ = base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableZeroStateMixedTypesRanker, "item_coeff",

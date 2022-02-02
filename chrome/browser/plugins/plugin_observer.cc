@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -75,7 +76,7 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
   }
 
  private:
-  PluginObserver* observer_;
+  raw_ptr<PluginObserver> observer_;
   mojo::Remote<chrome::mojom::PluginRenderer> plugin_renderer_remote_;
 };
 
@@ -93,6 +94,7 @@ void PluginObserver::BindPluginHost(
 
 PluginObserver::PluginObserver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
+      content::WebContentsUserData<PluginObserver>(*web_contents),
       plugin_host_receivers_(web_contents, this) {}
 
 PluginObserver::~PluginObserver() {

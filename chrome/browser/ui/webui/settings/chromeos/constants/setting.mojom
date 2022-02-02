@@ -69,24 +69,25 @@ enum Setting {
   kNearbyShareDataUsage = 217,
   kPhoneHubAppsOnOff = 218,
   kPhoneHubCameraRollOnOff = 219,
+  kDevicesNearbyAreSharingNotificationOnOff = 220,
 
   // People section.
   kAddAccount = 300,
   kRemoveAccount = 301,
   kSplitSyncOnOff = 302,
-  kLockScreen = 303,
-  kChangeAuthPin = 304,
-  kGuestBrowsing = 305,
-  kShowUsernamesAndPhotosAtSignIn = 306,
-  kRestrictSignIn = 307,
-  kAddToUserAllowlist = 308,
-  kRemoveFromUserAllowlist = 309,
+  // Note: Value 303 was for kLockScreen. Do not reuse.
+  // Note: Value 304 was for kChangeAuthPin. Do not reuse.
+  // Note: Value 305 was for kGuestBrowsing. Do not reuse.
+  // Note: Value 306 was for kShowUsernamesAndPhotosAtSignIn. Do not reuse.
+  // Note: Value 307 was for kRestrictSignIn. Do not reuse.
+  // Note: Value 308 was for kAddToUserAllowlist. Do not reuse.
+  // Note: Value 309 was for kRemoveFromUserAllowlist. Do not reuse.
   // Note: Values 310, 311 and 312 were for kAddKerberosTicket,
   // kRemoveKerberosTicket and kSetActiveKerberosTicket, respectively. These
   // settings have been moved to a separate Kerberos section - see
   // https://crbug.com/1186190. Do not reuse.
-  kAddFingerprint = 313,
-  kRemoveFingerprint = 314,
+  // Note: Value 313 was for kAddFingerprint. Do not reuse.
+  // Note: Value 314 was for kRemoveFingerprint. Do not reuse.
   kSetUpParentalControls = 315,
   kNonSplitSyncEncryptionOptions = 316,
   kAutocompleteSearchesAndUrls = 317,
@@ -200,6 +201,8 @@ enum Setting {
   kAddFingerprintV2 = 1111,
   kRemoveFingerprintV2 = 1112,
   kPeripheralDataAccessProtection = 1113,
+  kSnoopingProtection = 1114,
+  kQuickDim = 1115,
 
   // Languages and Input section.
   kAddLanguage = 1200,
@@ -267,6 +270,7 @@ enum Setting {
   kTermsOfService = 1706,
   kDiagnostics = 1707,
   kChangeDeviceName = 1708,
+  kFirmwareUpdates = 1709,
 
   // Kerberos section.
   kAddKerberosTicketV2 = 1800,

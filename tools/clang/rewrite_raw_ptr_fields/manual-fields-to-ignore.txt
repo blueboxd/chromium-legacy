@@ -21,6 +21,7 @@ WTF::HashTableAddResult::container_
 WTF::HashTableAddResult::stored_value
 cast_channel::CastTransportTest::logger_
 content::IndexedDBDispatcherHost::indexed_db_context_
+ServiceProcessState::state_
 
 # Populated manually - conflicting types in an initializer list
 WebUITabStripContainerView::tab_counter_
@@ -43,6 +44,31 @@ WTF::ICUConverterWrapper::converter
 # Populated manually - always holds a pointer to an OilPan-allocated memory.
 blink::PersistentBase::raw_
 blink::SVGFilterBuilder::last_effect_
+
+# Populated manually - global-scope exclusions that are missing because the
+# global variable is in a build configuration specific code
+base::android::ReachedAddressesBitset::reached_
+
+# Populated manually - missing |.get()| in not-rewritten platform specific code
+viz::OverlayCandidate::rpdq
+viz::CALayerOverlay::rpdq
+viz::DrawQuad::shared_quad_state
+content::RenderWidgetHostInputEventRouter::wheel_target_
+NavigateParams::navigated_or_inserted_contents
+web_app::WebAppTabStripBrowserTest::App::web_contents
+policy::ChromePolicyConversionsClient::profile_
+
+# Populated manually - reference to raw_ptr in not-rewritten platform specific code
+viz::DirectRenderer::DrawingFrame::current_render_pass
+TabGroupViews::header_
+TabGroupViews::underline_
+TabGroupViews::highlight_
+
+# Populated manually - incompatibilities with tracing in not-rewritten platform specific code
+TabStripModelChange::RemovedTab::contents
+
+# Populated manually - extra .get() added in not-rewritten platform specific code
+SECItem::data
 
 # Populated manually - the rewriter has trouble appending |.get()| inside macros
 # that work with |XDisplay*|.
@@ -186,6 +212,10 @@ device::RSAPublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, con
 device::RSAPublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, const cbor::Value::MapValue &)::COSEKey::n
 device::RSAPublicKey::ExtractFromCOSEKey(int32_t, base::span<const uint8_t>, const cbor::Value::MapValue &)::COSEKey::e
 
+# Populated manually - pointer to Objective-C object
+gfx::ScopedNSGraphicsContextSaveGState::context_
+base::mac::ScopedNSAutoreleasePool::autorelease_pool_
+
 #######
 # BackupRefPtr-specific sections
 #######
@@ -217,6 +247,10 @@ gpu::gles2::PassthroughProgramCache::ProgramCacheValue::program_cache_
 #######
 # Performance-related exclusions
 #######
+
+# Populated manually - to avoid out-of-line destructor
+base::LockFreeAddressHashSet::Node::next
+gpu::gles2::TextureManager::DoTexSubImageArguments::pixels
 
 # Populated manually - on-stack pointer + a large number of non-PA pointees
 base::AutoReset::scoped_variable_

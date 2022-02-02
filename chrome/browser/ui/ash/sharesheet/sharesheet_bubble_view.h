@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/tablet_mode_observer.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -28,7 +30,8 @@ namespace sharesheet {
 class SharesheetHeaderView;
 class SharesheetExpandButton;
 
-class SharesheetBubbleView : public views::BubbleDialogDelegateView {
+class SharesheetBubbleView : public views::BubbleDialogDelegateView,
+                             public TabletModeObserver {
  public:
   METADATA_HEADER(SharesheetBubbleView);
   using TargetInfo = ::sharesheet::TargetInfo;
@@ -71,6 +74,11 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+  void OnTabletControllerDestroyed() override;
+
   void CreateBubble();
   std::unique_ptr<views::View> MakeScrollableTargetView(
       std::vector<TargetInfo> targets);
@@ -85,7 +93,6 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   void ShowWidgetWithAnimateFadeIn();
   void CloseWidgetWithAnimateFadeOut(views::Widget::ClosedReason closed_reason);
   void CloseWidgetWithReason(views::Widget::ClosedReason closed_reason);
-  int GetBubbleHeight();
   void RecordFormFactorMetric();
 
   // Owns this class.
@@ -99,7 +106,7 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   int height_ = 0;
   bool show_expanded_view_ = false;
   bool is_bubble_closing_ = false;
-  bool user_selection_made_ = false;
+  bool close_on_deactivate_ = true;
   bool escape_pressed_ = false;
 
   size_t keyboard_highlighted_target_ = 0;
@@ -121,6 +128,8 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView {
   SharesheetExpandButton* expand_button_ = nullptr;
 
   std::unique_ptr<SharesheetParentWidgetObserver> parent_widget_observer_;
+  base::ScopedObservation<TabletMode, TabletModeObserver>
+      tablet_mode_observation_{this};
 };
 
 }  // namespace sharesheet

@@ -128,6 +128,9 @@ class BrowserAppInstanceRegistry
     observers_.RemoveObserver(observer);
   }
 
+  // Runs notifications for all existing instances.
+  void NotifyExistingInstances(BrowserAppInstanceObserver* observer);
+
   void BindReceiver(
       crosapi::CrosapiId id,
       mojo::PendingReceiver<crosapi::mojom::BrowserAppInstanceRegistry>
@@ -210,7 +213,8 @@ class BrowserAppInstanceRegistry
       receiver_set_;
   mojo::Remote<crosapi::mojom::BrowserAppInstanceController> controller_;
 
-  base::ObserverList<BrowserAppInstanceObserver, true>::Unchecked observers_;
+  base::ObserverList<BrowserAppInstanceObserver, true>::Unchecked observers_{
+      base::ObserverListPolicy::EXISTING_ONLY};
 
   base::ScopedObservation<BrowserAppInstanceTracker, BrowserAppInstanceObserver>
       tracker_observation_{this};

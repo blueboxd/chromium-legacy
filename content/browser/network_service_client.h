@@ -9,11 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -32,7 +30,7 @@ namespace content {
 
 class WebRtcConnectionsObserver;
 
-class CONTENT_EXPORT NetworkServiceClient
+class NetworkServiceClient
     : public network::mojom::URLLoaderNetworkServiceObserver,
 #if defined(OS_ANDROID)
       public net::NetworkChangeNotifier::ConnectionTypeObserver,

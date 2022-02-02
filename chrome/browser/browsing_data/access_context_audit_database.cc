@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
 #include "base/files/file_util.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"

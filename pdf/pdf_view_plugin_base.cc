@@ -66,6 +66,7 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -890,7 +891,7 @@ void PdfViewPluginBase::UpdateGeometryOnPluginRectChanged(
   // We should try to avoid the downscaling during this calculation process and
   // maybe migrate off `plugin_dip_size_`.
   plugin_dip_size_ =
-      gfx::ScaleToEnclosingRectSafe(new_plugin_rect, 1.0f / new_device_scale)
+      gfx::ScaleToEnclosingRect(new_plugin_rect, 1.0f / new_device_scale)
           .size();
 
   paint_manager_.SetSize(plugin_rect_.size(), device_scale_);
@@ -970,7 +971,23 @@ void PdfViewPluginBase::CalculateBackgroundParts() {
     background_parts_.push_back(part);
 }
 
-void PdfViewPluginBase::UpdateScroll(const gfx::Vector2dF& scroll_offset) {
+gfx::PointF PdfViewPluginBase::GetScrollPositionFromOffset(
+    const gfx::Vector2dF& scroll_offset) const {
+  gfx::PointF scroll_origin;
+
+  // TODO(crbug.com/1140374): Right-to-left scrolling currently is not
+  // compatible with the PDF viewer's sticky "scroller" element.
+  if (ui_direction_ == base::i18n::RIGHT_TO_LEFT && IsPrintPreview()) {
+    scroll_origin.set_x(
+        std::max(document_size_.width() * static_cast<float>(zoom_) -
+                     plugin_dip_size_.width(),
+                 0.0f));
+  }
+
+  return scroll_origin + scroll_offset;
+}
+
+void PdfViewPluginBase::UpdateScroll(const gfx::PointF& scroll_position) {
   if (stop_scrolling_)
     return;
 
@@ -980,13 +997,6 @@ void PdfViewPluginBase::UpdateScroll(const gfx::Vector2dF& scroll_offset) {
   float max_y = std::max(document_size_.height() * static_cast<float>(zoom_) -
                              plugin_dip_size_.height(),
                          0.0f);
-
-  // TODO(crbug.com/1256965): Right-to-left scrolling currently is not
-  // compatible with the PDF viewer's "scroller" element.
-  gfx::PointF scroll_position;
-  if (ui_direction_ == base::i18n::RIGHT_TO_LEFT && IsPrintPreview())
-    scroll_position.set_x(max_x);
-  scroll_position += scroll_offset;
 
   gfx::PointF scaled_scroll_position(
       base::clamp(scroll_position.x(), 0.0f, max_x),
@@ -1007,6 +1017,20 @@ int PdfViewPluginBase::GetDocumentPixelHeight() const {
       std::ceil(document_size_.height() * zoom() * device_scale()));
 }
 
+void PdfViewPluginBase::SetCaretPosition(const gfx::PointF& position) {
+  engine()->SetCaretPosition(FrameToPdfCoordinates(position));
+}
+
+void PdfViewPluginBase::MoveRangeSelectionExtent(const gfx::PointF& extent) {
+  engine()->MoveRangeSelectionExtent(FrameToPdfCoordinates(extent));
+}
+
+void PdfViewPluginBase::SetSelectionBounds(const gfx::PointF& base,
+                                           const gfx::PointF& extent) {
+  engine()->SetSelectionBounds(FrameToPdfCoordinates(base),
+                               FrameToPdfCoordinates(extent));
+}
+
 void PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo(int32_t page_index) {
   // Outdated calls are ignored.
   if (page_index != next_accessibility_page_index_)
@@ -1023,7 +1047,8 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityPageInfo(int32_t page_index) {
     return;
   }
 
-  SetAccessibilityPageInfo(page_info, text_runs, chars, page_objects);
+  SetAccessibilityPageInfo(std::move(page_info), std::move(text_runs),
+                           std::move(chars), std::move(page_objects));
 
   // Schedule loading the next page.
   ScheduleTaskOnMainThread(
@@ -1048,7 +1073,7 @@ void PdfViewPluginBase::PrepareAndSetAccessibilityViewportInfo() {
                         &viewport_info.selection_end_page_index,
                         &viewport_info.selection_end_char_index);
 
-  SetAccessibilityViewportInfo(viewport_info);
+  SetAccessibilityViewportInfo(std::move(viewport_info));
 }
 
 bool PdfViewPluginBase::StartFind(const std::string& text,
@@ -1282,8 +1307,8 @@ void PdfViewPluginBase::HandleStopScrollingMessage(
 }
 
 void PdfViewPluginBase::HandleUpdateScrollMessage(const base::Value& message) {
-  UpdateScroll(gfx::Vector2dF(message.FindDoubleKey("x").value(),
-                              message.FindDoubleKey("y").value()));
+  UpdateScroll(GetScrollPositionFromOffset(gfx::Vector2dF(
+      message.FindDoubleKey("x").value(), message.FindDoubleKey("y").value())));
 }
 
 void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
@@ -1403,7 +1428,7 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
   DCHECK(message.FindBoolKey("userInitiated").has_value());
 
   SetZoom(new_zoom);
-  UpdateScroll(scroll_offset);
+  UpdateScroll(GetScrollPositionFromOffset(scroll_offset));
 }
 
 void PdfViewPluginBase::DidStartLoading() {
@@ -1789,6 +1814,14 @@ void PdfViewPluginBase::LoadNextPreviewPage() {
 
   if (print_preview_loaded_page_count_ == print_preview_page_count_)
     SendPrintPreviewLoadedNotification();
+}
+
+gfx::Point PdfViewPluginBase::FrameToPdfCoordinates(
+    const gfx::PointF& frame_coordinates) const {
+  return gfx::ToFlooredPoint(
+             gfx::ScalePoint(frame_coordinates, device_scale_)) -
+         plugin_rect_.OffsetFromOrigin() -
+         gfx::Vector2d(available_area_.x(), 0);
 }
 
 }  // namespace chrome_pdf

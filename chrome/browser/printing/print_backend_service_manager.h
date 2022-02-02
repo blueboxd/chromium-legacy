@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
 #include "base/values.h"
@@ -36,6 +37,8 @@ class PrintBackendServiceManager {
 
   // Register as a client of PrintBackendServiceManager.  This acts as a signal
   // of impending activity enabling possible optimizations within the manager.
+  // Returns an ID which the caller is to use with `UnregisterClient()` once it
+  // is completed its printing activity.
   uint32_t RegisterClient();
 
   // Notify the manager that this client is no longer needing print backend
@@ -63,7 +66,6 @@ class PrintBackendServiceManager {
       int document_cookie,
       const std::u16string& document_name,
       mojom::PrintTargetType target_type,
-      int page_count,
       const PrintSettings& settings,
       mojom::PrintBackendService::StartPrintingCallback callback);
 
@@ -285,9 +287,9 @@ class PrintBackendServiceManager {
   std::unique_ptr<crash_keys::ScopedPrinterInfo> crash_keys_;
 
   // Override of service to use for testing.
-  mojo::Remote<printing::mojom::PrintBackendService>*
+  raw_ptr<mojo::Remote<printing::mojom::PrintBackendService>>
       sandboxed_service_remote_for_test_ = nullptr;
-  mojo::Remote<printing::mojom::PrintBackendService>*
+  raw_ptr<mojo::Remote<printing::mojom::PrintBackendService>>
       unsandboxed_service_remote_for_test_ = nullptr;
 };
 

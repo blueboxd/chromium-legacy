@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_
 
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/strong_alias.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -27,21 +26,30 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   // Observer type that regulates conditions to invoke callbacks.
   enum class ObserverType { kLoader, kWorkerScheduler };
 
-  // Callback type for receiving scheduling policy change events.
-  using OnLifecycleStateChangedCallback =
-      base::RepeatingCallback<void(scheduler::SchedulingLifecycleState)>;
+  // Observer interface to receive scheduling policy change events.
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    // Notified when throttling state is changed. May be called consecutively
+    // with the same value.
+    virtual void OnLifecycleStateChanged(
+        scheduler::SchedulingLifecycleState) = 0;
+  };
 
   class PLATFORM_EXPORT LifecycleObserverHandle {
     USING_FAST_MALLOC(LifecycleObserverHandle);
 
    public:
-    explicit LifecycleObserverHandle(FrameOrWorkerScheduler* scheduler);
+    LifecycleObserverHandle(FrameOrWorkerScheduler* scheduler,
+                            Observer* observer);
     LifecycleObserverHandle(const LifecycleObserverHandle&) = delete;
     LifecycleObserverHandle& operator=(const LifecycleObserverHandle&) = delete;
     ~LifecycleObserverHandle();
 
    private:
     base::WeakPtr<FrameOrWorkerScheduler> scheduler_;
+    Observer* observer_;
   };
 
   // RAII handle which should be kept alive as long as the feature is active
@@ -77,6 +85,17 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
     base::WeakPtr<FrameOrWorkerScheduler> scheduler_;
   };
 
+  class PLATFORM_EXPORT Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Notifies that the list of active features for this worker has changed.
+    // See SchedulingPolicy::Feature for the list of features and the meaning
+    // of individual features.
+    virtual void UpdateBackForwardCacheDisablingFeatures(
+        uint64_t features_mask) = 0;
+  };
+
   virtual ~FrameOrWorkerScheduler();
 
   using Preempted = base::StrongAlias<class PreemptedTag, bool>;
@@ -101,21 +120,14 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   void RegisterStickyFeature(SchedulingPolicy::Feature feature,
                              SchedulingPolicy policy);
 
-  // Adds an observer callback to be notified on scheduling policy changed.
-  // When a callback is added, the initial state will be notified synchronously
-  // through the callback. The callback may be invoked consecutively with the
-  // same value. Returns a RAII handle that unregisters the callback when the
-  // handle is destroyed.
-  //
-  // New usage outside of platform/ should be rare. Prefer using
-  // ExecutionContextLifecycleStateObserver to observe paused and frozenness
-  // changes and PageVisibilityObserver to observe visibility changes. One
-  // exception is that this observer enables observing visibility changes of the
-  // associated page in workers, whereas PageVisibilityObserver does not
-  // (crbug.com/1286570).
-  std::unique_ptr<LifecycleObserverHandle> AddLifecycleObserver(
-      ObserverType,
-      OnLifecycleStateChangedCallback) WARN_UNUSED_RESULT;
+  // Adds an Observer instance to be notified on scheduling policy changed.
+  // When an Observer is added, the initial state will be notified synchronously
+  // through the Observer interface.
+  // A RAII handle is returned and observer is unregistered when the handle is
+  // destroyed.
+  std::unique_ptr<LifecycleObserverHandle> AddLifecycleObserver(ObserverType,
+                                                                Observer*)
+      WARN_UNUSED_RESULT;
 
   virtual std::unique_ptr<WebSchedulingTaskQueue> CreateWebSchedulingTaskQueue(
       WebSchedulingPriority) = 0;
@@ -139,28 +151,16 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
   virtual void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
                                      const SchedulingPolicy& policy) = 0;
 
-  virtual base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr();
+  // Gets a weak pointer for this scheduler that is reset when the influence by
+  // registered features to this scheduler is reset.
+  virtual base::WeakPtr<FrameOrWorkerScheduler>
+  GetSchedulingAffectingFeatureWeakPtr() = 0;
 
  private:
-  class ObserverState {
-   public:
-    ObserverState(ObserverType, OnLifecycleStateChangedCallback);
-    ObserverState(const ObserverState&) = delete;
-    ObserverState& operator=(const ObserverState&) = delete;
-    ~ObserverState();
+  void RemoveLifecycleObserver(Observer* observer);
 
-    ObserverType GetObserverType() const { return observer_type_; }
-    OnLifecycleStateChangedCallback& GetCallback() { return callback_; }
-
-   private:
-    ObserverType observer_type_;
-    OnLifecycleStateChangedCallback callback_;
-  };
-
-  void RemoveLifecycleObserver(LifecycleObserverHandle* handle);
-
-  HashMap<LifecycleObserverHandle*, std::unique_ptr<ObserverState>>
-      lifecycle_observers_;
+  // Observers are not owned by the scheduler.
+  HashMap<Observer*, ObserverType> lifecycle_observers_;
   base::WeakPtrFactory<FrameOrWorkerScheduler> weak_factory_{this};
 };
 

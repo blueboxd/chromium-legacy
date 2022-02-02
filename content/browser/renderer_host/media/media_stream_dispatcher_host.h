@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -16,6 +16,7 @@
 #include "content/browser/media/media_devices_util.h"
 #include "content/browser/media/media_stream_web_contents_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -60,7 +61,6 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
  private:
   friend class MockMediaStreamDispatcherHost;
 
-  class Broker;
   struct PendingAccessRequest;
   using RequestsQueue =
       base::circular_deque<std::unique_ptr<PendingAccessRequest>>;
@@ -94,6 +94,14 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OnStreamStarted(const std::string& label) override;
 #if !defined(OS_ANDROID)
   void FocusCapturedSurface(const std::string& label, bool focus) override;
+  void Crop(const base::UnguessableToken& device_id,
+            const base::Token& crop_id,
+            CropCallback callback) override;
+
+  void OnCropValidationComplete(const base::UnguessableToken& device_id,
+                                const base::Token& crop_id,
+                                CropCallback callback,
+                                bool crop_id_passed_validation);
 #endif
 
   void DoGenerateStream(
@@ -121,17 +129,23 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void OnDeviceCaptureHandleChange(const std::string& label,
                                    const blink::MediaStreamDevice& device);
 
+  void SetWebContentsObserver(
+      std::unique_ptr<MediaStreamWebContentsObserver,
+                      BrowserThread::DeleteOnUIThread> web_contents_observer);
+
   static int next_requester_id_;
 
   const int render_process_id_;
   const int render_frame_id_;
   const int requester_id_;
-  MediaStreamManager* media_stream_manager_;
+  raw_ptr<MediaStreamManager> media_stream_manager_;
   mojo::Remote<blink::mojom::MediaStreamDeviceObserver>
       media_stream_device_observer_;
   MediaDeviceSaltAndOriginCallback salt_and_origin_callback_;
 
-  scoped_refptr<Broker> broker_;
+  std::unique_ptr<MediaStreamWebContentsObserver,
+                  BrowserThread::DeleteOnUIThread>
+      web_contents_observer_;
 
   base::WeakPtrFactory<MediaStreamDispatcherHost> weak_factory_{this};
 };

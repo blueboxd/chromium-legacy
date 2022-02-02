@@ -33,10 +33,8 @@
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
-#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
@@ -55,6 +53,8 @@
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 class DisplayItemList;
@@ -63,10 +63,10 @@ class PictureLayer;
 
 namespace blink {
 
+class GraphicsLayer;
 class PaintController;
 class RasterInvalidationTracking;
 class RasterInvalidator;
-struct PreCompositedLayerInfo;
 
 typedef HeapVector<Member<GraphicsLayer>, 64> GraphicsLayerVector;
 
@@ -78,13 +78,11 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
                                       private cc::ContentLayerClient {
  public:
   // |Destroy()| shouold be called when the object is no longer used.
-  explicit GraphicsLayer(GraphicsLayerClient&);
+  explicit GraphicsLayer();
   GraphicsLayer(const GraphicsLayer&) = delete;
   GraphicsLayer& operator=(const GraphicsLayer&) = delete;
   ~GraphicsLayer() override;
   void Destroy();
-
-  GraphicsLayerClient& Client() const { return *client_; }
 
   void SetCompositingReasons(CompositingReasons reasons) {
     compositing_reasons_ = reasons;
@@ -120,8 +118,10 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
 
   // The offset is the origin of the layoutObject minus the origin of the
   // graphics layer (so either zero or negative).
-  IntSize OffsetFromLayoutObject() const { return offset_from_layout_object_; }
-  void SetOffsetFromLayoutObject(const IntSize&);
+  gfx::Vector2d OffsetFromLayoutObject() const {
+    return offset_from_layout_object_;
+  }
+  void SetOffsetFromLayoutObject(const gfx::Vector2d&);
 
   // The size of the layer.
   const gfx::Size& Size() const;
@@ -153,13 +153,13 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   void InvalidateContents();
 
   // Set that the position/size of the contents (image or video).
-  void SetContentsRect(const IntRect&);
+  void SetContentsRect(const gfx::Rect&);
 
   void SetContentsToCcLayer(scoped_refptr<cc::Layer> contents_layer);
   bool HasContentsLayer() const { return ContentsLayer(); }
   cc::Layer* ContentsLayer() const { return contents_layer_.get(); }
 
-  const IntRect& ContentsRect() const { return contents_rect_; }
+  const gfx::Rect& ContentsRect() const { return contents_rect_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
   cc::PictureLayer& CcLayer() const { return *layer_; }
@@ -170,21 +170,15 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   bool HasTrackedRasterInvalidations() const;
   RasterInvalidationTracking* GetRasterInvalidationTracking() const;
   void TrackRasterInvalidation(const DisplayItemClient&,
-                               const IntRect&,
+                               const gfx::Rect&,
                                PaintInvalidationReason);
-
-  // Returns true if any layer is repainted.
-  bool PaintRecursively(GraphicsContext&,
-                        HeapVector<PreCompositedLayerInfo>&,
-                        PaintController::CycleScope& cycle_scope,
-                        PaintBenchmarkMode = PaintBenchmarkMode::kNormal);
 
   PaintController& GetPaintController() const;
 
   void SetElementId(const CompositorElementId&);
 
   // DisplayItemClient methods
-  String DebugName() const final { return client_->DebugName(this); }
+  String DebugName() const final { return ""; }
   DOMNodeId OwnerNodeId() const final { return owner_node_id_; }
 
   // LayerAsJSONClient implementation.
@@ -218,8 +212,6 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
     needs_check_raster_invalidation_ = true;
   }
 
-  void PaintForTesting(const IntRect& interest_rect, bool record_debug_info);
-
   void SetShouldCreateLayersAfterPaint(bool);
   bool ShouldCreateLayersAfterPaint() const {
     return should_create_layers_after_paint_;
@@ -245,10 +237,6 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   bool FillsBoundsCompletely() const final { return false; }
 
   void ClearPaintStateRecursively();
-  void Paint(HeapVector<PreCompositedLayerInfo>&,
-             PaintBenchmarkMode,
-             PaintController::CycleScope*,
-             const IntRect* interest_rect = nullptr);
 
   // Adds a child without calling NotifyChildListChange(), so that adding
   // children can be batched before updating.
@@ -268,10 +256,8 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   RasterInvalidator& EnsureRasterInvalidator();
   void InvalidateRaster(const gfx::Rect&);
 
-  Member<GraphicsLayerClient> client_;
-
   // Offset from the owning layoutObject
-  IntSize offset_from_layout_object_;
+  gfx::Vector2d offset_from_layout_object_;
 
   TransformationMatrix transform_;
 
@@ -292,7 +278,7 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   HeapVector<Member<GraphicsLayer>> children_;
   Member<GraphicsLayer> parent_;
 
-  IntRect contents_rect_;
+  gfx::Rect contents_rect_;
 
   scoped_refptr<cc::PictureLayer> layer_;
   scoped_refptr<cc::Layer> contents_layer_;
@@ -304,7 +290,7 @@ class PLATFORM_EXPORT GraphicsLayer : public GarbageCollected<GraphicsLayer>,
   mutable std::unique_ptr<PaintController> paint_controller_;
 
   // Used only when CullRectUpdate is not enabled.
-  IntRect previous_interest_rect_;
+  gfx::Rect previous_interest_rect_;
 
   struct LayerState {
     // In theory, it's unnecessary to use RefCountedPropertyTreeState because

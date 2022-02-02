@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/native_widget_types.h"
@@ -41,6 +40,7 @@ class VIZ_SERVICE_EXPORT SoftwareOutputDeviceOzone
   void EndPaint() override;
   void OnSwapBuffers(SwapBuffersCallback swap_ack_callback) override;
   int MaxFramesPending() const override;
+  bool SupportsOverridePlatformSize() const override;
 
  private:
   // This object should outlive |surface_ozone_|. Ending its lifetime may

@@ -35,14 +35,13 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.bottomsheet.BookmarkBottomSheetCoordinator;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.IncognitoCustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
-import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -84,11 +83,14 @@ public class BookmarkUtils {
      * @param fromCustomTab boolean indicates whether it is called by Custom Tab.
      * @param bookmarkType Type of the added bookmark.
      * @param callback Invoked with the resulting bookmark ID, which could be null if unsuccessful.
+     * @param fromExplicitTrackUi Whether the bookmark was added directly from a tracking ui (e.g.
+     *         the shopping "track price" button).
      */
     public static void addOrEditBookmark(@Nullable BookmarkItem existingBookmarkItem,
             BookmarkModel bookmarkModel, Tab tab, SnackbarManager snackbarManager,
             BottomSheetController bottomSheetController, Activity activity, boolean fromCustomTab,
-            @BookmarkType int bookmarkType, Callback<BookmarkId> callback) {
+            @BookmarkType int bookmarkType, Callback<BookmarkId> callback,
+            boolean fromExplicitTrackUi) {
         assert bookmarkModel.isBookmarkModelLoaded();
         if (existingBookmarkItem != null) {
             startEditActivity(activity, existingBookmarkItem.getId());
@@ -98,8 +100,8 @@ public class BookmarkUtils {
 
         // TODO(crbug.com/1252228): Reading list support needs some tests.
         if (BookmarkFeatures.isImprovedSaveFlowEnabled()) {
-            BookmarkId newBookmarkId = addBookmarkAndShowSaveFlow(
-                    activity, bookmarkModel, tab, bottomSheetController, bookmarkType);
+            BookmarkId newBookmarkId = addBookmarkAndShowSaveFlow(activity, bookmarkModel, tab,
+                    bottomSheetController, bookmarkType, fromExplicitTrackUi);
             callback.onResult(newBookmarkId);
             return;
         }
@@ -144,7 +146,7 @@ public class BookmarkUtils {
 
     private static BookmarkId addBookmarkAndShowSaveFlow(Activity activity,
             BookmarkModel bookmarkModel, Tab tab, BottomSheetController bottomSheetController,
-            @BookmarkType int bookmarkType) {
+            @BookmarkType int bookmarkType, boolean fromExplicitTrackUi) {
         BookmarkId bookmarkId;
         // TODO(crbug.com/1252228): Reading list support needs some tests.
         bookmarkId = addBookmarkInternal(activity, bookmarkModel, tab.getTitle(),
@@ -154,7 +156,7 @@ public class BookmarkUtils {
                         new CommerceSubscriptionsServiceFactory()
                                 .getForLastUsedProfile()
                                 .getSubscriptionsManager());
-        bookmarkSaveFlowCoordinator.show(bookmarkId, /*fromExplicitTrackUi=*/false);
+        bookmarkSaveFlowCoordinator.show(bookmarkId, fromExplicitTrackUi);
 
         return bookmarkId;
     }
@@ -284,8 +286,7 @@ public class BookmarkUtils {
             title = context.getResources().getString(R.string.new_tab_title);
         }
         // The shopping list experiment saves extra metadata along with the bookmark.
-        if (ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.SHOPPING_LIST)) {
+        if (ShoppingFeatures.isShoppingListEnabled()) {
             bookmarkId = bookmarkModel.addPowerBookmark(
                     webContents, parent, bookmarkModel.getChildCount(parent), title, url);
         } else {
@@ -486,7 +487,8 @@ public class BookmarkUtils {
 
         if (bookmarkItem.getId().getType() == BookmarkType.READING_LIST
                 && !bookmarkItem.isFolder()) {
-            openReadingListInCustomTab(context, bookmarkItem.getUrl().getSpec(), isIncognito);
+            openReadingListItem(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName,
+                    isIncognito);
             model.setReadStatusForReadingList(bookmarkItem.getUrl(), true);
         } else {
             openUrl(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName);
@@ -531,36 +533,6 @@ public class BookmarkUtils {
     }
 
     /**
-     * Retrieve the save flow title for the given bookmark.
-     *
-     * @param context The current Android {@link Context}.
-     * @param bookmarkId The {@link BookmarkId} to get the title for.
-     * @return The title associated with the given bookmarkId.
-     */
-    public static String getSaveFlowTitleForBookmark(
-            Context context, BookmarkId bookmarkId, @Nullable PowerBookmarkMeta meta) {
-        if (meta != null && meta.getType() == PowerBookmarkType.SHOPPING) {
-            return context.getResources().getString(R.string.price_tracking_save_flow_title);
-        }
-        return context.getResources().getString(R.string.bookmark_page_saved_default);
-    }
-
-    /**
-     * Retrieve the save flow subtitle for the given bookmark.
-     *
-     * @param context The current Android {@link Context}.
-     * @param bookmarkId The {@link BookmarkId} to get the subtitle for.
-     * @return The subtitle associated with the given bookmarkId.
-     */
-    public static String getSaveFlowSubtitleForBookmark(
-            Context context, BookmarkId bookmarkId, @Nullable PowerBookmarkMeta meta) {
-        if (meta != null && meta.getType() == PowerBookmarkType.SHOPPING) {
-            return context.getResources().getString(R.string.price_tracking_save_flow_subtitle);
-        }
-        return null;
-    }
-
-    /**
      * Retrieve the save flow start icon for the given bookmark.
      *
      * @param bookmarkId The {@link BookmarkId} to get the start icon for.
@@ -588,6 +560,15 @@ public class BookmarkUtils {
         }
 
         IntentHandler.startActivityForTrustedIntent(intent);
+    }
+
+    private static void openReadingListItem(
+            Context context, String url, ComponentName componentName, boolean isOffTheRecord) {
+        if (ReadingListFeatures.shouldUseCustomTab()) {
+            openReadingListInCustomTab(context, url, isOffTheRecord);
+        } else {
+            openUrl(context, url, componentName);
+        }
     }
 
     private static void openReadingListInCustomTab(
@@ -688,5 +669,21 @@ public class BookmarkUtils {
             SharedPreferencesManager.getInstance().removeKey(
                     ChromePreferenceKeys.BOOKMARKS_LAST_USED_URL);
         }
+    }
+
+    /** Allows strings to be landed for translation. */
+    private void fakeFunctiontoAllowStringMerge() {
+        int id = R.string.price_tracking_save_flow_notification_switch_subtitle_error;
+        id = R.string.disable_price_tracking_menu_item;
+        id = R.string.price_tracking_bookmarks_filter_title;
+        id = R.string.tracked_products_empty_list_title;
+        id = R.string.price_tracking_disabled_snackbar;
+        id = R.string.price_tracking_enabled_snackbar;
+        id = R.string.price_tracking_error_snackbar;
+        id = R.string.price_tracking_error_snackbar_action;
+        id = R.string.iph_price_tracking_menu_item;
+        id = R.string.iph_price_tracking_menu_item_accessibility;
+        id = R.string.iph_shopping_list_save_flow;
+        id = R.string.iph_shopping_list_save_flow_accessibility;
     }
 }

@@ -245,7 +245,6 @@ public class WebViewLayoutTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1266967")
     public void testRequestMIDIAccess() throws Exception {
         runWebViewLayoutTest("blink-apis/webmidi/requestmidiaccess.html",
                 "blink-apis/webmidi/requestmidiaccess-expected.txt");
@@ -279,7 +278,6 @@ public class WebViewLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add("use-fake-device-for-media-stream")
-    @DisabledTest(message = "crbug.com/784868")
     public void testMediaStreamApiDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-permission-denied-callbacks.html",
                 "blink-apis/webrtc/mediastream-permission-denied-callbacks-expected.txt");

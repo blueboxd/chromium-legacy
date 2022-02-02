@@ -11,8 +11,8 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/json/json_reader.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -205,7 +205,7 @@ class NavigateTabMessageHandler {
     navigate_listener_.Reset();
   }
 
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   ExtensionTestMessageListener navigate_listener_;
 };
 

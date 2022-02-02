@@ -23,12 +23,10 @@ Blink code in `third_party/blink` uses [Blink style](blink-c++.md).
 
 Google style
 [targets C++17](https://google.github.io/styleguide/cppguide.html#C++_Version).
-Chromium targets C++14; [C++17 support](https://crbug.com/752720) is not
-expected before
-[mid-2021](https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html).
-Additionally, some features of supported C++ versions remain forbidden. The
-status of Chromium's C++ support is covered in more detail in
-[Modern C++ use in Chromium](c++11.md).
+Chromium targets C++14; C++17 support is not expected before 2022. (See the
+[tracking bug](https://crbug.com/752720) for more details.) Additionally, some
+features of supported C++ versions remain forbidden. The status of Chromium's
+C++ support is covered in more detail in [Modern C++ use in Chromium](c++11.md).
 
 ## Naming
 
@@ -222,6 +220,21 @@ functions take ownership of params passed as `T*`, or take `const
 scoped_refptr<T>&` instead of `T*`, or return `T*` instead of
 `scoped_refptr<T>` (to avoid refcount churn pre-C++11). Try to clean up such
 code when you find it, or at least not make such usage any more widespread.
+
+## Non-owning pointers in class fields
+
+Use `raw_ptr<T>` for class and struct fields in place of a raw C++ pointer `T*`
+whenever possible, except in paths that include `/renderer/` or
+`blink/public/web/`.  `raw_ptr<T>` is a non-owning smart pointer that has
+improved memory-safety over raw pointers, and can prevent exploitation of a
+significant percentage of Use-after-Free bugs.
+
+Using `raw_ptr<T>` may not be possible in rare cases for
+[performance reasons](../../base/memory/raw_ptr.md#Performance).
+Additionally, `raw_ptr<T>` doesn’t support some C++ scenarios (e.g. `constexpr`,
+ObjC pointers).  Tooling will help to encourage use of `raw_ptr<T>`.  See
+[raw_ptr.md](../../base/memory/raw_ptr.md#When-to-use-raw_ptr_T)
+for how to add exclusions.
 
 ## Forward declarations vs. #includes
 

@@ -8,16 +8,19 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
-#include "ash/session/fullscreen_alert_bubble.h"
+#include "ash/session/fullscreen_notification_bubble.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "components/policy/core/browser/url_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_matcher/url_matcher.h"
 
 namespace ash {
 
@@ -59,24 +62,16 @@ void FullscreenController::MaybeExitFullscreen() {
   active_window_state->OnWMEvent(&event);
 }
 
-void FullscreenController::MaybeShowAlert() {
-  if (!features::IsFullscreenAlertBubbleEnabled())
-    return;
-
-  auto* session_controler = Shell::Get()->session_controller();
+void FullscreenController::MaybeShowNotification() {
+  auto* session_controller = Shell::Get()->session_controller();
 
   // Check if a user session is active to exclude OOBE process.
-  if (session_controler->GetSessionState() !=
+  if (session_controller->GetSessionState() !=
       session_manager::SessionState::ACTIVE) {
     return;
   }
 
-  auto* prefs = session_controler->GetPrimaryUserPrefService();
-
-  if (!prefs->GetBoolean(prefs::kFullscreenAlertEnabled))
-    return;
-
-  // Check if the activate window is fullscreen.
+  // Check if the active window is fullscreen.
   WindowState* active_window_state = WindowState::ForActiveWindow();
   if (!active_window_state || !active_window_state->IsFullscreen())
     return;
@@ -89,16 +84,32 @@ void FullscreenController::MaybeShowAlert() {
   if (shelf_visible && !active_window_state->GetHideShelfWhenFullscreen())
     return;
 
-  if (!bubble_)
-    bubble_ = std::make_unique<FullscreenAlertBubble>();
+  // Get the URL of the active window from the shell delegate.
+  const GURL& url =
+      Shell::Get()->shell_delegate()->GetLastCommittedURLForWindowIfAny(
+          active_window_state->window());
 
-  bubble_->Show();
+  // Check if the URL is exempt from the notification by user pref.
+  auto* prefs = session_controller->GetPrimaryUserPrefService();
+  const base::ListValue* url_exempt_list =
+      prefs->GetList(prefs::kFullscreenNotificationUrlExemptList);
+  url_matcher::URLMatcher url_matcher;
+  policy::url_util::AddAllowFilters(&url_matcher, url_exempt_list);
+  if (!url_matcher.MatchURL(url).empty())
+    return;
+
+  if (!bubble_)
+    bubble_ = std::make_unique<FullscreenNotificationBubble>();
+
+  bubble_->ShowForWindowState(active_window_state);
 }
 
 // static
 void FullscreenController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kFullscreenAlertEnabled, true,
                                 PrefRegistry::PUBLIC);
+  registry->RegisterListPref(prefs::kFullscreenNotificationUrlExemptList,
+                             PrefRegistry::PUBLIC);
 }
 
 void FullscreenController::SuspendImminent(
@@ -130,7 +141,7 @@ void FullscreenController::ScreenBrightnessChanged(
     device_in_dark_ = true;
   } else {
     if (device_in_dark_)
-      MaybeShowAlert();
+      MaybeShowNotification();
     device_in_dark_ = false;
   }
 }
@@ -139,9 +150,18 @@ void FullscreenController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     base::TimeTicks timestamp) {
   // Show alert when the lid is opened. This also covers the case when the user
-  // turn off "Sleep when cover is closed".
+  // turns off "Sleep when cover is closed".
   if (state == chromeos::PowerManagerClient::LidState::OPEN)
-    MaybeShowAlert();
+    MaybeShowNotification();
+}
+
+void FullscreenController::OnLockStateChanged(bool locked) {
+  if (!locked)
+    MaybeShowNotification();
+}
+
+void FullscreenController::OnLoginScreenUiWindowClosed() {
+  MaybeShowNotification();
 }
 
 }  // namespace ash

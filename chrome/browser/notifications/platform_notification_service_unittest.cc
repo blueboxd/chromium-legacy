@@ -11,10 +11,12 @@
 #include "base/callback_helpers.h"
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/notifications/metrics/mock_notification_metrics_logger.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
@@ -90,6 +92,9 @@ class PlatformNotificationServiceTest : public testing::Test {
  public:
   void SetUp() override {
     TestingProfile::Builder profile_builder;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    profile_builder.SetIsMainProfile(true);
+#endif
     profile_builder.AddTestingFactory(
         HistoryServiceFactory::GetInstance(),
         HistoryServiceFactory::GetDefaultFactory());
@@ -132,13 +137,18 @@ class PlatformNotificationServiceTest : public testing::Test {
   }
 
  protected:
+  // This needs to be declared before `task_environment_`, so that it is
+  // destroyed after `task_environment_` - this ensures that tasks running on
+  // other threads won't access `scoped_feature_list_` while it is being
+  // destroyed.
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
 
   // Owned by the |profile_| as a keyed service.
-  MockNotificationMetricsLogger* mock_logger_;
+  raw_ptr<MockNotificationMetricsLogger> mock_logger_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> recorder_;
 };
@@ -411,9 +421,11 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
 
 class PlatformNotificationServiceTest_WebAppNotificationIconAndTitle
     : public PlatformNotificationServiceTest {
- private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      features::kDesktopPWAsNotificationIconAndTitle};
+ protected:
+  PlatformNotificationServiceTest_WebAppNotificationIconAndTitle() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kDesktopPWAsNotificationIconAndTitle);
+  }
 };
 
 TEST_F(PlatformNotificationServiceTest_WebAppNotificationIconAndTitle,

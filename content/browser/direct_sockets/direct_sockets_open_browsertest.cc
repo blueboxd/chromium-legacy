@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
@@ -16,6 +17,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -190,7 +192,7 @@ class MockHostResolver : public network::mojom::HostResolver {
   std::unique_ptr<net::HostResolver::ResolveHostRequest> internal_request_;
   mojo::Remote<network::mojom::ResolveHostClient> response_client_;
   mojo::Receiver<network::mojom::HostResolver> receiver_;
-  net::HostResolver* const internal_resolver_;
+  const raw_ptr<net::HostResolver> internal_resolver_;
 };
 
 class MockNetworkContext;
@@ -365,7 +367,7 @@ class MockUDPSocket : public network::mojom::UDPSocket {
 
   void Close() override { NOTIMPLEMENTED(); }
 
-  MockNetworkContext* const network_context_;
+  const raw_ptr<MockNetworkContext> network_context_;
   mojo::Receiver<network::mojom::UDPSocket> receiver_{this};
   mojo::Remote<network::mojom::UDPSocketListener> listener_;
 };
@@ -439,6 +441,14 @@ class DirectSocketsOpenBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
 
     ContentBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    std::string origin_list = GetTestOpenPageURL().spec();
+
+    command_line->AppendSwitchASCII(switches::kRestrictedApiOrigins,
+                                    origin_list);
   }
 
  private:

@@ -127,6 +127,31 @@ TranslatePolicyValidationResultSeverity(
   return issue::VALUE_VALIDATION_ISSUE_SEVERITY_UNSPECIFIED;
 }
 
+template <typename T>
+std::vector<T> ToVector(
+    const google::protobuf::RepeatedPtrField<T>& proto_container) {
+  return std::vector<T>(proto_container.begin(), proto_container.end());
+}
+
+std::tuple<DeviceManagementStatus, std::vector<em::SignedData>>
+DecodeRemoteCommands(DeviceManagementStatus status,
+                     const em::DeviceManagementResponse& response) {
+  using MakeTuple =
+      std::tuple<DeviceManagementStatus, std::vector<em::SignedData>>;
+
+  if (status != DM_STATUS_SUCCESS) {
+    return MakeTuple(status, {});
+  }
+  if (!response.remote_command_response().commands().empty()) {
+    // Unsigned remote commands are no longer supported.
+    return MakeTuple(DM_STATUS_RESPONSE_DECODING_ERROR, {});
+  }
+
+  return MakeTuple(
+      DM_STATUS_SUCCESS,
+      ToVector(response.remote_command_response().secure_commands()));
+}
+
 }  // namespace
 
 CloudPolicyClient::RegistrationParameters::RegistrationParameters(
@@ -829,6 +854,39 @@ void CloudPolicyClient::UpdateGcmId(
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
+void CloudPolicyClient::UploadEuiccInfo(
+    std::unique_ptr<enterprise_management::UploadEuiccInfoRequest> request,
+    CloudPolicyClient::StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(is_registered());
+
+  std::unique_ptr<DMServerJobConfiguration> config =
+      std::make_unique<DMServerJobConfiguration>(
+          DeviceManagementService::JobConfiguration::TYPE_UPLOAD_EUICC_INFO,
+          /*client=*/this,
+          /*critical=*/false, DMAuth::FromDMToken(dm_token_),
+          /*oauth_token=*/absl::nullopt,
+          base::BindOnce(&CloudPolicyClient::OnEuiccInfoUploaded,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  config->request()->set_allocated_upload_euicc_info_request(request.release());
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
+void CloudPolicyClient::OnEuiccInfoUploaded(
+    StatusCallback callback,
+    DeviceManagementService::Job* job,
+    DeviceManagementStatus status,
+    int net_error,
+    const em::DeviceManagementResponse& response) {
+  status_ = status;
+  if (status != DM_STATUS_SUCCESS)
+    NotifyClientError();
+
+  std::move(callback).Run(status == DM_STATUS_SUCCESS);
+  RemoveJob(job);
+}
+
 void CloudPolicyClient::ClientCertProvisioningStartCsr(
     const std::string& cert_scope,
     const std::string& cert_profile_id,
@@ -1356,22 +1414,11 @@ void CloudPolicyClient::OnRemoteCommandsFetched(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  std::vector<em::RemoteCommand> commands;
-  std::vector<em::SignedData> signed_commands;
-  if (status == DM_STATUS_SUCCESS) {
-    if (response.has_remote_command_response()) {
-      for (const auto& command : response.remote_command_response().commands())
-        commands.push_back(command);
+  DeviceManagementStatus decoded_status;
+  std::vector<em::SignedData> commands;
+  std::tie(decoded_status, commands) = DecodeRemoteCommands(status, response);
 
-      for (const auto& secure_command :
-           response.remote_command_response().secure_commands()) {
-        signed_commands.push_back(secure_command);
-      }
-    } else {
-      status = DM_STATUS_RESPONSE_DECODING_ERROR;
-    }
-  }
-  std::move(callback).Run(status, commands, signed_commands);
+  std::move(callback).Run(decoded_status, commands);
   RemoveJob(job);
 }
 

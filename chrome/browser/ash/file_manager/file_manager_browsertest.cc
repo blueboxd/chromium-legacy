@@ -274,7 +274,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("fileDisplayDrive").TabletMode(),
         TestCase("fileDisplayDrive"),
         TestCase("fileDisplayDriveOffline").Offline(),
+        TestCase("fileDisplayDriveOffline").Offline().FilesSwa(),
         TestCase("fileDisplayDriveOnline"),
+        TestCase("fileDisplayDriveOnline").FilesSwa(),
+        TestCase("fileDisplayDriveOnlineNewWindow").DontObserveFileTasks(),
+        TestCase("fileDisplayDriveOnlineNewWindow")
+            .DontObserveFileTasks()
+            .FilesSwa(),
         TestCase("fileDisplayComputers"),
         TestCase("fileDisplayMtp"),
         TestCase("fileDisplayUsb"),
@@ -305,6 +311,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // TestCase("fileDisplayWithoutDriveThenDisable")
         //     .DontMountVolumes()
         //     .FilesSwa(),
+        TestCase("fileDisplayWithHiddenVolume"),
+        TestCase("fileDisplayWithHiddenVolume").FilesSwa(),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
         TestCase("fileDisplayUnmountRemovableRoot"),
@@ -563,6 +571,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewImageRaw").FilesSwa(),
         TestCase("openQuickViewImageRawWithOrientation"),
         TestCase("openQuickViewImageRawWithOrientation").FilesSwa(),
+        TestCase("openQuickViewImageWebp"),
+        TestCase("openQuickViewImageWebp").FilesSwa(),
         TestCase("openQuickViewBrokenImage"),
         TestCase("openQuickViewBrokenImage").FilesSwa(),
         TestCase("openQuickViewImageClick"),

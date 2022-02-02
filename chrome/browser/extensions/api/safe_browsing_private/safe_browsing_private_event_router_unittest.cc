@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
@@ -270,8 +271,8 @@ class SafeBrowsingPrivateEventRouterTestBase : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
   TestingProfileManager profile_manager_;
-  TestingProfile* profile_ = nullptr;
-  extensions::TestEventRouter* event_router_ = nullptr;
+  raw_ptr<TestingProfile> profile_ = nullptr;
+  raw_ptr<extensions::TestEventRouter> event_router_ = nullptr;
 
  private:
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -752,9 +753,29 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEvent) {
 
   safe_browsing::EventReportValidator validator(client_.get());
   validator.ExpectLoginEvent("https://www.example.com/", false, "",
-                             profile_->GetProfileUserName(), u"login-username");
+                             profile_->GetProfileUserName(), u"*****");
 
   TriggerOnLoginEvent(GURL("https://www.example.com/"), u"login-username");
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest,
+       TestOnLoginEventWithEmailAsLoginUsernam) {
+  SetUpRouters();
+
+  signin::IdentityTestEnvironment identity_test_environment;
+  SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
+      ->SetIdentityManagerForTesting(
+          identity_test_environment.identity_manager());
+  identity_test_environment.MakePrimaryAccountAvailable(
+      profile_->GetProfileUserName(), signin::ConsentLevel::kSignin);
+
+  safe_browsing::EventReportValidator validator(client_.get());
+  validator.ExpectLoginEvent("https://www.example.com/", false, "",
+                             profile_->GetProfileUserName(),
+                             u"*****@example.com");
+
+  TriggerOnLoginEvent(GURL("https://www.example.com/"),
+                      u"login-username@example.com");
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEventFederated) {
@@ -770,7 +791,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEventFederated) {
   safe_browsing::EventReportValidator validator(client_.get());
   validator.ExpectLoginEvent("https://www.example.com/", true,
                              "https://www.google.com",
-                             profile_->GetProfileUserName(), u"login-username");
+                             profile_->GetProfileUserName(), u"*****");
 
   TriggerOnLoginEvent(GURL("https://www.example.com/"), u"login-username",
                       url::Origin::Create(GURL("https://www.google.com")));

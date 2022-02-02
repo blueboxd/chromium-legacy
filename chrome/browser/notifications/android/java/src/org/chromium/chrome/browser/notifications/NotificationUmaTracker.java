@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.notifications;
 
 import android.annotation.TargetApi;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.os.Build;
 import android.text.format.DateUtils;
 
@@ -324,13 +323,6 @@ public class NotificationUmaTracker {
                         "Mobile.SystemNotification.Action.Click.Age.PriceDrop", createTime);
                 break;
         }
-    }
-
-    /**
-     * Tracks UMA when failed to notify {@link NotificationManager}.
-     */
-    public void onFailedToNotify(@SystemNotificationType int type) {
-        recordHistogram("Mobile.SystemNotification.NotifyFailure", type);
     }
 
     private void logNotificationShown(@SystemNotificationType int type,

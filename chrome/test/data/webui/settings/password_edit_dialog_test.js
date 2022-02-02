@@ -7,9 +7,10 @@
 // clang-format off
 import 'chrome://settings/lazy_load.js';
 
+import {isChromeOS, isLacros} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {PasswordManagerImpl} from 'chrome://settings/settings.js';
-import {eventToPromise} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, flushTasks} from 'chrome://webui-test/test_util.js';
 
 import {createMultiStorePasswordEntry, PasswordSectionElementFactory} from './passwords_and_autofill_fake_data.js';
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
@@ -355,6 +356,7 @@ suite('PasswordEditDialog', function() {
   test('hasCorrectInitialStateWhenAddPassword', function() {
     const addDialog = elementFactory.createPasswordEditDialog();
     assertAddDialogParts(addDialog);
+    assertEquals(true, addDialog.$.websiteInput.autofocus);
     assertEquals('', addDialog.$.websiteInput.value);
     assertEquals('', addDialog.$.usernameInput.value);
     assertEquals('', addDialog.$.passwordInput.value);
@@ -369,10 +371,14 @@ suite('PasswordEditDialog', function() {
     addDialog.accountEmail = 'username@gmail.com';
     const picker = addDialog.$.storePicker;
     assertFalse(isElementVisible(picker));
+    assertEquals(false, picker.autofocus);
+    assertEquals(true, addDialog.$.websiteInput.autofocus);
 
     addDialog.isAccountStoreUser = true;
     flush();
     assertTrue(isElementVisible(picker));
+    assertEquals(true, picker.autofocus);
+    assertEquals(false, addDialog.$.websiteInput.autofocus);
     assertEquals(
         addDialog.i18n('addPasswordStoreOptionAccount', addDialog.accountEmail),
         picker.options[0].textContent.trim());
@@ -510,4 +516,101 @@ suite('PasswordEditDialog', function() {
     addDialog.$.usernameInput.value = 'username2';
     assertTrue(addDialog.$.usernameInput.invalid);
   });
+
+  test('validatesWebsiteHasTopLevelDomainOnFocusLoss', async function() {
+    const addDialog = elementFactory.createPasswordEditDialog();
+    addDialog.$.passwordInput.value = 'password';
+
+    // TLD error doesn't appear if another website error is shown.
+    await updateWebsiteInput(
+        addDialog, passwordManager, 'invalid-without-TLD',
+        /* isValid= */ false);
+    addDialog.$.websiteInput.dispatchEvent(new CustomEvent('blur'));
+    assertTrue(addDialog.$.websiteInput.invalid);
+    assertEquals(
+        addDialog.$.websiteInput.errorMessage,
+        addDialog.i18n('notValidWebAddress'));
+    assertTrue(addDialog.$.actionButton.disabled);
+
+    // TLD error appears if no other website error.
+    await updateWebsiteInput(
+        addDialog, passwordManager, 'valid-without-TLD', /* isValid= */ true);
+    addDialog.$.websiteInput.dispatchEvent(new CustomEvent('blur'));
+    assertTrue(addDialog.$.websiteInput.invalid);
+    assertEquals(
+        addDialog.$.websiteInput.errorMessage,
+        addDialog.i18n('missingTLD', 'valid-without-TLD.com'));
+    assertTrue(addDialog.$.actionButton.disabled);
+
+    // TLD error disappears on website input change.
+    await updateWebsiteInput(
+        addDialog, passwordManager, 'changed-without-TLD', /* isValid= */ true);
+    assertFalse(addDialog.$.websiteInput.invalid);
+    assertFalse(addDialog.$.actionButton.disabled);
+
+    // TLD error doesn't appear if TLD is present.
+    await updateWebsiteInput(
+        addDialog, passwordManager, 'valid-with-TLD.com', /* isValid= */ true);
+    addDialog.$.websiteInput.dispatchEvent(new CustomEvent('blur'));
+    assertFalse(addDialog.$.websiteInput.invalid);
+    assertFalse(addDialog.$.actionButton.disabled);
+  });
+
+  test(
+      'requestsPlaintextPasswordAndSwitchesToEditModeOnViewPasswordClick',
+      async function() {
+        const existingEntry = createMultiStorePasswordEntry(
+            {url: 'website.com', username: 'username', accountId: 0});
+        const addDialog =
+            elementFactory.createPasswordEditDialog(null, [existingEntry]);
+        assertFalse(isElementVisible(addDialog.$.viewExistingPasswordLink));
+
+        await updateWebsiteInput(
+            addDialog, passwordManager, existingEntry.urls.shown);
+        addDialog.$.usernameInput.value = existingEntry.username;
+        assertTrue(isElementVisible(addDialog.$.viewExistingPasswordLink));
+
+        existingEntry.password = 'plaintext password';
+        passwordManager.setPlaintextPassword(existingEntry.password);
+        addDialog.$.viewExistingPasswordLink.click();
+        const {id, reason} =
+            await passwordManager.whenCalled('requestPlaintextPassword');
+        assertEquals(existingEntry.getAnyId(), id);
+        assertEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
+        await flushTasks();
+
+        assertEditDialogParts(addDialog);
+        assertEquals(existingEntry.urls.link, addDialog.$.websiteInput.value);
+        assertEquals(existingEntry.username, addDialog.$.usernameInput.value);
+        assertEquals(existingEntry.password, addDialog.$.passwordInput.value);
+      });
+
+  // On ChromeOS/Lacros the behavior is different (on failure we request token
+  // and retry).
+  if (!isChromeOS && !isLacros) {
+    test(
+        'notSwitchToEditModeOnViewPasswordClickWhenRequestPlaintextPasswordFailed',
+        async function() {
+          const existingEntry = createMultiStorePasswordEntry(
+              {url: 'website.com', username: 'username', accountId: 0});
+          const addDialog =
+              elementFactory.createPasswordEditDialog(null, [existingEntry]);
+          assertFalse(isElementVisible(addDialog.$.viewExistingPasswordLink));
+
+          await updateWebsiteInput(
+              addDialog, passwordManager, existingEntry.urls.shown);
+          addDialog.$.usernameInput.value = existingEntry.username;
+          assertTrue(isElementVisible(addDialog.$.viewExistingPasswordLink));
+
+          // By default requestPlaintextPassword fails if value not set.
+          addDialog.$.viewExistingPasswordLink.click();
+          const {id, reason} =
+              await passwordManager.whenCalled('requestPlaintextPassword');
+          assertEquals(existingEntry.getAnyId(), id);
+          assertEquals(chrome.passwordsPrivate.PlaintextReason.EDIT, reason);
+          await flushTasks();
+
+          assertAddDialogParts(addDialog);
+        });
+  }
 });

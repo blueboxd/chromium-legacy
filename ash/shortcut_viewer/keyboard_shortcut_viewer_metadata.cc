@@ -10,7 +10,6 @@
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "base/check.h"
 #include "base/feature_list.h"
-#include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
@@ -1559,6 +1558,33 @@ const std::vector<ash::KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
           // |accelerator_ids|
           {{ui::VKEY_ESCAPE, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN}}};
       item_list->emplace_back(diagnostics_shortcut);
+    }
+
+    // The improved desks keyboard shortcuts should only be enabled if the
+    // improved keyboard shortcuts flag is also enabled.
+    if (::features::IsImprovedKeyboardShortcutsEnabled() &&
+        ash::features::IsImprovedDesksKeyboardShortcutsEnabled()) {
+      const ash::KeyboardShortcutItem indexed_activation_shortcut = {
+          // |categories|
+          {ShortcutCategory::kTabAndWindow},
+          IDS_KSV_DESCRIPTION_DESKS_ACTIVATE_INDEXED_DESK,
+          IDS_KSV_SHORTCUT_DESKS_ACTIVATE_INDEXED_DESK,
+          // |accelerator_ids|
+          {},
+          // |shortcut_key_codes|
+          {{ui::VKEY_SHIFT, ui::VKEY_UNKNOWN, ui::VKEY_COMMAND,
+            ui::VKEY_UNKNOWN}}};
+
+      const ash::KeyboardShortcutItem toggle_all_desks_shortcut = {
+          // |categories|
+          {ShortcutCategory::kTabAndWindow},
+          IDS_KSV_DESCRIPTION_DESKS_TOGGLE_WINDOW_ASSIGNED_TO_ALL_DESKS,
+          {},
+          // |accelerator_ids|
+          {{ui::VKEY_A, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN}}};
+
+      item_list->emplace_back(indexed_activation_shortcut);
+      item_list->emplace_back(toggle_all_desks_shortcut);
     }
 
     for (auto& item : *item_list) {

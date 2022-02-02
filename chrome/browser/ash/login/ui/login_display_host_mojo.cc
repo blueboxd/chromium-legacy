@@ -92,12 +92,11 @@ bool AllAllowlistedUsersPresent() {
   const base::ListValue* allowlist = nullptr;
   if (!cros_settings->GetList(kAccountsPrefUsers, &allowlist) || !allowlist)
     return false;
-  for (size_t i = 0; i < allowlist->GetList().size(); ++i) {
-    std::string allowlisted_user;
+  for (const base::Value& i : allowlist->GetList()) {
+    const std::string* allowlisted_user = i.GetIfString();
     // NB: Wildcards in the allowlist are also detected as not present here.
-    if (!allowlist->GetString(i, &allowlisted_user) ||
-        !user_manager->IsKnownUser(
-            AccountId::FromUserEmail(allowlisted_user))) {
+    if (!allowlisted_user || !user_manager->IsKnownUser(
+                                 AccountId::FromUserEmail(*allowlisted_user))) {
       return false;
     }
   }
@@ -149,7 +148,7 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
 
   GetLoginScreenCertProviderService()
       ->pin_dialog_manager()
-      ->RemovePinDialogHost(&security_token_pin_dialog_host_impl_);
+      ->RemovePinDialogHost(&security_token_pin_dialog_host_login_impl_);
   dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
   StopObservingOobeUI();
   dialog_->Close();
@@ -480,6 +479,10 @@ bool LoginDisplayHostMojo::GetKeyboardRemappedPrefValue(
          known_user.GetIntegerPref(focused_pod_account_id_, pref_name, value);
 }
 
+bool LoginDisplayHostMojo::IsWebUIStarted() const {
+  return dialog_;
+}
+
 void LoginDisplayHostMojo::HandleAuthenticateUserWithPasswordOrPin(
     const AccountId& account_id,
     const std::string& password,
@@ -670,7 +673,7 @@ void LoginDisplayHostMojo::EnsureOobeDialogLoaded() {
   wizard_controller_ = std::make_unique<WizardController>(GetWizardContext());
 
   GetLoginScreenCertProviderService()->pin_dialog_manager()->AddPinDialogHost(
-      &security_token_pin_dialog_host_impl_);
+      &security_token_pin_dialog_host_login_impl_);
 
   // Update status of add user button in the shelf.
   UpdateAddUserButtonStatus();

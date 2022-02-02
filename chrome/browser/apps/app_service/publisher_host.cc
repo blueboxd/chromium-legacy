@@ -68,7 +68,7 @@ void PublisherHost::FlushMojoCallsForTesting() {
 
 void PublisherHost::ReInitializeCrostiniForTesting(AppServiceProxy* proxy) {
   DCHECK(proxy);
-  crostini_apps_->Initialize(proxy->AppService());
+  crostini_apps_->Initialize();
 }
 
 void PublisherHost::Shutdown() {
@@ -83,36 +83,45 @@ void PublisherHost::Shutdown() {
 #endif
 
 void PublisherHost::Initialize() {
-  auto* profile = proxy_->profile();
-  auto& app_service = proxy_->AppService();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  auto* profile = proxy_->profile();
   if (!g_omit_built_in_apps_for_testing_) {
     built_in_chrome_os_apps_ = std::make_unique<BuiltInChromeOsApps>(proxy_);
+    built_in_chrome_os_apps_->Initialize();
   }
   // TODO(b/170591339): Allow borealis to provide apps for the non-primary
   // profile.
   if (guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile)) {
     borealis_apps_ = std::make_unique<BorealisApps>(proxy_);
+    borealis_apps_->Initialize();
   }
+
   crostini_apps_ = std::make_unique<CrostiniApps>(proxy_);
-  extension_apps_ = std::make_unique<ExtensionAppsChromeOs>(
-      app_service, profile, &proxy_->InstanceRegistry());
+  crostini_apps_->Initialize();
+
+  extension_apps_ = std::make_unique<ExtensionAppsChromeOs>(proxy_);
+  extension_apps_->Initialize();
+
   if (!g_omit_plugin_vm_apps_for_testing_) {
     plugin_vm_apps_ = std::make_unique<PluginVmApps>(proxy_);
+    plugin_vm_apps_->Initialize();
   }
   // Lacros does not support multi-signin, so only create for the primary
   // profile. This also avoids creating an instance for the lock screen app
   // profile and ensures there is only one instance of StandaloneBrowserApps.
   if (crosapi::browser_util::IsLacrosEnabled() &&
       chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
-    standalone_browser_apps_ = std::make_unique<StandaloneBrowserApps>(
-        app_service, profile, proxy_->BrowserAppInstanceRegistry());
+    standalone_browser_apps_ = std::make_unique<StandaloneBrowserApps>(proxy_);
+    standalone_browser_apps_->Initialize();
   }
-  web_apps_ = std::make_unique<web_app::WebApps>(
-      app_service, &proxy_->InstanceRegistry(), profile);
+
+  // `web_apps_` can be initialized itself.
+  web_apps_ = std::make_unique<web_app::WebApps>(proxy_);
 #else
-  web_apps_ = std::make_unique<web_app::WebApps>(app_service, profile);
-  extension_apps_ = std::make_unique<ExtensionApps>(app_service, profile);
+  web_apps_ = std::make_unique<web_app::WebApps>(proxy_);
+
+  extension_apps_ = std::make_unique<ExtensionApps>(proxy_);
+  extension_apps_->Initialize();
 #endif
 }
 

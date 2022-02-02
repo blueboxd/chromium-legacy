@@ -5,6 +5,7 @@
 #include "content/browser/media/frameless_media_interface_proxy.h"
 
 #include "base/bind.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "content/public/browser/media_service.h"
 #include "media/base/cdm_context.h"
@@ -83,8 +84,7 @@ void FramelessMediaInterfaceProxy::CreateMediaFoundationRenderer(
         renderer_extension_receiver) {}
 #endif  // defined(OS_WIN)
 
-void FramelessMediaInterfaceProxy::CreateCdm(const std::string& key_system,
-                                             const media::CdmConfig& cdm_config,
+void FramelessMediaInterfaceProxy::CreateCdm(const media::CdmConfig& cdm_config,
                                              CreateCdmCallback callback) {
   std::move(callback).Run(mojo::NullRemote(), nullptr, "CDM not supported");
 }

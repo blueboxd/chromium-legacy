@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_OPTIMIZATION_GUIDE_CHROME_HINTS_MANAGER_H_
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_CHROME_HINTS_MANAGER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "components/optimization_guide/core/hints_manager.h"
 
@@ -18,7 +19,7 @@ class ChromeHintsManager : public HintsManager,
   ChromeHintsManager(
       Profile* profile,
       PrefService* pref_service,
-      base::WeakPtr<optimization_guide::OptimizationGuideStore> hint_store,
+      optimization_guide::OptimizationGuideStore* hint_store,
       optimization_guide::TopHostProvider* top_host_provider,
       optimization_guide::TabUrlProvider* tab_url_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -38,7 +39,7 @@ class ChromeHintsManager : public HintsManager,
 
  private:
   // A reference to the profile. Not owned.
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile> profile_ = nullptr;
 };
 
 }  // namespace optimization_guide

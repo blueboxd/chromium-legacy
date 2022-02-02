@@ -54,6 +54,9 @@
 #endif
 
 namespace {
+// Not selected tabs opacity in thumbstrip.
+const CGFloat kNotSelectedTabsOpacity = 0.8f;
+
 // Types of configurations of this view controller.
 typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   TabGridConfigurationBottomToolbar = 1,
@@ -627,6 +630,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 #pragma mark - LayoutSwitcher
 
+- (LayoutSwitcherState)currentLayoutSwitcherState {
+  GridViewController* gridViewController =
+      [self gridViewControllerForPage:self.currentPage];
+  return gridViewController.currentLayoutSwitcherState;
+}
+
 - (void)willTransitionToLayout:(LayoutSwitcherState)nextState
                     completion:
                         (void (^)(BOOL completed, BOOL finished))completion {
@@ -682,6 +691,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                toState:(ViewRevealState)nextViewRevealState {
   self.currentState = currentViewRevealState;
   self.scrollView.scrollEnabled = NO;
+  [self updateNotSelectedTabCellOpacityForState:currentViewRevealState];
+  if (nextViewRevealState != ViewRevealState::Fullscreen) {
+    // Reset tag grid mode, unless the grid is fullscreen.
+    self.tabGridMode = TabGridModeNormal;
+  }
   switch (currentViewRevealState) {
     case ViewRevealState::Hidden: {
       // If the tab grid is just showing up, make sure that the active page is
@@ -711,12 +725,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     case ViewRevealState::Peeked:
       break;
     case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
       self.plusSignButton.alpha = 0;
       break;
   }
 }
 
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
+  [self updateNotSelectedTabCellOpacityForState:nextViewRevealState];
   GridViewController* regularViewController =
       [self gridViewControllerForPage:TabGridPageRegularTabs];
   GridViewController* incognitoViewController =
@@ -753,7 +769,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                                 .fractionVisibleOfLastItem];
       break;
     }
-    case ViewRevealState::Revealed: {
+    case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen: {
       self.foregroundView.alpha = 0;
       self.topToolbar.transform = CGAffineTransformIdentity;
       regularViewController.gridView.transform =
@@ -770,6 +787,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)didAnimateViewReveal:(ViewRevealState)viewRevealState {
+  [self updateNotSelectedTabCellOpacityForState:viewRevealState];
   self.currentState = viewRevealState;
   switch (viewRevealState) {
     case ViewRevealState::Hidden:
@@ -779,8 +797,30 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       // No-op.
       break;
     case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
       self.scrollView.scrollEnabled = YES;
       [self setInsetForRemoteTabs];
+      break;
+  }
+}
+
+// Sets the expected opacity level for each view revealing state.
+- (void)updateNotSelectedTabCellOpacityForState:(ViewRevealState)state {
+  GridViewController* regularViewController =
+      [self gridViewControllerForPage:TabGridPageRegularTabs];
+  GridViewController* incognitoViewController =
+      [self gridViewControllerForPage:TabGridPageIncognitoTabs];
+  switch (state) {
+    case ViewRevealState::Hidden:
+    case ViewRevealState::Peeked:
+      regularViewController.notSelectedTabCellOpacity = kNotSelectedTabsOpacity;
+      incognitoViewController.notSelectedTabCellOpacity =
+          kNotSelectedTabsOpacity;
+      break;
+    case ViewRevealState::Revealed:
+    case ViewRevealState::Fullscreen:
+      regularViewController.notSelectedTabCellOpacity = 1.0f;
+      incognitoViewController.notSelectedTabCellOpacity = 1.0f;
       break;
   }
 }
@@ -943,7 +983,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self.scrollView setContentOffset:targetOffset animated:YES];
       // |self.currentPage| is set in scrollViewDidEndScrollingAnimation:
     } else {
+      BOOL changed = self.currentPage != targetPage;
       self.currentPage = targetPage;
+      if (changed) {
+        // When there is no scrolling and the page changed, it can be due to
+        // the user dragging the slider and dropping it right on the spot.
+        // Something easy to reproduce with the two edges (incognito / recent
+        // tabs), but also possible with middle position (normal).
+        [self arriveAtCurrentPage];
+        [self broadcastIncognitoContentVisibility];
+        [self configureButtonsForActiveAndCurrentPage];
+      }
     }
   }
 
@@ -1213,7 +1263,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [topToolbar setNewTabButtonTarget:self action:@selector(newTabButtonTapped:)];
   [topToolbar setSelectAllButtonTarget:self
                                 action:@selector(selectAllButtonTapped:)];
-
+  if (IsTabsSearchEnabled()) {
+    [topToolbar setSearchButtonTarget:self
+                               action:@selector(searchButtonTapped:)];
+    [topToolbar
+        setCancelSearchButtonTarget:self
+                             action:@selector(cancelSearchButtonTapped:)];
+  }
   // Configure and initialize the page control.
   [topToolbar.pageControl addTarget:self
                              action:@selector(pageControlChangedValue:)
@@ -1801,13 +1857,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)didTapPlusSignInGridViewController:
     (GridViewController*)gridViewController {
-  if (gridViewController == self.regularTabsViewController) {
-    [self.regularTabsDelegate addNewItem];
-    // TODO(crbug.com/1135329): Record when a new regular tab is opened.
-  } else if (gridViewController == self.incognitoTabsViewController) {
-    [self.incognitoTabsDelegate addNewItem];
-    // TODO(crbug.com/1135329): Record when a new incognito tab is opened.
-  }
+  [self plusSignButtonTapped:self];
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
                                        focusOmnibox:NO
                                        closeTabGrid:YES];
@@ -1827,8 +1877,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         didChangeItemCount:(NSUInteger)count {
   if (self.tabGridMode == TabGridModeSelection) {
     // Exit selection mode if there are no more tabs.
-    if (count == 0)
+    if (count == 0) {
       self.tabGridMode = TabGridModeNormal;
+      [self.delegate showFullscreen:NO];
+    }
     [self updateSelectionModeToolbars];
   }
 
@@ -1848,6 +1900,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)didChangeLastItemVisibilityInGridViewController:
     (GridViewController*)gridViewController {
+  self.plusSignButton.plusSignVerticalOffset =
+      gridViewController.gridView.adjustedContentInset.top -
+      kGridExpectedTopContentInset;
+
   CGFloat lastItemVisiblity = gridViewController.fractionVisibleOfLastItem;
   self.plusSignButton.alpha = 1 - lastItemVisiblity;
   self.plusSignButton.plusSignImage.transform =
@@ -1900,6 +1956,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // mode.
   if (self.tabGridMode == TabGridModeSelection) {
     self.tabGridMode = TabGridModeNormal;
+    [self.delegate showFullscreen:NO];
     // Records action when user exit the selection mode.
     base::RecordAction(base::UserMetricsAction("MobileTabGridSelectionDone"));
     return;
@@ -1925,6 +1982,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)selectTabsButtonTapped:(id)sender {
   self.tabGridMode = TabGridModeSelection;
+  [self.delegate showFullscreen:YES];
   base::RecordAction(base::UserMetricsAction("MobileTabGridSelectTabs"));
 }
 
@@ -1969,6 +2027,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+- (void)searchButtonTapped:(id)sender {
+  self.tabGridMode = TabGridModeSearch;
+  base::RecordAction(base::UserMetricsAction("MobileTabGridSearchTabs"));
+}
+
+- (void)cancelSearchButtonTapped:(id)sender {
+  self.tabGridMode = TabGridModeNormal;
+  base::RecordAction(base::UserMetricsAction("MobileTabGridCancelSearchTabs"));
+}
+
 - (void)newTabButtonTapped:(id)sender {
   [self openNewTabInPage:self.currentPage focusOmnibox:NO];
   // Record metrics for button taps
@@ -1989,13 +2057,25 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)plusSignButtonTapped:(id)sender {
   switch (self.currentPage) {
-    case TabGridPageRegularTabs:
-      [self.regularTabsDelegate addNewItem];
-      // TODO(crbug.com/1135329): Record when a new regular tab is opened.
-      break;
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsDelegate addNewItem];
-      // TODO(crbug.com/1135329): Record when a new incognito tab is opened.
+      if (self.currentState == ViewRevealState::Peeked) {
+        base::RecordAction(
+            base::UserMetricsAction("MobileThumbstripCreateIncognitoTab"));
+      } else {
+        base::RecordAction(
+            base::UserMetricsAction("MobileTabGridCreateIncognitoTab"));
+      }
+      break;
+    case TabGridPageRegularTabs:
+      [self.regularTabsDelegate addNewItem];
+      if (self.currentState == ViewRevealState::Peeked) {
+        base::RecordAction(
+            base::UserMetricsAction("MobileThumbstripCreateRegularTab"));
+      } else {
+        base::RecordAction(
+            base::UserMetricsAction("MobileTabGridCreateRegularTab"));
+      }
       break;
     case TabGridPageRemoteTabs:
       // No-op.
@@ -2094,6 +2174,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     didUpdateAuthenticationRequirement:(BOOL)isRequired {
   if (isRequired) {
     self.tabGridMode = TabGridModeNormal;
+    [self.delegate showFullscreen:NO];
   }
 }
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/intent_helper/intent_picker_internal.h"
 #include "chrome/browser/apps/intent_helper/metrics/intent_handling_metrics.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
@@ -38,10 +39,6 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/display/types/display_constants.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/handlers/system_features_disable_list_policy_handler.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 namespace apps {
 
 namespace {
@@ -49,7 +46,6 @@ namespace {
 using ThrottleCheckResult = content::NavigationThrottle::ThrottleCheckResult;
 
 // TODO(crbug.com/1251490 ) Update to make disabled page works in Lacros.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::string GetAppDisabledErrorPage() {
   base::DictionaryValue strings;
 
@@ -71,26 +67,16 @@ std::string GetAppDisabledErrorPage() {
 }
 
 bool IsAppDisabled(const std::string& app_id) {
-  PrefService* const local_state = g_browser_process->local_state();
-  if (!local_state)
-    return false;
-
-  const base::ListValue* disabled_system_features_pref =
-      local_state->GetList(policy::policy_prefs::kSystemFeaturesDisableList);
-  if (!disabled_system_features_pref)
-    return false;
-
   policy::SystemFeature system_feature =
       policy::SystemFeaturesDisableListPolicyHandler::GetSystemFeatureFromAppId(
           app_id);
+
   if (system_feature == policy::SystemFeature::kUnknownSystemFeature)
     return false;
 
-  const auto disabled_system_features =
-      disabled_system_features_pref->GetList();
-  return base::Contains(disabled_system_features, base::Value(system_feature));
+  return policy::SystemFeaturesDisableListPolicyHandler::
+      IsSystemFeatureDisabled(system_feature, g_browser_process->local_state());
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Usually we want to only capture navigations from clicking a link. For a
 // subset of apps, we want to capture typing into the omnibox as well.
@@ -138,6 +124,18 @@ GURL RedirectUrlIfSwa(Profile* profile,
 
   // No matching SWAs found, returning original url.
   return url;
+}
+
+IntentHandlingMetrics::Platform GetMetricsPlatform(mojom::AppType app_type) {
+  switch (app_type) {
+    case mojom::AppType::kArc:
+      return IntentHandlingMetrics::Platform::ARC;
+    case mojom::AppType::kWeb:
+      return IntentHandlingMetrics::Platform::PWA;
+    default:
+      NOTREACHED();
+      return IntentHandlingMetrics::Platform::ARC;
+  }
 }
 
 }  // namespace
@@ -245,16 +243,11 @@ bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
   if (!last_committed_url.is_valid() || last_committed_url.IsAboutBlank())
     web_contents->ClosePage();
 
-  IntentHandlingMetrics::RecordIntentPickerUserInteractionMetrics(
-      profile,
-      /*selected_app_package=*/preferred_app_id.value(),
-      GetPickerEntryType(app_type),
-      apps::IntentPickerCloseReason::PREFERRED_APP_FOUND,
-      apps::Source::kHttpOrHttps, /*should_persist=*/false);
+  IntentHandlingMetrics::RecordPreferredAppLinkClickMetrics(
+      GetMetricsPlatform(app_type));
   return true;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool CommonAppsNavigationThrottle::ShouldShowDisablePage(
     content::NavigationHandle* handle) {
   content::WebContents* web_contents = handle->GetWebContents();
@@ -279,6 +272,5 @@ ThrottleCheckResult CommonAppsNavigationThrottle::MaybeShowCustomResult() {
                              net::ERR_BLOCKED_BY_ADMINISTRATOR,
                              GetAppDisabledErrorPage());
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace apps

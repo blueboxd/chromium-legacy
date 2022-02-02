@@ -20,6 +20,6 @@ interface IWebLayerClient {
   int getPresentationApiNotificationId() = 8;
   int getRemotePlaybackApiNotificationId() = 9;
 
-  // Added in Version 97.
+  // Added in Version 98.
   int getMaxNavigationsPerTabForInstanceState() = 10;
 }

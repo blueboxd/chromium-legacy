@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_POWER_POWER_DATA_COLLECTOR_H_
 #define CHROME_BROWSER_ASH_POWER_POWER_DATA_COLLECTOR_H_
 
-#include "base/compiler_specific.h"
 #include "base/containers/circular_deque.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/power/cpu_data_collector.h"
 #include "chromeos/dbus/power/power_manager_client.h"

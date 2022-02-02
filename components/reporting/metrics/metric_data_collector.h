@@ -11,11 +11,14 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/reporting/client/report_queue.h"
-#include "components/reporting/proto/metric_data.pb.h"
+#include "components/reporting/metrics/sampler.h"
+#include "components/reporting/proto/synced/metric_data.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace reporting {
 
@@ -23,7 +26,6 @@ class MetricRateController;
 class MetricReportQueue;
 class MetricReportingController;
 class ReportingSettings;
-class Sampler;
 
 // A base class for metric data collection and reporting.
 class CollectorBase {
@@ -47,8 +49,8 @@ class CollectorBase {
   SEQUENCE_CHECKER(sequence_checker_);
 
  private:
-  Sampler* const sampler_;
-  MetricReportQueue* const metric_report_queue_;
+  const raw_ptr<Sampler> sampler_;
+  const raw_ptr<MetricReportQueue> metric_report_queue_;
 
   base::WeakPtrFactory<CollectorBase> weak_ptr_factory_{this};
 };
@@ -117,11 +119,38 @@ class PeriodicCollector : public CollectorBase {
 class EventDetector {
  public:
   virtual ~EventDetector() = default;
-  // Check if there is a new event present in `current_metric_data`.
-  // If an event is detected add it to `current_metric_data` and return true,
-  // otherwise return false.
-  virtual bool DetectEvent(const MetricData& previous_metric_data,
-                           MetricData* current_metric_data) = 0;
+  // Check if there is a new event present in `current_metric_data` and return
+  // it if found.
+  virtual absl::optional<MetricEventType> DetectEvent(
+      const MetricData& previous_metric_data,
+      const MetricData& current_metric_data) = 0;
+};
+
+class AdditionalSamplersCollector {
+ public:
+  explicit AdditionalSamplersCollector(std::vector<Sampler*> samplers);
+
+  AdditionalSamplersCollector(const AdditionalSamplersCollector& other) =
+      delete;
+  AdditionalSamplersCollector& operator=(
+      const AdditionalSamplersCollector& other) = delete;
+
+  ~AdditionalSamplersCollector();
+
+  void CollectAll(MetricCallback on_all_collected_cb,
+                  MetricData metric_data) const;
+
+ private:
+  void CollectAdditionalMetricData(uint64_t sampler_index,
+                                   MetricCallback on_all_collected_cb,
+                                   MetricData metric_data,
+                                   MetricData new_metric_data) const;
+
+  const std::vector<Sampler*> samplers_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<AdditionalSamplersCollector> weak_ptr_factory_{this};
 };
 
 // Class to collect metric data periodically, check the collected data for
@@ -148,17 +177,14 @@ class PeriodicEventCollector : public PeriodicCollector {
   void OnMetricDataCollected(MetricData metric_data) override;
 
  private:
-  void CollectAdditionalMetricData(uint64_t sampler_index,
-                                   MetricData metric_data,
-                                   MetricData new_metric_data);
+  void OnAdditionalMetricDataCollected(MetricData metric_data);
 
-  std::vector<Sampler*> additional_samplers_;
+  const std::unique_ptr<EventDetector> event_detector_;
 
-  std::unique_ptr<EventDetector> event_detector_;
+  const std::unique_ptr<AdditionalSamplersCollector>
+      additional_samplers_collector_;
 
   MetricData last_collected_data_;
-
-  base::WeakPtrFactory<PeriodicEventCollector> weak_ptr_factory_{this};
 };
 }  // namespace reporting
 

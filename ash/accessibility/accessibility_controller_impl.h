@@ -13,7 +13,6 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -445,7 +444,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
                               base::OnceClosure on_cancel_callback,
                               base::OnceClosure on_close_callback) override;
   void UpdateDictationButtonOnSpeechRecognitionDownloadChanged(
-      bool download_in_progress) override;
+      int download_progress) override;
   void ShowSpeechRecognitionDownloadNotificationForDictation(
       bool succeeded,
       const std::u16string& display_language) override;
@@ -474,6 +473,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   }
   DictationNudgeController* GetDictationNudgeControllerForTest() {
     return dictation_nudge_controller_.get();
+  }
+
+  int dictation_soda_download_progress() {
+    return dictation_soda_download_progress_;
   }
 
  private:
@@ -519,6 +522,10 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void DeactivateSwitchAccess();
   void SyncSwitchAccessPrefsToSignInProfile();
   void UpdateKeyCodesAfterSwitchAccessEnabled();
+
+  // Dictation's SODA download progress. Values are between 0 and 100. Tracked
+  // for testing purposes only.
+  int dictation_soda_download_progress_ = 0;
 
   // Client interface in chrome browser.
   AccessibilityControllerClient* client_ = nullptr;

@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -322,7 +322,6 @@ class HttpStreamFactory::Job
 
   // Called in Job constructor. Use |spdy_session_key_| after construction.
   static SpdySessionKey GetSpdySessionKey(
-      bool spdy_session_direct,
       const ProxyServer& proxy_server,
       const GURL& origin_url,
       PrivacyMode privacy_mode,
@@ -356,7 +355,7 @@ class HttpStreamFactory::Job
 
   const CompletionRepeatingCallback io_callback_;
   std::unique_ptr<ClientSocketHandle> connection_;
-  HttpNetworkSession* const session_;
+  const raw_ptr<HttpNetworkSession> session_;
 
   State next_state_;
 
@@ -381,7 +380,7 @@ class HttpStreamFactory::Job
   const bool enable_ip_based_pooling_;
 
   // Unowned. |this| job is owned by |delegate_|.
-  Delegate* const delegate_;
+  const raw_ptr<Delegate> delegate_;
 
   const JobType job_type_;
 
@@ -442,9 +441,8 @@ class HttpStreamFactory::Job
   // (but |existing_spdy_session_| can still be non-null).
   spdy::SpdyStreamId pushed_stream_id_;
 
-  // True if not connecting to an Https proxy for an Http url.
-  const bool spdy_session_direct_;
-
+  // Which SpdySessions in the pool to use. Note that, if requesting an HTTP URL
+  // through an HTTPS proxy, this key matches the proxy, not the origin server.
   const SpdySessionKey spdy_session_key_;
 
   // Type of stream that is requested.

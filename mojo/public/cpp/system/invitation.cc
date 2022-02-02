@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/system/invitation.h"
 
+#include "base/ignore_result.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "mojo/public/c/system/invitation.h"
@@ -60,8 +61,11 @@ void SendInvitation(ScopedInvitationHandle invitation,
                     MojoSendInvitationFlags flags,
                     const ProcessErrorCallback& error_callback,
                     base::StringPiece isolated_connection_name) {
-  MojoPlatformProcessHandle process_handle;
-  ProcessHandleToMojoProcessHandle(target_process, &process_handle);
+  std::unique_ptr<MojoPlatformProcessHandle> process_handle;
+  if (target_process != base::kNullProcessHandle) {
+    process_handle = std::make_unique<MojoPlatformProcessHandle>();
+    ProcessHandleToMojoProcessHandle(target_process, process_handle.get());
+  }
 
   MojoPlatformHandle platform_handle;
   MojoInvitationTransportEndpoint endpoint;
@@ -89,9 +93,9 @@ void SendInvitation(ScopedInvitationHandle invitation,
     options.isolated_connection_name_length =
         static_cast<uint32_t>(isolated_connection_name.size());
   }
-  MojoResult result =
-      MojoSendInvitation(invitation.get().value(), &process_handle, &endpoint,
-                         error_handler, error_handler_context, &options);
+  MojoResult result = MojoSendInvitation(
+      invitation.get().value(), process_handle.get(), &endpoint, error_handler,
+      error_handler_context, &options);
   // If successful, the invitation handle is already closed for us.
   if (result == MOJO_RESULT_OK)
     ignore_result(invitation.release());

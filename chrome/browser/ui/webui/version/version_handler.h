@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -23,6 +22,7 @@ class VersionHandler : public content::WebUIMessageHandler {
   ~VersionHandler() override;
 
   // content::WebUIMessageHandler implementation.
+  void OnJavascriptDisallowed() override;
   void RegisterMessages() override;
 
   // Callback for the "requestVersionInfo" message sent by |chrome.send| in JS.

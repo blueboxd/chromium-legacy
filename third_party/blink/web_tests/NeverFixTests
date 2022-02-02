@@ -1111,7 +1111,6 @@ external/wpt/battery-status/battery-full-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-plugging-in-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-unplugging-manual.https.html [ Skip ]
 external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ Skip ]
-external/wpt/clipboard-apis/async-custom-formats-write-read.tentative.https.html [ Skip ]
 external/wpt/clipboard-apis/clipboard-file-manual.html [ Skip ]
 external/wpt/clipboard-apis/events/copy-event-manual.html [ Skip ]
 external/wpt/clipboard-apis/events/cut-event-manual.html [ Skip ]
@@ -1295,6 +1294,11 @@ external/wpt/html-media-capture/capture_video_invalid-manual.html [ Skip ]
 external/wpt/html-media-capture/capture_video_missing-manual.html [ Skip ]
 external/wpt/html-media-capture/capture_video_user-manual.html [ Skip ]
 external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/pagehide-manual.html [ Skip ]
+external/wpt/html/browsers/offline/application-cache-api/api_status_checking-manual.html [ Skip ]
+external/wpt/html/browsers/offline/application-cache-api/api_status_downloading-manual.html [ Skip ]
+external/wpt/html/browsers/offline/application-cache-api/api_status_obsolete-manual.html [ Skip ]
+external/wpt/html/browsers/offline/application-cache-api/api_status_updateready-manual.html [ Skip ]
+external/wpt/html/browsers/offline/application-cache-api/api_swapcache-manual.html [ Skip ]
 external/wpt/html/browsers/offline/browser-state/navigator_online_event-manual.https.html [ Skip ]
 external/wpt/html/browsers/offline/manifest_main_empty-manual.https.html [ Skip ]
 external/wpt/html/browsers/offline/manifest_notchanged_online-manual.https.html [ Skip ]
@@ -1404,17 +1408,16 @@ external/wpt/html/semantics/interactive-elements/commands/legend/no-fieldset-par
 external/wpt/html/semantics/selectors/pseudo-classes/checked-001-manual.html [ Skip ]
 external/wpt/html/webappapis/scripting/events/contextmenu-event-manual.htm [ Skip ]
 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-manual.html [ Skip ]
-external/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none-manual.https.html [ Skip ]
 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Skip ]
-external/wpt/notifications/body-basic-manual.html [ Skip ]
-external/wpt/notifications/body-empty-manual.html [ Skip ]
-external/wpt/notifications/event-onclick-manual.html [ Skip ]
-external/wpt/notifications/event-onerror-default-manual.html [ Skip ]
-external/wpt/notifications/icon-basic-manual.html [ Skip ]
-external/wpt/notifications/icon-empty-manual.html [ Skip ]
-external/wpt/notifications/requestPermission-granted-manual.html [ Skip ]
-external/wpt/notifications/tag-different-manual.html [ Skip ]
-external/wpt/notifications/tag-same-manual.html [ Skip ]
+external/wpt/notifications/body-basic-manual.https.html [ Skip ]
+external/wpt/notifications/body-empty-manual.https.html [ Skip ]
+external/wpt/notifications/event-onclick-manual.https.html [ Skip ]
+external/wpt/notifications/event-onerror-default-manual.https.html [ Skip ]
+external/wpt/notifications/icon-basic-manual.https.html [ Skip ]
+external/wpt/notifications/icon-empty-manual.https.html [ Skip ]
+external/wpt/notifications/requestPermission-granted-manual.https.html [ Skip ]
+external/wpt/notifications/tag-different-manual.https.html [ Skip ]
+external/wpt/notifications/tag-same-manual.https.html [ Skip ]
 external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.basic-manual.worker.js [ Skip ]
 external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.maxWidth.large-manual.worker.js [ Skip ]
 external/wpt/html/canvas/offscreen/text/2d.text.draw.fill.rtl-manual.worker.js [ Skip ]
@@ -1622,7 +1625,9 @@ external/wpt/css/css-writing-modes/writing-mode-vlr-table-002-manual.html [ Skip
 #
 # Note that test coverage offered by the tests Skip-ed below is preserved by
 # the virtual/not-site-per-process test suite (see also
-# third_party/blink/web_tests/virtual/not-site-per-process/README.md).
+# third_party/blink/web_tests/virtual/not-site-per-process/README.md). This
+# requires adding a Pass line below for that virtual test suite to override the
+# Skip behavior, so actually every test needs two lines here.
 #
 # When modifying the list of files that behave differently with and without
 # OOPIFs, please consider modifying all the locations below:
@@ -1653,6 +1658,14 @@ external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-sibling
 external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
 external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
 external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
 virtual/not-site-per-process/external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Pass ]
 virtual/not-site-per-process/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Pass ]
@@ -1667,19 +1680,16 @@ virtual/not-site-per-process/external/wpt/html/browsers/windows/nested-browsing-
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
 virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
 virtual/wasm-module-sharing-enabled-not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
-# -------------------- origin-vs-url in console messages -----------------
-# Process hosting https://foo.example.com should not get any data from
-# https://bar.other-site-example.com.  This includes things like cookies
-# and localStorage, but also full URLs (which may include some "secrets"
-# and [unlike origins] are not exposed to other origins through web APIs).
-# To properly enforce security boundary described above, console messages
-# cannot include full cross-origin URLs (i.e. the messages need to strip
-# cross-origin URLs down to just the origin - for example,
-# https://foo.example.com/path?token=secret needs to be replaced with just
-# https://foo.example.com).
-crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Skip ]
 # ----------------------- origin-keyed agent clusters --------------------
 # Origin-keyed agent clusters web platform tests are for the feature at
 # https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make
@@ -1776,14 +1786,6 @@ crbug.com/567837 fast/hidpi/static/* [ Skip ]
 virtual/scalefactor200/fast/hidpi/static/* [ Pass ]
 virtual/scalefactor200withzoom/fast/hidpi/static/* [ Pass ]
 
-# Skip the non-virtualized CORS-RFC1918 blocking tests (`.addressSpace` tests are fine):
-crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Skip ]
-crbug.com/763830 http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Skip ]
-virtual/cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Pass ]
-virtual/cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Pass ]
-virtual/plz-dedicated-worker-cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-fetch.php [ Pass ]
-virtual/plz-dedicated-worker-cors-rfc1918/http/tests/security/cors-rfc1918/external-to-internal-xhr.php [ Pass ]
-
 # Memory measurement tests are run as virtual tests.
 external/wpt/measure-memory/* [ Skip ]
 virtual/force-eager/external/wpt/measure-memory/* [ Pass ]
@@ -1793,13 +1795,6 @@ crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/main-frame-and
 crbug.com/1085129 virtual/force-eager/external/wpt/measure-memory/idlharness.window.html [ Skip ]
 crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/service-worker.https.any.serviceworker.html [ Skip ]
 crbug.com/1207146 virtual/force-eager/external/wpt/measure-memory/shared-worker.https.any.sharedworker.html [ Skip ]
-
-# AppCache is no longer supported.
-crbug.com/582750 external/wpt/html/browsers/offline/appcache/* [ Skip ]
-crbug.com/940797 external/wpt/signed-exchange/appcache/* [ Skip ]
-crbug.com/582750 external/wpt/service-workers/service-worker/appcache-ordering-main.https.html [ Skip ]
-crbug.com/582750 external/wpt/service-workers/service-worker/claim-fetch-with-appcache.https.html [ Skip ]
-crbug.com/582750 external/wpt/storage/estimate-usage-details-application-cache.https.tentative.html [ Skip ]
 
 # WeakRefs are under development and run in a virtual test suite
 crbug.com/1016767 js/weakrefs/* [ Skip ]
@@ -2026,3 +2021,4 @@ crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-local-w
 crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-local-win.html [ Skip ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/appmanifest/icons-member/icons-member-cors-fail-manual.sub.html [ Skip ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/appmanifest/start_url-member/start_url-member-pass-manual.html [ Skip ]
+crbug.com/626703 [ Mac11 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-postMessage-windows-manual.https.html [ Skip ]

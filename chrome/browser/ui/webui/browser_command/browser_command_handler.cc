@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_policy_handler.h"
@@ -58,8 +59,7 @@ void BrowserCommandHandler::CanExecuteCommand(
       // Nothing to do.
       break;
     case Command::kOpenSafetyCheck:
-      can_execute =
-          !chrome::enterprise_util::HasBrowserPoliciesApplied(profile_);
+      can_execute = !chrome::enterprise_util::IsBrowserManaged(profile_);
       break;
     case Command::kOpenSafeBrowsingEnhancedProtectionSettings: {
       bool managed = safe_browsing::SafeBrowsingPolicyHandler::
@@ -70,6 +70,11 @@ void BrowserCommandHandler::CanExecuteCommand(
     } break;
     case Command::kOpenFeedbackForm:
       can_execute = true;
+      break;
+    case Command::kOpenPrivacyReview:
+      can_execute = base::FeatureList::IsEnabled(features::kPrivacyReview) &&
+                    !chrome::enterprise_util::IsBrowserManaged(profile_) &&
+                    !profile_->IsChild();
       break;
     default:
       NOTREACHED() << "Unspecified behavior for command " << command_id;
@@ -120,6 +125,12 @@ void BrowserCommandHandler::ExecuteCommandWithDisposition(
       break;
     case Command::kOpenFeedbackForm:
       OpenFeedbackForm();
+      break;
+    case Command::kOpenPrivacyReview:
+      NavigateToURL(GURL(chrome::GetSettingsUrl(chrome::kPrivacyReviewSubPage)),
+                    disposition);
+      base::RecordAction(
+          base::UserMetricsAction("NewTabPage_Promos_PrivacyGuide"));
       break;
     default:
       NOTREACHED() << "Unspecified behavior for command " << id;

@@ -24,8 +24,10 @@
 namespace {
 
 // Width of the identity control if nothing is contraining it.
-const CGFloat kIdentityControlMaxWidth = 327;
-const CGFloat kIdentityTopMargin = 16;
+constexpr CGFloat kIdentityControlMaxWidth = 327;
+constexpr CGFloat kIdentityControlMarginDefault = 16;
+constexpr CGFloat kIdentityControlMarginWhenInTop = 24;
+constexpr CGFloat kMarginBetweenContents = 12;
 
 // URL for the learn more text.
 // Need to set a value so the delegate gets called.
@@ -41,9 +43,8 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
 // Button controlling the display of the selected identity.
 @property(nonatomic, strong) IdentityButtonControl* identityControl;
 
-// The string to be displayed in the "Cotinue" button to personalize it. Usually
-// the given name, or the email address if no given name.
-@property(nonatomic, copy) NSString* personalizedButtonPrompt;
+// Layout guide determining the area for the identity control.
+@property(nonatomic, strong) UILayoutGuide* identityControlArea;
 
 // Scrim displayed above the view when the UI is disabled.
 @property(nonatomic, strong) ActivityOverlayView* overlay;
@@ -55,6 +56,13 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
 // Popover shown when "Details" link is tapped.
 @property(nonatomic, strong)
     EnterpriseInfoPopoverViewController* bubbleViewController;
+
+// Bottom constraint of the identity control area.
+@property(nonatomic, strong)
+    NSLayoutConstraint* identityControlAreaBottomConstraint;
+
+// Button to show sync advanced settings.
+@property(nonatomic, strong) UIButton* advanceSyncSettingsButton;
 
 @end
 
@@ -70,31 +78,46 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
   self.readMoreString =
       l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SCREEN_READ_MORE);
 
-  self.titleText = l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_TITLE);
-  if (self.enterpriseSignInRestrictions == kNoEnterpriseRestriction) {
-    self.subtitleText =
-        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE);
-  } else {
-    self.subtitleText =
-        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SUBTITLE_MANAGED);
-  }
+  [self.delegate signinSyncViewController:self
+                       addConsentStringID:[self titleTextID]];
+  self.titleText = l10n_util::GetNSString([self titleTextID]);
+
+  [self.delegate signinSyncViewController:self
+                       addConsentStringID:[self subtitleTextID]];
+  self.subtitleText = l10n_util::GetNSString([self subtitleTextID]);
+
   if (!self.primaryActionString) {
     // |primaryActionString| could already be set using the consumer methods.
     self.primaryActionString =
         l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION);
   }
+  // Set the consent ID associated with the primary action string to
+  // |self.activateSyncButtonID| regardless of its current value because this
+  // is the only string that will be used in the button when enabling sync.
+  [self.delegate signinSyncViewController:self
+                       addConsentStringID:self.activateSyncButtonID];
 
-  [self.specificContentView addSubview:self.identityControl];
+  if ([self identityControlInTop]) {
+    [self.topSpecificContentView addSubview:self.identityControl];
+    [self.topSpecificContentView addLayoutGuide:self.identityControlArea];
+  } else {
+    [self.specificContentView addSubview:self.identityControl];
+    [self.specificContentView addLayoutGuide:self.identityControlArea];
+  }
 
-  // Add Learn More text label according to EnterpriseSignInRestrictions.
+  UILabel* syncInfoLabel = [self syncInfoLabel];
+
+  // Add content specific to sync.
+  [self.specificContentView addSubview:syncInfoLabel];
+  [self.specificContentView addSubview:self.advanceSyncSettingsButton];
+
+  // Add the Learn More text label if there are enterprise sign-in or sync
+  // restrictions.
   if (self.enterpriseSignInRestrictions != kNoEnterpriseRestriction) {
     self.learnMoreTextView.delegate = self;
     [self.specificContentView addSubview:self.learnMoreTextView];
 
     [NSLayoutConstraint activateConstraints:@[
-      [self.learnMoreTextView.topAnchor
-          constraintGreaterThanOrEqualToAnchor:self.identityControl
-                                                   .bottomAnchor],
       [self.learnMoreTextView.bottomAnchor
           constraintEqualToAnchor:self.specificContentView.bottomAnchor],
       [self.learnMoreTextView.centerXAnchor
@@ -105,36 +128,93 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
     ]];
   }
 
-  bool forceSignInEnabled =
-      self.enterpriseSignInRestrictions & kEnterpriseForceSignIn;
-  bool signinRestricted =
-      self.enterpriseSignInRestrictions || forceSignInEnabled;
+  self.bannerImage = [UIImage imageNamed:@"sync_screen_banner"];
+  self.secondaryActionString =
+      l10n_util::GetNSString([self secondaryActionStringID]);
 
-  self.bannerImage =
-      [UIImage imageNamed:signinRestricted ? @"forced_signin_screen_banner"
-                                           : @"signin_screen_banner"];
-  // Only add "Don't Sign In" button when signin is not required.
-  if (!forceSignInEnabled) {
-    self.secondaryActionString =
-        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_DONT_SIGN_IN);
+  // Set constraints specific to the identity control button that don't change.
+  NSLayoutConstraint* areaWidthConstraint =
+      [self.identityControlArea.widthAnchor
+          constraintEqualToConstant:kIdentityControlMaxWidth];
+  areaWidthConstraint.priority = UILayoutPriorityDefaultHigh;
+  int topMargin = self.identityControlInTop ? kIdentityControlMarginWhenInTop
+                                            : kIdentityControlMarginDefault;
+  [NSLayoutConstraint activateConstraints:@[
+    [self.identityControlArea.centerXAnchor
+        constraintEqualToAnchor:self.identityControlArea.owningView
+                                    .centerXAnchor],
+    [self.identityControlArea.widthAnchor
+        constraintLessThanOrEqualToAnchor:self.identityControlArea.owningView
+                                              .widthAnchor],
+    [self.identityControlArea.topAnchor
+        constraintEqualToAnchor:self.identityControl.topAnchor
+                       constant:-topMargin],
+    areaWidthConstraint,
+    [self.identityControl.widthAnchor
+        constraintEqualToAnchor:self.identityControlArea.widthAnchor],
+    [self.identityControl.centerXAnchor
+        constraintEqualToAnchor:self.identityControlArea.centerXAnchor],
+  ]];
+
+  // Set constraints that are dependent on the position of the identity
+  // controller button and sign-in restrictions.
+
+  if ([self identityControlInTop]) {
+    [self.identityControlArea.bottomAnchor
+        constraintEqualToAnchor:self.topSpecificContentView.bottomAnchor]
+        .active = YES;
+    [self.identityControlArea.topAnchor
+        constraintEqualToAnchor:self.topSpecificContentView.topAnchor]
+        .active = YES;
+    if (self.enterpriseSignInRestrictions == kNoEnterpriseRestriction) {
+      [self.advanceSyncSettingsButton.bottomAnchor
+          constraintLessThanOrEqualToAnchor:self.advanceSyncSettingsButton
+                                                .superview.bottomAnchor]
+          .active = YES;
+    } else {
+      [self.advanceSyncSettingsButton.bottomAnchor
+          constraintLessThanOrEqualToAnchor:self.learnMoreTextView.topAnchor]
+          .active = YES;
+    }
+  } else {
+    [self.identityControlArea.topAnchor
+        constraintGreaterThanOrEqualToAnchor:self.specificContentView.topAnchor]
+        .active = YES;
+    [self.advanceSyncSettingsButton.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.identityControlArea.topAnchor]
+        .active = YES;
+    if (self.enterpriseSignInRestrictions == kNoEnterpriseRestriction) {
+      [self.identityControlArea.bottomAnchor
+          constraintEqualToAnchor:self.specificContentView.bottomAnchor]
+          .active = YES;
+    } else {
+      [self.identityControlArea.bottomAnchor
+          constraintLessThanOrEqualToAnchor:self.specificContentView
+                                                .bottomAnchor]
+          .active = YES;
+      [self.learnMoreTextView.topAnchor
+          constraintEqualToAnchor:self.identityControlArea.bottomAnchor]
+          .active = YES;
+    }
   }
 
-  NSLayoutConstraint* widthConstraint = [self.identityControl.widthAnchor
-      constraintEqualToConstant:kIdentityControlMaxWidth];
-  widthConstraint.priority = UILayoutPriorityDefaultHigh;
+  [self updateIdentityControlButtonVerticalLayout];
 
+  // Set constraints specific to the content related to sync.
   [NSLayoutConstraint activateConstraints:@[
-    [self.identityControl.topAnchor
-        constraintEqualToAnchor:self.specificContentView.topAnchor
-                       constant:kIdentityTopMargin],
-    [self.identityControl.centerXAnchor
+    [syncInfoLabel.topAnchor
+        constraintEqualToAnchor:self.specificContentView.topAnchor],
+    [syncInfoLabel.centerXAnchor
         constraintEqualToAnchor:self.specificContentView.centerXAnchor],
-    [self.identityControl.widthAnchor
+    [syncInfoLabel.widthAnchor
         constraintLessThanOrEqualToAnchor:self.specificContentView.widthAnchor],
-    widthConstraint,
-    [self.identityControl.bottomAnchor
-        constraintLessThanOrEqualToAnchor:self.specificContentView
-                                              .bottomAnchor],
+    [self.advanceSyncSettingsButton.topAnchor
+        constraintEqualToAnchor:syncInfoLabel.bottomAnchor
+                       constant:kMarginBetweenContents],
+    [self.advanceSyncSettingsButton.centerXAnchor
+        constraintEqualToAnchor:self.specificContentView.centerXAnchor],
+    [self.advanceSyncSettingsButton.widthAnchor
+        constraintLessThanOrEqualToAnchor:self.specificContentView.widthAnchor],
   ]];
 
   // Call super after setting up the strings and others, as required per super
@@ -172,6 +252,13 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
     heightConstraint.active = YES;
   }
   return _identityControl;
+}
+
+- (UILayoutGuide*)identityControlArea {
+  if (!_identityControlArea) {
+    _identityControlArea = [[UILayoutGuide alloc] init];
+  }
+  return _identityControlArea;
 }
 
 - (ActivityOverlayView*)overlay {
@@ -222,6 +309,60 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
   return _learnMoreTextView;
 }
 
+// Creates and returns the label that gives detailed information about sync.
+- (UILabel*)syncInfoLabel {
+  UILabel* label = [[UILabel alloc] init];
+  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  label.numberOfLines = 0;
+  label.textAlignment = NSTextAlignmentCenter;
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.adjustsFontForContentSizeCategory = YES;
+  int textID = IDS_IOS_FIRST_RUN_SYNC_SCREEN_CONTENT;
+  [self.delegate signinSyncViewController:self addConsentStringID:textID];
+  label.text = l10n_util::GetNSString(textID);
+  label.textColor = [UIColor colorNamed:kGrey600Color];
+  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  return label;
+}
+
+// Creates and returns the button to show advanced settings.
+- (UIButton*)advanceSyncSettingsButton {
+  if (!_advanceSyncSettingsButton) {
+    _advanceSyncSettingsButton = [[UIButton alloc] init];
+    _advanceSyncSettingsButton.translatesAutoresizingMaskIntoConstraints = NO;
+    _advanceSyncSettingsButton.titleLabel.numberOfLines = 0;
+    _advanceSyncSettingsButton.titleLabel.adjustsFontForContentSizeCategory =
+        YES;
+    [_advanceSyncSettingsButton.titleLabel
+        setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]];
+    int stringID = IDS_IOS_FIRST_RUN_SYNC_SCREEN_ADVANCE_SETTINGS;
+    [self.delegate signinSyncViewController:self addConsentStringID:stringID];
+    [_advanceSyncSettingsButton setTitle:l10n_util::GetNSString(stringID)
+                                forState:UIControlStateNormal];
+    [_advanceSyncSettingsButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                                     forState:UIControlStateNormal];
+    [_advanceSyncSettingsButton setTitle:l10n_util::GetNSString(stringID)
+                                forState:UIControlStateDisabled];
+    [_advanceSyncSettingsButton
+        setTitleColor:[UIColor colorNamed:kTextSecondaryColor]
+             forState:UIControlStateDisabled];
+    [_advanceSyncSettingsButton addTarget:self
+                                   action:@selector(showAdvanceSyncSettings)
+                         forControlEvents:UIControlEventTouchUpInside];
+  }
+  return _advanceSyncSettingsButton;
+}
+
+// Returns the ID of the string of the button that is used to activate sync.
+- (int)activateSyncButtonID {
+  switch (self.stringsSet) {
+    case SigninSyncScreenUIStringSet::kOld:
+      return IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
+    case SigninSyncScreenUIStringSet::kNew:
+      return IDS_IOS_FIRST_RUN_SYNC_SCREEN_PRIMARY_ACTION;
+  }
+}
+
 #pragma mark - SignInSyncConsumer
 
 - (void)setSelectedIdentityUserName:(NSString*)userName
@@ -230,7 +371,6 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
                              avatar:(UIImage*)avatar {
   DCHECK(email);
   DCHECK(avatar);
-  self.personalizedButtonPrompt = givenName ? givenName : email;
   [self updateUIForIdentityAvailable:YES];
   [self.identityControl setIdentityName:userName email:email];
   [self.identityControl setIdentityAvatar:avatar];
@@ -255,21 +395,116 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
 // Callback for |identityControl|.
 - (void)identityButtonControlTapped:(id)sender forEvent:(UIEvent*)event {
   UITouch* touch = event.allTouches.anyObject;
-  [self.delegate showAccountPickerFromPoint:[touch locationInView:nil]];
+  [self.delegate signinSyncViewController:self
+               showAccountPickerFromPoint:[touch locationInView:nil]];
 }
 
 // Updates the UI to adapt for |identityAvailable| or not.
 - (void)updateUIForIdentityAvailable:(BOOL)identityAvailable {
   self.identityControl.hidden = !identityAvailable;
+  [self updateIdentityControlButtonVerticalLayout];
   if (identityAvailable) {
-    self.primaryActionString = l10n_util::GetNSStringF(
-        IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS,
-        base::SysNSStringToUTF16(self.personalizedButtonPrompt));
-    ;
+    self.primaryActionString =
+        l10n_util::GetNSString(self.activateSyncButtonID);
+    self.advanceSyncSettingsButton.enabled = YES;
   } else {
     self.primaryActionString =
-        l10n_util::GetNSString(IDS_IOS_FIRST_RUN_SIGNIN_SIGN_IN_ACTION);
+        l10n_util::GetNSString(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_ADD_ACCOUNT);
+    self.advanceSyncSettingsButton.enabled = NO;
   }
+}
+
+// Appends |restrictionString| to |existingString|, adding padding if needed.
+- (void)appendRestrictionString:(NSString*)restrictionString
+                       toString:(NSMutableString*)existingString {
+  NSString* padding = @"\n\n";
+  if ([existingString length])
+    [existingString appendString:padding];
+  [existingString appendString:restrictionString];
+}
+
+// Called when the sync advanced settings button is tapped.
+- (void)showAdvanceSyncSettings {
+  [self.delegate signinSyncViewControllerDidTapOnSettings:self];
+}
+
+// Returns the title string ID.
+- (int)titleTextID {
+  switch (self.stringsSet) {
+    case SigninSyncScreenUIStringSet::kOld:
+      return IDS_IOS_ACCOUNT_UNIFIED_CONSENT_TITLE;
+    case SigninSyncScreenUIStringSet::kNew:
+      return IDS_IOS_FIRST_RUN_SYNC_SCREEN_TITLE;
+  }
+}
+
+// Returns the subtitle string ID.
+- (int)subtitleTextID {
+  switch (self.stringsSet) {
+    case SigninSyncScreenUIStringSet::kOld:
+      return IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE;
+    case SigninSyncScreenUIStringSet::kNew:
+      return IDS_IOS_FIRST_RUN_SYNC_SCREEN_SUBTITLE;
+  }
+}
+
+// Returns the secondary action string ID.
+- (int)secondaryActionStringID {
+  switch (self.stringsSet) {
+    case SigninSyncScreenUIStringSet::kOld:
+      return IDS_IOS_FIRST_RUN_DEFAULT_BROWSER_SCREEN_SECONDARY_ACTION;
+    case SigninSyncScreenUIStringSet::kNew:
+      return IDS_IOS_FIRST_RUN_SYNC_SCREEN_SECONDARY_ACTION;
+  }
+}
+
+// Returns YES if the identity control button has to be in top.
+- (BOOL)identityControlInTop {
+  switch (self.identitySwitcherPosition) {
+    case SigninSyncScreenUIIdentitySwitcherPosition::kTop:
+      return YES;
+    case SigninSyncScreenUIIdentitySwitcherPosition::kBottom:
+      return NO;
+  }
+}
+
+// Updates the vertical layout of the identity control button according to its
+// visibility.
+- (void)updateIdentityControlButtonVerticalLayout {
+  if (!self.viewLoaded) {
+    // Don't update the constraints when the view isn't yet loaded because the
+    // view tree as to be properly set before updating the constraints.
+    return;
+  }
+
+  BOOL hidden = self.identityControl.hidden;
+
+  // Clear constraint from the previous state.
+  self.identityControlAreaBottomConstraint.active = NO;
+
+  // Set the bottom margin between the area and identity control view to match
+  // the state of the UI.
+  int bottomMargin = kIdentityControlMarginDefault;
+  if (!hidden) {
+    if (self.identityControlInTop) {
+      // Use a larger margin when identity control is in top and visible.
+      bottomMargin = kIdentityControlMarginWhenInTop;
+    } else if (self.enterpriseSignInRestrictions == kNoEnterpriseRestriction) {
+      // Remove the bottom margin when the identity control is in bottom and
+      // visible.
+      bottomMargin = 0;
+    }
+  }
+
+  // Limit the area to a specific height when the identity control is hidden.
+  NSLayoutAnchor* bottomAnchor = hidden ? self.identityControlArea.topAnchor
+                                        : self.identityControl.bottomAnchor;
+
+  self.identityControlAreaBottomConstraint =
+      [self.identityControlArea.bottomAnchor
+          constraintEqualToAnchor:bottomAnchor
+                         constant:bottomMargin];
+  self.identityControlAreaBottomConstraint.active = YES;
 }
 
 #pragma mark - UITextViewDelegate
@@ -281,18 +516,21 @@ NSString* const kLearnMoreTextViewAccessibilityIdentifier =
   DCHECK(textView == self.learnMoreTextView);
 
   NSMutableString* detailsMessage = [[NSMutableString alloc] init];
-  NSString* detailsPadding = @"\n\n";
   if (self.enterpriseSignInRestrictions & kEnterpriseForceSignIn) {
-    [detailsMessage appendString:l10n_util::GetNSString(
-                                     IDS_IOS_ENTERPRISE_FORCED_SIGNIN_MESSAGE)];
+    [self appendRestrictionString:l10n_util::GetNSString(
+                                      IDS_IOS_ENTERPRISE_FORCED_SIGNIN_MESSAGE)
+                         toString:detailsMessage];
   }
   if (self.enterpriseSignInRestrictions & kEnterpriseRestrictAccounts) {
-    if ([detailsMessage length])
-      [detailsMessage appendString:detailsPadding];
-    [detailsMessage
-        appendString:
-            l10n_util::GetNSString(
-                IDS_IOS_ENTERPRISE_RESTRICTED_ACCOUNTS_TO_PATTERNS_MESSAGE)];
+    [self appendRestrictionString:
+              l10n_util::GetNSString(
+                  IDS_IOS_ENTERPRISE_RESTRICTED_ACCOUNTS_TO_PATTERNS_MESSAGE)
+                         toString:detailsMessage];
+  }
+  if (self.enterpriseSignInRestrictions & kEnterpriseSyncTypesListDisabled) {
+    [self appendRestrictionString:l10n_util::GetNSString(
+                                      IDS_IOS_ENTERPRISE_MANAGED_SYNC)
+                         toString:detailsMessage];
   }
 
   // Open signin popover.

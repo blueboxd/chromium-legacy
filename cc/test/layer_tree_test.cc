@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -137,7 +138,7 @@ class SynchronousLayerTreeFrameSink : public TestLayerTreeFrameSink {
 
   bool frame_request_pending_ = false;
   bool frame_ack_pending_ = false;
-  LayerTreeFrameSinkClient* client_ = nullptr;
+  raw_ptr<LayerTreeFrameSinkClient> client_ = nullptr;
   gfx::Rect viewport_;
   const bool use_software_renderer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -384,7 +385,7 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
  private:
-  TestHooks* test_hooks_;
+  raw_ptr<TestHooks> test_hooks_;
   bool block_notify_ready_to_activate_for_testing_ = false;
   bool notify_ready_to_activate_was_blocked_ = false;
 
@@ -456,7 +457,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     RequestNewLayerTreeFrameSink();
   }
 
-  void WillCommit(CommitState* commit_state) override {
+  void WillCommit(const CommitState& commit_state) override {
     test_hooks_->WillCommit(commit_state);
   }
 
@@ -492,7 +493,7 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)
       : test_hooks_(test_hooks) {}
 
-  TestHooks* test_hooks_;
+  raw_ptr<TestHooks> test_hooks_;
 };
 
 // Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.
@@ -541,21 +542,33 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     return layer_tree_host;
   }
 
-  std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
-      LayerTreeHostImplClient* host_impl_client) override {
+  std::unique_ptr<LayerTreeHostImpl> CreateLayerTreeHostImplInternal(
+      LayerTreeHostImplClient* host_impl_client,
+      MutatorHost*,
+      const LayerTreeSettings& settings,
+      TaskRunnerProvider* task_runner_provider,
+      raw_ptr<RasterDarkModeFilter>&,
+      int,
+      raw_ptr<TaskGraphRunner>& task_graph_runner,
+      scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
+      LayerTreeHostSchedulingClient* scheduling_client,
+      RenderingStatsInstrumentation* rendering_stats_instrumentation,
+      std::unique_ptr<UkmRecorderFactory>& ukm_recorder_factory,
+      base::WeakPtr<CompositorDelegateForInput>& compositor_delegate_weak_ptr)
+      override {
     std::unique_ptr<LayerTreeHostImpl> host_impl =
         LayerTreeHostImplForTesting::Create(
-            test_hooks_, GetSettings(), host_impl_client, scheduling_client(),
-            GetTaskRunnerProvider(), task_graph_runner(),
-            rendering_stats_instrumentation(), image_worker_task_runner_);
+            test_hooks_, settings, host_impl_client, scheduling_client,
+            task_runner_provider, task_graph_runner,
+            rendering_stats_instrumentation, image_worker_task_runner);
 
-    host_impl->InitializeUkm(ukm_recorder_factory_->CreateRecorder());
-    compositor_delegate_weak_ptr_ = host_impl->AsWeakPtr();
+    host_impl->InitializeUkm(ukm_recorder_factory->CreateRecorder());
+    compositor_delegate_weak_ptr = host_impl->AsWeakPtr();
 
     // Many tests using this class are specifically meant as input tests so
     // we'll need an input handler. Ideally these would be split out into a
     // separate test harness.
-    InputHandler::Create(*compositor_delegate_weak_ptr_);
+    InputHandler::Create(*compositor_delegate_weak_ptr);
 
     return host_impl;
   }
@@ -580,7 +593,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
                           CompositorMode mode)
       : LayerTreeHost(std::move(params), mode), test_hooks_(test_hooks) {}
 
-  TestHooks* test_hooks_;
+  raw_ptr<TestHooks> test_hooks_;
   bool test_started_ = false;
 };
 
@@ -625,7 +638,7 @@ class LayerTreeTestLayerTreeFrameSinkClient
   }
 
  private:
-  TestHooks* hooks_;
+  raw_ptr<TestHooks> hooks_;
 };
 
 LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
@@ -662,12 +675,7 @@ LayerTreeTest::LayerTreeTest(viz::RendererType renderer_type)
     timeout_seconds_ = 30;
 #elif defined(USE_OZONE)
     // Ozone builds go through a slower path than regular Linux builds.
-    // TODO(https://crbug.com/1096425): This special case of having both Ozone
-    // and X11 enabled that will be removed when Ozone is the default. Until
-    // then, we only need to use the slower Ozone timeout when the Ozone
-    // platform is being used. Remove this condition once it is not needed.
-    if (features::IsUsingOzonePlatform())
-      timeout_seconds_ = 30;
+    timeout_seconds_ = 30;
 #endif
   }
 

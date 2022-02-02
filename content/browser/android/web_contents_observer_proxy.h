@@ -8,7 +8,6 @@
 #include <jni.h>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/macros.h"
 #include "base/process/kill.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/reload_type.h"
@@ -36,7 +35,6 @@ class WebContentsObserverProxy : public WebContentsObserver {
  private:
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
-  void RenderViewReady() override;
   void PrimaryMainFrameRenderProcessGone(
       base::TerminationStatus termination_status) override;
   void DidStartLoading() override;

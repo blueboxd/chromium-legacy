@@ -18,10 +18,8 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial_params.h"
@@ -123,11 +121,9 @@ StoragePartition* BrowserContext::GetStoragePartition(
   if (site_instance)
     DCHECK_EQ(this, site_instance->GetBrowserContext());
 
-  auto* site_instance_impl = static_cast<SiteInstanceImpl*>(site_instance);
-  auto partition_config =
-      site_instance_impl
-          ? site_instance_impl->GetSiteInfo().storage_partition_config()
-          : StoragePartitionConfig::CreateDefault(this);
+  auto partition_config = site_instance
+                              ? site_instance->GetStoragePartitionConfig()
+                              : StoragePartitionConfig::CreateDefault(this);
   return GetStoragePartition(partition_config, can_create);
 }
 

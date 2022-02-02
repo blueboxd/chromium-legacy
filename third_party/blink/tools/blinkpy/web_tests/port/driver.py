@@ -504,7 +504,7 @@ class Driver(object):
         init_timeout = self._port.get_option(
             'initialize_webgpu_adapter_at_startup_timeout_ms')
         startup_input = DriverInput(
-            "wpt_internal/webgpu/000_run_me_first.html",
+            "wpt_internal/webgpu/000_run_me_first.https.html",
             timeout=init_timeout,
             image_hash=None,
             args=per_test_args)
@@ -512,8 +512,8 @@ class Driver(object):
         if output.text and 'PASS 000_run_me_first' in output.text:
             return True, None
 
-        output.text = ('Failed to initialize WebGPU adapter at startup '
-                       'via wpt_internal_webgpu/000_run_me_first.html:\n' +
+        output.text = ('Failed to initialize WebGPU adapter at startup via '
+                       'wpt_internal_webgpu/000_run_me_first.https.html:\n' +
                        output.text)
         return False, output
 
@@ -577,17 +577,6 @@ class Driver(object):
         if self._port.get_option('enable_leak_detection'):
             cmd.append('--enable-leak-detection')
         cmd.extend(per_test_args)
-
-        # The following code temporarily disables CompositeAfterPaint in web
-        # tests unless it is explicitly enabled. CompositeAfterPaint is enabled
-        # via fieldtrial_testing_config.json which would make web tests run
-        # with CompositeAfterPaint. This is disabled in order to stage the
-        # enabling of the feature because of the number of rebaselines needed.
-        # TODO(pdr): Remove this code and run web tests with
-        # CompositeAfterPaint.
-        if '--enable-blink-features=CompositeAfterPaint' not in cmd:
-            cmd.append('--disable-blink-features=CompositeAfterPaint')
-
         cmd = coalesce_repeated_switches(cmd)
         cmd.append('-')
         return cmd

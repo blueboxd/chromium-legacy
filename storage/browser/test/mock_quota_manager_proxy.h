@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -34,6 +34,9 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   MockQuotaManagerProxy(
       MockQuotaManager* quota_manager,
       scoped_refptr<base::SequencedTaskRunner> quota_manager_task_runner);
+
+  MockQuotaManagerProxy(const MockQuotaManagerProxy&) = delete;
+  MockQuotaManagerProxy& operator=(const MockQuotaManagerProxy&) = delete;
 
   void RegisterClient(
       mojo::PendingRemote<mojom::QuotaClient> client,
@@ -98,7 +101,7 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   ~MockQuotaManagerProxy() override;
 
  private:
-  MockQuotaManager* const mock_quota_manager_;
+  const raw_ptr<MockQuotaManager> mock_quota_manager_;
 
   int storage_accessed_count_;
   int storage_modified_count_;
@@ -107,8 +110,6 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   int64_t last_notified_delta_;
 
   mojo::Remote<mojom::QuotaClient> registered_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockQuotaManagerProxy);
 };
 
 }  // namespace storage

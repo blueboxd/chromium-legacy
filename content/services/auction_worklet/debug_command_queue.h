@@ -5,6 +5,8 @@
 #ifndef CONTENT_SERVICES_AUCTION_WORKLET_DEBUG_COMMAND_QUEUE_H_
 #define CONTENT_SERVICES_AUCTION_WORKLET_DEBUG_COMMAND_QUEUE_H_
 
+#include <set>
+
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/memory/ref_counted.h"
@@ -18,20 +20,44 @@ namespace auction_worklet {
 
 // DebugCommandQueue helps coordinate command transfer between Session (lives on
 // V8 thread) and IOSession (lives on mojo thread), as well as blocking
-// execution of V8 thread when paused in debugger. It's jointly owned by Session
-// and IOSession.
+// execution of V8 thread when paused in debugger. It's owned by the
+// AuctionV8Helper (but may extend its own lifetime a bit to keep callbacks
+// safe).
 class DebugCommandQueue : public base::RefCountedThreadSafe<DebugCommandQueue> {
  public:
-  // This must be created on the v8 thread.
-  DebugCommandQueue();
+  // May be created and destroyed on any thread.
+  explicit DebugCommandQueue(
+      scoped_refptr<base::SequencedTaskRunner> v8_runner);
   DebugCommandQueue(const DebugCommandQueue&) = delete;
   DebugCommandQueue& operator=(const DebugCommandQueue&) = delete;
 
   // Blocks the current thread until QuitPauseForDebugger() is called, executing
   // only things added via Post().
   //
+  // If AbortPauses(context_group_id) has been called, exits immediately.
+  //
+  // `abort_helper` should be a closure that, when called on the v8 thread, will
+  // eventually lead to QuitPauseForDebugger being called.
+  //
   // Called on v8 thread only.
-  void PauseForDebuggerAndRunCommands();
+  void PauseForDebuggerAndRunCommands(
+      int context_group_id,
+      base::OnceClosure abort_helper = base::OnceClosure());
+
+  // If the v8 thread is within PauseForDebuggerAndRunCommands() the
+  // `abort_helper` passed to the method will be queued for execution.
+  //
+  // Otherwise, marks `context_group_id` as requiring
+  // PauseForDebuggerAndRunCommands to exit immediately.
+  //
+  // Can be called from any thread.
+  void AbortPauses(int context_group_id);
+
+  // Notes that the meaning of `context_group_id` has changed, and so any
+  // previous calls to AbortPauses() for given value should no longer apply.
+  //
+  // Can be called from any thread.
+  void RecycleContextGroupId(int context_group_id);
 
   // Requests exit from PauseForDebuggerAndRunCommands().
   //
@@ -50,6 +76,7 @@ class DebugCommandQueue : public base::RefCountedThreadSafe<DebugCommandQueue> {
 
  private:
   friend class base::RefCountedThreadSafe<DebugCommandQueue>;
+
   ~DebugCommandQueue();
 
   void PostRunQueue() EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -61,7 +88,11 @@ class DebugCommandQueue : public base::RefCountedThreadSafe<DebugCommandQueue> {
   base::Lock lock_;
   base::ConditionVariable wake_up_ GUARDED_BY(lock_);
   base::queue<base::OnceClosure> queue_ GUARDED_BY(lock_);
+  base::OnceClosure pause_abort_helper_ GUARDED_BY(lock_);
+
   bool v8_thread_paused_ GUARDED_BY(lock_) = false;
+  int paused_context_group_id_ GUARDED_BY(lock_);
+  std::set<int> aborted_context_group_ids_ GUARDED_BY(lock_);
 };
 
 }  // namespace auction_worklet

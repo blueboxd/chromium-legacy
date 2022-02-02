@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/test/base/testing_profile.h"
@@ -26,7 +27,8 @@ class MockCallback {
   MockCallback() = default;
   MOCK_METHOD1(NotifyPaymentAppCreated, void(std::unique_ptr<PaymentApp> app));
   MOCK_METHOD1(NotifyCanMakePaymentCalculated, void(bool can_make_payment));
-  MOCK_METHOD1(NotifyPaymentAppCreationError, void(const std::string& error));
+  MOCK_METHOD2(NotifyPaymentAppCreationError,
+               void(const std::string& error, AppCreationFailureReason reason));
   MOCK_METHOD0(NotifyDoneCreatingPaymentApps, void(void));
   MOCK_METHOD0(SetCanMakePaymentEvenWithoutApps, void(void));
 };
@@ -85,7 +87,7 @@ class PaymentAppServiceBridgeUnitTest
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile browser_context_;
   content::TestWebContentsFactory test_web_contents_factory_;
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents> web_contents_;
   GURL top_origin_;
   GURL frame_origin_;
   scoped_refptr<PaymentManifestWebDataService> web_data_service_;
@@ -137,8 +139,11 @@ TEST_P(PaymentAppServiceBridgeUnitTest, Smoke) {
   EXPECT_CALL(mock_callback, SetCanMakePaymentEvenWithoutApps());
   bridge->SetCanMakePaymentEvenWithoutApps();
 
-  EXPECT_CALL(mock_callback, NotifyPaymentAppCreationError("some error"));
-  bridge->OnPaymentAppCreationError("some error");
+  EXPECT_CALL(mock_callback,
+              NotifyPaymentAppCreationError("some error",
+                                            AppCreationFailureReason::UNKNOWN));
+  bridge->OnPaymentAppCreationError("some error",
+                                    AppCreationFailureReason::UNKNOWN);
 
   // NotifyDoneCreatingPaymentApps() is only called after
   // OnDoneCreatingPaymentApps() is called for each payment factories in

@@ -19,7 +19,6 @@
 #include "ash/app_list/model/folder_image.h"
 #include "ash/public/cpp/app_list/app_list_config_provider.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "base/macros.h"
 #include "base/scoped_observation.h"
 
 namespace gfx {
@@ -75,6 +74,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem
   // AppListItem overrides:
   const char* GetItemType() const override;
   AppListItem* FindChildItem(const std::string& id) override;
+  AppListItem* GetChildItemAt(size_t index) override;
   size_t ChildItemCount() const override;
 
   // AppListConfigProvider::Observer override:

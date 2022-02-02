@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//testing/test.gni")
 
-assert(is_chromeos, "Scanning App is Chrome OS only")
+assert(is_chromeos_ash, "Scanning App is ash-chrome only")
 
 static_library("scanning") {
   sources = [
@@ -23,6 +24,8 @@ static_library("scanning") {
 
   deps = [
     "//ash/constants",
+    "//ash/webui/common/backend:backend",
+    "//ash/webui/common/mojom",
     "//ash/webui/resources:scanning_app_resources",
     "//ash/webui/scanning/mojom",
     "//chromeos/strings/",

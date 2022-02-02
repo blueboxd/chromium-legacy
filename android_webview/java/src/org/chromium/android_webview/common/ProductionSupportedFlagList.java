@@ -108,8 +108,6 @@ public final class ProductionSupportedFlagList {
                             + "security checks."),
             Flag.baseFeature(AwFeatures.WEBVIEW_BROTLI_SUPPORT,
                     "Enables brotli compression support in WebView."),
-            Flag.baseFeature(BlinkFeatures.APP_CACHE,
-                    "Controls AppCache to facilitate testing against future removal."),
             Flag.baseFeature(AwFeatures.WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY,
                     "Only allow extra headers added via loadUrl() to be sent to the same origin "
                             + "as the original request."),
@@ -163,6 +161,8 @@ public final class ProductionSupportedFlagList {
                             + "interact with a payment form."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_AUGMENTED_PHONE_COUNTRY_CODE,
                     "Enables support for phone code number fields with additional text."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_DISPLACE_REMOVED_FORMS,
+                    "Fixes memory leaks in the renderer- and browser-form caches."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_USE_UNASSOCIATED_LISTED_ELEMENTS,
                     "Caches unowned listed elements in the document."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
@@ -209,5 +209,20 @@ public final class ProductionSupportedFlagList {
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
                     "Defers the first commit until FCP or timeout for cross-origin navigations."),
+            Flag.baseFeature(BlinkFeatures.EARLY_CODE_CACHE,
+                    "Enables fetching the code cache earlier in navigation."),
+            Flag.baseFeature(ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
+                    "Schedules tasks related to the navigation network responses on a higher "
+                            + "priority task queue."),
+            Flag.baseFeature(ContentFeatures.FONT_MANAGER_EARLY_INIT,
+                    "Whether to initialize the font manager when the renderer starts on a "
+                            + "background thread."),
+            Flag.baseFeature(BlinkFeatures.RTC_DISALLOW_PLAN_B_OUTSIDE_DEPRECATION_TRIAL,
+                    "Makes constructing an RTCPeerConnection with {sdpSemantics:'plan-b'} throw "
+                            + "an exception."),
+            Flag.baseFeature(BlinkFeatures.PREFETCH_ANDROID_FONTS,
+                    "Enables prefetching Android fonts on renderer startup."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
+                    "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
     };
 }

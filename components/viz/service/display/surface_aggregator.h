@@ -13,7 +13,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -90,6 +90,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   }
   void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
+  void set_take_copy_requests(bool value) { take_copy_requests_ = value; }
 
   // Only used with experimental de-jelly effect.
   bool last_frame_had_jelly() const { return last_frame_had_jelly_; }
@@ -127,10 +128,16 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   ResolvedFrameData* GetResolvedFrame(Surface* surface,
                                       bool inside_aggregation);
 
-  void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
+  // - |source_pass| is the render pass that contains |surface_quad|.
+  // - |target_transform| is the transform from the coordinate space of
+  //   |source_pass| to |dest_pass|.
+  // - |added_clip_rect| is an added clip rect in the |dest_pass| coordinate
+  //   space.
+  void HandleSurfaceQuad(const CompositorRenderPass& source_pass,
+                         const SurfaceDrawQuad* surface_quad,
                          float parent_device_scale_factor,
                          const gfx::Transform& target_transform,
-                         const absl::optional<gfx::Rect>& clip_rect,
+                         const absl::optional<gfx::Rect>& added_clip_rect,
                          AggregatedRenderPass* dest_pass,
                          bool ignore_undamaged,
                          gfx::Rect* damage_rect_in_quad_space,
@@ -141,7 +148,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                           float parent_device_scale_factor,
                           const SurfaceDrawQuad* surface_quad,
                           const gfx::Transform& target_transform,
-                          const absl::optional<gfx::Rect>& clip_rect,
+                          const absl::optional<gfx::Rect>& added_clip_rect,
                           AggregatedRenderPass* dest_pass,
                           bool ignore_undamaged,
                           gfx::Rect* damage_rect_in_quad_space,
@@ -334,8 +341,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // Resets member variables that were used during Aggregate().
   void ResetAfterAggregate();
 
-  SurfaceManager* const manager_;
-  DisplayResourceProvider* const provider_;
+  const raw_ptr<SurfaceManager> manager_;
+  const raw_ptr<DisplayResourceProvider> provider_;
 
   const bool aggregate_only_damaged_;
 
@@ -345,7 +352,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // Whether de-jelly may be active.
   const bool de_jelly_enabled_;
 
+  const bool clip_prewalk_damage_;
+
   bool output_is_secure_ = false;
+
+  // Whether |CopyOutputRequests| should be moved over to the aggregated frame.
+  bool take_copy_requests_ = true;
 
   // The color space for the root render pass. If this is different from its
   // blending color space (e.g. for HDR), then a final render pass to convert
@@ -383,7 +395,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   FrameSinkIdMap contained_frame_sinks_;
 
   // This is the pass list for the aggregated frame.
-  AggregatedRenderPassList* dest_pass_list_ = nullptr;
+  raw_ptr<AggregatedRenderPassList> dest_pass_list_ = nullptr;
 
   // The target display time for the aggregated frame.
   base::TimeTicks expected_display_time_;
@@ -397,7 +409,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
 
   // A pointer to the list of surface damage rects from the current
   // AggregatedFrame, used for overlay optimization.
-  SurfaceDamageRectList* surface_damage_rect_list_;
+  raw_ptr<SurfaceDamageRectList> surface_damage_rect_list_;
 
   // The aggregate color content usage of the currently-aggregating frame. This
   // is computed by the prewalk, and is used to determine the format and color

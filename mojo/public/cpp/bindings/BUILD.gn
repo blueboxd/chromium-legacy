@@ -33,6 +33,7 @@ component("bindings_base") {
   sources = [
     "array_data_view.h",
     "array_traits.h",
+    "array_traits_protobuf.h",
     "array_traits_span.h",
     "array_traits_stl.h",
     "associated_group.h",
@@ -72,6 +73,8 @@ component("bindings_base") {
     "lib/pending_receiver_state.h",
     "lib/pending_remote_state.cc",
     "lib/pending_remote_state.h",
+    "lib/proxy_to_responder.cc",
+    "lib/proxy_to_responder.h",
     "lib/scoped_interface_endpoint_handle.cc",
     "lib/send_message_helper.cc",
     "lib/send_message_helper.h",
@@ -116,6 +119,7 @@ component("bindings_base") {
     ":mojo_buildflags",
     "//base",
     "//mojo/public/cpp/system",
+    "//third_party/protobuf:protobuf_lite",
   ]
 
   if (enable_ipc_fuzzer) {
@@ -228,7 +232,7 @@ component("bindings") {
     ]
   }
 
-  if (enable_ipc_fuzzer && !is_nacl_nonsfi) {
+  if (enable_ipc_fuzzer) {
     sources += [
       "lib/message_dumper.cc",
       "message_dumper.h",

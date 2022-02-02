@@ -45,22 +45,6 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame,
   DCHECK(frame_);
 }
 
-bool MediaValuesDynamic::ComputeLength(double value,
-                                       CSSPrimitiveValue::UnitType type,
-                                       int& result) const {
-  return MediaValues::ComputeLength(value, type,
-                                    CalculateDefaultFontSize(frame_),
-                                    ViewportWidth(), ViewportHeight(), result);
-}
-
-bool MediaValuesDynamic::ComputeLength(double value,
-                                       CSSPrimitiveValue::UnitType type,
-                                       double& result) const {
-  return MediaValues::ComputeLength(value, type,
-                                    CalculateDefaultFontSize(frame_),
-                                    ViewportWidth(), ViewportHeight(), result);
-}
-
 double MediaValuesDynamic::ViewportWidth() const {
   if (viewport_dimensions_overridden_)
     return viewport_width_override_;
@@ -71,6 +55,23 @@ double MediaValuesDynamic::ViewportHeight() const {
   if (viewport_dimensions_overridden_)
     return viewport_height_override_;
   return CalculateViewportHeight(frame_);
+}
+
+float MediaValuesDynamic::EmSize() const {
+  return CalculateEmSize(frame_);
+}
+
+float MediaValuesDynamic::RemSize() const {
+  // For media queries rem and em units are both based on the initial font.
+  return CalculateEmSize(frame_);
+}
+
+float MediaValuesDynamic::ExSize() const {
+  return CalculateExSize(frame_);
+}
+
+float MediaValuesDynamic::ChSize() const {
+  return CalculateChSize(frame_);
 }
 
 int MediaValuesDynamic::DeviceWidth() const {

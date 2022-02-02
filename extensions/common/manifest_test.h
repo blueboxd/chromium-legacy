@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "extensions/common/extension.h"
@@ -112,8 +111,20 @@ class ManifestTest : public testing::Test {
       int flags = extensions::Extension::NO_FLAGS);
 
   void LoadAndExpectError(
+      char const* manifest_name,
+      const std::u16string& expected_error,
+      mojom::ManifestLocation location = mojom::ManifestLocation::kInternal,
+      int flags = extensions::Extension::NO_FLAGS);
+
+  void LoadAndExpectError(
       const ManifestData& manifest,
       const std::string& expected_error,
+      mojom::ManifestLocation location = mojom::ManifestLocation::kInternal,
+      int flags = extensions::Extension::NO_FLAGS);
+
+  void LoadAndExpectError(
+      const ManifestData& manifest,
+      const std::u16string& expected_error,
       mojom::ManifestLocation location = mojom::ManifestLocation::kInternal,
       int flags = extensions::Extension::NO_FLAGS);
 
@@ -140,7 +151,15 @@ class ManifestTest : public testing::Test {
              int flags);
 
     Testcase(const std::string& manifest_filename,
+             const std::u16string& expected_error,
+             mojom::ManifestLocation location,
+             int flags);
+
+    Testcase(const std::string& manifest_filename,
              const std::string& expected_error);
+
+    Testcase(const std::string& manifest_filename,
+             const std::u16string& expected_error);
 
     explicit Testcase(const std::string& manifest_filename);
 

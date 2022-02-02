@@ -4,12 +4,14 @@
 
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 
+#include <Carbon/Carbon.h>  // for <HIToolbox/Events.h>
 #include <limits>
 #include <utility>
 
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
+#include "base/ignore_result.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
@@ -443,6 +445,42 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (void)orderFrontSubstitutionsPanel:(id)sender {
   [NSSpellChecker.sharedSpellChecker.substitutionsPanel orderFront:sender];
+}
+
+- (bool)canTransformText {
+  if (_textInputType == ui::TEXT_INPUT_TYPE_NONE)
+    return NO;
+  if (_textInputType == ui::TEXT_INPUT_TYPE_PASSWORD)
+    return NO;
+
+  return YES;
+}
+
+- (void)uppercaseWord:(id)sender {
+  NSString *text = base::SysUTF16ToNSString([self selectedText]);
+  if (!text)
+    return;
+
+  [self insertText:text.localizedUppercaseString
+      replacementRange:_textSelectionRange.ToNSRange()];
+}
+
+- (void)lowercaseWord:(id)sender {
+  NSString *text = base::SysUTF16ToNSString([self selectedText]);
+  if (!text)
+    return;
+
+  [self insertText:text.localizedLowercaseString
+      replacementRange:_textSelectionRange.ToNSRange()];
+}
+
+- (void)capitalizeWord:(id)sender {
+  NSString *text = base::SysUTF16ToNSString([self selectedText]);
+  if (!text)
+    return;
+
+  [self insertText:text.localizedCapitalizedString
+      replacementRange:_textSelectionRange.ToNSRange()];
 }
 
 - (void)setTextSelectionText:(std::u16string)text
@@ -1009,9 +1047,20 @@ void ExtractUnderlines(NSAttributedString* string,
   _hasEditCommands = NO;
   _editCommands.clear();
 
-  // Sends key down events to input method first, then we can decide what should
-  // be done according to input method's feedback.
-  [self interpretKeyEvents:@[ theEvent ]];
+  // Since Mac Eisu Kana keys cannot be handled by interpretKeyEvents to enable/
+  // disable an IME, we need to pass the event to processInputKeyBindings.
+  // processInputKeyBindings is available at least on 10.11-11.0.
+  if (keyCode == kVK_JIS_Eisu || keyCode == kVK_JIS_Kana) {
+    if ([NSTextInputContext
+            respondsToSelector:@selector(processInputKeyBindings:)]) {
+      [NSTextInputContext performSelector:@selector(processInputKeyBindings:)
+                               withObject:theEvent];
+    }
+  } else {
+    // Sends key down events to input method first, then we can decide what
+    // should be done according to input method's feedback.
+    [self interpretKeyEvents:@[ theEvent ]];
+  }
 
   _handlingKeyDown = NO;
 
@@ -1535,6 +1584,12 @@ void ExtractUnderlines(NSAttributedString* string,
     } else if (item.action == @selector(toggleAutomaticTextReplacement:)) {
       menuItem.state = self.automaticTextReplacementEnabled;
       return !!(self.allowedTextCheckingTypes & NSTextCheckingTypeReplacement);
+    } else if (item.action == @selector(uppercaseWord:)) {
+      return self.canTransformText;
+    } else if (item.action == @selector(lowercaseWord:)) {
+      return self.canTransformText;
+    } else if (item.action == @selector(capitalizeWord:)) {
+      return self.canTransformText;
     }
   }
 

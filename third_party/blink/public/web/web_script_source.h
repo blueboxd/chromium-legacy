@@ -36,22 +36,13 @@
 
 namespace blink {
 
-class ScriptSourceCode;
-
 struct WebScriptSource {
   WebString code;
   WebURL url;
-  int start_line;
 
-  WebScriptSource(const WebString& code) : code(code), start_line(1) {}
+  explicit WebScriptSource(const WebString& code) : code(code) {}
   WebScriptSource(const WebString& code, const WebURL& url)
-      : code(code), url(url), start_line(1) {}
-  WebScriptSource(const WebString& code, const WebURL& url, int start_line)
-      : code(code), url(url), start_line(start_line) {}
-
-#if INSIDE_BLINK
-  BLINK_EXPORT operator ScriptSourceCode() const;
-#endif
+      : code(code), url(url) {}
 };
 
 }  // namespace blink

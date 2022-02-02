@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -154,6 +155,13 @@ void AppInstall::WakeCandidate() {
       update_service_internal, base::WrapRefCounted(this)));
 }
 
+#if defined(OS_LINUX)
+// TODO(crbug.com/1276114) - implement.
+void AppInstall::WakeCandidateDone() {
+  NOTIMPLEMENTED();
+}
+#endif  // OS_LINUX
+
 void AppInstall::RegisterUpdater() {
   RegistrationRequest request;
   request.app_id = kUpdaterAppId;
@@ -166,7 +174,9 @@ void AppInstall::RegisterUpdater() {
       request, base::BindOnce(
                    [](scoped_refptr<UpdateService> /*update_service*/,
                       scoped_refptr<AppInstall> app_install,
-                      const RegistrationResponse& unused) {
+                      const RegistrationResponse& registration_response) {
+                     VLOG(2) << "Updater registration complete: "
+                             << registration_response.status_code;
                      app_install->MaybeInstallApp();
                    },
                    update_service, base::WrapRefCounted(this)));

@@ -13,9 +13,9 @@
 #include "base/callback.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "base/trace_event/traced_value.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/linux/gbm_device.h"
@@ -233,6 +233,8 @@ class DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   // Drm master related
   virtual bool SetMaster();
   virtual bool DropMaster();
+
+  void AsValueInto(base::trace_event::TracedValue* value) const;
 
   int modeset_sequence_id() const { return modeset_sequence_id_; }
 

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
 #include "chromecast/common/feature_constants.h"
 #include "chromecast/renderer/feature_manager.h"

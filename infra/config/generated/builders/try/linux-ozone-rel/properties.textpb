@@ -16,6 +16,10 @@
       "v.test_suite"
     ]
   },
+<<<<<<< HEAD:infra/config/generated/builders/try/linux-ozone-rel/properties.textpb
   "builder_group": "tryserver.chromium.linux",
+=======
+  "builder_group": "tryserver.chromium.android",
+>>>>>>> a2b2a8d987fdc9b77b737dbea6daa8985296a3b3:infra/config/generated/builders/try/android-pie-arm64-coverage-experimental-rel/properties.textpb
   "recipe": "chromium_trybot"
 }

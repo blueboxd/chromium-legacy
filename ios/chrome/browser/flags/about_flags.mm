@@ -128,31 +128,6 @@ const FeatureEntry::Choice
         {"5000", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "5000"},
 };
 
-const FeatureEntry::FeatureVariation
-    kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations[] = {
-        {
-            "relevance-1000",
-            (FeatureEntry::FeatureParam[]){
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-                 "1000"},
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-                 "decrease-relevances"}},
-            2,
-            nullptr,
-        },
-        {
-            "no-delay-relevance-1000",
-            (FeatureEntry::FeatureParam[]){
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs,
-                 "0"},
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestMaxScoreForNonUrlInput,
-                 "1000"},
-                {OmniboxFieldTrial::kOnDeviceHeadSuggestDemoteMode,
-                 "decrease-relevances"}},
-            3,
-            nullptr,
-        }};
-
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -324,6 +299,28 @@ const FeatureEntry::FeatureVariation kFREDefaultPromoTestingVariations[] = {
      base::size(kFREDefaultPromoTestingShortDelay), nullptr},
 };
 
+const FeatureEntry::FeatureVariation kEnableFREUIModuleIOSVariations[] = {
+    {"TOP | OLD",
+     (FeatureEntry::FeatureParam[]){
+         {kFREUIIdentitySwitcherPositionParam, "top"},
+         {kFREUIStringsSetParam, "old"}},
+     2, nullptr},
+    {"BOTTOM | OLD",
+     (FeatureEntry::FeatureParam[]){
+         {kFREUIIdentitySwitcherPositionParam, "bottom"},
+         {kFREUIStringsSetParam, "old"}},
+     2, nullptr},
+    {"TOP | NEW",
+     (FeatureEntry::FeatureParam[]){
+         {kFREUIIdentitySwitcherPositionParam, "top"},
+         {kFREUIStringsSetParam, "new"}},
+     2, nullptr},
+    {"BOTTOM | NEW",
+     (FeatureEntry::FeatureParam[]){
+         {kFREUIIdentitySwitcherPositionParam, "bottom"},
+         {kFREUIStringsSetParam, "new"}},
+     2, nullptr}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -401,19 +398,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-container", flag_descriptions::kToolbarContainerName,
      flag_descriptions::kToolbarContainerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(toolbar_container::kToolbarContainerEnabled)},
-    {"omnibox-on-device-head-suggestions-incognito",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsIncognitoDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(omnibox::kOnDeviceHeadProviderIncognito)},
-    {"omnibox-on-device-head-suggestions-non-incognito",
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoName,
-     flag_descriptions::kOmniboxOnDeviceHeadSuggestionsNonIncognitoDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         omnibox::kOnDeviceHeadProviderNonIncognito,
-         kOmniboxOnDeviceHeadSuggestNonIncognitoExperimentVariations,
-         "OmniboxOnDeviceHeadNonIncognitoTuningMobile")},
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription,
@@ -463,11 +447,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardDismissOnNavigation)},
-    {"default-user-agent",
-     flag_descriptions::kUseDefaultUserAgentInWebClientName,
-     flag_descriptions::kUseDefaultUserAgentInWebClientDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kUseDefaultUserAgentInWebClient)},
     {"url-blocklist-ios", flag_descriptions::kURLBlocklistIOSName,
      flag_descriptions::kURLBlocklistIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kURLBlocklistIOS)},
@@ -487,9 +466,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
-    {"enable-fre-ui-module-ios", flag_descriptions::kEnableFREUIModuleIOSName,
+    {"enable-fre-ui-module-ios-with-options",
+     flag_descriptions::kEnableFREUIModuleIOSName,
      flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFREUIModuleIOS,
+                                    kEnableFREUIModuleIOSVariations,
+                                    "EnableFREUIModuleIOS")},
     {"enable-long-message-duration",
      flag_descriptions::kEnableLongMessageDurationName,
      flag_descriptions::kEnableLongMessageDurationDescription, flags_ui::kOsIos,
@@ -511,10 +493,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          optimization_guide::features::
              kRemoteOptimizationGuideFetchingAnonymousDataConsent)},
-    {"legacy-tls-interstitial",
-     flag_descriptions::kIOSLegacyTLSInterstitialsName,
-     flag_descriptions::kIOSLegacyTLSInterstitialsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kIOSLegacyTLSInterstitial)},
 #if BUILDFLAG(IOS_SCREEN_TIME_ENABLED)
     {"screen-time-integration-ios",
      flag_descriptions::kScreenTimeIntegrationName,
@@ -524,11 +502,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"modern-tab-strip", flag_descriptions::kModernTabStripName,
      flag_descriptions::kModernTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kModernTabStrip)},
-    {"autofill-use-renderer-ids",
-     flag_descriptions::kAutofillUseRendererIDsName,
-     flag_descriptions::kAutofillUseRendererIDsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUseUniqueRendererIDsOnIOS)},
     {"minutes-delay-to-restore-gaia-cookies-if-deleted",
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieName,
      flag_descriptions::kDelayThresholdMinutesToUpdateGaiaCookieDescription,
@@ -543,10 +516,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEditPasswordsInSettingsName,
      flag_descriptions::kEditPasswordsInSettingsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kEditPasswordsInSettings)},
-    {"web-view-native-context-menu",
-     flag_descriptions::kWebViewNativeContextMenuName,
-     flag_descriptions::kWebViewNativeContextMenuDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(web::features::kWebViewNativeContextMenu)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -571,11 +540,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewImplementationName,
      flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
-    {"shared-highlighting-use-blocklist",
-     flag_descriptions::kSharedHighlightingUseBlocklistIOSName,
-     flag_descriptions::kSharedHighlightingUseBlocklistIOSDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingUseBlocklist)},
     {"start-surface", flag_descriptions::kStartSurfaceName,
      flag_descriptions::kStartSurfaceDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kStartSurface,
@@ -596,11 +560,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnableManualPasswordGeneration)},
-    {"interest-feed-notice-card-auto-dismiss",
-     flag_descriptions::kInterestFeedNoticeCardAutoDismissName,
-     flag_descriptions::kInterestFeedNoticeCardAutoDismissDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(feed::kInterestFeedNoticeCardAutoDismiss)},
     {"autofill-address-verification-in-save-prompt",
      flag_descriptions::kEnableAutofillAddressSavePromptAddressVerificationName,
      flag_descriptions::
@@ -653,12 +612,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdateHistoryEntryPointsInIncognitoDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUpdateHistoryEntryPointsInIncognito)},
-    {"enable-autofill-account-wallet-storage",
-     flag_descriptions::kEnableAutofillAccountWalletStorageName,
-     flag_descriptions::kEnableAutofillAccountWalletStorageDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableAccountWalletStorage)},
     {"reading-list-messages", flag_descriptions::kReadingListMessagesName,
      flag_descriptions::kReadingListMessagesDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kReadingListMessages)},
@@ -683,19 +636,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
-    {"enable-ntp-memory-enhancement",
-     flag_descriptions::kEnableNTPMemoryEnhancementName,
-     flag_descriptions::kEnableNTPMemoryEnhancementDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableNTPMemoryEnhancement)},
-    {"enable-autofill-save-card-info-bar-account-indication-footer",
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterName,
-     flag_descriptions::
-         kEnableAutofillSaveCardInfoBarAccountIndicationFooterDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::
-             kAutofillEnableSaveCardInfoBarAccountIndicationFooter)},
     {"wait-threshold-seconds-for-capabilities-api",
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiName,
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiDescription,
@@ -747,9 +687,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"download-vcard", flag_descriptions::kDownloadVcardName,
      flag_descriptions::kDownloadVcardDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadVcard)},
-    {"old-sync-string-fre", flag_descriptions::kOldSyncStringFREName,
-     flag_descriptions::kOldSyncStringFREDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kOldSyncStringFRE)},
     {"enable-discover-feed-static-resource-serving",
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingName,
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingDescription,
@@ -808,9 +745,25 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"remove-extra-ntps", flag_descriptions::kRemoveExcessNTPsExperimentName,
      flag_descriptions::kRemoveExcessNTPsExperimentDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kRemoveExcessNTPs)},
+    {"lazily-create-web-state-on-restoration",
+     flag_descriptions::kLazilyCreateWebStateOnRestorationName,
+     flag_descriptions::kLazilyCreateWebStateOnRestorationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kEnableUnrealizedWebStates)},
     {"reading-list-time-to-read", flag_descriptions::kReadingListTimeToReadName,
      flag_descriptions::kReadingListTimeToReadDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kReadingListTimeToRead)},
+    {"enable-shortened-password-auto-fill-instruction",
+     flag_descriptions::kEnableShortenedPasswordAutoFillInstructionName,
+     flag_descriptions::kEnableShortenedPasswordAutoFillInstructionDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableShortenedPasswordAutoFillInstruction)},
+    {"enable-password-manager-branding-update",
+     flag_descriptions::kIOSEnablePasswordManagerBrandingUpdateName,
+     flag_descriptions::kIOSEnablePasswordManagerBrandingUpdateDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kIOSEnablePasswordManagerBrandingUpdate)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -834,13 +787,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
   // Set some sample policy values for testing if EnableSamplePolicies is set to
   // true.
   if ([defaults boolForKey:@"EnableSamplePolicies"]) {
-    // Define sample policies to enable. If some of the sample policies are
-    // still marked as experimental (future_on), they must be explicitly
-    // allowed, otherwise they will be ignored in Beta and Stable. Add them to
-    // the |allowed_experimental_policies| array.
-    [allowed_experimental_policies addObjectsFromArray:@[
-    ]];
-
     [testing_policies addEntriesFromDictionary:@{
       base::SysUTF8ToNSString(policy::key::kAutofillAddressEnabled) : @NO,
 
@@ -879,7 +825,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     NSString* sync_policy_key =
         base::SysUTF8ToNSString(policy::key::kSyncDisabled);
     [testing_policies addEntriesFromDictionary:@{sync_policy_key : @YES}];
-    [allowed_experimental_policies addObject:sync_policy_key];
   }
 
   // SyncTypesListDisabled policy.
@@ -914,14 +859,12 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     }];
   }
 
-  // If an incognito mode availability is set, add the policy key to the list of
-  // allowed experimental policies, and set the value.
+  // If an incognito mode availability is set, set the value.
   NSString* incognito_policy_key =
       base::SysUTF8ToNSString(policy::key::kIncognitoModeAvailability);
   NSInteger incognito_mode_availability =
       [defaults integerForKey:incognito_policy_key];
   if (incognito_mode_availability) {
-    [allowed_experimental_policies addObject:incognito_policy_key];
     [testing_policies addEntriesFromDictionary:@{
       incognito_policy_key : @(incognito_mode_availability),
     }];
@@ -946,7 +889,6 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
     --signin_policy_mode;
     DCHECK(signin_policy_mode >= 0);
 
-    [allowed_experimental_policies addObject:kSigninPolicyKey];
     [testing_policies addEntriesFromDictionary:@{
       kSigninPolicyKey : @(signin_policy_mode),
     }];

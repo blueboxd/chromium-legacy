@@ -10,29 +10,29 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/arc/arc_features.h"
+#include "ash/components/disks/disk.h"
 #include "base/notreached.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/disks/disk.h"
-#include "components/arc/arc_features.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
-
-using chromeos::disks::Disk;
-using chromeos::disks::DiskMountManager;
 
 namespace chromeos {
 namespace settings {
 
 namespace {
 
+using ::ash::disks::Disk;
+using ::ash::disks::DiskMountManager;
+
 constexpr char kAndroidEnabled[] = "androidEnabled";
 // Dummy UUID for testing. The UUID is taken from
-// components/arc/volume_mounter/arc_volume_mounter_bridge.cc.
+// ash/components/arc/volume_mounter/arc_volume_mounter_bridge.cc.
 constexpr char kDummyUuid[] = "00000000000000000000000000000000DEADBEEF";
 
 const char* CalculationTypeToEventName(
@@ -204,9 +204,8 @@ void StorageHandler::UpdateExternalStorages() {
     if (!IsEligibleForAndroidStorage(mount_info.source_path))
       continue;
 
-    const chromeos::disks::Disk* disk =
-        DiskMountManager::GetInstance()->FindDiskBySourcePath(
-            mount_info.source_path);
+    const Disk* disk = DiskMountManager::GetInstance()->FindDiskBySourcePath(
+        mount_info.source_path);
 
     // Assigning a dummy UUID for diskless volume for testing.
     const std::string uuid = disk ? disk->fs_uuid() : kDummyUuid;

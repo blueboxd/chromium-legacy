@@ -275,6 +275,11 @@ class CreditCard : public AutofillDataModel {
   // A label for this card formatted as '••••2345' where the number of dots are
   // specified by the `obfuscation_length`.
   std::u16string ObfuscatedLastFourDigits(int obfuscation_length = 4) const;
+  // A label for this card formatted '••••••••••••2345' where every digit in the
+  // the credit card number is obfuscated except for the last four. This method
+  // is primarily used for splitting the preview of a credit card number into
+  // several fields.
+  std::u16string ObfuscatedLastFourDigitsForSplitFields() const;
   // The string used to represent the icon to be used for the autofill
   // suggestion. For ex: visaCC, googleIssuedCC, americanExpressCC, etc.
   std::string CardIconStringForAutofillSuggestion() const;
@@ -316,6 +321,7 @@ class CreditCard : public AutofillDataModel {
   std::u16string ExpirationDateForDisplay() const;
   // Expiration functions.
   std::u16string Expiration2DigitMonthAsString() const;
+  std::u16string Expiration2DigitYearAsString() const;
   std::u16string Expiration4DigitYearAsString() const;
 
   // Whether the cardholder name was created from separate first name and last
@@ -352,8 +358,6 @@ class CreditCard : public AutofillDataModel {
  private:
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
   FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
-
-  std::u16string Expiration2DigitYearAsString() const;
 
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;

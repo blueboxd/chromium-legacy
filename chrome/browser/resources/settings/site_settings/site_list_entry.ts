@@ -28,9 +28,10 @@ import {ChooserType, ContentSettingsTypes, SITE_EXCEPTION_WILDCARD} from './cons
 import {SiteSettingsMixin, SiteSettingsMixinInterface} from './site_settings_mixin.js';
 import {SiteException} from './site_settings_prefs_browser_proxy.js';
 
-interface SiteListEntryElement {
+export interface SiteListEntryElement {
   $: {
     actionMenuButton: HTMLElement,
+    resetSite: HTMLElement,
   }
 }
 
@@ -39,7 +40,7 @@ const SiteListEntryElementBase =
         [FocusRowBehavior], BaseMixin(SiteSettingsMixin(PolymerElement))) as
     {new (): PolymerElement & BaseMixinInterface & SiteSettingsMixinInterface};
 
-class SiteListEntryElement extends SiteListEntryElementBase {
+export class SiteListEntryElement extends SiteListEntryElementBase {
   static get is() {
     return 'site-list-entry';
   }
@@ -176,11 +177,6 @@ class SiteListEntryElement extends SiteListEntryElementBase {
    * description string.
    */
   private computeSiteDescription_(): string {
-    // If the SiteException specifies its own label, use that.
-    if (this.model.settingDetail) {
-      return this.model.settingDetail;
-    }
-
     let description = '';
 
     if (this.model.isEmbargoed) {
@@ -250,6 +246,12 @@ class SiteListEntryElement extends SiteListEntryElementBase {
     this.browserProxy.isOriginValid(this.model.origin).then((valid) => {
       this.allowNavigateToSiteDetail_ = valid;
     });
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'site-list-entry': SiteListEntryElement;
   }
 }
 

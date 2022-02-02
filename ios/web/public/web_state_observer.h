@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-
 namespace web {
 
 struct FaviconURL;
@@ -142,6 +140,10 @@ class WebStateObserver {
   // Called when the web process is terminated (usually by crashing, though
   // possibly by other means).
   virtual void RenderProcessGone(WebState* web_state) {}
+
+  // Invoked when the WebState becomes realized (e.g. when it becomes fully
+  // operational after being restored).
+  virtual void WebStateRealized(WebState* web_state) {}
 
   // Invoked when the WebState is being destroyed. Gives subclasses a chance
   // to cleanup.

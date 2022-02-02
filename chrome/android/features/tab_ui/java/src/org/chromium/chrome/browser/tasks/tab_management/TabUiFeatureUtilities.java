@@ -125,9 +125,9 @@ public class TabUiFeatureUtilities {
      * @param context The activity context.
      */
     public static boolean isGridTabSwitcherEnabled(Context context) {
-        // Disable grid tab switcher for tablet.
+        // Only enable grid tab switcher for tablet if flag is enabled.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return false;
+            return CachedFeatureFlags.isEnabled(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS);
         }
 
         // Having Tab Groups or Start implies Grid Tab Switcher.
@@ -142,7 +142,7 @@ public class TabUiFeatureUtilities {
     public static boolean isTabGroupsAndroidEnabled(Context context) {
         // Disable tab group for tablet.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return false;
+            return CachedFeatureFlags.isEnabled(ChromeFeatureList.TAB_GROUPS_FOR_TABLETS);
         }
 
         return !DeviceClassManager.enableAccessibilityLayout(context)

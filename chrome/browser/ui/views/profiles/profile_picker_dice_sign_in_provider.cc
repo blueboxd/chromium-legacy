@@ -63,10 +63,12 @@ ProfilePickerDiceSignInProvider::~ProfilePickerDiceSignInProvider() {
   // called yet).
   if (callback_) {
     contents()->SetDelegate(nullptr);
-    // TODO(crbug.com/1227699): Schedule the profile for deletion here, it's not
-    // needed any more. This triggers a crash if the browser is shutting down
-    // completely. Figure a way how to delete the profile only if that does not
-    // compete with a shutdown.
+
+    // Schedule the profile for deletion, it's not needed any more.
+    if (IsInitialized()) {
+      g_browser_process->profile_manager()->ScheduleEphemeralProfileForDeletion(
+          profile_->GetPath());
+    }
 
     ProfileMetrics::LogProfileAddSignInFlowOutcome(
         ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedBeforeSignIn);
@@ -120,8 +122,8 @@ void ProfilePickerDiceSignInProvider::NavigateBack() {
 
   // Move from sign-in back to the previous screen of profile creation.
   // Do not load any url because the desired screen is still loaded in the
-  // system contents.
-  host_->ShowScreenInSystemContents(GURL());
+  // picker contents.
+  host_->ShowScreenInPickerContents(GURL());
   toolbar_->SetVisible(false);
 }
 
@@ -298,5 +300,5 @@ void ProfilePickerDiceSignInProvider::FinishFlow(bool is_saml) {
   // Stop the sign-in: hide and clear the toolbar.
   toolbar_->ClearToolbar();
   toolbar_->SetVisible(false);
-  std::move(callback_).Run(profile_, std::move(contents_), is_saml);
+  std::move(callback_).Run(profile_.get(), std::move(contents_), is_saml);
 }

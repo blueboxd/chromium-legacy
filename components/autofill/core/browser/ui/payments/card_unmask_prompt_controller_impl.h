@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller.h"
 
@@ -83,12 +83,12 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   void LogOnCloseEvents();
   AutofillMetrics::UnmaskPromptEvent GetCloseReasonEvent();
 
-  PrefService* pref_service_;
+  raw_ptr<PrefService> pref_service_;
   bool new_card_link_clicked_ = false;
   CreditCard card_;
   AutofillClient::UnmaskCardReason reason_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
-  CardUnmaskPromptView* card_unmask_view_ = nullptr;
+  raw_ptr<CardUnmaskPromptView> card_unmask_view_ = nullptr;
 
   AutofillClient::PaymentsRpcResult unmasking_result_ =
       AutofillClient::PaymentsRpcResult::kNone;

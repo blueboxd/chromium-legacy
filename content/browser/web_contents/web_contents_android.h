@@ -10,8 +10,7 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
-#include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/navigation_controller_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
@@ -83,7 +82,7 @@ class CONTENT_EXPORT WebContentsAndroid {
 
   bool IsLoading(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj) const;
-  bool IsLoadingToDifferentDocument(
+  bool ShouldShowLoadingUI(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
 
@@ -137,8 +136,11 @@ class CONTENT_EXPORT WebContentsAndroid {
   void ScrollFocusedEditableNodeIntoView(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SelectWordAroundCaret(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj);
+  void SelectAroundCaret(JNIEnv* env,
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jint granularity,
+                         jboolean should_show_handle,
+                         jboolean should_show_context_menu);
   void AdjustSelectionByCharacterOffset(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -310,7 +312,7 @@ class CONTENT_EXPORT WebContentsAndroid {
       const base::android::JavaRef<jobject>& callback,
       const ui::AXTreeUpdate& result);
 
-  WebContentsImpl* web_contents_;
+  raw_ptr<WebContentsImpl> web_contents_;
 
   NavigationControllerAndroid navigation_controller_;
   base::android::ScopedJavaGlobalRef<jobject> obj_;

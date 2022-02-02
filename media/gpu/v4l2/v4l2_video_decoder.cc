@@ -19,6 +19,9 @@
 #include "media/gpu/chromeos/chromeos_status.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/image_processor.h"
+#include "media/gpu/chromeos/platform_video_frame_utils.h"
+#include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_status.h"
@@ -28,6 +31,8 @@
 namespace media {
 
 namespace {
+
+using PixelLayoutCandidate = ImageProcessor::PixelLayoutCandidate;
 
 // See http://crbug.com/255116.
 constexpr int k1080pArea = 1920 * 1088;
@@ -139,9 +144,22 @@ void V4L2VideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   const WaitingCB& /*waiting_cb*/) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(config.IsValidConfig());
-  DCHECK(state_ == State::kUninitialized || state_ == State::kInitialized ||
-         state_ == State::kDecoding);
   DVLOGF(3);
+
+  switch (state_) {
+    case State::kUninitialized:
+    case State::kInitialized:
+    case State::kDecoding:
+      // Expected state, do nothing.
+      break;
+    case State::kFlushing:
+    case State::kError:
+      VLOGF(1) << "V4L2 decoder should not be initialized at state: "
+               << static_cast<int>(state_);
+      std::move(init_cb).Run(
+          Status(Status::Codes::kDecoderInitializationFailed));
+      return;
+  }
 
   if (cdm_context || config.is_encrypted()) {
     VLOGF(1) << "V4L2 decoder does not support encrypted stream";
@@ -366,14 +384,14 @@ bool V4L2VideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
   return true;
 }
 
-bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
-                                         const gfx::Rect& visible_rect) {
+CroStatus V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
+                                              const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3) << "size: " << size.ToString()
             << ", visible_rect: " << visible_rect.ToString();
 
   // Get the supported output formats and their corresponding negotiated sizes.
-  std::vector<std::pair<Fourcc, gfx::Size>> candidates;
+  std::vector<PixelLayoutCandidate> candidates;
   for (const uint32_t& pixfmt : device_->EnumerateSupportedPixelformats(
            V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)) {
     const auto candidate = Fourcc::FromV4L2PixFmt(pixfmt);
@@ -390,23 +408,26 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
 
     gfx::Size adjusted_size(format->fmt.pix_mp.width,
                             format->fmt.pix_mp.height);
-    candidates.emplace_back(*candidate, adjusted_size);
+
+    candidates.emplace_back(
+        PixelLayoutCandidate{.fourcc = *candidate, .size = adjusted_size});
   }
 
   // Ask the pipeline to pick the output format.
-  CroStatus::Or<std::pair<Fourcc, gfx::Size>> status_or_output_format =
+  CroStatus::Or<PixelLayoutCandidate> status_or_output_format =
       client_->PickDecoderOutputFormat(
           candidates, visible_rect, aspect_ratio_.GetNaturalSize(visible_rect),
           /*output_size=*/absl::nullopt, num_output_frames_,
-          /*use+protected=*/false, /*need_aux_frame_pool=*/false);
+          /*use+protected=*/false, /*need_aux_frame_pool=*/false,
+          absl::nullopt);
   if (status_or_output_format.has_error()) {
     VLOGF(1) << "Failed to pick an output format.";
-    // TODO(crbug/1103510): Don't drop the error on the floor here.
-    return false;
+    return std::move(status_or_output_format).error().code();
   }
-  const auto output_format = std::move(status_or_output_format).value();
-  Fourcc fourcc = std::move(output_format.first);
-  gfx::Size picked_size = std::move(output_format.second);
+  const PixelLayoutCandidate output_format =
+      std::move(status_or_output_format).value();
+  Fourcc fourcc = std::move(output_format.fourcc);
+  gfx::Size picked_size = std::move(output_format.size);
 
   // We successfully picked the output format. Now setup output format again.
   absl::optional<struct v4l2_format> format =
@@ -419,7 +440,7 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
     VLOGF(1) << "The adjusted coded size (" << adjusted_size.ToString()
              << ") should contains the original coded size("
              << picked_size.ToString() << ").";
-    return false;
+    return CroStatus::Codes::kFailedToChangeResolution;
   }
 
   // Got the adjusted size from the V4L2 driver. Now setup the frame pool.
@@ -440,9 +461,8 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
         aspect_ratio_.GetNaturalSize(visible_rect), num_output_frames_,
         /*use_protected=*/false);
     if (status_or_layout.has_error()) {
-      // TODO(crbug/1103510): Don't just drop this error.
       VLOGF(1) << "Failed to setup format to VFPool";
-      return false;
+      return std::move(status_or_layout).error().code();
     }
     const GpuBufferLayout layout = std::move(status_or_layout).value();
     if (layout.size() != adjusted_size) {
@@ -450,7 +470,7 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
                << "adjusted by a video driver. fourcc: " << fourcc.ToString()
                << ", (video driver v.s. VFPool) " << adjusted_size.ToString()
                << " != " << layout.size().ToString();
-      return false;
+      return CroStatus::Codes::kFailedToChangeResolution;
     }
 
     VLOGF(1) << "buffer modifier: " << std::hex << layout.modifier();
@@ -459,7 +479,7 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
       absl::optional<struct v4l2_format> modifier_format =
           output_queue_->SetModifierFormat(layout.modifier(), picked_size);
       if (!modifier_format)
-        return false;
+        return CroStatus::Codes::kFailedToChangeResolution;
 
       gfx::Size size_for_modifier_format(format->fmt.pix_mp.width,
                                          format->fmt.pix_mp.height);
@@ -468,12 +488,12 @@ bool V4L2VideoDecoder::SetupOutputFormat(const gfx::Size& size,
             << "Buffers were allocated for " << adjusted_size.ToString()
             << " but modifier format is expecting buffers to be allocated for "
             << size_for_modifier_format.ToString();
-        return false;
+        return CroStatus::Codes::kFailedToChangeResolution;
       }
     }
   }
 
-  return true;
+  return CroStatus::Codes::kOk;
 }
 
 void V4L2VideoDecoder::Reset(base::OnceClosure closure) {
@@ -620,7 +640,13 @@ void V4L2VideoDecoder::CompleteFlush() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  SetState(State::kDecoding);
+  if (state_ != State::kFlushing) {
+    VLOGF(1) << "Completed flush in the wrong state: "
+             << static_cast<int>(state_);
+    SetState(State::kError);
+  } else {
+    SetState(State::kDecoding);
+  }
 }
 
 void V4L2VideoDecoder::ChangeResolution(gfx::Size pic_size,
@@ -667,9 +693,8 @@ CroStatus V4L2VideoDecoder::ContinueChangeResolution(
 
   // If we already reset, then skip it.
   // TODO(akahuang): Revisit to check if this condition may happen or not.
-  if (state_ == State::kDecoding)
+  if (state_ != State::kFlushing)
     return CroStatus::Codes::kResetRequired;
-  DCHECK_EQ(state_, State::kFlushing);
 
   DCHECK_GT(num_output_frames, 0u);
   num_output_frames_ = num_output_frames + kDpbOutputBufferExtraCount;
@@ -689,8 +714,14 @@ CroStatus V4L2VideoDecoder::ContinueChangeResolution(
     return CroStatus::Codes::kFailedToChangeResolution;
   }
 
-  if (!SetupOutputFormat(pic_size, visible_rect)) {
-    VLOGF(1) << "Failed to setup output format.";
+  const CroStatus status = SetupOutputFormat(pic_size, visible_rect);
+  if (status == CroStatus::Codes::kResetRequired) {
+    DVLOGF(2) << "SetupOutputFormat is aborted.";
+    return CroStatus::Codes::kResetRequired;
+  }
+  if (status != CroStatus::Codes::kOk) {
+    VLOGF(1) << "Failed to setup output format, status="
+             << static_cast<int>(status.code());
     SetState(State::kError);
     return CroStatus::Codes::kFailedToChangeResolution;
   }
@@ -762,7 +793,8 @@ void V4L2VideoDecoder::ServiceDeviceTask(bool event) {
     if (!dequeued_buffer)
       break;
 
-    backend_->OnOutputBufferDequeued(std::move(dequeued_buffer));
+    if (backend_)
+      backend_->OnOutputBufferDequeued(std::move(dequeued_buffer));
   }
 
   // Dequeue V4L2 input buffer.

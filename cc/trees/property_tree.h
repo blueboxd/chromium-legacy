@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/synced_property.h"
 #include "cc/cc_export.h"
@@ -24,6 +25,7 @@
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/sticky_position_constraint.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -49,7 +51,8 @@ struct ScrollNode;
 struct TransformNode;
 struct TransformCachedNodeData;
 
-typedef SyncedProperty<AdditionGroup<gfx::Vector2dF>> SyncedScrollOffset;
+using SyncedScrollOffset =
+    SyncedProperty<AdditionGroup<gfx::PointF, gfx::Vector2dF>>;
 
 class PropertyTrees;
 
@@ -111,7 +114,7 @@ class CC_EXPORT PropertyTree {
  protected:
   std::vector<T> nodes_;
   bool needs_update_;
-  PropertyTrees* property_trees_;
+  raw_ptr<PropertyTrees> property_trees_;
 };
 
 struct StickyPositionNodeData;
@@ -383,7 +386,7 @@ class ScrollCallbacks {
   // Called after the composited scroll offset changed.
   virtual void DidCompositorScroll(
       ElementId scroll_element_id,
-      const gfx::Vector2dF&,
+      const gfx::PointF&,
       const absl::optional<TargetSnapAreaElementIds>&) = 0;
   // Called after the hidden status of composited scrollbars changed. Note that
   // |scroll_element_id| is the element id of the scroll not of the scrollbars.
@@ -407,10 +410,10 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   void clear();
 
-  gfx::Vector2dF MaxScrollOffset(int scroll_node_id) const;
+  gfx::PointF MaxScrollOffset(int scroll_node_id) const;
   void OnScrollOffsetAnimated(ElementId id,
                               int scroll_tree_index,
-                              const gfx::Vector2dF& scroll_offset,
+                              const gfx::PointF& scroll_offset,
                               LayerTreeImpl* layer_tree_impl);
   gfx::Size container_bounds(int scroll_node_id) const;
   gfx::SizeF scroll_bounds(int scroll_node_id) const;
@@ -429,7 +432,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // Returns the current scroll offset. On the main thread this would return the
   // value for the LayerTree while on the impl thread this is the current value
   // on the active tree.
-  const gfx::Vector2dF current_scroll_offset(ElementId id) const;
+  const gfx::PointF current_scroll_offset(ElementId id) const;
 
   // Returns the scroll offset taking into account any adjustments that may be
   // included due to pixel snapping.
@@ -441,7 +444,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // simple cases but we really should update the whole transform tree otherwise
   // we are ignoring any parent transform node that needs updating and thus our
   // snap amount can be incorrect.
-  const gfx::Vector2dF GetPixelSnappedScrollOffset(int scroll_node_id) const;
+  const gfx::PointF GetPixelSnappedScrollOffset(int scroll_node_id) const;
 
   // Collects deltas for scroll changes on the impl thread that need to be
   // reported to the main thread during the main frame. As such, should only be
@@ -468,25 +471,25 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   void PushScrollUpdatesFromPendingTree(PropertyTrees* pending_property_trees,
                                         LayerTreeImpl* active_tree);
 
-  void SetBaseScrollOffset(ElementId id, const gfx::Vector2dF& scroll_offset);
+  void SetBaseScrollOffset(ElementId id, const gfx::PointF& scroll_offset);
   // Returns true if the scroll offset is changed.
-  bool SetScrollOffset(ElementId id, const gfx::Vector2dF& scroll_offset);
+  bool SetScrollOffset(ElementId id, const gfx::PointF& scroll_offset);
   void SetScrollOffsetClobberActiveValue(ElementId id) {
     GetOrCreateSyncedScrollOffset(id)->set_clobber_active_value();
   }
   bool UpdateScrollOffsetBaseForTesting(ElementId id,
-                                        const gfx::Vector2dF& offset);
+                                        const gfx::PointF& offset);
   bool SetScrollOffsetDeltaForTesting(ElementId id,
                                       const gfx::Vector2dF& delta);
-  const gfx::Vector2dF GetScrollOffsetBaseForTesting(ElementId id) const;
+  const gfx::PointF GetScrollOffsetBaseForTesting(ElementId id) const;
   const gfx::Vector2dF GetScrollOffsetDeltaForTesting(ElementId id) const;
   void CollectScrollDeltasForTesting(bool use_fractional_deltas = false);
 
   gfx::Vector2dF ScrollBy(const ScrollNode& scroll_node,
                           const gfx::Vector2dF& scroll,
                           LayerTreeImpl* layer_tree_impl);
-  gfx::Vector2dF ClampScrollOffsetToLimits(gfx::Vector2dF offset,
-                                           const ScrollNode& scroll_node) const;
+  gfx::PointF ClampScrollOffsetToLimits(gfx::PointF offset,
+                                        const ScrollNode& scroll_node) const;
 
   const SyncedScrollOffset* GetSyncedScrollOffset(ElementId id) const;
 
@@ -501,7 +504,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 
   void NotifyDidCompositorScroll(
       ElementId scroll_element_id,
-      const gfx::Vector2dF& scroll_offset,
+      const gfx::PointF& scroll_offset,
       const absl::optional<TargetSnapAreaElementIds>& snap_target_ids);
   void NotifyDidChangeScrollbarsHidden(ElementId scroll_element_id,
                                        bool hidden);
@@ -511,12 +514,16 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // repainting.
   bool IsComposited(const ScrollNode& node) const;
 
+  // Returns true iff the node is composited and does not have any non-transient
+  // main-thread scrolling reasons (see main_thread_scrolling_reason.h).
+  bool CanRealizeScrollsOnCompositor(const ScrollNode& node) const;
+
  private:
   // ScrollTree doesn't use the needs_update flag.
   using PropertyTree::needs_update;
   using PropertyTree::set_needs_update;
 
-  using ScrollOffsetMap = base::flat_map<ElementId, gfx::Vector2dF>;
+  using ScrollOffsetMap = base::flat_map<ElementId, gfx::PointF>;
   using SyncedScrollOffsetMap =
       base::flat_map<ElementId, scoped_refptr<SyncedScrollOffset>>;
 

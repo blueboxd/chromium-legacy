@@ -10,6 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/cxx17_backports.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_clear_last_error.h"
@@ -44,7 +45,10 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "base/android/radio_utils.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "net/android/network_change_notifier_factory_android.h"
+#include "net/android/radio_activity_tracker.h"
 #include "net/base/network_change_notifier.h"
 #endif
 
@@ -858,7 +862,7 @@ class TestUDPSocketWin : public UDPSocketWin {
   QwaveApi* GetQwaveApi() const override { return qos_; }
 
  private:
-  QwaveApi* qos_;
+  raw_ptr<QwaveApi> qos_;
 };
 
 class MockQwaveApi : public QwaveApi {
@@ -1389,7 +1393,27 @@ TEST_F(UDPSocketTest, Tag) {
   EXPECT_EQ(simple_message, str);
   EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
 }
-#endif
+
+TEST_F(UDPSocketTest, RecordRadioWakeUpTrigger) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kRecordRadioWakeupTrigger);
+
+  base::HistogramTester histograms;
+
+  // Simulates the radio state is dormant.
+  android::RadioActivityTracker::GetInstance().OverrideRadioActivityForTesting(
+      base::android::RadioDataActivity::kDormant);
+  android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
+      base::android::RadioConnectionType::kCell);
+
+  ConnectTest(/*use_nonblocking_io=*/false);
+
+  // Check the write is recorded as a possible radio wake-up trigger.
+  histograms.ExpectTotalCount(
+      android::kUmaNamePossibleWakeupTriggerUDPWriteAnnotationId, 1);
+}
+
+#endif  // defined(OS_ANDROID)
 
 // Scoped helper to override the process-wide UDP socket limit.
 class OverrideUDPSocketLimit {

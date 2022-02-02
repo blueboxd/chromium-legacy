@@ -19,7 +19,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/output_device_info.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/web/modules/media/audio/web_audio_output_ipc_factory.h"
+#include "third_party/blink/public/web/modules/media/audio/audio_output_ipc_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace chromecast {
@@ -42,9 +42,9 @@ scoped_refptr<::media::AudioOutputDevice> NewOutputDevice(
     const ::media::AudioSinkParameters& params,
     base::TimeDelta auth_timeout) {
   auto device = base::MakeRefCounted<::media::AudioOutputDevice>(
-      blink::WebAudioOutputIPCFactory::GetInstance().CreateAudioOutputIPC(
+      blink::AudioOutputIPCFactory::GetInstance().CreateAudioOutputIPC(
           frame_token),
-      blink::WebAudioOutputIPCFactory::GetInstance().io_task_runner(), params,
+      blink::AudioOutputIPCFactory::GetInstance().io_task_runner(), params,
       auth_timeout);
   device->RequestDeviceAuthorization();
   return device;
@@ -85,15 +85,28 @@ class NonSwitchableAudioRendererSink
     output_device_->Initialize(params, callback);
   }
 
-  void Start() override { output_device_->Start(); }
+  void Start() override {
+    DCHECK(output_device_);
+    output_device_->Start();
+  }
 
-  void Stop() override { output_device_->Stop(); }
+  void Stop() override {
+    if (output_device_)
+      output_device_->Stop();
+  }
 
-  void Pause() override { output_device_->Pause(); }
+  void Pause() override {
+    DCHECK(output_device_);
+    output_device_->Pause();
+  }
 
-  void Play() override { output_device_->Play(); }
+  void Play() override {
+    DCHECK(output_device_);
+    output_device_->Play();
+  }
 
   bool SetVolume(double volume) override {
+    DCHECK(output_device_);
     return output_device_->SetVolume(volume);
   }
 
@@ -139,10 +152,16 @@ class NonSwitchableAudioRendererSink
     std::move(callback).Run(::media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }
 
-  void Flush() override { output_device_->Flush(); }
+  void Flush() override {
+    DCHECK(output_device_);
+    output_device_->Flush();
+  }
 
  protected:
-  ~NonSwitchableAudioRendererSink() override { output_device_->Stop(); }
+  ~NonSwitchableAudioRendererSink() override {
+    if (output_device_)
+      output_device_->Stop();
+  }
 
  private:
   const blink::LocalFrameToken frame_token_;

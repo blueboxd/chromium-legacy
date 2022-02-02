@@ -219,6 +219,8 @@ if (enable_extensions) {
       "event_filter.h",
       "event_filtering_info.cc",
       "event_filtering_info.h",
+      "event_filtering_info_type_converters.cc",
+      "event_filtering_info_type_converters.h",
       "event_matcher.cc",
       "event_matcher.h",
       "extension.cc",
@@ -614,6 +616,32 @@ if (enable_extensions) {
     deps = [
       ":common",
       "//base",
+    ]
+  }
+
+  fuzzer_test("extension_manifest_fuzzer") {
+    sources = [ "manifest_fuzzer.cc" ]
+    deps = [
+      ":common",
+      "//base",
+      "//extensions:test_support",
+    ]
+  }
+
+  fuzzer_test("extension_url_pattern_fuzzer") {
+    sources = [ "url_pattern_fuzzer.cc" ]
+    deps = [
+      ":common",
+      "//base",
+    ]
+  }
+
+  fuzzer_test("extension_csp_validator_fuzzer") {
+    sources = [ "csp_validator_fuzzer.cc" ]
+    deps = [
+      ":common",
+      "//base",
+      "//third_party/icu/fuzzers:fuzzer_support",
     ]
   }
 }  # enable_extensions

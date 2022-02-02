@@ -11,6 +11,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+class PrefService;
+
 // This command line flag enables NoStatePrefetch on Prefetch Proxy.
 extern const char kIsolatedPrerenderEnableNSPCmdLineFlag[];
 
@@ -53,8 +55,11 @@ size_t PrefetchProxyMainframeBodyLengthLimit();
 // Whether idle sockets should be closed after every prefetch.
 bool PrefetchProxyCloseIdleSockets();
 
-// The amount of time to allow before timing out an origin probe.
-base::TimeDelta PrefetchProxyProbeTimeout();
+// The amount of time to allow before timing out a canary check.
+base::TimeDelta PrefetchProxyCanaryCheckTimeout();
+
+// The number of retries to allow for canary checks.
+int PrefetchProxyCanaryCheckRetries();
 
 // The amount of time to allow a prefetch to take before considering it a
 // timeout error.
@@ -81,9 +86,6 @@ GURL PrefetchProxyDNSCanaryCheckURL();
 // How long a canary check can be cached for the same network.
 base::TimeDelta PrefetchProxyCanaryCheckCacheLifetime();
 
-// Experimental control to replace TLS probing with HTTP.
-bool PrefetchProxyMustHTTPProbeInsteadOfTLS();
-
 // The maximum number of subresources that will be fetched per prefetched page.
 size_t PrefetchProxyMaxSubresourcesPerPrerender();
 
@@ -108,8 +110,10 @@ base::TimeDelta PrefetchProxyMaxRetryAfterDelta();
 // Returns true if an ineligible prefetch request should be put on the network,
 // but not cached, to disguise the presence of cookies (or other criteria). The
 // return value is randomly decided based on variation params since always
-// sending the decoy request is expensive from a data use perspective.
-bool PrefetchProxySendDecoyRequestForIneligiblePrefetch();
+// sending the decoy request is expensive from a data use perspective. Decoys
+// may be disabled for users that opted-in to "Make Search and Browsing Better".
+bool PrefetchProxySendDecoyRequestForIneligiblePrefetch(
+    PrefService* pref_service);
 
 // Returns true if any domain can issue private prefetches using the Google
 // proxy. Normally, this is restricted to Google domains.
@@ -123,5 +127,10 @@ base::TimeDelta PrefetchProxyCacheableDuration();
 // behavior to apply to requests. If the client is not in any server experiment
 // group, this will return an empty string.
 std::string PrefetchProxyServerExperimentGroup();
+
+// Whether each prefetch should have its own isolated network context (return
+// true), or if all prefetches from a main frame should share a single isolated
+// network context (returns false).
+bool PrefetchProxyUseIndividualNetworkContextsForEachPrefetch();
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PARAMS_H_

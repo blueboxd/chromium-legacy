@@ -16,17 +16,21 @@ CSSLayerStatementRule::CSSLayerStatementRule(
 
 CSSLayerStatementRule::~CSSLayerStatementRule() = default;
 
+Vector<String> CSSLayerStatementRule::nameList() const {
+  return layer_statement_rule_->GetNamesAsStrings();
+}
+
 String CSSLayerStatementRule::cssText() const {
   StringBuilder result;
   result.Append("@layer ");
-  Vector<String> names = layer_statement_rule_->GetNamesAsStrings();
+  const Vector<String>& names = nameList();
   result.Append(names[0]);
   for (unsigned i = 1; i < names.size(); ++i) {
     result.Append(", ");
     result.Append(names[i]);
   }
   result.Append(';');
-  return result.ToString();
+  return result.ReleaseString();
 }
 
 void CSSLayerStatementRule::Reattach(StyleRuleBase* rule) {

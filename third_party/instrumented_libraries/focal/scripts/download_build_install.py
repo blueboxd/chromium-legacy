@@ -75,14 +75,16 @@ class InstrumentedPackageBuilder(object):
 
     self._ldflags = unescape_flags(args.ldflags)
 
-    self.init_build_env()
+    self.init_build_env(eval(args.env))
 
     # Initialized later.
     self._source_dir = None
     self._source_archives = None
 
-  def init_build_env(self):
+  def init_build_env(self, args_env):
     self._build_env = os.environ.copy()
+
+    self._build_env.update(dict(args_env))
 
     self._build_env['CC'] = self._cc
     self._build_env['CXX'] = self._cxx
@@ -274,8 +276,10 @@ class DebianBuilder(InstrumentedPackageBuilder):
   TODO(spang): Probably the rest of the packages should also use this method..
   """
 
-  def init_build_env(self):
+  def init_build_env(self, args_env):
     self._build_env = os.environ.copy()
+
+    self._build_env.update(dict(args_env))
 
     self._build_env['CC'] = self._cc
     self._build_env['CXX'] = self._cxx
@@ -327,18 +331,13 @@ class DebianBuilder(InstrumentedPackageBuilder):
     files_file = os.path.join(self._source_dir, 'debian/files')
 
     for line in open(files_file, 'r').read().splitlines():
+      if not line.endswith('.deb'):
+        continue
       filename, category, section = line.split(' ')
       pathname = os.path.join(self._source_dir, '..', filename)
       deb_files.append(pathname)
 
     return deb_files
-
-
-class LibcurlBuilder(DebianBuilder):
-  def build_and_install(self):
-    DebianBuilder.build_and_install(self)
-    self.shell_call('ln -rsf %s/libcurl-gnutls.so.4 %s/libcurl.so' %
-                    (self.dest_libdir(), self.dest_libdir()))
 
 
 class LibcapBuilder(InstrumentedPackageBuilder):
@@ -429,12 +428,12 @@ class MesonBuilder(InstrumentedPackageBuilder):
       'build',
       '.',
       ' '.join('--%s %s' % item for item in meson_flags.items()),
+      '-Db_lundef=false',
       self._extra_configure_flags,
     ]
 
     self.shell_call(' '.join(meson_cmd),
                     env=self._build_env, cwd=self._source_dir)
-    self.shell_call('ninja -C build', cwd=self._source_dir)
     self.shell_call('ninja -C build install',
                     {**self._build_env, 'DESTDIR': self.temp_dir()},
                     cwd=self._source_dir)
@@ -444,6 +443,26 @@ class MesonBuilder(InstrumentedPackageBuilder):
   # unlike when using configure.
   def temp_libdir(self):
     return os.path.join(self.temp_dir(), 'usr', self._libdir)
+
+
+class CmakeBuilder(InstrumentedPackageBuilder):
+  def build_and_install(self):
+    cmake_cmd = [
+      'cmake',
+      '.',
+      '-DCMAKE_INSTALL_PREFIX=/usr',
+      '-DCMAKE_INSTALL_LIBDIR=/%s/' % self._libdir,
+      self._extra_configure_flags,
+    ]
+    self.shell_call(' '.join(cmake_cmd), env=self._build_env,
+                    cwd=self._source_dir)
+
+    args = ['DESTDIR', 'BUILDROOT', 'INSTALL_ROOT']
+    make_args = ['%s=%s' % (name, self.temp_dir()) for name in args]
+    self.make(make_args)
+    self.make_install(make_args)
+
+    self.post_install()
 
 
 class NSSBuilder(InstrumentedPackageBuilder):
@@ -531,6 +550,7 @@ def main():
   parser.add_argument('--sanitizer-ignorelist', default='')
   # The LIBDIR argument to configure/make.
   parser.add_argument('--libdir', default='lib')
+  parser.add_argument('--env', default='')
 
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of
@@ -548,14 +568,14 @@ def main():
     builder = NSSBuilder(args, clobber)
   elif args.build_method == 'custom_libcap':
     builder = LibcapBuilder(args, clobber)
-  elif args.build_method == 'custom_libcurl':
-    builder = LibcurlBuilder(args, clobber)
   elif args.build_method == 'custom_libpci3':
     builder = Libpci3Builder(args, clobber)
   elif args.build_method == 'debian':
     builder = DebianBuilder(args, clobber)
   elif args.build_method == 'meson':
     builder = MesonBuilder(args, clobber)
+  elif args.build_method == 'cmake':
+    builder = CmakeBuilder(args, clobber)
   elif args.build_method == 'stub':
     builder = StubBuilder(args, clobber)
   else:

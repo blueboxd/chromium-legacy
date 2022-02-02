@@ -15,6 +15,7 @@
 
 #include "base/auto_reset.h"
 #include "base/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/region.h"
 #include "cc/benchmarks/micro_benchmark.h"
@@ -22,7 +23,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/region_capture_bounds.h"
 #include "cc/layers/touch_action_region.h"
 #include "cc/paint/element_id.h"
 #include "cc/paint/filter_operations.h"
@@ -30,9 +30,11 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/target_property.h"
+#include "components/viz/common/surfaces/region_capture_bounds.h"
 #include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/rrect_f.h"
@@ -52,6 +54,7 @@ class LayerTreeImpl;
 class PictureLayer;
 
 struct CommitState;
+struct ThreadUnsafeCommitState;
 
 // For tracing and debugging. The info will be attached to this layer's tracing
 // output.
@@ -129,6 +132,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // The list of children of this layer.
   const LayerList& children() const { return inputs_.children; }
+
+  bool IsAttached() const { return layer_tree_host_; }
 
   // Gets the LayerTreeHost that this layer is attached to, or null if not.
   // A layer is attached to a LayerTreeHost if it or an ancestor layer is set as
@@ -228,10 +233,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // for each matching pixel.
   void SetMaskLayer(scoped_refptr<PictureLayer> mask_layer);
   const PictureLayer* mask_layer() const {
-    return layer_tree_inputs() ? layer_tree_inputs()->mask_layer : nullptr;
+    return layer_tree_inputs() ? layer_tree_inputs()->mask_layer.get()
+                               : nullptr;
   }
   PictureLayer* mask_layer() {
-    return layer_tree_inputs() ? layer_tree_inputs()->mask_layer : nullptr;
+    return layer_tree_inputs() ? layer_tree_inputs()->mask_layer.get()
+                               : nullptr;
   }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and
@@ -395,16 +402,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // position of its subtree, as well as other layers for which this layer is
   // their scroll parent, and their subtrees) is moved up by the amount of
   // offset specified here.
-  void SetScrollOffset(const gfx::Vector2dF& scroll_offset);
-  gfx::Vector2dF scroll_offset() const {
+  void SetScrollOffset(const gfx::PointF& scroll_offset);
+  gfx::PointF scroll_offset() const {
     return layer_tree_inputs() ? layer_tree_inputs()->scroll_offset
-                               : gfx::Vector2dF();
+                               : gfx::PointF();
   }
 
   // For layer tree mode only.
   // Called internally during commit to update the layer with state from the
   // compositor thread. Not to be called externally by users of this class.
-  void SetScrollOffsetFromImplSide(const gfx::Vector2dF& scroll_offset);
+  void SetScrollOffsetFromImplSide(const gfx::PointF& scroll_offset);
 
   // For layer tree mode only.
   // Marks this layer as being scrollable and needing an associated scroll node,
@@ -456,8 +463,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   }
 
   // Set or get the region that should be used for capture.
-  void SetCaptureBounds(RegionCaptureBounds bounds);
-  const RegionCaptureBounds& capture_bounds() const {
+  void SetCaptureBounds(viz::RegionCaptureBounds bounds);
+  const viz::RegionCaptureBounds& capture_bounds() const {
     return inputs_.capture_bounds;
   }
 
@@ -480,7 +487,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // which case nothing is called. This is for layer tree mode only. Should use
   // ScrollTree::SetScrollCallbacks() in layer list mode.
   void SetDidScrollCallback(
-      base::RepeatingCallback<void(const gfx::Vector2dF&, const ElementId&)>);
+      base::RepeatingCallback<void(const gfx::PointF&, const ElementId&)>);
 
   // For layer tree mode only.
   // Sets the given |subtree_id| on this layer, so that the layer subtree rooted
@@ -568,6 +575,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int effect_tree_index() const;
   int scroll_tree_index() const;
 
+  bool transform_tree_index_is_valid(const PropertyTrees&) const;
+  bool clip_tree_index_is_valid(const PropertyTrees&) const;
+  bool effect_tree_index_is_valid(const PropertyTrees&) const;
+  bool scroll_tree_index_is_valid(const PropertyTrees&) const;
+
   // While all layers have an index into the transform tree, this value
   // indicates whether the transform tree node was created for this layer.
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
@@ -640,7 +652,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // CreateLayerImpl(), so can be safely down-casted if the subclass uses a
   // different type for the compositor thread.
   virtual void PushPropertiesTo(LayerImpl* layer,
-                                const CommitState& commit_state);
+                                const CommitState& commit_state,
+                                const ThreadUnsafeCommitState& unsafe_state);
 
   // Internal method to be overridden by Layer subclasses that need to do work
   // during a main frame. The method should compute any state that will need to
@@ -851,6 +864,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetMirrorCount(int mirror_count);
 
+  int transform_tree_index(const PropertyTrees&) const;
+  int clip_tree_index(const PropertyTrees&) const;
+  int effect_tree_index(const PropertyTrees&) const;
+  int scroll_tree_index(const PropertyTrees&) const;
+
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   struct Inputs {
     explicit Inputs(int layer_id);
@@ -881,7 +899,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     // moved to a separate sub-struct.
     Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
-    RegionCaptureBounds capture_bounds;
+    viz::RegionCaptureBounds capture_bounds;
     Region wheel_event_region;
 
     ElementId element_id;
@@ -900,7 +918,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     // If not null, points to one of child layers which is set as mask layer
     // by SetMaskLayer().
-    PictureLayer* mask_layer = nullptr;
+    raw_ptr<PictureLayer> mask_layer = nullptr;
 
     float opacity = 1.0f;
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
@@ -942,7 +960,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     int mirror_count = 0;
 
-    gfx::Vector2dF scroll_offset;
+    gfx::PointF scroll_offset;
     // Size of the scroll container that this layer scrolls in.
     gfx::Size scroll_container_bounds;
 
@@ -950,17 +968,17 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     //     top left, top right, bottom right, bottom left
     gfx::RoundedCornersF corner_radii;
 
-    base::RepeatingCallback<void(const gfx::Vector2dF&, const ElementId&)>
+    base::RepeatingCallback<void(const gfx::PointF&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
   };
 
-  Layer* parent_;
+  raw_ptr<Layer> parent_;
 
   // Layer instances have a weak pointer to their LayerTreeHost.
   // This pointer value is nil when a Layer is not in a tree and is
   // updated via SetLayerTreeHost() if a layer moves between trees.
-  LayerTreeHost* layer_tree_host_;
+  raw_ptr<LayerTreeHost> layer_tree_host_;
 
   Inputs inputs_;
   std::unique_ptr<LayerTreeInputs> layer_tree_inputs_;

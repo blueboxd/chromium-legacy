@@ -87,7 +87,6 @@ void RegisterFontFamilyPrefs(user_prefs::PrefRegistrySyncable* registry,
 ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_CURSIVE)
 ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_FANTASY)
 ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_FIXED)
-ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_PICTOGRAPH)
 ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_SANSERIF)
 ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_SERIF)
 ALL_FONT_SCRIPTS(WEBKIT_WEBPREFS_FONTS_STANDARD)
@@ -135,7 +134,6 @@ const FontDefault kFontDefaults[] = {
     {prefs::kWebKitSansSerifFontFamily, IDS_SANS_SERIF_FONT_FAMILY},
     {prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY},
     {prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY},
-    {prefs::kWebKitPictographFontFamily, IDS_PICTOGRAPH_FONT_FAMILY},
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_MAC) || defined(OS_WIN)
     {prefs::kWebKitStandardFontFamilyJapanese,
      IDS_STANDARD_FONT_FAMILY_JAPANESE},
@@ -264,8 +262,6 @@ void OverrideFontFamily(blink::web_pref::WebPreferences* prefs,
     map = &prefs->cursive_font_family_map;
   else if (generic_family == "fantasy")
     map = &prefs->fantasy_font_family_map;
-  else if (generic_family == "pictograph")
-    map = &prefs->pictograph_font_family_map;
   else
     NOTREACHED() << "Unknown generic font family: " << generic_family;
   (*map)[script] = base::UTF8ToUTF16(pref_value);
@@ -286,9 +282,8 @@ void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
 }  // namespace
 
 PrefsTabHelper::PrefsTabHelper(WebContents* contents)
-    : web_contents_(contents),
-      profile_(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext())) {
+    : content::WebContentsUserData<PrefsTabHelper>(*contents),
+      profile_(Profile::FromBrowserContext(contents->GetBrowserContext())) {
   PrefService* prefs = profile_->GetPrefs();
   if (prefs) {
 #if !defined(OS_ANDROID)
@@ -317,7 +312,7 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   }
 
   blink::RendererPreferences* render_prefs =
-      web_contents_->GetMutableRendererPrefs();
+      GetWebContents().GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(render_prefs, profile_);
 
 #if defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_ANDROID)
@@ -438,13 +433,14 @@ void PrefsTabHelper::OnThemeChanged() {
 }
 
 void PrefsTabHelper::UpdateWebPreferences() {
-  web_contents_->NotifyPreferencesChanged();
+  GetWebContents().NotifyPreferencesChanged();
 }
 
 void PrefsTabHelper::UpdateRendererPreferences() {
-  blink::RendererPreferences* prefs = web_contents_->GetMutableRendererPrefs();
+  blink::RendererPreferences* prefs =
+      GetWebContents().GetMutableRendererPrefs();
   renderer_preferences_util::UpdateFromSystemSettings(prefs, profile_);
-  web_contents_->SyncRendererPrefs();
+  GetWebContents().SyncRendererPrefs();
 }
 
 void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
@@ -469,9 +465,9 @@ void PrefsTabHelper::OnFontFamilyPrefChanged(const std::string& pref_name) {
     std::string pref_value = prefs->GetString(pref_name);
     if (pref_value.empty()) {
       blink::web_pref::WebPreferences web_prefs =
-          web_contents_->GetOrCreateWebPreferences();
+          GetWebContents().GetOrCreateWebPreferences();
       OverrideFontFamily(&web_prefs, generic_family, script, std::string());
-      web_contents_->SetWebPreferences(web_prefs);
+      GetWebContents().SetWebPreferences(web_prefs);
       return;
     }
   }
@@ -492,7 +488,7 @@ void PrefsTabHelper::NotifyWebkitPreferencesChanged(
   OnFontFamilyPrefChanged(pref_name);
 #endif
 
-  web_contents_->OnWebPreferencesChanged();
+  GetWebContents().OnWebPreferencesChanged();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefsTabHelper);

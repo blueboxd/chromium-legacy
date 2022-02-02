@@ -86,6 +86,9 @@ chromium-metrics-reviews@google.com.
   <suffix name="NoAction"
       label="The accuracy tip was closed without user interaction"/>
   <suffix name="OptOut" label="Opt-out button within Accuracy Tip was clicked"/>
+  <suffix name="PermissionRequested"
+      label="The Accuracy Tip was closed because the site requested a
+             permission"/>
   <affected-histogram name="Privacy.AccuracyTip.AccuracyTipTimeOpen"/>
   <affected-histogram name="Privacy.AccuracyTip.NumDialogsShown"/>
 </histogram_suffixes>
@@ -3064,6 +3067,9 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="ContextMenuTypeIOS" separator=".">
+  <obsolete>
+    Deprecated as of M98.
+  </obsolete>
   <suffix name="Image"
       label="The context menu was shown for a (non-link) image"/>
   <suffix name="ImageLink"
@@ -6823,6 +6829,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="LeakDetectionDialogType" separator=".">
   <suffix name="Change" label="The user is asked to change their password"/>
+  <suffix name="ChangeAutomatically"
+      label="The user is asked to let Chrome automatically change their
+             password for the current site."/>
   <suffix name="Checkup"
       label="The user is asked to visit the Password Checkup"/>
   <suffix name="CheckupAndChange"
@@ -8125,6 +8134,9 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="NavigationType" separator=".">
+  <obsolete>
+    Removed as of November 2021.
+  </obsolete>
   <suffix name="ExistingPageBrowserInitiated"
       label="existing page browser-initiated navigation"/>
   <suffix name="ExistingPageDifferentDocumentIntendedAsNew"
@@ -9935,6 +9947,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="ChromeUpdate" label=""/>
   <suffix name="Prefetch" label=""/>
   <suffix name="ReadingList" label=""/>
+  <suffix name="FeatureGuide" label=""/>
   <suffix name="Unknown" label=""/>
   <suffix name="WebUI" label=""/>
   <affected-histogram name="Notifications.Scheduler.IhnrActionButtonEvent"/>
@@ -10610,6 +10623,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="Autolaunch.Completed" label=""/>
   <suffix name="Connect.EnableDebugging" label=""/>
   <suffix name="Connect.Next" label=""/>
+  <suffix name="Connect.QuickStart" label=""/>
   <suffix name="Connect.SetupDemo" label=""/>
   <suffix name="Connect.StartDemo" label=""/>
   <suffix name="Connect.StartOsInstall" label=""/>
@@ -10695,147 +10709,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="User-creation.SignInAsChild" label=""/>
   <suffix name="Wrong-hwid.Next" label=""/>
   <affected-histogram name="OOBE.StepCompletionTimeByExitReason"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="OptimizationGuide_OptimizationTargets" separator=".">
-  <suffix name="AutofillAssistant" label="Autofill Assistant"/>
-  <suffix name="LanguageDetection" label="Language detection"/>
-  <suffix name="ModelValidation" label="Model validation triggered via CLI"/>
-  <suffix name="NotificationPermissions" label="Notification permissions"/>
-  <suffix name="PageEntities" label="Page entities"/>
-  <suffix name="PageTopics" label="Page topics"/>
-  <suffix name="PainfulPageLoad" label="Painful page load"/>
-  <suffix name="SegmentationChromeStartAndroid" label="Chrome Start Android"/>
-  <suffix name="SegmentationDummyFeature" label="Dummy feature"/>
-  <suffix name="SegmentationNewTab" label="Segmentation: New tab page user"/>
-  <suffix name="SegmentationQueryTiles" label="Query tiles"/>
-  <suffix name="SegmentationShare" label="Segmentation: Share user"/>
-  <suffix name="SegmentationVoice" label="Segmentation: Voice user"/>
-  <affected-histogram name="OptimizationGuide.IsPredictionModelValid"/>
-  <affected-histogram
-      name="OptimizationGuide.PredictionManager.ModelTypeChanged"/>
-  <affected-histogram name="OptimizationGuide.PredictionModelEvaluationLatency">
-    <obsolete>
-      Deprecated as of 2021/10.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="OptimizationGuide.PredictionModelLoadedVersion"/>
-  <affected-histogram name="OptimizationGuide.PredictionModelUpdateVersion"/>
-  <affected-histogram
-      name="OptimizationGuide.PredictionModelValidationLatency"/>
-  <affected-histogram name="OptimizationGuide.PredictionModelVersion">
-    <obsolete>
-      Removed as of 05/2020 in favor of recording on update and load of the
-      prediction model.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram
-      name="OptimizationGuide.ShouldTargetNavigation.PredictionModelStatus">
-    <obsolete>
-      Deprecated as of 2021/10.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="OptimizationGuide.TargetDecision"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="OptimizationGuide_OptimizationTypes" separator=".">
-  <suffix name="AboutThisSite"
-      label="Provides 'About this site' data about the site being visited"/>
-  <suffix name="BloomFilterValidation"
-      label="Validates bloom filer allowlist/blocklist based hints"/>
-  <suffix name="CompressPublicImages" label="Compresses public images"/>
-  <suffix name="DeferAllScript" label="Defers execution of script"/>
-  <suffix name="DelayAsyncScriptExecution"
-      label="Delays execution of async scripts">
-    <obsolete>
-      Removed in M94.
-    </obsolete>
-  </suffix>
-  <suffix name="DelayCompetingLowPriorityRequests"
-      label="Delays low priority requests behind in-flight 'important'
-             requests">
-    <obsolete>
-      Removed in M94.
-    </obsolete>
-  </suffix>
-  <suffix name="FastHostHints"
-      label="Provides information about hosts that historically provide a
-             fast and responsive user experience"/>
-  <suffix name="LinkPerformance"
-      label="Provides aggregated performance information for links on the
-             page"/>
-  <suffix name="LitePage"
-      label="HTTP server preview (served from the Data Reduction Proxy)"/>
-  <suffix name="LitePageRedirect"
-      label="HTTPS server preview (served from the litepages service)">
-    <obsolete>
-      Removed in M84.
-    </obsolete>
-  </suffix>
-  <suffix name="LiteVideo"
-      label="Provides information on how to throttle media requests to reduce
-             the adaptive bit rates of media streams."/>
-  <suffix name="LoadingPredictor"
-      label="Provides information about subresources predicted to be on the
-             page"/>
-  <suffix name="LoginDetection"
-      label="Provides information about hosts that are identified as commonly
-             logged-in"/>
-  <suffix name="MerchantTrustSignals"
-      label="Provides trust data related to the merchant."/>
-  <suffix name="MerchantTrustSignalsV2"
-      label="Provides trust data related to the merchant -- version 2."/>
-  <suffix name="MetadataFetchValidation"
-      label="Validates metadata fetch on navigation"/>
-  <suffix name="NoScript"
-      label="Disables the fetching and execution of JavaScript">
-    <obsolete>
-      Removed in M89.
-    </obsolete>
-  </suffix>
-  <suffix name="PerformanceHints"
-      label="Provides aggregated performance information about the page"/>
-  <suffix name="PriceTracking"
-      label="Returns price related data for shopping websites"/>
-  <suffix name="ResourceLoading"
-      label="Applies a set of resource loading hints to load the page">
-    <obsolete>
-      Removed in M89.
-    </obsolete>
-  </suffix>
-  <suffix name="ShoppingPagePredictor"
-      label="Determines if a page is shopping related or not"/>
-  <affected-histogram name="OptimizationGuide.ApplyDecision"/>
-  <affected-histogram name="OptimizationGuide.ApplyDecisionAsync"/>
-  <affected-histogram name="OptimizationGuide.OptimizationFilterStatus"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="OptimizationGuide_RequestContexts" separator=".">
-  <suffix name="BatchUpdate" label="Batch update.">
-    <obsolete>
-      Obsolete as of 10/2021.
-    </obsolete>
-  </suffix>
-  <suffix name="BatchUpdateActiveTabs"
-      label="Batch update of hints for active tabs"/>
-  <suffix name="BatchUpdateGoogleSRP"
-      label="Batch update of hints for result links off the Google SRP"/>
-  <suffix name="BatchUpdateModels" label="Batch update of models"/>
-  <suffix name="PageNavigation" label="Page navigation"/>
-  <affected-histogram
-      name="OptimizationGuide.HintsFetcher.GetHintsRequest.ActiveRequestCanceled"/>
-  <affected-histogram
-      name="OptimizationGuide.HintsFetcher.GetHintsRequest.FetchLatency"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="OptimizationGuide_StoreEntryTypes" separator=".">
-  <suffix name="ComponentHint"
-      label="Holds hint received from the Chrome Optimization Hints Component"/>
-  <suffix name="Empty" label="Unknown entry type"/>
-  <suffix name="FetchedHint"
-      label="Holds hint fetched from the Chrome Optimization Guide Service"/>
-  <suffix name="Metadata" label="Holds metadata about the store"/>
-  <affected-histogram name="OptimizationGuide.HintsLoadedPercentage"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OsSettingsChangeType" separator=".">
@@ -12703,7 +12576,9 @@ chromium-metrics-reviews@google.com.
       label="Inactive anonymous memory (data segments)."/>
   <suffix name="infoInactiveFile" label="Inactive file-backed memory."/>
   <suffix name="infoMapped" label="Mapped memory."/>
-  <suffix name="infoMemFree" label="Free memory."/>
+  <suffix name="infoMemFree"
+      label="Free memory. Logged from ChromeOS; previously logged from
+             Chromecast from M53 through M97."/>
   <suffix name="infoSwapUsedPercent" label="Used swap memory."/>
   <affected-histogram name="Platform.Mem"/>
 </histogram_suffixes>
@@ -13268,12 +13143,67 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.AllocatedObjects"
       label="Only counting objects allocated using the malloc allocator. The
              measurement is only accurate on Linux and MacOS."/>
+  <suffix name="Malloc.Fragmentation"
+      label="Fragmentation of Partition allocator."/>
+  <suffix name="Malloc.Fragmentation.After1H"
+      label="Fragmentation of Partition allocator for processes that have
+             existed for &gt;=1H."/>
+  <suffix name="Malloc.Fragmentation.After24H"
+      label="Fragmentation of Partition allocator for processes older than 1
+             day."/>
+  <suffix name="Malloc.MaxAllocatedSize"
+      label="Highwatermark for allocated memory for malloc(). Recorded only
+             when PartitionAlloc is used as malloc()."/>
+  <suffix name="Malloc.MaxCommittedSize"
+      label="Highwatermark for committed memory for malloc(). Recorded only
+             when PartitionAlloc is used as malloc()."/>
+  <suffix name="Malloc.Wasted"
+      label="Amount of memory that is wasted due to fragmentation in
+             PartitionAlloc, in bytes."/>
+  <suffix name="Malloc.Wasted.After1H"
+      label="Amount of memory that is wasted due to fragmentation in
+             PartitionAlloc, in bytes, for renderers older than 1 hour."/>
+  <suffix name="Malloc.Wasted.After24H"
+      label="Amount of memory that is wasted due to fragmentation in
+             PartitionAlloc, in bytes, for renderers older than 1 day."/>
   <suffix name="ManualFillingCache"
       label="Only counting memory used by the password manager fallbacks."/>
   <suffix name="PartitionAlloc"
       label="Only counting memory used by Partition allocator."/>
   <suffix name="PartitionAlloc.AllocatedObjects"
       label="Only counting objects allocated using Partition allocator."/>
+  <suffix name="PartitionAlloc.Fragmentation.ArrayBuffer"
+      label="Fragmentation of ArrayBuffer partition."/>
+  <suffix name="PartitionAlloc.Fragmentation.ArrayBuffer.After1H"
+      label="Fragmentation of ArrayBuffer partition. Only recorded for
+             renderers older than 1 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.ArrayBuffer.After24H"
+      label="Fragmentation of ArrayBuffer partition. Only recorded for
+             renderers older than 24 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.Buffer"
+      label="Fragmentation of Buffer partition."/>
+  <suffix name="PartitionAlloc.Fragmentation.Buffer.After1H"
+      label="Fragmentation of Buffer partition. Only recorded for renderers
+             older than 1 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.Buffer.After24H"
+      label="Fragmentation of Buffer partition. Only recorded for renderers
+             older than 24 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.FastMalloc"
+      label="Fragmentation of FastMalloc partition."/>
+  <suffix name="PartitionAlloc.Fragmentation.FastMalloc.After1H"
+      label="Fragmentation of FastMalloc partition. Only recorded for
+             renderers older than 1 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.FastMalloc.After24H"
+      label="Fragmentation of FastMalloc partition. Only recorded for
+             renderers older than 24 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.Layout"
+      label="Fragmentation of Layout partition."/>
+  <suffix name="PartitionAlloc.Fragmentation.Layout.After1H"
+      label="Fragmentation of Layout partition. Only recorded for renderers
+             older than 1 hour."/>
+  <suffix name="PartitionAlloc.Fragmentation.Layout.After24H"
+      label="Fragmentation of Layout partition. Only recorded for renderers
+             older than 24 hour."/>
   <suffix name="PartitionAlloc.MaxAllocatedSize.ArrayBuffer"
       label="Highwatermark for allocated memory for the ArrayBuffer
              partition."/>
@@ -13300,6 +13230,50 @@ chromium-metrics-reviews@google.com.
       label="Only counting memory used by Fast Malloc partition."/>
   <suffix name="PartitionAlloc.Partitions.Layout"
       label="Only counting memory used by Layout partition."/>
+  <suffix name="PartitionAlloc.Wasted.ArrayBuffer"
+      label="Amount of memory that is wasted in the ArrayBuffer partition due
+             to fragmentation, in bytes."/>
+  <suffix name="PartitionAlloc.Wasted.ArrayBuffer.After1H"
+      label="Amount of memory that is wasted in the ArrayBuffer partition due
+             to fragmentation, in bytes. Only recorded for renderers older
+             than 1 hour."/>
+  <suffix name="PartitionAlloc.Wasted.ArrayBuffer.After24H"
+      label="Amount of memory that is wasted in the ArrayBuffer partition due
+             to fragmentation, in bytes. Only recorded for renderers older
+             than 24 hour."/>
+  <suffix name="PartitionAlloc.Wasted.Buffer"
+      label="Amount of memory that is wasted in the Buffer partition due to
+             fragmentation, in bytes."/>
+  <suffix name="PartitionAlloc.Wasted.Buffer.After1H"
+      label="Amount of memory that is wasted in the Buffer partition due to
+             fragmentation, in bytes. Only recorded for renderers older than
+             1 hour."/>
+  <suffix name="PartitionAlloc.Wasted.Buffer.After24H"
+      label="Amount of memory that is wasted in the Buffer partition due to
+             fragmentation, in bytes. Only recorded for renderers older than
+             24 hour."/>
+  <suffix name="PartitionAlloc.Wasted.FastMalloc"
+      label="Amount of memory that is wasted in the FastMalloc partition due
+             to fragmentation, in bytes."/>
+  <suffix name="PartitionAlloc.Wasted.FastMalloc.After1H"
+      label="Amount of memory that is wasted in the FastMalloc partition due
+             to fragmentation, in bytes. Only recorded for renderers older
+             than 1 hour."/>
+  <suffix name="PartitionAlloc.Wasted.FastMalloc.After24H"
+      label="Amount of memory that is wasted in the FastMalloc partition due
+             to fragmentation, in bytes. Only recorded for renderers older
+             than 24 hour."/>
+  <suffix name="PartitionAlloc.Wasted.Layout"
+      label="Amount of memory that is wasted in the Layout partition due to
+             fragmentation, in bytes."/>
+  <suffix name="PartitionAlloc.Wasted.Layout.After1H"
+      label="Amount of memory that is wasted in the Layout partition due to
+             fragmentation, in bytes. Only recorded for renderers older than
+             1 hour."/>
+  <suffix name="PartitionAlloc.Wasted.Layout.After24H"
+      label="Amount of memory that is wasted in the Layout partition due to
+             fragmentation, in bytes. Only recorded for renderers older than
+             24 hour."/>
   <suffix name="PrivateMemoryFootprint"
       label="Only counting private resident + swapped/compressed memory.">
     <obsolete>
@@ -13414,9 +13388,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="Malloc.BRPQuarantined"
       label="Memory used by objects quarantined by BRP, recorded when
              USE_BACKUP_REF_PTR build flag is enabled."/>
-  <suffix name="Malloc.BRPQuarantinedCount"
-      label="Number of slots quarantined by BRP, recorded when
-             USE_BACKUP_REF_PTR build flag is enabled."/>
   <suffix name="Malloc.ThreadCache"
       label="Memory used by all thread caches, recorded when PartitionAlloc
              is used as malloc()."/>
@@ -13481,6 +13452,9 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="ProcessMemoryAllocatorTiny2" separator=".">
+  <suffix name="Malloc.BRPQuarantinedCount"
+      label="Number of slots quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
   <suffix name="NumberOfAdSubframes" label=""/>
   <suffix name="NumberOfArrayBufferContents" label=""/>
   <suffix name="NumberOfAudioHandler" label=""/>
@@ -17024,231 +16998,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="WebCore.IndexedDB.TombstoneSweeper.TombstonesSize"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SyncConfigureResults" separator=".">
-  <suffix name="ABORTED" label="When configuration gets aborted."/>
-  <suffix name="OK" label="When configuration is successful"/>
-  <suffix name="UNRECOVERABLE_ERROR"
-      label="When configuration encounters an unrecoverable error">
-    <obsolete>
-      Removed 06/2020, no longer used.
-    </obsolete>
-  </suffix>
-  <affected-histogram name="Sync.ConfigureTime_Initial"/>
-  <affected-histogram name="Sync.ConfigureTime_Subsequent"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SyncFaviconRequestOrigin" separator=".">
-  <suffix name="HISTORY" label="Request made by chrome://history."/>
-  <suffix name="RECENTLY_CLOSED_TABS"
-      label="Request made by the recently closed tabs menu."/>
-  <suffix name="SYNCED_TABS"
-      label="Request made by chrome://history/syncedTabs."/>
-  <suffix name="UNKNOWN" label="Request made by an unknown source.">
-    <obsolete>
-      Removed in M77.
-    </obsolete>
-  </suffix>
-  <affected-histogram name="Sync.FaviconAvailability">
-    <obsolete>
-      Replaced by Sync.SyncedHistoryFaviconAvailability in M77.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.RequestGroupSizeForSyncedHistoryFavicons">
-    <obsolete>
-      Deleted in M84.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.SizeOfFaviconServerRequestGroup">
-    <obsolete>
-      Replaced by Sync.RequestGroupSizeForSyncedHistoryFavicons in M77.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.SyncedHistoryFaviconAvailability"/>
-  <affected-histogram name="Sync.SyncedHistoryFaviconLatency">
-    <obsolete>
-      Deleted in M93.
-    </obsolete>
-  </affected-histogram>
-</histogram_suffixes>
-
-<histogram_suffixes name="SyncKeyDerivationMethod" separator=".">
-  <suffix name="Pbkdf2" label="PBKDF2_HMAC_SHA1_1003"/>
-  <suffix name="Scrypt8192" label="SCRYPT_8192_8_11"/>
-  <affected-histogram name="Sync.Crypto.NigoriKeyDerivationDuration"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SyncModelType" separator=".">
-  <suffix name="APP" label="APP"/>
-  <suffix name="APP_LIST" label="APP_LIST"/>
-  <suffix name="APP_NOTIFICATION" label="APP_NOTIFICATION">
-    <obsolete>
-      Removed on 2/2017.
-    </obsolete>
-  </suffix>
-  <suffix name="APP_SETTING" label="APP_SETTING"/>
-  <suffix name="ARC_PACKAGE" label="ARC_PACKAGE"/>
-  <suffix name="ARTICLE" label="ARTICLE">
-    <obsolete>
-      Removed on 7/2018.
-    </obsolete>
-  </suffix>
-  <suffix name="AUTOFILL" label="AUTOFILL"/>
-  <suffix name="AUTOFILL_OFFER" label="AUTOFILL_OFFER"/>
-  <suffix name="AUTOFILL_PROFILE" label="AUTOFILL_PROFILE"/>
-  <suffix name="AUTOFILL_WALLET" label="AUTOFILL_WALLET"/>
-  <suffix name="BOOKMARK" label="BOOKMARK"/>
-  <suffix name="DEVICE_INFO" label="DEVICE_INFO"/>
-  <suffix name="DICTIONARY" label="DICTIONARY"/>
-  <suffix name="EXPERIMENTS" label="EXPERIMENTS">
-    <obsolete>
-      Removed on 4/2020.
-    </obsolete>
-  </suffix>
-  <suffix name="EXTENSION" label="EXTENSION"/>
-  <suffix name="EXTENSION_SETTING" label="EXTENSION_SETTING"/>
-  <suffix name="FAVICON_IMAGE" label="FAVICON_IMAGE">
-    <obsolete>
-      Removed on 01/2021 (M90).
-    </obsolete>
-  </suffix>
-  <suffix name="FAVICON_TRACKING" label="FAVICON_TRACKING">
-    <obsolete>
-      Removed on 01/2021 (M90).
-    </obsolete>
-  </suffix>
-  <suffix name="HISTORY_DELETE_DIRECTIVE" label="HISTORY_DELETE_DIRECTIVE"/>
-  <suffix name="MANAGED_USER" label="MANAGED_USER">
-    <obsolete>
-      Removed on 4/2018.
-    </obsolete>
-  </suffix>
-  <suffix name="MANAGED_USER_SETTING" label="MANAGED_USER_SETTING"/>
-  <suffix name="MANAGED_USER_SHARED_SETTING"
-      label="MANAGED_USER_SHARED_SETTING">
-    <obsolete>
-      Removed on 4/2018.
-    </obsolete>
-  </suffix>
-  <suffix name="MANAGED_USER_WHITELIST" label="MANAGED_USER_ALLOWLIST">
-    <obsolete>
-      Removed 4/2021.
-    </obsolete>
-  </suffix>
-  <suffix name="MOUNTAIN_SHARE" label="MOUNTAIN_SHARE">
-    <obsolete>
-      Removed 11/2019.
-    </obsolete>
-  </suffix>
-  <suffix name="NIGORI" label="NIGORI"/>
-  <suffix name="OS_PREFERENCE" label="OS_PREFERENCE"/>
-  <suffix name="OS_PRIORITY_PREFERENCE" label="OS_PRIORITY_PREFERENCE"/>
-  <suffix name="PASSWORD" label="PASSWORD"/>
-  <suffix name="PREFERENCE" label="PREFERENCE"/>
-  <suffix name="PRINTERS" label="PRINTERS"/>
-  <suffix name="PRIORITY_PREFERENCE" label="PRIORITY_PREFERENCE"/>
-  <suffix name="PROXY_TABS" label="PROXY_TABS"/>
-  <suffix name="READING_LIST" label="READING_LIST"/>
-  <suffix name="SEARCH_ENGINE" label="SEARCH_ENGINE"/>
-  <suffix name="SECURITY_EVENT" label="SECURITY_EVENT"/>
-  <suffix name="SEND_TAB_TO_SELF" label="SEND_TAB_TO_SELF"/>
-  <suffix name="SESSION" label="SESSION"/>
-  <suffix name="SHARING_MESSAGE" label="SHARING_MESSAGE"/>
-  <suffix name="SYNCED_NOTIFICATION" label="SYNCED_NOTIFICATION">
-    <obsolete>
-      Removed in M53.
-    </obsolete>
-  </suffix>
-  <suffix name="SYNCED_NOTIFICATION_APP_INFO"
-      label="SYNCED_NOTIFICATION_APP_INFO">
-    <obsolete>
-      Removed in M53.
-    </obsolete>
-  </suffix>
-  <suffix name="THEME" label="THEME"/>
-  <suffix name="TYPED_URL" label="TYPED_URL"/>
-  <suffix name="USER_CONSENT" label="USER_CONSENT"/>
-  <suffix name="USER_EVENT" label="USER_EVENT"/>
-  <suffix name="WALLET_METADATA" label="WALLET_METADATA"/>
-  <suffix name="WEB_APP" label="WEB_APP"/>
-  <suffix name="WIFI_CONFIGURATION" label="WIFI_CONFIGURATION"/>
-  <suffix name="WIFI_CREDENTIAL" label="WIFI_CREDENTIAL">
-    <obsolete>
-      This never got launched and is removed.
-    </obsolete>
-  </suffix>
-  <suffix name="WORKSPACE_DESK" label="WORKSPACE_DESK"/>
-  <affected-histogram name="FCMInvalidations.SubscriptionResponseCodeForTopic"/>
-  <affected-histogram name="Sync.CommitLatency"/>
-  <affected-histogram name="Sync.CommitResponse"/>
-  <affected-histogram name="Sync.DuplicateClientTagHashInApplyPendingUpdates"/>
-  <affected-histogram name="Sync.DuplicateClientTagHashInGetUpdatesResponse"/>
-  <affected-histogram
-      name="Sync.DuplicateClientTagHashWithDifferentServerIdsInApplyPendingUpdates"/>
-  <affected-histogram name="Sync.DuplicateServerIdInApplyPendingUpdates"/>
-  <affected-histogram name="Sync.E2ELatency">
-    <obsolete>
-      Deprecated 10/2021. Replaced by server-side metrics.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeConfigurationTime.Ephemeral"/>
-  <affected-histogram name="Sync.ModelTypeConfigurationTime.Persistent"/>
-  <affected-histogram name="Sync.ModelTypeCount">
-    <obsolete>
-      Deprecated 7/2018. Replaced by Sync.ModelTypeCount2.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeCount2">
-    <obsolete>
-      Deprecated 8/2018. Replaced by Sync.ModelTypeCount3.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeCount3">
-    <obsolete>
-      Deprecated 8/2018. Replaced by Sync.ModelTypeCount3.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeCount4"/>
-  <affected-histogram name="Sync.ModelTypeEntityChange">
-    <obsolete>
-      Deprecated 10/2018. Replaced by Sync.ModelTypeEntityChange3.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeEntityChange2">
-    <obsolete>
-      Deprecated 11/2018. Replaced by Sync.ModelTypeEntityChange3.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeEntityChange3"/>
-  <affected-histogram name="Sync.ModelTypeErrorSite"/>
-  <affected-histogram name="Sync.ModelTypeMemoryKB"/>
-  <affected-histogram name="Sync.ModelTypeStoreCommitWriteBatchOutcome">
-    <obsolete>
-      Deprecated 09/2021. No longer needed.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.ModelTypeTimeUntilEncryptionKeyFound"/>
-  <affected-histogram name="Sync.ModelTypeTimeUntilEncryptionKeyFound2"/>
-  <affected-histogram name="Sync.ModelTypeUndecryptablePendingUpdatesDropped"/>
-  <affected-histogram name="Sync.NonReflectionUpdateFreshnessPossiblySkewed">
-    <obsolete>
-      Deprecated 06/2019. Replaced by
-      Sync.NonReflectionUpdateFreshnessPossiblySkewed2.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.NonReflectionUpdateFreshnessPossiblySkewed2"/>
-  <affected-histogram name="Sync.ReceivedDataTypeGetUpdatesResponseWithToken">
-    <obsolete>
-      Deprecated 05/2019.
-    </obsolete>
-  </affected-histogram>
-  <affected-histogram name="Sync.UndecryptedEntitiesOnDataTypeDisabled"/>
-  <affected-histogram name="Sync.USSMigrationEntityCount">
-    <obsolete>
-      Deprecated 05/2020.
-    </obsolete>
-  </affected-histogram>
-</histogram_suffixes>
-
 <histogram_suffixes name="SyncModelTypeByMacro" separator="" ordering="prefix">
   <obsolete>
     Removed in M80.
@@ -17327,45 +17076,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Sync.ConfigureFailure"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SyncModelTypeUpdateDrop" separator=".">
-  <suffix name="CannotGenerateStorageKey"
-      label="The bridge cannot generate a valid storage key based on the
-             entity data."/>
-  <suffix name="DecryptionPending"
-      label="Decryption keys are missing at the moment (it is queued for
-             later decryption which may or may not happen)."/>
-  <suffix name="DecryptionPendingForTooLong"
-      label="Decryption keys were missing for so long that the update was
-             ignored."/>
-  <suffix name="FailedToDecrypt"
-      label="Decryption is not successful (maybe the data is corrupt)."/>
-  <suffix name="InconsistentClientTag"
-      label="Client tag hash from the server does not match the one computed
-             by the bridge based on the entity data."/>
-  <suffix name="TombstoneForNonexistentInIncrementalUpdate"
-      label="It was a tombstone for an entity that does not exist locally."/>
-  <suffix name="TombstoneInFullUpdate"
-      label="It was a tombstone in a full update."/>
-  <affected-histogram name="Sync.ModelTypeUpdateDrop"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SyncOrphanMetadata" separator=".">
-  <suffix name="GetData"
-      label="This happens as a result of missing data in response from
-             GetData() call."/>
-  <suffix name="ModelReadyToSync"
-      label="This happens as a result of a ModelReadyToSync() call with
-             metadata batch containing entities with duplicate
-             client-tag-hashes (which indicates that all but one from each
-             equivalence class are previous orphans). The type of the orphan
-             is reported in this histogram, one for each orphan."/>
-  <suffix name="Put"
-      label="This happens as a result of a Put() call with an entity whose
-             client-tag-hash is already tracked by the processor (which
-             indicates an orphan)."/>
-  <affected-histogram name="Sync.ModelTypeOrphanMetadata"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="SystemNotificationAgeType" separator=".">
   <suffix name="ClickToCall" label="Click To Call"/>
   <suffix name="PriceDrop" label="Price Drop Alerts"/>
@@ -17441,6 +17151,7 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="TabletOrClamshellMode" separator=".">
   <suffix name="ClamshellMode" label="Clamshell Mode Enabled"/>
   <suffix name="TabletMode" label="Tablet Mode Enabled"/>
+  <affected-histogram name="Apps.AppListContinueTaskOpenType"/>
   <affected-histogram name="Apps.AppListFolderNameLength"/>
   <affected-histogram name="Apps.AppListPageSwitcherSource"/>
   <affected-histogram name="Apps.AppListSearchBoxActivated"/>
@@ -18012,6 +17723,9 @@ chromium-metrics-reviews@google.com.
       label="The reauth happened to move a password to the account store."/>
   <suffix name="ToSaveOrUpdatePassword"
       label="The reauth happened to save a password to the account store."/>
+  <suffix name="ToSavePasswordLocallyThenMove"
+      label="The reauth happened to move a just-locally-saved password to the
+             account store."/>
   <affected-histogram name="Signin.TransactionalReauthResult"/>
   <affected-histogram name="Signin.TransactionalReauthUserAction"/>
 </histogram_suffixes>

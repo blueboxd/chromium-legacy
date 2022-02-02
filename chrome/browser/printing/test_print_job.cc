@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_job_worker.h"
@@ -46,6 +45,10 @@ void TestPrintJob::Stop() {
 void TestPrintJob::Cancel() {
   set_job_pending(false);
 }
+
+void TestPrintJob::OnFailed() {}
+
+void TestPrintJob::OnDocDone(int job_id, PrintedDocument* document) {}
 
 bool TestPrintJob::FlushJob(base::TimeDelta timeout) {
   return true;

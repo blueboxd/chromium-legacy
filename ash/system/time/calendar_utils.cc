@@ -7,6 +7,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "base/i18n/unicodestring.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/dtptngen.h"
 #include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
@@ -18,9 +19,14 @@ namespace calendar_utils {
 
 bool IsToday(const base::Time::Exploded& selected_date) {
   base::Time::Exploded today_exploded = GetExplodedLocal(base::Time::Now());
-  return selected_date.year == today_exploded.year &&
-         selected_date.month == today_exploded.month &&
-         selected_date.day_of_month == today_exploded.day_of_month;
+  return IsTheSameDay(selected_date, today_exploded);
+}
+bool IsTheSameDay(absl::optional<base::Time::Exploded> date_a,
+                  absl::optional<base::Time::Exploded> date_b) {
+  if (!date_a.has_value() || !date_b.has_value())
+    return false;
+  return date_a->year == date_b->year && date_a->month == date_b->month &&
+         date_a->day_of_month == date_b->day_of_month;
 }
 
 base::Time::Exploded GetExplodedLocal(const base::Time& date) {
@@ -58,6 +64,7 @@ std::u16string GetMonthName(const base::Time date) {
 }
 
 void SetUpWeekColumns(views::TableLayout* layout) {
+  layout->AddPaddingColumn(views::TableLayout::kFixedSize, kColumnSetPadding);
   for (int i = 0; i < calendar_utils::kDateInOneWeek; ++i) {
     layout
         ->AddColumn(views::LayoutAlignment::kStretch,
@@ -94,17 +101,17 @@ base::Time GetStartOfNextMonthLocal(base::Time date) {
   return GetStartOfMonthLocal(GetStartOfMonthLocal(date) + base::Days(33));
 }
 
-base::Time GetStartOfMonthUTC(const base::Time& date) {
+ASH_EXPORT base::Time GetStartOfMonthUTC(const base::Time& date) {
   return (date -
           base::Days(calendar_utils::GetExplodedUTC(date).day_of_month - 1))
       .UTCMidnight();
 }
 
-base::Time GetStartOfPreviousMonthUTC(base::Time date) {
+ASH_EXPORT base::Time GetStartOfPreviousMonthUTC(base::Time date) {
   return GetStartOfMonthUTC(GetStartOfMonthUTC(date) - base::Days(1));
 }
 
-base::Time GetStartOfNextMonthUTC(base::Time date) {
+ASH_EXPORT base::Time GetStartOfNextMonthUTC(base::Time date) {
   // Adds over 31 days to make sure it goes to the next month.
   return GetStartOfMonthUTC(GetStartOfMonthUTC(date) + base::Days(33));
 }

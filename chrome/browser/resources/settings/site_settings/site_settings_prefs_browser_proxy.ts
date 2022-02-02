@@ -76,7 +76,6 @@ export type RawSiteException = {
   isEmbargoed: boolean,
   origin: string,
   displayName: string,
-  settingDetail: string|null,
   type: string,
   setting: ContentSetting,
   source: SiteSettingSource,
@@ -93,7 +92,6 @@ export type SiteException = {
   isEmbargoed: boolean,
   origin: string,
   displayName: string,
-  settingDetail: string|null,
   setting: ContentSetting,
   enforcement: chrome.settingsPrivate.Enforcement|null,
   controlledBy: chrome.settingsPrivate.ControlledBy,
@@ -163,7 +161,9 @@ type ProtocolHandlerEntry = {
 };
 
 export type ZoomLevelEntry = {
+  displayName: string,
   origin: string,
+  originForFavicon: string,
   setting: string,
   source: string,
   zoom: string,

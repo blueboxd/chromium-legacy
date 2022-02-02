@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -131,9 +130,7 @@ class VIEWS_EXPORT Button : public View, public AnimationDelegateViews {
   int tag() const { return tag_; }
   void set_tag(int tag) { tag_ = tag; }
 
-  void SetCallback(PressedCallback callback) {
-    callback_ = std::move(callback);
-  }
+  virtual void SetCallback(PressedCallback callback);
 
   void SetAccessibleName(const std::u16string& name);
   const std::u16string& GetAccessibleName() const;

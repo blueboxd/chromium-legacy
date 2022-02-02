@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/cxx17_backports.h"
+#include "base/ignore_result.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ui/base/tablet_state.h"
@@ -573,8 +574,11 @@ bool FrameCaptionButtonContainerView::CanSnap() {
   return SnapController::Get()->CanSnap(frame_->GetNativeWindow());
 }
 
-void FrameCaptionButtonContainerView::ShowSnapPreview(SnapDirection snap) {
-  SnapController::Get()->ShowSnapPreview(frame_->GetNativeWindow(), snap);
+void FrameCaptionButtonContainerView::ShowSnapPreview(
+    SnapDirection snap,
+    bool allow_haptic_feedback) {
+  SnapController::Get()->ShowSnapPreview(frame_->GetNativeWindow(), snap,
+                                         allow_haptic_feedback);
 }
 
 void FrameCaptionButtonContainerView::CommitSnap(SnapDirection snap) {

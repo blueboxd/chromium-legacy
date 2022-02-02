@@ -8,7 +8,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
-assert(is_chromeos, "Eche App is Chrome OS only")
+assert(is_chromeos_ash, "Eche App is ash-chrome only")
 
 preprocess_mojo_manifest = "preprocessed_mojo_manifest.json"
 preprocess_folder = "preprocessed"
@@ -66,6 +66,7 @@ static_library("eche_app_ui") {
 
   deps = [
     "//ash",
+    "//ash/components/phonehub",
     "//ash/constants",
     "//ash/public/cpp",
     "//ash/webui/eche_app_ui/mojom",
@@ -74,7 +75,6 @@ static_library("eche_app_ui") {
     "//ash/webui/resources:eche_bundle_resources",
     "//chromeos/components/multidevice:multidevice",
     "//chromeos/components/multidevice/logging",
-    "//chromeos/components/phonehub:phonehub",
     "//chromeos/services/device_sync/public/cpp:cpp",
     "//chromeos/services/multidevice_setup/public/cpp:cpp",
     "//chromeos/services/secure_channel/public/cpp/client",
@@ -90,6 +90,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_apps_access_manager.cc",
+    "fake_apps_access_manager.h",
     "fake_eche_connector.cc",
     "fake_eche_connector.h",
     "fake_eche_message_receiver.cc",
@@ -119,14 +121,14 @@ source_set("unit_tests") {
   deps = [
     ":eche_app_ui",
     ":test_support",
+    "//ash/components/phonehub",
+    "//ash/components/phonehub:debug",
     "//ash/public/cpp",
     "//ash/webui/eche_app_ui/proto",
     "//base",
     "//base/test:test_support",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
-    "//chromeos/components/phonehub",
-    "//chromeos/components/phonehub:debug",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/cpp",

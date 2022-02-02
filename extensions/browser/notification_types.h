@@ -53,16 +53,6 @@ enum NotificationType {
   // TODO(https://crbug.com/1174734): Remove.
   NOTIFICATION_EXTENSION_INSTALL_ERROR,
 
-  // Sent when extension render process ends (whether it crashes or closes). The
-  // details are an ExtensionHost* and the source is a BrowserContext*. Not sent
-  // during browser shutdown.
-  // TODO(https://crbug.com/1174743): Remove.
-  NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-
-  // Sent when a background page is ready so other components can load.
-  // TODO(https://crbug.com/1174744): Remove.
-  NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-
   // Sent when an bookmarks extensions API function was successfully invoked.
   // The source is the id of the extension that invoked the function, and the
   // details are a pointer to the const BookmarksFunction in question.
@@ -74,11 +64,6 @@ enum NotificationType {
   // extensions::api::omnibox::SendSuggestions::Params object.
   // TODO(https://crbug.com/1174750): Remove.
   NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
-
-  // Sent when the user accepts the input in an extension omnibox keyword
-  // session. The source is the BrowserContext*.
-  // TODO(https://crbug.com/1174751): Remove.
-  NOTIFICATION_EXTENSION_OMNIBOX_INPUT_ENTERED,
 
   // Sent when an omnibox extension has updated the default suggestion. The
   // source is the BrowserContext*.

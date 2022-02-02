@@ -14,7 +14,16 @@
   [OobeI18nBehavior, OobeDialogHostBehavior],
   Polymer.Element);
 
-class OobeWelcomeDialog extends OobeWelcomeDialogBase {
+/**
+ * @typedef {{
+ *   title:  HTMLAnchorElement,
+ *   chromeVoxHint:  OobeModalDialogElement,
+ *   welcomeAnimation:  CrLottieElement,
+ * }}
+ */
+OobeWelcomeDialogBase.$;
+
+/* #export */ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
 
   static get is() { return 'oobe-welcome-dialog'; }
 
@@ -54,6 +63,10 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
         },
         readOnly: true,
       },
+
+      isQuickStartEnabled_: {
+        type: Boolean,
+      },
     };
   }
 
@@ -72,10 +85,11 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
      * to this dialog from Language / Timezone Selection dialogs.
      */
     this.focusedElement_ = null;
+
+    this.isQuickStartEnabled_ = loadTimeData.getBoolean('isQuickStartEnabled');
   }
 
   onBeforeShow() {
-    document.documentElement.setAttribute('new-layout', '');
     this.setVideoPlay_(true);
   }
 
@@ -96,11 +110,19 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
 
   onNextClicked_() {
     this.focusedElement_ = 'getStarted';
-    this.dispatchEvent(new CustomEvent('next-button-clicked', { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent(
+        'next-button-clicked', {bubbles: true, composed: true}));
+  }
+
+  onQuickStartClicked_() {
+    assert(this.isQuickStartEnabled_);
+    this.dispatchEvent(new CustomEvent(
+        'quick-start-clicked', {bubbles: true, composed: true}));
   }
 
   onDebuggingLinkClicked_() {
-    this.dispatchEvent(new CustomEvent('enable-debugging-clicked', { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent(
+        'enable-debugging-clicked', {bubbles: true, composed: true}));
   }
 
   /*
@@ -109,12 +131,10 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
     * @private
     */
   onTitleLongTouch_() {
-    this.dispatchEvent(new CustomEvent('launch-advanced-options', { bubbles: true, composed: true }));
+    this.dispatchEvent(new CustomEvent(
+        'launch-advanced-options', {bubbles: true, composed: true}));
   }
 
-  /**
-   * @suppress {missingProperties}
-   */
   attached() {
     this.titleLongTouchDetector_ = new LongTouchDetector(
         this.$.title, () => void this.onTitleLongTouch_());
@@ -131,9 +151,6 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
     this.focus();
   }
 
-  /**
-   * @suppress {missingProperties}
-   */
   focus() {
     if (!this.focusedElement_) {
       this.focusedElement_ = 'getStarted';
@@ -165,7 +182,7 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
   setVideoPlay_(play) {
     if (this.isMeet_)
       return;
-    this.$.welcomeAnimation.setPlay(play);
+    this.$.welcomeAnimation.playing = play;
   }
 
   /**
@@ -182,7 +199,6 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
 
   /**
    * Called to show the ChromeVox hint dialog.
-   * @suppress {missingProperties}
    */
   showChromeVoxHint() {
     this.$.chromeVoxHint.showDialog();
@@ -191,7 +207,6 @@ class OobeWelcomeDialog extends OobeWelcomeDialogBase {
 
   /**
    * Called to close the ChromeVox hint dialog.
-   * @suppress {missingProperties}
    */
   closeChromeVoxHint() {
     this.setVideoPlay_(true);

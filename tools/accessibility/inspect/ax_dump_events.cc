@@ -39,6 +39,7 @@ void PrintHelp() {
   printf("\nusage: ax_dump_events <options>\n");
   printf("options:\n");
   tools::PrintHelpForTreeSelectors();
+  tools::PrintHelpFooter();
 }
 
 }  // namespace
@@ -72,7 +73,7 @@ int main(int argc, char** argv) {
   // A future patch will update mac and linux to use selector->widget and remove
   // the `pid` argument.
   unsigned int pid = 0;
-#if defined(USE_OZONE) || defined(USE_X11) || defined(OS_MAC)
+#if defined(USE_OZONE) || defined(OS_MAC)
   pid = selector->widget;
 #endif
   const auto server = std::make_unique<tools::AXEventServer>(pid, *selector);

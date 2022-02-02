@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/optimization_guide/core/prediction_model_fetcher.h"
+#include "components/optimization_guide/core/prediction_model_fetcher_impl.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,7 +39,7 @@ class PredictionModelFetcherTest : public testing::Test {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
         network_tracker_(network::TestNetworkConnectionTracker::GetInstance()) {
-    prediction_model_fetcher_ = std::make_unique<PredictionModelFetcher>(
+    prediction_model_fetcher_ = std::make_unique<PredictionModelFetcherImpl>(
         shared_url_loader_factory_, GURL(optimization_guide_service_url),
         network_tracker_);
   }
@@ -112,11 +112,11 @@ class PredictionModelFetcherTest : public testing::Test {
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
 
-  std::unique_ptr<PredictionModelFetcher> prediction_model_fetcher_;
+  std::unique_ptr<PredictionModelFetcherImpl> prediction_model_fetcher_;
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  network::TestNetworkConnectionTracker* network_tracker_;
+  raw_ptr<network::TestNetworkConnectionTracker> network_tracker_;
 };
 
 TEST_F(PredictionModelFetcherTest, FetchOptimizationGuideServiceModels) {
@@ -148,12 +148,14 @@ TEST_F(PredictionModelFetcherTest, FetchReturned404) {
   SimulateResponse(response_content, net::HTTP_NOT_FOUND);
   EXPECT_FALSE(models_fetched());
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status",
+      "OptimizationGuide.PredictionModelFetcher."
+      "GetModelsResponse.Status",
       net::HTTP_NOT_FOUND, 1);
 
   // Net error codes are negative but UMA histograms require positive values.
   histogram_tester.ExpectUniqueSample(
-      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.NetErrorCode",
+      "OptimizationGuide.PredictionModelFetcher."
+      "GetModelsResponse.NetErrorCode",
       -net::ERR_HTTP_RESPONSE_CODE_FAILURE, 1);
 }
 

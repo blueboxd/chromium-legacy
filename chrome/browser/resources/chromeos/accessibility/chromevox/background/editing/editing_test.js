@@ -1682,6 +1682,67 @@ TEST_F('ChromeVoxEditingTest', 'MoveByWordSuggestions', function() {
   });
 });
 
+TEST_F('ChromeVoxEditingTest', 'MoveByWordSuggestionsNoIntents', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div contenteditable="true" role="textbox" id="textbox">
+      <p>Start</p>
+      <span>I </span>
+      <span role="suggestion" aria-description="Username">
+        <span role="insertion">was</span>
+        <span role="deletion">am</span></span><span> typing</span>
+      <p>End</p>
+    </div>
+    <script>
+      const textbox = document.getElementById('textbox');
+      let firstRightSkipped = false;
+      textbox.addEventListener('keydown', event => {
+        if (event.keyCode === 40) {
+          return;
+        }
+
+        if (!firstRightSkipped) {
+          firstRightSkipped = true;
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const contentEditable = document.activeElement;
+        const selection = getSelection();
+        selection.removeAllRanges();
+        const range = new Range();
+        const text = contentEditable.children[2].children[0].firstChild;
+        range.setStart(text, 3);
+        range.setEnd(text, 3);
+        selection.addRange(range);
+      });
+    </script>
+  `;
+  this.runWithLoadedTree(site, async function(root) {
+    await this.focusFirstTextField(root);
+
+    mockFeedback.call(this.press(KeyCode.DOWN))
+        .expectSpeech(' typing')
+        // Move forward through line.
+
+        // This first right arrow is allowed to be processed by the content
+        // editable.
+        .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+        .expectSpeech('I')
+
+        // This next right is swallowed by the content editable mimicking custom
+        // rich editors. It manually moves selection (and looses intent data).
+        // We infer it by getting a command mapped for a raw control right arrow
+        // key.
+        .call(doCmd('nativeNextWord'))
+        .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+        .expectSpeech('Suggest', 'Username', 'Insert', 'was', 'Insert end')
+        .replay();
+  });
+});
+
 TEST_F('ChromeVoxEditingTest', 'Separator', function() {
   // In the past, an ARIA leaf role would cause subtree content to be removed.
   // However, the new decision is to not remove any content the user might
@@ -1904,6 +1965,155 @@ TEST_F('ChromeVoxEditingTest', 'DISABLED_ParagraphNavigation', function() {
         .expectSpeech('Another paragraph, number two.')
         .call(this.press(KeyCode.DOWN))
         .expectSpeech('paragraph, ')
+        .replay();
+  });
+});
+
+TEST_F(
+    'ChromeVoxEditingTest', 'StartAndEndOfOutputStopAtEditableRoot',
+    function() {
+      const mockFeedback = this.createMockFeedback();
+      const site = `
+    <div role="article">
+      <div contenteditable role="textbox">
+        hello<br>world
+      </div>
+    </div>
+  `;
+      this.runWithLoadedTree(site, async function(root) {
+        await this.focusFirstTextField(root);
+        mockFeedback.expectSpeech('Text area')
+            .call(this.press(KeyCode.DOWN))
+            .expectSpeech('world')
+            .call(this.press(KeyCode.UP))
+            .expectNextSpeechUtteranceIsNot('Article')
+            .expectNextSpeechUtteranceIsNot('Article end')
+            .expectSpeech('hello')
+            .replay();
+      });
+    });
+
+TEST_F('ChromeVoxEditingTest', 'TableNavigation', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <div contenteditable role="textbox" tabindex=0>
+      <table border=1>
+        <tr><td>hello<br>world</td><td>goodbye</td></tr>
+        <tr><td>hola</td><td>hasta luego</td></tr>
+      </table>
+    </div>
+  `;
+  this.runWithLoadedTree(site, async function(root) {
+    await this.focusFirstTextField(root);
+
+    mockFeedback.expectSpeech('Text area')
+        .call(this.press(KeyCode.RIGHT))
+        .call(this.press(KeyCode.RIGHT))
+        .expectSpeech('e')
+        .call(doCmd('nextCol'))
+        .expectSpeech('goodbye')
+        .expectSpeech('row 1 column 2')
+        .call(this.press(KeyCode.RIGHT))
+        .expectSpeech('o')
+        .call(doCmd('previousCol'))
+        .expectSpeech('hello', 'world')
+        .expectSpeech('row 1 column 1')
+        .call(this.press(KeyCode.RIGHT))
+        .expectSpeech('e')
+        .replay();
+  });
+});
+
+TEST_F('ChromeVoxEditingTest', 'InputTextBrailleContractions', function() {
+  const site = `
+    <input type=text value="about that"></input>
+  `;
+  this.runWithLoadedTree(site, async function(root) {
+    await this.focusFirstTextField(root);
+
+    // In case LibLouis takes a while to load.
+    if (!ChromeVox.braille.displayManager_.translatorManager_.liblouis_
+             .isLoaded()) {
+      await new Promise(r => {
+        ChromeVox.braille.displayManager_.translatorManager_.liblouis_
+            .onInstanceLoad_ = r;
+      });
+    }
+
+    // Fake an available display.
+    ChromeVox.braille.displayManager_.refreshDisplayState_(
+        {available: true, textRowCount: 1, textColumnCount: 40});
+
+    // Set braille to use 6-dot braille (which is defaulted to UEB grade 2
+    // contracted braille).
+    localStorage['brailleTable'] = 'en-ueb-g2';
+
+    async function waitForBrailleDots(expectedDots) {
+      return new Promise(r => {
+        chrome.brailleDisplayPrivate.writeDots = (dotsBuffer) => {
+          const view = new Uint8Array(dotsBuffer);
+          const dots = new Array(view.length);
+          view.forEach((item, index) => dots[index] = item.toString(2));
+          if (expectedDots.toString() === dots.toString()) {
+            r();
+          }
+        };
+      });
+    }
+
+    this.press(KeyCode.END)();
+
+    // This test intentionally leaves the raw binary encoding for braille. Dots
+    // are read from right to left.
+    await waitForBrailleDots([
+      // 'ab' is 'about' in UEB Grade 2.
+      1 /* a */, 11 /* b */,
+
+      0 /* space */,
+
+      11110 /* t */, 10011 /* h */, 1 /* a */, 11110 /* t */,
+
+      11000000 /* cursor _ */,
+
+      101011 /* ed contraction */
+    ]);
+
+    this.press(KeyCode.HOME)();
+    await waitForBrailleDots([
+      11000001 /* a with a cursor _*/, 11 /* b */, 10101 /* o */,
+      100101 /* u */, 11110 /* t */,
+
+      0 /* space */,
+
+      // 't' by itself is contracted as 'that'.
+      11110 /* t */,
+
+      0 /* space */,
+
+      101011 /* ed contraction */
+    ]);
+  });
+});
+
+
+TEST_F('ChromeVoxEditingTest', 'ContextMenus', function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
+    <textarea>abc</textarea>
+  `;
+  this.runWithLoadedTree(site, async function(root) {
+    await this.focusFirstTextField(root);
+
+    const textField = root.find({role: RoleType.TEXT_FIELD});
+    mockFeedback.expectSpeech('Text area')
+        .call(() => {
+          textField.setSelection(0, 2);
+        })
+        .expectSpeech('ab', 'selected')
+        .call(doCmd('contextMenu'))
+        .expectSpeech(' menu opened')
+        .call(this.press(KeyCode.ESCAPE))
+        .expectSpeech('ab', 'selected')
         .replay();
   });
 });

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "base/macros.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 
 namespace ash {
@@ -27,7 +26,8 @@ class ASH_EXPORT SnapControllerImpl : public chromeos::SnapController {
 
   bool CanSnap(aura::Window* window) override;
   void ShowSnapPreview(aura::Window* window,
-                       chromeos::SnapDirection snap) override;
+                       chromeos::SnapDirection snap,
+                       bool allow_haptic_feedback) override;
   void CommitSnap(aura::Window* window, chromeos::SnapDirection snap) override;
 
  private:

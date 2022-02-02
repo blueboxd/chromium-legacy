@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/components/settings/cros_settings_names.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
@@ -31,7 +32,6 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
-#include "chromeos/settings/cros_settings_names.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -652,7 +652,7 @@ TEST_F(LoginApiSharedSessionUnittest, LaunchSharedManagedGuestSession) {
 TEST_F(LoginApiSharedSessionUnittest,
        LaunchSharedManagedGuestSessionRestrictedMGSNotEnabled) {
   GetCrosSettingsHelper()->SetBoolean(
-      chromeos::kDeviceRestrictedManagedGuestSessionEnabled, false);
+      ash::kDeviceRestrictedManagedGuestSessionEnabled, false);
 
   ASSERT_EQ(
       login_api_errors::kNoPermissionToUseApi,
@@ -933,7 +933,7 @@ TEST_F(LoginApiSharedSessionUnittest, EnterSharedSession) {
 TEST_F(LoginApiSharedSessionUnittest,
        EnterSharedSessionRestrictedMGSNotEnabled) {
   GetCrosSettingsHelper()->SetBoolean(
-      chromeos::kDeviceRestrictedManagedGuestSessionEnabled, false);
+      ash::kDeviceRestrictedManagedGuestSessionEnabled, false);
 
   ASSERT_EQ(login_api_errors::kNoPermissionToUseApi,
             RunFunctionAndReturnError(new LoginEnterSharedSessionFunction(),

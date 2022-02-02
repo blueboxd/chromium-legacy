@@ -9,8 +9,8 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/ignore_result.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
@@ -130,7 +130,7 @@ absl::optional<media::CdmCapability> GetHardwareSecureCapability(
     return absl::nullopt;
   }
 #elif !BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
-  if (!base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+  if (!media::IsHardwareSecureDecryptionEnabled()) {
     DVLOG(1) << "Hardware secure decryption disabled";
     return absl::nullopt;
   }

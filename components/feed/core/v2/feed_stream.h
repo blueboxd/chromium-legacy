@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/task/sequenced_task_runner.h"
@@ -77,6 +78,7 @@ class FeedStream : public FeedApi,
     virtual bool IsAutoplayEnabled() = 0;
     virtual void ClearAll() = 0;
     virtual std::string GetSyncSignedInGaia() = 0;
+    virtual std::string GetSyncSignedInEmail() = 0;
     virtual void PrefetchImage(const GURL& url) = 0;
     virtual void RegisterExperiments(const Experiments& experiments) = 0;
   };
@@ -132,7 +134,13 @@ class FeedStream : public FeedApi,
   bool RejectEphemeralChange(const StreamType& stream_type,
                              EphemeralChangeId id) override;
   void ProcessThereAndBackAgain(base::StringPiece data) override;
+  void ProcessThereAndBackAgain(
+      base::StringPiece data,
+      const feedui::LoggingParameters& logging_parameters) override;
   void ProcessViewAction(base::StringPiece data) override;
+  void ProcessViewAction(
+      base::StringPiece data,
+      const feedui::LoggingParameters& logging_parameters) override;
   bool WasUrlRecentlyNavigatedFromFeed(const GURL& url) override;
   DebugStreamData GetDebugStreamData() override;
   void ForceRefreshForDebugging(const StreamType& stream_type) override;
@@ -359,6 +367,7 @@ class FeedStream : public FeedApi,
   void BackgroundRefreshComplete(LoadStreamTask::Result result);
   void LoadTaskComplete(const LoadStreamTask::Result& result);
   void UploadActionsComplete(UploadActionsTask::Result result);
+  LoggingParameters GetLoggingParameters(const StreamType& stream_type);
 
   void ClearAll();
 
@@ -380,15 +389,15 @@ class FeedStream : public FeedApi,
 
   // Unowned.
 
-  RefreshTaskScheduler* refresh_task_scheduler_;
-  MetricsReporter* metrics_reporter_;
-  Delegate* delegate_;
-  PrefService* profile_prefs_;  // May be null.
-  FeedNetwork* feed_network_;
-  ImageFetcher* image_fetcher_;
-  FeedStore* store_;
-  PersistentKeyValueStoreImpl* persistent_key_value_store_;
-  const WireResponseTranslator* wire_response_translator_;
+  raw_ptr<RefreshTaskScheduler> refresh_task_scheduler_;
+  raw_ptr<MetricsReporter> metrics_reporter_;
+  raw_ptr<Delegate> delegate_;
+  raw_ptr<PrefService> profile_prefs_;  // May be null.
+  raw_ptr<FeedNetwork> feed_network_;
+  raw_ptr<ImageFetcher> image_fetcher_;
+  raw_ptr<FeedStore> store_;
+  raw_ptr<PersistentKeyValueStoreImpl> persistent_key_value_store_;
+  raw_ptr<const WireResponseTranslator> wire_response_translator_;
 
   StreamModel::Context stream_model_context_;
 

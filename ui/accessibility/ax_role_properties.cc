@@ -147,6 +147,7 @@ bool IsClickable(const ax::mojom::Role role) {
 bool IsCheckBox(const ax::mojom::Role role) {
   switch (role) {
     case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kSwitch:
       return true;
     default:
@@ -971,6 +972,35 @@ bool SupportsOrientation(const ax::mojom::Role role) {
     case ax::mojom::Role::kToolbar:
     case ax::mojom::Role::kTreeGrid:
     case ax::mojom::Role::kTree:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool SupportsRequired(const ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kButton:        // Used by the file upload button.
+    case ax::mojom::Role::kCell:          // Used only for grid.
+    case ax::mojom::Role::kColumnHeader:  // Used only for gridheaders.
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kCheckBox:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kInputTime:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kRowHeader:
+    case ax::mojom::Role::kSearchBox:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSpinButton:
+    case ax::mojom::Role::kSwitch:
+    case ax::mojom::Role::kTextField:
+    case ax::mojom::Role::kTextFieldWithComboBox:
+    case ax::mojom::Role::kToggleButton:
+    case ax::mojom::Role::kTree:
+    case ax::mojom::Role::kTreeGrid:
       return true;
     default:
       return false;

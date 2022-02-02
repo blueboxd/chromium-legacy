@@ -58,14 +58,6 @@ std::string ItemIdFromAppId(const std::string& app_id) {
   return app_id;
 }
 
-// Returns true if `type` is an application result.
-bool IsAppType(AppListSearchResultType type) {
-  return type == AppListSearchResultType::kInstalledApp ||
-         type == AppListSearchResultType::kPlayStoreApp ||
-         type == AppListSearchResultType::kInstantApp ||
-         type == AppListSearchResultType::kInternalApp;
-}
-
 // Returns a list of recent apps by filtering suggestion chip data.
 // TODO(crbug.com/1216662): Replace with a real implementation after the ML team
 // gives us a way to query directly for recent apps.
@@ -73,7 +65,7 @@ std::vector<std::string> GetRecentAppIdsFromSuggestionChips(
     SearchModel* search_model) {
   SearchModel::SearchResults* results = search_model->results();
   auto is_app_suggestion = [](const SearchResult& r) -> bool {
-    return IsAppType(r.result_type()) &&
+    return IsAppListSearchResultAnApp(r.result_type()) &&
            r.display_type() == SearchResultDisplayType::kList;
   };
   std::vector<SearchResult*> app_suggestion_results =
@@ -134,14 +126,13 @@ class RecentAppsView::GridDelegateImpl : public AppListItemView::GridDelegate {
   void EndDrag(bool cancel) override {}
   void OnAppListItemViewActivated(AppListItemView* pressed_item_view,
                                   const ui::Event& event) override {
-    // TODO(crbug.com/1216594): Add a new launch type for "recent apps".
     // NOTE: Avoid using |item->id()| as the parameter. In some rare situations,
     // activating the item may destruct it. Using the reference to an object
     // which may be destroyed during the procedure as the function parameter
     // may bring the crash like https://crbug.com/990282.
     const std::string id = pressed_item_view->item()->id();
-    view_delegate_->ActivateItem(
-        id, event.flags(), AppListLaunchedFrom::kLaunchedFromSuggestionChip);
+    view_delegate_->ActivateItem(id, event.flags(),
+                                 AppListLaunchedFrom::kLaunchedFromRecentApps);
     // `this` may be deleted.
   }
 

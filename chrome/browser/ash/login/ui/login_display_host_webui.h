@@ -12,11 +12,11 @@
 
 #include "ash/components/audio/cras_audio_handler.h"
 #include "ash/public/cpp/multi_user_window_manager_observer.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/oobe_configuration.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
@@ -104,6 +104,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   bool IsWizardControllerCreated() const final;
   bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
                                     int* value) const final;
+  bool IsWebUIStarted() const final;
 
   // session_manager::SessionManagerObserver:
   void OnNetworkErrorScreenShown() override;
@@ -214,6 +215,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // Updates default scaling for CfM devices.
   void UpScaleOobe();
 
+  // Show OOBE WebUI if signal from javascript side never came.
+  void OnShowWebUITimeout();
+
   // Sign in screen controller.
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
@@ -289,6 +293,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   display::ScopedDisplayObserver display_observer_{this};
 
   base::ObserverList<LoginDisplayHost::Observer> observers_;
+
+  base::OneShotTimer show_webui_guard_;
 
   base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_{this};
 };

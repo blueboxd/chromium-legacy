@@ -20,7 +20,7 @@ import {html, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bun
 
 import {prefToString, stringToPrefValue} from '../prefs/pref_util.js';
 
-import {PrefControlMixin, PrefControlMixinInterface} from './pref_control_mixin.js';
+import {PrefControlMixin} from './pref_control_mixin.js';
 
 const SettingsRadioGroupElementBase = PrefControlMixin(PolymerElement);
 
@@ -97,6 +97,12 @@ export class SettingsRadioGroupElement extends SettingsRadioGroupElementBase {
     }
     this.dispatchEvent(
         new CustomEvent('change', {bubbles: true, composed: true}));
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-radio-group': SettingsRadioGroupElement;
   }
 }
 

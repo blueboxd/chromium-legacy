@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/arc/mojom/intent_helper.mojom-forward.h"
+#include "ash/components/arc/mojom/intent_helper.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -42,7 +42,13 @@ class ArcIntentHelperObserver {
   // |removed_packages| contains packages for which the setting was disabled.
   virtual void OnArcSupportedLinksChanged(
       const std::vector<arc::mojom::SupportedLinksPtr>& added_packages,
-      const std::vector<arc::mojom::SupportedLinksPtr>& removed_packages) {}
+      const std::vector<arc::mojom::SupportedLinksPtr>& removed_packages,
+      arc::mojom::SupportedLinkChangeSource source) {}
+
+  virtual void OnIconInvalidated(const std::string& package_name) {}
+
+  // Called when ArcIntentHelperBridge is destroyed.
+  virtual void OnArcIntentHelperBridgeDestruction() {}
 };
 
 }  // namespace arc

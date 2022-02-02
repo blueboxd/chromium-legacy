@@ -9,7 +9,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -58,19 +57,16 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
       const nacl::NaClLaunchParams& launch_params,
       IPC::Message* reply_msg,
       ppapi::PpapiPermissions permissions,
-      bool nonsfi_mode_allowed,
       NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback);
   void LaunchNaClContinuation(
       const nacl::NaClLaunchParams& launch_params,
       IPC::Message* reply_msg,
-      bool nonsfi_mode_allowed,
       NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback);
   void LaunchNaClContinuationOnUIThread(
       const nacl::NaClLaunchParams& launch_params,
       IPC::Message* reply_msg,
       const std::vector<NaClResourcePrefetchResult>& prefetched_resource_files,
       ppapi::PpapiPermissions permissions,
-      bool nonsfi_mode_allowed,
       NaClBrowserDelegate::MapUrlToLocalFilePathCallback map_url_callback);
   void OnGetReadonlyPnaclFd(const std::string& filename,
                             bool is_executable,

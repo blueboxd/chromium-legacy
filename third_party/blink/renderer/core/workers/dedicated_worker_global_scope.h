@@ -44,6 +44,7 @@
 
 namespace blink {
 
+class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
 class DedicatedWorkerThread;
 class PostMessageOptions;
@@ -84,6 +85,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   ~DedicatedWorkerGlobalScope() override;
 
   // Implements ExecutionContext.
+  void SetIsInBackForwardCache(bool) override;
   bool IsDedicatedWorkerGlobalScope() const override { return true; }
 
   // Implements EventTarget
@@ -98,6 +100,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // Implements WorkerGlobalScope.
+  void Dispose() override;
   void Initialize(
       const KURL& response_url,
       network::mojom::ReferrerPolicy response_referrer_policy,
@@ -120,6 +123,14 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       network::mojom::CredentialsMode,
       RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   bool IsOffMainThreadScriptFetchDisabled() override;
+
+  // Implements scheduler::WorkerScheduler::Delegate.
+  void UpdateBackForwardCacheDisablingFeatures(uint64_t features_mask) override;
+
+  // Implements BackForwardCacheLoaderHelperImpl::Delegate.
+  void EvictFromBackForwardCache(
+      mojom::blink::RendererEvictionReason reason) override;
+  void DidBufferLoadWhileInBackForwardCache(size_t num_bytes) override;
 
   // Called by the bindings (dedicated_worker_global_scope.idl).
   const String name() const;
@@ -161,6 +172,14 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       const final {
     return parent_token_;
   }
+
+  // Adds a DedicatedWorker. This is called when a DedicatedWorker is created in
+  // this ExecutionContext.
+  void AddDedicatedWorker(DedicatedWorker* dedicated_worker);
+
+  // Removes a DedicatedWorker This is called when a DedicatedWorker is
+  // destroyed in this ExecutionContext.
+  void RemoveDedicatedWorker(DedicatedWorker* dedicated_worker);
 
  private:
   struct ParsedCreationParams {
@@ -209,6 +228,14 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       this};
   HeapMojoRemote<mojom::blink::BackForwardCacheControllerHost>
       back_forward_cache_controller_host_{this};
+
+  // The set of DedicatedWorkers that are created in this ExecutionContext.
+  HeapHashSet<Member<DedicatedWorker>> dedicated_workers_;
+
+  // The total bytes buffered by all network requests in this worker while
+  // frozen due to back-forward cache. This number gets reset when the worker
+  // gets out of the back-forward cache.
+  size_t total_bytes_buffered_while_in_back_forward_cache_ = 0;
 };
 
 template <>

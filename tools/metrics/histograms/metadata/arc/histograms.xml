@@ -115,7 +115,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Arc.AccessibilityWithTalkBack" enum="BooleanEnabled"
     expires_after="2022-04-10">
   <owner>hirokisato@chromium.org</owner>
-  <owner>sarakato@chromium.org</owner>
+  <owner>arc-framework@google.com</owner>
   <summary>
     Whether the ARC window is opened with TalkBack enabled or not. Counted when
     a user opens a window or toggles the feature. Checked only when the spoken
@@ -200,6 +200,16 @@ chromium-metrics-reviews@google.com.
     <variant name="SystemApp" summary="System components."/>
     <variant name="SystemServer" summary="System Server."/>
   </token>
+</histogram>
+
+<histogram name="Arc.App.PrimaryAbi" enum="AppPrimaryAbi" expires_after="M102">
+  <owner>batoon@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Emitted for each app launched with ArcAppLauncher. Records the primary ABI
+    used for the app. This will let us know if 32-bit binaries are still being
+    used or if 32-bit support is not needed anymore.
+  </summary>
 </histogram>
 
 <histogram name="Arc.AppCount" units="units" expires_after="2022-04-24">
@@ -715,23 +725,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.DataRestore.Duration" units="ms"
-    expires_after="2022-09-01">
-  <owner>khmel@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>The duration of the SELinux data restoration flow.</summary>
-</histogram>
-
-<histogram name="Arc.DataRestore.Status" enum="ArcDataRestoreStatus"
-    expires_after="2022-09-01">
-  <owner>khmel@google.com</owner>
-  <owner>arc-core@google.com</owner>
-  <summary>
-    Tracks status of SELinux contexts restore flows of Android /data for ARC++ P
-    container. This also means ARC++ container boot delay.
-  </summary>
-</histogram>
-
 <histogram name="Arc.EngagementTime.ArcTotal" units="ms"
     expires_after="2022-04-24">
   <owner>maajid@google.com</owner>
@@ -1009,9 +1002,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.LowLatencyStylusLibrary.PredictionTarget" units="ms"
-    expires_after="2021-12-31">
-  <owner>shuanghu@chromium.org</owner>
+    expires_after="2022-04-24">
   <owner>phshah@chromium.org</owner>
+  <owner>arc-app-dev@google.com</owner>
   <summary>
     Prediction target used in ChromeOS Low-latency Stylus Library.
   </summary>
@@ -1019,8 +1012,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Arc.LowLatencyStylusLibraryApisCounter"
     enum="LowLatencyStylusLibraryApisList" expires_after="2022-04-24">
-  <owner>shuanghu@chromium.org</owner>
   <owner>phshah@chromium.org</owner>
+  <owner>arc-app-dev@google.com</owner>
   <summary>
     Records the number of times ChromeOS Low-latency Stylus Library API called.
     Counter adding when its Stub library receive the call from applications.
@@ -1247,7 +1240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.State{ArcUserTypes}"
-    enum="ArcPlayAutoInstallRequestState" expires_after="2022-02-01">
+    enum="ArcPlayAutoInstallRequestState" expires_after="2022-09-01">
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>
@@ -1259,7 +1252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayAutoInstallRequest.TimeDelta{ArcUserTypes}" units="ms"
-    expires_after="2022-02-01">
+    expires_after="2022-09-01">
   <owner>jhorwich@google.com</owner>
   <owner>khmel@google.com</owner>
   <summary>
@@ -1272,7 +1265,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayStoreLaunch.TimeDelta" units="ms"
-    expires_after="2021-11-01">
+    expires_after="2022-09-01">
   <owner>khmel@google.com</owner>
   <owner>yusukes@google.com</owner>
   <summary>
@@ -1304,7 +1297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
-    expires_after="2022-03-06">
+    expires_after="2022-05-08">
   <owner>hejq@chromium.org</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
@@ -1532,7 +1525,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Reauthorization.Result{ArcUserTypes}"
-    enum="ArcProvisioningStatus" expires_after="2022-01-12">
+    enum="ArcProvisioningStatus" expires_after="2022-07-04">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@gmail.com</owner>
   <summary>
@@ -1880,6 +1873,23 @@ chromium-metrics-reviews@google.com.
   <summary>
     Counts user interactions with ARC by type, such as ARC app launches via the
     shelf or launcher.
+  </summary>
+</histogram>
+
+<histogram name="Arc.VolumeMounter.MountFailureCount" units="failures"
+    expires_after="2022-10-19">
+  <owner>risan@google.com</owner>
+  <owner>youkichihosoi@google.com</owner>
+  <owner>arc-storage@google.com</owner>
+  <summary>
+    Counts the number of mount failures for a volume shared with ARC. This is
+    recorded when a volume is successfully mounted by ARC, or when ARC gives up
+    on mounting a volume. Samples in the underflow bucket (value 0) indicate
+    that ARC successfully mounted the volume without any failure. Samples in the
+    overflow bucket indicate that ARC stopped trying to mount the volume after
+    reaching the retry threshold. Samples in between them with value n indicate
+    that ARC successfully mounted the volume after n failures (= n retries).
+    Emitted only on ARC-enabled Chrome OS devices.
   </summary>
 </histogram>
 

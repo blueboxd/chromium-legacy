@@ -4,6 +4,10 @@
 
 #include "net/cookies/canonical_cookie.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -2611,7 +2615,6 @@ TEST(CanonicalCookieTest, TestSetCreationDate) {
 TEST(CanonicalCookieTest, TestPrefixHistograms) {
   base::HistogramTester histograms;
   const char kCookiePrefixHistogram[] = "Cookie.CookiePrefix";
-  const char kCookiePrefixBlockedHistogram[] = "Cookie.CookiePrefixBlocked";
   GURL https_url("https://www.example.test");
   base::Time creation_time = base::Time::Now();
   absl::optional<base::Time> server_time = absl::nullopt;
@@ -2622,23 +2625,17 @@ TEST(CanonicalCookieTest, TestPrefixHistograms) {
 
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 1);
-  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
-                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
 
   EXPECT_TRUE(CanonicalCookie::Create(
       https_url, "__Host-A=B; Path=/; Secure", creation_time, server_time,
       absl::nullopt /* cookie_partition_key */));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 2);
-  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
-                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
   EXPECT_TRUE(CanonicalCookie::Create(
       https_url, "__HostA=B; Path=/; Secure", creation_time, server_time,
       absl::nullopt /* cookie_partition_key */));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 2);
-  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
-                               CanonicalCookie::COOKIE_PREFIX_HOST, 1);
 
   EXPECT_FALSE(CanonicalCookie::Create(
       https_url, "__Secure-A=B;", creation_time, server_time,
@@ -2646,22 +2643,16 @@ TEST(CanonicalCookieTest, TestPrefixHistograms) {
 
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
-  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
-                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
   EXPECT_TRUE(CanonicalCookie::Create(
       https_url, "__Secure-A=B; Path=/; Secure", creation_time, server_time,
       absl::nullopt /* cookie_partition_key */));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
-  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
-                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
   EXPECT_TRUE(CanonicalCookie::Create(
       https_url, "__SecureA=B; Path=/; Secure", creation_time, server_time,
       absl::nullopt /* cookie_partition_key */));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
-  histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
-                               CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
 }
 
 TEST(CanonicalCookieTest, BuildCookieLine) {

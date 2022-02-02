@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.IntentUtils;
@@ -38,6 +39,9 @@ import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * This class attempts to preload the tab if the url is known from the intent when the profile
  * is created. This is done to improve startup latency.
@@ -47,6 +51,26 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
     public static final String EXTRA_DISABLE_STARTUP_TAB_PRELOADER =
             "org.chromium.chrome.browser.init.DISABLE_STARTUP_TAB_PRELOADER";
     private static boolean sFailNextTabMatchForTesting;
+
+    // These values are persisted in histograms. Please do not renumber. Append only.
+    @VisibleForTesting
+    @IntDef({LoadDecisionReason.DISABLED_BY_INTENT, LoadDecisionReason.INCOGNITO,
+            LoadDecisionReason.INTENT_IGNORED, LoadDecisionReason.NO_URL,
+            LoadDecisionReason.NO_TAB_CREATOR, LoadDecisionReason.WRONG_TAB_CREATOR,
+            LoadDecisionReason.DISABLED_BY_FEATURE, LoadDecisionReason.ALL_SATISFIED})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface LoadDecisionReason {
+        int DISABLED_BY_INTENT = 0;
+        int INCOGNITO = 1;
+        int INTENT_IGNORED = 2;
+        int NO_URL = 3;
+        int NO_TAB_CREATOR = 4;
+        int WRONG_TAB_CREATOR = 5;
+        int DISABLED_BY_FEATURE = 6;
+        int ALL_SATISFIED = 7;
+
+        int NUM_ENTRIES = 8;
+    }
 
     private final Supplier<Intent> mIntentSupplier;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -63,8 +87,15 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
     private long mLoadDecisionMs;
     // Records whether a preload was triggered.
     boolean mTriggerPreload;
+    // Records the reason for the last preload decision.
+    @LoadDecisionReason
+    int mLoadDecisionReason;
     // Records whether a preloaded tab matched.
     boolean mTabMatches;
+    // Records whether we have already recorded the histogram for the duration between the load
+    // decision and the match decision; this histogram should be recorded only on the first match
+    // decision.
+    private boolean mRecordedLoadDecisionToMatchDecisionHistogram;
 
     // Whether a tab preload was prevented only by the ElideTabPreloadAtStartup feature.
     private boolean mPreloadPreventedOnlyByFeature;
@@ -77,6 +108,9 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
     private String mReferrerForPreloadPreventedOnlyByFeature;
     // Whether the tab preload that was prevented only by the feature would have matched.
     private boolean mPreloadPreventedOnlyByFeatureWouldHaveMatched;
+
+    // The time at which the first navigation start occurred.
+    private long mFirstNavigationStartMs;
 
     public static void failNextTabMatchForTesting() {
         sFailNextTabMatchForTesting = true;
@@ -110,9 +144,6 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
         return mTabMatches || mPreloadPreventedOnlyByFeatureWouldHaveMatched;
     }
 
-    // The time at which the first navigation start occurred.
-    private long mFirstNavigationStartMs;
-
     @Override
     public void onDestroy() {
         if (mTab != null) mTab.destroy();
@@ -130,39 +161,55 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
 
     @Override
     public void onFirstVisibleContent() {
-        recordDurationFromLoadDecisionIntoHistogram(
+        recordDurationFromLoadDecisionIntoPostTabMatchHistogram(
                 "Android.StartupTabPreloader.LoadDecisionToFirstVisibleContent");
     }
 
     @Override
     public void onFirstNavigationCommit() {
-        recordDurationFromLoadDecisionIntoHistogram(
+        recordDurationFromLoadDecisionIntoPostTabMatchHistogram(
                 "Android.StartupTabPreloader.LoadDecisionToFirstNavigationCommit");
 
         // We record the metric for navigation start here as well, as we want that metric to be
         // recorded only for navigations that result in the first navigation commit startup metric
         // being recorded.
-        if (mLoadDecisionMs == 0) return;
         assert mFirstNavigationStartMs > 0;
-        long triggerpointToFirstNavigationStartMs = mFirstNavigationStartMs - mLoadDecisionMs;
-
-        // Note that we don't use recordDurationFromLoadDecisionIntoHistogram() here as first
-        // navigation start was reached before tab matching occurred.
-        String suffix = preloadWasViable() ? ".Load" : ".NoLoad";
-        RecordHistogram.recordMediumTimesHistogram(
-                "Android.StartupTabPreloader.LoadDecisionToFirstNavigationStart" + suffix,
-                triggerpointToFirstNavigationStartMs);
+        recordDurationFromLoadDecisionToEventTimeIntoPreTabMatchHistogram(
+                "Android.StartupTabPreloader.LoadDecisionToFirstNavigationStart",
+                mFirstNavigationStartMs);
     }
 
     @Override
     public void onFirstContentfulPaint() {
-        recordDurationFromLoadDecisionIntoHistogram(
+        recordDurationFromLoadDecisionIntoPostTabMatchHistogram(
                 "Android.StartupTabPreloader.LoadDecisionToFirstContentfulPaint");
     }
 
     // Records the duration from the load decision to the current time into |histogram| (suffixed
-    // by the state of the tab preload and match decisions).
-    private void recordDurationFromLoadDecisionIntoHistogram(String histogram) {
+    // by the state of the tab preload decision). To be used when the current time is before the
+    // tab match decision has occurred.
+    private void recordDurationFromLoadDecisionIntoPreTabMatchHistogram(String histogram) {
+        recordDurationFromLoadDecisionToEventTimeIntoPreTabMatchHistogram(
+                histogram, SystemClock.uptimeMillis());
+    }
+
+    // Records the duration from the load decision to |eventTimeMs| into |histogram| (suffixed
+    // by the state of the tab preload decision). To be used when the corresponding event occurred
+    // before the tab match decision has occurred.
+    private void recordDurationFromLoadDecisionToEventTimeIntoPreTabMatchHistogram(
+            String histogram, long eventTimeMs) {
+        if (mLoadDecisionMs == 0 || eventTimeMs == 0) return;
+
+        long triggerpointToEventTimeMs = eventTimeMs - mLoadDecisionMs;
+
+        String suffix = preloadWasViable() ? ".Load" : ".NoLoad";
+        RecordHistogram.recordMediumTimesHistogram(histogram + suffix, triggerpointToEventTimeMs);
+    }
+
+    // Records the duration from the load decision to the current time into |histogram| (suffixed
+    // by the state of the tab preload and match decisions). To be used when the tab match decision
+    // may have already occurred at the present time.
+    private void recordDurationFromLoadDecisionIntoPostTabMatchHistogram(String histogram) {
         if (mLoadDecisionMs == 0) return;
 
         long currentTimeMs = SystemClock.uptimeMillis();
@@ -203,12 +250,30 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
     /**
      * Returns the Tab if loadUrlParams and type match, otherwise the Tab is discarded.
      *
-     * @param loadUrlParams The actual parameters of the url load.
-     * @param type The actual launch type type.
-     * @return The results of maybeNavigate() if they match loadUrlParams and type or null
-     *         otherwise.
+     * @param loadUrlParams The actual parameters of the url load.  @param type The actual launch
+     * type type.  @return The results of maybeNavigate() if they match loadUrlParams and type or
+     * null otherwise.
      */
     public Tab takeTabIfMatchingOrDestroy(LoadUrlParams loadUrlParams, @TabLaunchType int type) {
+        if (!mRecordedLoadDecisionToMatchDecisionHistogram
+                && mStartupMetricsTracker.isTrackingStartupMetrics()) {
+            // NOTE: This histogram is segmented only by state of the load decision as it covers the
+            // duration from the load decision *up to* the tab match decision. Additionally, note
+            // that we record the metric only when tracking startup metrics to ensure that the
+            // latencies of this metric are comparable to those ones.
+            recordDurationFromLoadDecisionIntoPreTabMatchHistogram(
+                    "Android.StartupTabPreloader.LoadDecisionToMatchDecision");
+            mRecordedLoadDecisionToMatchDecisionHistogram = true;
+
+            // Similarly, we record this metric only now to avoid recording cases where startup
+            // metrics are tracked at the time of the load decision but have been cancelled by the
+            // time of the tab match decision (e.g., due to a decision being made to show an
+            // overview).
+            RecordHistogram.recordMediumTimesHistogram(
+                    "Android.StartupTabPreloader.ActivityStartToLoadDecision",
+                    mLoadDecisionMs - mStartupMetricsTracker.getActivityStartTimeMs());
+        }
+
         if (mTab == null) {
             if (mUrlForPreloadPreventedOnlyByFeature != null) {
                 // Construct a LoadUrlParams object for the preload that would have occurred.
@@ -282,14 +347,28 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
             ProfileManager.removeObserver(this);
             mTriggerPreload = shouldLoadTab();
             mLoadDecisionMs = SystemClock.uptimeMillis();
+
             if (mTriggerPreload) loadTab();
             RecordHistogram.recordBooleanHistogram(
                     "Startup.Android.StartupTabPreloader.TabLoaded", mTriggerPreload);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Startup.Android.StartupTabPreloader.LoadDecisionReason",
+                    getLoadDecisionReason(), LoadDecisionReason.NUM_ENTRIES);
         }
     }
 
     @Override
     public void onProfileDestroyed(Profile profile) {}
+
+    /**
+     * @returns The reason for the decision returned by the most recent invocation of
+     * shouldLoadTab().
+     */
+    @VisibleForTesting
+    @LoadDecisionReason
+    int getLoadDecisionReason() {
+        return mLoadDecisionReason;
+    }
 
     /**
      * @returns True if based on the intent we should load the tab, returns false otherwise.
@@ -303,16 +382,28 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
 
         Intent intent = mIntentSupplier.get();
         if (IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STARTUP_TAB_PRELOADER, false)) {
+            mLoadDecisionReason = LoadDecisionReason.DISABLED_BY_INTENT;
             return false;
         }
-        if (mIntentHandler.shouldIgnoreIntent(intent, /*startedActivity=*/true)) return false;
-        if (getUrlFromIntent(intent) == null) return false;
 
-        // We don't support incognito tabs because only chrome can send new incognito tab
-        // intents and that's not a startup scenario.
+        // We don't support incognito tabs. NOTE: This check is before the check for whether the
+        // intent should be ignored to allow capturing the metric for this case separately, as
+        // IntentHandler also disallows incognito tab intents not sent by Chrome (i.e.,
+        // IntentHandler#shouldIgnoreIntent() returns true in this case).
         boolean incognito = IntentUtils.safeGetBooleanExtra(
                 intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-        if (incognito) return false;
+        if (incognito) {
+            mLoadDecisionReason = LoadDecisionReason.INCOGNITO;
+            return false;
+        }
+        if (mIntentHandler.shouldIgnoreIntent(intent, /*startedActivity=*/true)) {
+            mLoadDecisionReason = LoadDecisionReason.INTENT_IGNORED;
+            return false;
+        }
+        if (getUrlFromIntent(intent) == null) {
+            mLoadDecisionReason = LoadDecisionReason.NO_URL;
+            return false;
+        }
 
         // The TabCreatorManager throws an IllegalStateException if it is not ready to provide a
         // TabCreator.
@@ -320,14 +411,19 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
         try {
             tabCreator = mTabCreatorManager.getTabCreator(incognito);
         } catch (IllegalStateException e) {
+            mLoadDecisionReason = LoadDecisionReason.NO_TAB_CREATOR;
             return false;
         }
 
         // We want to get the TabDelegateFactory but only ChromeTabCreator has one.
-        if (!(tabCreator instanceof ChromeTabCreator)) return false;
+        if (!(tabCreator instanceof ChromeTabCreator)) {
+            mLoadDecisionReason = LoadDecisionReason.WRONG_TAB_CREATOR;
+            return false;
+        }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP)) {
             mPreloadPreventedOnlyByFeature = true;
+            mLoadDecisionReason = LoadDecisionReason.DISABLED_BY_FEATURE;
             GURL url = UrlFormatter.fixupUrl(getUrlFromIntent(intent));
 
             // NOTE: We avoid calling IntentHandler.createLoadUrlParamsForIntent() here as that
@@ -342,6 +438,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, DestroyObse
             return false;
         }
 
+        mLoadDecisionReason = LoadDecisionReason.ALL_SATISFIED;
         return true;
     }
 

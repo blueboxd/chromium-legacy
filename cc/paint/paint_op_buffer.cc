@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/stl_util.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
@@ -19,7 +21,6 @@
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/scoped_raster_flags.h"
-#include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -28,6 +29,7 @@
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
 #include "third_party/skia/include/gpu/GrRecordingContext.h"
+#include "third_party/skia/include/private/chromium/GrSlug.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
@@ -361,7 +363,8 @@ PaintOp::SerializeOptions::SerializeOptions(
     sk_sp<SkColorSpace> color_space,
     bool can_use_lcd_text,
     bool context_supports_distance_field_text,
-    int max_texture_size)
+    int max_texture_size,
+    bool raw_draw)
     : image_provider(image_provider),
       transfer_cache(transfer_cache),
       paint_cache(paint_cache),
@@ -370,7 +373,8 @@ PaintOp::SerializeOptions::SerializeOptions(
       can_use_lcd_text(can_use_lcd_text),
       context_supports_distance_field_text(
           context_supports_distance_field_text),
-      max_texture_size(max_texture_size) {}
+      max_texture_size(max_texture_size),
+      raw_draw(raw_draw) {}
 
 PaintOp::SerializeOptions::SerializeOptions() = default;
 PaintOp::SerializeOptions::SerializeOptions(const SerializeOptions&) = default;
@@ -732,6 +736,9 @@ size_t DrawTextBlobOp::Serialize(const PaintOp* base_op,
   helper.Write(op->x);
   helper.Write(op->y);
   helper.Write(op->blob);
+  helper.Write(options.raw_draw);
+  if (options.raw_draw)
+    helper.Write(current_ctm.asM33());
   return helper.size();
 }
 
@@ -903,7 +910,7 @@ class PaintOpDeserializer {
       return nullptr;
     }
 
-    UpdateTypeAndSkip(op_);
+    UpdateTypeAndSkip(op_.get());
     T* op_snapshot = op_;
     op_ = nullptr;
     return op_snapshot;
@@ -926,7 +933,7 @@ class PaintOpDeserializer {
 
  private:
   PaintOpReader reader_;
-  T* op_;
+  raw_ptr<T> op_;
 };
 
 PaintOp* AnnotateOp::Deserialize(const volatile void* input,
@@ -1245,6 +1252,13 @@ PaintOp* DrawTextBlobOp::Deserialize(const volatile void* input,
   deserializer.Read(&deserializer->x);
   deserializer.Read(&deserializer->y);
   deserializer.Read(&deserializer->blob);
+  bool raw_draw = false;
+  deserializer.Read(&raw_draw);
+  if (raw_draw) {
+    SkMatrix hint;
+    deserializer.Read(&hint);
+    deserializer->hint = hint;
+  }
   return deserializer.FinalizeOp();
 }
 
@@ -1639,27 +1653,26 @@ void DrawRRectOp::RasterWithFlags(const DrawRRectOp* op,
 void DrawSkottieOp::Raster(const DrawSkottieOp* op,
                            SkCanvas* canvas,
                            const PlaybackParams& params) {
-  for (const auto& image_asset_pair : op->images) {
-    const SkottieResourceIdHash& asset_id_hash = image_asset_pair.first;
-    const SkottieFrameData& frame_data = image_asset_pair.second;
-    sk_sp<SkImage> sk_image =
-        GetImageAssetForRaster(frame_data, canvas, params);
-    DCHECK(sk_image) << "Failed to fetch SkImage for Skottie image asset "
-                     << asset_id_hash;
-    if (!op->skottie->SetImageForAsset(
-            asset_id_hash, std::move(sk_image),
-            PaintFlags::FilterQualityToSkSamplingOptions(frame_data.quality))) {
-      NOTREACHED() << "Unknown skottie image asset received: " << asset_id_hash;
-    }
-  }
-  op->skottie->Draw(canvas, op->t, op->dst);
+  // Binding unretained references in the callback is safe because Draw()'s API
+  // guarantees that the callback is invoked synchronously.
+  op->skottie->Draw(
+      canvas, op->t, op->dst,
+      base::BindRepeating(&DrawSkottieOp::GetImageAssetForRaster,
+                          base::Unretained(op), canvas, std::cref(params)));
 }
 
-sk_sp<SkImage> DrawSkottieOp::GetImageAssetForRaster(
-    const SkottieFrameData& frame_data,
+SkottieWrapper::FrameDataFetchResult DrawSkottieOp::GetImageAssetForRaster(
     SkCanvas* canvas,
-    const PlaybackParams& params) {
-  sk_sp<SkImage> sk_image;
+    const PlaybackParams& params,
+    SkottieResourceIdHash asset_id,
+    float t_frame,
+    sk_sp<SkImage>& sk_image,
+    SkSamplingOptions& sampling_out) const {
+  auto images_iter = images.find(asset_id);
+  if (images_iter == images.end())
+    return SkottieWrapper::FrameDataFetchResult::NO_UPDATE;
+
+  const SkottieFrameData& frame_data = images_iter->second;
   if (params.image_provider) {
     // There is no use case for applying dark mode filters to skottie images
     // currently.
@@ -1680,7 +1693,11 @@ sk_sp<SkImage> DrawSkottieOp::GetImageAssetForRaster(
     if (!sk_image)
       sk_image = frame_data.image.GetSwSkImage();
   }
-  return sk_image;
+  DCHECK(sk_image) << "Failed to fetch SkImage for Skottie image asset "
+                   << asset_id;
+  sampling_out =
+      PaintFlags::FilterQualityToSkSamplingOptions(frame_data.quality);
+  return SkottieWrapper::FrameDataFetchResult::NEW_DATA_AVAILABLE;
 }
 
 void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
@@ -1690,7 +1707,18 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
   if (op->node_id)
     SkPDF::SetNodeId(canvas, op->node_id);
   flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
-    c->drawTextBlob(op->blob.get(), op->x, op->y, p);
+    if (op->hint) {
+      sk_sp<GrSlug> slug;
+      {
+        SkAutoCanvasRestore auto_save(c, true);
+        c->setMatrix(*op->hint);
+        slug = GrSlug::ConvertBlob(c, *op->blob, {op->x, op->y}, p);
+        DCHECK(slug);
+      }
+      slug->draw(c);
+    } else {
+      c->drawTextBlob(op->blob.get(), op->x, op->y, p);
+    }
   });
   if (op->node_id)
     SkPDF::SetNodeId(canvas, 0);
@@ -2489,6 +2517,9 @@ bool PaintOp::OpHasDiscardableImages(const PaintOp* op) {
   } else if (op->GetType() == PaintOpType::DrawRecord &&
              static_cast<const DrawRecordOp*>(op)->HasDiscardableImages()) {
     return true;
+  } else if (op->GetType() == PaintOpType::DrawSkottie &&
+             static_cast<const DrawSkottieOp*>(op)->HasDiscardableImages()) {
+    return true;
   }
 
   return false;
@@ -2665,6 +2696,10 @@ DrawSkottieOp::DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie,
 DrawSkottieOp::DrawSkottieOp() : PaintOp(kType) {}
 
 DrawSkottieOp::~DrawSkottieOp() = default;
+
+bool DrawSkottieOp::HasDiscardableImages() const {
+  return !images.empty();
+}
 
 bool DrawRecordOp::HasDiscardableImages() const {
   return record->HasDiscardableImages();

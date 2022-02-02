@@ -105,6 +105,9 @@ interface DriveFs {
   // Paths returned are relative to the mount point.
   LocateFilesByItemIds(array<string> item_ids) => (
       array<FilePathOrError>? response);
+
+  // Returns the total and free space available in the user's Drive.
+  GetQuotaUsage() => (FileError error, QuotaUsage quota);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -258,7 +261,7 @@ struct DialogReason {
   mojo_base.mojom.FilePath path;
 };
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 struct FileMetadata {
   [Extensible] enum Type {
     // A regular file.
@@ -309,6 +312,13 @@ struct FileMetadata {
   // The unique device local ID used by DriveFS to refer to this file.
   // Note: 0 is an invalid stable id.
   [MinVersion=3] int64 stable_id = 0;
+
+  [Extensible] enum CanPinStatus {
+    kOk,
+    kDisabled,
+  };
+
+  [MinVersion=4] CanPinStatus can_pin;
 };
 
 struct ImageMetadata {
@@ -523,4 +533,10 @@ struct ExtensionConnectionParams {
 union FilePathOrError {
   FileError error;
   mojo_base.mojom.FilePath path;
+};
+
+// Free and total space available in Drive.
+struct QuotaUsage {
+  uint64 free_cloud_bytes;
+  uint64 total_cloud_bytes;
 };

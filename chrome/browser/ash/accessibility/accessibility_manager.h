@@ -14,7 +14,6 @@
 #include "ash/components/audio/cras_audio_handler.h"
 #include "base/callback_forward.h"
 #include "base/callback_list.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
@@ -372,8 +371,7 @@ class AccessibilityManager
   void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
   void OnSodaProgress(int combined_progress) override {}
   void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override {
-  }
+                                  speech::LanguageCode language_code) override;
 
   // Test helpers:
   void SetProfileForTest(Profile* profile);
@@ -497,7 +495,7 @@ class AccessibilityManager
   void MaybeInstallSoda(const std::string& locale);
   void OnSodaInstallSucceeded();
   void OnSodaInstallError(speech::LanguageCode language_code);
-  void OnSodaInstallUpdated();
+  void OnSodaInstallUpdated(int progress);
   bool ShouldShowSodaSucceededNotificationForDictation();
   bool ShouldShowSodaFailedNotificationForDictation(
       speech::LanguageCode language_code);

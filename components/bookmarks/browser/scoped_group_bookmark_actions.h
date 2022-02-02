@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_SCOPED_GROUP_BOOKMARK_ACTIONS_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_SCOPED_GROUP_BOOKMARK_ACTIONS_H_
 
-#include "base/macros.h"
+#include "base/memory/raw_ptr.h"
 
 namespace bookmarks {
 
@@ -23,7 +23,7 @@ class ScopedGroupBookmarkActions {
   ~ScopedGroupBookmarkActions();
 
  private:
-  BookmarkModel* model_;
+  raw_ptr<BookmarkModel> model_;
 };
 
 }  // namespace bookmarks

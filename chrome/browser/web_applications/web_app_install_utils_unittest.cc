@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
@@ -27,6 +28,16 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if defined(OS_WIN)
+#include "base/test/bind.h"
+#include "chrome/browser/web_applications/test/mock_os_integration_manager.h"
+#include "chrome/browser/web_applications/web_app.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
+#include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock-actions.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+#endif
 namespace web_app {
 
 using Purpose = blink::mojom::ManifestImageResource_Purpose;
@@ -459,7 +470,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestWithShortcuts) {
   EXPECT_EQ(1u, web_app_info.shortcuts_menu_item_infos[0]
                     .GetShortcutIconInfosForPurpose(IconPurpose::ANY)
                     .size());
-  WebApplicationShortcutsMenuItemInfo::Icon web_app_shortcut_icon =
+  WebAppShortcutsMenuItemInfo::Icon web_app_shortcut_icon =
       web_app_info.shortcuts_menu_item_infos[0].GetShortcutIconInfosForPurpose(
           IconPurpose::ANY)[0];
   EXPECT_EQ(kIconUrl2, web_app_shortcut_icon.url);
@@ -537,7 +548,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyShortcutIcons) {
   UpdateWebAppInfoFromManifest(
       manifest, GURL("http://www.chromium.org/manifest.json"), &web_app_info);
 
-  std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
+  std::vector<WebAppShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
     for (const auto& icon_info :
          shortcut.GetShortcutIconInfosForPurpose(IconPurpose::ANY)) {
@@ -591,7 +602,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestShortcutIconsTooLarge) {
   UpdateWebAppInfoFromManifest(
       manifest, GURL("http://www.chromium.org/manifest.json"), &web_app_info);
 
-  std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
+  std::vector<WebAppShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcuts_menu_item_infos) {
     for (const auto& icon_info :
          shortcut.GetShortcutIconInfosForPurpose(IconPurpose::ANY)) {
@@ -605,13 +616,12 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestShortcutIconsTooLarge) {
 // their own map in web_app_info.
 TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   WebApplicationInfo web_app_info;
-  WebApplicationShortcutsMenuItemInfo::Icon icon;
+  WebAppShortcutsMenuItemInfo::Icon icon;
 
   const GURL kIconUrl1("http://www.chromium.org/shortcuts/icon1.png");
   {
-    WebApplicationShortcutsMenuItemInfo shortcut_item;
-    std::vector<WebApplicationShortcutsMenuItemInfo::Icon>
-        shortcut_manifest_icons;
+    WebAppShortcutsMenuItemInfo shortcut_item;
+    std::vector<WebAppShortcutsMenuItemInfo::Icon> shortcut_manifest_icons;
     shortcut_item.name = std::u16string(kShortcutItemName) + u"1";
     shortcut_item.url = GURL("http://www.chromium.org/shortcuts/action");
     icon.url = kIconUrl1;
@@ -624,9 +634,8 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
 
   const GURL kIconUrl2("http://www.chromium.org/shortcuts/icon2.png");
   {
-    WebApplicationShortcutsMenuItemInfo shortcut_item;
-    std::vector<WebApplicationShortcutsMenuItemInfo::Icon>
-        shortcut_manifest_icons;
+    WebAppShortcutsMenuItemInfo shortcut_item;
+    std::vector<WebAppShortcutsMenuItemInfo::Icon> shortcut_manifest_icons;
     shortcut_item.name = std::u16string(kShortcutItemName) + u"2";
     icon.url = kIconUrl1;
     icon.square_size_px = kIconSize;
@@ -814,6 +823,53 @@ TEST(WebAppInstallUtils, PopulateProductIcons_IsGeneratedIcon) {
   }
 }
 
+TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest_Translations) {
+  blink::mojom::Manifest manifest;
+  WebApplicationInfo web_app_info;
+
+  {
+    blink::Manifest::TranslationItem item;
+    item.name = u"name 1";
+    item.short_name = u"short name 1";
+    item.description = u"description 1";
+
+    manifest.translations[u"language 1"] = std::move(item);
+  }
+  {
+    blink::Manifest::TranslationItem item;
+    item.short_name = u"short name 2";
+    item.description = u"description 2";
+
+    manifest.translations[u"language 2"] = std::move(item);
+  }
+  {
+    blink::Manifest::TranslationItem item;
+    item.name = u"name 3";
+
+    manifest.translations[u"language 3"] = std::move(item);
+  }
+
+  const GURL kAppManifestUrl("http://www.chromium.org/manifest.json");
+  UpdateWebAppInfoFromManifest(manifest, kAppManifestUrl, &web_app_info);
+
+  EXPECT_EQ(3u, web_app_info.translations.size());
+  EXPECT_EQ(web_app_info.translations[u"language 1"].name, u"name 1");
+  EXPECT_EQ(web_app_info.translations[u"language 1"].short_name,
+            u"short name 1");
+  EXPECT_EQ(web_app_info.translations[u"language 1"].description,
+            u"description 1");
+
+  EXPECT_FALSE(web_app_info.translations[u"language 2"].name);
+  EXPECT_EQ(web_app_info.translations[u"language 2"].short_name,
+            u"short name 2");
+  EXPECT_EQ(web_app_info.translations[u"language 2"].description,
+            u"description 2");
+
+  EXPECT_EQ(web_app_info.translations[u"language 3"].name, u"name 3");
+  EXPECT_FALSE(web_app_info.translations[u"language 3"].short_name);
+  EXPECT_FALSE(web_app_info.translations[u"language 3"].description);
+}
+
 class FileHandlersFromManifestTest : public ::testing::TestWithParam<bool> {
  public:
   FileHandlersFromManifestTest() {
@@ -998,5 +1054,152 @@ TEST_P(FileHandlersFromManifestTest, PopulateFileHandlerIcons) {
 }
 
 INSTANTIATE_TEST_SUITE_P(, FileHandlersFromManifestTest, testing::Bool());
+
+#if defined(OS_WIN)
+class RegisterOsSettingsTest : public testing::Test {
+ public:
+  RegisterOsSettingsTest() {
+    feature_list_.InitWithFeatures(
+        {features::kEnableWebAppUninstallFromOsSettings}, {});
+  }
+  ~RegisterOsSettingsTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  content::BrowserTaskEnvironment browser_task_environment_;
+};
+
+TEST_F(RegisterOsSettingsTest, MaybeRegisterOsUninstall) {
+  // MaybeRegisterOsUninstall
+  // Scenario 1.
+  // web app sources: kDefault, kPolicy
+  // removed source: kPolicy
+  // check web_app.CanUserUninstallWebApp is false
+  // check RegisterWebAppOsUninstallation is called
+  const AppId app_id = "test";
+  testing::StrictMock<MockOsIntegrationManager> manager;
+  manager.ScopedSuppressOsHooksForTesting();
+  // InstallOsHooks from MaybeRegisterOsUninstall
+  // sets only kUninstallationViaOsSettings that will async call from
+  // InstallOsHooks. Test ends before async is called so we test against
+  // InstallOsHooks.
+  EXPECT_CALL(manager, MacAppShimOnAppInstalledForProfile(app_id)).Times(1);
+  EXPECT_CALL(manager, RegisterWebAppOsUninstallation(app_id, testing::_))
+      .Times(1);
+
+  // Scenario 1.
+  auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->AddSource(Source::kDefault);
+  web_app->AddSource(Source::kPolicy);
+  EXPECT_FALSE(web_app->CanUserUninstallWebApp());
+
+  base::RunLoop run_loop;
+  MaybeRegisterOsUninstall(
+      web_app.get(), Source::kPolicy, manager,
+      base::BindLambdaForTesting(
+          [&](OsHooksErrors os_hooks_errors) { run_loop.Quit(); }));
+  run_loop.Run();
+}
+
+TEST_F(RegisterOsSettingsTest, MaybeRegisterOsSettings_NoRegistration) {
+  // MaybeRegisterOsUninstall
+  // Scenario 2.
+  // web app sources: kSync, kPolicy
+  // removed source: kSync
+  // check web_app.CanUserUninstallWebApp is false
+  // check RegisterWebAppOsUninstallation is not called
+
+  // Scenario 3.
+  // web app sources: kDefault, kSync, kWewbAppStore
+  // removed source: kSync
+  // check web_app.CanUserUninstallWebApp is true
+  // check RegisterWebAppOsUninstallation is not called
+  const AppId app_id = "test";
+  testing::StrictMock<MockOsIntegrationManager> manager;
+  manager.ScopedSuppressOsHooksForTesting();
+  // InstallOsHooks from MaybeRegisterOsUninstall
+  // sets only kUninstallationViaOsSettings that will async call from
+  // InstallOsHooks. Test ends before async is called so we test against
+  // InstallOsHooks.
+  EXPECT_CALL(manager, RegisterWebAppOsUninstallation(app_id, testing::_))
+      .Times(0);
+
+  // Scenario 2.
+  auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->AddSource(Source::kSync);
+  web_app->AddSource(Source::kPolicy);
+  EXPECT_FALSE(web_app->CanUserUninstallWebApp());
+  MaybeRegisterOsUninstall(web_app.get(), Source::kSync, manager,
+                           base::DoNothing());
+
+  // Scenario 3.
+  auto web_app2 = std::make_unique<WebApp>(app_id);
+  web_app2->AddSource(Source::kDefault);
+  web_app2->AddSource(Source::kSync);
+  web_app2->AddSource(Source::kWebAppStore);
+  EXPECT_TRUE(web_app2->CanUserUninstallWebApp());
+  MaybeRegisterOsUninstall(web_app2.get(), Source::kDefault, manager,
+                           base::DoNothing());
+}
+
+TEST_F(RegisterOsSettingsTest, MaybeUnregisterOsUninstall) {
+  // MaybeUnregisterOsUninstall
+  // Scenario 1.
+  // web app sources: kDefault
+  // added source: kPolicy
+  // check web_app.CanUserUninstallWebApp is false
+  // check UnregisterWebAppOsUninstallation is called
+  const AppId app_id = "test";
+  testing::StrictMock<MockOsIntegrationManager> manager;
+  manager.ScopedSuppressOsHooksForTesting();
+  // InstallOsHooks from MaybeRegisterOsUninstall
+  // sets only kUninstallationViaOsSettings that will async call from
+  // InstallOsHooks. Test ends before async is called so we test against
+  // InstallOsHooks.
+  EXPECT_CALL(manager, UnregisterWebAppOsUninstallation(app_id)).Times(1);
+
+  // Scenario 1.
+  auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->AddSource(Source::kDefault);
+  EXPECT_TRUE(web_app->CanUserUninstallWebApp());
+  MaybeUnregisterOsUninstall(web_app.get(), Source::kPolicy, manager);
+}
+
+TEST_F(RegisterOsSettingsTest, MaybeUnregisterOsSettings_NoUnregistration) {
+  // MaybeUnregisterOsUninstall
+  // Scenario 2.
+  // web app sources: kSync, kPolicy
+  // added source: kSync
+  // check web_app.CanUserUninstallWebApp is false
+  // check UnregisterWebAppOsUninstallation is not called
+
+  // Scenario 3.
+  // web app sources: kSync
+  // added source: kSync
+  // check web_app.CanUserUninstallWebApp is true
+  // check UnregisterWebAppOsUninstallation is not called
+  const AppId app_id = "test";
+  testing::StrictMock<MockOsIntegrationManager> manager;
+  manager.ScopedSuppressOsHooksForTesting();
+  // InstallOsHooks from MaybeRegisterOsUninstall
+  // sets only kUninstallationViaOsSettings that will async call from
+  // InstallOsHooks. Test ends before async is called so we test against
+  // InstallOsHooks.
+  EXPECT_CALL(manager, UnregisterWebAppOsUninstallation(app_id)).Times(0);
+
+  // Scenario 2.
+  auto web_app = std::make_unique<WebApp>(app_id);
+  web_app->AddSource(Source::kPolicy);
+  EXPECT_FALSE(web_app->CanUserUninstallWebApp());
+  MaybeUnregisterOsUninstall(web_app.get(), Source::kSync, manager);
+
+  // Scenario 3.
+  auto web_app2 = std::make_unique<WebApp>(app_id);
+  web_app2->AddSource(Source::kSync);
+  EXPECT_TRUE(web_app2->CanUserUninstallWebApp());
+  MaybeUnregisterOsUninstall(web_app2.get(), Source::kDefault, manager);
+}
+
+#endif  // defined(OS_WIN)
 
 }  // namespace web_app

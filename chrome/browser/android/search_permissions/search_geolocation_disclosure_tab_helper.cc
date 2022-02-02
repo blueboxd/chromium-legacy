@@ -53,7 +53,9 @@ base::Time GetTimeNow() {
 
 SearchGeolocationDisclosureTabHelper::SearchGeolocationDisclosureTabHelper(
     content::WebContents* contents)
-    : content::WebContentsObserver(contents) {}
+    : content::WebContentsObserver(contents),
+      content::WebContentsUserData<SearchGeolocationDisclosureTabHelper>(
+          *contents) {}
 
 SearchGeolocationDisclosureTabHelper::~SearchGeolocationDisclosureTabHelper() {}
 
@@ -196,7 +198,7 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
     return false;
 
   if (gIgnoreUrlChecksForTesting)
-    return true;
+    return service->IsDSEAutograntEnabled(ContentSettingsType::GEOLOCATION);
 
   return service->IsPermissionControlledByDSE(ContentSettingsType::GEOLOCATION,
                                               url::Origin::Create(gurl));

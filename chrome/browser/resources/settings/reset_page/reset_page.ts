@@ -23,13 +23,17 @@ import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.j
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
+
+// <if expr="_google_chrome and is_win">
 import {loadTimeData} from '../i18n_setup.js';
+// </if>
+
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
 import {SettingsResetProfileDialogElement} from './reset_profile_dialog.js';
 
-interface SettingsResetPageElement {
+export interface SettingsResetPageElement {
   $: {
     resetProfileDialog: CrLazyRenderElement<SettingsResetProfileDialogElement>,
     resetProfile: HTMLElement,
@@ -40,7 +44,7 @@ const SettingsResetPageElementBase =
     RouteObserverMixin(BaseMixin(PolymerElement)) as
     {new (): PolymerElement & RouteObserverMixinInterface};
 
-class SettingsResetPageElement extends SettingsResetPageElementBase {
+export class SettingsResetPageElement extends SettingsResetPageElementBase {
   static get is() {
     return 'settings-reset-page';
   }
@@ -105,6 +109,12 @@ class SettingsResetPageElement extends SettingsResetPageElementBase {
     Router.getInstance().navigateTo(routes.INCOMPATIBLE_APPLICATIONS);
   }
   // </if>
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-reset-page': SettingsResetPageElement;
+  }
 }
 
 customElements.define(SettingsResetPageElement.is, SettingsResetPageElement);

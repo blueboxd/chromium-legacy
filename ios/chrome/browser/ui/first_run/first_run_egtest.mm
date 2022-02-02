@@ -63,11 +63,6 @@ id<GREYMatcher> GetAcceptButton() {
 
 // Returns a matcher for the button to turn on sync.
 id<GREYMatcher> GetTurnSyncOnButton() {
-  if ([FirstRunAppInterface isOldSyncStringInFREEnabled]) {
-    return grey_allOf(grey_text(l10n_util::GetNSString(
-                          IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON)),
-                      grey_sufficientlyVisible(), nil);
-  }
   return grey_allOf(grey_text(l10n_util::GetNSString(
                         IDS_IOS_FIRST_RUN_SYNC_SCREEN_PRIMARY_ACTION)),
                     grey_sufficientlyVisible(), nil);
@@ -75,11 +70,6 @@ id<GREYMatcher> GetTurnSyncOnButton() {
 
 // Returns a matcher for the button to not turn on sync.
 id<GREYMatcher> GetDontSyncButton() {
-  if ([FirstRunAppInterface isOldSyncStringInFREEnabled]) {
-    return grey_allOf(grey_text(l10n_util::GetNSString(
-                          IDS_IOS_FIRSTRUN_ACCOUNT_CONSISTENCY_SKIP_BUTTON)),
-                      grey_sufficientlyVisible(), nil);
-  }
   return grey_allOf(grey_text(l10n_util::GetNSString(
                         IDS_IOS_FIRST_RUN_SYNC_SCREEN_SECONDARY_ACTION)),
                     grey_sufficientlyVisible(), nil);
@@ -87,10 +77,6 @@ id<GREYMatcher> GetDontSyncButton() {
 
 // Returns a matcher for the button to open the Sync settings.
 id<GREYMatcher> GetSyncSettings() {
-  if ([FirstRunAppInterface isOldSyncStringInFREEnabled]) {
-    return grey_allOf(grey_accessibilityLabel(@"settings"),
-                      grey_sufficientlyVisible(), nil);
-  }
   return grey_allOf(grey_text(l10n_util::GetNSString(
                         IDS_IOS_FIRST_RUN_SYNC_SCREEN_ADVANCE_SETTINGS)),
                     grey_sufficientlyVisible(), nil);
@@ -261,8 +247,9 @@ GREYLayoutConstraint* BelowConstraint() {
   [self scrollToElementAndAssertVisibility:GetAcceptButton()];
 }
 
+// TODO(crbug.com/1272857): Adapt this test to the sign-in & sync UI.
 // Checks that the Sign In screen is displayed correctly.
-- (void)testSignInScreenUI {
+- (void)DISABLED_testSignInScreenUI {
   [self verifyWelcomeScreenIsDisplayed];
 
   // Go to the sign-in screen.
@@ -359,8 +346,9 @@ GREYLayoutConstraint* BelowConstraint() {
                                      kSigninSyncScreenAccessibilityIdentifier)];
 }
 
+// TODO(crbug.com/1272857): Adapt this test to the sign-in & sync UI.
 // Checks that the default browser screen is displayed correctly.
-- (void)testDefaultBrowserScreenUI {
+- (void)DISABLED_testDefaultBrowserScreenUI {
   if ([self isDefaultBrowserTestDisabled]) {
     return;
   }
@@ -503,10 +491,11 @@ GREYLayoutConstraint* BelowConstraint() {
   [self verifyFREIsDismissed];
 }
 
+// TODO(crbug.com/1272857): Adapt this test to the sign-in & sync UI.
 // Checks that when opening the app no accounts are here and the primary button
 // allows to create a new account and that it is updated if a new account is
 // added.
-- (void)testSignInNoAccount {
+- (void)DISABLED_testSignInNoAccount {
   [self scrollToElementAndAssertVisibility:GetAcceptButton()];
   [[EarlGrey selectElementWithMatcher:GetAcceptButton()]
       performAction:grey_tap()];
@@ -543,10 +532,11 @@ GREYLayoutConstraint* BelowConstraint() {
       assertWithMatcher:grey_nil()];
 }
 
+// TODO(crbug.com/1272857): Adapt this test to the sign-in & sync UI.
 // Checks that it is possible to add an account even if there is already account
 // and that it is possible to switch accounts when multiple accounts are
 // present.
-- (void)testSignInSelectAccount {
+- (void)DISABLED_testSignInSelectAccount {
   FakeChromeIdentity* fakeIdentity1 = [SigninEarlGrey fakeIdentity1];
   FakeChromeIdentity* fakeIdentity2 = [SigninEarlGrey fakeIdentity2];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
@@ -581,8 +571,9 @@ GREYLayoutConstraint* BelowConstraint() {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// TODO(crbug.com/1272857): Adapt this test to the sign-in & sync UI.
 // Checks that pressing "No thanks" on SignIn screen doesn't sign in the user.
-- (void)testNoSignIn {
+- (void)DISABLED_testNoSignIn {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 

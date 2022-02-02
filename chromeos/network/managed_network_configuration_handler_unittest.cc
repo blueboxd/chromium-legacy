@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -35,9 +34,9 @@
 #include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/onc/network_onc_utils.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_test_utils.h"
-#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/onc/onc_validator.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/test_cellular_esim_profile_handler.h"
@@ -72,6 +71,11 @@ constexpr char kTestGuidManagedWifi[] = "policy_wifi1";
 // for a managed Cellular service.
 constexpr char kTestGuidManagedCellular[] = "policy_cellular";
 
+// The GUID used by
+// chromeos/test/data/network/policy/policy_cellular_with_iccid.onc files for a
+// managed Cellular service.
+constexpr char kTestGuidManagedCellular2[] = "policy_cellular2";
+
 // The GUID used by chromeos/test/data/network/policy/*.{json,onc} files for an
 // unmanaged Wifi service.
 constexpr char kTestGuidUnmanagedWifi2[] = "wifi2";
@@ -82,6 +86,12 @@ constexpr char kTestGuidEthernetEap[] = "policy_ethernet_eap";
 
 constexpr char kTestEuiccPath[] = "/org/chromium/Hermes/Euicc/0";
 constexpr char kTestEid[] = "12345678901234567890123456789012";
+
+// A valid but empty (no networks and no certificates) and unencrypted
+// configuration.
+constexpr char kEmptyUnencryptedConfiguration[] =
+    "{\"Type\":\"UnencryptedConfiguration\",\"NetworkConfigurations\":[],"
+    "\"Certificates\":[]}";
 
 std::string PrettyJson(const base::DictionaryValue& value) {
   std::string pretty;
@@ -256,7 +266,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
                  const std::string& path_to_onc) {
     base::Value policy =
         path_to_onc.empty()
-            ? onc::ReadDictionaryFromJson(onc::kEmptyUnencryptedConfiguration)
+            ? onc::ReadDictionaryFromJson(kEmptyUnencryptedConfiguration)
             : test_utils::ReadTestDictionaryValue(path_to_onc);
 
     onc::Validator validator(true,   // error_on_unknown_field
@@ -394,6 +404,23 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManagedCellular) {
       GetShillServiceClient()->GetServiceProperties(service_path);
   ASSERT_TRUE(properties);
   EXPECT_THAT(*properties, DictionaryHasValues(*expected_shill_properties));
+
+  // Verify that applying a new cellular policy with same ICCID should update
+  // the old shill configuration.
+  SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, std::string(),
+            "policy/policy_cellular_with_iccid.onc");
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(std::string(), GetShillServiceClient()->FindServiceMatchingGUID(
+                               kTestGuidManagedCellular));
+  service_path = GetShillServiceClient()->FindServiceMatchingGUID(
+      kTestGuidManagedCellular2);
+  const base::Value* properties2 =
+      GetShillServiceClient()->GetServiceProperties(service_path);
+  ASSERT_TRUE(properties2);
+  absl::optional<bool> auto_connect =
+      properties2->FindBoolKey(shill::kAutoConnectProperty);
+  ASSERT_TRUE(*auto_connect);
 }
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {

@@ -4,6 +4,7 @@
 
 #include "net/cert/internal/cert_issuer_source_aia.h"
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/cert/cert_net_fetcher.h"
@@ -21,14 +22,15 @@ const int kTimeoutMilliseconds = 10000;
 const int kMaxResponseBytes = 65536;
 const int kMaxFetchesPerCert = 5;
 
-bool ParseCertFromDer(const uint8_t* data,
-                      size_t length,
+bool ParseCertFromDer(base::span<const uint8_t> data,
                       ParsedCertificateList* results) {
   CertErrors errors;
   if (!ParsedCertificate::CreateAndAddToVector(
-          x509_util::CreateCryptoBuffer(data, length),
+          x509_util::CreateCryptoBuffer(data),
           x509_util::DefaultParseCertificateOptions(), results, &errors)) {
     // TODO(crbug.com/634443): propagate error info.
+    // TODO(mattm): this creates misleading log spam if one of the other Parse*
+    // methods is actually able to parse the data.
     LOG(ERROR) << "Error parsing cert retrieved from AIA (as DER):\n"
                << errors.ToDebugString();
 
@@ -36,6 +38,33 @@ bool ParseCertFromDer(const uint8_t* data,
   }
 
   return true;
+}
+
+bool ParseCertsFromCms(base::span<const uint8_t> data,
+                       ParsedCertificateList* results) {
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> cert_buffers;
+  // A "certs-only CMS message" is a PKCS#7 SignedData structure with no signed
+  // inner content. See RFC 3851 section 3.2.2 and RFC 2315 section 9.1.
+  // Note: RFC 5280 section 4.2.2.1 says that the data should be a certs-only
+  // CMS message, however this will actually allow a SignedData which
+  // contains CRLs and/or inner content, ignoring them.
+  if (!x509_util::CreateCertBuffersFromPKCS7Bytes(data, &cert_buffers)) {
+    return false;
+  }
+  bool any_succeeded = false;
+  for (auto& cert_buffer : cert_buffers) {
+    CertErrors errors;
+    if (!ParsedCertificate::CreateAndAddToVector(
+            std::move(cert_buffer), x509_util::DefaultParseCertificateOptions(),
+            results, &errors)) {
+      // TODO(crbug.com/634443): propagate error info.
+      LOG(ERROR) << "Error parsing cert extracted from AIA PKCS7:\n"
+                 << errors.ToDebugString();
+      continue;
+    }
+    any_succeeded = true;
+  }
+  return any_succeeded;
 }
 
 bool ParseCertFromPem(const uint8_t* data,
@@ -47,9 +76,8 @@ bool ParseCertFromPem(const uint8_t* data,
   if (!pem_tokenizer.GetNext())
     return false;
 
-  return ParseCertFromDer(
-      reinterpret_cast<const uint8_t*>(pem_tokenizer.data().data()),
-      pem_tokenizer.data().size(), results);
+  return ParseCertFromDer(base::as_bytes(base::make_span(pem_tokenizer.data())),
+                          results);
 }
 
 class AiaRequest : public CertIssuerSource::Request {
@@ -112,13 +140,11 @@ bool AiaRequest::AddCompletedFetchToResults(Error error,
   //    Conforming applications that support HTTP or FTP for accessing
   //    certificates MUST be able to accept individual DER encoded
   //    certificates and SHOULD be able to accept "certs-only" CMS messages.
-  //
-  // TODO(mattm): Is supporting CMS message format important?
 
   // TODO(https://crbug.com/870359): Some AIA responses are served as PEM, which
   // is not part of RFC 5280's profile.
-  return ParseCertFromDer(fetched_bytes.data(), fetched_bytes.size(),
-                          results) ||
+  return ParseCertFromDer(fetched_bytes, results) ||
+         ParseCertsFromCms(fetched_bytes, results) ||
          ParseCertFromPem(fetched_bytes.data(), fetched_bytes.size(), results);
 }
 

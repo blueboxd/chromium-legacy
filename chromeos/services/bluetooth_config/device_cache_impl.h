@@ -70,6 +70,9 @@ class DeviceCacheImpl : public DeviceCache,
   void DeviceConnectedStateChanged(device::BluetoothAdapter* adapter,
                                    device::BluetoothDevice* device,
                                    bool is_now_connected) override;
+  void DeviceBlockedByPolicyChanged(device::BluetoothAdapter* adapter,
+                                    device::BluetoothDevice* device,
+                                    bool new_blocked_status) override;
   void DeviceBatteryChanged(device::BluetoothAdapter* adapter,
                             device::BluetoothDevice* device,
                             device::BluetoothDevice::BatteryType type) override;
@@ -93,8 +96,9 @@ class DeviceCacheImpl : public DeviceCache,
   // true if the device was removed from the list.
   bool RemoveFromPairedDeviceList(device::BluetoothDevice* device);
 
-  // Attempts to add updated metadata about |device| to |paired_devices_|.
-  // Returns true if the device was updated in the list.
+  // Attempts to add updated metadata about |device| to |paired_devices_|. If
+  // |device| is not found in |paired_devices_|, no update is performed. Returns
+  // true if the device was updated in the list.
   bool AttemptUpdatePairedDeviceMetadata(device::BluetoothDevice* device);
 
   // Sorts |paired_devices_| based on connection state. This function is called
@@ -114,7 +118,8 @@ class DeviceCacheImpl : public DeviceCache,
   // true if the device was removed from the list.
   bool RemoveFromUnpairedDeviceList(device::BluetoothDevice* device);
 
-  // Attempts to add updated metadata about |device| to |unpaired_devices_|.
+  // Attempts to add updated metadata about |device| to |paired_devices_|. If
+  // |device| is not found in |unpaired_devices_|, no update is performed.
   // Returns true if the device was updated in the list.
   bool AttemptUpdateUnpairedDeviceMetadata(device::BluetoothDevice* device);
 

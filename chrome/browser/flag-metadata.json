@@ -3117,7 +3117,7 @@
   {
     "name": "feed-v2-autoplay",
     "owners": [ "//chrome/android/feed/OWNERS", "jianli@chromium.org" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 102
   },
   {
     "name": "feed-v2-hearts",
@@ -3233,6 +3233,11 @@
   },
   {
     "name": "force-major-version-to-100",
+    "owners": [ "abeyad", "potassium-katabolism@google.com" ],
+    "expiry_milestone": 100
+  },
+  {
+    "name": "force-minor-version-to-100",
     "owners": [ "abeyad", "potassium-katabolism@google.com" ],
     "expiry_milestone": 100
   },
@@ -5536,6 +5541,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "use-ulp-languages-in-chrome",
+    "owners": [ "chrome-language@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
     "name": "use-wallpaper-staging-url",
     "owners": [ "cros-customization@google.com", "hsuregan", "khorimoto" ],
     // This flag is required for QA and dogfood testing.
@@ -5544,7 +5554,7 @@
   {
     "name": "use-winrt-midi-api",
     "owners": [ "toyoshim" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 100
   },
   {
     "name": "use-xps-for-printing",

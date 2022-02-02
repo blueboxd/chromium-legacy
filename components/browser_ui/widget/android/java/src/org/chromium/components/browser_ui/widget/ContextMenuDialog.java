@@ -52,8 +52,9 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
     private float mContextMenuSourceXPx;
     private float mContextMenuSourceYPx;
     private int mContextMenuFirstLocationYPx;
-    private AnchoredPopupWindow mPopupWindow;
+    private @Nullable AnchoredPopupWindow mPopupWindow;
     private View mLayout;
+    private OnLayoutChangeListener mOnLayoutChangeListener;
 
     private int mTopMarginPx;
     private int mBottomMarginPx;
@@ -137,14 +138,27 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
             layoutParams.topMargin = mTopMarginPx;
         }
 
-        (mIsPopup ? mLayout : mContentView).addOnLayoutChangeListener(new OnLayoutChangeListener() {
+        mOnLayoutChangeListener = new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                // // If the layout size does not change (e.g. call due to #forceLayout), do nothing
+                // // because we don't want to dismiss the context menu.
+                if (left == oldLeft && right == oldRight && top == oldTop && bottom == oldBottom) {
+                    return;
+                }
+
                 if (mIsPopup) {
                     // If the menu is a popup, wait for the layout to be measured, then proceed with
                     // showing the popup window.
                     if (v.getMeasuredHeight() == 0) return;
+
+                    // If dialog is showing and the layout changes, we might lost the anchor point.
+                    // We'll dismiss the context menu and remove the listener.
+                    if (mPopupWindow != null && mPopupWindow.isShowing()) {
+                        dismiss();
+                        return;
+                    }
 
                     final int posX = (int) mTouchPointXPx;
                     final int posY = (int) (mTouchPointYPx + mTopContentOffsetPx);
@@ -166,10 +180,12 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
                     if (v.getMeasuredHeight() == 0) return;
 
                     startEnterAnimation();
+                    v.removeOnLayoutChangeListener(this);
+                    mOnLayoutChangeListener = null;
                 }
-                v.removeOnLayoutChangeListener(this);
             }
-        });
+        };
+        (mIsPopup ? mLayout : mContentView).addOnLayoutChangeListener(mOnLayoutChangeListener);
     }
 
     private void startEnterAnimation() {
@@ -195,12 +211,23 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
     @Override
     public void dismiss() {
         if (mIsPopup) {
-            mPopupWindow.dismiss();
+            if (mPopupWindow != null) {
+                mPopupWindow.dismiss();
+                mPopupWindow = null;
+            }
+            if (mOnLayoutChangeListener != null) {
+                mLayout.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+                mOnLayoutChangeListener = null;
+            }
             super.dismiss();
 
             return;
         }
 
+        if (mOnLayoutChangeListener != null) {
+            mContentView.removeOnLayoutChangeListener(mOnLayoutChangeListener);
+            mOnLayoutChangeListener = null;
+        }
         int[] contextMenuFinalLocationPx = new int[2];
         mContentView.getLocationOnScreen(contextMenuFinalLocationPx);
         // Recalculate mContextMenuDestinationY because the context menu's final location may not be

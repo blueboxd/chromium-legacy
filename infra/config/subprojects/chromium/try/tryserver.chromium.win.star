@@ -12,9 +12,12 @@ try_.defaults.set(
     builder_group = "tryserver.chromium.win",
     builderless = True,
     cores = 8,
+    orchestrator_cores = 2,
+    compilator_cores = 32,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
+    compilator_goma_jobs = goma.jobs.J300,
     os = os.WINDOWS_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
@@ -65,6 +68,9 @@ try_.builder(
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(),
+    builderless = False,
+    cores = 16,
+    ssd = True,
 )
 
 try_.builder(
@@ -115,17 +121,22 @@ try_.builder(
     os = os.WINDOWS_10,
 )
 
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "win10_chromium_x64_rel_ng",
+    compilator = "win10_chromium_x64_rel_ng-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(),
-    compilator_cores = 32,
-    compilator_goma_jobs = goma.jobs.J300,
-    compilator_name = "win10_chromium_x64_rel_ng-compilator",
+    tryjob = try_.job(),
+)
+
+try_.compilator_builder(
+    name = "win10_chromium_x64_rel_ng-compilator",
+    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    main_list_view = "try",
+    # TODO (crbug.com/1245171): Revert when root issue is fixed
+    grace_period = 3 * time.minute,
 )
 
 try_.builder(
@@ -145,6 +156,7 @@ try_.builder(
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/sandbox/win/.+",
+            ".+/[+]/sandbox/policy/win/.+",
         ],
     ),
 )

@@ -59,19 +59,19 @@ bool ShouldShowForState(PrefService* local_state) {
   if (!base::FeatureList::IsEnabled(features::kChromeWhatsNewUI))
     return false;
 
-  // Show What's New if the page hasn't yet been shown for the current
-  // milestone.
   int last_version = local_state->GetInteger(prefs::kLastWhatsNewVersion);
 
-  return CHROME_VERSION_MAJOR > last_version;
-}
+  // Don't show What's New if it's already been shown for the current major
+  // milestone.
+  if (CHROME_VERSION_MAJOR <= last_version)
+    return false;
 
-void SetLastVersion(PrefService* local_state) {
-  if (!local_state) {
-    return;
-  }
-
+  // Set the last version here to indicate that What's New should not attempt
+  // to display again for this milestone. This prevents the page from
+  // potentially displaying multiple times in a given milestone, e.g. for
+  // multiple profile relaunches (see https://crbug.com/1274313).
   local_state->SetInteger(prefs::kLastWhatsNewVersion, CHROME_VERSION_MAJOR);
+  return true;
 }
 
 GURL GetServerURL(bool may_redirect) {
@@ -92,13 +92,24 @@ namespace {
 
 void AddWhatsNewTab(Browser* browser) {
   chrome::AddTabAt(browser, GetWebUIStartupURL(), 0, true);
-  browser->tab_strip_model()->ActivateTabAt(0);
+  browser->tab_strip_model()->ActivateTabAt(
+      browser->tab_strip_model()->IndexOfFirstNonPinnedTab());
 }
 
 class WhatsNewFetcher : public BrowserListObserver {
  public:
   explicit WhatsNewFetcher(Browser* browser) : browser_(browser) {
     BrowserList::AddObserver(this);
+    if (IsRemoteContentDisabled()) {
+      // Don't fetch network content if this is the case, just pretend the tab
+      // was retrieved successfully. Do so asynchronously to simulate the
+      // production code better.
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&WhatsNewFetcher::OpenWhatsNewTabForTest,
+                                    base::Unretained(this)));
+      return;
+    }
+
     LogLoadEvent(LoadEvent::kLoadStart);
     auto traffic_annotation =
         net::DefineNetworkTrafficAnnotation("whats_new_handler", R"(
@@ -168,6 +179,14 @@ class WhatsNewFetcher : public BrowserListObserver {
     base::UmaHistogramEnumeration("WhatsNew.LoadEvent", event);
   }
 
+  void OpenWhatsNewTabForTest() {
+    if (browser_closed_or_inactive_)
+      return;
+
+    AddWhatsNewTab(browser_);
+    delete this;
+  }
+
   void OnResponseLoaded(std::unique_ptr<std::string> body) {
     int error_or_response_code = simple_loader_->NetError();
     const auto& headers = simple_loader_->ResponseInfo()
@@ -191,11 +210,6 @@ class WhatsNewFetcher : public BrowserListObserver {
 
     DCHECK(browser_);
 
-    // Update pref if shown automatically. Do this even if the load failed - we
-    // only want to try once, so that the network request only occurs once per
-    // version and not every time the browser opens.
-    SetLastVersion(g_browser_process->local_state());
-
     LogLoadEvent(success ? LoadEvent::kLoadSuccess
                          : LoadEvent::kLoadFailAndDoNotShow);
     if (success)
@@ -211,15 +225,6 @@ class WhatsNewFetcher : public BrowserListObserver {
 }  // namespace
 
 void StartWhatsNewFetch(Browser* browser) {
-  if (IsRemoteContentDisabled()) {
-    // Don't fetch network content if this is the case, just pretend the tab was
-    // retrieved successfully. Do so asynchronously to simulate the production
-    // code better.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(AddWhatsNewTab, browser));
-    return;
-  }
-
   new WhatsNewFetcher(browser);
 }
 

@@ -31,7 +31,6 @@
 <translation id="2478931088402984578"><ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> තෝරන්න</translation>
 <translation id="2567507405773541360">සරල, ආරක්ෂිත සහ වෙන කවරදාකටත් වඩා වේගවත් Chromium සමඟ වැඩියෙන් දේවල් කරන්න</translation>
 <translation id="2590893390871230428">ඔබේ Chromium දත්ත සමමුහූර්ත කරන්න</translation>
-<translation id="259094968798709429"><ph name="BEGIN_LINK" />මුරපද කළමනාකරු<ph name="END_LINK" /> තුළ මුරපද සුරැකේ, එබැවින් ඔබට ඒවා ඕනෑම උපාංගයක භාවිත කළ හැකිය.</translation>
 <translation id="2650312721222849884">ඔබ Chromium භාවිත කරන ඕනෑම ස්ථානයක සිට ඔබේ ටැබ බැලීමට, සමමුහුර්ත කිරීම ක්‍රියාත්මක කරන්න</translation>
 <translation id="2684230048001240293">ඔබගේ සියලු උපාංගවල ටැබ, මුරපද සහ ගෙවීම් තොරතුරු සමමුහුර්ත කිරීමට පෙරනිමි ලෙස Chromium සකසන්න</translation>
 <translation id="2730884209570016437">Chromium හට ඔබේ කැමරාව තවත් යෙදුමක් මගින් භාවිත කරන නිසා භාවිතා කළ නොහැකිය</translation>
@@ -78,6 +77,7 @@
 <translation id="6424492062988593837">Chromium වඩා යහපත් විය. නව අනුවාදයක් තිබේ.</translation>
 <translation id="6752854822223394465">ඔබගේ සංවිධානය Chromium පිහිටුවමින්...</translation>
 <translation id="6820823224820483452">Chromium හට සියලු මුරපද පරීක්ෂා කළ නොහැකි විය. හෙට නැවත උත්සාහ කරන්න.</translation>
+<translation id="7006920032187763988">ඔබට ඔබගේ iPad හි වෙනත් යෙදුම්වල මුරපද කළමනාකරු වෙත ඔබ සුරකින ලද මුරපද භාවිත කළ හැකිය.</translation>
 <translation id="7018284295775193585">Chromium යාවත්කාලීන කළ නොහැකිය</translation>
 <translation id="7045244423563602563">Chromium ඔබගේම කර ගන්න</translation>
 <translation id="7099326575020694068">Chromium හට බෙදුම් දසුන් ප්‍රකාරය තුළ ඔබගේ කැමරාව භාවිත කළ නොහැකිය</translation>
@@ -104,11 +104,13 @@
 <translation id="8073677936375100957">මෙම උපාංගයෙන් ඔබේ Chromium දත්ත හිස් කරන්න ද?</translation>
 <translation id="8175055321229419309">ඉඟිය: <ph name="BEGIN_LINK" />ඔබගේ කූඩුවට Chromium ගෙන යන්න<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium හට යාවත්කාලීන සඳහා පරීක්ෂා කළ නොහැකි විය. පසුව නැවත උත්සාහ කරන්න.</translation>
+<translation id="858114650497379505">ඔබට ඔබගේ iPhone හි වෙනත් යෙදුම්වල මුරපද කළමනාකරු වෙත ඔබ සුරකින ලද මුරපද භාවිත කළ හැකිය.</translation>
 <translation id="8586442755830160949">හිමිකම <ph name="YEAR" /> Chromium කතෲවරුන්. සියළුම හිමිකම් ඇවිරිනි.</translation>
 <translation id="8663480472502753423">Chromium යාවත්කාලීනව තබා ගන්න</translation>
 <translation id="8776843108004031667">මෙම ගිණුම සහ සුරැකීම් නොකළ දත්ත Chromium වෙතින් ඉවත් කෙරෙනු ඇත.</translation>
 <translation id="894437814105052438">ඔබ වැරූ විට, Chromium ඔබගේ Google ගිණුමට නව දත්ත කිසිවක් සමමුහුර්ත නොකරයි. පෙරදී සමමුහුර්ත කළ දත්ත ගිණුමේ රැඳේ.</translation>
 <translation id="9022552996538154597">Chromium වෙත පිවිසෙන්න</translation>
+<translation id="9059693977935746710">ඔබට මෙම මුරපදය මතක තබා ගැනීමට අවශ්‍ය නොවනු ඇත. එය <ph name="EMAIL" /> සඳහා මුරපද කළමනාකරු වෙත සුරකිනු ඇත</translation>
 <translation id="9089354809943900324">Chromium යල්පැනගොස් ඇත</translation>
 <translation id="9110075932708282655">පෙරනිමියෙන් Chromium භාවිත කරන්න</translation>
 <translation id="921174536258924340">Chromium හට සියලු මුරපද පරීක්ෂා කළ නොහැකි විය. හෙට නැවත උත්සාහ කරන්න, නැති නම් <ph name="BEGIN_LINK" />ඔබේ Google ගිණුම තුළ මුරපද පරීක්ෂා කරන්න<ph name="END_LINK" /></translation>

@@ -25,6 +25,7 @@
 <translation id="2574249610672786438">For å se fanene dine overalt hvor du bruker Chrome, logg på alle enhetene dine</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
 <translation id="257708665678654955">Vil du at Google Chrome skal tilby å oversette sider på <ph name="LANGUAGE_NAME" /> på dette nettstedet neste gang?</translation>
+<translation id="2671426118752779020">Du kan bruke passordene du har lagret i Google Passordlagring, i andre apper på iPhonen din.</translation>
 <translation id="2695886661449553974">Chrome kunne ikke se etter oppdateringer. Prøv igjen senere.</translation>
 <translation id="2732745070297234559">Chrome kunne ikke sjekke alle passordene. Prøv på nytt i morgen.</translation>
 <translation id="2869959624320573933">Logg på Chrome</translation>
@@ -70,6 +71,7 @@
 <translation id="6063091872902370735">Tillat Chrome-pålogging</translation>
 <translation id="6181930887571472871">Bytt til Chrome</translation>
 <translation id="6238746320622508509">La Chrome låse inkognitofanene dine.</translation>
+<translation id="6387994324662817823">Passord lagres i Google Passordlagring kun på denne enheten.</translation>
 <translation id="6427126399757991875">Organisasjonen din konfigurerer Chrome …</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="6634107063912726160">Når du logger av, synkroniserer ikke Chrome nye data med Google-kontoen din. Tidligere synkroniserte data blir værende på kontoen.</translation>
@@ -84,6 +86,7 @@
 <translation id="7165736900384873061">Begynn å bruke Google Chrome QR-skanneren</translation>
 <translation id="7172660552945675509">Tips: <ph name="BEGIN_LINK" />Flytt Chrome til dokken<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome bruker Face ID til å sikre at bare godkjente personer får tilgang til passordene dine.</translation>
+<translation id="72119412072970160">Du kan bruke passordene du har lagret i Google Passordlagring, i andre apper på iPaden din.</translation>
 <translation id="7261678641327190792">Chrome kan ikke sjekke passordene dine</translation>
 <translation id="7272930098487145294">For å lagre bilder, trykk på Innstillinger for å la Chrome legge dem til i bildene dine</translation>
 <translation id="7275945473750112644">Kontoen din administreres av <ph name="HOSTED_DOMAIN" />, så Chrome-dataene dine blir slettet fra denne enheten</translation>
@@ -111,5 +114,6 @@
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8736550665979974340">Hold deg trygg med Google Chrome</translation>
 <translation id="8772179140489533211">Viser vinduer som ber deg logge på Chrome.</translation>
+<translation id="8788269841521769222">Du trenger ikke å huske dette passordet. Det blir lagret i Google Passordlagring for <ph name="EMAIL" /></translation>
 <translation id="9112744793181547300">Vil du angi Chrome som standard?</translation>
 </translationbundle>

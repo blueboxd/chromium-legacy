@@ -887,11 +887,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // directly reference |self.ntpCoordinator|.
 - (NewTabPageCoordinator*)ntpCoordinatorForWebState:(web::WebState*)webState {
   if (IsSingleNtpEnabled()) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(webState);
-    BOOL activeNtp = self.isNTPActiveForCurrentWebState ||
-                     (NTPHelper && NTPHelper->IsActive());
-    DCHECK(activeNtp);
     return _ntpCoordinator;
   }
   auto found = _ntpCoordinatorsForWebStates.find(webState);
@@ -1067,8 +1062,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // WebStateObserver has a webUsage callback.
   if (!active) {
     if (IsSingleNtpEnabled()) {
-      [_ntpCoordinator stop];
-      [_ntpCoordinator disconnect];
+      [self stopNTP];
     } else {
       for (const auto& element : _ntpCoordinatorsForWebStates)
         [element.second stop];
@@ -2773,6 +2767,32 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                          reading_list::ADDED_VIA_CURRENT_APP);
 }
 
+#pragma mark - Private SingleNTP feature helper methods
+
+// Checks if there are any WebStates showing an NTP at this time. If not, then
+// deconstructs |ntpCoordinator|.
+- (void)stopNTPIfNeeded {
+  DCHECK(IsSingleNtpEnabled());
+  BOOL activeNTP = NO;
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  for (int i = 0; i < webStateList->count(); i++) {
+    NewTabPageTabHelper* iterNtpHelper =
+        NewTabPageTabHelper::FromWebState(webStateList->GetWebStateAt(i));
+    if (iterNtpHelper->IsActive()) {
+      activeNTP = YES;
+    }
+  }
+  if (!activeNTP) {
+    [self stopNTP];
+  }
+}
+
+- (void)stopNTP {
+  [_ntpCoordinator stop];
+  [_ntpCoordinator disconnect];
+  _ntpCoordinator = nullptr;
+}
+
 #pragma mark - ** Protocol Implementations and Helpers **
 
 #pragma mark - ThumbStripSupporting
@@ -3804,7 +3824,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   self.keyCommandsProvider.canDismissModals = NO;
   [self.sideSwipeController setEnabled:YES];
 
-  if (self.isNTPActiveForCurrentWebState) {
+  if (self.isNTPActiveForCurrentWebState || IsSingleNtpEnabled()) {
     NewTabPageCoordinator* coordinator =
         [self ntpCoordinatorForWebState:self.currentWebState];
     [coordinator locationBarDidResignFirstResponder];
@@ -4066,6 +4086,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   webState->WasHidden();
   webState->SetKeepRenderProcessAlive(false);
 
+  if (IsSingleNtpEnabled()) {
+    [self stopNTPIfNeeded];
+  }
   [self uninstallDelegatesForWebState:webState];
 }
 
@@ -4686,6 +4709,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     } else {
       // Set to nullptr to save NTP scroll offset before navigation.
       self.ntpCoordinator.webState = nullptr;
+      [self stopNTPIfNeeded];
     }
   } else {
     if (NTPHelper->IsActive()) {

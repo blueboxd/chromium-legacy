@@ -5,7 +5,7 @@
 
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
-load("//lib/ci.star", "ci")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -47,6 +47,9 @@ ci.builder(
     # Higher build timeout since dbg ASAN builds can take a while on a clobber
     # build.
     execution_timeout = 4 * time.hour,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     tree_closing = True,
 )
 
@@ -103,6 +106,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 4 * time.hour,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.DEFAULT,
     tree_closing = True,
 )
 
@@ -115,7 +121,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 7 * time.hour,
-    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     tree_closing = True,
 )
 
@@ -128,6 +136,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 7 * time.hour,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -139,6 +150,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 6 * time.hour,
+    goma_backend = None,
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
 )
 
 ci.builder(
@@ -439,10 +453,11 @@ ci.builder(
     name = "android-marshmallow-x86-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
-        category = "builder_tester|x86",
+        category = "on_cq|x86",
         short_name = "M",
     ),
     cq_mirrors_console_view = "mirrors",
+    tree_closing = True,
 )
 
 ci.builder(
@@ -451,16 +466,6 @@ ci.builder(
         category = "builder_tester|x86",
         short_name = "M_non-cq",
     ),
-)
-
-ci.builder(
-    name = "android-nougat-arm64-rel",
-    branch_selector = branches.STANDARD_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "builder_tester|arm64",
-        short_name = "N",
-    ),
-    cq_mirrors_console_view = "mirrors",
 )
 
 ci.builder(
@@ -492,6 +497,7 @@ ci.builder(
         short_name = "P",
     ),
     cq_mirrors_console_view = "mirrors",
+    execution_timeout = 4 * time.hour,
     tree_closing = True,
 )
 

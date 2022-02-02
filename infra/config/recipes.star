@@ -116,6 +116,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:binary_size_fuchsia_trybot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -138,9 +139,7 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium/orchestrator",
     bootstrappable = True,
-    experiments = {
-        "luci.recipes.use_python3": 25,
-    },
+    use_python3 = True,
 )
 
 build_recipe(
@@ -179,9 +178,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_libfuzzer_trybot",
-    experiments = {
-        "luci.recipes.use_python3": 25,
-    },
+    use_python3 = True,
 )
 
 build_recipe(
@@ -192,9 +189,7 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium_trybot",
     bootstrappable = True,
-    experiments = {
-        "luci.recipes.use_python3": 25,
-    },
+    use_python3 = True,
 )
 
 build_recipe(
@@ -230,6 +225,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:presubmit",
+    use_python3 = True,
 )
 
 build_recipe(

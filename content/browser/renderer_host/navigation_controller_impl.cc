@@ -179,7 +179,7 @@ bool ShouldTreatNavigationAsReload(FrameTreeNode* node,
   if (should_replace_current_entry)
     return false;
   // Only convert to reload if at least one navigation committed.
-  if (last_committed_entry->IsInitialEntry())
+  if (!last_committed_entry || last_committed_entry->IsInitialEntry())
     return false;
 
   // Skip navigations initiated by external applications.
@@ -660,8 +660,12 @@ void NavigationControllerImpl::Restore(
     RestoreType type,
     std::vector<std::unique_ptr<NavigationEntry>>* entries) {
   // Verify that this controller is unused and that the input is valid.
-  DCHECK_EQ(1, GetEntryCount());
-  DCHECK(GetLastCommittedEntry()->IsInitialEntry());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    DCHECK_EQ(1, GetEntryCount());
+    DCHECK(GetLastCommittedEntry()->IsInitialEntry());
+  } else {
+    DCHECK_EQ(0, GetEntryCount());
+  }
   DCHECK(!GetPendingEntry());
   DCHECK(selected_navigation >= 0 &&
          selected_navigation < static_cast<int>(entries->size()));
@@ -720,6 +724,16 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
   if (!entry)
     return;
 
+  if (entry->IsInitialEntryNotForSynchronousAboutBlank()) {
+    // We should never navigate to an existing initial NavigationEntry that is
+    // the initial NavigationEntry for the initial empty document that hasn't
+    // been overridden by the synchronous about:blank commit, to preserve
+    // legacy behavior where trying to reload when the main frame is on the
+    // initial empty document won't result in a navigation. See also
+    // https://crbug.com/1277414.
+    return;
+  }
+
   // Set ReloadType for |entry|.
   entry->set_reload_type(reload_type);
 
@@ -767,9 +781,15 @@ bool NavigationControllerImpl::IsInitialNavigation() {
 }
 
 bool NavigationControllerImpl::IsInitialBlankNavigation() {
-  return IsInitialNavigation() && GetEntryCount() == 1 &&
-         GetLastCommittedEntry()->IsInitialEntry() &&
-         GetLastCommittedEntry()->restore_type() == RestoreType::kNotRestored;
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    // Check that we're on the initial NavigationEntry and that this is not a
+    // cloned tab.
+    return IsInitialNavigation() && GetEntryCount() == 1 &&
+           GetLastCommittedEntry()->IsInitialEntry() &&
+           GetLastCommittedEntry()->restore_type() == RestoreType::kNotRestored;
+  } else {
+    return IsInitialNavigation() && GetEntryCount() == 0;
+  }
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetEntryWithUniqueID(
@@ -854,8 +874,13 @@ int NavigationControllerImpl::GetCurrentEntryIndex() {
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetLastCommittedEntry() {
-  if (last_committed_entry_index_ == -1)
+  if (last_committed_entry_index_ == -1) {
+    // The last committed entry must always exist when InitialNavigationEntry
+    // is enabled. TODO(https://crbug.com/524208): Remove this case and all
+    // related nullchecks entirely.
+    DCHECK(!blink::features::IsInitialNavigationEntryEnabled());
     return nullptr;
+  }
   return entries_[last_committed_entry_index_].get();
 }
 
@@ -871,13 +896,13 @@ bool NavigationControllerImpl::CanViewSource() {
 
 int NavigationControllerImpl::GetLastCommittedEntryIndex() {
   // The last committed entry index must always be less than the number of
-  // entries.
+  // entries.  If there are no entries, it must be -1.
   DCHECK_LT(last_committed_entry_index_, GetEntryCount());
+  DCHECK(GetEntryCount() || last_committed_entry_index_ == -1);
   return last_committed_entry_index_;
 }
 
 int NavigationControllerImpl::GetEntryCount() {
-  DCHECK_GE(entries_.size(), 1u);
   DCHECK_LE(entries_.size(), max_entry_count());
   return static_cast<int>(entries_.size());
 }
@@ -989,10 +1014,21 @@ void NavigationControllerImpl::GoToIndex(int index,
     return;
   }
 
+  if (entries_[index]->IsInitialEntryNotForSynchronousAboutBlank()) {
+    // We should never navigate to an existing initial NavigationEntry that is
+    // the initial NavigationEntry for the initial empty document that hasn't
+    // been overridden by the synchronous about:blank commit, to preserve
+    // legacy behavior where trying to reload when the main frame is on the
+    // initial empty document won't result in a navigation. See also
+    // https://crbug.com/1277414.
+    return;
+  }
+
   DiscardNonCommittedEntries();
 
   DCHECK_EQ(nullptr, pending_entry_);
   DCHECK_EQ(-1, pending_entry_index_);
+
   pending_entry_ = entries_[index].get();
   pending_entry_index_ = index;
   pending_entry_->SetTransitionType(ui::PageTransitionFromInt(
@@ -1268,10 +1304,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
     // in turn send it back here as part of |params| and it can be just
     // enforced and renderer process terminated on mismatch.
     details->did_replace_entry = true;
-  } else if (!params.history_list_was_cleared && !rfh->GetParent() &&
-             GetLastCommittedEntry()->IsInitialEntry()) {
-    // Make sure we always replace the initial NavigationEntry.
-    details->did_replace_entry = true;
   } else {
     // The renderer tells us whether the navigation replaces the current entry.
     details->did_replace_entry = params.should_replace_current_entry;
@@ -1279,6 +1311,44 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params, navigation_request);
+  if (GetLastCommittedEntry() && GetLastCommittedEntry()->IsInitialEntry()) {
+    if (rfh->GetParent()) {
+      // This is a subframe navigation on the initial empty document, which used
+      // to not have a NavigationEntry to attach to. Now it can attach to the
+      // initial NavigationEntry, and we must ensure that its NavigationEntry
+      // will keep the "initial NavigationEntry" status and won't append a new
+      // NavigationEntry (it should always do replacement instead).
+      // See also https://crbug.com/1277414.
+      details->should_stay_as_initial_entry = true;
+      // Subframe navigation on initial NavigationEntry must not append a new
+      // NavigationEntry (i.e. should not be classified as NEW_SUBFRAME). This
+      // means every subframe navigation that happens while we're on the initial
+      // NavigationEntry will always reuse the existing NavigationEntry and
+      // just update the corresponding FrameNavigationEntry.
+      DCHECK_EQ(details->type, NAVIGATION_TYPE_AUTO_SUBFRAME);
+    } else if (details->type == NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY) {
+      // This is a navigation that modifies the initial NavigationEntry, either
+      // for a replacement or a reload. The initial NavigationEntry should
+      // retain its "initial NavigationEntry" status in this case.
+      details->should_stay_as_initial_entry = true;
+    } else if (navigation_request->is_synchronous_renderer_commit() &&
+               !navigation_request->IsSameDocument() && !rfh->GetParent() &&
+               params.should_replace_current_entry) {
+      // This is a synchronous about:blank navigation on the main frame, which
+      // used to not create a NavigationEntry when we have no NavigationEntry on
+      // FrameTree creation. We now have the initial NavigationEntry and are on
+      // the initial NavigationEntry. To preserve old behavior, we should still
+      // keep the "initial" status for the new NavigationEntry that we will
+      // create for this navigation, so that subframe navigations under the
+      // synchronously committed about:blank document will never append new
+      // NavigationEntry, and instead will just reuse the initial
+      // NavigationEntry and modify the corresponding FrameNavigationEntries.
+      // See also https://crbug.com/1277414.
+      details->should_stay_as_initial_entry = true;
+    }
+  }
+  DCHECK(!details->should_stay_as_initial_entry ||
+         GetLastCommittedEntry()->IsInitialEntry());
 
   // is_same_document must be computed before the entry gets committed.
   details->is_same_document = is_same_document_navigation;
@@ -1300,22 +1370,22 @@ bool NavigationControllerImpl::RendererDidNavigate(
     case NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY:
       RendererDidNavigateToNewEntry(
           rfh, params, details->is_same_document, details->did_replace_entry,
-          previous_document_was_activated, navigation_request);
+          previous_document_was_activated, navigation_request, details);
       break;
     case NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY:
       RendererDidNavigateToExistingEntry(rfh, params, details->is_same_document,
                                          was_restored, navigation_request,
-                                         keep_pending_entry);
+                                         keep_pending_entry, details);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
       RendererDidNavigateNewSubframe(
           rfh, params, details->is_same_document, details->did_replace_entry,
-          previous_document_was_activated, navigation_request);
+          previous_document_was_activated, navigation_request, details);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:
       if (!RendererDidNavigateAutoSubframe(
               rfh, params, details->is_same_document,
-              was_on_initial_empty_document, navigation_request)) {
+              was_on_initial_empty_document, navigation_request, details)) {
         // We don't send a notification about auto-subframe PageState during
         // UpdateStateForFrame, since it looks like nothing has changed.  Send
         // it here at commit time instead.
@@ -1323,6 +1393,14 @@ bool NavigationControllerImpl::RendererDidNavigate(
         return false;
       }
       break;
+    case NAVIGATION_TYPE_NAV_IGNORE:
+      // If a pending navigation was in progress, this canceled it.  We should
+      // discard it and make sure it is removed from the URL bar.  After that,
+      // there is nothing we can do with this navigation, so we just return to
+      // the caller that nothing has happened.
+      if (pending_entry_)
+        DiscardNonCommittedEntries();
+      return false;
     case NAVIGATION_TYPE_UNKNOWN:
       NOTREACHED();
       break;
@@ -1343,7 +1421,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // TODO(pbos): Consider a CHECK here that verifies that the pending entry has
   // been cleared instead of protecting against it.
   if (!keep_pending_entry)
-    DiscardNonCommittedEntries();
+    DiscardNonCommittedEntriesWithCommitDetails(details);
 
   // All committed entries should have nonempty content state so WebKit doesn't
   // get confused when we go back to them (see the function for details).
@@ -1437,16 +1515,26 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     NavigationRequest* navigation_request) {
   TraceReturnReason<tracing_category::kNavigation> trace_return(
       "ClassifyNavigation");
-  DCHECK(GetLastCommittedEntry());
 
   if (params.did_create_new_entry) {
-    // A new entry for either the main frame or a subframe.
+    // A new entry. We may or may not have a corresponding pending entry, and
+    // this may or may not be the main frame.
     if (!rfh->GetParent()) {
       trace_return.set_return_reason("new entry, no parent, new entry");
       return NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY;
     }
 
-    // Subframe navigation.
+    // When this is a new subframe navigation, we should have a committed page
+    // in which it's a subframe. This may not be the case when an iframe is
+    // navigated on a popup navigated to about:blank (the iframe would be
+    // written into the popup by script on the main page). For these cases,
+    // there isn't any navigation stuff we can do, so just ignore it.
+    if (!GetLastCommittedEntry()) {
+      trace_return.set_return_reason("new entry, no last committed, ignore");
+      return NAVIGATION_TYPE_NAV_IGNORE;
+    }
+
+    // Valid subframe navigation.
     trace_return.set_return_reason("new entry, new subframe");
     return NAVIGATION_TYPE_NEW_SUBFRAME;
   }
@@ -1457,14 +1545,30 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   if (rfh->GetParent()) {
     // All manual subframes would be did_create_new_entry and handled above, so
     // we know this is auto.
-    trace_return.set_return_reason("subframe, last commmited, auto subframe");
-    return NAVIGATION_TYPE_AUTO_SUBFRAME;
+    if (GetLastCommittedEntry()) {
+      trace_return.set_return_reason("subframe, last commmited, auto subframe");
+      return NAVIGATION_TYPE_AUTO_SUBFRAME;
+    }
+
+    // We ignore subframes created in non-committed pages; we'd appreciate if
+    // people stopped doing that.
+    trace_return.set_return_reason("subframe, no last commmited, ignore");
+    return NAVIGATION_TYPE_NAV_IGNORE;
   }
 
   const int nav_entry_id = navigation_request->commit_params().nav_entry_id;
   if (nav_entry_id == 0) {
     // This is a renderer-initiated navigation (nav_entry_id == 0), but didn't
     // create a new page.
+
+    // Just like above in the did_create_new_entry case, it's possible to
+    // scribble onto an uncommitted page. Again, there isn't any navigation
+    // stuff that we can do, so ignore it here as well.
+    NavigationEntry* last_committed = GetLastCommittedEntry();
+    if (!last_committed) {
+      trace_return.set_return_reason("nav entry 0, no last committed, ignore");
+      return NAVIGATION_TYPE_NAV_IGNORE;
+    }
 
     // This main frame navigation is not a history navigation (since
     // nav_entry_id is 0), but didn't create a new entry. So this must be a
@@ -1565,9 +1669,9 @@ void NavigationControllerImpl::UpdateNavigationEntryDetails(
     const mojom::DidCommitProvisionalLoadParams& params,
     NavigationRequest* request,
     NavigationEntryImpl::UpdatePolicy update_policy,
-    bool is_new_entry) {
+    bool is_new_entry,
+    LoadCommittedDetails* commit_details) {
   // Update the FrameNavigationEntry.
-
   std::vector<GURL> redirects;
   entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), update_policy, params.item_sequence_number,
@@ -1598,6 +1702,34 @@ void NavigationControllerImpl::UpdateNavigationEntryDetails(
   entry->set_page_type((request && request->DidEncounterError())
                            ? PAGE_TYPE_ERROR
                            : PAGE_TYPE_NORMAL);
+  if (commit_details && commit_details->should_stay_as_initial_entry) {
+    // Retain the "initial NavigationEntry" status.
+    if (request->IsSameDocument()) {
+      // If this is for a same-document navigation, the NavigationEntry must be
+      // reused and should already be marked as the initial NavigationEntry.
+      DCHECK(entry->IsInitialEntry());
+    } else {
+      // If this is for a cross-document navigation, it can be caused by a
+      // renderer-initiated reload, or the synchronous about:blank commit. Mark
+      // "for synchronous about:blank" in the latter case, and also when it is
+      // reloading a "for synchronous about:blank" entry. Otherwise, the entry
+      // is not for a synchronous about:blank commit.
+      NavigationEntryImpl::InitialNavigationEntryState new_state =
+          NavigationEntryImpl::InitialNavigationEntryState::
+              kInitialNotForSynchronousAboutBlank;
+      if (entry->IsInitialEntryForSynchronousAboutBlank() ||
+          request->is_synchronous_renderer_commit()) {
+        new_state = NavigationEntryImpl::InitialNavigationEntryState::
+            kInitialForSynchronousAboutBlank;
+      }
+      entry->set_initial_navigation_entry_state(new_state);
+    }
+  } else if (commit_details && !commit_details->should_stay_as_initial_entry) {
+    // Remove the "initial NavigationEntry" status.
+    entry->set_initial_navigation_entry_state(
+        NavigationEntryImpl::InitialNavigationEntryState::kNonInitial);
+  }
+
   if (is_new_entry) {
     // Some properties of the NavigationEntry are only set when the entry is
     // new (we aren't reusing it).
@@ -1650,11 +1782,12 @@ void NavigationControllerImpl::CreateInitialEntry() {
       nullptr /* blob_url_loader_factory */, true /* is_initial_entry */);
   UpdateNavigationEntryDetails(
       new_entry.get(), rfh, *params, nullptr /* request */,
-      NavigationEntryImpl::UpdatePolicy::kUpdate, true /* is_new_entry */);
+      NavigationEntryImpl::UpdatePolicy::kUpdate, true /* is_new_entry */,
+      nullptr /* commit_details */);
 
   InsertOrReplaceEntry(std::move(new_entry), false /* replace_entry */,
                        false /* was_post_commit_error */,
-                       is_in_fenced_frame_tree);
+                       is_in_fenced_frame_tree, nullptr /* commit_details */);
 }
 
 void NavigationControllerImpl::RendererDidNavigateToNewEntry(
@@ -1663,7 +1796,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
     bool is_same_document,
     bool replace_entry,
     bool previous_document_was_activated,
-    NavigationRequest* request) {
+    NavigationRequest* request,
+    LoadCommittedDetails* commit_details) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
   const absl::optional<url::Origin>& initiator_origin =
       request->common_params().initiator_origin;
@@ -1768,7 +1902,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
   if (!request->IsPrerenderedPageActivation()) {
     UpdateNavigationEntryDetails(new_entry.get(), rfh, params, request,
                                  NavigationEntryImpl::UpdatePolicy::kUpdate,
-                                 true /* is_new_entry */);
+                                 true /* is_new_entry */, commit_details);
 
     // history.pushState() is classified as a navigation to a new page, but sets
     // is_same_document to true. In this case, we already have the title and
@@ -1784,7 +1918,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
   // navigation. Now we know that the renderer has updated its state accordingly
   // and it is safe to also clear the browser side history.
   if (params.history_list_was_cleared) {
-    DiscardNonCommittedEntries();
+    DiscardNonCommittedEntriesWithCommitDetails(commit_details);
     entries_.clear();
     last_committed_entry_index_ = -1;
   }
@@ -1804,7 +1938,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry,
                        !request->post_commit_error_page_html().empty(),
-                       rfh->frame_tree_node()->IsInFencedFrameTree());
+                       rfh->frame_tree_node()->IsInFencedFrameTree(),
+                       commit_details);
 }
 
 void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
@@ -1813,7 +1948,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
     bool is_same_document,
     bool was_restored,
     NavigationRequest* request,
-    bool keep_pending_entry) {
+    bool keep_pending_entry,
+    LoadCommittedDetails* commit_details) {
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
 
@@ -1917,7 +2053,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
 
   UpdateNavigationEntryDetails(entry, rfh, params, request,
                                NavigationEntryImpl::UpdatePolicy::kUpdate,
-                               false /* is_new_entry */);
+                               false /* is_new_entry */, commit_details);
 
   // The redirected to page should not inherit the favicon from the previous
   // page.
@@ -1933,7 +2069,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
   // Note that we need to use the "internal" version since we don't want to
   // actually change any other state, just kill the pointer.
   if (!keep_pending_entry)
-    DiscardNonCommittedEntries();
+    DiscardNonCommittedEntriesWithCommitDetails(commit_details);
 
   // Update the last committed index to reflect the committed entry.
   last_committed_entry_index_ = GetIndexOfEntry(entry);
@@ -1945,9 +2081,12 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     bool is_same_document,
     bool replace_entry,
     bool previous_document_was_activated,
-    NavigationRequest* request) {
+    NavigationRequest* request,
+    LoadCommittedDetails* commit_details) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
+  // The NEW_SUBFRAME path should never result in an initial NavigationEntry.
+  DCHECK(!commit_details->should_stay_as_initial_entry);
 
   // Manual subframe navigations just get the current entry cloned so the user
   // can go back or forward to it. The actual subframe information will be
@@ -1996,7 +2135,8 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // delete the |frame_entry| when the function exits if it doesn't get used.
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry, false,
-                       rfh->frame_tree_node()->IsInFencedFrameTree());
+                       rfh->frame_tree_node()->IsInFencedFrameTree(),
+                       commit_details);
 }
 
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
@@ -2004,7 +2144,8 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     const mojom::DidCommitProvisionalLoadParams& params,
     bool is_same_document,
     bool was_on_initial_empty_document,
-    NavigationRequest* request) {
+    NavigationRequest* request,
+    LoadCommittedDetails* commit_details) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_AUTO_SUBFRAME));
 
@@ -2045,7 +2186,7 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
       // We only need to discard the pending entry in this history navigation
       // case.  For newly created subframes, there was no pending entry.
       last_committed_entry_index_ = entry_index;
-      DiscardNonCommittedEntries();
+      DiscardNonCommittedEntriesWithCommitDetails(commit_details);
 
       // History navigations should send a commit notification.
       send_commit_notification = true;
@@ -2092,7 +2233,8 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
   }
 
   UpdateNavigationEntryDetails(last_committed, rfh, params, request,
-                               update_policy, false /* is_new_entry */);
+                               update_policy, false /* is_new_entry */,
+                               commit_details);
 
   return send_commit_notification;
 }
@@ -2111,13 +2253,16 @@ void NavigationControllerImpl::CopyStateFrom(NavigationController* temp,
   NavigationControllerImpl* source =
       static_cast<NavigationControllerImpl*>(temp);
   // Verify that we look new.
-  DCHECK_EQ(1, GetEntryCount());
-  DCHECK(GetLastCommittedEntry()->IsInitialEntry());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    DCHECK_EQ(1, GetEntryCount());
+    DCHECK(GetLastCommittedEntry()->IsInitialEntry());
+  } else {
+    DCHECK_EQ(0, GetEntryCount());
+  }
   DCHECK(!GetPendingEntry());
   entries_.clear();
 
   if (source->GetEntryCount() == 0) {
-    NOTREACHED();
     return;
   }
 
@@ -2354,6 +2499,16 @@ bool NavigationControllerImpl::ReloadFrame(FrameTreeNode* frame_tree_node) {
   NavigationEntryImpl* entry = GetEntryAtIndex(GetCurrentEntryIndex());
   if (!entry)
     return false;
+
+  if (entry->IsInitialEntryNotForSynchronousAboutBlank()) {
+    // We should never navigate to an existing initial NavigationEntry that is
+    // the initial NavigationEntry for the initial empty document that hasn't
+    // been overridden by the synchronous about:blank commit, to preserve
+    // legacy behavior where trying to reload when the main frame is on the
+    // initial empty document won't result in a navigation. See also
+    // https://crbug.com/1277414.
+    return false;
+  }
   FrameNavigationEntry* frame_entry = entry->GetFrameEntry(frame_tree_node);
   if (!frame_entry)
     return false;
@@ -2402,6 +2557,11 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
 
   FrameTreeNode* node = render_frame_host->frame_tree_node();
 
+  // Don't allow an entry replacement if there is no entry to replace.
+  // http://crbug.com/457149
+  if (GetEntryCount() == 0)
+    should_replace_current_entry = false;
+
   // Create a NavigationEntry for the transfer, without making it the pending
   // entry. Subframe transfers should have a clone of the last committed entry
   // with a FrameNavigationEntry for the target frame. Main frame transfers
@@ -2412,9 +2572,23 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   std::unique_ptr<NavigationEntryImpl> entry;
   if (!render_frame_host->is_main_frame()) {
     // Subframe case: create FrameNavigationEntry.
-    CHECK(GetLastCommittedEntry());
-    entry = GetLastCommittedEntry()->Clone();
-    entry->set_extra_headers(extra_headers);
+    if (GetLastCommittedEntry()) {
+      entry = GetLastCommittedEntry()->Clone();
+      entry->set_extra_headers(extra_headers);
+      // TODO(arthursonzogni): What about |is_renderer_initiated|?
+      // Renderer-initiated navigation that target a remote frame are currently
+      // classified as browser-initiated when this one has already navigated.
+      // See https://crbug.com/722251.
+    } else {
+      // If there's no last committed entry, create an entry for about:blank
+      // with a subframe entry for our destination.
+      // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
+      entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+          GURL(url::kAboutBlankURL), referrer, initiator_origin,
+          source_site_instance, page_transition, is_renderer_initiated,
+          extra_headers, browser_context_,
+          nullptr /* blob_url_loader_factory */));
+    }
     // TODO(arthursonzogni): What about |is_renderer_initiated|?
     // Renderer-initiated navigation that target a remote frame are currently
     // classified as browser-initiated when this one has already navigated.
@@ -2537,7 +2711,9 @@ void NavigationControllerImpl::SetSessionStorageNamespace(
 }
 
 bool NavigationControllerImpl::IsUnmodifiedBlankTab() {
-  return IsInitialNavigation() && GetLastCommittedEntry()->IsInitialEntry() &&
+  return IsInitialNavigation() &&
+         (!GetLastCommittedEntry() ||
+          GetLastCommittedEntry()->IsInitialEntry()) &&
          !frame_tree_.has_accessed_initial_main_document();
 }
 
@@ -2640,7 +2816,9 @@ NavigationEntryImpl* NavigationControllerImpl::GetPendingEntry() {
 
 int NavigationControllerImpl::GetPendingEntryIndex() {
   // The pending entry index must always be less than the number of entries.
+  // If there are no entries, it must be exactly -1.
   DCHECK_LT(pending_entry_index_, GetEntryCount());
+  DCHECK(GetEntryCount() != 0 || pending_entry_index_ == -1);
   return pending_entry_index_;
 }
 
@@ -2648,7 +2826,8 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
     std::unique_ptr<NavigationEntryImpl> entry,
     bool replace,
     bool was_post_commit_error,
-    bool in_fenced_frame_tree) {
+    bool in_fenced_frame_tree,
+    LoadCommittedDetails* commit_details) {
   // Fenced frame trees should always have `ui::PAGE_TRANSITION_AUTO_SUBFRAME`
   // set because:
   // 1) They don't influence the history of the outer page.
@@ -2671,7 +2850,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   if (pending_entry_ && pending_entry_index_ == -1)
     entry->set_unique_id(pending_entry_->GetUniqueID());
 
-  DiscardNonCommittedEntries();
+  DiscardNonCommittedEntriesWithCommitDetails(commit_details);
 
   // When replacing, don't prune the forward history.
   if ((replace || was_post_commit_error) && entries_.size() > 0) {
@@ -3177,7 +3356,8 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
   // and that PolicyContainerHost will be put in the final RenderFrameHost for
   // the navigation. This way, we ensure that we keep enforcing the right
   // policies on the initial empty document after the reload.
-  if (GetLastCommittedEntry()->IsInitialEntry() && params.url.IsAboutBlank()) {
+  if ((!GetLastCommittedEntry() || GetLastCommittedEntry()->IsInitialEntry()) &&
+      params.url.IsAboutBlank()) {
     if (node->current_frame_host() &&
         node->current_frame_host()->policy_container_host()) {
       pending_entry_->GetFrameEntry(node)->set_policy_container_policies(
@@ -3273,8 +3453,18 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
 
   // For subframes, create a pending entry with a corresponding frame entry.
   if (!node->IsMainFrame()) {
-    CHECK(GetLastCommittedEntry());
-    entry = GetLastCommittedEntry()->Clone();
+    if (GetLastCommittedEntry()) {
+      entry = GetLastCommittedEntry()->Clone();
+    } else {
+      // If there's no last committed entry, create an entry for about:blank
+      // with a subframe entry for our destination.
+      // TODO(creis): Ensure this case can't exist in https://crbug.com/524208.
+      entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+          GURL(url::kAboutBlankURL), params.referrer, params.initiator_origin,
+          params.source_site_instance.get(), params.transition_type,
+          params.is_renderer_initiated, extra_headers_crlf, browser_context_,
+          blob_url_loader_factory));
+    }
     entry->AddOrUpdateFrameEntry(
         node, NavigationEntryImpl::UpdatePolicy::kReplace, -1, -1, "", nullptr,
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
@@ -3549,13 +3739,13 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     bool is_browser_initiated) {
   DCHECK(frame_entry);
   GURL dest_url = frame_entry->url();
-  if (entry->IsInitialEntry() && frame_tree_node->IsMainFrame()) {
-    // The main frame of an initial NavigationEntry has an empty URL. Convert it
-    // to about:blank instead. This should only happen when the initial
-    // NavigationEntry is reloaded.
-    DCHECK(dest_url.is_empty());
-    dest_url = GURL("about:blank");
-  }
+  // We should never navigate to an existing initial NavigationEntry that is the
+  // initial NavigationEntry for the initial empty document that hasn't been
+  // overridden by the synchronous about:blank commit, to preserve previous
+  // behavior where trying to reload when the main frame is on the initial empty
+  // document won't result in a navigation.
+  // See also https://crbug.com/1277414.
+  DCHECK(!entry->IsInitialEntryNotForSynchronousAboutBlank());
   absl::optional<url::Origin> origin_to_commit =
       frame_entry->committed_origin();
 
@@ -3675,7 +3865,10 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // when it wants to draw.  See http://crbug.com/11157
   ssl_manager_.DidCommitProvisionalLoad(*details);
 
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+  delegate_->NotifyNavigationStateChanged(
+      (details && details->should_stay_as_initial_entry)
+          ? INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
+          : INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS);
   delegate_->NotifyNavigationEntryCommitted(*details);
 
   // TODO(avi): Remove. http://crbug.com/170921
@@ -3712,15 +3905,23 @@ void NavigationControllerImpl::LoadIfNecessary() {
     NavigateToExistingPendingEntry(ReloadType::NONE,
                                    FrameTreeNode::kFrameTreeNodeInvalidId,
                                    true /* is_browser_initiated */);
-  } else if (last_committed_entry_index_ != -1) {
+  } else if (last_committed_entry_index_ != -1 &&
+             !GetLastCommittedEntry()
+                  ->IsInitialEntryNotForSynchronousAboutBlank()) {
     pending_entry_ = entries_[last_committed_entry_index_].get();
     pending_entry_index_ = last_committed_entry_index_;
     NavigateToExistingPendingEntry(ReloadType::NONE,
                                    FrameTreeNode::kFrameTreeNodeInvalidId,
                                    true /* is_browser_initiated */);
   } else {
-    // If there is something to reload, the successful reload will clear the
-    // |needs_reload_| flag. Otherwise, just do it here.
+    // We should never navigate to an existing initial NavigationEntry that is
+    // the initial NavigationEntry for the initial empty document that hasn't
+    // been overridden by the synchronous about:blank commit, to preserve
+    // legacy behavior where trying to reload when the main frame is on the
+    // initial empty document won't result in a navigation. See also
+    // https://crbug.com/1277414. If there is something to reload, the
+    // successful reload will clear the |needs_reload_| flag. Otherwise, just do
+    // it here.
     needs_reload_ = false;
   }
 }
@@ -3804,6 +4005,11 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
 }
 
 void NavigationControllerImpl::DiscardNonCommittedEntries() {
+  DiscardNonCommittedEntriesWithCommitDetails(nullptr /* commit_details */);
+}
+
+void NavigationControllerImpl::DiscardNonCommittedEntriesWithCommitDetails(
+    LoadCommittedDetails* commit_details) {
   // Avoid sending a notification if there is nothing to discard.
   // TODO(mthiesse): Temporarily checking failed_pending_entry_id_ to help
   // diagnose https://bugs.chromium.org/p/chromium/issues/detail?id=1007570.
@@ -3811,8 +4017,12 @@ void NavigationControllerImpl::DiscardNonCommittedEntries() {
     return;
   }
   DiscardPendingEntry(false);
-  if (delegate_)
-    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+  if (delegate_) {
+    delegate_->NotifyNavigationStateChanged(
+        (commit_details && commit_details->should_stay_as_initial_entry)
+            ? INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
+            : INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS);
+  }
 }
 
 int NavigationControllerImpl::GetEntryIndexWithUniqueID(
@@ -3838,9 +4048,15 @@ void NavigationControllerImpl::InsertEntriesFrom(
     entries_.insert(entries_.begin() + i,
                     source->entries_[i]->CloneWithoutSharing(context.get()));
   }
-  DCHECK_GE(entries_.size(), 1u);
   DCHECK(pending_entry_index_ == -1 ||
          pending_entry_ == GetEntryAtIndex(pending_entry_index_));
+  if (!source->frame_tree_.root()->is_on_initial_empty_document()) {
+    // If the source frame tree's root is not on the initial empty document,
+    // also mark this FrameTree's root as such, so that the next navigation
+    // won't replace the latest NavigationEntry due to it still being marked as
+    // "on the initial empty document".
+    frame_tree_.root()->SetNotOnInitialEmptyDocument();
+  }
 }
 
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(
@@ -3946,7 +4162,10 @@ NavigationControllerImpl::ComputePolicyContainerPoliciesForFrameEntry(
     return nullptr;
 
   if (is_same_document) {
-    CHECK(GetLastCommittedEntry());
+    // TODO(https://crbug.com/524208): Remove this nullptr check when we can
+    // ensure we always have a FrameNavigationEntry here.
+    if (!GetLastCommittedEntry())
+      return nullptr;
 
     FrameNavigationEntry* previous_frame_entry =
         GetLastCommittedEntry()->GetFrameEntry(rfh->frame_tree_node());
@@ -4080,7 +4299,7 @@ NavigationControllerImpl::PopulateSingleAppHistoryEntryVector(
     SiteInstance* site_instance,
     int64_t previous_item_sequence_number) {
   std::vector<blink::mojom::AppHistoryEntryPtr> entries;
-  if (GetLastCommittedEntry()->IsInitialEntry()) {
+  if (GetLastCommittedEntry() && GetLastCommittedEntry()->IsInitialEntry()) {
     // Don't process the initial entry.
     DCHECK_EQ(GetEntryCount(), 1);
     return entries;

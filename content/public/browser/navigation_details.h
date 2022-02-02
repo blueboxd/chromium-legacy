@@ -68,6 +68,14 @@ struct CONTENT_EXPORT LoadCommittedDetails {
 
   // The HTTP status code for this entry..
   int http_status_code = 0;
+
+  // True if the NavigationEntry that we're about to create/update for this
+  // navigation should still be marked as the "initial NavigationEntry". This is
+  // needed to ensure that subframe navigations etc on the initial
+  // NavigationEntry won't append new NavigationEntries, and will always get
+  // replaced on the next navigation.
+  // See also https://crbug.com/1277414.
+  bool should_stay_as_initial_entry = false;
 };
 
 // Provides the details for a NOTIFICATION_NAV_ENTRY_CHANGED notification.

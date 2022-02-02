@@ -75,7 +75,7 @@ const base::Feature kAppManagementIntentSettings{
 const base::Feature kAppServiceExternalProtocol{
     "AppServiceExternalProtocol", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceLoadIconWithoutMojom{
-    "AppServiceLoadIconWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AppServiceLoadIconWithoutMojom", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAppServiceExtension{"AppServiceExtension",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !defined(OS_ANDROID)
@@ -324,6 +324,15 @@ const base::Feature kDesktopPWAsTabStripSettings{
 const base::Feature kDesktopPWAsWebBundles{"DesktopPWAsWebBundles",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Tries disabling the HTTP disk cache.
+const base::Feature kDisableHttpDiskCache{"DisableHttpDiskCache",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// The size of the memory cache when the HTTP disk cache is disabled. 0 uses the
+// default size.
+const base::FeatureParam<int> kDisableHttpDiskCacheMemoryCacheSizeParam{
+    &kDisableHttpDiskCache, "MemoryCacheSize", 0};
+
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {
   "DnsOverHttps",
@@ -421,7 +430,7 @@ const base::Feature kEnterpriseReportingExtensionManifestVersion{
 // Lazy initialize IndividualSettings for extensions from enterprise policy
 // that are not installed.
 const base::Feature kExtensionDeferredIndividualSettings{
-    "ExtensionDeferredIndividualSettings", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ExtensionDeferredIndividualSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Controls whether the user justification text field is visible on the

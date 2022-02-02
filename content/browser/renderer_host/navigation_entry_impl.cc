@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/containers/queue.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
@@ -234,6 +235,12 @@ NavigationEntryImpl::TreeNode::~TreeNode() {}
 
 bool NavigationEntryImpl::TreeNode::MatchesFrame(
     FrameTreeNode* frame_tree_node) const {
+  if (!frame_tree_node) {
+    SCOPED_CRASH_KEY_BOOL("NoFTN", "is_main_frame", !parent);
+    SCOPED_CRASH_KEY_NUMBER("NoFTN", "children_size", children.size());
+    base::debug::DumpWithoutCrashing();
+    return false;
+  }
   // The root node is for the main frame whether the unique name matches or not.
   if (!parent)
     return frame_tree_node->IsMainFrame();
@@ -410,7 +417,10 @@ NavigationEntryImpl::NavigationEntryImpl(
       started_from_context_menu_(false),
       ssl_error_(false),
       should_skip_on_back_forward_ui_(false),
-      is_initial_entry_(is_initial_entry) {}
+      initial_navigation_entry_state_(
+          is_initial_entry
+              ? InitialNavigationEntryState::kInitialNotForSynchronousAboutBlank
+              : InitialNavigationEntryState::kNonInitial) {}
 
 NavigationEntryImpl::~NavigationEntryImpl() {}
 
@@ -718,16 +728,21 @@ bool NavigationEntryImpl::GetCanLoadLocalResources() {
 }
 
 bool NavigationEntryImpl::IsInitialEntry() {
-  return is_initial_entry_;
+  DCHECK(blink::features::IsInitialNavigationEntryEnabled() ||
+         initial_navigation_entry_state_ ==
+             InitialNavigationEntryState::kNonInitial);
+  return initial_navigation_entry_state_ !=
+         InitialNavigationEntryState::kNonInitial;
 }
 
 std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::Clone() const {
   std::unique_ptr<NavigationEntryImpl> entry =
       CloneAndReplaceInternal(nullptr, false, nullptr, nullptr, nullptr,
                               ClonePolicy::kShareFrameEntries);
-  // When we are not deep-copying, the NavigationEntry is going to be used for
-  // a new committed navigation, so it loses its "initial" status.
-  entry->set_is_initial_entry(false);
+  // This function is only used for creating pending entries, which should not
+  // carry the "initial" status.
+  entry->set_initial_navigation_entry_state(
+      InitialNavigationEntryState::kNonInitial);
   return entry;
 }
 
@@ -747,9 +762,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   std::unique_ptr<NavigationEntryImpl> entry = CloneAndReplaceInternal(
       frame_navigation_entry, clone_children_of_target, target_frame_tree_node,
       root_frame_tree_node, nullptr, ClonePolicy::kShareFrameEntries);
-  // When we are not deep-copying, the NavigationEntry is going to be used for
-  // a new committed navigation, so it loses its "initial" status.
-  entry->set_is_initial_entry(false);
   return entry;
 }
 
@@ -799,7 +811,7 @@ NavigationEntryImpl::CloneAndReplaceInternal(
   copy->CloneDataFrom(*this);
   copy->replaced_entry_data_ = replaced_entry_data_;
   copy->should_skip_on_back_forward_ui_ = should_skip_on_back_forward_ui_;
-  copy->is_initial_entry_ = is_initial_entry_;
+  copy->initial_navigation_entry_state_ = initial_navigation_entry_state_;
 
   return copy;
 }
@@ -948,17 +960,29 @@ void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
 NavigationEntryImpl::TreeNode* NavigationEntryImpl::GetTreeNode(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl::TreeNode* node = nullptr;
-  base::queue<NavigationEntryImpl::TreeNode*> work_queue;
-  work_queue.push(root_node());
+  // TODO(https://crbug.com/1279628): Remove the BFS depth from the queue once
+  // we don't need to debug the crash anymore.
+  base::queue<std::pair<NavigationEntryImpl::TreeNode*, int>> work_queue;
+  work_queue.push(std::make_pair(root_node(), 0));
   while (!work_queue.empty()) {
-    node = work_queue.front();
+    node = work_queue.front().first;
+    int depth = work_queue.front().second;
     work_queue.pop();
+    if (!node) {
+      SCOPED_CRASH_KEY_BOOL("NoNode", "ftn_is_main_frame",
+                            frame_tree_node->IsMainFrame());
+      SCOPED_CRASH_KEY_NUMBER("NoNode", "ftn_child_count",
+                              frame_tree_node->child_count());
+      SCOPED_CRASH_KEY_NUMBER("NoNode", "bfs_depth", depth);
+      base::debug::DumpWithoutCrashing();
+      continue;
+    }
     if (node->MatchesFrame(frame_tree_node))
       return node;
 
     // Enqueue any children and keep looking.
     for (const auto& child : node->children)
-      work_queue.push(child.get());
+      work_queue.push(std::make_pair(child.get(), depth + 1));
   }
   return nullptr;
 }
@@ -990,19 +1014,17 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     // If the document of the FrameNavigationEntry is changing, we must clear
     // any child FrameNavigationEntries.
     if (root_node()->frame_entry->document_sequence_number() !=
-        document_sequence_number)
+        document_sequence_number) {
       root_node()->children.clear();
-
-    if (!url.is_empty()) {
-      // A navigation committed on the main frame, so the NavigationEntry loses
-      // its "initial NavigationEntry" status. Note that the initial entry
-      // creation path also goes through this function, but we know not to
-      // remove the status in that case because it uses the empty URL.
-      // TODO(https://crbug.com/1215096): Consider to remove the initial entry
-      // status after subframe navigations too, when the initial empty document
-      // replacement behavior is more consistent, and we've determined that
-      // exposing more history entries to WebView is OK.
-      is_initial_entry_ = false;
+      if (!url.is_empty()) {
+        // A cross-document navigation committed in the main frame, so the
+        // NavigationEntry loses its "initial NavigationEntry" status. Note that
+        // the initial entry creation path also goes through this function, but
+        // we know not to remove the status in that case because it uses the
+        // empty URL.
+        initial_navigation_entry_state_ =
+            InitialNavigationEntryState::kNonInitial;
+      }
     }
 
     root_node()->frame_entry->UpdateEntry(

@@ -31,7 +31,6 @@
 <translation id="2478931088402984578">Piliin ang <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="2567507405773541360">Makagawa ng mas maraming bagay gamit ang simple, secure, at mas mabilis na ngayong Chromium</translation>
 <translation id="2590893390871230428">I-sync ang Iyong Data sa Chromium</translation>
-<translation id="259094968798709429">Sine-save ang mga password sa <ph name="BEGIN_LINK" />Password Manager<ph name="END_LINK" /> para magamit mo ang mga ito sa anumang device.</translation>
 <translation id="2650312721222849884">Para makita ang iyong mga tab sa kahit saan ka man gumagamit ng Chromium, i-on ang pag-sync</translation>
 <translation id="2684230048001240293">Itakda ang Chromium bilang default para ma-sync ang iyong mga tab, password, at impormasyon sa pagbabayad sa lahat ng device mo</translation>
 <translation id="2730884209570016437">Hindi magamit ng Chromium ang iyong camera ngayon dahil ginagamit ito sa isa pang application</translation>
@@ -78,6 +77,7 @@
 <translation id="6424492062988593837">Naging mas mahusay na ang Chromium! Available na ang bagong bersyon.</translation>
 <translation id="6752854822223394465">Sine-set up ng iyong organisasyon ang Chromium...</translation>
 <translation id="6820823224820483452">Hindi masuri ng Chromium ang lahat ng password. Subukan ulit bukas.</translation>
+<translation id="7006920032187763988">Puwede mong gamitin ang mga password na na-save mo sa Password Manager sa iba pang app sa iyong iPad.</translation>
 <translation id="7018284295775193585">Hindi makapag-update ang Chromium</translation>
 <translation id="7045244423563602563">Gawing Iyo ang Chromium</translation>
 <translation id="7099326575020694068">Hindi magamit ng Chromium ang iyong camera sa Split View mode</translation>
@@ -104,11 +104,13 @@
 <translation id="8073677936375100957">I-clear ang iyong data sa Chromium sa device na ito?</translation>
 <translation id="8175055321229419309">Tip: <ph name="BEGIN_LINK" />Ilipat ang Chromium sa iyong dock<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Hindi matingnan ng Chromium kung may mga update. Subukan ulit sa ibang pagkakataon.</translation>
+<translation id="858114650497379505">Puwede mong gamitin ang mga password na na-save mo sa Password Manager sa iba pang app sa iyong iPhone.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ang Mga May-akda ng Chromium. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="8663480472502753423">Panatilihing up to date ang Chromium</translation>
 <translation id="8776843108004031667">Aalisin sa Chromium ang account na ito at anumang hindi naka-save na data.</translation>
 <translation id="894437814105052438">Kapag nag-sign out ka, hindi magsi-sync ang Chromium ng anumang bagong data sa iyong Google Account. Mananatili sa account ang data na dati nang na-sync.</translation>
 <translation id="9022552996538154597">Mag-sign in sa Chromium</translation>
+<translation id="9059693977935746710">Hindi mo kailangang tandaan ang password na ito. Mase-save ito sa Password Manager para sa <ph name="EMAIL" /></translation>
 <translation id="9089354809943900324">Luma na ang Chromium</translation>
 <translation id="9110075932708282655">Gamitin ang Chromium bilang Default</translation>
 <translation id="921174536258924340">Hindi masuri ng Chromium ang lahat ng password. Subukan ulit bukas o <ph name="BEGIN_LINK" />suriin ang mga password sa iyong Google Account.<ph name="END_LINK" /></translation>

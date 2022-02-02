@@ -253,6 +253,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Startup.Android.LastVisitedTabIsSRPWhenOverviewShownAtLaunch"
+    enum="Boolean" expires_after="2022-08-09">
+  <owner>hanxi@chromium.org</owner>
+  <owner>spdonghao@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <summary>
+    Records whether or not the last visited tab is a search result page when
+    StartSurface is shown at launch. This histogram is only recorded when
+    StartSurface is shown at launch due to &quot;return to tab switcher&quot;
+    feature.
+  </summary>
+</histogram>
+
 <histogram name="Startup.Android.ShowChromeStartSegmentationResult"
     enum="ShowChromeStartSegmentationResult" expires_after="2022-08-09">
   <owner>hanxi@chromium.org</owner>
@@ -770,6 +783,16 @@ chromium-metrics-reviews@google.com.
     Records whether Incognito switch was present in commmand line switches and
     if Incognito mode was enforced or denied. This is recorded during browser
     startup when commandline is processed.
+  </summary>
+</histogram>
+
+<histogram name="Startup.IOSColdStartType" enum="IOSColdStartType"
+    expires_after="2022-04-01">
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@chromium.org</owner>
+  <summary>
+    Records session type for a cold start. It is recorded at cold start.
+    Histogram only for iOS.
   </summary>
 </histogram>
 

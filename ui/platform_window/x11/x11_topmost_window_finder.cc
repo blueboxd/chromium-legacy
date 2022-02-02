@@ -42,19 +42,12 @@ bool EnumerateChildren(ShouldStopIteratingCallback should_stop_iterating,
   // reverse-iterate the list to check the windows from top-to-bottom.
   std::vector<x11::Window>::reverse_iterator iter;
   for (iter = windows.rbegin(); iter != windows.rend(); iter++) {
-    if (IsWindowNamed(*iter) && should_stop_iterating.Run(*iter))
-      return true;
-  }
-
-  // If we're at this point, we didn't find the window we're looking for at the
-  // current level, so we need to recurse to the next level.  We use a second
-  // loop because the recursion and call to XQueryTree are expensive and is only
-  // needed for a small number of cases.
-  if (++depth <= max_depth) {
-    for (iter = windows.rbegin(); iter != windows.rend(); iter++) {
-      if (EnumerateChildren(should_stop_iterating, *iter, max_depth, depth))
+    if (depth < max_depth) {
+      if (EnumerateChildren(should_stop_iterating, *iter, max_depth, depth + 1))
         return true;
     }
+    if (IsWindowNamed(*iter) && should_stop_iterating.Run(*iter))
+      return true;
   }
 
   return false;
@@ -68,9 +61,9 @@ bool EnumerateAllWindows(ShouldStopIteratingCallback should_stop_iterating,
 
 void EnumerateTopLevelWindows(
     ui::ShouldStopIteratingCallback should_stop_iterating) {
-  // Some WMs parent 'top-level' windows in unnamed actual top-level windows
-  // (ion WM), so extend the search depth to all children of top-level windows.
-  const int kMaxSearchDepth = 1;
+  // WMs may reparent toplevel windows inside their own containers, so extend
+  // the search to all grandchildren of all toplevel windows.
+  const int kMaxSearchDepth = 2;
   ui::EnumerateAllWindows(should_stop_iterating, kMaxSearchDepth);
 }
 

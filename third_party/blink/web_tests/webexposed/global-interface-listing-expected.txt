@@ -3450,15 +3450,6 @@ interface HTMLEmbedElement : HTMLElement
     setter src
     setter type
     setter width
-interface HTMLFencedFrameElement : HTMLElement
-    attribute @@toStringTag
-    getter height
-    getter src
-    getter width
-    method constructor
-    setter height
-    setter src
-    setter width
 interface HTMLFieldSetElement : HTMLElement
     attribute @@toStringTag
     getter disabled
@@ -10740,7 +10731,7 @@ interface WindowControlsOverlay : EventTarget
     setter ongeometrychange
 interface WindowControlsOverlayGeometryChangeEvent : Event
     attribute @@toStringTag
-    getter boundingRect
+    getter titlebarAreaRect
     getter visible
     method constructor
 interface Worker : EventTarget

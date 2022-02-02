@@ -19,6 +19,12 @@ interface SceneEditorDelegate {
     void duplicateReaction(ReactionLayout reactionLayout);
 
     /**
+     * Shows the {@link org.chromium.ui.widget.Toast} that indicates the max number of reactions on
+     * the scene has been reached.
+     */
+    void showMaxReactionsReachedToast();
+
+    /**
      * Removes the given {@link ReactionLayout} from the scene.
      */
     void removeReaction(ReactionLayout reactionLayout);
@@ -31,7 +37,7 @@ interface SceneEditorDelegate {
     /**
      * Invoked when a reaction is dragged across the editing surface.
      */
-    void reactionWasMoved();
+    void reactionWasMoved(ReactionLayout reactionLayout);
 
     /**
      * Invoked when the scale / rotate editing control of a reaction is interacted with.

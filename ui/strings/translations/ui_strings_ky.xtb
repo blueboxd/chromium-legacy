@@ -105,6 +105,7 @@
 <translation id="4565377596337484307">Сырсөздү жашыруу</translation>
 <translation id="4588090240171750605">Оңго сыдырып кароо</translation>
 <translation id="4724120544754982507">Билдирмелер борбору, <ph name="UNREAD_NOTIFICATION_COUNT" /> окулбаган эскертме бар</translation>
+<translation id="4746179598275229723">Кеңейтүү бошотулду</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ай калды}other{# ай калды}}</translation>
 <translation id="4888938634149558681">Чалуу</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунд}other{# секунд}}</translation>
@@ -121,7 +122,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Сол жебе</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 мүн.}other{# мүн.}}</translation>
-<translation id="5763338081255973061">{DAYS,plural, =0{Акыркы аракеттер: бүгүн}=1{Акыркы аракеттер: 1 күн мурун}other{Акыркы аракеттер: # күн мурун}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Соңку аракеттер: бүгүн}=1{Соңку аракеттер: 1 күн мурун}other{Соңку аракеттер: # күн мурун}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 күн жана }other{# күн жана }}</translation>
 <translation id="5789643057113097023">.</translation>
 <translation id="5843690142429128814">Сүрөт.</translation>
@@ -130,6 +131,7 @@
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 секунд калды}other{# секунд калды}}</translation>
 <translation id="5941711191222866238">Кичирейтүү</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 саат}other{# саат}}</translation>
+<translation id="6007284015834422026">Кеңейтүү кадалды</translation>
 <translation id="6040143037577758943">Жабуу</translation>
 <translation id="6117103120090651229">Ортоңку баскыч</translation>
 <translation id="6129953537138746214">Боштук</translation>

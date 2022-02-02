@@ -267,6 +267,13 @@ const base::Feature kDocumentPolicy{"DocumentPolicy",
 const base::Feature kDocumentPolicyNegotiation{
     "DocumentPolicyNegotiation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+// Tries running DWriteFontProxyImpl on the IO thread to see if it improves
+// performance.
+const base::Feature kDWriteFontProxyOnIO{"DWriteFontProxyOnIO",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enable establishing the GPU channel early in renderer startup.
 const base::Feature kEarlyEstablishGpuChannel{
     "EarlyEstablishGpuChannel", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -383,6 +390,20 @@ const base::Feature kHistoryPreventSandboxedNavigation{
 // or the site should obtain an Origin Trial token.
 const base::Feature kIdleDetection{"IdleDetection",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Historically most navigations required IPC from browser to renderer and
+// from renderer back to browser. This was done to check for before-unload
+// handlers on the current page and occurred regardless of whether a
+// before-unload handler was present. The navigation start time (as used in
+// various metrics) is the time the renderer initiates the IPC back to the
+// browser. If this feature is enabled, the navigation start time takes into
+// account the cost of the IPC from the browser to renderer. More specifically:
+// navigation_start = time_renderer_sends_ipc_to_browser -
+//    (time_renderer_receives_ipc - time_browser_sends_ipc)
+// Note that navigation_start does not take into account the amount of time the
+// renderer spends processing the IPC (that is, executing script).
+const base::Feature kIncludeIpcOverheadInNavigationStart{
+    "IncludeIpcOverheadInNavigationStart", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the GetInstalledRelatedApps API.
 const base::Feature kInstalledApp{"InstalledApp",
@@ -872,6 +893,11 @@ const base::Feature kSuppressDifferentOriginSubframeJSDialogs{
 // real OS events.
 const base::Feature kSyntheticPointerActions{"SyntheticPointerActions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether optimizations controlled by kNavigationThreadingOptimizations are
+// moved to the IO thread or a separate background thread.
+const base::Feature kThreadingOptimizationsOnIO{
+    "ThreadingOptimizationsOnIO", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables async touchpad pinch zoom events. We check the ACK of the first
 // synthetic wheel event in a pinch sequence, then send the rest of the

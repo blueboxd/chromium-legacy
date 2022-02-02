@@ -16,11 +16,15 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
+import org.chromium.chrome.browser.bookmarks.PowerBookmarkMetrics.PriceTrackingState;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
 import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Controls the bookmarks save-flow. */
@@ -86,6 +90,8 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
         mPropertyModel.set(BookmarkSaveFlowProperties.FOLDER_SELECT_ONCLICK_LISTENER, (v) -> {
             RecordUserAction.record("MobileBookmark.SaveFlow.EditFolder");
             BookmarkUtils.startFolderSelectActivity(mContext, mBookmarkId);
+            TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
+                    .notifyEvent(EventConstants.SHOPPING_LIST_SAVE_FLOW_FOLDER_TAP);
             mCloseRunnable.run();
         });
 
@@ -128,10 +134,10 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
                     this::handleNotificationSwitchToggle);
 
             if (fromExplicitTrackUi) {
-                mPropertyModel.set(BookmarkSaveFlowProperties.TITLE_TEXT,
-                        mContext.getResources().getString(R.string.price_tracking_title));
                 mPropertyModel.set(BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TOGGLED, true);
             }
+            PowerBookmarkMetrics.reportBookmarkSaveFlowPriceTrackingState(
+                    PriceTrackingState.PRICE_TRACKING_SHOWN);
         }
     }
 
@@ -139,9 +145,7 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
         if (mSubscriptionsManagerCallback == null) {
             mSubscriptionsManagerCallback = mCallbackController.makeCancelable((Integer status) -> {
                 boolean statusOk = (status == SubscriptionsManager.StatusCode.OK);
-                if (statusOk) {
-                    setPriceTrackingIconForEnabledState(toggled);
-                } else {
+                if (!statusOk) {
                     // Set it back to the previous state if the request.
                     mPropertyModel.set(
                             BookmarkSaveFlowProperties.NOTIFICATION_SWITCH_TOGGLE_LISTENER, null);
@@ -154,9 +158,13 @@ public class BookmarkSaveFlowMediator extends BookmarkModelObserver {
                 setPriceTrackingNotificationUiEnabled(statusOk);
             });
         }
-        // TODO(crbug.com/1243383): Follow-up with UX about failure.
+
+        setPriceTrackingIconForEnabledState(toggled);
         PowerBookmarkUtils.setPriceTrackingEnabled(mSubscriptionsManager, mBookmarkModel,
                 mBookmarkId, toggled, mSubscriptionsManagerCallback);
+        PowerBookmarkMetrics.reportBookmarkSaveFlowPriceTrackingState(toggled
+                        ? PriceTrackingState.PRICE_TRACKING_ENABLED
+                        : PriceTrackingState.PRICE_TRACKING_DISABLED);
     }
 
     void setPriceTrackingNotificationUiEnabled(boolean enabled) {

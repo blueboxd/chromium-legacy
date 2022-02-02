@@ -34,6 +34,7 @@ static_library("core") {
   if (build_with_on_device_clustering_backend) {
     sources += [
       "cluster_finalizer.h",
+      "cluster_metrics_utils.h",
       "cluster_processor.h",
       "clusterer.cc",
       "clusterer.h",
@@ -41,6 +42,8 @@ static_library("core") {
       "content_annotations_cluster_processor.h",
       "content_visibility_cluster_finalizer.cc",
       "content_visibility_cluster_finalizer.h",
+      "keyword_cluster_finalizer.cc",
+      "keyword_cluster_finalizer.h",
       "noisy_cluster_finalizer.cc",
       "noisy_cluster_finalizer.h",
       "on_device_clustering_backend.cc",
@@ -91,6 +94,7 @@ source_set("unit_tests") {
       "clusterer_unittest.cc",
       "content_annotations_cluster_processor_unittest.cc",
       "content_visibility_cluster_finalizer_unittest.cc",
+      "keyword_cluster_finalizer_unittest.cc",
       "noisy_cluster_finalizer_unittest.cc",
       "on_device_clustering_backend_unittest.cc",
       "on_device_clustering_util_unittest.cc",

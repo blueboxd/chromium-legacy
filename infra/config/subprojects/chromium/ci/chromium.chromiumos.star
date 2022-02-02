@@ -188,6 +188,16 @@ ci.builder(
 )
 
 ci.builder(
+    name = "linux-chromeos-annotator-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "rel",
+    ),
+    main_console_view = "main",
+)
+
+ci.builder(
     name = "lacros-amd64-generic-binary-size-rel",
     console_view_entry = consoles.console_view_entry(
         category = "lacros|size",
@@ -224,6 +234,7 @@ ci.builder(
 
 ci.builder(
     name = "lacros-amd64-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|x64",
         short_name = "rel",
@@ -235,6 +246,7 @@ ci.builder(
 
 ci.builder(
     name = "lacros-arm-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "lacros|arm",
         short_name = "arm",

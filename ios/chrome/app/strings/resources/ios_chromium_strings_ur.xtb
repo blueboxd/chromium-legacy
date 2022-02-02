@@ -31,7 +31,6 @@
 <translation id="2478931088402984578">‏<ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> کو منتخب کریں</translation>
 <translation id="2567507405773541360">‏ایک آسان، محفوظ اور پہلے سے کہیں زیادہ تیز Chromium کے ساتھ مزید کام کریں</translation>
 <translation id="2590893390871230428">‏اپنے Chromium ڈیٹا کو مطابقت پذیر بنائیں</translation>
-<translation id="259094968798709429">پاس ورڈز کو <ph name="BEGIN_LINK" />پاس ورڈ مینیجر<ph name="END_LINK" /> میں محفوظ کیا جاتا ہے تاکہ آپ انہیں کسی بھی آلہ پر استعمال کرسکیں۔</translation>
 <translation id="2650312721222849884">‏اپنے ٹیبز کو دیکھنے کے لئے جہاں بھی آپ Chromium استعمال کرتے ہیں، سِنک کو آن کریں</translation>
 <translation id="2684230048001240293">‏اپنے ٹیبز، پاس ورڈز اور ادائیگی کی معلومات کو اپنے تمام آلات پر سنک کرنے کیلئے Chromium کو بطور ڈیفالٹ براؤزر سیٹ کریں</translation>
 <translation id="2730884209570016437">‏Chromium آپ کا کیمرا استعمال نہیں کر سکتا ہے کیونکہ یہ کسی دوسری ایپلیکیشن کے زیر استعمال ہے</translation>
@@ -78,6 +77,7 @@
 <translation id="6424492062988593837">‏Chromium اور بھی بہتر ہوگیا ہے! ایک نیا ورژن دستیاب ہے۔</translation>
 <translation id="6752854822223394465">‏آپ کی تنظیم Chromium سیٹ اپ کر رہی ہے...</translation>
 <translation id="6820823224820483452">‏Chromium سبھی پاس ورڈز چیک نہیں کر سکا۔ کل دوبارہ کوشش کریں۔</translation>
+<translation id="7006920032187763988">‏آپ اپنے iPad پر پاس ورڈ مینیجر میں اپنے محفوظ کردہ پاس ورڈز کو دیگر ایپس میں استعمال کر سکتے ہیں۔</translation>
 <translation id="7018284295775193585">‏Chromium اپ ڈیٹ نہیں کیا جا سکتا</translation>
 <translation id="7045244423563602563">‏Chromium میں سائن ان کریں</translation>
 <translation id="7099326575020694068">‏Chromium تقسیم کے منظر کی وضع میں آپ کا کیمرا استعمال نہیں کر سکتا ہے</translation>
@@ -104,11 +104,13 @@
 <translation id="8073677936375100957">‏اس آلہ سے آپ کا Chromium ڈیٹا صاف کریں؟</translation>
 <translation id="8175055321229419309">‏تجویز: <ph name="BEGIN_LINK" />Chromium کو اپنے ڈاک میں منتقل کریں<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">‏Chromium اپ ڈیٹس چیک نہیں کر سکا۔ بعد میں دوبارہ کوشش کریں۔</translation>
+<translation id="858114650497379505">‏آپ اپنے iPhone پر پاس ورڈ مینیجر میں اپنے محفوظ کردہ پاس ورڈز کو دیگر ایپس میں استعمال کر سکتے ہیں۔</translation>
 <translation id="8586442755830160949">‏کاپی رائٹ ‎<ph name="YEAR" /> The Chromium Authors۔ جملہ حقوق محفوظ۔</translation>
 <translation id="8663480472502753423">‏Chromium کو اپ ٹو ڈیٹ رکھیں</translation>
 <translation id="8776843108004031667">‏اس اکاؤنٹ اور کسی بھی غیر محفوظ ڈیٹا کو Chromium سے ہٹا دیا جائے گا۔</translation>
 <translation id="894437814105052438">‏آپ کے سائن آؤٹ کرنے پر، Chromium کوئی بھی نیا ڈیٹا آپ کے Google اکاؤنٹ کے ساتھ سِنک نہیں کرے گا۔ پہلے کا سِنک کردہ ڈیٹا اکاؤنٹ میں باقی رہے گا۔</translation>
 <translation id="9022552996538154597">‏Chromium میں سائن ان کریں</translation>
+<translation id="9059693977935746710">آپ کو یہ پاس ورڈ یاد رکھنے کی ضرورت نہیں ہوگی۔ اسے پاس ورڈ مینیجر میں <ph name="EMAIL" /> کے لیے محفوظ کیا جائے گا</translation>
 <translation id="9089354809943900324">‏Chromium پرانا ہے</translation>
 <translation id="9110075932708282655">‏بطور ڈیفالٹ Chromium کا استعمال کریں</translation>
 <translation id="921174536258924340">‏Chromium سبھی پاس ورڈز چیک نہیں کر سکا۔ آئندہ کل دوبارہ کوشش کریں یا <ph name="BEGIN_LINK" />اپنے Google اکاؤنٹ میں پاس ورڈز چیک کریں۔<ph name="END_LINK" /></translation>

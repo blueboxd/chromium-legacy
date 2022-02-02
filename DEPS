@@ -239,15 +239,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'eb6851ab510554632125a4c3e1a9fcd43f148d91',
+  'skia_revision': 'a6986cd7224f104044fd5bc29cb5f80796d76f5a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e218afa8473132b56a9e1532be7920dd130aeb7e',
+  'v8_revision': 'db77a493a5595b835655b243202ac0c2fb1898a6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '663831aa676c59829cc3d822340812f016bf77f6',
+  'angle_revision': '343b7bb57268e1cb47da26fcb0ed40fe47e8ff5d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -255,7 +255,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '7555375264d234a42305f85d37999d1f8b656099',
+  'pdfium_revision': '27cabf3dae38d0634a53316da0ad069bf0413495',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -306,7 +306,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'd16203a89ed9ac8af19f92a11e4c2cea48744d99',
+  'catapult_revision': '1227b26f3260494ce81f0d0180b2b084ba211f6d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -1532,7 +1532,7 @@ deps = {
   },
 
   'src/third_party/requests/src': {
-      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'refs/tags/v2.23.0',
+      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'c7e0fc087ceeadb8b4c84a0953a422c474093d6d',
       'condition': 'checkout_android',
   },
 
@@ -1700,7 +1700,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b9131a70da0bd29f3c8c2aa208fe89de4424935f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@049fc349261eedf4e76299646f098360a600256a',
     'condition': 'checkout_src_internal',
   },
 

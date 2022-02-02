@@ -187,6 +187,46 @@ FrameLoader::FrameLoader(LocalFrame* frame)
   TakeObjectSnapshot();
 }
 
+WebFrameLoadType FrameLoader::HandleInitialEmptyDocumentReplacementIfNeeded(
+    const KURL& url,
+    WebFrameLoadType frame_load_type) {
+  // Converts navigations from the initial empty document to do replacement if
+  // needed.
+  if (features::IsInitialNavigationEntryEnabled()) {
+    // When we have initial NavigationEntries, just checking the original load
+    // type and IsOnInitialEmptyDocument() should be enough. Note that we don't
+    // convert reloads or history navigations (so only
+    // kStandard navigations can get converted to do replacement).
+    if (frame_load_type == WebFrameLoadType::kStandard &&
+        IsOnInitialEmptyDocument()) {
+      frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
+    }
+    return frame_load_type;
+  }
+
+  if (frame_load_type == WebFrameLoadType::kStandard ||
+      frame_load_type == WebFrameLoadType::kReplaceCurrentItem) {
+    if (frame_->Tree().Parent() && IsOnInitialEmptyDocument()) {
+      // Subframe navigations from the initial empty document should always do
+      // replacement.
+      return WebFrameLoadType::kReplaceCurrentItem;
+    }
+    if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
+      // For main frames, currently only empty-URL navigations will be converted
+      // to do replacement. Note that this will cause the navigation to be
+      // ignored in the browser side, so no NavigationEntry will be added.
+      // TODO(https://crbug.com/1215096, https://crbug.com/524208): Make the
+      // main frame case follow the behavior of subframes (always replace when
+      // navigating from the initial empty document), and that a NavigationEntry
+      // will always be created.
+      if (Opener() && url.IsEmpty())
+        return WebFrameLoadType::kReplaceCurrentItem;
+      return WebFrameLoadType::kStandard;
+    }
+  }
+  return frame_load_type;
+}
+
 FrameLoader::~FrameLoader() {
   DCHECK_EQ(state_, State::kDetached);
 }
@@ -632,13 +672,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
         mojom::blink::WebFeature::kFileSystemUrlNavigation);
   }
 
-  // Convert navigations from the initial empty document to do replacement if
-  // needed. Note that we don't convert reloads or history navigations (so only
-  // kStandard navigations can get converted to do replacement).
-  if (frame_load_type == WebFrameLoadType::kStandard &&
-      IsOnInitialEmptyDocument()) {
-    frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-  }
+  frame_load_type = HandleInitialEmptyDocumentReplacementIfNeeded(
+      resource_request.Url(), frame_load_type);
 
   bool same_document_navigation =
       request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
@@ -1361,17 +1396,6 @@ void FrameLoader::ProcessFragment(const KURL& url,
   if (!view)
     return;
 
-  // Leaking scroll position to a cross-origin ancestor would permit the
-  // so-called "framesniffing" attack.
-  Frame* boundary_frame =
-      url.HasFragmentIdentifier()
-          ? frame_->FindUnsafeParentScrollPropagationBoundary()
-          : nullptr;
-
-  // FIXME: Handle RemoteFrames
-  if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
-    boundary_local_frame->View()->SetSafeToPropagateScrollToParent(false);
-
   const bool is_same_document_navigation =
       load_start_type == kNavigationWithinSameDocument;
 
@@ -1410,9 +1434,6 @@ void FrameLoader::ProcessFragment(const KURL& url,
 
   view->ProcessUrlFragment(url, is_same_document_navigation,
                            !block_fragment_scroll);
-
-  if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
-    boundary_local_frame->View()->SetSafeToPropagateScrollToParent(true);
 }
 
 bool FrameLoader::ShouldClose(bool is_reload) {

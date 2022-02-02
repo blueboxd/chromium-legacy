@@ -1632,6 +1632,9 @@ extern const char kShareContextMenuDescription[];
 extern const char kForceMajorVersion100InUserAgentName[];
 extern const char kForceMajorVersion100InUserAgentDescription[];
 
+extern const char kForceMinorVersion100InUserAgentName[];
+extern const char kForceMinorVersion100InUserAgentDescription[];
+
 // Android --------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
@@ -2044,6 +2047,9 @@ extern const char kUseRealColorSpaceForAndroidVideoDescription[];
 
 extern const char kUserMediaScreenCapturingName[];
 extern const char kUserMediaScreenCapturingDescription[];
+
+extern const char kUseULPLanguagesInChromeName[];
+extern const char kUseULPLanguagesInChromeDescription[];
 
 extern const char kVideoTutorialsName[];
 extern const char kVideoTutorialsDescription[];

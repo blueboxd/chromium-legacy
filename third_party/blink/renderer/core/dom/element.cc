@@ -36,6 +36,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
+#include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_inner_html_options.h"
@@ -1126,109 +1127,23 @@ void Element::scrollIntoView(bool align_to_top) {
   scrollIntoView(arg);
 }
 
-static mojom::blink::ScrollAlignment ToPhysicalAlignment(
-    const ScrollIntoViewOptions* options,
-    ScrollOrientation axis,
-    WritingMode writing_mode,
-    bool is_ltr) {
-  bool is_horizontal_writing_mode = IsHorizontalWritingMode(writing_mode);
-  String alignment =
-      ((axis == kHorizontalScroll && is_horizontal_writing_mode) ||
-       (axis == kVerticalScroll && !is_horizontal_writing_mode))
-          ? options->inlinePosition()
-          : options->block();
-
-  if (alignment == "center")
-    return ScrollAlignment::CenterAlways();
-  if (alignment == "nearest")
-    return ScrollAlignment::ToEdgeIfNeeded();
-  if (alignment == "start") {
-    if (axis == kHorizontalScroll) {
-      switch (writing_mode) {
-        case WritingMode::kHorizontalTb:
-          return is_ltr ? ScrollAlignment::LeftAlways()
-                        : ScrollAlignment::RightAlways();
-        case WritingMode::kVerticalRl:
-        case WritingMode::kSidewaysRl:
-          return ScrollAlignment::RightAlways();
-        case WritingMode::kVerticalLr:
-        case WritingMode::kSidewaysLr:
-          return ScrollAlignment::LeftAlways();
-        default:
-          NOTREACHED();
-          return ScrollAlignment::LeftAlways();
-      }
-    } else {
-      switch (writing_mode) {
-        case WritingMode::kHorizontalTb:
-          return ScrollAlignment::TopAlways();
-        case WritingMode::kVerticalRl:
-        case WritingMode::kSidewaysRl:
-        case WritingMode::kVerticalLr:
-          return is_ltr ? ScrollAlignment::TopAlways()
-                        : ScrollAlignment::BottomAlways();
-        case WritingMode::kSidewaysLr:
-          return is_ltr ? ScrollAlignment::BottomAlways()
-                        : ScrollAlignment::TopAlways();
-        default:
-          NOTREACHED();
-          return ScrollAlignment::TopAlways();
-      }
-    }
-  }
-  if (alignment == "end") {
-    if (axis == kHorizontalScroll) {
-      switch (writing_mode) {
-        case WritingMode::kHorizontalTb:
-          return is_ltr ? ScrollAlignment::RightAlways()
-                        : ScrollAlignment::LeftAlways();
-        case WritingMode::kVerticalRl:
-        case WritingMode::kSidewaysRl:
-          return ScrollAlignment::LeftAlways();
-        case WritingMode::kVerticalLr:
-        case WritingMode::kSidewaysLr:
-          return ScrollAlignment::RightAlways();
-        default:
-          NOTREACHED();
-          return ScrollAlignment::RightAlways();
-      }
-    } else {
-      switch (writing_mode) {
-        case WritingMode::kHorizontalTb:
-          return ScrollAlignment::BottomAlways();
-        case WritingMode::kVerticalRl:
-        case WritingMode::kSidewaysRl:
-        case WritingMode::kVerticalLr:
-          return is_ltr ? ScrollAlignment::BottomAlways()
-                        : ScrollAlignment::TopAlways();
-        case WritingMode::kSidewaysLr:
-          return is_ltr ? ScrollAlignment::TopAlways()
-                        : ScrollAlignment::BottomAlways();
-        default:
-          NOTREACHED();
-          return ScrollAlignment::BottomAlways();
-      }
-    }
-  }
-
-  // Default values
-  if (is_horizontal_writing_mode) {
-    return (axis == kHorizontalScroll) ? ScrollAlignment::ToEdgeIfNeeded()
-                                       : ScrollAlignment::TopAlways();
-  }
-  return (axis == kHorizontalScroll) ? ScrollAlignment::LeftAlways()
-                                     : ScrollAlignment::ToEdgeIfNeeded();
-}
-
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
   ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kScrollIntoView);
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
-  ScrollIntoViewNoVisualUpdate(options);
+
+  if (!GetLayoutObject() || !GetDocument().GetPage())
+    return;
+
+  mojom::blink::ScrollIntoViewParamsPtr params =
+      ScrollAlignment::CreateScrollIntoViewParams(*options,
+                                                  *GetComputedStyle());
+
+  ScrollIntoViewNoVisualUpdate(std::move(params));
 }
 
 void Element::ScrollIntoViewNoVisualUpdate(
-    const ScrollIntoViewOptions* options) {
+    mojom::blink::ScrollIntoViewParamsPtr params) {
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
@@ -1237,22 +1152,8 @@ void Element::ScrollIntoViewNoVisualUpdate(
     return;
   }
 
-  mojom::blink::ScrollBehavior behavior =
-      (options->behavior() == "smooth") ? mojom::blink::ScrollBehavior::kSmooth
-                                        : mojom::blink::ScrollBehavior::kAuto;
-
-  WritingMode writing_mode = GetComputedStyle()->GetWritingMode();
-  bool is_ltr = GetComputedStyle()->IsLeftToRightDirection();
-  auto align_x =
-      ToPhysicalAlignment(options, kHorizontalScroll, writing_mode, is_ltr);
-  auto align_y =
-      ToPhysicalAlignment(options, kVerticalScroll, writing_mode, is_ltr);
-
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
-  GetLayoutObject()->ScrollRectToVisible(
-      bounds, ScrollAlignment::CreateScrollIntoViewParams(
-                  align_x, align_y, mojom::blink::ScrollType::kProgrammatic,
-                  /*make_visible_in_visual_viewport=*/true, behavior));
+  GetLayoutObject()->ScrollRectToVisible(bounds, std::move(params));
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }
@@ -1603,7 +1504,7 @@ double Element::scrollTop() {
   // Don't disclose scroll position in preview state. See crbug.com/1261689.
   auto* select_element = DynamicTo<HTMLSelectElement>(this);
   if (select_element && !select_element->UsesMenuList() &&
-      !select_element->SuggestedValue().IsEmpty()) {
+      select_element->GetAutofillState() == WebAutofillState::kPreviewed) {
     return 0;
   }
 

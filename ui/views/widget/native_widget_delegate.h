@@ -76,6 +76,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Called just after the native widget is destroyed.
   virtual void OnNativeWidgetDestroyed() = 0;
 
+  // Called after the native widget's parent has changed.
+  virtual void OnNativeWidgetParentChanged(gfx::NativeView parent) = 0;
+
   // Returns the smallest size the window can be resized to by the user.
   virtual gfx::Size GetMinimumSize() const = 0;
 
@@ -102,6 +105,12 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Called when the user begins/ends to change the bounds of the window.
   virtual void OnNativeWidgetBeginUserBoundsChange() = 0;
   virtual void OnNativeWidgetEndUserBoundsChange() = 0;
+
+  // Called when the NativeWidget is added and/or being removed from a
+  // Compositor. On some platforms the Compositor never changes, and these
+  // functions are never called.
+  virtual void OnNativeWidgetAddedToCompositor() = 0;
+  virtual void OnNativeWidgetRemovingFromCompositor() = 0;
 
   // Returns true if the delegate has a FocusManager.
   virtual bool HasFocusManager() const = 0;

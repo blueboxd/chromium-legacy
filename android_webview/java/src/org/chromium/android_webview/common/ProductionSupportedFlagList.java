@@ -203,6 +203,8 @@ public final class ProductionSupportedFlagList {
                             + " PageTimeSpent."),
             Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION100_IN_USER_AGENT,
                     "Force the Chrome major version number to 100 in the User-Agent string."),
+            Flag.baseFeature(BlinkFeatures.FORCE_MINOR_VERSION100_IN_USER_AGENT,
+                    "Force the Chrome minor version number to 100 in the User-Agent string."),
             Flag.baseFeature(NetworkServiceFeatures.URL_LOADER_SYNC_CLIENT,
                     "Optimizes communication between URLLoader and CorsURLLoader."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
@@ -224,5 +226,7 @@ public final class ProductionSupportedFlagList {
                     "Enables prefetching Android fonts on renderer startup."),
             Flag.baseFeature(AwFeatures.WEBVIEW_LEGACY_TLS_SUPPORT,
                     "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
+            Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
+                    "Enables creation of initial NavigationEntries on WebContents creation."),
     };
 }

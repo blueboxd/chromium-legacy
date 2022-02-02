@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.bookmarks.BookmarkListEntry.ViewType;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
 import org.chromium.chrome.browser.sync.SyncService;
@@ -147,6 +149,17 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         return position;
     }
 
+    private void filterForPriceTrackingCategory(List<BookmarkId> bookmarks) {
+        for (int i = bookmarks.size() - 1; i >= 0; i--) {
+            PowerBookmarkMeta meta = mDelegate.getModel().getPowerBookmarkMeta(bookmarks.get(i));
+            if (meta == null || meta.getType() != PowerBookmarkType.SHOPPING
+                    || !meta.getShoppingSpecifics().getIsPriceTracked()) {
+                bookmarks.remove(i);
+                continue;
+            }
+        }
+    }
+
     private void setBookmarks(List<BookmarkId> bookmarks) {
         clearHighlight();
         mElements.clear();
@@ -157,6 +170,10 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         }
 
         updateHeader(false);
+        if (BookmarkId.SHOPPING_FOLDER.equals(mCurrentFolder)) {
+            filterForPriceTrackingCategory(bookmarks);
+        }
+
         for (BookmarkId bookmarkId : bookmarks) {
             BookmarkItem item = mDelegate.getModel().getBookmarkById(bookmarkId);
 
@@ -434,7 +451,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
      */
     void moveUpOne(BookmarkId bookmarkId) {
         int pos = getPositionForBookmark(bookmarkId);
-        assert isOrderable(getItemByPosition(pos));
+        assert isReorderable(getItemByPosition(pos));
         mElements.remove(pos);
         mElements.add(pos - 1,
                 BookmarkListEntry.createBookmarkEntry(
@@ -448,7 +465,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
      */
     void moveDownOne(BookmarkId bookmarkId) {
         int pos = getPositionForBookmark(bookmarkId);
-        assert isOrderable(getItemByPosition(pos));
+        assert isReorderable(getItemByPosition(pos));
         mElements.remove(pos);
         mElements.add(pos + 1,
                 BookmarkListEntry.createBookmarkEntry(
@@ -576,9 +593,9 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         return endIndex;
     }
 
-    private boolean isOrderable(BookmarkListEntry entry) {
+    private boolean isReorderable(BookmarkListEntry entry) {
         return entry != null && entry.getBookmarkItem() != null
-                && entry.getBookmarkItem().isMovable();
+                && entry.getBookmarkItem().isReorderable();
     }
 
     @Override
@@ -591,7 +608,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
     @Override
     @VisibleForTesting
     public boolean isPassivelyDraggable(ViewHolder viewHolder) {
-        return isOrderable(getItemByHolder(viewHolder));
+        return isReorderable(getItemByHolder(viewHolder));
     }
 
     @VisibleForTesting

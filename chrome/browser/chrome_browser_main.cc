@@ -236,7 +236,6 @@
 #if defined(OS_MAC)
 #include <Security/Security.h>
 
-#include "base/mac/scoped_nsautorelease_pool.h"
 #include "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -506,13 +505,13 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     content::MainFunctionParams parameters,
     StartupData* startup_data)
     : parameters_(std::move(parameters)),
-      parsed_command_line_(*parameters.command_line),
+      parsed_command_line_(*parameters_.command_line),
       should_call_pre_main_loop_start_startup_on_variations_service_(
-          !parameters.ui_task),
+          !parameters_.ui_task),
       startup_data_(startup_data) {
   DCHECK(startup_data_);
   // If we're running tests (ui_task is non-null).
-  if (parameters.ui_task)
+  if (parameters_.ui_task)
     browser_defaults::enable_help_app = false;
 }
 
@@ -1729,13 +1728,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // Record now as the last successful chrome start.
     if (ShouldRecordActiveUse(parsed_command_line()))
       GoogleUpdateSettings::SetLastRunTime();
-
-#if defined(OS_MAC)
-    // Call Recycle() here as late as possible, before going into the loop
-    // because Start() will add things to it while creating the main window.
-    if (parameters_.autorelease_pool)
-      parameters_.autorelease_pool->Recycle();
-#endif  // defined(OS_MAC)
 
     // Create the RunLoop for MainMessageLoopRun() to use and transfer
     // ownership of the browser's lifetime to the BrowserProcess.

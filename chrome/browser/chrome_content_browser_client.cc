@@ -84,6 +84,7 @@
 #include "chrome/browser/prefetch/no_state_prefetch/chrome_no_state_prefetch_contents_delegate.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_navigation_throttle.h"
+#include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/prefetch/prefetch_proxy/chrome_speculation_host_delegate.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_service.h"
@@ -6365,6 +6366,21 @@ void ChromeContentBrowserClient::FlushBackgroundAttributions(
   background_attribution_flusher_->FlushPreNativeAttributions(
       std::move(callback));
 #endif
+}
+
+bool ChromeContentBrowserClient::ShouldPreconnectNavigation(
+    content::BrowserContext* browser_context) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // An extension could be blocking connections for privacy reasons, so skip
+  // optimization if there are any extensions with WebRequest permissions.
+  const auto* web_request_api =
+      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+          browser_context);
+  if (web_request_api->MayHaveProxies())
+    return false;
+#endif
+  return prefetch::IsSomePreloadingEnabled(
+      *Profile::FromBrowserContext(browser_context)->GetPrefs());
 }
 
 ChromeContentBrowserClient::UserAgentReductionEnterprisePolicyState

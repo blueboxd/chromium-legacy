@@ -12,6 +12,8 @@ load("//project.star", "settings")
 try_.defaults.set(
     builder_group = "tryserver.chromium.chromiumos",
     cores = 8,
+    orchestrator_cores = 2,
+    compilator_cores = 32,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
@@ -41,13 +43,19 @@ try_.builder(
     ),
 )
 
-try_.builder(
+try_.orchestrator_builder(
     name = "chromeos-amd64-generic-rel",
+    compilator = "chromeos-amd64-generic-rel-compilator",
     branch_selector = branches.CROS_LTS_MILESTONE,
-    builderless = not settings.is_main,
     main_list_view = "try",
-    os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(),
+)
+
+try_.compilator_builder(
+    name = "chromeos-amd64-generic-rel-compilator",
+    branch_selector = branches.CROS_LTS_MILESTONE,
+    main_list_view = "try",
+    cores = 16,
 )
 
 try_.builder(
@@ -66,6 +74,7 @@ try_.builder(
 
 try_.builder(
     name = "lacros-amd64-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -74,6 +83,7 @@ try_.builder(
 
 try_.builder(
     name = "lacros-arm-generic-rel",
+    branch_selector = branches.STANDARD_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -110,17 +120,21 @@ try_.builder(
     name = "linux-chromeos-inverse-fieldtrials-fyi-rel",
 )
 
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "linux-chromeos-rel",
+    compilator = "linux-chromeos-rel-compilator",
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(),
-    compilator_cores = 32,
-    compilator_goma_jobs = goma.jobs.J300,
-    compilator_name = "linux-chromeos-rel-compilator",
+    tryjob = try_.job(),
+)
+
+try_.compilator_builder(
+    name = "linux-chromeos-rel-compilator",
+    branch_selector = branches.CROS_LTS_MILESTONE,
+    main_list_view = "try",
+    goma_jobs = goma.jobs.J300,
 )
 
 try_.builder(
@@ -174,6 +188,10 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-dbg",
+)
+
+try_.builder(
+    name = "linux-chromeos-annotator-rel",
 )
 
 try_.builder(

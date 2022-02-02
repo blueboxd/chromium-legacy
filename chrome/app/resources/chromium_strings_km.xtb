@@ -36,6 +36,7 @@
 <translation id="2313870531055795960">ពិនិត្យ URL ធៀបនឹងបញ្ជីគេហទំព័រគ្មានសុវត្ថិភាព ដែលរក្សាទុកនៅក្នុង Chromium។ ប្រសិនបើ​គេហទំព័រណាមួយ​ព្យាយាមលួចពាក្យសម្ងាត់​របស់អ្នក ឬនៅពេលអ្នក​ទាញយក​ឯកសារដែលបង្កគ្រោះថ្នាក់នោះ Chromium ក៏ប្រហែលជាបញ្ជូន URL រួមជាមួយផ្នែកនៃខ្លឹមសារទំព័រ ទៅការរុករកដោយសុវត្ថិភាពផងដែរ។</translation>
 <translation id="2343156876103232566">ដើម្បីផ្ញើលេខទូរសព្ទ​ពីទីនេះទៅទូរសព្ទ Android របស់អ្នក សូមចូល Chromium នៅលើ​ឧបករណ៍​ទាំងពីរ។</translation>
 <translation id="2347108572062610441">កម្មវិធីបន្ថែមនេះបានប្តូរអ្វីដែលបានបង្ហាញនៅលើទំព័រនៅពេលអ្នកចាប់ផ្តើម Chromium។</translation>
+<translation id="2359808026110333948">បន្ត</translation>
 <translation id="2396765026452590966">កម្មវិធីបន្ថែម "<ph name="EXTENSION_NAME" />" បានប្តូរអ្វីដែលបានបង្ហាញនៅលើទំព័រនៅពេលអ្នកចាប់ផ្តើម Chromium។</translation>
 <translation id="2401032172288869980">Chromium ត្រូវការ​ការអនុញ្ញាត​មីក្រូហ្វូន និង​កាមេរ៉ា​សម្រាប់គេហទំព័រនេះ</translation>
 <translation id="2483889755041906834">នៅក្នុង Chromium</translation>
@@ -113,6 +114,7 @@
 <translation id="4407044323746248786">នៅ​តែចង់​ចាក​ចេញពី Chromium ឬ?</translation>
 <translation id="4415566066719264597">អនុញ្ញាត​ឱ្យ Chromium ដំណើរការ​នៅ​ផ្ទៃខាងក្រោយ</translation>
 <translation id="4423735387467980091">កែសម្រួល និងគ្រប់គ្រង Chromium</translation>
+<translation id="4427306783828095590">ការការពារ​ដែលប្រសើរជាងមុនធ្វើសកម្មភាពសកម្មជាងមុន ដើម្បីទប់ស្កាត់ការដាក់នុយ និងកម្មវិធីគ្រោះថ្នាក់</translation>
 <translation id="452711251841752011">សូម​ស្វាគមន៍​មក​កាន់ Chromium។ បាន​បើក​វិនដូ​របស់​កម្មវិធីរុករកតាមអ៊ីនធឺណិត​ថ្មី</translation>
 <translation id="4544142686420020088">Chromium មិន​បានដំឡើងកំណែទេ មានអ្វីមួយខុសប្រក្រតី។ <ph name="BEGIN_LINK" />សូមដោះស្រាយបញ្ហា​នៃការដំឡើងកំណែ Chromium និងការដំឡើងកំណែដែលមិនបានសម្រេចផ្សេងៗ។<ph name="END_LINK" /></translation>
 <translation id="454579500955453258">បន្តនៅក្នុងកម្រងព័ត៌មាន Chromium ថ្មីឬ?</translation>
@@ -238,6 +240,7 @@ Chromium មិនអាចសង្គ្រោះការកំណត់រ�
 <translation id="7561906087460245826">សម្អាតទិន្នន័យពី Chromium (<ph name="URL" />) ផងដែរ</translation>
 <translation id="7585853947355360626">ប្រសិនបើ​ការកំណត់​មិនបង្ហាញនៅលើទំព័រនេះទេ សូមមើលនៅក្នុងការកំណត់កម្មវិធីរុករកតាមអ៊ីនធឺណិត <ph name="LINK_BEGIN" />
       Chromium OS របស់អ្នក<ph name="LINK_END" /></translation>
+<translation id="7597596667193879455">អ្នកបានបើក​ការរុករកដោយ​សុវត្ថិភាពបន្ថែមនៅក្នុង​គណនីរបស់អ្នក។ ឥឡូវនេះ យកវាសម្រាប់ Chromium។</translation>
 <translation id="761356813943268536">Chromium កំពុងប្រើកាមេរ៉ា និងម៉ៃក្រូហ្វូនរបស់អ្នក។</translation>
 <translation id="7617377681829253106">Chromium កាន់តែប្រសើរឡើង</translation>
 <translation id="7686590090926151193">Chromium មិនមែន​ជា​កម្មវិធីរុករក​តាមអ៊ីនធឺណិត​លំនាំដើម​របស់អ្នក​ទេ</translation>
@@ -297,5 +300,6 @@ Chromium មិនអាចសង្គ្រោះការកំណត់រ�
 <translation id="9214764063801632699">ប្រព័ន្ធ Chromium OS</translation>
 <translation id="93478295209880648">Chromium អាច​នឹង​​ដំណើរការ​មិន​​ត្រឹមត្រូវ​ ដោយសារ​វា​មិន​អាចប្រើ​បាន​នៅលើ Windows XP ឬ Windows Vista ទៀត​ឡើយ។</translation>
 <translation id="965162752251293939">តើនរណា​កំពុងប្រើ Chromium?</translation>
+<translation id="967427899662692980">ទទួលបាន​សុវត្ថិភាពខ្លាំង​បំផុតរបស់ Chromium</translation>
 <translation id="985602178874221306">ផលិតករ Chromium</translation>
 </translationbundle>

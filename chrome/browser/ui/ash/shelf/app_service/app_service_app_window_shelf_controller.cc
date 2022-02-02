@@ -230,7 +230,7 @@ void AppServiceAppWindowShelfController::OnWindowPropertyChanged(
     const void* key,
     intptr_t old) {
   if (IgnoreWindow(window)) {
-    observed_windows_.RemoveObservation(window);
+    StopHandleWindow(window);
     return;
   }
   if (key != ash::kShelfIDKey)
@@ -259,7 +259,7 @@ void AppServiceAppWindowShelfController::OnWindowVisibilityChanged(
     return;
 
   if (IgnoreWindow(window)) {
-    observed_windows_.RemoveObservation(window);
+    StopHandleWindow(window);
     return;
   }
 
@@ -309,9 +309,6 @@ void AppServiceAppWindowShelfController::OnWindowDestroying(
     aura::Window* window) {
   DCHECK(observed_windows_.IsObservingSource(window));
   observed_windows_.RemoveObservation(window);
-  if (IgnoreWindow(window)) {
-    return;
-  }
 
   if (arc_tracker_)
     arc_tracker_->RemoveCandidateWindow(window);
@@ -790,4 +787,13 @@ void AppServiceAppWindowShelfController::UserHasAppOnActiveDesktop(
         window, multi_user_util::GetCurrentAccountId());
     RegisterWindow(window, shelf_id);
   }
+}
+
+void AppServiceAppWindowShelfController::StopHandleWindow(
+    aura::Window* window) {
+  observed_windows_.RemoveObservation(window);
+  if (arc_tracker_)
+    arc_tracker_->RemoveCandidateWindow(window);
+  UnregisterWindow(window);
+  aura_window_to_app_window_.erase(window);
 }

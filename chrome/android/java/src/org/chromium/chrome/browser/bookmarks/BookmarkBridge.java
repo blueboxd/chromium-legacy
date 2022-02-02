@@ -11,6 +11,7 @@ import android.util.Pair;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import com.google.common.primitives.UnsignedLongs;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.ContextUtils;
@@ -19,20 +20,29 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
+import org.chromium.chrome.browser.power_bookmarks.ShoppingSpecifics;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
+import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.commerce.PriceTracking.ProductPrice;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -49,6 +59,8 @@ public class BookmarkBridge {
             new ArrayList<DelayedBookmarkCallback>();
     private final ObserverList<BookmarkModelObserver> mObservers =
             new ObserverList<BookmarkModelObserver>();
+    private SubscriptionsManager mSubscriptionManager;
+    private SubscriptionsManager.SubscriptionObserver mSubscriptionsObserver;
 
     /**
      * Interface for callback object for fetching bookmarks and folder hierarchy.
@@ -70,6 +82,16 @@ public class BookmarkBridge {
         @CalledByNative("BookmarksCallback")
         void onBookmarksFolderHierarchyAvailable(BookmarkId folderId,
                 List<BookmarkItem> bookmarksList);
+    }
+
+    /** A callback for updates to the price of a product. */
+    public interface PriceUpdateCallback {
+        /**
+         * @param id The bookmark ID that the price information was fetched for.
+         * @param url The URL of the product that was updated.
+         * @param price The price of the product.
+         */
+        void onPriceUpdated(BookmarkId id, GURL url, ProductPrice price);
     }
 
     /**
@@ -245,9 +267,11 @@ public class BookmarkBridge {
 
         /**@return Whether this bookmark can be moved */
         public boolean isMovable() {
-            if (ReadingListUtils.isSwappableReadingListItem(mId)) {
-                return true;
-            }
+            return ReadingListUtils.isSwappableReadingListItem(mId) || isReorderable();
+        }
+
+        /**@return Whether this bookmark can be moved */
+        public boolean isReorderable() {
             return isEditable() && mId.getType() == BookmarkType.NORMAL;
         }
 
@@ -291,6 +315,25 @@ public class BookmarkBridge {
         mNativeBookmarkBridge = BookmarkBridgeJni.get().init(BookmarkBridge.this, profile);
         mIsDoingExtensiveChanges = BookmarkBridgeJni.get().isDoingExtensiveChanges(
                 mNativeBookmarkBridge, BookmarkBridge.this);
+        mSubscriptionsObserver = new SubscriptionsManager.SubscriptionObserver() {
+            @Override
+            public void onSubscribe(List<CommerceSubscription> subscriptions) {}
+
+            @Override
+            public void onUnsubscribe(List<CommerceSubscription> subscriptions) {
+                removeExplicitShoppingSubscriptions(subscriptions);
+            }
+        };
+        if (ShoppingFeatures.isShoppingListEnabled()) {
+            mSubscriptionManager = new CommerceSubscriptionsServiceFactory()
+                                           .getForLastUsedProfile()
+                                           .getSubscriptionsManager();
+        }
+    }
+
+    @VisibleForTesting
+    SubscriptionsManager.SubscriptionObserver getSubscriptionObserver() {
+        return mSubscriptionsObserver;
     }
 
     /**
@@ -305,6 +348,10 @@ public class BookmarkBridge {
             mDelayedBookmarkCallbacks.clear();
         }
         mObservers.clear();
+
+        if (mSubscriptionManager != null) {
+            mSubscriptionManager.removeObserver(mSubscriptionsObserver);
+        }
     }
 
     /** Returns whether the bridge has been destroyed. */
@@ -606,6 +653,61 @@ public class BookmarkBridge {
     }
 
     /**
+     * Disable price tracking for the list of subscriptions. This flips the bit in ShoppingSpecifics
+     * but does not actually unsubscribe from the subscription service -- this assumes that is
+     * already done.
+     * TODO(1284730): This should live somewhere other than BookmarkBridge.
+     *
+     * @param subscriptions The list of subscriptions to disable.
+     */
+    private void removeExplicitShoppingSubscriptions(List<CommerceSubscription> subscriptions) {
+        if (subscriptions == null) return;
+
+        List<BookmarkId> products = searchBookmarks("", null, PowerBookmarkType.SHOPPING, -1);
+        if (products == null || products.size() == 0) return;
+
+        // Put the offer and cluster IDs into a map so they can be quickly checked.
+        HashSet<Long> offerIdMap = new HashSet<>();
+        HashSet<Long> clusterIdMap = new HashSet<>();
+        for (CommerceSubscription c : subscriptions) {
+            // Ensure the subscription is explicit.
+            if (c == null
+                    || !c.getManagementType().equals(
+                            CommerceSubscription.SubscriptionManagementType.USER_MANAGED)) {
+                continue;
+            }
+
+            if (c.getTrackingIdType().equals(CommerceSubscription.TrackingIdType.OFFER_ID)) {
+                offerIdMap.add(UnsignedLongs.parseUnsignedLong(c.getTrackingId()));
+            } else if (c.getTrackingIdType().equals(
+                               CommerceSubscription.TrackingIdType.PRODUCT_CLUSTER_ID)) {
+                clusterIdMap.add(UnsignedLongs.parseUnsignedLong(c.getTrackingId()));
+            }
+        }
+
+        // Look at all the products the user has saved to find any of the above product or cluster
+        // IDs.
+        for (BookmarkId product : products) {
+            PowerBookmarkMeta meta = getPowerBookmarkMeta(product);
+            if (meta.getType() != PowerBookmarkType.SHOPPING) continue;
+
+            ShoppingSpecifics specifics = meta.getShoppingSpecifics();
+            if (offerIdMap.contains(specifics.getOfferId())
+                    || clusterIdMap.contains(specifics.getProductClusterId())) {
+                // Reset the meta using a copy of the existing one, but set the price tracking flag
+                // to false.
+                setPowerBookmarkMeta(product,
+                        PowerBookmarkMeta.newBuilder(meta)
+                                .setShoppingSpecifics(
+                                        ShoppingSpecifics.newBuilder(meta.getShoppingSpecifics())
+                                                .setIsPriceTracked(false)
+                                                .build())
+                                .build());
+            }
+        }
+    }
+
+    /**
      * Gets the child of a folder at the specific position.
      * @param folderId Id of the parent folder
      * @param index Position of child among all children in folder
@@ -870,6 +972,8 @@ public class BookmarkBridge {
         assert title != null;
         assert url != null;
 
+        recordBookmarkAdded();
+
         if (TextUtils.isEmpty(title)) title = url.getSpec();
         return BookmarkBridgeJni.get().addBookmark(
                 mNativeBookmarkBridge, BookmarkBridge.this, parent, index, title, url);
@@ -896,9 +1000,16 @@ public class BookmarkBridge {
         assert title != null;
         assert url != null;
 
+        recordBookmarkAdded();
+
         if (TextUtils.isEmpty(title)) title = url.getSpec();
         return BookmarkBridgeJni.get().addPowerBookmark(
                 mNativeBookmarkBridge, this, webContents, parent, index, title, url);
+    }
+
+    /** Record the user action for adding a bookmark. */
+    private void recordBookmarkAdded() {
+        RecordUserAction.record("BookmarkAdded");
     }
 
     @Deprecated // Only included until internal repository is updated.
@@ -1125,6 +1236,46 @@ public class BookmarkBridge {
         }
     }
 
+    /**
+     * Get updated price information for a given list of bookmark IDs.
+     * @param bookmarksToUpdate The IDs of the bookmarks to update.
+     * @param callback A callback to be called for each ID iff price information is available.
+     */
+    public void getUpdatedProductPrices(
+            List<BookmarkId> bookmarksToUpdate, PriceUpdateCallback callback) {
+        final HashMap<GURL, BookmarkId> urlToId = new HashMap<>();
+        GURL[] urls = new GURL[bookmarksToUpdate.size()];
+        for (int i = 0; i < bookmarksToUpdate.size(); i++) {
+            GURL url = getBookmarkById(bookmarksToUpdate.get(i)).getUrl();
+            urls[i] = url;
+            urlToId.put(url, bookmarksToUpdate.get(i));
+        }
+
+        // This wrapper is used to avoid needing to pass the map of URL -> BookmarkId to native.
+        PriceUpdateCallback callbackWrapper = new PriceUpdateCallback() {
+            @Override
+            public void onPriceUpdated(BookmarkId id, GURL url, ProductPrice price) {
+                callback.onPriceUpdated(urlToId.get(url), url, price);
+            }
+        };
+
+        BookmarkBridgeJni.get().getUpdatedProductPrices(
+                mNativeBookmarkBridge, BookmarkBridge.this, urls, callbackWrapper);
+    }
+
+    @CalledByNative
+    private void onProductPriceUpdated(
+            GURL url, byte[] productPriceBytes, PriceUpdateCallback callback) {
+        try {
+            ProductPrice price = ProductPrice.parseFrom(productPriceBytes);
+            // Intentionally pass |null| for the bookmark ID here, the wrapper will populate this
+            // field. See #getUpdatedProductPrices
+            callback.onPriceUpdated(null, url, price);
+        } catch (InvalidProtocolBufferException ex) {
+            // Intentional noop
+        }
+    }
+
     @CalledByNative
     private static BookmarkItem createBookmarkItem(long id, int type, String title, GURL url,
             boolean isFolder, long parentId, int parentIdType, boolean isEditable,
@@ -1224,6 +1375,8 @@ public class BookmarkBridge {
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type, int index);
         int getTotalBookmarkCount(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
+        void getUpdatedProductPrices(long nativeBookmarkBridge, BookmarkBridge caller, GURL[] gurls,
+                PriceUpdateCallback callback);
         void setBookmarkTitle(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type, String title);
         void setBookmarkUrl(

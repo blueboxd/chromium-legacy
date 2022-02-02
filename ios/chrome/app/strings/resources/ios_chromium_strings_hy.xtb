@@ -31,7 +31,6 @@
 <translation id="2478931088402984578">Ընտրեք <ph name="BEGIN_BOLD" />Chromium-ը<ph name="END_BOLD" />։</translation>
 <translation id="2567507405773541360">Դուք կարող եք ավելի արդյունավետ աշխատել պարզ, ապահով և արագագործ Chromium դիտարկիչի օգնությամբ</translation>
 <translation id="2590893390871230428">Համաժամացնել Chromium-ի տվյալները</translation>
-<translation id="259094968798709429">Գաղտնաբառերը պահվում են <ph name="BEGIN_LINK" />Գաղտնաբառերի կառավարիչում<ph name="END_LINK" />, ուստի դուք կարող եք դրանք օգտագործել ցանկացած սարքում</translation>
 <translation id="2650312721222849884">Chromium-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար միացրեք համաժամացումը։</translation>
 <translation id="2684230048001240293">Դարձրեք Chromium-ը ձեր կանխադրված դիտարկիչը՝ ներդիրները, գաղտնաբառերը և վճարային տվյալները ձեր բոլոր սարքերում համաժամացնելու համար</translation>
 <translation id="2730884209570016437">Chromium-ը չի կարող օգտագործել ձեր ֆոտոխցիկը, քանի որ այն օգտագործվում է մեկ այլ հավելվածի կողմից</translation>
@@ -78,6 +77,7 @@
 <translation id="6424492062988593837">Chromium-ը կատարելագործվել է: Մատչելի է նոր տարբերակ:</translation>
 <translation id="6752854822223394465">Ձեր կազմակերպությունը կարգավորում է Chromium-ը…</translation>
 <translation id="6820823224820483452">Chromium-ին չհաջողվեց ստուգել բոլոր գաղտնաբառերը։ Վաղը նորից փորձեք։</translation>
+<translation id="7006920032187763988">Դուք կարող եք Գաղտնաբառերի կառավարիչում պահված գաղտնաբառերն օգտագործել ձեր iPad-ի այլ հավելվածներում։</translation>
 <translation id="7018284295775193585">Չհաջողվեց թարմացնել Chromium-ը</translation>
 <translation id="7045244423563602563">Անհատականացրեք Chromium դիտարկիչը</translation>
 <translation id="7099326575020694068">Chromium-ը չի կարող օգտագործել ֆոտոխցիկը տրոհված տեսքի ռեժիմում</translation>
@@ -104,11 +104,13 @@
 <translation id="8073677936375100957">Հեռացնե՞լ Chromium-ի տվյալները այս սարքից</translation>
 <translation id="8175055321229419309">Խորհուրդ․ <ph name="BEGIN_LINK" />տեղափոխեք Chrome-ը Dock վահանակ<ph name="END_LINK" /></translation>
 <translation id="8240981428553046115">Chromium-ին չհաջողվեց ստուգել թարմացումների առկայությունը։ Փորձեք ավելի ուշ։</translation>
+<translation id="858114650497379505">Դուք կարող եք Գաղտնաբառերի կառավարիչում պահված գաղտնաբառերն օգտագործել ձեր iPhone-ի այլ հավելվածներում։</translation>
 <translation id="8586442755830160949">© <ph name="YEAR" /> The Chromium Authors: Բոլոր իրավունքները պահպանված են:</translation>
 <translation id="8663480472502753423">Chromium-ը թարմացված պահեք</translation>
 <translation id="8776843108004031667">Այս հաշիվը և բոլոր չպահված տվյալները կհեռացվեն Chromium-ից։</translation>
 <translation id="894437814105052438">Երբ դուք դուրս գաք հաշվից, Chromium-ը չի համաժամացնի նոր տվյալները ձեր Google հաշվի հետ։ Նախկինում համաժամացված տվյալները չեն հեռացվի։</translation>
 <translation id="9022552996538154597">Մուտք գործել Chromium</translation>
+<translation id="9059693977935746710">Այս գաղտնաբառը հիշելու կարիք չկա։ Այն կպահվի <ph name="EMAIL" /> հաշվի Գաղտնաբառերի կառավարիչում։</translation>
 <translation id="9089354809943900324">Chromium-ը հնացել է</translation>
 <translation id="9110075932708282655">Օգտագործեք Chromium-ն ըստ կանխադրման</translation>
 <translation id="921174536258924340">Chromium-ին չհաջողվեց ստուգել բոլոր գաղտնաբառերը։ Վաղը նորից փորձեք կամ <ph name="BEGIN_LINK" />գաղտնաբառերը ստուգեք ձեր Google հաշվում<ph name="END_LINK" />։</translation>

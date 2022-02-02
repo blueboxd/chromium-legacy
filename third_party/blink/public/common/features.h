@@ -93,6 +93,12 @@ BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
 BLINK_COMMON_EXPORT bool IsFencedFramesMPArchBased();
 
+// Whether we will create initial NavigationEntry or not on FrameTree creation,
+// which also impacts the session history replacement decisions made in the
+// renderer.
+BLINK_COMMON_EXPORT extern const base::Feature kInitialNavigationEntry;
+BLINK_COMMON_EXPORT bool IsInitialNavigationEntryEnabled();
+
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -497,6 +503,13 @@ extern const base::FeatureParam<base::TimeDelta> kHttpRttThreshold;
 // `kDelayLowPriorityRequestsAccordingToNetworkState` is enabled.
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<double> kCostReductionOfMultiplexedRequests;
+
+// If enabled, the minor version number returned by Chrome will be forced to
+// 100.  This feature is only applicable for M96-M99 and will be removed after
+// M99.  The purpose of this feature is to allow testing of mitigation
+// strategies for conveying the major version number in the minor version string
+// if we decide to freeze the major version at 99.
+BLINK_COMMON_EXPORT extern const base::Feature kForceMinorVersion100InUserAgent;
 
 // If enabled, the major version number returned by Chrome will be forced to
 // 100.  This feature is only applicable for M96-M99 and will be removed after

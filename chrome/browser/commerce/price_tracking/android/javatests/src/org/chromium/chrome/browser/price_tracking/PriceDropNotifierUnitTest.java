@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.price_tracking;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -66,6 +68,7 @@ public class PriceDropNotifierUnitTest {
     private static final String ICON_URL = "http://www.example.com/icon";
     private static final String DESTINATION_URL = "http://www.example.com/destination";
     private static final String OFFER_ID = "offer_id";
+    private static final String PRODUCT_CLUSTER_ID = "cluster_id";
     private static final String ACTION_TEXT_0 = "action_text_0";
     private static final String ACTION_TEXT_1 = "action_text_1";
 
@@ -164,8 +167,8 @@ public class PriceDropNotifierUnitTest {
     }
 
     private void showNotification(List<ActionData> actionDataList) {
-        PriceDropNotifier.NotificationData data = new NotificationData(
-                TITLE, TEXT, ICON_URL, DESTINATION_URL, OFFER_ID, actionDataList);
+        PriceDropNotifier.NotificationData data = new NotificationData(TITLE, TEXT, ICON_URL,
+                DESTINATION_URL, OFFER_ID, PRODUCT_CLUSTER_ID, actionDataList);
         mPriceDropNotifier.showNotification(data);
     }
 
@@ -183,21 +186,31 @@ public class PriceDropNotifierUnitTest {
                 .create();
     }
 
+    private void verifySetNotificationProperties() {
+        verify(mNotificationBuilder, times(1)).setContentTitle(eq(TITLE));
+        verify(mNotificationBuilder, times(1)).setContentText(eq(TEXT));
+        verify(mNotificationBuilder, times(1)).setContentIntent(any(PendingIntentProvider.class));
+        verify(mNotificationBuilder, times(1)).setSmallIcon(anyInt());
+        verify(mNotificationBuilder, times(1)).setTimeoutAfter(anyLong());
+    }
+
     @Test
     public void testShowNotificationImageFetcherFailure() {
         showNotification(/*actionDataList=*/null);
         invokeImageFetcherCallback(null);
         verify(mNotificationBuilder, times(0)).setLargeIcon(any());
+        verifySetNotificationProperties();
         verify(mNotificationManagerProxy).notify(any());
     }
 
     @Test
     public void testShowNotificationNoIconURL() {
         PriceDropNotifier.NotificationData data = new NotificationData(
-                TITLE, TEXT, /*iconUrl=*/null, DESTINATION_URL, OFFER_ID, null);
+                TITLE, TEXT, /*iconUrl=*/null, DESTINATION_URL, OFFER_ID, PRODUCT_CLUSTER_ID, null);
         mPriceDropNotifier.showNotification(data);
         verify(mNotificationBuilder, times(0)).setLargeIcon(any());
         verify(mNotificationBuilder, times(0)).setBigPictureStyle(any(), any());
+        verifySetNotificationProperties();
         verify(mNotificationManagerProxy).notify(any());
     }
 
@@ -207,6 +220,7 @@ public class PriceDropNotifierUnitTest {
         invokeImageFetcherCallback(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888));
         verify(mNotificationBuilder).setLargeIcon(any());
         verify(mNotificationBuilder).setBigPictureStyle(any(), eq(TEXT));
+        verifySetNotificationProperties();
         verify(mNotificationManagerProxy).notify(any());
     }
 

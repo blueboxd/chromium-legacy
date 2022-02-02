@@ -609,7 +609,8 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails) {
   parent_node->children.push_back(GURL(kDOMChildURL));
   params.push_back(std::move(parent_node));
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     main_rfh(), std::move(params));
+                                     main_rfh()->GetGlobalId(),
+                                     std::move(params));
 
   std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, 0 /* num_visit */);
@@ -828,10 +829,11 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
 
     // Send both sets of nodes from different render frames.
     report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                       main_rfh(),
+                                       main_rfh()->GetGlobalId(),
                                        std::move(outer_params_copy));
     report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                       child_rfh, std::move(inner_params_copy));
+                                       child_rfh->GetGlobalId(),
+                                       std::move(inner_params_copy));
 
     std::string serialized = WaitForThreatDetailsDone(
         report.get(), false /* did_proceed*/, 0 /* num_visit */);
@@ -877,9 +879,11 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
 
     // Send both sets of nodes from different render frames.
     report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                       child_rfh, std::move(inner_params));
+                                       child_rfh->GetGlobalId(),
+                                       std::move(inner_params));
     report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                       main_rfh(), std::move(outer_params));
+                                       main_rfh()->GetGlobalId(),
+                                       std::move(outer_params));
 
     std::string serialized = WaitForThreatDetailsDone(
         report.get(), false /* did_proceed*/, 0 /* num_visit */);
@@ -1003,9 +1007,11 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
 
   // Send both sets of nodes from different render frames.
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     main_rfh(), std::move(outer_params));
+                                     main_rfh()->GetGlobalId(),
+                                     std::move(outer_params));
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     child_rfh, std::move(inner_params));
+                                     child_rfh->GetGlobalId(),
+                                     std::move(inner_params));
   std::string serialized = WaitForThreatDetailsDone(
       report.get(), false /* did_proceed*/, 0 /* num_visit */);
   ClientSafeBrowsingReportRequest actual;
@@ -1270,10 +1276,10 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags) {
 
   // Send both sets of nodes from different render frames.
   trimmed_report->OnReceivedThreatDOMDetails(
-      mojo::Remote<mojom::ThreatReporter>(), child_rfh,
+      mojo::Remote<mojom::ThreatReporter>(), child_rfh->GetGlobalId(),
       std::move(inner_params));
   trimmed_report->OnReceivedThreatDOMDetails(
-      mojo::Remote<mojom::ThreatReporter>(), main_rfh(),
+      mojo::Remote<mojom::ThreatReporter>(), main_rfh()->GetGlobalId(),
       std::move(outer_params));
 
   std::string serialized = WaitForThreatDetailsDone(
@@ -1346,10 +1352,10 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_EmptyReportNotSent) {
 
   // Send both sets of nodes from different render frames.
   trimmed_report->OnReceivedThreatDOMDetails(
-      mojo::Remote<mojom::ThreatReporter>(), child_rfh,
+      mojo::Remote<mojom::ThreatReporter>(), child_rfh->GetGlobalId(),
       std::move(inner_params));
   trimmed_report->OnReceivedThreatDOMDetails(
-      mojo::Remote<mojom::ThreatReporter>(), main_rfh(),
+      mojo::Remote<mojom::ThreatReporter>(), main_rfh()->GetGlobalId(),
       std::move(outer_params));
 
   std::string serialized = WaitForThreatDetailsDone(
@@ -1547,8 +1553,10 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
 }
 
 TEST_F(ThreatDetailsTest, ThreatOnFreshTab) {
-  // A fresh WebContents should be on the initial NavigationEntry.
-  EXPECT_TRUE(controller().GetLastCommittedEntry()->IsInitialEntry());
+  // A fresh WebContents should be on the initial NavigationEntry, or have
+  // no NavigationEntry (if InitialNavigationEntry is disabled).
+  EXPECT_TRUE(!controller().GetLastCommittedEntry() ||
+              controller().GetLastCommittedEntry()->IsInitialEntry());
   EXPECT_EQ(nullptr, controller().GetPendingEntry());
 
   // Initiate the connection to a (pretend) renderer process.
@@ -1606,7 +1614,8 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<mojom::ThreatDOMDetailsNodePtr> params;
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     main_rfh(), std::move(params));
+                                     main_rfh()->GetGlobalId(),
+                                     std::move(params));
 
   // Let the cache callbacks complete.
   base::RunLoop().RunUntilIdle();
@@ -1686,7 +1695,8 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<mojom::ThreatDOMDetailsNodePtr> params;
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     main_rfh(), std::move(params));
+                                     main_rfh()->GetGlobalId(),
+                                     std::move(params));
 
   // Let the cache callbacks complete.
   base::RunLoop().RunUntilIdle();
@@ -1769,7 +1779,8 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<mojom::ThreatDOMDetailsNodePtr> params;
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     main_rfh(), std::move(params));
+                                     main_rfh()->GetGlobalId(),
+                                     std::move(params));
 
   // Let the cache callbacks complete.
   base::RunLoop().RunUntilIdle();
@@ -1828,7 +1839,8 @@ TEST_F(ThreatDetailsTest, HistoryServiceUrls) {
   // The redirects collection starts after the IPC from the DOM is fired.
   std::vector<mojom::ThreatDOMDetailsNodePtr> params;
   report->OnReceivedThreatDOMDetails(mojo::Remote<mojom::ThreatReporter>(),
-                                     main_rfh(), std::move(params));
+                                     main_rfh()->GetGlobalId(),
+                                     std::move(params));
 
   // Let the redirects callbacks complete.
   base::RunLoop().RunUntilIdle();

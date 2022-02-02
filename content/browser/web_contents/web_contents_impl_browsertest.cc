@@ -32,6 +32,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
+#include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -2609,6 +2610,55 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestClientHintsEnabled,
       ->set_client_hints_controller_delegate(nullptr);
 }
 
+// Verifies client hints are updated when the user-agent is changed in
+// DidStartNavigation().
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestClientHintsEnabled,
+                       SetUserAgentOverrideWithAcceptCHRestart) {
+  net::EmbeddedTestServer http2_server(
+      net::EmbeddedTestServer::TYPE_HTTPS,
+      net::test_server::HttpConnection::Protocol::kHttp2);
+
+  MockClientHintsControllerDelegate client_hints_controller_delegate(
+      content::GetShellUserAgentMetadata());
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(&client_hints_controller_delegate);
+
+  std::vector<std::string> accept_ch_tokens;
+  for (const auto& pair : network::GetClientHintToNameMap())
+    accept_ch_tokens.push_back(pair.second);
+  http2_server.SetAlpsAcceptCH("", base::JoinString(accept_ch_tokens, ","));
+  http2_server.ServeFilesFromSourceDirectory("content/test/data");
+
+  base::RunLoop run_loop;
+  http2_server.RegisterRequestMonitor(base::BindRepeating(
+      [](base::RunLoop* run_loop,
+         const net::test_server::HttpRequest& request) {
+        for (auto header : request.headers)
+          LOG(INFO) << header.first << ": " << header.second;
+        if (request.relative_url.compare("/empty.html") == 0) {
+          EXPECT_EQ(request.headers.at("User-Agent"), "x");
+          run_loop->Quit();
+        }
+      },
+      &run_loop));
+
+  auto handle = http2_server.StartAndReturnHandle();
+
+  blink::UserAgentOverride ua_override;
+  ua_override.ua_string_override = "x";
+  // Do NOT set `ua_metadata_override`, so the UA-CH headers are *removed*
+  ua_override.ua_metadata_override = absl::nullopt;
+  UserAgentInjector injector(shell()->web_contents(), ua_override);
+  EXPECT_TRUE(NavigateToURL(shell(), http2_server.GetURL("/empty.html")));
+
+  run_loop.Run();
+  // This test fails if the browser hangs
+  ShellContentBrowserClient::Get()
+      ->browser_context()
+      ->set_client_hints_controller_delegate(nullptr);
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DialogsFromJavaScriptEndFullscreen) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -3035,6 +3085,165 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DISABLED_UpdateLoadState) {
 
 namespace {
 
+// Watches if all title changes in the WebContents match the expected title
+// changes, in the order given.
+class TitleChecker : public WebContentsDelegate {
+ public:
+  explicit TitleChecker(content::WebContents* contents,
+                        std::queue<std::u16string> expected_title_changes)
+      : web_contents_(contents),
+        expected_title_changes_(expected_title_changes) {
+    contents->SetDelegate(this);
+  }
+  ~TitleChecker() override = default;
+  TitleChecker(const LoadStateWaiter&) = delete;
+  TitleChecker& operator=(const TitleChecker&) = delete;
+
+  // Waits until the WebContents has gone through all the titles in
+  // `expected_title_changes_`.
+  void WaitForAllTitles() {
+    if (expected_title_changes_.empty())
+      return;
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  // WebContentsDelegate:
+  void NavigationStateChanged(WebContents* source,
+                              InvalidateTypes changed_flags) override {
+    // We only care about title changes.
+    if (!(changed_flags & INVALIDATE_TYPE_TITLE))
+      return;
+    // See if this title change is the next thing on the queue.
+    DCHECK(!expected_title_changes_.empty());
+    DCHECK_EQ(expected_title_changes_.front(), source->GetTitle());
+    expected_title_changes_.pop();
+    // If `expected_title_changes_` is empty, we have gone through all the
+    // expected title changes.
+    if (quit_closure_ && expected_title_changes_.empty())
+      std::move(quit_closure_).Run();
+  }
+
+ private:
+  base::OnceClosure quit_closure_;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
+  std::queue<std::u16string> expected_title_changes_;
+};
+
+}  // namespace
+
+// Tests that restoring a NavigationEntry on a new tab restores the title
+// correctly after the page is parsed again, and that the empty title update
+// from the initial empty document created by the new tab won't affect anything
+// (won't change the restored NavigationEntry's title or the WebContents' title)
+// as the tab is not on the initial NavigationEntry.
+// Regression test for https://crbug.com/1275392.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, TitleUpdateOnRestore) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+  std::u16string main_title = u"Title Of Awesomeness";
+  std::u16string main_url_as_title = url_formatter::FormatUrl(main_url);
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // Before any navigation is initiated, the WebContents starts with an empty
+  // title.
+  EXPECT_EQ(u"", web_contents->GetTitle());
+
+  // Set up all the expected title change in the original WebContents.
+  std::queue<std::u16string> original_expected_title_changes;
+  // The first "title change" is not an actual title change, it's triggered by a
+  // INVALIDATE_TYPE_ALL NotifyNavigationStateChanged call from
+  // NavigationControllerImpl::DiscardNonCommittedEntries().
+  original_expected_title_changes.push(u"");
+  // When the navigation to `main_url` commits, the document title is not set
+  // yet, so we use the URL as the title.
+  original_expected_title_changes.push(main_url_as_title);
+  // Finally, after the committed `main_url` document finished parsing, the
+  // final title is set.
+  original_expected_title_changes.push(main_title);
+  TitleChecker original_web_contents_title_checker(
+      web_contents, original_expected_title_changes);
+
+  // Navigate to the page with the expected title.
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+  original_web_contents_title_checker.WaitForAllTitles();
+  EXPECT_EQ(main_title, web_contents->GetTitle());
+
+  // Create a NavigationEntry with the same PageState and title as the last
+  // committed entry. We are simulating the condition where the restore has
+  // started, but the empty title update from the initial empty document created
+  // when the new tab is created came later. When this happens, we already have
+  // the restored entry as the "last committed entry" and uses the entry's title
+  // (or URL) as the WebContents title. The initial empty document's title
+  // update is not for the restored entry, so we should not use it to overwrite
+  // the title of the restored entry and the WebContents.
+  NavigationControllerImpl& controller = web_contents->GetController();
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              main_url, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
+      std::make_unique<NavigationEntryRestoreContextImpl>();
+  restored_entry->SetPageState(
+      controller.GetLastCommittedEntry()->GetPageState(), context.get());
+  restored_entry->SetTitle(controller.GetLastCommittedEntry()->GetTitle());
+
+  // Create a new tab.
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  WebContentsImpl* new_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  // Before the restore is initiated, the WebContents starts with an empty
+  // title.
+  EXPECT_EQ(u"", new_contents->GetTitle());
+
+  // Set up all the expected title change in the new WebContents.
+  std::queue<std::u16string> new_expected_title_changes;
+  // Similar to the original WebContents' case above, the first "title change"
+  // is not an actual title change, but instead triggered by a
+  // INVALIDATE_TYPE_ALL NotifyNavigationStateChanged call from
+  // NavigationControllerImpl::DiscardNonCommittedEntries(). For the
+  // original WebContents' case we expect an empty title because there's no
+  // entries and GetNavigationEntryForTitle() returns null. However, in the new
+  // WebContents we already have the restored entry, so we will use the entry's
+  // title.
+  new_expected_title_changes.push(main_title);
+  // When the navigation to `main_url` commits, we also got another "update"
+  // that is not really a title change, but it is triggered by a
+  // INVALIDATE_TYPE_ALL NotifyNavigationStateChanged call from
+  // NavigationControllerImpl::NotifyNavigationEntryCommitted().
+  new_expected_title_changes.push(main_title);
+  // Finally, after the committed `main_url` document finished parsing again,
+  // the final title is set, but since the title didn't actually change, no
+  // "title change" call was dispatched.
+  TitleChecker new_web_contents_title_checker(new_contents,
+                                              new_expected_title_changes);
+
+  // Restore the new entry in the new tab.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
+  NavigationControllerImpl& new_controller = new_contents->GetController();
+  new_controller.Restore(entries.size() - 1, RestoreType::kRestored, &entries);
+  ASSERT_EQ(0u, entries.size());
+  // Load the restored entry.
+  {
+    TestNavigationObserver restore_observer(new_contents);
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+
+  // Test that the URL and title are restored correctly.
+  new_web_contents_title_checker.WaitForAllTitles();
+  EXPECT_EQ(main_url, new_root->current_url());
+  EXPECT_EQ(main_title, new_contents->GetTitle());
+}
+
+namespace {
+
 class OutgoingSetRendererPrefsMojoWatcher {
  public:
   explicit OutgoingSetRendererPrefsMojoWatcher(RenderViewHostImpl* rvh)
@@ -3260,10 +3469,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     new_shell = new_shell_observer.GetShell();
     new_contents = new_shell->web_contents();
     // Delaying popup holds the initial load of |url|.
-    EXPECT_TRUE(WaitForLoadStop(new_contents));
-    EXPECT_TRUE(new_contents->GetController()
-                    .GetLastCommittedEntry()
-                    ->IsInitialEntry());
+    if (blink::features::IsInitialNavigationEntryEnabled()) {
+      EXPECT_TRUE(WaitForLoadStop(new_contents));
+      EXPECT_TRUE(new_contents->GetController()
+                      .GetLastCommittedEntry()
+                      ->IsInitialEntry());
+    } else {
+      // If we don't have the initial NavigationEntry, WaitForLoadStop() will
+      // return false because there's no NavigationEntry.
+      EXPECT_FALSE(WaitForLoadStop(new_contents));
+      EXPECT_FALSE(new_contents->GetController().GetLastCommittedEntry());
+    }
     EXPECT_NE(url, new_contents->GetLastCommittedURL());
   }
 
@@ -4803,7 +5019,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
              "geometrychangeCount = 0;"
              "navigator.windowControlsOverlay.ongeometrychange = (e) => {"
              "  geometrychangeCount++;"
-             "  rect = e.boundingRect;"
+             "  rect = e.titlebarAreaRect;"
              "  visible = e.visible;"
              "  document.title = 'ongeometrychange' + geometrychangeCount"
              "}"));
@@ -4855,7 +5071,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestWindowControlsOverlay,
              "geometrychangeCount = 0;"
              "navigator.windowControlsOverlay.ongeometrychange = (e) => {"
              "  geometrychangeCount++;"
-             "  rect = e.boundingRect;"
+             "  rect = e.titlebarAreaRect;"
              "  visible = e.visible;"
              "  document.title = 'ongeometrychangefromzoomlevel'"
              "}"));

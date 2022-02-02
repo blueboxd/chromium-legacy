@@ -2004,27 +2004,17 @@ int AXPlatformNodeBase::FindTextBoundary(
     ax::mojom::MoveDirection direction,
     ax::mojom::TextAffinity affinity) const {
   DCHECK_NE(boundary, ax::mojom::TextBoundary::kNone);
-  if (!delegate_)
-    return offset;  // Unable to compute text boundary.
-
-  const AXPosition position = delegate_->CreateTextPositionAt(offset, affinity);
-  // On Windows and Linux ATK, searching for a text boundary should always stop
-  // at the boundary of the current object.
-  auto boundary_behavior = AXBoundaryBehavior::kStopAtAnchorBoundary;
-  // On Windows and Linux ATK, it is standard text navigation behavior to stop
-  // if we are searching in the backwards direction and the current position is
-  // already at the required text boundary.
-  if (direction == ax::mojom::MoveDirection::kBackward) {
-    boundary_behavior =
-        AXBoundaryBehavior::kStopAtAnchorBoundaryOrIfAlreadyAtBoundary;
+  if (boundary != ax::mojom::TextBoundary::kSentenceStart) {
+    absl::optional<int> boundary_offset =
+        GetDelegate()->FindTextBoundary(boundary, offset, direction, affinity);
+    if (boundary_offset.has_value())
+      return *boundary_offset;
   }
 
-  const AXPosition boundary_position = position->CreatePositionAtTextBoundary(
-      boundary, direction, boundary_behavior);
-  if (boundary_position->IsNullPosition())
-    return -1;
-  DCHECK_GE(boundary_position->text_offset(), 0);
-  return boundary_position->text_offset();
+  std::vector<int32_t> unused_line_start_offsets;
+  return static_cast<int>(
+      FindAccessibleTextBoundary(GetHypertext(), unused_line_start_offsets,
+                                 boundary, offset, direction, affinity));
 }
 
 AXPlatformNodeBase* AXPlatformNodeBase::NearestLeafToPoint(
@@ -2109,38 +2099,6 @@ int AXPlatformNodeBase::NearestTextIndexToPoint(gfx::Point point) {
   return nearest_index;
 }
 
-std::string AXPlatformNodeBase::GetInvalidValue() const {
-  const AXPlatformNodeBase* target = this;
-  // The aria-invalid=spelling/grammar need to be exposed as text attributes for
-  // a range matching the visual underline representing the error.
-  if (static_cast<ax::mojom::InvalidState>(
-          target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState)) ==
-          ax::mojom::InvalidState::kNone &&
-      target->IsText() && target->GetParent()) {
-    // Text nodes need to reflect the invalid state of their parent object,
-    // otherwise spelling and grammar errors communicated through aria-invalid
-    // won't be reflected in text attributes.
-    target = static_cast<AXPlatformNodeBase*>(
-        FromNativeViewAccessible(target->GetParent()));
-  }
-
-  std::string invalid_value("");
-  // Note: spelling+grammar errors case is disallowed and not supported. It
-  // could possibly arise with aria-invalid on the ancestor of a spelling error,
-  // but this is not currently described in any spec and no real-world use cases
-  // have been found.
-  switch (static_cast<ax::mojom::InvalidState>(
-      target->GetIntAttribute(ax::mojom::IntAttribute::kInvalidState))) {
-    case ax::mojom::InvalidState::kNone:
-    case ax::mojom::InvalidState::kFalse:
-      break;
-    case ax::mojom::InvalidState::kTrue:
-      invalid_value = "true";
-      break;
-  }
-  return invalid_value;
-}
-
 ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
   ui::TextAttributeList attributes;
 
@@ -2217,13 +2175,6 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
       attributes.push_back(std::make_pair("text-underline-style", "solid"));
     }
   }
-
-  // Screen readers look at the text attributes to determine if something is
-  // misspelled, so we need to propagate any spelling attributes from immediate
-  // parents of text-only objects.
-  std::string invalid_value = GetInvalidValue();
-  if (!invalid_value.empty())
-    attributes.push_back(std::make_pair("invalid", invalid_value));
 
   std::string language = GetDelegate()->GetLanguage();
   if (!language.empty()) {

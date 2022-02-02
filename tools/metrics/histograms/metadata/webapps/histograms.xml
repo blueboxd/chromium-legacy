@@ -169,10 +169,42 @@ chromium-metrics-reviews@google.com.
 <histogram name="Webapp.AddToHomescreenMediator.AppTypeToMenuEntry"
     enum="AppTypeToMenuEntry" expires_after="2022-06-05">
   <owner>finnur@chromium.org</owner>
-  <owner>beverloo@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
   <summary>
     Keeps track of what verbiage was shown in the App menu versus what was
     actually installed.
+  </summary>
+</histogram>
+
+<histogram name="Webapp.AppIdentityDialog.NotShowing"
+    enum="AppIdentityDisplayMetric" expires_after="2023-01-15">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Whenever PWAs change their manifest, this may result in a change to their
+    identity (icon and/or name). This metric is intended to keep track of the
+    combinations of App Identity changes that were requested (changes to the
+    icons, icon masks, app name, and/or shortname). This metric is logged once
+    each time Chrome determines that a PWA is in need of an update, but ONLY if
+    there is no App Identity change involved (or the App Identity dialog is
+    disabled by a feature switch). See also complementary metric
+    Webapp.AppIdentityDialog.Showing.
+  </summary>
+</histogram>
+
+<histogram name="Webapp.AppIdentityDialog.Showing"
+    enum="AppIdentityDisplayMetric" expires_after="2023-01-15">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Whenever PWAs change their manifest, this may result in a change to their
+    identity (icon and/or name). This metric is intended to keep track of the
+    combinations of App Identity changes that were requested (changes to the
+    icons, icon masks, app name, and/or shortname). This metric is logged once
+    each time Chrome determines that a PWA is in need of an update, but ONLY if
+    there is an App Identity change involved (the App Identity dialog is enabled
+    by a feature switch and the dialog was shown to the user). See also
+    complementary metric Webapp.AppIdentityDialog.NotShowing.
   </summary>
 </histogram>
 
@@ -431,6 +463,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebApp.Preinstalled.AppToReplaceStillDefaultInstalledCount"
+    units="apps" expires_after="2022-04-17">
+  <owner>alancutter@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Preinstalled web app configs can specify a set of apps to uninstall after
+    the preinstalled web app is installed.
+
+    This records how many apps that are meant to be uninstalled are still
+    default installed; see https://crbug.com/1266234.
+
+    This gets recorded at start up after preinstalled web apps configs have been
+    applied.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.Preinstalled.AppToReplaceStillInstalledCount"
     units="apps" expires_after="2022-04-17">
   <owner>alancutter@chromium.org</owner>
@@ -458,22 +506,6 @@ chromium-metrics-reviews@google.com.
 
     This records how many apps that are meant to be uninstalled are still
     installed and present in the Chrome OS shelf; see https://crbug.com/1266234.
-
-    This gets recorded at start up after preinstalled web apps configs have been
-    applied.
-  </summary>
-</histogram>
-
-<histogram name="WebApp.Preinstalled.AppToReplaceStillSyncInstalledCount"
-    units="apps" expires_after="2022-04-17">
-  <owner>alancutter@chromium.org</owner>
-  <owner>desktop-pwas-team@google.com</owner>
-  <summary>
-    Preinstalled web app configs can specify a set of apps to uninstall after
-    the preinstalled web app is installed.
-
-    This records how many apps that are meant to be uninstalled are still
-    installed due to Chrome app sync; see https://crbug.com/1266234.
 
     This gets recorded at start up after preinstalled web apps configs have been
     applied.

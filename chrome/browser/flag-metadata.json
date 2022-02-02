@@ -700,6 +700,16 @@
     "expiry_milestone": -1
   },
   {
+    "name": "certificate-transparency-2022-policy",
+    "owners": [ "carlosil", "asymmetric", "trusty-transport@chromium.org" ],
+    "expiry_milestone": 102
+  },
+  {
+    "name": "certificate-transparency-2022-policy-all-certs",
+    "owners": [ "carlosil", "asymmetric", "trusty-transport@chromium.org" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "check-offline-capability",
     "owners": [ "asamidoi", "//content/browser/service_worker/OWNERS" ],
     "expiry_milestone": 93
@@ -753,7 +763,7 @@
   {
     "name": "clean-undecryptable-passwords",
     "owners": [ "derinel@google.com", "mamir" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 102
   },
   {
     "name": "clear-cross-site-cross-browsing-context-group-window-name",
@@ -1789,6 +1799,11 @@
     "name": "enable-default-calculator-web-app",
     "owners": [ "zafzal@google.com", "calculator-eng@google.com" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-delegated-compositing",
+    "owners": [ "petermcneeley" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-desks-templates",
@@ -2903,6 +2918,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "enable-web-bluetooth",
+    "owners": [ "web-bluetooth@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-web-bluetooth-new-permissions-backend",
     "owners": [ "web-bluetooth@google.com" ],
     "expiry_milestone": 100
@@ -3313,6 +3333,11 @@
     "name": "force-minor-version-to-100",
     "owners": [ "abeyad", "potassium-katabolism@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "force-password-initial-sync-when-decryption-fails",
+    "owners": [ "derinel@google.com", "mamir" ],
+    "expiry_milestone": 102
   },
   {
     "name": "force-show-continue-section",
@@ -4044,11 +4069,6 @@
     "name": "mute-notification-snooze-action",
     "owners": [ "knollr@chromium.org", "peter@chromium.org" ],
     "expiry_milestone": 96
-  },
-  {
-    "name": "nearby-keep-alive-fix",
-    "owners": [ "danlee@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 98
   },
   {
     "name": "nearby-sharing-arc",
@@ -5300,6 +5320,11 @@
     "name": "site-isolation-trial-opt-out",
     "owners": [ "site-isolation-dev", "alexmos", "creis", "lukasza" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "skip-undecryptable-passwords",
+    "owners": [ "derinel@google.com", "mamir" ],
+    "expiry_milestone": 102
   },
   {
     "name": "smart-lock-ui-revamp",

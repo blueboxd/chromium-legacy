@@ -419,7 +419,6 @@ struct WebPreferences {
       lazy_frame_loading_distance_thresholds_px;
   map<EffectiveConnectionType, int32>
       lazy_image_loading_distance_thresholds_px;
-  map<EffectiveConnectionType, int32> lazy_image_first_k_fully_load;
 
   // Setting to false disables upgrades to HTTPS for HTTP resources in HTTPS
   // sites.
@@ -435,4 +434,8 @@ struct WebPreferences {
 
   // Controls whether WebXR's immersive-ar is allowed.
   bool webxr_immersive_ar_allowed;
+
+  // Controls whether the window-placement permission is automatically granted
+  // to all sites, according to enterprise policy.
+  bool window_placement_always_allowed;
 };

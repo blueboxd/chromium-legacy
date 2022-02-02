@@ -33,7 +33,7 @@ FeatureType FeatureFromCustomData(
 }
 
 #if BUILDFLAG(IS_ANDROID)
-base::Feature GetNotificationIphFeatureForFeature(FeatureType& feature) {
+const base::Feature& GetNotificationIphFeatureForFeature(FeatureType& feature) {
   switch (feature) {
     case FeatureType::kIncognitoTab:
       return feature_engagement::
@@ -54,6 +54,24 @@ base::Feature GetNotificationIphFeatureForFeature(FeatureType& feature) {
       NOTREACHED();
       return feature_engagement::
           kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature;
+  }
+}
+
+const base::Feature* GetUsedIphFeatureForFeature(FeatureType& feature) {
+  switch (feature) {
+    case FeatureType::kIncognitoTab:
+      return &feature_engagement::
+          kIPHFeatureNotificationGuideIncognitoTabUsedFeature;
+    case FeatureType::kVoiceSearch:
+      return &feature_engagement::
+          kIPHFeatureNotificationGuideVoiceSearchUsedFeature;
+    case FeatureType::kNTPSuggestionCard:
+    case FeatureType::kDefaultBrowser:
+    case FeatureType::kSignIn:
+      return nullptr;
+    default:
+      NOTREACHED();
+      return nullptr;
   }
 }
 #endif

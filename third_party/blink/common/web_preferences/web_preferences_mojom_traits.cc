@@ -26,7 +26,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
           &out->lazy_frame_loading_distance_thresholds_px) ||
       !data.ReadLazyImageLoadingDistanceThresholdsPx(
           &out->lazy_image_loading_distance_thresholds_px) ||
-      !data.ReadLazyImageFirstKFullyLoad(&out->lazy_image_first_k_fully_load) ||
       !data.ReadDefaultEncoding(&out->default_encoding) ||
       !data.ReadTextTrackBackgroundColor(&out->text_track_background_color) ||
       !data.ReadTextTrackTextColor(&out->text_track_text_color) ||
@@ -219,6 +218,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->always_show_focus = data.always_show_focus();
   out->touch_drag_drop_enabled = data.touch_drag_drop_enabled();
   out->webxr_immersive_ar_allowed = data.webxr_immersive_ar_allowed();
+  out->window_placement_always_allowed = data.window_placement_always_allowed();
   return true;
 }
 

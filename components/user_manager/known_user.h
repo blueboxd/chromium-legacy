@@ -87,11 +87,16 @@ class USER_MANAGER_EXPORT KnownUser final {
                       const std::string& path,
                       const bool in_value);
 
+  // Return absl::nullopt if the value is not found or doesn't have the int
+  // type.
+  absl::optional<int> FindIntPath(const AccountId& account_id,
+                                  base::StringPiece path) const;
+
   // Returns true if |account_id| preference by |path| does exist,
   // fills in |out_value|. Otherwise returns false.
-  bool GetIntegerPref(const AccountId& account_id,
-                      const std::string& path,
-                      int* out_value);
+  bool GetIntegerPrefForTest(const AccountId& account_id,
+                             const std::string& path,
+                             int* out_value);
 
   // Updates user's identified by |account_id| integer preference |path|.
   void SetIntegerPref(const AccountId& account_id,
@@ -173,9 +178,8 @@ class USER_MANAGER_EXPORT KnownUser final {
   void UpdateReauthReason(const AccountId& account_id, const int reauth_reason);
 
   // Returns the reason why the user with |account_id| has to go through the
-  // re-auth flow. Returns true if such a reason was recorded or false
-  // otherwise.
-  bool FindReauthReason(const AccountId& account_id, int* out_value);
+  // re-auth flow. Returns absl::nullopt if value is not set.
+  absl::optional<int> FindReauthReason(const AccountId& account_id) const;
 
   // Setter and getter for the information about challenge-response keys that
   // can be used by this user to authenticate. The getter returns a null value
@@ -302,21 +306,6 @@ void USER_MANAGER_EXPORT SetBooleanPref(const AccountId& account_id,
 
 // Returns true if |account_id| preference by |path| does exist,
 // fills in |out_value|. Otherwise returns false.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::GetIntegerPref
-// instead.
-bool USER_MANAGER_EXPORT GetIntegerPref(const AccountId& account_id,
-                                        const std::string& path,
-                                        int* out_value);
-
-// Updates user's identified by |account_id| integer preference |path|.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::SetIntegerPref
-// instead.
-void USER_MANAGER_EXPORT SetIntegerPref(const AccountId& account_id,
-                                        const std::string& path,
-                                        const int in_value);
-
-// Returns true if |account_id| preference by |path| does exist,
-// fills in |out_value|. Otherwise returns false.
 // TODO(https://crbug.com/1150434): Deprecated, use KnownUser::GetPref instead.
 bool USER_MANAGER_EXPORT GetPref(const AccountId& account_id,
                                  const std::string& path,
@@ -341,14 +330,6 @@ std::vector<AccountId> USER_MANAGER_EXPORT GetKnownAccountIds();
 AccountId USER_MANAGER_EXPORT GetAccountId(const std::string& user_email,
                                            const std::string& id,
                                            const AccountType& account_type);
-
-// Saves |account_id| into known users. Tries to commit the change on disk. Use
-// only if account_id is not yet in the known user list. Important if Chrome
-// crashes shortly after starting a session. Cryptohome should be able to find
-// known account_id on Chrome restart.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::SaveKnownUser
-// instead.
-void USER_MANAGER_EXPORT SaveKnownUser(const AccountId& account_id);
 
 // Updates |account_id.account_type_| and |account_id.GetGaiaId()| or
 // |account_id.GetObjGuid()| for user with |account_id|.
@@ -422,35 +403,6 @@ SetProfileRequiresPolicy(const AccountId& account_id,
 // KnownUser::ClearProfileRequiresPolicy instead.
 void USER_MANAGER_EXPORT
 ClearProfileRequiresPolicy(const AccountId& account_id);
-
-// Saves why the user has to go through re-auth flow.
-// TODO(https://crbug.com/1150434): Deprecated, use
-// KnownUser::UpdateReauthReason instead.
-void USER_MANAGER_EXPORT UpdateReauthReason(const AccountId& account_id,
-                                            const int reauth_reason);
-
-// Returns the reason why the user with |account_id| has to go through the
-// re-auth flow. Returns true if such a reason was recorded or false
-// otherwise.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::FindReauthReason
-// instead.
-bool USER_MANAGER_EXPORT FindReauthReason(const AccountId& account_id,
-                                          int* out_value);
-
-// Setter and getter for the information about challenge-response keys that can
-// be used by this user to authenticate.
-// The getter returns a null value when the property isn't present.
-// For the format of the value, refer to
-// ash/components/login/auth/challenge_response/known_user_pref_utils.h.
-// TODO(https://crbug.com/1150434): Deprecated, use
-// KnownUser::SetChallengeResponseKeys instead.
-void USER_MANAGER_EXPORT SetChallengeResponseKeys(const AccountId& account_id,
-                                                  base::Value value);
-
-// TODO(https://crbug.com/1150434): Deprecated, use
-// KnownUser::GetChallengeResponseKeys instead.
-base::Value USER_MANAGER_EXPORT
-GetChallengeResponseKeys(const AccountId& account_id);
 
 // TODO(https://crbug.com/1150434): Deprecated, use
 // KnownUser::SetLastOnlineSignin instead.

@@ -154,45 +154,6 @@
             ]
         }
     ],
-    "AndroidInProductHelpPwaInstall": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "WithToolbar",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:pwa_install_iph_trigger;comparator:<10;window:1;storage:360",
-                        "event_used": "name:pwa_install_menu_clicked;comparator:<3;window:90;storage:360",
-                        "session_rate": "any",
-                        "session_rate_impact": "none",
-                        "x_iph_replaces_toolbar": "false",
-                        "x_min_engagement_for_iph": "2"
-                    },
-                    "enable_features": [
-                        "IPH_PwaInstallAvailableFeature"
-                    ]
-                },
-                {
-                    "name": "WithoutToolbar",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:pwa_install_iph_trigger;comparator:<10;window:1;storage:360",
-                        "event_used": "name:pwa_install_menu_clicked;comparator:<3;window:90;storage:360",
-                        "session_rate": "any",
-                        "session_rate_impact": "none",
-                        "x_iph_replaces_toolbar": "true",
-                        "x_min_engagement_for_iph": "2"
-                    },
-                    "enable_features": [
-                        "IPH_PwaInstallAvailableFeature"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidMediaPickerVideoSupport": [
         {
             "platforms": [
@@ -1750,6 +1711,21 @@
             ]
         }
     ],
+    "CleanUndecryptablePasswordsLinuxDuringInitialSync": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncUndecryptablePasswordsLinux"
+                    ]
+                }
+            ]
+        }
+    ],
     "CombinedNavigationOptimizations": [
         {
             "platforms": [
@@ -2249,6 +2225,7 @@
                         "NtpChromeCartModuleAbandonedCartDiscountParam": "true",
                         "NtpChromeCartModuleAbandonedCartDiscountUseUtmParam": "true",
                         "NtpChromeCartModuleHeuristicsImprovementParam": "true",
+                        "NtpDriveModuleExperimentGroupParam": "foo:bar",
                         "NtpModulesLoadTimeoutMillisecondsParam": "3000",
                         "NtpModulesOrderParam": "",
                         "discount-fetch-delay": "1h"
@@ -3020,6 +2997,21 @@
             ]
         }
     ],
+    "GoogleLensIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "LensContextMenuModal_20220201",
+                    "enable_features": [
+                        "UseLensToSearchForImage"
+                    ]
+                }
+            ]
+        }
+    ],
     "GoogleOnContent": [
         {
             "platforms": [
@@ -3554,24 +3546,6 @@
             ]
         }
     ],
-    "InstalledAppsInCbd": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InstalledAppsInCbd"
-                    ]
-                }
-            ]
-        }
-    ],
     "KeyboardAccessoryAddressIPH": [
         {
             "platforms": [
@@ -3698,6 +3672,21 @@
             ]
         }
     ],
+    "LacrosNonSyncingProfiles": [
+        {
+            "platforms": [
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LacrosNonSyncingProfiles"
+                    ]
+                }
+            ]
+        }
+    ],
     "LightweightReactions": [
         {
             "platforms": [
@@ -3745,6 +3734,33 @@
                     },
                     "enable_features": [
                         "MacCAOverlayQuads"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MacWebContentsOcclusion": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithEnhancedWindowOcclusionDetection",
+                    "params": {
+                        "myparam": "EnhancedWindowOcclusionDetection"
+                    },
+                    "enable_features": [
+                        "MacWebContentsOcclusion"
+                    ]
+                },
+                {
+                    "name": "EnabledWithDisplaySleepAndAppHideDetection",
+                    "params": {
+                        "myparam": "DisplaySleepAndAppHideDetection"
+                    },
+                    "enable_features": [
+                        "MacWebContentsOcclusion"
                     ]
                 }
             ]
@@ -5054,6 +5070,31 @@
                     ]
                 },
                 {
+                    "name": "EnabledExploreAndServerRankingSegmentation2",
+                    "params": {
+                        "base_url": "https://chromeupboarding-pa.googleapis.com",
+                        "experiment_tag": "{maxLevels : 1, rankTiles : true}",
+                        "image_prefetch_mode": "top",
+                        "is_unmetered_network_required": "false",
+                        "max_trending_tile_impressions": "1",
+                        "most_visited_max_rows_normal_screen": "1",
+                        "most_visited_max_rows_small_screen": "1",
+                        "mv_tile_click_threshold": "1",
+                        "small_screen_height_threshold_dp": "700"
+                    },
+                    "enable_features": [
+                        "QueryTiles",
+                        "QueryTilesInNTP",
+                        "QueryTilesLocalOrdering",
+                        "QueryTilesRemoveTrendingAfterInactivity",
+                        "QueryTilesSegmentation"
+                    ],
+                    "disable_features": [
+                        "QueryTilesEnableQueryEditing",
+                        "QueryTilesInOmnibox"
+                    ]
+                },
+                {
                     "name": "EnabledExploreAndServerRankingAndRawTrendingSegmentation2",
                     "params": {
                         "base_url": "https://chromeupboarding-pa.googleapis.com",
@@ -5941,25 +5982,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "TabSwitchMetrics2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "TabToGTSAnimation": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "zooming-min-memory-mb": "2048",
-                        "zooming-min-sdk-version": "23"
-                    },
-                    "enable_features": [
-                        "TabToGTSAnimation"
                     ]
                 }
             ]

@@ -36,7 +36,6 @@
 #include "chrome/browser/apps/app_discovery_service/app_discovery_features.h"
 #include "chrome/browser/ash/android_sms/android_sms_switches.h"
 #include "chrome/browser/browser_features.h"
-#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
 #include "chrome/browser/flag_descriptions.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
@@ -81,12 +80,13 @@
 #include "components/bookmarks/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
+#include "components/certificate_transparency/ct_features.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/contextual_search/core/browser/public.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/download/public/common/download_features.h"
@@ -2502,6 +2502,14 @@ const FeatureEntry::FeatureVariation kQuerySearchBurnInPeriodVariations[] = {
      base::size(kQuerySearchBurnInPeriod_500ms), nullptr},
     {"2000ms", kQuerySearchBurnInPeriod_2000ms,
      base::size(kQuerySearchBurnInPeriod_2000ms), nullptr}};
+
+const FeatureEntry::FeatureParam kProductivityLauncher_WithoutContinue[] = {
+    {"enable_continue", "false"}};
+
+const FeatureEntry::FeatureVariation kProductivityLauncherVariations[] = {
+    {"without Continue", kProductivityLauncher_WithoutContinue,
+     base::size(kProductivityLauncher_WithoutContinue), nullptr}};
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 constexpr FeatureEntry::FeatureParam kPlatformProvidedTrustTokenIssuance[] = {
@@ -3425,6 +3433,9 @@ const FeatureEntry kFeatureEntries[] = {
          "1",
          autofill::switches::kWalletServiceUseSandbox,
          "0")},
+    {"enable-web-bluetooth", flag_descriptions::kWebBluetoothName,
+     flag_descriptions::kWebBluetoothDescription, kOsLinux,
+     FEATURE_VALUE_TYPE(features::kWebBluetooth)},
     {"enable-web-bluetooth-new-permissions-backend",
      flag_descriptions::kWebBluetoothNewPermissionsBackendName,
      flag_descriptions::kWebBluetoothNewPermissionsBackendDescription,
@@ -3713,10 +3724,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLoginDetectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(login_detection::kLoginDetection)},
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
-    {"enable-save-data", flag_descriptions::kEnableSaveDataName,
-     flag_descriptions::kEnableSaveDataDescription, kOsCrOS | kOsLinux,
-     SINGLE_VALUE_TYPE(
-         data_reduction_proxy::switches::kEnableDataReductionProxy)},
     {"enable-navigation-predictor",
      flag_descriptions::kEnableNavigationPredictorName,
      flag_descriptions::kEnableNavigationPredictorDescription,
@@ -3914,7 +3921,24 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCleanUndecryptablePasswordsLinuxDescription, kOsLinux,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSyncUndecryptablePasswordsLinux)},
-#endif
+
+    {"force-password-initial-sync-when-decryption-fails",
+     flag_descriptions::kForcePasswordInitialSyncWhenDecryptionFailsName,
+     flag_descriptions::kForcePasswordInitialSyncWhenDecryptionFailsDescription,
+     kOsLinux,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kForceInitialSyncWhenDecryptionFails)},
+#endif  // BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+    {"skip-undecryptable-passwords",
+     flag_descriptions::kSkipUndecryptablePasswordsName,
+     flag_descriptions::kSkipUndecryptablePasswordsDescription,
+     kOsLinux | kOsMac,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kSkipUndecryptablePasswords)},
+
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(ENABLE_VR)
     {"webxr-incubations", flag_descriptions::kWebXrIncubationsName,
@@ -6537,9 +6561,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"shimless-rma-flow", flag_descriptions::kShimlessRMAFlowName,
      flag_descriptions::kShimlessRMAFlowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMAFlow)},
-    {"nearby-keep-alive-fix", flag_descriptions::kNearbyKeepAliveFixName,
-     flag_descriptions::kNearbyKeepAliveFixDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kNearbyKeepAliveFix)},
     {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
      flag_descriptions::kNearbySharingArcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableArcNearbyShare)},
@@ -6620,7 +6641,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"productivity-launcher", flag_descriptions::kProductivityLauncherName,
      flag_descriptions::kProductivityLauncherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kProductivityLauncher)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kProductivityLauncher,
+                                    kProductivityLauncherVariations,
+                                    "ProductivityLauncher")},
     {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
      flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
@@ -7671,6 +7694,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRawDrawDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kRawDraw)},
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"enable-delegated-compositing",
+     flag_descriptions::kEnableDelegatedCompositingName,
+     flag_descriptions::kEnableDelegatedCompositingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kDelegatedCompositing)},
+#endif
+
     {"web-midi", flag_descriptions::kWebMidiName,
      flag_descriptions::kWebMidiDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebMidi)},
@@ -7887,6 +7917,19 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::
              kAutofillEnableVirtualCardManagementInDesktopSettingsPage)},
 
+    {"certificate-transparency-2022-policy",
+     flag_descriptions::kCertificateTransparency2022PolicyName,
+     flag_descriptions::kCertificateTransparency2022PolicyDescription, kOsAll,
+     FEATURE_VALUE_TYPE(certificate_transparency::features::
+                            kCertificateTransparency2022Policy)},
+
+    {"certificate-transparency-2022-policy-all-certs",
+     flag_descriptions::kCertificateTransparency2022PolicyAllCertsName,
+     flag_descriptions::kCertificateTransparency2022PolicyAllCertsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(certificate_transparency::features::
+                            kCertificateTransparency2022PolicyAllCerts)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -8014,17 +8057,6 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!(entry.supported_platforms & (kOsCrOS | kOsCrOSOwnerOnly)))
     return true;
 #endif  //  BUILDFLAG(IS_CHROMEOS_LACROS)
-
-  // data-reduction-proxy-lo-fi and enable-data-reduction-proxy-lite-page
-  // are only available for Chromium builds and the Canary/Dev/Beta channels.
-  if ((!strcmp("data-reduction-proxy-lo-fi", entry.internal_name) ||
-       !strcmp("enable-data-reduction-proxy-lite-page", entry.internal_name)) &&
-      channel != version_info::Channel::BETA &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
-  }
 
   // enable-unsafe-webgpu is only available on Dev/Canary channels.
   if (!strcmp("enable-unsafe-webgpu", entry.internal_name) &&

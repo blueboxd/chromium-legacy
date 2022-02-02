@@ -283,6 +283,12 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCanvasOopRasterizationName[];
 extern const char kCanvasOopRasterizationDescription[];
 
+extern const char kCertificateTransparency2022PolicyName[];
+extern const char kCertificateTransparency2022PolicyDescription[];
+
+extern const char kCertificateTransparency2022PolicyAllCertsName[];
+extern const char kCertificateTransparency2022PolicyAllCertsDescription[];
+
 extern const char kCheckOfflineCapabilityName[];
 extern const char kCheckOfflineCapabilityDescription[];
 
@@ -439,9 +445,6 @@ extern const char
 extern const char kEnableExperimentalCookieFeaturesName[];
 extern const char kEnableExperimentalCookieFeaturesDescription[];
 
-extern const char kEnableSaveDataName[];
-extern const char kEnableSaveDataDescription[];
-
 extern const char kEnableNavigationPredictorName[];
 extern const char kEnableNavigationPredictorDescription[];
 
@@ -450,6 +453,9 @@ extern const char kEnablePreconnectToSearchDescription[];
 
 extern const char kEnableRawDrawName[];
 extern const char kEnableRawDrawDescription[];
+
+extern const char kEnableDelegatedCompositingName[];
+extern const char kEnableDelegatedCompositingDescription[];
 
 extern const char kEnableRemovingAllThirdPartyCookiesName[];
 extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
@@ -1495,6 +1501,9 @@ extern const char kWallpaperFullScreenPreviewDescription[];
 
 extern const char kWallpaperPerDeskName[];
 extern const char kWallpaperPerDeskDescription[];
+
+extern const char kWebBluetoothName[];
+extern const char kWebBluetoothDescription[];
 
 extern const char kWebBluetoothNewPermissionsBackendName[];
 extern const char kWebBluetoothNewPermissionsBackendDescription[];
@@ -2867,9 +2876,6 @@ extern const char kMicrophoneMuteSwitchDeviceDescription[];
 extern const char kMultilingualTypingName[];
 extern const char kMultilingualTypingDescription[];
 
-extern const char kNearbyKeepAliveFixName[];
-extern const char kNearbyKeepAliveFixDescription[];
-
 extern const char kNearbySharingArcName[];
 extern const char kNearbySharingArcDescription[];
 
@@ -3154,7 +3160,15 @@ extern const char kOzonePlatformHintDescription[];
 
 extern const char kCleanUndecryptablePasswordsLinuxName[];
 extern const char kCleanUndecryptablePasswordsLinuxDescription[];
+
+extern const char kForcePasswordInitialSyncWhenDecryptionFailsName[];
+extern const char kForcePasswordInitialSyncWhenDecryptionFailsDescription[];
 #endif  // BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+extern const char kSkipUndecryptablePasswordsName[];
+extern const char kSkipUndecryptablePasswordsDescription[];
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 // Feature flags --------------------------------------------------------------
 

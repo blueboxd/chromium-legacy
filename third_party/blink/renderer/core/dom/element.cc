@@ -375,7 +375,8 @@ inline bool NeedsLegacyBlockFragmentation(const Element& element,
   if (style.IsDisplayInlineType())
     return false;
 
-  if (style.IsDisplayTableType())
+  if (style.IsDisplayTableType() &&
+      !RuntimeEnabledFeatures::LayoutNGTableFragmentationEnabled())
     return true;
 
   if (style.IsDisplayGridBox() &&
@@ -5404,6 +5405,9 @@ const ComputedStyle* Element::EnsureComputedStyle(
   // because there is always a possibility that it could allocate something on
   // the V8 heap.
   DCHECK(ThreadState::Current()->IsAllocationAllowed());
+
+  StyleEngine::InEnsureComputedStyleScope ensure_scope(
+      GetDocument().GetStyleEngine());
 
   if (PseudoElement* element = GetPseudoElement(pseudo_element_specifier))
     return element->EnsureComputedStyle();

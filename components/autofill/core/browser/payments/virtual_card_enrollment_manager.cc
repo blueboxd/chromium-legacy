@@ -8,6 +8,8 @@
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_database_base.h"
 #include "ui/gfx/image/image.h"
 
 namespace autofill {
@@ -38,6 +40,10 @@ VirtualCardEnrollmentManager::VirtualCardEnrollmentManager(
   // Here only check autofill_client_ because in some tests payments_client_
   // does not exist.
   DCHECK(autofill_client_);
+
+  StrikeDatabaseBase* strike_database = autofill_client->GetStrikeDatabase();
+  virtual_card_enrollment_strike_database_ =
+      std::make_unique<VirtualCardEnrollmentStrikeDatabase>(strike_database);
 }
 
 VirtualCardEnrollmentManager::~VirtualCardEnrollmentManager() = default;
@@ -68,6 +74,30 @@ void VirtualCardEnrollmentManager::OfferVirtualCardEnroll(
 
 void VirtualCardEnrollmentManager::Unenroll(int64_t instrument_id) {}
 
+bool VirtualCardEnrollmentManager::IsVirtualCardEnrollmentBlocked(
+    const std::string& guid) const {
+  return GetVirtualCardEnrollmentStrikeDatabase() &&
+         GetVirtualCardEnrollmentStrikeDatabase()->IsMaxStrikesLimitReached(
+             guid);
+}
+
+void VirtualCardEnrollmentManager::
+    AddStrikeToBlockOfferingVirtualCardEnrollment(const std::string& guid) {
+  if (!GetVirtualCardEnrollmentStrikeDatabase())
+    return;
+
+  GetVirtualCardEnrollmentStrikeDatabase()->AddStrike(guid);
+}
+
+void VirtualCardEnrollmentManager::
+    RemoveAllStrikesToBlockOfferingVirtualCardEnrollment(
+        const std::string& guid) {
+  if (!GetVirtualCardEnrollmentStrikeDatabase())
+    return;
+
+  GetVirtualCardEnrollmentStrikeDatabase()->ClearStrikes(guid);
+}
+
 void VirtualCardEnrollmentManager::OnDidGetUpdateVirtualCardEnrollmentResponse(
     AutofillClient::PaymentsRpcResult result) {
   Reset();
@@ -77,6 +107,11 @@ void VirtualCardEnrollmentManager::Reset() {
   payments_client_->CancelRequest();
   weak_ptr_factory_.InvalidateWeakPtrs();
   state_ = VirtualCardEnrollmentProcessState();
+}
+
+VirtualCardEnrollmentStrikeDatabase*
+VirtualCardEnrollmentManager::GetVirtualCardEnrollmentStrikeDatabase() const {
+  return virtual_card_enrollment_strike_database_.get();
 }
 
 void VirtualCardEnrollmentManager::OnRiskDataLoadedForVirtualCard(
@@ -119,17 +154,13 @@ void VirtualCardEnrollmentManager::OnDidGetDetailsForEnrollResponse(
     return;
   }
 
-  // The controller will only expect one |legal_message_lines| vector, so we
-  // need to combine all of the legal message lines we receive from the server.
-  std::vector<LegalMessageLine> legal_message_lines;
-  legal_message_lines.reserve(response.google_legal_message.size() +
-                              response.issuer_legal_message.size());
-  base::ranges::copy(response.google_legal_message,
-                     std::back_inserter(legal_message_lines));
-  base::ranges::copy(response.issuer_legal_message,
-                     std::back_inserter(legal_message_lines));
-  state_.virtual_card_enrollment_fields.legal_message_lines =
-      std::move(legal_message_lines);
+  state_.virtual_card_enrollment_fields.google_legal_message =
+      std::move(response.google_legal_message);
+  // Issuer legal message is empty for some issuers.
+  if (!response.issuer_legal_message.empty()) {
+    state_.virtual_card_enrollment_fields.issuer_legal_message =
+        std::move(response.issuer_legal_message);
+  }
 
   // The |vcn_context_token| will be used by the server to link the previous
   // GetDetailsForEnrollRequest to the future UpdateVirtualCardEnrollmentRequest
@@ -153,8 +184,14 @@ void VirtualCardEnrollmentManager::OnDidGetDetailsForEnrollResponse(
 }
 
 void VirtualCardEnrollmentManager::ShowVirtualCardEnrollmentBubble() {
-  // TODO(crbug.com/1281695): Link backend components to
-  //  VirtualCardEnrollmentBubble here.
+  autofill_client_->ShowVirtualCardEnrollDialog(
+      &(state_.virtual_card_enrollment_fields),
+      base::BindOnce(
+          &VirtualCardEnrollmentManager::OnVirtualCardEnrollmentBubbleAccepted,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &VirtualCardEnrollmentManager::OnVirtualCardEnrollmentBubbleCancelled,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void VirtualCardEnrollmentManager::OnVirtualCardEnrollmentBubbleAccepted() {

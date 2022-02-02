@@ -47,11 +47,12 @@ VirtualCardEnrollBubbleViews::VirtualCardEnrollBubbleViews(
   set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUBBLE_PREFERRED_WIDTH));
 
-  const LegalMessageLines message_lines =
-      controller_->GetVirtualCardEnrollmentFields()->legal_message_lines;
-  if (!message_lines.empty()) {
+  // TODO(crbug.com/1281695): Add issuer legal message as well to the footnote.
+  const LegalMessageLines google_legal_message =
+      controller_->GetVirtualCardEnrollmentFields()->google_legal_message;
+  if (!google_legal_message.empty()) {
     legal_message_view_ = SetFootnoteView(std::make_unique<LegalMessageView>(
-        message_lines,
+        google_legal_message,
         base::BindRepeating(&VirtualCardEnrollBubbleViews::LegalMessageClicked,
                             base::Unretained(this))));
     legal_message_view_->SetID(DialogViewId::FOOTNOTE_VIEW);
@@ -128,7 +129,7 @@ VirtualCardEnrollBubbleViews::CreateMainContentView() {
   description_view->SetBetweenChildSpacing(
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL));
 
-  VirtualCardEnrollmentFields* virtual_card_enrollment_fields =
+  const VirtualCardEnrollmentFields* virtual_card_enrollment_fields =
       controller_->GetVirtualCardEnrollmentFields();
   CreditCard* card = virtual_card_enrollment_fields->credit_card.get();
   gfx::Image* card_image = virtual_card_enrollment_fields->card_art_image.get();

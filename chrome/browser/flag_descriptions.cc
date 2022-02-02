@@ -502,6 +502,24 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
+const char kCertificateTransparency2022PolicyName[] =
+    "Certificate Transparency 2022 Policy";
+const char kCertificateTransparency2022PolicyDescription[] =
+    "Enables the 2022 policy for Certificate Transparency requirements for "
+    "certificates issued after February 1, 2022. This policy increases the "
+    "number of SCTs required for certificates with a lifetime over 180 days, "
+    "and replaces the one Google log requirement with log operator diversity "
+    "requirements.";
+
+const char kCertificateTransparency2022PolicyAllCertsName[] =
+    "Certificate Transparency 2022 Policy All Certificates";
+const char kCertificateTransparency2022PolicyAllCertsDescription[] =
+    "Enables the 2022 policy for Certificate Transparency requirements for "
+    "all certificates regardless of issuance date. This policy increases the "
+    "number of SCTs required for certificates with a lifetime over 180 days, "
+    "and replaces the one Google log requirement with log operator diversity "
+    "requirements.";
+
 const char kCheckOfflineCapabilityName[] = "Check offline capability for PWAs";
 const char kCheckOfflineCapabilityDescription[] =
     "Use advanced offline capability check to decide whether the browser "
@@ -745,11 +763,6 @@ const char kEnableExperimentalCookieFeaturesDescription[] =
     "Enable new features that affect setting, sending, and managing cookies. "
     "The enabled features are subject to change at any time.";
 
-const char kEnableSaveDataName[] = "Enables save data feature";
-const char kEnableSaveDataDescription[] =
-    "Enables save data feature. May cause user's traffic to be proxied via "
-    "Google's data reduction proxy.";
-
 const char kEnableNavigationPredictorName[] = "Enables navigation predictor";
 const char kEnableNavigationPredictorDescription[] =
     "Enables navigation predictor feature that predicts the next likely "
@@ -763,6 +776,10 @@ const char kEnablePreconnectToSearchDescription[] =
 const char kEnableRawDrawName[] = "Enable raw draw";
 const char kEnableRawDrawDescription[] =
     "When enabled, web content will be rastered on output surface directly.";
+
+const char kEnableDelegatedCompositingName[] = "Enable delegated compositing";
+const char kEnableDelegatedCompositingDescription[] =
+    "When enabled and applicable, the act of compositing is delegated to Ash.";
 
 const char kEnableRemovingAllThirdPartyCookiesName[] =
     "Enable removing SameSite=None cookies";
@@ -2618,6 +2635,10 @@ const char kWallpaperPerDeskName[] =
     "Enable setting different wallpapers per desk";
 const char kWallpaperPerDeskDescription[] =
     "Allow users to set different wallpapers on each of their active desks";
+
+const char kWebBluetoothName[] = "Web Bluetooth";
+const char kWebBluetoothDescription[] =
+    "Enables the Web Bluetooth API on platforms without official support";
 
 const char kWebBluetoothNewPermissionsBackendName[] =
     "Use the new permissions backend for Web Bluetooth";
@@ -4995,12 +5016,6 @@ const char kMultilingualTypingName[] = "Multilingual typing on CrOS";
 const char kMultilingualTypingDescription[] =
     "Enables support for multilingual assistive typing on Chrome OS.";
 
-const char kNearbyKeepAliveFixName[] = "Nearby Keep Alive Fix";
-const char kNearbyKeepAliveFixDescription[] =
-    "Enables custom KeepAlive interval and timeout for Nearby Connections and "
-    "makes Nearby Connections WebRTC KeepAlive less chatty to help with "
-    "battery life.";
-
 const char kNearbySharingArcName[] = "ARC Nearby Sharing";
 const char kNearbySharingArcDescription[] =
     "Enables Nearby Sharing from ARC apps.";
@@ -5460,7 +5475,21 @@ const char kCleanUndecryptablePasswordsLinuxName[] =
 const char kCleanUndecryptablePasswordsLinuxDescription[] =
     "Deletes the undecryptable passwords from the local database to enable "
     "syncing all passwords during the initial sync.";
+const char kForcePasswordInitialSyncWhenDecryptionFailsName[] =
+    "Force initial sync to clean local undecryptable passwords during startup";
+const char kForcePasswordInitialSyncWhenDecryptionFailsDescription[] =
+    "During startup checks if there are undecryptable passwords in the local "
+    "storage and requests initial sync.";
 #endif  // BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+const char kSkipUndecryptablePasswordsName[] =
+    "Skip undecryptable passwords to use the available decryptable "
+    "passwords.";
+const char kSkipUndecryptablePasswordsDescription[] =
+    "Makes the decryptable passwords available in the password manager when "
+    "there are undecryptable ones.";
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
 
 // Feature flags --------------------------------------------------------------
 

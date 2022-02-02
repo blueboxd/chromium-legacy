@@ -4149,6 +4149,16 @@
             "value": 5
           }
         }
+      },
+      {
+        "policies": {
+          "RestoreOnStartup": 6
+        },
+        "prefs": {
+          "session.restore_on_startup": {
+            "value": 6
+          }
+        }
       }
     ]
   },
@@ -6952,19 +6962,7 @@
     ]
   },
   "DataCompressionProxyEnabled": {
-    "os": [
-      "android"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "DataCompressionProxyEnabled": false
-        },
-        "prefs": {
-          "spdy_proxy.enabled": {}
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "ForceEphemeralProfiles": {
     "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
@@ -18001,6 +17999,45 @@
           "force_major_version_to_minor_position_in_user_agent": {
             "location": "user_profile",
             "value": 2
+          }
+        }
+      }
+    ]
+  },
+  "WindowPlacementAlwaysAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "window_placement_always_allowed": {
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "WindowPlacementAlwaysAllowed": false
+        },
+        "prefs": {
+          "window_placement_always_allowed": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "WindowPlacementAlwaysAllowed": true
+        },
+        "prefs": {
+          "window_placement_always_allowed": {
+            "value": true
           }
         }
       }

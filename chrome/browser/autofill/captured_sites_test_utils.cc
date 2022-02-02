@@ -975,7 +975,8 @@ bool TestRecipeReplayer::ReplayRecordedActions(
   }
 
   DCHECK(parsed_json->is_dict());
-  base::Value::DictStorage recipe = std::move(*parsed_json).TakeDict();
+  base::Value::DictStorage recipe =
+      std::move(*parsed_json).TakeDictDeprecated();
   if (!InitializeBrowserToExecuteRecipe(recipe))
     return false;
 
@@ -1029,7 +1030,7 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     }
 
     base::Value::DictStorage action =
-        std::move(action_list[execution_state.index]).TakeDict();
+        std::move(action_list[execution_state.index]).TakeDictDeprecated();
     absl::optional<std::string> type =
         FindPopulateString(action, "type", "action type");
 
@@ -1133,7 +1134,7 @@ bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     }
 
     base::Value::ListStorage autofill_profile_container =
-        std::move(autofill_profile_container_iter->second).TakeList();
+        std::move(autofill_profile_container_iter->second).TakeListDeprecated();
     if (!SetupSavedAutofillProfile(std::move(autofill_profile_container)))
       return false;
   }
@@ -1148,7 +1149,7 @@ bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     }
 
     base::Value::ListStorage saved_password_container =
-        std::move(saved_password_container_iter->second).TakeList();
+        std::move(saved_password_container_iter->second).TakeListDeprecated();
     if (!SetupSavedPasswords(std::move(saved_password_container)))
       return false;
   }
@@ -2246,7 +2247,7 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
     }
 
     const base::Value::DictStorage list_entry_dict =
-        std::move(list_entry).TakeDict();
+        std::move(list_entry).TakeDictDeprecated();
     absl::optional<std::string> type =
         FindPopulateString(list_entry_dict, "type", "profile field type");
     absl::optional<std::string> value =
@@ -2281,7 +2282,8 @@ bool TestRecipeReplayer::SetupSavedPasswords(
       return false;
     }
 
-    const base::Value::DictStorage entry_dict = std::move(entry).TakeDict();
+    const base::Value::DictStorage entry_dict =
+        std::move(entry).TakeDictDeprecated();
 
     absl::optional<std::string> origin =
         FindPopulateString(entry_dict, "website", "Website");

@@ -1065,7 +1065,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.ThrottleDeferTime.{Event}" units="ms"
-    expires_after="2022-03-11">
+    expires_after="2022-09-11">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1076,7 +1076,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.ThrottleExecutionTime.{Event}" units="ms"
-    expires_after="2022-03-11">
+    expires_after="2022-09-11">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1198,6 +1198,54 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     lookalike2.com recorded two events. This updated histogram only records an
     entry for the first or last URL in the redirect if any of those is a
     lookalike.
+  </summary>
+</histogram>
+
+<histogram
+    name="NavigationSuggestion.GetDomainInfoDelayBeforeAllowingNavigation"
+    units="ms" expires_after="2022-07-03">
+  <owner>meacer@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>security-enamel@chromium.org</owner>
+  <summary>
+    Records the time duration that PerformChecks() spent in calls to
+    GetDomainInfo() before the navigation was ultimately allowed to proceed.
+    Recorded only for navigations that
+    LookalikeUrlNavigationThrottle::PerfomChecks() directly allows to proceed
+    (i.e., not those that result in showing interstitials and/or digital asset
+    manifest checks).
+  </summary>
+</histogram>
+
+<histogram
+    name="NavigationSuggestion.IsLookalikeUrlDelayBeforeAllowingNavigation"
+    units="ms" expires_after="2022-07-03">
+  <owner>meacer@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>security-enamel@chromium.org</owner>
+  <summary>
+    Records the time duration that PerformChecks() spent in calls to
+    IsLookalikeUrl() before the navigation was ultimately allowed to proceed.
+    Recorded only for navigations that
+    LookalikeUrlNavigationThrottle::PerfomChecks() directly allows to proceed
+    (i.e., not those that result in showing interstitials and/or digital asset
+    manifest checks).
+  </summary>
+</histogram>
+
+<histogram
+    name="NavigationSuggestion.PerformChecksDelayBeforeAllowingNavigation"
+    units="ms" expires_after="2022-07-03">
+  <owner>meacer@chromium.org</owner>
+  <owner>blundell@chromium.org</owner>
+  <owner>security-enamel@chromium.org</owner>
+  <summary>
+    Records the time duration the navigation was deferred while PerformChecks()
+    was executing before the navigation was ultimately allowed to proceed.
+    Recorded only for navigations that
+    LookalikeUrlNavigationThrottle::PerfomChecks() directly allows to proceed
+    (i.e., not those that result in showing interstitials and/or digital asset
+    manifest checks).
   </summary>
 </histogram>
 

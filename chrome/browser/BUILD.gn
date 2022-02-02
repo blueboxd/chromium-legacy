@@ -1803,6 +1803,8 @@ static_library("browser") {
     "universal_web_contents_observers.h",
     "update_client/chrome_update_query_params_delegate.cc",
     "update_client/chrome_update_query_params_delegate.h",
+    "url_param_filter/url_param_filterer.cc",
+    "url_param_filter/url_param_filterer.h",
     "usb/frame_usb_services.cc",
     "usb/frame_usb_services.h",
     "usb/usb_blocklist.cc",
@@ -1912,6 +1914,7 @@ static_library("browser") {
     ":permissions_proto",
     ":resource_prefetch_predictor_proto",
     ":unexpire_flags",
+    ":url_param_filter_classification_proto",
     "//base",
     "//base:i18n",
     "//base/allocator:buildflags",
@@ -1928,7 +1931,6 @@ static_library("browser") {
     "//chrome/app/vector_icons",
     "//chrome/browser/breadcrumbs",
     "//chrome/browser/browsing_data:constants",
-    "//chrome/browser/commerce:feature_list",
     "//chrome/browser/devtools",
     "//chrome/browser/feature_guide/notifications:public",
     "//chrome/browser/feature_guide/notifications/internal",
@@ -2028,6 +2030,7 @@ static_library("browser") {
     "//components/certificate_transparency:proto",
     "//components/client_hints/browser",
     "//components/cloud_devices/common",
+    "//components/commerce/core:feature_list",
     "//components/component_updater",
     "//components/component_updater:crl_set_remover",
     "//components/component_updater/installer_policies",
@@ -3365,7 +3368,6 @@ static_library("browser") {
       "//chrome/browser/attribution_reporting/android:jni_headers",
       "//chrome/browser/attribution_reporting/android/internal",
       "//chrome/browser/banners/android:jni_headers",
-      "//chrome/browser/commerce:feature_list",
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db",
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db_content_proto",
       "//chrome/browser/commerce/merchant_viewer:merchant_viewer_data_manager",
@@ -3430,6 +3432,7 @@ static_library("browser") {
       "//components/browser_ui/util/android",
       "//components/cbor",
       "//components/cdm/browser",
+      "//components/commerce/core:feature_list",
       "//components/commerce/core:proto",
       "//components/component_updater/android:native_background_task_update_scheduler",
       "//components/content_capture/android",
@@ -4430,6 +4433,7 @@ static_library("browser") {
       "//chrome/browser/cart:mojo_bindings",
       "//chrome/browser/enterprise/signals:utils",
       "//chrome/browser/media/router/discovery:discovery",
+      "//chrome/browser/media/router/discovery/access_code:access_code_sink_service_factory",
       "//chrome/browser/new_tab_page/chrome_colors:generate_chrome_colors_info",
       "//chrome/browser/new_tab_page/chrome_colors:generate_colors_info",
       "//chrome/browser/policy:path_parser",
@@ -4919,6 +4923,7 @@ static_library("browser") {
       "//ash/services/nearby/public/cpp",
       "//ash/services/nearby/public/cpp:tcp_server_socket_port",
       "//ash/services/nearby/public/mojom",
+      "//ash/services/secure_channel/public/mojom",
       "//ash/webui/projector_app",
       "//build:chromeos_buildflags",
       "//chrome/browser/ash/crosapi",
@@ -4969,7 +4974,6 @@ static_library("browser") {
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config",
       "//chromeos/services/network_config/public/mojom",
-      "//chromeos/services/secure_channel/public/mojom",
       "//chromeos/strings",
       "//chromeos/ui/base",
       "//chromeos/ui/vector_icons",
@@ -5902,6 +5906,8 @@ static_library("browser") {
       "first_run/upgrade_util_fuchsia.cc",
       "fuchsia/chrome_browser_main_parts_fuchsia.cc",
       "fuchsia/chrome_browser_main_parts_fuchsia.h",
+      "fuchsia/element_manager_impl.cc",
+      "fuchsia/element_manager_impl.h",
       "fuchsia/switches.cc",
       "fuchsia/switches.h",
       "fullscreen_fuchsia.cc",
@@ -5920,7 +5926,6 @@ static_library("browser") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.element",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.app",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.composition",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
@@ -5929,6 +5934,8 @@ static_library("browser") {
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       "//ui/platform_window",
     ]
+
+    public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.element" ]
   }
 
   if (is_posix) {
@@ -7325,6 +7332,10 @@ proto_library("resource_prefetch_predictor_proto") {
 
 proto_library("permissions_proto") {
   sources = [ "permissions/crowd_deny.proto" ]
+}
+
+proto_library("url_param_filter_classification_proto") {
+  sources = [ "url_param_filter/url_param_filter_classification.proto" ]
 }
 
 grit("resources") {

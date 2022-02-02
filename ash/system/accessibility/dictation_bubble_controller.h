@@ -26,6 +26,7 @@ class Widget;
 
 namespace ash {
 
+enum class DictationBubbleHintType;
 enum class DictationBubbleIconType;
 class DictationBubbleView;
 
@@ -40,10 +41,11 @@ class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver,
   ~DictationBubbleController() override;
 
   // Updates the bubble's visibility and text content.
-  void UpdateBubble(bool visible,
-                    DictationBubbleIconType icon,
-                    const absl::optional<std::u16string>& text,
-                    const absl::optional<std::vector<std::string>>& hints);
+  void UpdateBubble(
+      bool visible,
+      DictationBubbleIconType icon,
+      const absl::optional<std::u16string>& text,
+      const absl::optional<std::vector<DictationBubbleHintType>>& hints);
 
   // ui::InputMethodObserver:
   void OnFocus() override {}
@@ -57,16 +59,17 @@ class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver,
   void OnColorModeThemed(bool is_themed) override {}
 
  private:
-  friend class AccessibilityPrivateApiTest;
   friend class DictationBubbleControllerTest;
+  friend class DictationBubbleTestHelper;
 
   // Performs initialization if necessary.
   void MaybeInitialize();
 
   // Updates the view and widget.
-  void Update(DictationBubbleIconType icon,
-              const absl::optional<std::u16string>& text,
-              const absl::optional<std::vector<std::string>>& hints);
+  void Update(
+      DictationBubbleIconType icon,
+      const absl::optional<std::u16string>& text,
+      const absl::optional<std::vector<DictationBubbleHintType>>& hints);
 
   // Owned by views hierarchy.
   DictationBubbleView* dictation_bubble_view_ = nullptr;

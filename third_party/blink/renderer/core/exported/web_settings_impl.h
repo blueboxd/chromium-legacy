@@ -213,11 +213,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetLazyImageLoadingDistanceThresholdPx2G(int) override;
   void SetLazyImageLoadingDistanceThresholdPx3G(int) override;
   void SetLazyImageLoadingDistanceThresholdPx4G(int) override;
-  void SetLazyImageFirstKFullyLoadUnknown(int) override;
-  void SetLazyImageFirstKFullyLoadSlow2G(int) override;
-  void SetLazyImageFirstKFullyLoad2G(int) override;
-  void SetLazyImageFirstKFullyLoad3G(int) override;
-  void SetLazyImageFirstKFullyLoad4G(int) override;
 
   void SetForceDarkModeEnabled(bool) override;
   void SetPreferredColorScheme(mojom::blink::PreferredColorScheme) override;
@@ -230,6 +225,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAccessibilityIncludeSvgGElement(bool) override;
   void SetWebXRImmersiveArAllowed(bool webxr_immersive_ar_allowed) override;
   void SetLitePageSubresourceRedirectOrigin(const WebString&) override;
+  void SetWindowPlacementAlwaysAllowed(bool) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;

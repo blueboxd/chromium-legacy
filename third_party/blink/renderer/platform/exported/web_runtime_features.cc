@@ -118,10 +118,6 @@ void WebRuntimeFeatures::EnableAccessibilityAriaVirtualContent(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityAriaVirtualContentEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableAccessibilityExposeDisplayNone(bool enable) {
-  RuntimeEnabledFeatures::SetAccessibilityExposeDisplayNoneEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableAccessibilityExposeHTMLElement(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(enable);
 }
@@ -150,14 +146,6 @@ void WebRuntimeFeatures::EnableAdTagging(bool enable) {
 
 void WebRuntimeFeatures::EnableAllowActivationDelegationAttr(bool enable) {
   RuntimeEnabledFeatures::SetAllowActivationDelegationAttrEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableAutomaticLazyFrameLoading(bool enable) {
-  RuntimeEnabledFeatures::SetAutomaticLazyFrameLoadingEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableAutomaticLazyImageLoading(bool enable) {
-  RuntimeEnabledFeatures::SetAutomaticLazyImageLoadingEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
@@ -473,28 +461,12 @@ void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
   RuntimeEnabledFeatures::SetPresentationEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableRestrictAutomaticLazyFrameLoadingToDataSaver(
-    bool enable) {
-  RuntimeEnabledFeatures::
-      SetRestrictAutomaticLazyFrameLoadingToDataSaverEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableRestrictAutomaticLazyImageLoadingToDataSaver(
-    bool enable) {
-  RuntimeEnabledFeatures::
-      SetRestrictAutomaticLazyImageLoadingToDataSaverEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableSecurePaymentConfirmation(bool enable) {
   RuntimeEnabledFeatures::SetSecurePaymentConfirmationEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableSecurePaymentConfirmationDebug(bool enable) {
   RuntimeEnabledFeatures::SetSecurePaymentConfirmationDebugEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableAutoLazyLoadOnReloads(bool enable) {
-  RuntimeEnabledFeatures::SetAutoLazyLoadOnReloadsEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableTimerThrottlingForBackgroundTabs(bool enable) {

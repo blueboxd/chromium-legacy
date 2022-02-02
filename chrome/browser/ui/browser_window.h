@@ -153,6 +153,11 @@ class BrowserWindow : public ui::BaseWindow {
   //////////////////////////////////////////////////////////////////////////////
   // Browser specific methods:
 
+  // Returns the browser window currently hosting `web_contents`. If no browser
+  // window exists this returns null.
+  static const BrowserWindow* FindBrowserWindowWithWebContents(
+      content::WebContents* web_contents);
+
   // Returns true if the browser window is on the current workspace (a.k.a.
   // virtual desktop) or if we can't tell. False otherwise.
   //
@@ -396,7 +401,7 @@ class BrowserWindow : public ui::BaseWindow {
       std::vector<apps::IntentPickerAppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
-      PageActionIconType icon_type,
+      apps::IntentPickerBubbleType bubble_type,
       const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback) = 0;
 

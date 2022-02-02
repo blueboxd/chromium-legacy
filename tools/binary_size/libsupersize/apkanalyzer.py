@@ -17,6 +17,7 @@ import zipfile
 
 import models
 import path_util
+import parallel
 
 
 _TOTAL_NODE_NAME = '<TOTAL>'
@@ -32,22 +33,29 @@ def _ParseJarInfoFile(file_name):
   return source_map
 
 
-def _RunApkAnalyzer(apk_path, mapping_path):
+def RunApkAnalyzerAsync(apk_path, mapping_path):
   args = [path_util.GetApkAnalyzerPath(), 'dex', 'packages', apk_path]
   if mapping_path and os.path.exists(mapping_path):
     args.extend(['--proguard-mappings', mapping_path])
   env = os.environ.copy()
   env['JAVA_HOME'] = path_util.GetJavaHome()
-  result = subprocess.run(args,
-                          env=env,
-                          encoding='utf8',
-                          capture_output=True,
-                          check=True)
-  stderr = re.sub(r'Successfully loaded.*?\n', '', result.stderr)
+
+  # Use a thread rather than directly using a Popen instance so that stdout is
+  # being read from.
+  return parallel.CallOnThread(subprocess.run,
+                               args,
+                               env=env,
+                               encoding='utf8',
+                               capture_output=True,
+                               check=True)
+
+
+def _ParseApkAnalyzerOutput(stdout, stderr):
+  stderr = re.sub(r'Successfully loaded.*?\n', '', stderr)
   if stderr.strip():
     raise Exception('Unexpected stderr:\n' + stderr)
   data = []
-  for line in result.stdout.splitlines():
+  for line in stdout.splitlines():
     try:
       vals = line.split()
       # We want to name these columns so we know exactly which is which.
@@ -59,16 +67,6 @@ def _RunApkAnalyzer(apk_path, mapping_path):
       logging.error('Problem line was: %s', line)
       raise
   return data
-
-
-def _ExpectedDexTotalSize(apk_path):
-  dex_total = 0
-  with zipfile.ZipFile(apk_path) as z:
-    for zip_info in z.infolist():
-      if not zip_info.filename.endswith('.dex'):
-        continue
-      dex_total += zip_info.file_size
-  return dex_total
 
 
 # VisibleForTesting
@@ -280,22 +278,21 @@ def CreateDexSymbol(name, size, source_map, lambda_normalizer):
                        source_path=source_path)
 
 
-def CreateDexSymbols(apk_path, mapping_path, size_info_prefix):
+def CreateDexSymbols(apk_analyzer_result, dex_total_size, size_info_prefix):
   source_map = _ParseJarInfoFile(size_info_prefix + '.jar.info')
 
-  nodes = _RunApkAnalyzer(apk_path, mapping_path)
+  nodes = _ParseApkAnalyzerOutput(apk_analyzer_result.stdout,
+                                  apk_analyzer_result.stderr)
   nodes = UndoHierarchicalSizing(nodes)
 
-  dex_expected_size = _ExpectedDexTotalSize(apk_path)
   total_node_size = sum([x[2] for x in nodes])
   # TODO(agrieve): Figure out why this log is triggering for
   #     ChromeModernPublic.apk (https://crbug.com/851535).
-  # Reporting: dex_expected_size=6546088 total_node_size=6559549
-  if dex_expected_size < total_node_size:
+  # Reporting: dex_total_size=6546088 total_node_size=6559549
+  if dex_total_size < total_node_size:
     logging.error(
-      'Node size too large, check for node processing errors. '
-      'dex_expected_size=%d total_node_size=%d', dex_expected_size,
-      total_node_size)
+        'Node size too large, check for node processing errors. '
+        'dex_total_size=%d total_node_size=%d', dex_total_size, total_node_size)
   # Use (DEX_METHODS, DEX) buckets to speed up sorting.
   symbols = ([], [])
   lambda_normalizer = LambdaNormalizer()

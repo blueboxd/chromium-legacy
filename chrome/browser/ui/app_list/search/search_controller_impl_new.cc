@@ -215,6 +215,10 @@ void SearchControllerImplNew::InvokeResultAction(
   // non-zero state results.
   if (action == ash::SearchResultActionType::kRemove) {
     ranker_->Remove(result);
+    // We need to update the currently published results to not include the
+    // just-removed result. Manually set the result as filtered and re-publish.
+    result->scoring().filter = true;
+    Publish();
   } else if (result->result_type() == ash::AppListSearchResultType::kOmnibox) {
     result->InvokeAction(action);
   }
@@ -316,7 +320,7 @@ void SearchControllerImplNew::SetZeroStateResults(
   }
 }
 
-void SearchControllerImplNew::Rank(ash::AppListSearchResultType provider_type) {
+void SearchControllerImplNew::Rank(ProviderType provider_type) {
   DCHECK(ranker_);
   if (results_.empty()) {
     // Happens if the burn-in period has elapsed without any results having been
@@ -382,6 +386,8 @@ void SearchControllerImplNew::Publish() {
     }
   }
 
+  // TODO(crbug.com/1258415): Refactor this lambda to be a method on the Scoring
+  // struct.
   std::sort(
       all_results.begin(), all_results.end(),
       [&](const ChromeSearchResult* a, const ChromeSearchResult* b) {
@@ -421,6 +427,9 @@ void SearchControllerImplNew::Publish() {
           // This happens before sorting on display_score, as a trade-off
           // between ranking accuracy and UX pop-in mitigation.
           return a->scoring().burnin_iteration < b->scoring().burnin_iteration;
+        } else if (a->scoring().continue_rank != -1 ||
+                   b->scoring().continue_rank != -1) {
+          return a->scoring().continue_rank > b->scoring().continue_rank;
         } else {
           // Lastly, sort by display score.
           return a->display_score() > b->display_score();

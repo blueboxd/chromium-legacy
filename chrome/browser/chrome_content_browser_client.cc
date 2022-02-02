@@ -1336,6 +1336,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kForceMajorVersionToMinorPositionInUserAgent,
       embedder_support::ForceMajorVersionToMinorPosition::kDefault);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kWindowPlacementAlwaysAllowed, false);
 }
 
 // static
@@ -2551,8 +2553,7 @@ bool ChromeContentBrowserClient::IsDataSaverEnabled(
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return profile && data_reduction_proxy::DataReductionProxySettings::
-                        IsDataSaverEnabledByUser(profile->IsOffTheRecord(),
-                                                 profile->GetPrefs());
+                        IsDataSaverEnabledByUser(profile->IsOffTheRecord());
 }
 
 void ChromeContentBrowserClient::UpdateRendererPreferencesForWorker(
@@ -3636,6 +3637,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   web_prefs->webxr_immersive_ar_allowed =
       prefs->GetBoolean(prefs::kWebXRImmersiveArEnabled);
 #endif
+
+  web_prefs->window_placement_always_allowed =
+      prefs->GetBoolean(policy::policy_prefs::kWindowPlacementAlwaysAllowed);
 
   for (ChromeContentBrowserClientParts* parts : extra_parts_)
     parts->OverrideWebkitPrefs(web_contents, web_prefs);
@@ -5018,10 +5022,13 @@ void ChromeContentBrowserClient::
   content::BrowserContext* browser_context =
       content::RenderProcessHost::FromID(render_process_id)
           ->GetBrowserContext();
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(browser_context)
-          ->enabled_extensions()
-          .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+  const extensions::Extension* extension = nullptr;
+
+  if (request_initiator_origin != absl::nullopt) {
+    extension = extensions::ExtensionRegistry::Get(browser_context)
+                    ->enabled_extensions()
+                    .GetExtensionOrAppByURL(request_initiator_origin->GetURL());
+  }
 
   // For service worker contexts, we only allow file access. The remainder of
   // this code is used to allow extensions to access chrome:-scheme

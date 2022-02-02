@@ -3245,6 +3245,12 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
     LogicalOffset relative_offset;
   };
 
+  wtf_size_t previous_expansion_row_set_index = kNotFound;
+  auto IsExpansionMakingProgress = [&](wtf_size_t row_set_index) -> bool {
+    return previous_expansion_row_set_index == kNotFound ||
+           row_set_index > previous_expansion_row_set_index;
+  };
+
   Vector<ResultAndOffsets> result_and_offsets;
   BaselineAccumulator baseline_accumulator;
   LayoutUnit max_row_expansion;
@@ -3323,6 +3329,16 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
                         fragment_relative_block_offset),
           item_offsets.relative_offset);
 
+      // We may have failed to generate a fragment (due to running out of
+      // fragmentainer space). Force a breakpoint at the row, so we shift the
+      // item into the next fragmentainer.
+      if (result->Status() != NGLayoutResult::kSuccess) {
+        DCHECK_EQ(result->Status(), NGLayoutResult::kOutOfFragmentainerSpace);
+        breakpoint_row_set_index =
+            std::min(item_row_set_index, breakpoint_row_set_index);
+        continue;
+      }
+
       const NGBoxFragment fragment(
           container_writing_direction,
           To<NGPhysicalBoxFragment>(result->PhysicalFragment()));
@@ -3384,6 +3400,7 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
       // should grow the row by (if applicable).
       if (min_block_size_should_encompass_intrinsic_size &&
           item_row_set_index <= expansion_row_set_index &&
+          IsExpansionMakingProgress(item_row_set_index) &&
           fragmentainer_space != kIndefiniteSize &&
           grid_area.BlockEndOffset() <= fragmentainer_space) {
         // Check if we've found a different row to expand.
@@ -3433,6 +3450,7 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
     if (max_row_expansion == LayoutUnit())
       return false;
     DCHECK_GT(max_row_expansion, LayoutUnit());
+    DCHECK(IsExpansionMakingProgress(expansion_row_set_index));
 
     *intrinsic_block_size += max_row_expansion;
     AdjustItemOffsets(expansion_row_set_index + 1, max_row_expansion);
@@ -3442,6 +3460,8 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
         grid_geometry->row_geometry.sets.begin() + expansion_row_set_index + 1;
     while (it != grid_geometry->row_geometry.sets.end())
       (it++)->offset += max_row_expansion;
+
+    previous_expansion_row_set_index = expansion_row_set_index;
     return true;
   };
 
@@ -3484,9 +3504,9 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
 
   PlaceItems();
 
-  // See if we need to expand any rows, and if so re-run |PlaceItems()|. Only
-  // allow row expansion once.
-  if (ExpandRow())
+  // See if we need to expand any rows, and if so re-run |PlaceItems()|. We
+  // track the previous row we expanded, so this loop should eventually break.
+  while (ExpandRow())
     PlaceItems();
 
   // See if we need to take a row break-point, and if-so re-run |PlaceItems()|.

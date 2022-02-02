@@ -24,53 +24,39 @@ QuickPairMetricsLogger::QuickPairMetricsLogger(ScannerBroker* scanner_broker,
 QuickPairMetricsLogger::~QuickPairMetricsLogger() = default;
 
 void QuickPairMetricsLogger::OnDevicePaired(scoped_refptr<Device> device) {
-  switch (device->protocol) {
-    case Protocol::kFastPairInitial:
-      RecordFastPairEngagementFlow(
-          FastPairEngagementFlowEvent::kPairingSucceeded);
-      feature_usage_metrics_logger_->RecordUsage(/*success=*/true);
-      break;
-    case Protocol::kFastPairRetroactive:
-      break;
-    case Protocol::kFastPairSubsequent:
-      break;
-  }
+  AttemptRecordingFastPairEngagementFlow(
+      *device, FastPairEngagementFlowEvent::kPairingSucceeded);
+  feature_usage_metrics_logger_->RecordUsage(/*success=*/true);
+  base::TimeDelta total_pair_time =
+      base::TimeTicks::Now() - device_pairing_start_timestamps_[device];
+  AttemptRecordingTotalUxPairTime(*device, total_pair_time);
 }
 
 void QuickPairMetricsLogger::OnPairFailure(scoped_refptr<Device> device,
                                            PairFailure failure) {
-  switch (device->protocol) {
-    case Protocol::kFastPairInitial:
-      RecordFastPairEngagementFlow(FastPairEngagementFlowEvent::kPairingFailed);
-      feature_usage_metrics_logger_->RecordUsage(/*success=*/false);
-      break;
-    case Protocol::kFastPairRetroactive:
-      break;
-    case Protocol::kFastPairSubsequent:
-      break;
-  }
+  AttemptRecordingFastPairEngagementFlow(
+      *device, FastPairEngagementFlowEvent::kPairingFailed);
+  base::TimeDelta total_pair_time =
+      base::TimeTicks::Now() - device_pairing_start_timestamps_[device];
+  device_pairing_start_timestamps_.erase(device);
+  AttemptRecordingTotalUxPairTime(*device, total_pair_time);
+
+  feature_usage_metrics_logger_->RecordUsage(/*success=*/false);
 }
 
 void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
                                                DiscoveryAction action) {
-  switch (device->protocol) {
-    case Protocol::kFastPairInitial:
-      switch (action) {
-        case DiscoveryAction::kPairToDevice:
-          RecordFastPairEngagementFlow(
-              FastPairEngagementFlowEvent::kDiscoveryUiConnectPressed);
-          break;
-        case DiscoveryAction::kDismissedByUser:
-        case DiscoveryAction::kDismissed:
-          RecordFastPairEngagementFlow(
-              FastPairEngagementFlowEvent::kDiscoveryUiDismissed);
-          feature_usage_metrics_logger_->RecordUsage(/*success=*/true);
-          break;
-      }
+  switch (action) {
+    case DiscoveryAction::kPairToDevice:
+      AttemptRecordingFastPairEngagementFlow(
+          *device, FastPairEngagementFlowEvent::kDiscoveryUiConnectPressed);
+      device_pairing_start_timestamps_[device] = base::TimeTicks::Now();
       break;
-    case Protocol::kFastPairRetroactive:
-      break;
-    case Protocol::kFastPairSubsequent:
+    case DiscoveryAction::kDismissedByUser:
+    case DiscoveryAction::kDismissed:
+      AttemptRecordingFastPairEngagementFlow(
+          *device, FastPairEngagementFlowEvent::kDiscoveryUiDismissed);
+      feature_usage_metrics_logger_->RecordUsage(/*success=*/true);
       break;
   }
 }
@@ -78,38 +64,22 @@ void QuickPairMetricsLogger::OnDiscoveryAction(scoped_refptr<Device> device,
 void QuickPairMetricsLogger::OnPairingFailureAction(
     scoped_refptr<Device> device,
     PairingFailedAction action) {
-  switch (device->protocol) {
-    case Protocol::kFastPairInitial:
-      switch (action) {
-        case PairingFailedAction::kNavigateToSettings:
-          RecordFastPairEngagementFlow(
-              FastPairEngagementFlowEvent::kErrorUiSettingsPressed);
-          break;
-        case PairingFailedAction::kDismissedByUser:
-        case PairingFailedAction::kDismissed:
-          RecordFastPairEngagementFlow(
-              FastPairEngagementFlowEvent::kErrorUiDismissed);
-          break;
-      }
+  switch (action) {
+    case PairingFailedAction::kNavigateToSettings:
+      AttemptRecordingFastPairEngagementFlow(
+          *device, FastPairEngagementFlowEvent::kErrorUiSettingsPressed);
       break;
-    case Protocol::kFastPairRetroactive:
-      break;
-    case Protocol::kFastPairSubsequent:
+    case PairingFailedAction::kDismissedByUser:
+    case PairingFailedAction::kDismissed:
+      AttemptRecordingFastPairEngagementFlow(
+          *device, FastPairEngagementFlowEvent::kErrorUiDismissed);
       break;
   }
 }
 
 void QuickPairMetricsLogger::OnDeviceFound(scoped_refptr<Device> device) {
-  switch (device->protocol) {
-    case Protocol::kFastPairInitial:
-      RecordFastPairEngagementFlow(
-          FastPairEngagementFlowEvent::kDiscoveryUiShown);
-      break;
-    case Protocol::kFastPairRetroactive:
-      break;
-    case Protocol::kFastPairSubsequent:
-      break;
-  }
+  AttemptRecordingFastPairEngagementFlow(
+      *device, FastPairEngagementFlowEvent::kDiscoveryUiShown);
 }
 
 void QuickPairMetricsLogger::OnAccountKeyWrite(

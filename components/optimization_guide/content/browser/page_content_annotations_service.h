@@ -62,7 +62,8 @@ struct HistoryVisit {
 class PageContentAnnotationsService : public KeyedService,
                                       public EntityMetadataProvider {
  public:
-  explicit PageContentAnnotationsService(
+  PageContentAnnotationsService(
+      const std::string& application_locale,
       OptimizationGuideModelProvider* optimization_guide_model_provider,
       history::HistoryService* history_service);
   ~PageContentAnnotationsService() override;
@@ -143,6 +144,14 @@ class PageContentAnnotationsService : public KeyedService,
       const HistoryVisit& visit,
       continuous_search::SearchResultExtractorClientStatus status,
       continuous_search::mojom::CategoryResultsPtr results);
+
+  // Persist |entities| for |visit| in |history_service_|.
+  //
+  // Virtualized for testing.
+  virtual void PersistRemotePageEntities(
+      const HistoryVisit& visit,
+      const std::vector<history::VisitContentModelAnnotations::Category>&
+          entities);
 
   using PersistAnnotationsCallback = base::OnceCallback<void(history::VisitID)>;
   // Queries |history_service| for all the visits to the visited URL of |visit|.

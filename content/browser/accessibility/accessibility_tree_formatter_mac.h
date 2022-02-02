@@ -19,6 +19,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
   AccessibilityTreeFormatterMac();
   ~AccessibilityTreeFormatterMac() override;
 
+  // AXTreeFormatter
   base::Value BuildTree(ui::AXPlatformNodeDelegate* root) const override;
   base::Value BuildTreeForSelector(
       const AXTreeSelector& selector) const override;
@@ -31,6 +32,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
       size_t start_index,
       size_t end_index) const override;
 
+  // AccessibilityTreeFormatterMac
+  base::Value BuildNode(const id node) const;
+
  protected:
   void AddDefaultFilters(
       std::vector<ui::AXPropertyFilter>* property_filters) override;
@@ -38,8 +42,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
  private:
   base::Value BuildTree(const id root) const;
   base::Value BuildTreeForAXUIElement(AXUIElementRef node) const;
-
-  base::Value BuildNode(const id node) const;
 
   void RecursiveBuildTree(const id node,
                           const NSRect& root_rect,
@@ -59,10 +61,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
 
   base::Value PopulateLocalPosition(const id node,
                                     const NSRect& root_rect) const;
-  base::Value PopulatePoint(NSPoint) const;
-  base::Value PopulateSize(NSSize) const;
-  base::Value PopulateRect(NSRect) const;
-  base::Value PopulateRange(NSRange) const;
   base::Value PopulateTextPosition(
       const BrowserAccessibility::AXPosition& position,
       const ui::AXTreeIndexerMac*) const;
@@ -70,8 +68,6 @@ class CONTENT_EXPORT AccessibilityTreeFormatterMac
                                       const ui::AXTreeIndexerMac*) const;
   base::Value PopulateObject(id, const ui::AXTreeIndexerMac*) const;
   base::Value PopulateArray(NSArray*, const ui::AXTreeIndexerMac*) const;
-
-  std::string NodeToLineIndex(id, const ui::AXTreeIndexerMac*) const;
 
   std::string ProcessTreeForOutput(
       const base::DictionaryValue& node) const override;

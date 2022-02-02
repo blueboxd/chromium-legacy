@@ -54,6 +54,8 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   void SetNotificationBadgeColor(const SkColor color);
 
+  void SetIconColor(const IconColor color);
+
   const std::string& GetDisplayName() const {
     return short_name_.empty() ? name() : short_name_;
   }
@@ -132,6 +134,7 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   friend class AppListBadgeController;
   friend class AppListItemList;
   friend class AppListItemListTest;
+  friend class AppListItemViewProductivityLauncherTest;
   friend class AppListModel;
 
   // These should only be called by AppListModel or in tests so that name

@@ -2775,6 +2775,9 @@ crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/servi
 crbug.com/626703 external/wpt/preload/preload-resource-match.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/infrastructure/channels/test_call.html [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/channels/test_postMessage.html [ Timeout ]
+crbug.com/626703 external/wpt/infrastructure/channels/test_serialize.html [ Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/mediacapture-streams/MediaDevices-enumerateDevices-per-origin-ids.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Win10.20h2 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaDevices-enumerateDevices-per-origin-ids.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] wpt_internal/webcodecs/basic_video_encoding.https.any.worker.html [ Crash Timeout ]
@@ -6280,7 +6283,7 @@ crbug.com/1227092 [ Win ] virtual/scroll-unification/fast/events/selection-autos
 crbug.com/1228432 [ Linux ] external/wpt/video-rvfc/request-video-frame-callback-before-xr-session.https.html [ Pass Timeout ]
 
 # Depends on fixing WPT cross-origin iframe click flake in crbug.com/1066891.
-crbug.com/1227710 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.html [ Failure Pass ]
+crbug.com/1227710 external/wpt/bluetooth/requestDevice/cross-origin-iframe.sub.https.window.html [ Failure Pass ]
 
 # Cross-origin WebAssembly module sharing is getting deprecated.
 crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]

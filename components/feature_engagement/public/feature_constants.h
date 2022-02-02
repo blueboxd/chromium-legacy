@@ -86,6 +86,16 @@ extern const base::Feature kIPHDownloadSettingsFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadContinuingFeature;
 extern const base::Feature kIPHDownloadInfoBarDownloadsAreFasterFeature;
 extern const base::Feature kIPHEphemeralTabFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideDefaultBrowserNotificationShownFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideSignInNotificationShownFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideNTPSuggestionCardNotificationShownFeature;
+extern const base::Feature
+    kIPHFeatureNotificationGuideVoiceSearchNotificationShownFeature;
 extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
@@ -108,6 +118,7 @@ extern const base::Feature kIPHReadLaterContextMenuFeature;
 extern const base::Feature kIPHReadLaterAppMenuBookmarkThisPageFeature;
 extern const base::Feature kIPHReadLaterAppMenuBookmarksFeature;
 extern const base::Feature kIPHReadLaterBottomSheetFeature;
+extern const base::Feature kIPHShoppingListMenuItemFeature;
 extern const base::Feature kIPHTabGroupsQuicklyComparePagesFeature;
 extern const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature;
 extern const base::Feature kIPHTabGroupsYourTabsAreTogetherFeature;

@@ -16667,7 +16667,7 @@ should be kept until we use this API.  -->
 </histogram>
 
 <histogram name="TouchScreen.MissedTOUCHEVENTF_UP" enum="BooleanHit"
-    expires_after="2021-12-12">
+    expires_after="2022-06-12">
   <owner>girard@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -18223,7 +18223,7 @@ regressions. -->
 </histogram>
 
 <histogram name="WebUITabStrip.TabCreation" units="ms"
-    expires_after="2021-12-26">
+    expires_after="2022-04-10">
   <owner>robliao@chromium.org</owner>
   <owner>johntlee@chromium.org</owner>
   <summary>

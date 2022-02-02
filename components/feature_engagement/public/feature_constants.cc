@@ -128,6 +128,25 @@ const base::Feature kIPHReadLaterBottomSheetFeature{
     "IPH_ReadLaterBottomSheet", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHEphemeralTabFeature{"IPH_EphemeralTab",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature
+    kIPHFeatureNotificationGuideDefaultBrowserNotificationShownFeature{
+        "IPH_FeatureNotificationGuideDefaultBrowserNotificationShown",
+        base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHFeatureNotificationGuideSignInNotificationShownFeature{
+    "IPH_FeatureNotificationGuideSignInNotificationShown",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature
+    kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature{
+        "IPH_FeatureNotificationGuideIncognitoTabNotificationShown",
+        base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature
+    kIPHFeatureNotificationGuideNTPSuggestionCardNotificationShownFeature{
+        "IPH_FeatureNotificationGuideNTPSuggestionCardNotificationShown",
+        base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature
+    kIPHFeatureNotificationGuideVoiceSearchNotificationShownFeature{
+        "IPH_FeatureNotificationGuideVoiceSearchNotificationShown",
+        base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHFeedCardMenuFeature{"IPH_FeedCardMenu",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHHomepagePromoCardFeature{
@@ -159,6 +178,8 @@ const base::Feature kIPHPageInfoStoreInfoFeature{
     "IPH_PageInfoStoreInfo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPreviewsOmniboxUIFeature{
     "IPH_PreviewsOmniboxUI", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHShoppingListMenuItemFeature{
+    "IPH_ShoppingListMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
     "IPH_TabGroupsQuicklyComparePages", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{

@@ -28,13 +28,13 @@ Some features (i.e. [DRM](../../wiki/DRM)) need extra operations to use.
 
 ## builds
 
-This project is automatically built and uploaded twice a day (00:00 and 12:00 JST) if no issues occurred.
-And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
-It's recommended to find and use a stable build for daily use. (The same is true for the original Chrome Canary/Chromium)
-
-For getting/updating the latest canary/stable builds, [an updater](https://github.com/blueboxd/chromium-updater) is available (experimental).
+For getting/updating the latest builds, [an updater](https://github.com/blueboxd/chromium-updater) is available (experimental).
 
 ### canary (Chrome canary channel)
+
+Canary builds are automatically built and uploaded once a day (00:00 JST) if no issues occurred.
+And note, uploaded **without any tests**, thus there is no guarantee for launching or proper operation.
+It's recommended to find and use a stable build for daily use. (The same is true for the original Chrome Canary/Chromium)
 
 See [Releases](../../releases) for recent builds.
 
@@ -42,9 +42,9 @@ Or, you can [use a downloader](https://github.com/blueboxd/chromium-legacy/discu
 
 ### stable (Chrome stable channel)
 
-See [releases/tag/stable](../../releases/tag/stable) for current stable channel release.
+Stable builds are currently merged and built manually and passed a few basic tests (launching, HTML5/JS tests, media playing) on 10.7.
 
-You can [find the branch position](https://omahaproxy.appspot.com/all?os=mac&channel=stable) of the current Chrome stable channel.
+See [releases/tag/stable](../../releases/tag/stable) for current stable channel release.
 
 ## limitations
 

@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserService} from 'chrome://history/history.js';
-import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
-import {createHistoryInfo} from 'chrome://test/history/test_util.js';
-import {flushTasks} from 'chrome://test/test_util.js';
+import {BrowserServiceImpl} from 'chrome://history/history.js';
+import {flushTasks} from 'chrome://webui-test/test_util.js';
+
+import {TestBrowserService} from './test_browser_service.js';
+import {createHistoryInfo} from './test_util.js';
 
 suite('routing-with-query-param', function() {
   let app;
@@ -17,7 +18,7 @@ suite('routing-with-query-param', function() {
     document.body.innerHTML = '';
     window.history.replaceState({}, '', '/?q=query');
     testService = new TestBrowserService();
-    BrowserService.setInstance(testService);
+    BrowserServiceImpl.setInstance(testService);
     // Ignore the initial empty query so that we can correctly check the
     // search term for the second call to queryHistory().
     testService.ignoreNextQuery();

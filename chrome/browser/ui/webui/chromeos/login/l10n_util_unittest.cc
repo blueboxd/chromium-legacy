@@ -25,7 +25,7 @@ namespace chromeos {
 namespace {
 
 void VerifyOnlyUILanguages(const base::ListValue& list) {
-  for (const base::Value& value : list.GetList()) {
+  for (const base::Value& value : list.GetListDeprecated()) {
     ASSERT_TRUE(value.is_dict());
     const base::DictionaryValue& dict = base::Value::AsDictionaryValue(value);
     std::string code;
@@ -39,7 +39,7 @@ void VerifyOnlyUILanguages(const base::ListValue& list) {
 void VerifyLanguageCode(const base::ListValue& list,
                         size_t index,
                         const std::string& expected_code) {
-  const base::Value& value = list.GetList()[index];
+  const base::Value& value = list.GetListDeprecated()[index];
   ASSERT_TRUE(value.is_dict());
   const base::DictionaryValue& dict = base::Value::AsDictionaryValue(value);
   std::string actual_code;
@@ -170,7 +170,7 @@ TEST_F(L10nUtilTest, GetUILanguageListMulti) {
   VerifyOnlyUILanguages(*list);
 
   // (4 languages (except Irish) + divider) = 5 + all other languages
-  ASSERT_LE(5u, list->GetList().size());
+  ASSERT_LE(5u, list->GetListDeprecated().size());
 
   VerifyLanguageCode(*list, 0, "fr");
   VerifyLanguageCode(*list, 1, "en-US");
@@ -191,7 +191,7 @@ TEST_F(L10nUtilTest, GetUILanguageListWithMostRelevant) {
 
   VerifyOnlyUILanguages(*list);
 
-  ASSERT_LE(3u, list->GetList().size());
+  ASSERT_LE(3u, list->GetListDeprecated().size());
 
   VerifyLanguageCode(*list, 0, "it");
   VerifyLanguageCode(*list, 1, "de");

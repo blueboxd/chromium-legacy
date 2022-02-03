@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {BrowserServiceImpl, ensureLazyLoaded} from 'chrome://history/history.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
-import {createSession, createWindow, polymerSelectAll} from 'chrome://test/history/test_util.js';
-import {flushTasks, waitBeforeNextRender} from 'chrome://test/test_util.js';
+import {flushTasks, waitBeforeNextRender} from 'chrome://webui-test/test_util.js';
+
+import {TestBrowserService} from './test_browser_service.js';
+import {createSession, createWindow, polymerSelectAll} from './test_util.js';
 
 function getCards(manager) {
   return polymerSelectAll(manager, 'history-synced-device-card');
@@ -34,7 +35,7 @@ suite('<history-synced-device-manager>', function() {
     document.body.innerHTML = '';
     window.history.replaceState({}, '', '/');
     testService = new TestBrowserService();
-    BrowserService.setInstance(testService);
+    BrowserServiceImpl.setInstance(testService);
 
     // Need to ensure lazy_load.html has been imported so that the device
     // manager custom element is defined.
@@ -256,7 +257,7 @@ suite('<history-synced-device-manager>', function() {
         })
         .then(args => {
           assertEquals('Chromebook', args.sessionTag, 'sessionTag is correct');
-          assertEquals('123', args.windowId, 'windowId is correct');
+          assertEquals(123, args.windowId, 'windowId is correct');
           assertEquals(456, args.tabId, 'tabId is correct');
           assertFalse(args.e.altKey, 'altKey is defined');
           assertFalse(args.e.ctrlKey, 'ctrlKey is defined');

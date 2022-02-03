@@ -965,6 +965,7 @@
         'ReportDeviceTimezoneInfo',
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
+        'ReportDevicePeripherals',
         'ReportDevicePowerStatus',
         'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
@@ -11040,6 +11041,37 @@
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
+      'name': 'ReportDevicePeripherals',
+      'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:101-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'default': False,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report information about peripherals that are plugged into the device',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report information about peripherals that are plugged into the device',
+        },
+      ],
+      'example_value': False,
+      'id': 952,
+      'caption': '''Report peripheral details''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to True has enrolled devices report information related to peripherals that are plugged into the device.
+
+      Setting the policy to False or leaving it unset means enrolled devices don't report peripherals information.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDeviceStorageStatus',
       'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org', 'antrim@chromium.org'],
       'type': 'main',
@@ -15941,7 +15973,7 @@
       'owners': ['mlerman@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:38-'],
+      'supported_on': ['chrome.*:38-', 'chrome_os:100-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -15950,9 +15982,11 @@
       'id': 275,
       'caption': '''Enable guest mode in browser''',
       'tags': [],
-      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
 
-      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow guest profiles to be started.''',
+      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will not allow guest profiles to be started.
+
+      Note: If this policy is not configured or set to true, but <ph name="LACROS_SECONDARY_PROFILES_ALLOWED_POLICY_NAME">LacrosSecondaryProfilesAllowed</ph> is set to false, <ph name="LACROS_NAME">Lacros</ph> will not allow guest profiles to be started.''',
     },
     {
       'name': 'BrowserGuestModeEnforced',
@@ -15977,7 +16011,7 @@
       'owners': ['mlerman@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:39-'],
+      'supported_on': ['chrome.*:39-', 'chrome_os:100-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -15986,9 +16020,11 @@
       'id': 276,
       'caption': '''Enable add person in user manager''',
       'tags': [],
-      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow Add Person from the user manager.
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will allow to add a new person from the user manager.
 
-      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the user manager.''',
+      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will not allow adding a new person from the user manager.
+
+      Note: If this policy is not configured or set to true, but <ph name="LACROS_SECONDARY_PROFILES_ALLOWED_POLICY_NAME">LacrosSecondaryProfilesAllowed</ph> is set to false, <ph name="LACROS_NAME">Lacros</ph> will not allow adding a new person from the user manager.''',
     },
     {
       'name': 'ForceBrowserSignin',
@@ -24881,12 +24917,29 @@
               'type': 'array',
               'items': { 'type': 'string' },
             },
+            'enabled_opt_in_events': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'name': { 'type': 'string' },
+                  'url_patterns': {
+                    'type': 'array',
+                    'items': { 'type': 'string' },
+                  },
+                },
+              },
+            },
           },
         },
       },
       'example_value': [{
         'service_provider': 'Google',
         'enabled_event_names': ['passwordChangedEvent', 'sensitiveDataEvent'],
+        'enabled_opt_in_events': [
+          { 'name': 'loginEvent', 'url_patterns': ['*'] },
+          { 'name': 'passwordBreachEvent', 'url_patterns': ['example.com', 'other.example.com'] },
+        ],
       }],
       'features': {
         'dynamic_refresh': True,
@@ -27560,11 +27613,11 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This setting allows users to create and use secondary profiles, and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser.
 
-      Similar to both BrowserAddPersonEnabled and BrowserGuestModeEnabled, if this policy is set to false or unset, the user cannot create or use secondary profiles, and use guest mode. Previously created secondary profiles, if any, will be unavailable.
+      Similar to both <ph name="BROWSER_ADD_PERSON_ENABLED_POLICY_NAME">BrowserAddPersonEnabled</ph> and <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME">BrowserGuestModeEnabled</ph>, if this policy is set to false or unset, the user cannot create or use secondary profiles, and use guest mode. Previously created secondary profiles, if any, will be unavailable.
 
       If this policy is set to true, the user can create and use secondary profiles, and use guest mode.
 
-      Note, that if this policy is set to true but BrowserAddPersonEnabled is set to false, the user cannot create secondary profiles. The same for BrowserGuestModeEnabled and guest mode.''',
+      Note: If this policy is set to true but <ph name="BROWSER_ADD_PERSON_ENABLED_POLICY_NAME">BrowserAddPersonEnabled</ph> is set to false, the user cannot create secondary profiles. The same for <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME">BrowserGuestModeEnabled</ph> and guest mode.''',
     },
     {
       'name': 'LacrosAvailability',
@@ -29225,7 +29278,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'owners': ['file://ash/quick_pair/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:100-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -30195,6 +30248,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceMemoryInfo': 'device_reporting.report_memory_info',
     'ReportDeviceBacklightInfo': 'device_reporting.report_backlight_info',
     'ReportDeviceStorageStatus': 'device_reporting.report_storage_status',
+    'ReportDevicePeripherals': 'device_reporting.report_peripherals',
     'ReportDevicePowerStatus': 'device_reporting.report_power_status',
     'DeviceOpenNetworkConfiguration': 'open_network_configuration.open_network_configuration',
     'DeviceBootOnAcEnabled': 'device_boot_on_ac.enabled',
@@ -30629,6 +30683,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceTimezoneInfo',
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
+        'ReportDevicePeripherals',
         'ReportDevicePowerStatus',
         'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
@@ -30743,6 +30798,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 951,
+  'highest_id_currently_used': 952,
   'highest_atomic_group_id_currently_used': 41
 }

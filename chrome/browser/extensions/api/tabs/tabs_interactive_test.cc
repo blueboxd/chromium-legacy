@@ -108,8 +108,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_QueryLastFocusedWindowTabs) {
 
   base::ListValue* result_tabs = result.get();
   // We should have one initial tab and one added tab.
-  EXPECT_EQ(2u, result_tabs->GetList().size());
-  for (const base::Value& result_tab : result_tabs->GetList()) {
+  EXPECT_EQ(2u, result_tabs->GetListDeprecated().size());
+  for (const base::Value& result_tab : result_tabs->GetListDeprecated()) {
     EXPECT_EQ(focused_window_id,
               api_test_utils::GetInteger(utils::ToDictionary(result_tab),
                                          keys::kWindowIdKey));
@@ -123,8 +123,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_QueryLastFocusedWindowTabs) {
 
   result_tabs = result.get();
   // We should get one tab for each extra window and one for the initial window.
-  EXPECT_EQ(kExtraWindows + 1, result_tabs->GetList().size());
-  for (const base::Value& result_tab : result_tabs->GetList()) {
+  EXPECT_EQ(kExtraWindows + 1, result_tabs->GetListDeprecated().size());
+  for (const base::Value& result_tab : result_tabs->GetListDeprecated()) {
     EXPECT_NE(focused_window_id,
               api_test_utils::GetInteger(utils::ToDictionary(result_tab),
                                          keys::kWindowIdKey));
@@ -282,9 +282,9 @@ int ExtensionWindowLastFocusedTest::GetTabId(
   if (iter == dict.end() || !iter->second.is_list())
     return -2;
   const base::ListValue& tabs = base::Value::AsListValue(iter->second);
-  if (tabs.GetList().empty())
+  if (tabs.GetListDeprecated().empty())
     return -2;
-  const base::Value& tab = tabs.GetList()[0];
+  const base::Value& tab = tabs.GetListDeprecated()[0];
   const base::DictionaryValue* tab_dict = nullptr;
   if (!tab.GetAsDictionary(&tab_dict))
     return -2;

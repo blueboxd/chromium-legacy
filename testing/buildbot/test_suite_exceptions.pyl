@@ -1126,6 +1126,11 @@
           'shards': 2,
         },
       },
+      'android-asan': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'quickrun_shards': 2,
@@ -1324,7 +1329,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.asan.content_browsertests.filter',
         ],
         'swarming': {
-          'shards': 18,
+          'shards': 25,
         },
       },
       'android-marshmallow-arm64-rel': {
@@ -2964,8 +2969,6 @@
       # Disabled due to dbus crashes crbug.com/927465
       'Linux FYI Release (Intel HD 630)',
       'Linux FYI Release (NVIDIA)',
-      'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
-      'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux Release (NVIDIA)',
     ],
   },

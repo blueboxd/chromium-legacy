@@ -2174,7 +2174,7 @@ void DeviceStatusCollector::OnProbeDataFetched(
 void DeviceStatusCollector::ReportingUsersChanged() {
   std::vector<std::string> reporting_users;
   for (auto& value :
-       pref_service_->GetList(prefs::kReportingUsers)->GetList()) {
+       pref_service_->GetList(prefs::kReportingUsers)->GetListDeprecated()) {
     if (value.is_string())
       reporting_users.push_back(value.GetString());
   }
@@ -2973,9 +2973,10 @@ bool DeviceStatusCollector::IsReportingNetworkData() const {
 }
 bool DeviceStatusCollector::IsReportingHardwareData() const {
   return report_power_status_ || report_storage_status_ ||
-         report_board_status_ || report_memory_info_ || report_cpu_info_ ||
-         report_backlight_info_ || report_bluetooth_info_ || report_fan_info_ ||
-         report_vpd_info_ || report_system_info_ || report_version_info_;
+         report_audio_status_ || report_board_status_ || report_memory_info_ ||
+         report_cpu_info_ || report_backlight_info_ || report_bluetooth_info_ ||
+         report_fan_info_ || report_vpd_info_ || report_system_info_ ||
+         report_version_info_;
 }
 bool DeviceStatusCollector::IsReportingUsers() const {
   // For more details, see comment in

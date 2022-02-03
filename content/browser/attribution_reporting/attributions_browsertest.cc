@@ -117,6 +117,8 @@ struct ExpectedReportWaiter {
     EXPECT_TRUE(report_id);
     EXPECT_TRUE(base::GUID::ParseLowercase(*report_id).is_valid());
 
+    EXPECT_TRUE(body.FindDoubleKey("randomized_trigger_rate"));
+
     // Clear the port as it is assigned by the EmbeddedTestServer at runtime.
     replace_host.SetPortStr("");
 
@@ -834,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
-  // 12 below is sanitized to 4 here by the `AttributionPolicy`.
+  // 12 below is sanitized to 4 here by `SanitizeTriggerData()`.
   ExpectedReportWaiter expected_report2(
       GURL("https://a.test/.well-known/attribution-reporting/"
            "report-attribution"),

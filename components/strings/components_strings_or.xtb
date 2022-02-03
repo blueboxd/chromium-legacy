@@ -70,7 +70,6 @@
 <translation id="1178581264944972037">ବିରତି</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
 <translation id="1186201132766001848">ପାସ୍‌ୱାର୍ଡଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରନ୍ତୁ</translation>
-<translation id="1195210374336998651">ଆପ ସେଟିଂସକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="1195558154361252544">ଆପଣ ଅନୁମତି ଦେଇଥିବା ସାଇଟ୍‍ଗୁଡ଼ିକ ବ୍ୟତୀତ ସମସ୍ତ ସାଇଟ୍‌ରେ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="1197088940767939838">କମଳା</translation>
 <translation id="1201402288615127009">ପରବର୍ତ୍ତୀ</translation>
@@ -837,7 +836,6 @@
 <translation id="3587738293690942763">ମଧ୍ୟମ</translation>
 <translation id="3592413004129370115">ଇଟାଲିଆନ୍ (ଏନଭଲପ୍)</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{ଆପଣ ଯେ କୌଣସି ସମୟରେ ଆପଣଙ୍କ ଗୋଷ୍ଠୀ ରିସେଟ୍ କରିପାରିବେ। ଏକ ନୂଆ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦେବା ପାଇଁ ଗୋଟିଏ ଦିନ ସମୟ ଲାଗିଥାଏ।}=1{ଆପଣ ଯେ କୌଣସି ସମୟରେ ଆପଣଙ୍କ ଗୋଷ୍ଠୀ ରିସେଟ୍ କରିପାରିବେ। ଏକ ନୂଆ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦେବା ପାଇଁ ଗୋଟିଏ ଦିନ ସମୟ ଲାଗିଥାଏ।}other{ଆପଣ ଯେ କୌଣସି ସମୟରେ ଆପଣଙ୍କ ଗୋଷ୍ଠୀ ରିସେଟ୍ କରିପାରିବେ। ଏକ ନୂଆ ଗୋଷ୍ଠୀରେ ଯୋଗ ଦେବା ପାଇଁ {NUM_DAYS} ଦିନ ସମୟ ଲାଗିଥାଏ।}}</translation>
-<translation id="3596012367874587041">ଆପ ସେଟିଂସ</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ଆପ୍ଲିକେସନ୍ ବ୍ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="3608932978122581043">ଫିଡ୍ ଓରିଏଣ୍ଟେସନ୍</translation>
@@ -1964,6 +1962,7 @@
 <translation id="7334320624316649418">&amp;ରି-ଡୁକୁ ପୁନଃକ୍ରମରେ ରଖନ୍ତୁ</translation>
 <translation id="7335157162773372339">ଆପଣଙ୍କ କ୍ୟାମେରା ବ୍ୟବହାର କରିବାକୁ ସାଇଟ୍ ପଚାରିପାରେ</translation>
 <translation id="7337248890521463931">ଅଧିକ ଲାଇନ୍ ଦେଖାନ୍ତୁ</translation>
+<translation id="7337418456231055214">ଭର୍ଚୁଆଲ କାର୍ଡ ନମ୍ବର ପୂରଣ କରାଯାଇନାହିଁ? କପି କରିବାକୁ କାର୍ଡ ବିବରଣୀରେ କ୍ଲିକ କରନ୍ତୁ। <ph name="IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="7337706099755338005">ଆପଣଙ୍କର ପ୍ଲାଟ୍‌ଫର୍ମରେ ଉପଲବ୍ଧ ନାହିଁ।</translation>
 <translation id="733923710415886693">ସର୍ଭର୍‍ର ସାର୍ଟିଫିକେଟ୍, ସାର୍ଟିଫିକେଟ୍ ସ୍ଵଚ୍ଛତା ମାଧ୍ୟମରେ ପ୍ରକାଶ କରାଯାଇନାହିଁ।</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -2426,6 +2425,7 @@
 <translation id="883848425547221593">ଅନ୍ୟ ବୁକ୍‍ମାର୍କ</translation>
 <translation id="884264119367021077">ସିପିଂ ଠିକଣା</translation>
 <translation id="884923133447025588">କୌଣସି ନାକଚକରଣ ଯନ୍ତ୍ରକୌଶଳ ଖୋଜି ପାଇଲା ନାହିଁ ।</translation>
+<translation id="8849262850971482943">ଅଧିକ ସୁରକ୍ଷା ପାଇଁ ଆପଣଙ୍କ ଭର୍ଚୁଆଲ୍ କାର୍ଡ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="885730110891505394">Google ସହିତ ସେୟାର୍ କରାଯାଉଛି</translation>
 <translation id="8858065207712248076">ଆପଣ ଯଦି ନିଜର <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ପାସ୍‌ୱର୍ଡକୁ ଅନ୍ୟ ୱେବ୍‌ସାଇଟ୍‌ଗୁଡ଼ିକରେ ପୁନଃ ବ୍ୟବହାର କରିଛନ୍ତି, ତେବେ Chrome ଆପଣଙ୍କୁ ଏହି ପାସ୍‌ୱର୍ଡକୁ ରିସେଟ୍ କରିବା ପାଇଁ ସୁପାରିଶ କରୁଛି।</translation>
 <translation id="885906927438988819">ଯଦି ବନାନ ସଠିକ୍ ଅଛି, ତେବେ <ph name="BEGIN_LINK" />Windows ନେଟୱାର୍କ ଡାଏଗ୍ନୋଷ୍ଟିକ୍ସ ଚଲାଇବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ<ph name="END_LINK" />।</translation>

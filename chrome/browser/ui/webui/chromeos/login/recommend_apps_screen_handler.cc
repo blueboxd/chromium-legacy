@@ -121,7 +121,8 @@ void RecommendAppsScreenHandler::Show() {
 void RecommendAppsScreenHandler::Hide() {}
 
 void RecommendAppsScreenHandler::OnLoadSuccess(const base::Value& app_list) {
-  recommended_app_count_ = static_cast<int>(app_list.GetList().size());
+  recommended_app_count_ =
+      static_cast<int>(app_list.GetListDeprecated().size());
   LoadAppListInUI(app_list);
 }
 
@@ -142,9 +143,9 @@ void RecommendAppsScreenHandler::LoadAppListInUI(const base::Value& app_list) {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   std::string app_list_webview = resource_bundle.LoadDataResourceString(
-      IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
-  CallJS("login.RecommendAppsScreen.setWebview", app_list_webview);
-  CallJS("login.RecommendAppsScreen.loadAppList", app_list);
+      IDR_ARC_SUPPORT_RECOMMEND_APP_OLD_LIST_VIEW_HTML);
+  CallJS("login.RecommendAppsOldScreen.setWebview", app_list_webview);
+  CallJS("login.RecommendAppsOldScreen.loadAppList", app_list);
 }
 
 void RecommendAppsScreenHandler::OnUserSkip() {
@@ -164,7 +165,7 @@ void RecommendAppsScreenHandler::HandleSkip() {
 
 void RecommendAppsScreenHandler::HandleInstall(const base::ListValue* args) {
   if (recommended_app_count_ != 0) {
-    int selected_app_count = static_cast<int>(args->GetList().size());
+    int selected_app_count = static_cast<int>(args->GetListDeprecated().size());
     int selected_recommended_percentage =
         100 * selected_app_count / recommended_app_count_;
     RecordUmaUserSelectionAppCount(selected_app_count);
@@ -173,7 +174,7 @@ void RecommendAppsScreenHandler::HandleInstall(const base::ListValue* args) {
 
   // If the user does not select any apps, we should skip the app downloading
   // screen.
-  if (args->GetList().empty()) {
+  if (args->GetListDeprecated().empty()) {
     RecordUmaScreenAction(RecommendAppsScreenAction::SELECTED_NONE);
     HandleSkip();
     return;

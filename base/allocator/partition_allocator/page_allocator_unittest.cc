@@ -426,7 +426,14 @@ TEST(PartitionAllocPageAllocatorTest, InaccessiblePages) {
   FreePages(buffer, PageAllocationGranularity());
 }
 
-TEST(PartitionAllocPageAllocatorTest, ReadExecutePages) {
+// TODO(crbug.com/1291888): Understand why we can't read from Read-Execute pages
+// on iOS.
+#if BUILDFLAG(IS_IOS)
+#define MAYBE_ReadExecutePages DISABLED_ReadExecutePages
+#else
+#define MAYBE_ReadExecutePages ReadExecutePages
+#endif  // BUILDFLAG(IS_IOS)
+TEST(PartitionAllocPageAllocatorTest, MAYBE_ReadExecutePages) {
   uintptr_t buffer = AllocPages(
       PageAllocationGranularity(), PageAllocationGranularity(),
       PageAccessibilityConfiguration::kReadExecute, PageTag::kChromium);
@@ -489,9 +496,9 @@ TEST(PartitionAllocPageAllocatorTest, DecommitErasesMemory) {
   memset(reinterpret_cast<void*>(buffer), 42, size);
 
   DecommitSystemPages(buffer, size,
-                      PageAccessibilityDisposition::kKeepPermissionsIfPossible);
+                      PageAccessibilityDisposition::kAllowKeepForPerf);
   RecommitSystemPages(buffer, size, PageAccessibilityConfiguration::kReadWrite,
-                      PageAccessibilityDisposition::kKeepPermissionsIfPossible);
+                      PageAccessibilityDisposition::kAllowKeepForPerf);
 
   uint8_t* recommitted_buffer = reinterpret_cast<uint8_t*>(buffer);
   uint32_t sum = 0;
@@ -563,8 +570,8 @@ TEST(PartitionAllocPageAllocatorTest, MappedPagesAccounting) {
 
     EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
 
-    DecommitSystemPages(
-        data, size, PageAccessibilityDisposition::kKeepPermissionsIfPossible);
+    DecommitSystemPages(data, size,
+                        PageAccessibilityDisposition::kAllowKeepForPerf);
     EXPECT_EQ(mapped_size_before + size, GetTotalMappedSize());
 
     FreePages(data, size);

@@ -67,6 +67,7 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/services/app_service/public/cpp/instance.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/clear_site_data_utils.h"
@@ -823,6 +824,15 @@ std::unique_ptr<App> ExtensionAppsChromeOs::CreateApp(
   app->has_badge = app_notifications_.HasNotification(extension->id());
   app->paused = paused;
 
+  bool is_quickoffice =
+      extension->is_extension() &&
+      extension->id() == extension_misc::kQuickOfficeComponentExtensionId;
+  if (extension->is_app() || is_quickoffice) {
+    app->intent_filters = apps_util::CreateIntentFiltersForChromeApp(extension);
+  } else if (extension->is_extension()) {
+    app->intent_filters = apps_util::CreateIntentFiltersForExtension(extension);
+  }
+
   return app;
 }
 
@@ -1003,7 +1013,7 @@ void ExtensionAppsChromeOs::UpdateAppDisabledState(
     const std::string& app_id,
     bool is_disabled_mode_changed) {
   const bool is_disabled = base::Contains(
-      disabled_system_features_pref->GetList(), base::Value(feature));
+      disabled_system_features_pref->GetListDeprecated(), base::Value(feature));
   // Sometimes the policy is updated before the app is installed, so this way
   // the disabled_apps_ is updated regardless the Publish should happen or not
   // and the app will be published with the correct readiness upon its

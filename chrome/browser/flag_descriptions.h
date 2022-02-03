@@ -100,6 +100,9 @@ extern const char kDetectedSourceLanguageOptionDescription[];
 extern const char kLauncherAppSortName[];
 extern const char kLauncherAppSortDescription[];
 
+extern const char kLeakDetectionUnauthenticated[];
+extern const char kLeakDetectionUnauthenticatedDescription[];
+
 extern const char kDetectFormSubmissionOnFormClearName[];
 extern const char kDetectFormSubmissionOnFormClearDescription[];
 
@@ -162,6 +165,9 @@ extern const char kAssistantConsentSimplifiedTextDescription[];
 
 extern const char kAssistantConsentV2Name[];
 extern const char kAssistantConsentV2Description[];
+
+extern const char kEnableAutoDisableAccessibilityName[];
+extern const char kEnableAutoDisableAccessibilityDescription[];
 
 extern const char kAutofillAlwaysReturnCloudTokenizedCardName[];
 extern const char kAutofillAlwaysReturnCloudTokenizedCardDescription[];
@@ -786,6 +792,9 @@ extern const char kForceDirectionRtl[];
 extern const char kForceUiDirectionName[];
 extern const char kForceUiDirectionDescription[];
 
+extern const char kFullUserAgentName[];
+extern const char kFullUserAgentDescription[];
+
 extern const char kGlobalMediaControlsModernUIName[];
 extern const char kGlobalMediaControlsModernUIDescription[];
 
@@ -1335,6 +1344,9 @@ extern const char kStylusBatteryStatusDescription[];
 extern const char kSubframeShutdownDelayName[];
 extern const char kSubframeShutdownDelayDescription[];
 
+extern const char kSuppressToolbarCapturesName[];
+extern const char kSuppressToolbarCapturesDescription[];
+
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
 
@@ -1734,9 +1746,6 @@ extern const char KContextualSearchNewSettingsDescription[];
 extern const char kContextualSearchRankerQueryName[];
 extern const char kContextualSearchRankerQueryDescription[];
 
-extern const char kContextualSearchSecondTapName[];
-extern const char kContextualSearchSecondTapDescription[];
-
 extern const char kContextualSearchThinWebViewImplementationName[];
 extern const char kContextualSearchThinWebViewImplementationDescription[];
 
@@ -2086,9 +2095,6 @@ extern const char kAppManagementIntentSettingsDescription[];
 
 extern const char kEnableAccessibilityLiveCaptionName[];
 extern const char kEnableAccessibilityLiveCaptionDescription[];
-
-extern const char kEnableAutoDisableAccessibilityName[];
-extern const char kEnableAutoDisableAccessibilityDescription[];
 
 extern const char kCopyLinkToTextName[];
 extern const char kCopyLinkToTextDescription[];
@@ -2481,6 +2487,9 @@ extern const char kCrostiniImeSupportDescription[];
 extern const char kCrostiniVirtualKeyboardSupportName[];
 extern const char kCrostiniVirtualKeyboardSupportDescription[];
 
+extern const char kBruschettaName[];
+extern const char kBruschettaDescription[];
+
 extern const char kCryptAuthV2DedupDeviceLastActivityTimeName[];
 extern const char kCryptAuthV2DedupDeviceLastActivityTimeDescription[];
 
@@ -2738,6 +2747,9 @@ extern const char kFilesSWADescription[];
 extern const char kFilesTrashName[];
 extern const char kFilesTrashDescription[];
 
+extern const char kFilesWebDriveOfficeName[];
+extern const char kFilesWebDriveOfficeDescription[];
+
 extern const char kFiltersInRecentsName[];
 extern const char kFiltersInRecentsDescription[];
 
@@ -2884,6 +2896,9 @@ extern const char kNearbySharingBackgroundScanningDescription[];
 
 extern const char kNearbySharingOnePageOnboardingName[];
 extern const char kNearbySharingOnePageOnboardingDescription[];
+
+extern const char kNearbySharingReceiveWifiCredentialsName[];
+extern const char kNearbySharingReceiveWifiCredentialsDescription[];
 
 extern const char kNearbySharingSelfShareName[];
 extern const char kNearbySharingSelfShareDescription[];

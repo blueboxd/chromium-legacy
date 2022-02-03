@@ -337,30 +337,6 @@ void CoreOobeHandler::UpdateClientAreaSize(const gfx::Size& size) {
   SetDialogSize(dialog_size.width(), dialog_size.height());
 }
 
-void CoreOobeHandler::SetDialogPaddingMode(
-    CoreOobeView::DialogPaddingMode mode) {
-  std::string padding;
-  switch (mode) {
-    case CoreOobeView::DialogPaddingMode::MODE_AUTO:
-      padding = "auto";
-      break;
-    case CoreOobeView::DialogPaddingMode::MODE_NARROW:
-      padding = "narrow";
-      break;
-    case CoreOobeView::DialogPaddingMode::MODE_WIDE:
-      padding = "wide";
-      break;
-    default:
-      NOTREACHED();
-  }
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.setDialogPaddingMode", padding);
-  } else {
-    LOG(ERROR) << "Silently dropping SetDialogPaddingMode request.";
-  }
-}
-
 void CoreOobeHandler::OnOobeConfigurationChanged() {
   base::Value configuration(base::Value::Type::DICTIONARY);
   configuration::FilterConfiguration(
@@ -386,8 +362,8 @@ void CoreOobeHandler::HandleRaiseTabKeyEvent(bool reverse) {
 
 void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const base::Value& callback_id = args->GetList()[0];
+  CHECK_EQ(1U, args->GetListDeprecated().size());
+  const base::Value& callback_id = args->GetListDeprecated()[0];
 
   cros_display_config_->GetDisplayUnitInfoList(
       false /* single_unified */,

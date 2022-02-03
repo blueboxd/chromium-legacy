@@ -50,7 +50,6 @@
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/loader/code_cache.mojom-forward.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom-shared.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 #include "third_party/blink/public/platform/audio/web_audio_device_source_type.h"
 #include "third_party/blink/public/platform/blame_context.h"
@@ -149,6 +148,10 @@ struct WebContentSecurityPolicyHeader;
 
 namespace scheduler {
 class WebThreadScheduler;
+}
+
+namespace mojom {
+class ServiceWorkerContainerHostInterfaceBase;
 }
 
 class BLINK_PLATFORM_EXPORT Platform {
@@ -298,8 +301,12 @@ class BLINK_PLATFORM_EXPORT Platform {
   WrapSharedURLLoaderFactory(
       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
-  // Returns the User-Agent string.
+  // Returns the default User-Agent string, it can either full User-Agent string
+  // or reduced User-Agent string based on policy setting.
   virtual WebString UserAgent() { return WebString(); }
+  // Returns the full User-Agent string.
+  virtual WebString FullUserAgent() { return WebString(); }
+  // Returns the reduced User-Agent string.
   virtual WebString ReducedUserAgent() { return WebString(); }
 
   // Returns the User Agent metadata. This will replace `UserAgent()` if we

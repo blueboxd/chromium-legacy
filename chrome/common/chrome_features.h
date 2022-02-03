@@ -224,7 +224,8 @@ extern const base::Feature kDesktopPWAsTabStripSettings;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsWebBundles;
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsWebAppSettingsPage;
 #endif
@@ -824,6 +825,11 @@ extern const base::Feature kSupportSearchSuggestionForPrerender2;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kOmniboxTriggerForNoStatePrefetch;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kSupportsRtcWakeOver24Hours;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 bool PrefServiceEnabled();
 

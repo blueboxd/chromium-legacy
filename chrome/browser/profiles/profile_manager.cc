@@ -655,7 +655,7 @@ std::vector<Profile*> ProfileManager::GetLastOpenedProfiles() {
     // Make a copy because the list might change in the calls to GetProfile.
     const base::Value profile_list =
         local_state->GetList(prefs::kProfilesLastActive)->Clone();
-    for (const auto& entry : profile_list.GetList()) {
+    for (const auto& entry : profile_list.GetListDeprecated()) {
       const std::string* profile_base_name = entry.GetIfString();
       if (!profile_base_name || profile_base_name->empty() ||
           *profile_base_name ==
@@ -1209,7 +1209,7 @@ void ProfileManager::CleanUpDeletedProfiles() {
       local_state->GetList(prefs::kProfilesDeleted);
   DCHECK(deleted_profiles);
 
-  for (const base::Value& value : deleted_profiles->GetList()) {
+  for (const base::Value& value : deleted_profiles->GetListDeprecated()) {
     absl::optional<base::FilePath> profile_path = base::ValueToFilePath(value);
     // Although it should never happen, make sure this is a valid path in the
     // user_data_dir, so we don't accidentally delete something else.

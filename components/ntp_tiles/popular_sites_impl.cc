@@ -186,7 +186,7 @@ std::map<SectionType, PopularSites::SitesVector> ParseVersion6OrAbove(
     const base::Value* sites_list = item_value.FindListKey("sites");
     if (!sites_list)
       continue;
-    sections[section_type] = ParseSiteList(sites_list->GetList());
+    sections[section_type] = ParseSiteList(sites_list->GetListDeprecated());
   }
   return sections;
 }
@@ -204,7 +204,7 @@ std::map<SectionType, PopularSites::SitesVector> ParseSites(
 void SetDefaultResourceForSite(size_t index,
                                int resource_id,
                                base::Value* sites) {
-  base::Value::ListView list = sites->GetList();
+  base::Value::ListView list = sites->GetListDeprecated();
   if (index >= list.size() || !list[index].is_dict())
     return;
 
@@ -223,7 +223,7 @@ base::Value DefaultPopularSites() {
   absl::optional<base::Value> sites = base::JSONReader::Read(
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           IDR_DEFAULT_POPULAR_SITES_JSON));
-  for (base::Value& site : sites.value().GetList())
+  for (base::Value& site : sites.value().GetListDeprecated())
     site.SetBoolKey("baked_in", true);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -269,9 +269,9 @@ PopularSitesImpl::PopularSitesImpl(
       variations_(variations_service),
       url_loader_factory_(std::move(url_loader_factory)),
       is_fallback_(false),
-      sections_(
-          ParseSites(prefs->GetList(prefs::kPopularSitesJsonPref)->GetList(),
-                     prefs_->GetInteger(prefs::kPopularSitesVersionPref))) {}
+      sections_(ParseSites(
+          prefs->GetList(prefs::kPopularSitesJsonPref)->GetListDeprecated(),
+          prefs_->GetInteger(prefs::kPopularSitesVersionPref))) {}
 
 PopularSitesImpl::~PopularSitesImpl() {}
 
@@ -488,7 +488,7 @@ void PopularSitesImpl::OnJsonParsed(
   prefs_->SetInteger(prefs::kPopularSitesVersionPref, version_in_pending_url_);
   prefs_->SetString(prefs::kPopularSitesURLPref, pending_url_.spec());
 
-  sections_ = ParseSites(list.GetList(), version_in_pending_url_);
+  sections_ = ParseSites(list.GetListDeprecated(), version_in_pending_url_);
   std::move(callback_).Run(true);
 }
 

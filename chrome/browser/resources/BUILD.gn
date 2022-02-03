@@ -81,7 +81,7 @@ group("resources") {
     public_deps += [ "browser_switch:resources" ]
   }
 
-  if (is_win || is_mac || is_linux) {
+  if (is_win || is_mac || is_linux || is_fuchsia) {
     public_deps += [ "app_settings:resources" ]
   }
 
@@ -140,7 +140,6 @@ if (enable_js_type_check) {
         "internals/user_education:closure_compile",
         "media_router:closure_compile",
         "nearby_internals:closure_compile",
-        "new_tab_page:closure_compile",
         "new_tab_page_instant:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",

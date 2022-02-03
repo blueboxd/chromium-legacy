@@ -55,6 +55,9 @@ class DlpContentManager : public DlpContentObserver {
   void CheckPrintingRestriction(content::WebContents* web_contents,
                                 OnDlpRestrictionCheckedCallback callback);
 
+  // Returns whether screenshots should be restricted for extensions API.
+  virtual bool IsScreenshotApiRestricted(content::WebContents* web_contents);
+
   // Checks whether screen sharing of content from the |media_id| source with
   // application |application_name| is restricted or not advised. Depending on
   // the result, calls |callback| and passes an indicator whether to proceed or
@@ -156,8 +159,6 @@ class DlpContentManager : public DlpContentObserver {
     base::WeakPtrFactory<ScreenShareInfo> weak_factory_{this};
   };
 
-  void SetIsScreenShareWarningModeEnabledForTesting(bool is_enabled);
-
   // Structure that relates a list of confidential contents to the
   // corresponding restriction level.
   struct ConfidentialContentsInfo {
@@ -240,7 +241,7 @@ class DlpContentManager : public DlpContentObserver {
   // also saves the |confidential_contents| that were allowed to be shared by
   // the user to avoid future warnings.
   void OnDlpScreenShareWarnDialogReply(
-      const DlpConfidentialContents& confidential_contents,
+      const ConfidentialContentsInfo& info,
       base::WeakPtr<ScreenShareInfo> screen_share,
       bool should_proceed);
 
@@ -284,9 +285,6 @@ class DlpContentManager : public DlpContentObserver {
   raw_ptr<DlpReportingManager> reporting_manager_{nullptr};
 
   std::unique_ptr<DlpWarnNotifier> warn_notifier_;
-
-  // TODO(https://crbug.com/1278733): Remove this flag
-  bool is_screen_share_warning_mode_enabled_ = false;
 };
 
 }  // namespace policy

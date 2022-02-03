@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {BrowserServiceImpl, ensureLazyLoaded} from 'chrome://history/history.js';
 import {isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
-import {createHistoryEntry, createHistoryInfo, polymerSelectAll, shiftClick, waitForEvent} from 'chrome://test/history/test_util.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+
+import {TestBrowserService} from './test_browser_service.js';
+import {createHistoryEntry, createHistoryInfo, polymerSelectAll, shiftClick, waitForEvent} from './test_util.js';
 
 window.history_list_test = {};
 history_list_test.suiteName = 'HistoryListTest';
@@ -69,7 +70,7 @@ suite(history_list_test.suiteName, function() {
     window.history.replaceState({}, '', '/');
     document.body.innerHTML = '';
     testService = new TestBrowserService();
-    BrowserService.setInstance(testService);
+    BrowserServiceImpl.setInstance(testService);
 
     app = document.createElement('history-app');
   });
@@ -122,7 +123,7 @@ suite(history_list_test.suiteName, function() {
         .then(function(visits) {
           assertEquals(1, visits.length);
           assertEquals('http://example.com', visits[0].url);
-          assertEquals('2015-01-01 UTC', visits[0].timestamps[0]);
+          assertEquals(Date.parse('2015-01-01 UTC'), visits[0].timestamps[0]);
 
           // The list should fire a query-history event which results in a
           // queryHistory call, since deleting the only item results in an
@@ -727,8 +728,10 @@ suite(history_list_test.suiteName, function() {
         .then(function(toRemove) {
           assertEquals('https://www.example.com', toRemove[0].url);
           assertEquals('https://www.google.com', toRemove[1].url);
-          assertEquals('2016-03-14 10:00 UTC', toRemove[0].timestamps[0]);
-          assertEquals('2016-03-14 9:00 UTC', toRemove[1].timestamps[0]);
+          assertEquals(
+              Date.parse('2016-03-14 10:00 UTC'), toRemove[0].timestamps[0]);
+          assertEquals(
+              Date.parse('2016-03-14 9:00 UTC'), toRemove[1].timestamps[0]);
         });
   });
 

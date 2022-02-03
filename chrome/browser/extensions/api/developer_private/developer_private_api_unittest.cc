@@ -98,10 +98,10 @@ bool WasItemChangedEventDispatched(
 
   const Event& event = *iter->second;
   CHECK(event.event_args);
-  CHECK_GE(1u, event.event_args->GetList().size());
+  CHECK_GE(1u, event.event_args->GetListDeprecated().size());
   std::unique_ptr<api::developer_private::EventData> event_data =
       api::developer_private::EventData::FromValue(
-          event.event_args->GetList()[0]);
+          event.event_args->GetListDeprecated()[0]);
   if (!event_data)
     return false;
 
@@ -111,6 +111,50 @@ bool WasItemChangedEventDispatched(
   }
 
   return true;
+}
+
+bool WasUserSiteSettingsChangedEventDispatched(
+    const TestEventRouterObserver& observer,
+    api::developer_private::UserSiteSettings* settings) {
+  const std::string kEventName =
+      api::developer_private::OnUserSiteSettingsChanged::kEventName;
+  const auto& event_map = observer.events();
+  auto iter = event_map.find(kEventName);
+  if (iter == event_map.end())
+    return false;
+
+  const Event& event = *iter->second;
+  CHECK(event.event_args);
+  CHECK_GE(1u, event.event_args->GetList().size());
+  auto site_settings = api::developer_private::UserSiteSettings::FromValue(
+      event.event_args->GetList()[0]);
+  if (!site_settings)
+    return false;
+
+  *settings = std::move(*site_settings);
+  return true;
+}
+
+void AddUserSpecifiedSite(Profile* profile, const char* site, bool restricted) {
+  scoped_refptr<ExtensionFunction> function =
+      base::MakeRefCounted<api::DeveloperPrivateAddUserSpecifiedSiteFunction>();
+  std::string args =
+      base::StringPrintf(R"([{"siteList":"%s","host":"%s"}])",
+                         restricted ? "RESTRICTED" : "PERMITTED", site);
+  EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile))
+      << function->GetError();
+}
+
+void RemoveUserSpecifiedSite(Profile* profile,
+                             const char* site,
+                             bool restricted) {
+  scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
+      api::DeveloperPrivateRemoveUserSpecifiedSiteFunction>();
+  std::string args =
+      base::StringPrintf(R"([{"siteList":"%s","host":"%s"}])",
+                         restricted ? "RESTRICTED" : "PERMITTED", site);
+  EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile))
+      << function->GetError();
 }
 
 }  // namespace
@@ -291,7 +335,8 @@ testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(
 
   // Extract the result. We don't have to test this here, since it's verified as
   // part of the general extension api system.
-  const base::Value& response_value = function->GetResultList()->GetList()[0];
+  const base::Value& response_value =
+      function->GetResultList()->GetListDeprecated()[0];
   std::unique_ptr<api::developer_private::PackDirectoryResponse> response =
       api::developer_private::PackDirectoryResponse::FromValue(response_value);
   CHECK(response);
@@ -329,8 +374,9 @@ void DeveloperPrivateApiUnitTest::GetProfileConfiguration(
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
 
   ASSERT_TRUE(function->GetResultList());
-  ASSERT_EQ(1u, function->GetResultList()->GetList().size());
-  const base::Value& response_value = function->GetResultList()->GetList()[0];
+  ASSERT_EQ(1u, function->GetResultList()->GetListDeprecated().size());
+  const base::Value& response_value =
+      function->GetResultList()->GetListDeprecated()[0];
   *profile_info =
       api::developer_private::ProfileInfo::FromValue(response_value);
 }
@@ -472,9 +518,9 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivatePackFunction) {
   // Try to pack a final time when omitting (an existing) pem file. We should
   // get an error.
   base::DeleteFile(crx_path);
-  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetList().begin() +
+  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetListDeprecated().begin() +
                                       1u));  // Remove the pem key argument.
-  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetList().begin() +
+  EXPECT_TRUE(pack_args.EraseListIter(pack_args.GetListDeprecated().begin() +
                                       1u));  // Remove the flags argument.
   EXPECT_TRUE(TestPackExtensionFunction(
       pack_args, api::developer_private::PACK_STATUS_ERROR, 0));
@@ -501,7 +547,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   const base::Value* result_list = function->GetResultList();
   ASSERT_TRUE(result_list);
   ASSERT_TRUE(result_list->is_list());
-  base::Value::ConstListView result_list_view = result_list->GetList();
+  base::Value::ConstListView result_list_view =
+      result_list->GetListDeprecated();
   ASSERT_GT(result_list_view.size(), 0u);
   ASSERT_TRUE(result_list_view[0].is_string());
   path = result_list_view[0].GetString();
@@ -520,7 +567,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateChoosePath) {
   result_list = function->GetResultList();
   ASSERT_TRUE(result_list);
   ASSERT_TRUE(result_list->is_list());
-  result_list_view = result_list->GetList();
+  result_list_view = result_list->GetListDeprecated();
   ASSERT_GT(result_list_view.size(), 0u);
   ASSERT_TRUE(result_list_view[0].is_string());
   path = result_list_view[0].GetString();
@@ -1024,7 +1071,8 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
   file_source_args.Append(properties.ToValue());
   EXPECT_TRUE(RunFunction(function, file_source_args)) << function->GetError();
 
-  const base::Value& response_value = function->GetResultList()->GetList()[0];
+  const base::Value& response_value =
+      function->GetResultList()->GetListDeprecated()[0];
   std::unique_ptr<api::developer_private::RequestFileSourceResponse> response =
       api::developer_private::RequestFileSourceResponse::FromValue(
           response_value);
@@ -1047,10 +1095,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
       new api::DeveloperPrivateGetExtensionsInfoFunction());
   EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
   const base::ListValue* results = function->GetResultList();
-  base::Value::ConstListView results_list = results->GetList();
+  base::Value::ConstListView results_list = results->GetListDeprecated();
   ASSERT_EQ(1u, results_list.size());
   ASSERT_TRUE(results_list[0].is_list());
-  base::Value::ConstListView list = results_list[0].GetList();
+  base::Value::ConstListView list = results_list[0].GetListDeprecated();
   ASSERT_EQ(1u, list.size());
   std::unique_ptr<api::developer_private::ExtensionInfo> info =
       api::developer_private::ExtensionInfo::FromValue(list[0]);
@@ -1064,10 +1112,10 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   args.Append(false);
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
   results = function->GetResultList();
-  results_list = results->GetList();
+  results_list = results->GetListDeprecated();
   ASSERT_EQ(1u, results_list.size());
   ASSERT_TRUE(results_list[0].is_list());
-  list = results_list[0].GetList();
+  list = results_list[0].GetListDeprecated();
   ASSERT_EQ(1u, list.size());
   std::unique_ptr<api::developer_private::ItemInfo> item_info =
       api::developer_private::ItemInfo::FromValue(list[0]);
@@ -1820,8 +1868,9 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetUserSiteSettings) {
   base::ListValue args;
   EXPECT_TRUE(RunFunction(function, args)) << function->GetError();
   ASSERT_TRUE(function->GetResultList());
-  ASSERT_EQ(1u, function->GetResultList()->GetList().size());
-  const base::Value& response_value = function->GetResultList()->GetList()[0];
+  ASSERT_EQ(1u, function->GetResultList()->GetListDeprecated().size());
+  const base::Value& response_value =
+      function->GetResultList()->GetListDeprecated()[0];
   std::unique_ptr<api::developer_private::UserSiteSettings> settings =
       api::developer_private::UserSiteSettings::FromValue(response_value);
 
@@ -1843,31 +1892,14 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateModifyUserSiteSettings) {
   const url::Origin chromium_url = url::Origin::Create(GURL(kChromium));
   const url::Origin google_url = url::Origin::Create(GURL(kGoogle));
 
-  auto add_site = [this](const char* site, bool restricted) {
-    scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
-        api::DeveloperPrivateAddUserSpecifiedSiteFunction>();
-    std::string args =
-        base::StringPrintf(R"([{"siteList":"%s","host":"%s"}])",
-                           restricted ? "RESTRICTED" : "PERMITTED", site);
-    EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
-        << function->GetError();
-  };
-
-  auto remove_site = [this](const char* site, bool restricted) {
-    scoped_refptr<ExtensionFunction> function = base::MakeRefCounted<
-        api::DeveloperPrivateRemoveUserSpecifiedSiteFunction>();
-    std::string args =
-        base::StringPrintf(R"([{"siteList":"%s","host":"%s"}])",
-                           restricted ? "RESTRICTED" : "PERMITTED", site);
-    EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
-        << function->GetError();
-  };
-
   // First, add some permitted and restricted sites, and check that these sites
   // are stored in the manager.
-  add_site(kExample, /*restricted=*/false);
-  add_site(kChromium, /*restricted=*/false);
-  add_site(kGoogle, /*restricted=*/true);
+  EXPECT_NO_FATAL_FAILURE(
+      AddUserSpecifiedSite(profile(), kExample, /*restricted=*/false));
+  EXPECT_NO_FATAL_FAILURE(
+      AddUserSpecifiedSite(profile(), kChromium, /*restricted=*/false));
+  EXPECT_NO_FATAL_FAILURE(
+      AddUserSpecifiedSite(profile(), kGoogle, /*restricted=*/true));
 
   PermissionsManager* manager = PermissionsManager::Get(browser_context());
   EXPECT_THAT(manager->GetUserPermissionsSettings().permitted_sites,
@@ -1876,13 +1908,68 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateModifyUserSiteSettings) {
               testing::UnorderedElementsAre(google_url));
 
   // Attempting to add a restricted site should remove it as a permitted site.
-  add_site(kChromium, /*restricted=*/true);
-  remove_site(kExample, /*restricted=*/false);
-  remove_site(kGoogle, /*restricted=*/true);
+  EXPECT_NO_FATAL_FAILURE(
+      AddUserSpecifiedSite(profile(), kChromium, /*restricted=*/true));
+  EXPECT_NO_FATAL_FAILURE(
+      RemoveUserSpecifiedSite(profile(), kExample, /*restricted=*/false));
+  EXPECT_NO_FATAL_FAILURE(
+      RemoveUserSpecifiedSite(profile(), kGoogle, /*restricted=*/true));
 
   EXPECT_TRUE(manager->GetUserPermissionsSettings().permitted_sites.empty());
   EXPECT_THAT(manager->GetUserPermissionsSettings().restricted_sites,
               testing::UnorderedElementsAre(chromium_url));
+}
+
+// Test that the OnUserSiteSettingsChanged event is fired whenever the user
+// defined site settings updates.
+TEST_F(DeveloperPrivateApiUnitTest, OnUserSiteSettingsChanged) {
+  static constexpr char kExample[] = "http://example.com";
+
+  // We need to call DeveloperPrivateAPI::Get() in order to instantiate the
+  // keyed service, since it's not created by default in unit tests.
+  DeveloperPrivateAPI::Get(profile());
+  EventRouter* event_router = EventRouter::Get(profile());
+
+  // The DeveloperPrivateEventRouter will only dispatch events if there's at
+  // least one listener to dispatch to. Create one.
+  const char* kEventName =
+      api::developer_private::OnUserSiteSettingsChanged::kEventName;
+  event_router->AddEventListener(kEventName, /*process=*/nullptr,
+                                 crx_file::id_util::GenerateId("listener"));
+
+  TestEventRouterObserver test_observer(event_router);
+
+  api::developer_private::UserSiteSettings settings;
+  EXPECT_FALSE(
+      WasUserSiteSettingsChangedEventDispatched(test_observer, &settings));
+
+  // Add a permitted site, and check that it is contained within the event's
+  // payload.
+  EXPECT_NO_FATAL_FAILURE(
+      AddUserSpecifiedSite(profile(), kExample, /*restricted=*/false));
+  EXPECT_TRUE(
+      WasUserSiteSettingsChangedEventDispatched(test_observer, &settings));
+  EXPECT_THAT(settings.permitted_sites,
+              testing::UnorderedElementsAre(kExample));
+  EXPECT_TRUE(settings.restricted_sites.empty());
+
+  // Add the same site to the restricted site, and check the event that it's
+  // only contained in the restricted list.
+  EXPECT_NO_FATAL_FAILURE(
+      AddUserSpecifiedSite(profile(), kExample, /*restricted=*/true));
+  EXPECT_TRUE(
+      WasUserSiteSettingsChangedEventDispatched(test_observer, &settings));
+  EXPECT_TRUE(settings.permitted_sites.empty());
+  EXPECT_THAT(settings.restricted_sites,
+              testing::UnorderedElementsAre(kExample));
+
+  // Remove the site, and check the event that both lists are empty.
+  EXPECT_NO_FATAL_FAILURE(
+      RemoveUserSpecifiedSite(profile(), kExample, /*restricted=*/true));
+  EXPECT_TRUE(
+      WasUserSiteSettingsChangedEventDispatched(test_observer, &settings));
+  EXPECT_TRUE(settings.permitted_sites.empty());
+  EXPECT_TRUE(settings.restricted_sites.empty());
 }
 
 class DeveloperPrivateApiAllowlistUnitTest

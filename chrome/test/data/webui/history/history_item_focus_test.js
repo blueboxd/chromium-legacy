@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserService} from 'chrome://history/history.js';
-import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
-import {createHistoryEntry} from 'chrome://test/history/test_util.js';
-import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
+import {BrowserServiceImpl} from 'chrome://history/history.js';
+import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+
+import {TestBrowserService} from './test_browser_service.js';
+import {createHistoryEntry} from './test_util.js';
 
 suite('<history-item> focus test', function() {
   let item;
 
   setup(function() {
     document.body.innerHTML = '';
-    BrowserService.setInstance(new TestBrowserService());
+    BrowserServiceImpl.setInstance(new TestBrowserService());
 
     item = document.createElement('history-item');
     item.item = createHistoryEntry('2016-03-16 10:00', 'http://www.google.com');

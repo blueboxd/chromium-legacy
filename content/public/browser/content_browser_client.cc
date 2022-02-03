@@ -1067,6 +1067,10 @@ std::string ContentBrowserClient::GetUserAgentBasedOnPolicy(
   return GetUserAgent();
 }
 
+std::string ContentBrowserClient::GetFullUserAgent() {
+  return GetUserAgent();
+}
+
 std::string ContentBrowserClient::GetReducedUserAgent() {
   return GetUserAgent();
 }
@@ -1300,7 +1304,8 @@ bool ContentBrowserClient::IsFirstPartySetsEnabled() {
 mojom::AlternativeErrorPageOverrideInfoPtr
 ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     const GURL& url,
-    BrowserContext* browser_context) {
+    BrowserContext* browser_context,
+    int32_t error_code) {
   return nullptr;
 }
 

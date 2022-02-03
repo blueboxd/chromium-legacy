@@ -46,7 +46,8 @@ static void ExpectEqualLanguageLists(
     const base::Value& language_values,
     const std::vector<std::string>& languages) {
   const int input_size = languages.size();
-  base::Value::ConstListView language_values_view = language_values.GetList();
+  base::Value::ConstListView language_values_view =
+      language_values.GetListDeprecated();
   ASSERT_EQ(input_size, static_cast<int>(language_values_view.size()));
   for (int i = 0; i < input_size; ++i) {
     ASSERT_TRUE(language_values_view[i].is_string());
@@ -940,7 +941,7 @@ TEST_F(TranslatePrefsTest, MigrateNeverPromptSites) {
   translate_prefs_->AddValueToNeverPromptList(
       TranslatePrefs::kPrefNeverPromptSitesDeprecated, "migratedWrong.com");
   EXPECT_EQ(prefs_.Get(TranslatePrefs::kPrefNeverPromptSitesDeprecated)
-                ->GetList()
+                ->GetListDeprecated()
                 .size(),
             2u);
   // Also put one of those sites on the new pref but migrated incorrectly.
@@ -955,7 +956,7 @@ TEST_F(TranslatePrefsTest, MigrateNeverPromptSites) {
                   base::Time::Now() - base::Days(1), base::Time::Max()),
               ElementsAre("migratedWrong.com", "unmigrated.com"));
   EXPECT_EQ(prefs_.Get(TranslatePrefs::kPrefNeverPromptSitesDeprecated)
-                ->GetList()
+                ->GetListDeprecated()
                 .size(),
             0u);
 }

@@ -1470,7 +1470,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   // Create the pending tree containing only the root layer.
   CreatePendingTree();
-  PropertyTrees pending_property_trees;
+  PropertyTrees pending_property_trees(*host_impl_);
   pending_property_trees.set_sequence_number(
       host_impl_->active_tree()->property_trees()->sequence_number() + 1);
   host_impl_->pending_tree()->SetPropertyTrees(pending_property_trees);
@@ -1678,7 +1678,7 @@ gfx::PresentationFeedback ExampleFeedback() {
       base::TimeTicks() + base::Milliseconds(42), base::Microseconds(18),
       gfx::PresentationFeedback::Flags::kVSync |
           gfx::PresentationFeedback::Flags::kHWCompletion);
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   feedback.ca_layer_error_code = gfx::kCALayerFailedQuadBlendMode;
 #endif
   return feedback;

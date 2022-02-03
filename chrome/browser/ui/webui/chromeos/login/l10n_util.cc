@@ -393,8 +393,8 @@ void ResolveLanguageListInThreadPool(
 
 void AdjustUILanguageList(const std::string& selected,
                           base::ListValue* languages_list) {
-  for (size_t i = 0; i < languages_list->GetList().size(); ++i) {
-    base::Value& language_info = languages_list->GetList()[i];
+  for (size_t i = 0; i < languages_list->GetListDeprecated().size(); ++i) {
+    base::Value& language_info = languages_list->GetListDeprecated()[i];
     if (!language_info.is_dict())
       NOTREACHED();
 
@@ -483,7 +483,7 @@ std::string FindMostRelevantLocale(
     const base::ListValue& available_locales,
     const std::string& fallback_locale) {
   for (const auto& most_relevant : most_relevant_language_codes) {
-    for (const auto& entry : available_locales.GetList()) {
+    for (const auto& entry : available_locales.GetListDeprecated()) {
       const std::string* available_locale = nullptr;
       if (entry.is_dict())
         available_locale = entry.FindStringKey("value");

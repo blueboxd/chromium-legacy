@@ -40,6 +40,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "content/public/browser/clear_site_data_utils.h"
@@ -194,6 +195,24 @@ apps::mojom::InstallSource GetInstallSource(PrefService* prefs,
       return apps::mojom::InstallSource::kUnknown;
   }
 }
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+apps::WindowMode GetDisplayMode(blink::mojom::DisplayMode display_mode) {
+  switch (display_mode) {
+    case blink::mojom::DisplayMode::kUndefined:
+      return apps::WindowMode::kUnknown;
+    case blink::mojom::DisplayMode::kBrowser:
+      return apps::WindowMode::kBrowser;
+    case blink::mojom::DisplayMode::kTabbed:
+      return apps::WindowMode::kTabbedWindow;
+    case blink::mojom::DisplayMode::kMinimalUi:
+    case blink::mojom::DisplayMode::kStandalone:
+    case blink::mojom::DisplayMode::kFullscreen:
+    case blink::mojom::DisplayMode::kWindowControlsOverlay:
+      return apps::WindowMode::kWindow;
+  }
+}
+#endif
 
 bool IsNoteTakingWebApp(const web_app::WebApp& web_app) {
   return web_app.note_taking_new_note_url().is_valid();
@@ -526,6 +545,29 @@ std::unique_ptr<apps::App> WebAppPublisherHelper::CreateWebApp(
 
   app->allow_uninstall = web_app->CanUserUninstallWebApp();
   app->paused = IsPaused(web_app->app_id());
+
+  // Add the intent filters for PWAs.
+  base::Extend(app->intent_filters,
+               apps_util::CreateIntentFiltersForWebApp(
+                   web_app->app_id(), IsNoteTakingWebApp(*web_app),
+                   registrar().GetAppScope(web_app->app_id()),
+                   registrar().GetAppShareTarget(web_app->app_id()),
+                   provider_->os_integration_manager().GetEnabledFileHandlers(
+                       web_app->app_id())));
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (web_app->app_id() == crostini::kCrostiniTerminalSystemAppId) {
+    app->intent_filters.push_back(apps::ConvertMojomIntentFilterToIntentFilter(
+        apps_util::CreateFileFilter(
+            {apps_util::kIntentActionView},
+            /*mime_types=*/
+            {extensions::app_file_handler_util::kMimeTypeInodeDirectory},
+            /*file_extensions=*/{})));
+  }
+#endif
+
+  app->window_mode =
+      GetDisplayMode(registrar().GetAppUserDisplayMode(web_app->app_id()));
 
   return app;
 }

@@ -162,7 +162,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
   }
 
   base::Value ca_certs(base::Value::Type::LIST);
-  for (const auto& certificate : certificates.GetList()) {
+  for (const auto& certificate : certificates.GetListDeprecated()) {
     if (!certificate.is_dict()) {
       DLOG(FATAL) << "Value of a certificate entry is not a dictionary "
                   << "value.";
@@ -180,7 +180,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
       continue;
 
     bool web_trust_flag = false;
-    for (const auto& list_val : trust_list->GetList()) {
+    for (const auto& list_val : trust_list->GetListDeprecated()) {
       if (!list_val.is_string())
         NOTREACHED();
 
@@ -203,7 +203,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
     data.SetStringKey("X509", *x509_data);
     ca_certs.Append(std::move(data));
   }
-  if (!ca_certs.GetList().empty())
+  if (!ca_certs.GetListDeprecated().empty())
     filtered_policies->SetKey("credentialsConfigDisabled", base::Value(true));
   filtered_policies->SetKey(kArcCaCerts, std::move(ca_certs));
 }
@@ -239,7 +239,7 @@ void AddChoosePrivateKeyRuleToPolicy(
     if (LooksLikeAndroidPackageName(app_id))
       arc_app_ids.Append(app_id);
   }
-  if (arc_app_ids.GetList().empty() ||
+  if (arc_app_ids.GetListDeprecated().empty() ||
       cert_store_service->get_required_cert_names().empty()) {
     return;
   }
@@ -299,7 +299,7 @@ std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
     base::Value* applications_value =
         filtered_policies.FindListKey(ArcPolicyBridge::kApplications);
     if (applications_value) {
-      base::Value::ListView list_view = applications_value->GetList();
+      base::Value::ListView list_view = applications_value->GetListDeprecated();
       for (base::Value& entry : list_view) {
         auto* installType = entry.FindStringKey("installType");
         if (installType &&
@@ -323,7 +323,7 @@ std::string GetFilteredJSONPolicies(policy::PolicyService* const policy_service,
     base::Value* applications_value =
         filtered_policies.FindListKey(ArcPolicyBridge::kApplications);
     if (applications_value) {
-      base::Value::ListView list_view = applications_value->GetList();
+      base::Value::ListView list_view = applications_value->GetListDeprecated();
       for (base::Value& entry : list_view) {
         const std::string* packageName = entry.FindStringKey("packageName");
         if (packageName && *packageName != kPlayStorePackageName)

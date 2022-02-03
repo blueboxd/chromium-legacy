@@ -405,11 +405,11 @@ TEST_F(PrintingAPIHandlerUnittest, EventIsDispatched) {
   EXPECT_EQ(kExtensionId, event_observer.extension_id());
   const base::Value& event_args = event_observer.event_args();
   ASSERT_TRUE(event_args.is_list());
-  ASSERT_EQ(2u, event_args.GetList().size());
-  base::Value job_id = event_args.GetList()[0].Clone();
+  ASSERT_EQ(2u, event_args.GetListDeprecated().size());
+  base::Value job_id = event_args.GetListDeprecated()[0].Clone();
   ASSERT_TRUE(job_id.is_string());
   EXPECT_FALSE(job_id.GetString().empty());
-  base::Value job_status = event_args.GetList()[1].Clone();
+  base::Value job_status = event_args.GetListDeprecated()[1].Clone();
   ASSERT_TRUE(job_status.is_string());
   EXPECT_EQ(api::printing::JOB_STATUS_PENDING,
             api::printing::ParseJobStatus(job_status.GetString()));
@@ -583,9 +583,9 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo_OutOfPaper) {
   ASSERT_TRUE(color);
   const base::Value* color_options = color->FindListKey("option");
   ASSERT_TRUE(color_options);
-  ASSERT_EQ(1u, color_options->GetList().size());
+  ASSERT_EQ(1u, color_options->GetListDeprecated().size());
   const std::string* color_type =
-      color_options->GetList()[0].FindStringKey("type");
+      color_options->GetListDeprecated()[0].FindStringKey("type");
   ASSERT_TRUE(color_type);
   EXPECT_EQ("STANDARD_MONOCHROME", *color_type);
 
@@ -595,10 +595,10 @@ TEST_F(PrintingAPIHandlerUnittest, GetPrinterInfo_OutOfPaper) {
   const base::Value* page_orientation_options =
       page_orientation->FindListKey("option");
   ASSERT_TRUE(page_orientation_options);
-  ASSERT_EQ(3u, page_orientation_options->GetList().size());
+  ASSERT_EQ(3u, page_orientation_options->GetListDeprecated().size());
   std::vector<std::string> page_orientation_types;
   for (const base::Value& page_orientation_option :
-       page_orientation_options->GetList()) {
+       page_orientation_options->GetListDeprecated()) {
     const std::string* page_orientation_type =
         page_orientation_option.FindStringKey("type");
     ASSERT_TRUE(page_orientation_type);

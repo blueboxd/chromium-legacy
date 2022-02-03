@@ -78,7 +78,7 @@ bool TetherHostResponseRecorder::AddRecentResponse(
     const std::string& device_id,
     const std::string& pref_name) {
   const base::Value* ids = pref_service_->GetList(pref_name);
-  base::Value::ConstListView ids_list = ids->GetList();
+  base::Value::ConstListView ids_list = ids->GetListDeprecated();
 
   std::string first_device_id_in_list;
   if (!ids_list.empty() && ids_list[0].is_string())
@@ -100,7 +100,8 @@ bool TetherHostResponseRecorder::AddRecentResponse(
   updated_ids.EraseListValue(device_id_value);
 
   // Add the device ID to the front of the queue.
-  updated_ids.Insert(updated_ids.GetList().begin(), std::move(device_id_value));
+  updated_ids.Insert(updated_ids.GetListDeprecated().begin(),
+                     std::move(device_id_value));
 
   // Store the updated list back in |pref_service_|.
   pref_service_->Set(pref_name, std::move(updated_ids));
@@ -116,7 +117,7 @@ std::vector<std::string> TetherHostResponseRecorder::GetDeviceIdsForPref(
   if (!ids)
     return device_ids;
 
-  for (const auto& entry : ids->GetList()) {
+  for (const auto& entry : ids->GetListDeprecated()) {
     if (entry.is_string())
       device_ids.push_back(entry.GetString());
   }

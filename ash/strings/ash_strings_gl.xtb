@@ -628,7 +628,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="5075554201838155866">Iniciar subtítulos</translation>
 <translation id="5078796286268621944">PIN incorrecto</translation>
 <translation id="5083553833479578423">Desbloquea máis funcións do Asistente.</translation>
-<translation id="5090752371472782287">Emitir nun dispositivo de <ph name="MANAGER" /></translation>
 <translation id="5106223312672646208">Personalizar</translation>
 <translation id="5117590920725113268">Mostrar mes seguinte</translation>
 <translation id="5136175204352732067">Conectouse un teclado diferente</translation>
@@ -929,6 +928,7 @@ Nova instalación</translation>
 <translation id="7165278925115064263">Alt+Maiús+K</translation>
 <translation id="7168224885072002358">Volvendo á resolución anterior dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Actualizar</translation>
+<translation id="718361511487535372">Abrir en Google Calendar</translation>
 <translation id="7188494361780961876">O menú moveuse á esquina superior esquerda da pantalla.</translation>
 <translation id="7189412385142492784">A que distancia está Venus?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Tes que reiniciar este Chromebook para aplicar unha actualización. Esta acción pode tardar 1 minuto.</translation>

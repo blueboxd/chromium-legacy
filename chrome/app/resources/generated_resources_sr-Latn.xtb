@@ -206,6 +206,7 @@
 <ph name="DOMAIN" /> zahteva da pametna kartica ostane umetnuta.}other{Automatski ćete biti odjavljeni za # sekundi.
 <ph name="DOMAIN" /> zahteva da pametna kartica ostane umetnuta.}}</translation>
 <translation id="1193927020065025187">Ovaj sajt možda pokušava da vas prevari da dozvolite ometajuća obaveštenja</translation>
+<translation id="1195210374336998651">Otvori podešavanja aplikacije</translation>
 <translation id="1195447618553298278">Nepoznata greška.</translation>
 <translation id="1195558154361252544">Obaveštenja su automatski blokirana za sve sajtove osim za one koje omogućite</translation>
 <translation id="1197088940767939838">Narandžasta</translation>
@@ -386,6 +387,7 @@
 <translation id="1396259464226642517">Da li je ovo neočekivan rezultat? <ph name="BEGIN_LINK" />Pošaljite povratne informacije<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">Korisničko ime i lozinka koje ste uneli se ne podudaraju</translation>
 <translation id="1397500194120344683">Nema uređaja koji ispunjavaju uslove. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
+<translation id="1397594434718759194">Prijavljeni ste u Chrome na ovim uređajima, pa možete da ih koristite kao bezbednosne ključeve.</translation>
 <translation id="1398853756734560583">Uvećaj</translation>
 <translation id="139911022479327130">Otključajte telefon i potvrdite da ste to vi</translation>
 <translation id="1401308693935339022">Koristi lokaciju. Dozvolite aplikacijama i uslugama sa dozvolom za lokaciju da koriste lokaciju ovog uređaja. Google može povremeno da prikuplja podatke o lokaciji i da ih koristi na anoniman način za poboljšanje preciznosti lokacije i usluga zasnovanih na lokaciji.</translation>
@@ -1167,6 +1169,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2163470535490402084">Povežite se na internet da biste se prijavili na <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2163937499206714165">Uključite tamni režim</translation>
 <translation id="2164131635608782358"><ph name="FIRST_SWITCH" />, <ph name="SECOND_SWITCH" />, <ph name="THIRD_SWITCH" /> i još 1 prekidač</translation>
+<translation id="2165102982098084499">Povezali ste ove uređaje skeniranjem QR koda.</translation>
 <translation id="2165177462441582039">Izaberite koliko dugo svaka stavka treba da ostane istaknuta</translation>
 <translation id="2166369534954157698">Na vrh brda vrba mrda</translation>
 <translation id="2169062631698640254">Ipak me prijavi</translation>
@@ -1941,6 +1944,7 @@ a Ctrl+Alt+taster za smanjivanje osvetljenosti da biste umanjili prikaz.</transl
 <translation id="2915873080513663243">Automatsko skeniranje sadržaja</translation>
 <translation id="2916073183900451334">Pritiskom na Tab na veb stranici biće istaknute veze, kao i polja u obrascu</translation>
 <translation id="2916745397441987255">Pretražite dodatke</translation>
+<translation id="2918484639460781603">Idi na podešavanja</translation>
 <translation id="2918484644467055090">Ovaj uređaj ne može da se registruje u organizaciji kojoj pripada vaš nalog jer je označen kao uređaj kojim upravlja druga organizacija.</translation>
 <translation id="2920852127376356161">Nije im dozvoljeno upravljanje protokolima</translation>
 <translation id="2921081876747860777">Napravite lozinku da biste zaštitili lokalne podatke.</translation>
@@ -2565,6 +2569,7 @@ a Ctrl+Alt+taster za smanjivanje osvetljenosti da biste umanjili prikaz.</transl
 <translation id="3592260987370335752">&amp;Saznajte više</translation>
 <translation id="3593152357631900254">Omogući Fuzzy-Pinyin režim</translation>
 <translation id="3593965109698325041">Ograničenja naziva sertifikata </translation>
+<translation id="3596012367874587041">Podešavanja aplikacije</translation>
 <translation id="3596414637720633074">Blokira kolačiće trećih strana u režimu bez arhiviranja</translation>
 <translation id="3599221874935822507">Ispupčeno</translation>
 <translation id="3599863153486145794">Briše istoriju sa svih uređaja na kojima ste prijavljeni. Google nalog može da ima druge oblike istorije pregledanja na <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -5685,6 +5690,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> sek</translation>
 <translation id="6860097299815761905">Podešavanja proksija...</translation>
 <translation id="6860427144121307915">Otvori na kartici</translation>
+<translation id="6863496016067551393">Svi dodaci su dozvoljeni</translation>
 <translation id="686366188661646310">Želite da izbrišete lozinku?</translation>
 <translation id="6865313869410766144">Podaci Automatskog popunjavanja za obrasce</translation>
 <translation id="6865598234501509159">Jezik ove stranice nije <ph name="LANGUAGE" /></translation>
@@ -5714,6 +5720,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6900532703269623216">Napredna zaštita</translation>
 <translation id="6900651018461749106">Prijavite se ponovo da biste ažurirali <ph name="USER_EMAIL" /></translation>
 <translation id="6900654715912436255">Želite li stvarno da izbrišete ovaj pretraživač?</translation>
+<translation id="6901024547292737736"><ph name="ACTUAL_CHAR_COUNT" />/<ph name="MAX_CHAR_COUNT" /></translation>
 <translation id="6902066522699286937">Glas za pregled</translation>
 <translation id="6902336033320348843">Odeljak nije podržan: <ph name="ERROR_LINE" /></translation>
 <translation id="6902837902700739466">Pridružite uređaj domenu</translation>
@@ -7365,6 +7372,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8610103157987623234">Pogrešan format. Probajte ponovo</translation>
 <translation id="8611682088849615761">Nastavi da dozvoljavaš ovom sajtu da ima potpunu kontrolu nad MIDI uređajima</translation>
 <translation id="8613164732773110792">Samo mala slova, cifre, donje crte ili crte</translation>
+<translation id="8613645710357126807">Korišćenje dodataka nije dozvoljeno</translation>
 <translation id="8613786722548417558">Datoteka <ph name="FILE_NAME" /> je prevelika za bezbednosnu proveru. Možete da otvorite datoteke veličine do 50 MB.</translation>
 <translation id="8615618338313291042">Apl. u režimu bez arhiviranja: <ph name="APP_NAME" /></translation>
 <translation id="8616441548384109662">Dodajte kontakt <ph name="CONTACT_NAME" /> u kontakte</translation>

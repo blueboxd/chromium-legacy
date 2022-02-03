@@ -988,7 +988,7 @@ interestGroupBuyers: [$1]
       return absl::nullopt;
 
     std::vector<GURL> out;
-    for (const auto& value : result.value.GetList()) {
+    for (const auto& value : result.value.GetListDeprecated()) {
       if (!value.is_string()) {
         ADD_FAILURE() << "Expected string: " << value;
         return std::vector<GURL>();
@@ -1769,6 +1769,75 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       perBuyerSignals: {'https://invalid^&': {a:1}}
   })"));
   ExpectAccessObserved({});
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionInvalidComponentAuctionsArray) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ(
+      "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Failed to "
+      "read the 'componentAuctions' property from 'AuctionAdConfig': The "
+      "provided value cannot be converted to a sequence.",
+      RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      componentAuctions: ''
+  })"));
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionInvalidComponentAuctionsElementType) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ(
+      "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Failed to "
+      "read the 'componentAuctions' property from 'AuctionAdConfig': "
+      "The provided value is not of type 'AuctionAdConfig'.",
+      RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      componentAuctions: ['test']
+  })"));
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionInvalidComponentAuctionsAuctionConfig) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ(
+      "TypeError: Failed to execute 'runAdAuction' on 'Navigator': seller "
+      "'http://test.com' for AuctionAdConfig must be a valid https origin.",
+      RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      componentAuctions: [{
+        seller: 'http://test.com',
+        decisionLogicUrl: 'http://test.com'
+      }]
+  })"));
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionInvalidComponentAuctionDepth) {
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("a.test", "/echo")));
+
+  EXPECT_EQ(
+      "TypeError: Failed to execute 'runAdAuction' on 'Navigator': Auctions "
+      "listed in componentAuctions may not have their own nested "
+      "componentAuctions.",
+      RunAuctionAndWait(R"({
+      seller: 'https://test.com',
+      decisionLogicUrl: 'https://test.com',
+      componentAuctions: [{
+        seller: 'https://test2.com',
+        decisionLogicUrl: 'https://test2.com',
+        componentAuctions: [{
+          seller: 'https://test3.com',
+          decisionLogicUrl: 'https://test3.com',
+        }]
+      }]
+  })"));
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -3052,23 +3121,15 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, NoAdComponents) {
   CheckAdComponents(/*expected_ad_component_urls=*/std::vector<GURL>{},
                     ad_frame);
 
-  // Navigate the ad component fenced frame to some of the URNs, which
-  // should navigate it to about:blank. MPArch mode currently crashes on
-  // navigations to about:blank, so skip in that case.
-  //
-  // TODO(https://crbug.com/1268238): Always do this once MPArch can handle
-  // about:blank navigations.
-  if (GetParam() != blink::features::FencedFramesImplementationType::kMPArch) {
-    absl::optional<std::vector<GURL>> all_component_urls =
-        GetAdAuctionComponentsInJS(ad_frame, blink::kMaxAdAuctionAdComponents);
-    ASSERT_TRUE(all_component_urls);
-    NavigateFencedFrameAndWait((*all_component_urls)[0],
-                               GURL(url::kAboutBlankURL),
-                               GetFencedFrameRenderFrameHost(shell()));
-    NavigateFencedFrameAndWait(
-        (*all_component_urls)[blink::kMaxAdAuctionAdComponents - 1],
-        GURL(url::kAboutBlankURL), GetFencedFrameRenderFrameHost(shell()));
-  }
+  absl::optional<std::vector<GURL>> all_component_urls =
+      GetAdAuctionComponentsInJS(ad_frame, blink::kMaxAdAuctionAdComponents);
+  ASSERT_TRUE(all_component_urls);
+  NavigateFencedFrameAndWait((*all_component_urls)[0],
+                             GURL(url::kAboutBlankURL),
+                             GetFencedFrameRenderFrameHost(shell()));
+  NavigateFencedFrameAndWait(
+      (*all_component_urls)[blink::kMaxAdAuctionAdComponents - 1],
+      GURL(url::kAboutBlankURL), GetFencedFrameRenderFrameHost(shell()));
 }
 
 // Test with an ad component. Run an auction with an ad component, load the ad
@@ -3090,23 +3151,15 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, AdComponents) {
       /*expected_ad_component_urls=*/std::vector<GURL>{ad_component_url},
       ad_frame);
 
-  // Navigate the ad component fenced frame to some of the about:blank URNs.
-  // MPArch mode currently crashes on navigations to about:blank, so skip in
-  // that case.
-  //
-  // TODO(https://crbug.com/1268238): Always do this once MPArch can handle
-  // about:blank navigations.
-  if (GetParam() != blink::features::FencedFramesImplementationType::kMPArch) {
-    absl::optional<std::vector<GURL>> all_component_urls =
-        GetAdAuctionComponentsInJS(ad_frame, blink::kMaxAdAuctionAdComponents);
-    ASSERT_TRUE(all_component_urls);
-    NavigateFencedFrameAndWait((*all_component_urls)[1],
-                               GURL(url::kAboutBlankURL),
-                               GetFencedFrameRenderFrameHost(shell()));
-    NavigateFencedFrameAndWait(
-        (*all_component_urls)[blink::kMaxAdAuctionAdComponents - 1],
-        GURL(url::kAboutBlankURL), GetFencedFrameRenderFrameHost(shell()));
-  }
+  absl::optional<std::vector<GURL>> all_component_urls =
+      GetAdAuctionComponentsInJS(ad_frame, blink::kMaxAdAuctionAdComponents);
+  ASSERT_TRUE(all_component_urls);
+  NavigateFencedFrameAndWait((*all_component_urls)[1],
+                             GURL(url::kAboutBlankURL),
+                             GetFencedFrameRenderFrameHost(shell()));
+  NavigateFencedFrameAndWait(
+      (*all_component_urls)[blink::kMaxAdAuctionAdComponents - 1],
+      GURL(url::kAboutBlankURL), GetFencedFrameRenderFrameHost(shell()));
 }
 
 // Checked that navigator.adAuctionComponents() from an ad auction with
@@ -3338,14 +3391,8 @@ interestGroupBuyers: [$1]
                              ad_frame);
   NavigateFencedFrameAndWait((*components)[1], ad_components[2].render_url,
                              ad_frame);
-  // MPArch currently crashes on navigations to about:blank.
-  //
-  // TODO(https://crbug.com/1268238): Always do this once MPArch can handle
-  // about:blank navigations.
-  if (GetParam() != blink::features::FencedFramesImplementationType::kMPArch) {
-    NavigateFencedFrameAndWait((*components)[2], GURL(url::kAboutBlankURL),
-                               ad_frame);
-  }
+  NavigateFencedFrameAndWait((*components)[2], GURL(url::kAboutBlankURL),
+                             ad_frame);
 }
 
 // These end-to-end tests validate that information from navigator-exposed APIs
@@ -3943,6 +3990,20 @@ class InterestGroupBrowserTestRunAdAuctionBypassBlink
     return absl::nullopt;
   }
 
+  // Creates a valid AuctionAdConfigPtr which will run an auction with the
+  // InterestGroup added in SetUpOnMainThread() participating and winning.
+  blink::mojom::AuctionAdConfigPtr CreateValidAuctionConfig() {
+    auto config = blink::mojom::AuctionAdConfig::New();
+    config->seller = test_origin_a_;
+    config->decision_logic_url =
+        https_server_->GetURL("a.test", "/interest_group/decision_logic.js");
+    config->auction_ad_config_non_shared_params =
+        blink::mojom::AuctionAdConfigNonSharedParams::New();
+    config->auction_ad_config_non_shared_params->interest_group_buyers = {
+        test_origin_a_};
+    return config;
+  }
+
   url::Origin test_origin_a_;
   GURL ad_url_;
 };
@@ -4118,6 +4179,30 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   config->auction_ad_config_non_shared_params->interest_group_buyers = {
       test_origin_a_};
+
+  EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Eq(absl::nullopt));
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
+                       InvalidComponentAuctionUrl) {
+  auto config = CreateValidAuctionConfig();
+  auto component_auction_config = CreateValidAuctionConfig();
+  // This is invalid because it's cross-origin to the seller.
+  component_auction_config->decision_logic_url =
+      https_server_->GetURL("d.test", "/interest_group/decision_logic.js");
+  config->component_auctions.emplace_back(std::move(component_auction_config));
+
+  EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Eq(absl::nullopt));
+}
+
+// Test that component auctions with their own component auctions are rejected.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTestRunAdAuctionBypassBlink,
+                       InvalidComponentAuctionDepth) {
+  auto config = CreateValidAuctionConfig();
+  auto component_auction_config = CreateValidAuctionConfig();
+  component_auction_config->component_auctions.emplace_back(
+      CreateValidAuctionConfig());
+  config->component_auctions.emplace_back(std::move(component_auction_config));
 
   EXPECT_THAT(RunAuctionBypassBlink(std::move(config)), Eq(absl::nullopt));
 }

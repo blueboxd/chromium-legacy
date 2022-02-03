@@ -26,11 +26,6 @@ void ChromeSearchResult::SetDisplayScore(double display_score) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetIsInstalling(bool is_installing) {
-  metadata_->is_installing = is_installing;
-  SetSearchResultMetadata();
-}
-
 void ChromeSearchResult::SetTitle(const std::u16string& title) {
   metadata_->title = title;
   MaybeUpdateTitleVector();
@@ -45,7 +40,7 @@ void ChromeSearchResult::SetTitleTags(const Tags& tags) {
 
 void ChromeSearchResult::MaybeUpdateTitleVector() {
   // Create and setup title tags if not set explicitly.
-  if (!explicit_title_vector) {
+  if (!explicit_title_vector_) {
     std::vector<TextItem> text_vector;
     TextItem text_item(ash::SearchResultTextItemType::kString);
     text_item.SetText(metadata_->title);
@@ -69,7 +64,7 @@ void ChromeSearchResult::SetDetailsTags(const Tags& tags) {
 
 void ChromeSearchResult::MaybeUpdateDetailsVector() {
   // Create and setup details tags if not set explicitly.
-  if (!explicit_details_vector) {
+  if (!explicit_details_vector_) {
     std::vector<TextItem> text_vector;
     TextItem text_item(ash::SearchResultTextItemType::kString);
     text_item.SetText(metadata_->details);
@@ -81,13 +76,13 @@ void ChromeSearchResult::MaybeUpdateDetailsVector() {
 
 void ChromeSearchResult::SetTitleTextVector(const TextVector& text_vector) {
   metadata_->title_vector = text_vector;
-  explicit_title_vector = true;
+  explicit_title_vector_ = true;
   SetSearchResultMetadata();
 }
 
 void ChromeSearchResult::SetDetailsTextVector(const TextVector& text_vector) {
   metadata_->details_vector = text_vector;
-  explicit_details_vector = true;
+  explicit_details_vector_ = true;
   SetSearchResultMetadata();
 }
 
@@ -157,13 +152,6 @@ void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetQueryUrl(const GURL& url) {
-  metadata_->query_url = url;
-  auto* updater = model_updater();
-  if (updater)
-    updater->SetSearchResultMetadata(id(), CloneMetadata());
-}
-
 void ChromeSearchResult::SetEquivalentResultId(
     const std::string& equivalent_result_id) {
   metadata_->equivalent_result_id = equivalent_result_id;
@@ -193,11 +181,6 @@ void ChromeSearchResult::SetUseBadgeIconBackground(
     bool use_badge_icon_background) {
   metadata_->use_badge_icon_background = use_badge_icon_background;
   SetSearchResultMetadata();
-}
-
-void ChromeSearchResult::SetNotifyVisibilityChange(
-    bool notify_visibility_change) {
-  metadata_->notify_visibility_change = notify_visibility_change;
 }
 
 void ChromeSearchResult::SetSearchResultMetadata() {

@@ -31,7 +31,7 @@ constexpr char kAlt[] = "alt";
 std::vector<std::unique_ptr<Position>> ParseLocation(
     const base::Value& position) {
   std::vector<std::unique_ptr<Position>> positions;
-  for (const base::Value& val : position.GetList()) {
+  for (const base::Value& val : position.GetListDeprecated()) {
     auto pos = ParsePosition(val);
     if (!pos) {
       LOG(ERROR) << "Failed to parse location.";
@@ -135,7 +135,7 @@ absl::optional<std::pair<ui::DomCode, int>> ParseKeyboardKey(
   auto* modifier_list = value.FindListKey(kModifiers);
   int modifiers = 0;
   if (modifier_list) {
-    for (const base::Value& val : modifier_list->GetList()) {
+    for (const base::Value& val : modifier_list->GetListDeprecated()) {
       if (base::ToLowerASCII(val.GetString()) == kCtrl)
         modifiers |= ui::EF_CONTROL_DOWN;
       else if (base::ToLowerASCII(val.GetString()) == kShift)

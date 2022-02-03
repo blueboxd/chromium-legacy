@@ -4,7 +4,9 @@
 
 import './strings.m.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
+import 'chrome://resources/cr_components/app_management/more_permissions_item.js';
 import 'chrome://resources/cr_components/app_management/permission_item.js';
+import 'chrome://resources/cr_components/app_management/window_mode_item.js';
 import 'chrome://resources/cr_components/app_management/icons.js';
 
 import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
@@ -30,7 +32,6 @@ export class WebAppSettingsAppElement extends PolymerElement {
     };
   }
 
-  private appId_: string;
   private app_: App|null;
   private iconUrl_: string;
   private showSearch_: boolean;
@@ -59,6 +60,12 @@ export class WebAppSettingsAppElement extends PolymerElement {
 
   private getAppIcon_(app: App|null): string {
     return app ? getAppIcon(app) : '';
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'web-app-settings-app': WebAppSettingsAppElement;
   }
 }
 

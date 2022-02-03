@@ -19,7 +19,7 @@
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_page_metrics.h"
 #include "content/browser/attribution_reporting/attribution_policy.h"
-#include "content/browser/attribution_reporting/storable_trigger.h"
+#include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -299,13 +299,11 @@ void AttributionHost::RegisterConversion(
   if (!allowed)
     return;
 
-  const AttributionPolicy& policy = attribution_manager->GetAttributionPolicy();
-
   const auto sanitize_trigger_data =
       [&](const uint64_t unsanitized, CommonSourceInfo::SourceType source_type,
           devtools_instrumentation::AttributionReportingIssueType issue_type) {
         const uint64_t sanitized =
-            policy.SanitizeTriggerData(unsanitized, source_type);
+            SanitizeTriggerData(unsanitized, source_type);
 
         if (sanitized != unsanitized) {
           devtools_instrumentation::ReportAttributionReportingIssue(
@@ -318,7 +316,7 @@ void AttributionHost::RegisterConversion(
 
   net::SchemefulSite conversion_destination(main_frame_origin);
 
-  StorableTrigger storable_conversion(
+  AttributionTrigger storable_conversion(
       sanitize_trigger_data(
           conversion->conversion_data,
           CommonSourceInfo::SourceType::kNavigation,

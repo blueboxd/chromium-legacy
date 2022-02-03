@@ -10,7 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.SwitchCompat;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
@@ -18,14 +22,21 @@ import org.chromium.chrome.browser.ChromeStringConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.components.autofill.VirtualCardEnrollmentState;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * Server credit card settings.
  */
-public class AutofillServerCardEditor extends AutofillCreditCardEditor {
+public class AutofillServerCardEditor
+        extends AutofillCreditCardEditor implements CompoundButton.OnCheckedChangeListener {
     private View mLocalCopyLabel;
     private View mClearLocalCopy;
+    private SwitchCompat mVirtualCardEnrollmentSwitch;
 
     @UsedByReflection("AutofillPaymentMethodsFragment.java")
     public AutofillServerCardEditor() {}
@@ -49,6 +60,19 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
                         getActivity(), ChromeStringConstants.AUTOFILL_MANAGE_WALLET_CARD_URL);
             }
         });
+
+        final LinearLayout mVirtualCardContainerLayout =
+                (LinearLayout) v.findViewById(R.id.virtual_card_ui);
+        mVirtualCardEnrollmentSwitch =
+                (SwitchCompat) v.findViewById(R.id.virtual_card_enrollment_switch);
+        if (showVirtualCardEnrollmentSwitch()) {
+            mVirtualCardContainerLayout.setVisibility(View.VISIBLE);
+            mVirtualCardEnrollmentSwitch.setChecked(
+                    mCard.getVirtualCardEnrollmentState() == VirtualCardEnrollmentState.ENROLLED);
+            mVirtualCardEnrollmentSwitch.setOnCheckedChangeListener(this);
+        } else {
+            mVirtualCardContainerLayout.setVisibility(View.GONE);
+        }
 
         mLocalCopyLabel = v.findViewById(R.id.local_copy_label);
         mClearLocalCopy = v.findViewById(R.id.clear_local_copy);
@@ -77,6 +101,24 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
         parent.removeView(mClearLocalCopy);
     }
 
+    private boolean showVirtualCardEnrollmentSwitch() {
+        return (ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT)
+                && (mCard.getVirtualCardEnrollmentState() == VirtualCardEnrollmentState.ENROLLED
+                        || mCard.getVirtualCardEnrollmentState()
+                                == VirtualCardEnrollmentState.UNENROLLED_AND_ELIGIBLE));
+    }
+
+    /**
+     * Sets the mVirtualCardEnrollmentSwitch checked state without triggering the
+     * enrollment/unenrollment action.
+     */
+    private void setVirtualCardEnrollmentSwitchCheckedState(boolean isChecked) {
+        mVirtualCardEnrollmentSwitch.setOnCheckedChangeListener(null);
+        mVirtualCardEnrollmentSwitch.setChecked(isChecked);
+        mVirtualCardEnrollmentSwitch.setOnCheckedChangeListener(this);
+    }
+
     @Override
     protected int getLayoutId() {
         return R.layout.autofill_server_card_editor;
@@ -85,6 +127,26 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
     @Override
     protected int getTitleResourceId(boolean isNewEntry) {
         return R.string.autofill_edit_credit_card;
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked) {
+            // TODO (crbug/1281695): Implement enroll dialog.
+        } else {
+            final ModalDialogManager modalDialogManager = new ModalDialogManager(
+                    new AppModalPresenter(getActivity()), ModalDialogType.APP);
+            AutofillVirtualCardUnenrollmentDialog dialog =
+                    new AutofillVirtualCardUnenrollmentDialog(
+                            getActivity(), modalDialogManager, unenrollRequested -> {
+                                if (unenrollRequested) {
+                                    // TODO(crbug/1281695): Implement unenroll action.
+                                } else {
+                                    setVirtualCardEnrollmentSwitchCheckedState(true);
+                                }
+                            });
+            dialog.show();
+        }
     }
 
     @Override

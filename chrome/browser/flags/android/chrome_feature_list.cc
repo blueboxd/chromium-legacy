@@ -89,6 +89,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableSupportForMoreStructureInAddresses,
     &autofill::features::kAutofillEnableSupportForMoreStructureInNames,
+    &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &blink::features::kPrerender2,
     &blink::features::kForceWebContentsDarkMode,
     &commerce::kCommerceMerchantViewer,
@@ -213,7 +214,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
     &KContextualSearchNewSettings,
-    &kContextualSearchSecondTap,
     &kContextualSearchTapDisableOverride,
     &kContextualSearchThinWebViewImplementation,
     &kContextualSearchTranslations,
@@ -270,6 +270,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
+    &kSuppressToolbarCaptures,
     &kStoreHoursAndroid,
     &kSwapPixelFormatToFixConvertFromTranslucent,
     &kTabEngagementReportingAndroid,
@@ -573,9 +574,6 @@ const base::Feature kContextualSearchMlTapSuppression{
 const base::Feature KContextualSearchNewSettings{
     "ContextualSearchNewSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContextualSearchSecondTap{
-    "ContextualSearchSecondTap", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -748,6 +746,9 @@ const base::Feature kSpecialUserDecision{"SpecialUserDecision",
 
 const base::Feature kStoreHoursAndroid{"StoreHoursAndroid",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSuppressToolbarCaptures{"SuppressToolbarCaptures",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSwapPixelFormatToFixConvertFromTranslucent{
     "SwapPixelFormatToFixConvertFromTranslucent",

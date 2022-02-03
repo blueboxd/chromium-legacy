@@ -207,7 +207,7 @@ void MemoryInternalsDOMHandler::RegisterMessages() {
 void MemoryInternalsDOMHandler::HandleRequestProcessList(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
 
   std::vector<base::Value> result;
 
@@ -282,10 +282,10 @@ void MemoryInternalsDOMHandler::HandleReportProcess(
 void MemoryInternalsDOMHandler::HandleStartProfiling(
     const base::ListValue* args) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!args->is_list() || args->GetList().size() != 1)
+  if (!args->is_list() || args->GetListDeprecated().size() != 1)
     return;
 
-  base::ProcessId pid = args->GetList()[0].GetInt();
+  base::ProcessId pid = args->GetListDeprecated()[0].GetInt();
   heap_profiling::Supervisor* supervisor =
       heap_profiling::Supervisor::GetInstance();
   if (supervisor->HasStarted()) {
@@ -333,10 +333,10 @@ void MemoryInternalsDOMHandler::ReturnProcessListOnUIThread(
 
   // Append whether each process is being profiled.
   for (base::Value& value : process_list) {
-    DCHECK_EQ(value.GetList().size(), 2u);
+    DCHECK_EQ(value.GetListDeprecated().size(), 2u);
 
     base::ProcessId pid =
-        static_cast<base::ProcessId>(value.GetList()[0].GetInt());
+        static_cast<base::ProcessId>(value.GetListDeprecated()[0].GetInt());
     bool is_profiled =
         std::binary_search(profiled_pids.begin(), profiled_pids.end(), pid);
     value.Append(is_profiled);

@@ -130,6 +130,8 @@ static_library("test_support") {
     "../browser/password_manager/password_manager_test_util.h",
     "../browser/permissions/crowd_deny_fake_safe_browsing_database_manager.cc",
     "../browser/permissions/crowd_deny_fake_safe_browsing_database_manager.h",
+    "../browser/profiles/profile_test_util.cc",
+    "../browser/profiles/profile_test_util.h",
     "../browser/search_engines/template_url_service_factory_test_util.cc",
     "../browser/search_engines/template_url_service_factory_test_util.h",
     "../browser/search_engines/template_url_service_test_util.cc",
@@ -3327,6 +3329,7 @@ if (!is_android && !is_fuchsia) {
         "../browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.cc",
         "../browser/ash/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h",
         "../browser/ash/login/screens/recommend_apps_screen_browsertest.cc",
+        "../browser/ash/login/screens/smart_privacy_protection_screen_browsertest.cc",
         "../browser/ash/login/screens/sync_consent_browsertest.cc",
         "../browser/ash/login/screens/terms_of_service_screen_browsertest.cc",
         "../browser/ash/login/screens/update_required_screen_browsertest.cc",
@@ -4547,6 +4550,7 @@ test("unit_tests") {
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
     "../browser/component_updater/trust_token_key_commitments_component_installer_unittest.cc",
+    "../browser/component_updater/updater_state_unittest.cc",
     "../browser/content_index/content_index_provider_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
     "../browser/content_settings/content_settings_mock_observer.cc",
@@ -6492,8 +6496,14 @@ test("unit_tests") {
   }
 
   if (is_chromeos) {
-    sources += [ "../browser/chromeos/arc/open_with_menu_unittest.cc" ]
-    deps += [ "//components/arc/common" ]
+    sources += [
+      "../browser/chromeos/arc/arc_external_protocol_dialog_unittest.cc",
+      "../browser/chromeos/arc/open_with_menu_unittest.cc",
+    ]
+    deps += [
+      "//components/arc/common",
+      "//components/arc/common:arc_test_support",
+    ]
   }
 
   if (is_chromeos_lacros) {
@@ -7028,6 +7038,7 @@ test("unit_tests") {
       "../browser/extensions/safe_browsing_verdict_handler_unittest.cc",
       "../browser/extensions/scripting_permissions_modifier_unittest.cc",
       "../browser/extensions/shared_module_service_unittest.cc",
+      "../browser/extensions/site_permissions_helper_unittest.cc",
       "../browser/extensions/standard_management_policy_provider_unittest.cc",
       "../browser/extensions/tab_helper_unittest.cc",
       "../browser/extensions/update_install_gate_unittest.cc",
@@ -9939,8 +9950,6 @@ if (is_chromeos_ash) {
 
 if (is_linux || is_mac || is_win) {
   script_test("variations_smoke_tests") {
-    run_under_python2 = true
-
     if (is_linux) {
       script = "//testing/xvfb.py"
     } else {
@@ -9958,8 +9967,8 @@ if (is_linux || is_mac || is_win) {
     ]
 
     data = [
+      "//.vpython3",
       "//testing/scripts/run_variations_smoke_tests.py",
-      "//testing/scripts/variations_http_test_server.py",
       "//testing/scripts/variations_seed_access_helper.py",
       "//testing/scripts/variations_smoke_test_data/",
       "//testing/scripts/variations_smoke_test_data/http_server/",

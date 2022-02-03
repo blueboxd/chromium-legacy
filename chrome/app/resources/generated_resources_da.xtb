@@ -207,6 +207,7 @@
 <ph name="DOMAIN" /> kræver, at chipkortet er indsat.}other{Du logges automatisk ud om # sekunder.
 <ph name="DOMAIN" /> kræver, at chipkortet er indsat.}}</translation>
 <translation id="1193927020065025187">Dette website forsøger muligvis at narre dig til at tillade påtrængende notifikationer</translation>
+<translation id="1195210374336998651">Gå til appindstillinger</translation>
 <translation id="1195447618553298278">Ukendt fejl.</translation>
 <translation id="1195558154361252544">Notifikationer blokeres automatisk for alle website med undtagelse dem, du har givet tilladelse til</translation>
 <translation id="1197088940767939838">Orange</translation>
@@ -387,6 +388,7 @@
 <translation id="1396259464226642517">Var resultatet ikke som forventet? <ph name="BEGIN_LINK" />Send feedback<ph name="END_LINK" /></translation>
 <translation id="1396963298126346194">Brugernavnet og adgangskoden, du har angivet, stemmer ikke overens.</translation>
 <translation id="1397500194120344683">Der er ingen kvalificerede enheder. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
+<translation id="1397594434718759194">Da du er logget ind i Chrome på disse enheder, kan du bruge dem som sikkerhedsnøgler.</translation>
 <translation id="1398853756734560583">Maksimér</translation>
 <translation id="139911022479327130">Lås din telefon op, og bekræft din identitet</translation>
 <translation id="1401308693935339022">Brug placering. Tillad, at apps og tjenester med placeringstilladelse kan bruge denne enheds lokation. Google kan jævnligt indsamle lokationsdata og bruge disse data på en anonym måde for at forbedre lokationernes nøjagtighed og placeringsbaserede tjenester.</translation>
@@ -780,6 +782,7 @@
 <translation id="176587472219019965">&amp;Nyt vindue</translation>
 <translation id="1766575458646819543">Fuld skærm er afsluttet</translation>
 <translation id="1766957085594317166">Gem adgangskoder sikkert på din Google-konto. Så behøver du aldrig at indtaste dem igen.</translation>
+<translation id="1767043563165955993">Brug med Android-apps</translation>
 <translation id="1768212860412467516">Send feedback om <ph name="EXPERIMENT_NAME" />.</translation>
 <translation id="1768278914020124551">Ups! Der var problemer med at oprette forbindelse til loginserveren. Tjek din netværksforbindelse og domænenavnet, og prøv igen.</translation>
 <translation id="1769104665586091481">Åbn link i nyt &amp;vindue</translation>
@@ -1116,6 +1119,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2113479184312716848">Åbn &amp;fil...</translation>
 <translation id="2113921862428609753">Adgang til autoritetsoplysninger</translation>
 <translation id="2114326799768592691">Genindlæs &amp;ramme</translation>
+<translation id="2114413269775311385">Brug denne konto med Android-apps. Du kan styre tilladelser for Android-apps under <ph name="LINK_BEGIN" />Appindstillinger<ph name="LINK_END" />.</translation>
 <translation id="2114896190328250491">Foto af <ph name="NAME" /></translation>
 <translation id="2114995631896158695">Der er ikke indsat et SIM-kort</translation>
 <translation id="2116619964159595185">Websites opretter normalt forbindelse til Bluetooth-enheder i forbindelse med funktioner som f.eks. konfiguration eller synkronisering af en lavenergibeacon, en sundheds- eller motionstracker eller en smartpære</translation>
@@ -1179,6 +1183,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2163470535490402084">Du skal oprette forbindelse til internettet for at kunne logge ind på din <ph name="DEVICE_TYPE" />.</translation>
 <translation id="2163937499206714165">Aktivér mørkt tilstand</translation>
 <translation id="2164131635608782358"><ph name="FIRST_SWITCH" />, <ph name="SECOND_SWITCH" />, <ph name="THIRD_SWITCH" /> og 1 anden kontakt</translation>
+<translation id="2165102982098084499">Du tilknyttede disse enheder ved at scanne en QR-kode.</translation>
 <translation id="2165177462441582039">Vælg, hvor længe hvert element skal fremhæves</translation>
 <translation id="2166369534954157698">Quizdeltagerne spiste jordbær med fløde, mens cirkusklovnen Walther spillede på xylofon</translation>
 <translation id="2169062631698640254">Log ind alligevel</translation>
@@ -1956,6 +1961,7 @@ og tryk på Ctrl+Alt+lysstyrke ned for at zoome ud.</translation>
 <translation id="2915873080513663243">Automatisk scanning</translation>
 <translation id="2916073183900451334">Tryk på Tab på en webside fremhæver links og felter i formularer</translation>
 <translation id="2916745397441987255">Søg efter udvidelser</translation>
+<translation id="2918484639460781603">Gå til indstillinger</translation>
 <translation id="2918484644467055090">Denne enhed kan ikke tilmeldes den organisation, din konto tilhører, da administration af enheden er tildelt en anden organisation.</translation>
 <translation id="2920852127376356161">Har ikke tilladelse til at håndtere protokoller</translation>
 <translation id="2921081876747860777">Opret en adgangskode for at beskytte dine lokale data.</translation>
@@ -2580,6 +2586,7 @@ og tryk på Ctrl+Alt+lysstyrke ned for at zoome ud.</translation>
 <translation id="3592260987370335752">&amp;Få flere oplysninger</translation>
 <translation id="3593152357631900254">Aktiver tilstanden Fuzzy-pinyin</translation>
 <translation id="3593965109698325041">Begrænsninger for certifikatnavn</translation>
+<translation id="3596012367874587041">Appindstillinger</translation>
 <translation id="3596414637720633074">Bloker tredjepartscookies i inkognito</translation>
 <translation id="3599221874935822507">Hævet</translation>
 <translation id="3599863153486145794">Rydder historikken på alle enheder, hvor du er logget ind. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -2957,6 +2964,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Tilbage</translation>
 <translation id="3943857333388298514">Indsæt</translation>
 <translation id="3945513714196326460">Prøv et kortere navn</translation>
+<translation id="3947643756376959257">Angiv den adgangskode, der vises på Chromecast-enheden eller fjernsynet.</translation>
 <translation id="3948027458879361203">Skift hostname</translation>
 <translation id="3948116654032448504">&amp;Søg efter billedet på <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3948507072814225786"><ph name="ORIGIN" /> kan redigere filer i følgende mapper</translation>
@@ -3198,12 +3206,14 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4210048056321123003">Downloader den virtuelle maskine</translation>
 <translation id="421182450098841253">&amp;Vis bogmærkelinjen</translation>
 <translation id="4211851069413100178">Send brugs- og diagnosticeringsdata. Hjælp med at forbedre din Android-oplevelse ved automatisk at sende diagnosticerings- og enhedsdata samt data om brug af apps til Google. Dataene bruges til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Denne <ph name="BEGIN_LINK1" />indstilling<ph name="END_LINK1" /> håndhæves af ejeren. Ejeren kan vælge at sende diagnosticerings- og brugsdata for denne enhed til Google. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret, gemmes disse data muligvis på din Google-konto. <ph name="BEGIN_LINK2" />Få flere oplysninger<ph name="END_LINK2" /></translation>
+<translation id="4211904048067111541">Brug ikke med Android-apps</translation>
 <translation id="42126664696688958">Eksportér</translation>
 <translation id="42137655013211669">Serveren har forbudt dig adgang til denne ressource.</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4219558185499589032">Box</translation>
 <translation id="4220648711404560261">Der opstod en fejl under aktiveringen.</translation>
 <translation id="4225397296022057997">På alle websites</translation>
+<translation id="4227605727325220318">Tilføj en ny Android-telefon</translation>
 <translation id="4228209296591583948">{NUM_EXTENSIONS,plural, =1{Denne udvidelse er ikke tilladt}one{Denne udvidelse er ikke tilladt}other{Nogle udvidelser er ikke tilladt}}</translation>
 <translation id="4231095370974836764">Installer apps og spil fra Google Play på din <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="4232375817808480934">Konfigurer Kerberos</translation>
@@ -4735,6 +4745,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="5862109781435984885">Vis styluspenværktøjer på hylden</translation>
 <translation id="5862319196656206789">Konfigurer forbundne enheder</translation>
 <translation id="5863445608433396414">Aktivér fejlretningsfunktioner</translation>
+<translation id="5864147196375746035">Cast til en administreret enhed</translation>
 <translation id="5864195618110239517">Brug forbrugsafregnet forbindelse</translation>
 <translation id="5864754048328252126">Handling for inaktivitet under opladning</translation>
 <translation id="5865508026715185451"><ph name="APP_NAME" /> sættes snart på pause</translation>
@@ -5697,6 +5708,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="6857725247182211756"><ph name="SECONDS" /> sek.</translation>
 <translation id="6860097299815761905">Indstillinger for proxy...</translation>
 <translation id="6860427144121307915">Åbn på en fane</translation>
+<translation id="6863496016067551393">Alle udvidelser er tilladt</translation>
 <translation id="686366188661646310">Vil du slette adgangskoden?</translation>
 <translation id="6865313869410766144">Formulardata for AutoFyld</translation>
 <translation id="6865598234501509159">Siden findes ikke på <ph name="LANGUAGE" /></translation>
@@ -5726,6 +5738,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="6900532703269623216">Forbedret beskyttelse</translation>
 <translation id="6900651018461749106">Log ind igen for at opdatere <ph name="USER_EMAIL" /></translation>
 <translation id="6900654715912436255">Er du sikker på, at du vil slette denne søgemaskine?</translation>
+<translation id="6901024547292737736"><ph name="ACTUAL_CHAR_COUNT" />/<ph name="MAX_CHAR_COUNT" /></translation>
 <translation id="6902066522699286937">Eksempel på stemme</translation>
 <translation id="6902336033320348843">Sektionen understøttes ikke: <ph name="ERROR_LINE" /></translation>
 <translation id="6902837902700739466">Føj enheden til domænet</translation>
@@ -5915,6 +5928,7 @@ Flere kontakter kan tildeles denne handling.</translation>
 <translation id="7086672505018440886">Medtag Chrome-logfiler i arkivet.</translation>
 <translation id="7088434364990739311">Der kunne ikke søges efter opdateringer (fejlkode <ph name="ERROR" />).</translation>
 <translation id="7088674813905715446">Denne enhed er blevet sat i en deprovisioneret tilstand af administratoren. Hvis den skal kunne tilmeldes, skal du bede administratoren om at sætte enheden i en afventende tilstand.</translation>
+<translation id="7090160970140261931">Du kan føje ekstra konti til din <ph name="DEVICE_TYPE" />, som kan bruges på websites og med Android-apps. Du kan også styre, hvilke konti der skal bruges med Android-apps.</translation>
 <translation id="7093220653036489319">Hurtig info</translation>
 <translation id="7093416310351037609">Af hensyn til sikkerheden og databeskyttelse kræver din organisation, at alle kvalificerede downloads gemmes på din organisations <ph name="WEB_DRIVE" />-konto.</translation>
 <translation id="7093434536568905704">GTK+</translation>
@@ -6974,6 +6988,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8147900440966275470">Der blev fundet <ph name="NUM" /> fane</translation>
 <translation id="8148760431881541277">Begræns login</translation>
 <translation id="8149564499626272569">Bekræft via din telefon med et USB-kabel</translation>
+<translation id="815114315010033526">Brug QR-kode i stedet</translation>
 <translation id="8151638057146502721">Konfigurer</translation>
 <translation id="8154790740888707867">Ingen fil</translation>
 <translation id="8154912474061769055">Funktionerne på mange websites virker muligvis ikke</translation>
@@ -6999,6 +7014,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8176332201990304395">Lyserød og hvid</translation>
 <translation id="8177196903785554304">Netværksoplysninger</translation>
 <translation id="8177318697334260664">{NUM_TABS,plural, =1{Flyt fanen til et nyt vindue}one{Flyt fanen til et nyt vindue}other{Flyt fanerne til et nyt vindue}}</translation>
+<translation id="8179188928355984576">Bruges ikke med Android-apps</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180786512391440389">"<ph name="EXTENSION" />" har læse- og sletterettigheder til billed-, video- og lydfiler på de markerede placeringer.</translation>
 <translation id="8181215761849004992">Enheden kunne ikke knyttes til domænet. Sørg for, at din konto har de påkrævede tilladelser til at tilføje enheder.</translation>
@@ -7374,6 +7390,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8610103157987623234">Formatet er forkert. Prøv igen.</translation>
 <translation id="8611682088849615761">Tillad fortsat, at dette website kan få fuld kontrol over MIDI-enheder</translation>
 <translation id="8613164732773110792">Kun små bogstaver, cifre, understregninger og tankestreger</translation>
+<translation id="8613645710357126807">Har ikke tilladelse til at bruge udvidelser</translation>
 <translation id="8613786722548417558"><ph name="FILE_NAME" /> er for stor til, at der kan udføres et sikkerhedstjek. Du kan åbne filer på op til 50 MB.</translation>
 <translation id="8615618338313291042">Inkognitoprogram: <ph name="APP_NAME" /></translation>
 <translation id="8616441548384109662">Føj <ph name="CONTACT_NAME" /> til dine kontakter</translation>

@@ -4298,219 +4298,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Discarding.DiscardCandidatesCount" units="tabs"
-    expires_after="2022-05-01">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The number of tabs discard candidates. This is recorded each time Chrome
-    needs to urgently discard a tab.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.DiscardsPer10Minutes" units="tabs"
-    expires_after="M85">
-  <obsolete>
-    Removed 11/2020. Not actively used because reported values are 0 most of the
-    time. It would be more useful to report number of discards per day.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="DiscardReason" -->
-
-  <owner>fdoray@chromium.org</owner>
-  <summary>
-    Number of tabs discarded in each interval of 10 minutes, per discard reason.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.HighPMFPolicy.DiscardAttemptsCount" units="tabs"
-    expires_after="2021-12-06">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The number of tab discard attempts during a high-PMF session. Recorded at
-    the end of each high PMF session, or when the number of discard attempts
-    within the same high-PMF session reaches 100 (at which point the counter
-    will reset, e.g. 102 discards attempts would be recorded in two pieces as
-    &quot;100&quot; and &quot;2&quot;).
-  </summary>
-</histogram>
-
-<histogram name="Discarding.HighPMFPolicy.DiscardSuccess"
-    units="BooleanSuccess" expires_after="2021-12-06">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    Indicates if a tab has been successfully discarded during a high-PMF
-    session.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.HighPMFPolicy.MemoryPressureLevel"
-    enum="MemoryPressureLevel" expires_after="2022-02-06">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The memory pressure level when the High-PMF policy decides to discard a tab.
-    Windows and Mac only.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.HighPMFPolicy.MemoryReclaimedKbAfterDiscardingATab"
-    units="KB" expires_after="2021-12-06">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The amount of memory that has been reclaimed after discarding a tab during a
-    high-PMF session. In the case of a memory increase the value will be
-    reported as 0 and will go in the underflow bucket.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.HighPMFPolicy.SuccessfulDiscardsCount" units="tabs"
-    expires_after="2021-12-06">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The number of successful tab discards during a high-PMF session. Recorded at
-    the end of each high PMF session, or when the number of successful discards
-    within the same high-PMF session reaches 100 (at which point the counter
-    will reset, e.g. 102 successful discards would be recorded in two pieces as
-    &quot;100&quot; and &quot;2&quot;).
-  </summary>
-</histogram>
-
-<histogram name="Discarding.LargestTabFootprint" units="MiB"
-    expires_after="2021-02-28">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The largest tab's resident set among all the urgent discarding candidates.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.OldestTabFootprint" units="MiB"
-    expires_after="2021-02-28">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>The resident set of the oldest urgent discarding candidate.</summary>
-</histogram>
-
-<histogram name="Discarding.OnCriticalPressure.TotalRSS_Mb" units="MB"
-    expires_after="2021-01-31">
-  <obsolete>
-    Removed 03/2021, replaced by Discarding.OnCriticalPressure.TotalRSS_Mb2. The
-    new histogram is now guaranteed to be recorded before discarding any tab.
-  </obsolete>
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    An estimate of the total resident set of Chrome when receiving a critical
-    memory pressure event, in megabytes. Note that the estimate is based on the
-    most recent data collected by Performance Manager, which are refreshed at a
-    low frequency (up to 2 minutes).
-  </summary>
-</histogram>
-
-<histogram name="Discarding.OnCriticalPressure.TotalRSS_Mb2" units="MB"
-    expires_after="2021-10-30">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    An estimate of the total resident set of Chrome when receiving a critical
-    memory pressure event, in megabytes. Note that the estimate is based on the
-    most recent data collected by Performance Manager, which are refreshed at a
-    low frequency (up to 2 minutes).
-  </summary>
-</histogram>
-
-<histogram name="Discarding.OnCriticalPressure.TotalRSS_PercentOfRAM" units="%"
-    expires_after="2021-08-09">
-  <obsolete>
-    Removed 03/2021, replaced by
-    Discarding.OnCriticalPressure.TotalRSS_PercentOfRAM2. The new histogram is
-    now guaranteed to be recorded before discarding any tab.
-  </obsolete>
-  <owner>sebmarchand@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    An estimate of the total resident set of Chrome when receiving a critical
-    memory pressure event, in percentage of the total amount of RAM. Note that
-    the estimate is based on the most recent data collected by Performance
-    Manager, which are refreshed at a low frequency (up to 2 minutes).
-  </summary>
-</histogram>
-
-<histogram name="Discarding.OnCriticalPressure.TotalRSS_PercentOfRAM2"
-    units="%" expires_after="2021-10-30">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    An estimate of the total resident set of Chrome when receiving a critical
-    memory pressure event, in percentage of the total amount of RAM. Note that
-    the estimate is based on the most recent data collected by Performance
-    Manager, which are refreshed at a low frequency (up to 2 minutes).
-  </summary>
-</histogram>
-
-<histogram name="Discarding.OnlineOnReload" enum="Boolean" expires_after="M85">
-  <obsolete>
-    Removed 11/2020.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="DiscardReason" -->
-
-  <owner>fdoray@chromium.org</owner>
-  <summary>
-    Whether the machine was online when a discarded tab was reloaded.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.ReloadsPer10Minutes" units="tabs"
-    expires_after="M85">
-  <obsolete>
-    Removed 11/2020. Not actively used because reported values are 0 most of the
-    time. It would be more useful to report number of reloads per day.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="DiscardReason" -->
-
-  <owner>fdoray@chromium.org</owner>
-  <summary>
-    Number of discarded tabs reloaded in each interval of 10 minutes, grouped by
-    their discard reason.
-  </summary>
-</histogram>
-
-<histogram
-    name="Discarding.WinOSPressureSignals.AvailableMemoryMbOnLowMemoryNotification"
-    units="MB" expires_after="2021-05-02">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The amount of physical memory available when receiving a low memory
-    notification, in megabytes. Windows 8.1+ only.
-  </summary>
-</histogram>
-
-<histogram name="Discarding.WinOSPressureSignals.LowMemorySessionLength"
-    units="ms" expires_after="2021-05-02">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The time it takes to receive a high memory notification from the OS after
-    receiving a low memory notification. Windows 8.1+ only.
-  </summary>
-</histogram>
-
-<histogram
-    name="Discarding.WinOSPressureSignals.PressureLevelOnLowMemoryNotification"
-    enum="MemoryPressureLevel" expires_after="2021-05-02">
-  <owner>chrisha@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The memory pressure level when receiving a low memory notification from the
-    OS. Windows 8.1+ only.
-  </summary>
-</histogram>
-
 <histogram name="DisplayManager.InternalDisplayZoomPercentage" units="%"
     expires_after="2022-06-15">
   <owner>zentaro@chromium.org</owner>
@@ -5689,25 +5476,29 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.GoogleAppsInteraction"
-    enum="NuxGoogleAppsInteractions" expires_after="M76">
-  <owner>hcarmona@chromium.org</owner>
-  <owner>scottchen@chromium.org</owner>
+    enum="NuxGoogleAppsInteractions" expires_after="M110">
+  <owner>johntlee@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records when a user interacted with the Google Apps new user experience. We
     record both accept and reject but are not recording when a user ignored the
     prompt completely. Users can ignore this prompt by closing the tab or
     navigating away, we record when the prompt is shown.
+
+    Warning: this histogram was expired from M76 to M100; data may be missing.
   </summary>
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.GoogleAppsSelection"
-    enum="NuxGoogleAppsSelections" expires_after="M76">
-  <owner>hcarmona@chromium.org</owner>
-  <owner>scottchen@chromium.org</owner>
+    enum="NuxGoogleAppsSelections" expires_after="M110">
+  <owner>johntlee@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records what Google apps were selected as part of the Google Apps New User
     Experience. Histogram is only recorded when a user accepts the prompt to add
     Google Apps.
+
+    Warning: this histogram was expired from M76 to M100; data may be missing.
   </summary>
 </histogram>
 
@@ -5717,7 +5508,6 @@ chromium-metrics-reviews@google.com.
     need to track how the metrics change over time, and how different
     acquisition campaigns impact this metric. -->
 
-  <owner>hcarmona@chromium.org</owner>
   <owner>scottchen@chromium.org</owner>
   <summary>
     Records when a user interacted with the landing page of the onboarding
@@ -5727,8 +5517,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FirstRun.NewUserExperience.NtpBackgroundInteraction"
     enum="NuxNtpBackgroundInteractions" expires_after="2022-06-12">
-  <owner>hcarmona@chromium.org</owner>
   <owner>johntlee@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records when a user interacts with the NTP Backgrounds new user experience.
     We record the number of times the page is seen, how they interacted with the
@@ -5740,8 +5530,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="FirstRun.NewUserExperience.NtpBackgroundLoadTime" units="ms"
     expires_after="M80">
-  <owner>hcarmona@chromium.org</owner>
   <owner>johntlee@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records the time taken to load a NTP background image for preview. This is
     recorded when a user clicks on a background to preview and the full-size
@@ -5755,8 +5545,8 @@ chromium-metrics-reviews@google.com.
     need to track how the metrics change over time, and how different
     acquisition campaigns impact this metric. -->
 
-  <owner>hcarmona@chromium.org</owner>
-  <owner>scottchen@chromium.org</owner>
+  <owner>johntlee@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records when a user interacted with the set default page of the onboarding
     process. We record that the page was seen and what action the user took.
@@ -5764,13 +5554,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.SignInInterstitialInteraction"
-    enum="NuxSignInInterstitialInteractions" expires_after="M76">
-  <owner>hcarmona@chromium.org</owner>
-  <owner>scottchen@chromium.org</owner>
+    enum="NuxSignInInterstitialInteractions" expires_after="M110">
+  <owner>johntlee@chromium.org</owner>
+  <owner>dpapad@chromium.org</owner>
   <summary>
     Records when a user interacted with the sign in interstitial of the
     onboarding process. We record that the page was seen and what action the
     user took.
+
+    Warning: this histogram was expired from M76 to M100; data may be missing.
   </summary>
 </histogram>
 

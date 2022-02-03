@@ -411,15 +411,15 @@ void CertificatesHandler::HandleViewCertificate(const base::ListValue* args) {
 }
 
 void CertificatesHandler::AssignWebUICallbackId(const base::ListValue* args) {
-  CHECK_LE(1U, args->GetList().size());
+  CHECK_LE(1U, args->GetListDeprecated().size());
   CHECK(webui_callback_id_.empty());
-  webui_callback_id_ = args->GetList()[0].GetString();
+  webui_callback_id_ = args->GetListDeprecated()[0].GetString();
 }
 
 void CertificatesHandler::HandleGetCATrust(const base::ListValue* args) {
   AllowJavascript();
 
-  CHECK_EQ(2U, args->GetList().size());
+  CHECK_EQ(2U, args->GetListDeprecated().size());
   AssignWebUICallbackId(args);
 
   CertificateManagerModel::CertInfo* cert_info =
@@ -445,7 +445,7 @@ void CertificatesHandler::HandleGetCATrust(const base::ListValue* args) {
 }
 
 void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_EQ(5U, list.size());
   AssignWebUICallbackId(args);
 
@@ -485,7 +485,7 @@ void CertificatesHandler::HandleEditCATrust(const base::ListValue* args) {
 }
 
 void CertificatesHandler::HandleExportPersonal(const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
+  CHECK_EQ(2U, args->GetListDeprecated().size());
   AssignWebUICallbackId(args);
 
   CertificateManagerModel::CertInfo* cert_info =
@@ -520,7 +520,7 @@ void CertificatesHandler::ExportPersonalFileSelected(
 
 void CertificatesHandler::HandleExportPersonalPasswordSelected(
     const base::ListValue* args) {
-  const base::Value::ConstListView args_list = args->GetList();
+  const base::Value::ConstListView args_list = args->GetListDeprecated();
   CHECK_EQ(2U, args_list.size());
   AssignWebUICallbackId(args);
   password_ = UTF8ToUTF16(args_list[1].GetString());  // CHECKs if non-string.
@@ -582,7 +582,7 @@ void CertificatesHandler::HandleImportPersonal(const base::ListValue* args) {
     return;
   }
 
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_EQ(2U, list.size());
   AssignWebUICallbackId(args);
   use_hardware_backed_ = list[1].GetBool();
@@ -664,7 +664,7 @@ void CertificatesHandler::ImportPersonalFileRead(const int* read_errno,
 
 void CertificatesHandler::HandleImportPersonalPasswordSelected(
     const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
+  base::Value::ConstListView args_list = args->GetListDeprecated();
   CHECK_EQ(2U, args_list.size());
   AssignWebUICallbackId(args);
   password_ = UTF8ToUTF16(args_list[1].GetString());  // CHECKs if non-string.
@@ -745,7 +745,7 @@ void CertificatesHandler::ImportExportCleanup() {
 }
 
 void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
+  CHECK_EQ(1U, args->GetListDeprecated().size());
   AssignWebUICallbackId(args);
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
@@ -819,7 +819,7 @@ void CertificatesHandler::HandleImportCA(const base::ListValue* args) {
     return;
   }
 
-  CHECK_EQ(1U, args->GetList().size());
+  CHECK_EQ(1U, args->GetListDeprecated().size());
   AssignWebUICallbackId(args);
 
   select_file_dialog_ = ui::SelectFileDialog::Create(
@@ -877,7 +877,7 @@ void CertificatesHandler::ImportCAFileRead(const int* read_errno,
 
 void CertificatesHandler::HandleImportCATrustSelected(
     const base::ListValue* args) {
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK_EQ(4U, list.size());
   AssignWebUICallbackId(args);
 
@@ -924,7 +924,7 @@ void CertificatesHandler::HandleExportCertificate(const base::ListValue* args) {
 }
 
 void CertificatesHandler::HandleDeleteCertificate(const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
+  CHECK_EQ(2U, args->GetListDeprecated().size());
   AssignWebUICallbackId(args);
 
   CertificateManagerModel::CertInfo* cert_info =
@@ -1057,14 +1057,16 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
           cert_info->source() ==
           CertificateManagerModel::CertInfo::Source::kPolicy;
     }
-    std::sort(subnodes.GetList().begin(), subnodes.GetList().end(), comparator);
+    std::sort(subnodes.GetListDeprecated().begin(),
+              subnodes.GetListDeprecated().end(), comparator);
 
     org_dict.SetKey(kCertificatesHandlerContainsPolicyCertsField,
                     base::Value(contains_policy_certs));
     org_dict.SetKey(kCertificatesHandlerSubnodesField, std::move(subnodes));
     nodes.Append(std::move(org_dict));
   }
-  std::sort(nodes.GetList().begin(), nodes.GetList().end(), comparator);
+  std::sort(nodes.GetListDeprecated().begin(), nodes.GetListDeprecated().end(),
+            comparator);
 
   if (IsJavascriptAllowed()) {
     FireWebUIListener("certificates-changed", base::Value(tab_name),
@@ -1136,9 +1138,9 @@ CertificatesHandler::GetCertInfoFromCallbackArgs(const base::Value& args,
                                                  size_t arg_index) {
   if (!args.is_list())
     return nullptr;
-  if (arg_index >= args.GetList().size())
+  if (arg_index >= args.GetListDeprecated().size())
     return nullptr;
-  const auto& arg = args.GetList()[arg_index];
+  const auto& arg = args.GetListDeprecated()[arg_index];
   if (!arg.is_string())
     return nullptr;
 

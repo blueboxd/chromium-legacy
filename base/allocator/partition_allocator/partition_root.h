@@ -49,6 +49,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_hooks.h"
 #include "base/allocator/partition_allocator/partition_alloc_notreached.h"
 #include "base/allocator/partition_allocator/partition_bucket_lookup.h"
+#include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/partition_lock.h"
@@ -1814,5 +1815,13 @@ static_assert(offsetof(ThreadSafePartitionRoot, lock_) ==
               "Padding is incorrect");
 
 }  // namespace base
+
+namespace partition_alloc::internal {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::base::internal::ScopedSyscallTimer;
+
+}  // namespace partition_alloc::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_H_

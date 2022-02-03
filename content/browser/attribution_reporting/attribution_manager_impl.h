@@ -19,7 +19,6 @@
 #include "base/threading/sequence_bound.h"
 #include "base/timer/wall_clock_timer.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_policy.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/common/content_export.h"
@@ -107,7 +106,7 @@ class CONTENT_EXPORT AttributionManagerImpl
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void HandleSource(StorableSource source) override;
-  void HandleTrigger(StorableTrigger trigger) override;
+  void HandleTrigger(AttributionTrigger trigger) override;
   void GetActiveSourcesForWebUI(
       base::OnceCallback<void(std::vector<StoredSource>)> callback) override;
   void GetPendingReportsForWebUI(
@@ -116,7 +115,6 @@ class CONTENT_EXPORT AttributionManagerImpl
   void SendReportsForWebUI(
       const std::vector<AttributionReport::EventLevelData::Id>& ids,
       base::OnceClosure done) override;
-  const AttributionPolicy& GetAttributionPolicy() const override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
                  base::RepeatingCallback<bool(const url::Origin&)> filter,
@@ -169,7 +167,7 @@ class CONTENT_EXPORT AttributionManagerImpl
       const AttributionStorage::DeactivatedSource& source);
 
   void HandleSourceInternal(StorableSource source);
-  void HandleTriggerInternal(StorableTrigger trigger);
+  void HandleTriggerInternal(AttributionTrigger trigger);
 
   // Friend to expose the AttributionStorage for certain tests.
   friend std::vector<AttributionReport> GetAttributionsToReportForTesting(
@@ -179,10 +177,6 @@ class CONTENT_EXPORT AttributionManagerImpl
   raw_ptr<StoragePartitionImpl> storage_partition_;
 
   base::SequenceBound<AttributionStorage> attribution_storage_;
-
-  // Policy used for controlling API configurations such as reporting and
-  // attribution models.
-  AttributionPolicy attribution_policy_;
 
   // Storage policy for the browser context |this| is in. May be nullptr.
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

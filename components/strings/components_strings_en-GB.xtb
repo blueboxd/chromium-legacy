@@ -70,7 +70,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1186201132766001848">Check passwords</translation>
-<translation id="1195210374336998651">Go to app settings</translation>
 <translation id="1195558154361252544">Notifications are automatically blocked for all sites except ones that you allow</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Next</translation>
@@ -842,7 +841,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3587738293690942763">Middle</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{You can reset your group at any time. It takes about a day to join a new group.}=1{You can reset your group at any time. It takes about a day to join a new group.}other{You can reset your group at any time. It takes {NUM_DAYS} days to join a new group.}}</translation>
-<translation id="3596012367874587041">App settings</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">Application blocked by your administrator</translation>
 <translation id="3608932978122581043">Feed orientation</translation>
@@ -2439,6 +2437,7 @@ Additional details:
 <translation id="883848425547221593">Other Bookmarks</translation>
 <translation id="884264119367021077">Delivery address</translation>
 <translation id="884923133447025588">No revocation mechanism found.</translation>
+<translation id="8849262850971482943">Use your virtual card for added security</translation>
 <translation id="885730110891505394">Sharing with Google</translation>
 <translation id="8858065207712248076">Chrome recommends resetting your <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> password if you reused it on other sites.</translation>
 <translation id="885906927438988819">If spelling is correct, <ph name="BEGIN_LINK" />try running windows network Diagnostics<ph name="END_LINK" />.</translation>

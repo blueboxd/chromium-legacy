@@ -120,14 +120,15 @@ base::Value SecureDnsHandler::GetSecureDnsResolverList() {
   }
 
   // Randomize the order of the resolvers.
-  base::RandomShuffle(resolvers.GetList().begin(), resolvers.GetList().end());
+  base::RandomShuffle(resolvers.GetListDeprecated().begin(),
+                      resolvers.GetListDeprecated().end());
 
   // Add a custom option to the front of the list
   base::Value custom(base::Value::Type::DICTIONARY);
   custom.SetStringKey("name", l10n_util::GetStringUTF8(IDS_SETTINGS_CUSTOM));
   custom.SetStringKey("value", std::string());  // Empty value means custom.
   custom.SetStringKey("policy", std::string());
-  resolvers.Insert(resolvers.GetList().begin(), std::move(custom));
+  resolvers.Insert(resolvers.GetListDeprecated().begin(), std::move(custom));
 
   return resolvers;
 }
@@ -157,7 +158,7 @@ void SecureDnsHandler::SetProvidersForTesting(
 void SecureDnsHandler::HandleGetSecureDnsResolverList(
     const base::ListValue* args) {
   AllowJavascript();
-  std::string callback_id = args->GetList()[0].GetString();
+  std::string callback_id = args->GetListDeprecated()[0].GetString();
 
   ResolveJavascriptCallback(base::Value(callback_id),
                             GetSecureDnsResolverList());
@@ -165,15 +166,15 @@ void SecureDnsHandler::HandleGetSecureDnsResolverList(
 
 void SecureDnsHandler::HandleGetSecureDnsSetting(const base::ListValue* args) {
   AllowJavascript();
-  CHECK_EQ(1u, args->GetList().size());
-  const base::Value& callback_id = args->GetList()[0];
+  CHECK_EQ(1u, args->GetListDeprecated().size());
+  const base::Value& callback_id = args->GetListDeprecated()[0];
   ResolveJavascriptCallback(callback_id, *CreateSecureDnsSettingDict());
 }
 
 void SecureDnsHandler::HandleIsValidConfig(const base::ListValue* args) {
   AllowJavascript();
-  const base::Value& callback_id = args->GetList()[0];
-  const std::string& custom_entry = args->GetList()[1].GetString();
+  const base::Value& callback_id = args->GetListDeprecated()[0];
+  const std::string& custom_entry = args->GetListDeprecated()[1].GetString();
 
   bool valid = net::DnsOverHttpsConfig::FromString(custom_entry).has_value();
   secure_dns::UpdateValidationHistogram(valid);
@@ -192,8 +193,9 @@ void SecureDnsHandler::HandleProbeConfig(const base::ListValue* args) {
                               base::Value(true));
   }
 
-  probe_callback_id_ = args->GetList()[0].GetString();
-  const std::string& server_templates = args->GetList()[1].GetString();
+  probe_callback_id_ = args->GetListDeprecated()[0].GetString();
+  const std::string& server_templates =
+      args->GetListDeprecated()[1].GetString();
 
   net::DnsConfigOverrides overrides;
   overrides.search = std::vector<std::string>();
@@ -209,9 +211,9 @@ void SecureDnsHandler::HandleProbeConfig(const base::ListValue* args) {
 
 void SecureDnsHandler::HandleRecordUserDropdownInteraction(
     const base::ListValue* args) {
-  CHECK_EQ(2U, args->GetList().size());
-  const std::string& old_provider = args->GetList()[0].GetString();
-  const std::string& new_provider = args->GetList()[1].GetString();
+  CHECK_EQ(2U, args->GetListDeprecated().size());
+  const std::string& old_provider = args->GetListDeprecated()[0].GetString();
+  const std::string& new_provider = args->GetListDeprecated()[1].GetString();
 
   secure_dns::UpdateDropdownHistograms(providers_, old_provider, new_provider);
 }

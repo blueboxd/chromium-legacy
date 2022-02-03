@@ -113,6 +113,14 @@ class DlpContentManagerAshBrowserTest : public InProcessBrowserTest {
   DlpContentManagerAshBrowserTest() = default;
   ~DlpContentManagerAshBrowserTest() override = default;
 
+  MockDlpWarnNotifier* CreateAndSetMockDlpWarnNotifier(bool should_proceed) {
+    std::unique_ptr<MockDlpWarnNotifier> mock_notifier =
+        std::make_unique<MockDlpWarnNotifier>(should_proceed);
+    MockDlpWarnNotifier* mock_notifier_ptr = mock_notifier.get();
+    helper_->SetWarnNotifierForTesting(std::move(mock_notifier));
+    return mock_notifier_ptr;
+  }
+
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
     auto dlp_rules_manager = std::make_unique<MockDlpRulesManager>();
@@ -205,19 +213,26 @@ class DlpContentManagerAshBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(test_future.Get<1>(), expected_result);
   }
 
+  void CheckScreenshotRestriction(ScreenshotArea area, bool expected_allowed) {
+    base::RunLoop run_loop;
+    static_cast<DlpContentManagerAsh*>(helper_->GetContentManager())
+        ->CheckScreenshotRestriction(
+            area, base::BindLambdaForTesting([&](bool allowed) {
+              EXPECT_EQ(expected_allowed, allowed);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
+
  protected:
   std::unique_ptr<DlpContentManagerTestHelper> helper_;
   base::HistogramTester histogram_tester_;
   MockDlpRulesManager* mock_rules_manager_;
-
- private:
   std::vector<DlpPolicyEvent> events_;
 };
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
   SetupReporting();
-  DlpContentManagerAsh* manager =
-      static_cast<DlpContentManagerAsh*>(helper_->GetContentManager());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -236,10 +251,10 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
   ScreenshotArea partial_in =
       ScreenshotArea::CreateForPartialWindow(root_window, in_rect);
 
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, true, 0);
   histogram_tester_.ExpectBucketCount(
@@ -248,10 +263,10 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
               DlpRulesManager::Level::kBlock, 0u);
 
   helper_->ChangeConfidentiality(web_contents, kScreenshotRestricted);
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/false);
+  CheckScreenshotRestriction(window, /*expected=*/false);
+  CheckScreenshotRestriction(partial_in, /*expected=*/false);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, true, 3);
   histogram_tester_.ExpectBucketCount(
@@ -261,10 +276,10 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
 
   web_contents->WasHidden();
   helper_->ChangeVisibility(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/false);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, true, 4);
   histogram_tester_.ExpectBucketCount(
@@ -274,10 +289,10 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
 
   web_contents->WasShown();
   helper_->ChangeVisibility(web_contents);
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/false);
+  CheckScreenshotRestriction(window, /*expected=*/false);
+  CheckScreenshotRestriction(partial_in, /*expected=*/false);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, true, 7);
   histogram_tester_.ExpectBucketCount(
@@ -286,9 +301,9 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
               DlpRulesManager::Level::kBlock, 7u);
 
   helper_->DestroyWebContents(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, true, 7);
   histogram_tester_.ExpectBucketCount(
@@ -299,8 +314,10 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsRestricted) {
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsWarned) {
   SetupReporting();
-  DlpContentManagerAsh* manager =
-      static_cast<DlpContentManagerAsh*>(helper_->GetContentManager());
+  auto* mock_dlp_warn_notifier =
+      CreateAndSetMockDlpWarnNotifier(/*should_proceed=*/false);
+  EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpWarningDialog(_, _)).Times(7);
+
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -319,51 +336,50 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsWarned) {
   ScreenshotArea partial_in =
       ScreenshotArea::CreateForPartialWindow(root_window, in_rect);
 
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
               DlpRulesManager::Level::kWarn, 0u);
 
   helper_->ChangeConfidentiality(web_contents, kScreenshotWarned);
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/false);
+  CheckScreenshotRestriction(window, /*expected=*/false);
+  CheckScreenshotRestriction(partial_in, /*expected=*/false);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
               DlpRulesManager::Level::kWarn, 3u);
 
   web_contents->WasHidden();
   helper_->ChangeVisibility(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/false);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
               DlpRulesManager::Level::kWarn, 4u);
 
   web_contents->WasShown();
   helper_->ChangeVisibility(web_contents);
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_TRUE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/false);
+  CheckScreenshotRestriction(window, /*expected=*/false);
+  CheckScreenshotRestriction(partial_in, /*expected=*/false);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
               DlpRulesManager::Level::kWarn, 7u);
 
   helper_->DestroyWebContents(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
               DlpRulesManager::Level::kWarn, 7u);
 }
 
+// Calls to CheckScreenshotRestriction() should not be reported if allowed.
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsReported) {
   SetupReporting();
-  DlpContentManagerAsh* manager =
-      static_cast<DlpContentManagerAsh*>(helper_->GetContentManager());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -382,49 +398,49 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest, ScreenshotsReported) {
   ScreenshotArea partial_in =
       ScreenshotArea::CreateForPartialWindow(root_window, in_rect);
 
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
               DlpRulesManager::Level::kReport, 0u);
 
   helper_->ChangeConfidentiality(web_contents, kScreenshotReported);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kReport, 3u);
+              DlpRulesManager::Level::kReport, 0u);
 
   web_contents->WasHidden();
   helper_->ChangeVisibility(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kReport, 4u);
+              DlpRulesManager::Level::kReport, 0u);
 
   web_contents->WasShown();
   helper_->ChangeVisibility(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(window));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(window, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kReport, 7u);
+              DlpRulesManager::Level::kReport, 0u);
 
   helper_->DestroyWebContents(web_contents);
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(fullscreen));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_in));
-  EXPECT_FALSE(manager->IsScreenshotApiRestricted(partial_out));
+  CheckScreenshotRestriction(fullscreen, /*expected=*/true);
+  CheckScreenshotRestriction(partial_in, /*expected=*/true);
+  CheckScreenshotRestriction(partial_out, /*expected=*/true);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, true, 0);
   histogram_tester_.ExpectBucketCount(
       GetDlpHistogramPrefix() + dlp::kScreenshotBlockedUMA, false, 19);
   CheckEvents(DlpRulesManager::Restriction::kScreenshot,
-              DlpRulesManager::Level::kReport, 7u);
+              DlpRulesManager::Level::kReport, 0u);
 }
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
@@ -860,7 +876,6 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
                        ScreenShareWarnedDuringAllowed) {
-  helper_->EnableScreenShareWarningMode();
   SetupReporting();
   NotificationDisplayServiceTester display_service_tester(browser()->profile());
 
@@ -892,12 +907,18 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
 
   helper_->ChangeConfidentiality(web_contents, kScreenShareWarned);
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 1);
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kWarn, 1u);
 
   // Hit Enter to "Share anyway".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::VKEY_RETURN, /*control=*/false,
       /*shift=*/false, /*alt=*/false, /*command=*/false));
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
+  EXPECT_EQ(events_.size(), 2u);
+  EXPECT_THAT(events_[1],
+              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
+                  kSrcPattern, DlpRulesManager::Restriction::kScreenShare)));
 
   EXPECT_TRUE(helper_->HasContentCachedForRestriction(
       web_contents, DlpRulesManager::Restriction::kScreenShare));
@@ -905,11 +926,11 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
   // should not trigger a new warning.
   helper_->ChangeConfidentiality(web_contents, kScreenShareWarned);
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
+  EXPECT_EQ(events_.size(), 2u);
 }
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
                        ScreenShareWarnedDuringCanceled) {
-  helper_->EnableScreenShareWarningMode();
   SetupReporting();
   NotificationDisplayServiceTester display_service_tester(browser()->profile());
 
@@ -942,6 +963,8 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
 
   helper_->ChangeConfidentiality(web_contents, kScreenShareWarned);
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 1);
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kWarn, 1u);
 
   // Hit Esc to "Cancel".
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -953,19 +976,59 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
   // should not trigger a new warning.
   helper_->ChangeConfidentiality(web_contents, kScreenShareWarned);
   EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kWarn, 1u);
+}
+
+IN_PROC_BROWSER_TEST_F(DlpContentManagerAshBrowserTest,
+                       ScreenShareWarnedFromLacrosDuringAllowed) {
+  SetupReporting();
+  NotificationDisplayServiceTester display_service_tester(browser()->profile());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kExampleUrl)));
+  aura::Window* root_window =
+      browser()->window()->GetNativeWindow()->GetRootWindow();
+  const auto media_id = content::DesktopMediaID::RegisterNativeWindow(
+      content::DesktopMediaID::TYPE_SCREEN, root_window);
+
+  DlpContentManagerAsh* manager =
+      static_cast<DlpContentManagerAsh*>(helper_->GetContentManager());
+  base::MockCallback<content::MediaStreamUI::StateChangeCallback>
+      state_change_cb;
+  base::MockCallback<base::RepeatingClosure> stop_cb;
+  // Explicitly specify that the stop callback should never be invoked.
+  EXPECT_CALL(stop_cb, Run()).Times(0);
+  testing::InSequence s;
+  EXPECT_CALL(state_change_cb,
+              Run(testing::_, blink::mojom::MediaStreamStateChange::PAUSE))
+      .Times(1);
+  EXPECT_CALL(state_change_cb,
+              Run(testing::_, blink::mojom::MediaStreamStateChange::PLAY))
+      .Times(1);
+
+  manager->OnScreenCaptureStarted(kLabel, {media_id}, kApplicationTitle,
+                                  stop_cb.Get(), state_change_cb.Get());
+
+  manager->OnWindowRestrictionChanged(browser()->window()->GetNativeWindow(),
+                                      kScreenShareWarned);
+  EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 1);
+
+  // Hit Enter to "Share anyway".
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_RETURN, /*control=*/false,
+      /*shift=*/false, /*alt=*/false, /*command=*/false));
+  EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
+
+  // The window contents should already be cached as allowed by the user, so
+  // this should not trigger a new warning.
+  manager->OnWindowRestrictionChanged(browser()->window()->GetNativeWindow(),
+                                      kScreenShareWarned);
+  EXPECT_EQ(helper_->ActiveWarningDialogsCount(), 0);
 }
 
 class DlpContentManagerAshScreenShareBrowserTest
     : public DlpContentManagerAshBrowserTest {
  public:
-  MockDlpWarnNotifier* CreateAndSetMockDlpWarnNotifier(bool should_proceed) {
-    std::unique_ptr<MockDlpWarnNotifier> mock_notifier =
-        std::make_unique<MockDlpWarnNotifier>(should_proceed);
-    MockDlpWarnNotifier* mock_notifier_ptr = mock_notifier.get();
-    helper_->SetWarnNotifierForTesting(std::move(mock_notifier));
-    return mock_notifier_ptr;
-  }
-
   void StartDesktopScreenShare(
       content::WebContents* web_contents,
       blink::mojom::MediaStreamRequestResult expected_result) {
@@ -1057,7 +1120,6 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
                        TabScreenShareWarnedAllowed) {
-  helper_->EnableScreenShareWarningMode();
   MockDlpWarnNotifier* mock_dlp_warn_notifier =
       CreateAndSetMockDlpWarnNotifier(/*should_proceed=*/true);
   EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpWarningDialog(_, _)).Times(1);
@@ -1071,7 +1133,14 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
   helper_->ChangeConfidentiality(web_contents, kScreenShareWarned);
 
   StartTabScreenShare(web_contents, blink::mojom::MediaStreamRequestResult::OK);
-
+  EXPECT_EQ(events_.size(), 2u);
+  EXPECT_THAT(events_[0],
+              IsDlpPolicyEvent(CreateDlpPolicyEvent(
+                  kSrcPattern, DlpRulesManager::Restriction::kScreenShare,
+                  DlpRulesManager::Level::kWarn)));
+  EXPECT_THAT(events_[1],
+              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
+                  kSrcPattern, DlpRulesManager::Restriction::kScreenShare)));
   EXPECT_FALSE(display_service_tester.GetNotification(
       kScreenShareBlockedNotificationId));
   EXPECT_TRUE(helper_->HasContentCachedForRestriction(
@@ -1082,7 +1151,6 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
                        TabScreenShareWarnedCancelled) {
-  helper_->EnableScreenShareWarningMode();
   MockDlpWarnNotifier* mock_dlp_warn_notifier =
       CreateAndSetMockDlpWarnNotifier(/*should_proceed=*/false);
   EXPECT_CALL(*mock_dlp_warn_notifier, ShowDlpWarningDialog(_, _)).Times(1);
@@ -1097,7 +1165,8 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
 
   StartTabScreenShare(
       web_contents, blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED);
-
+  CheckEvents(DlpRulesManager::Restriction::kScreenShare,
+              DlpRulesManager::Level::kWarn, 1u);
   EXPECT_FALSE(display_service_tester.GetNotification(
       kScreenShareBlockedNotificationId));
   EXPECT_FALSE(helper_->HasAnyContentCached());

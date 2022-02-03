@@ -248,6 +248,21 @@ TEST_F(RetroactivePairingDetectorTest, DevicedPaired_FastPair) {
   EXPECT_FALSE(retroactive_pair_found_);
 }
 
+TEST_F(RetroactivePairingDetectorTest,
+       DevicedPaired_FastPair_BluetoothEventFiresFirst) {
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
+  base::RunLoop().RunUntilIdle();
+  CreateRetroactivePairingDetector();
+
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+  PairFastPairDeviceWithFastPair(kTestDeviceAddress);
+
+  EXPECT_FALSE(retroactive_pair_found_);
+}
+
 TEST_F(RetroactivePairingDetectorTest, DeviceUnpaired) {
   Login(user_manager::UserType::USER_TYPE_REGULAR);
   base::RunLoop().RunUntilIdle();
@@ -424,6 +439,24 @@ TEST_F(RetroactivePairingDetectorTest,
   CreateRetroactivePairingDetector();
 
   EXPECT_FALSE(retroactive_pair_found_);
+
+  AddMessageStream(kModelIdBleAddressBytes);
+  PairFastPairDeviceWithClassicBluetooth(
+      /*new_paired_status=*/true, kTestDeviceAddress);
+  fake_socket_->TriggerReceiveCallback();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(retroactive_pair_found_);
+  EXPECT_EQ(retroactive_device_->ble_address, kBleAddress);
+  EXPECT_EQ(retroactive_device_->metadata_id, kModelId);
+}
+
+TEST_F(RetroactivePairingDetectorTest, EnableScenarioIfLoggedInLater) {
+  EXPECT_FALSE(retroactive_pair_found_);
+
+  CreateRetroactivePairingDetector();
+  base::RunLoop().RunUntilIdle();
+  Login(user_manager::UserType::USER_TYPE_REGULAR);
 
   AddMessageStream(kModelIdBleAddressBytes);
   PairFastPairDeviceWithClassicBluetooth(

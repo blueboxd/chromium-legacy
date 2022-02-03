@@ -783,12 +783,6 @@
     "args": [ "--enable-features=BackForwardCacheABExperimentControl" ]
   },
   {
-    "prefix": "bfcache",
-    "bases": [ "http/tests/inspector-protocol/bfcache",
-               "http/tests/devtools/bfcache" ],
-    "args": [ "--enable-features=BackForwardCache" ]
-  },
-  {
     "prefix": "interest-cohort-api-origin-trial",
     "bases": [ "http/tests/origin_trials/webexposed/interest-cohort-origin-trial-interfaces.html" ],
     "args": [ "--enable-features=InterestCohortAPIOriginTrial" ]
@@ -953,6 +947,7 @@
               "external/wpt/accessibility/crashtests/move-owned-inside-another-owned.html",
               "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",
               "external/wpt/accessibility/crashtests/validation-message.html",
+              "external/wpt/accessibility/crashtests/displaylocked-serialize.html",
               "editing/text-iterator/auto-expand-details.html",
               "editing/text-iterator/auto-expand-details-shadowdom.html"],
     "args": ["--force-renderer-accessibility"]

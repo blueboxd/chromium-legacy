@@ -8,8 +8,11 @@
 #include <string>
 #include <utility>
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
@@ -29,6 +32,10 @@
 #include "url/url_constants.h"
 
 namespace {
+
+const base::Feature kHaveReputationServiceGetDomainInfoOnWorkerThread{
+    "kHaveReputationServiceGetDomainInfoOnWorkerThread",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 using security_state::SafetyTipStatus;
 
@@ -170,7 +177,41 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     bool has_delayed_warning,
     ReputationCheckCallback callback,
     const std::vector<DomainInfo>& engaged_sites) {
-  const DomainInfo navigated_domain = GetDomainInfo(url);
+  if (base::FeatureList::IsEnabled(
+          kHaveReputationServiceGetDomainInfoOnWorkerThread)) {
+    // Get the DomainInfo for |url| on a worker thread and pass it back to the
+    // rest of the reputation check.
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::TaskPriority::USER_BLOCKING,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+        base::BindOnce([](const GURL& url) { return GetDomainInfo(url); }, url),
+        base::BindOnce(
+            &ReputationService::GetReputationStatusWithEngagedSitesImpl,
+            weak_factory_.GetWeakPtr(), url, has_delayed_warning,
+            std::move(callback), engaged_sites, base::TimeDelta()));
+    return;
+  }
+
+  base::TimeTicks get_domain_info_start = base::TimeTicks::Now();
+  const DomainInfo domain = GetDomainInfo(url);
+
+  GetReputationStatusWithEngagedSitesImpl(
+      url, has_delayed_warning, std::move(callback), engaged_sites,
+      base::TimeTicks::Now() - get_domain_info_start, domain);
+}
+
+void ReputationService::GetReputationStatusWithEngagedSitesImpl(
+    const GURL& url,
+    bool has_delayed_warning,
+    ReputationCheckCallback callback,
+    const std::vector<DomainInfo>& engaged_sites,
+    base::TimeDelta get_domain_info_on_main_thread_duration,
+    const DomainInfo navigated_domain) {
+  base::TimeTicks start = base::TimeTicks::Now();
+
+  UMA_HISTOGRAM_TIMES("Security.SafetyTips.GetDomainInfoTime",
+                      get_domain_info_on_main_thread_duration);
 
   ReputationCheckResult result;
 
@@ -281,4 +322,9 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   DCHECK(done_checking_reputation_status ||
          !result.triggered_heuristics.triggered_any());
   std::move(callback).Run(result);
+
+  UMA_HISTOGRAM_TIMES(
+      "Security.SafetyTips.GetReputationStatusWithEngagedSitesTime",
+      get_domain_info_on_main_thread_duration +
+          (base::TimeTicks::Now() - start));
 }

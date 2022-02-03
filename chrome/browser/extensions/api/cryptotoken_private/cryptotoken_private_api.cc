@@ -63,7 +63,7 @@ bool ContainsAppIdByHash(const base::Value& list,
     return false;
   }
 
-  for (const auto& i : list.GetList()) {
+  for (const auto& i : list.GetListDeprecated()) {
     const std::string& s = i.GetString();
     if (s.find('/') == std::string::npos) {
       // No slashes mean that this is a webauthn RP ID, not a U2F AppID.
@@ -203,7 +203,7 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   const base::Value* const permit_attestation =
       prefs->GetList(prefs::kSecurityKeyPermitAttestation);
 
-  for (const auto& entry : permit_attestation->GetList()) {
+  for (const auto& entry : permit_attestation->GetListDeprecated()) {
     if (entry.GetString() == app_id)
       return RespondNow(OneArgument(base::Value(true)));
   }

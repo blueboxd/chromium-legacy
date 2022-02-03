@@ -109,7 +109,7 @@ bool InstallValue(const base::Value& value,
     case base::Value::Type::LIST: {
       if (!value.is_list())
         return false;
-      const base::Value::ConstListView& list_view = value.GetList();
+      const base::Value::ConstListView& list_view = value.GetListDeprecated();
       for (size_t i = 0; i < list_view.size(); ++i) {
         if (!InstallValue(list_view[i], hive, path + kPathSep + name,
                           base::NumberToWString(i + 1))) {
@@ -323,7 +323,7 @@ void RegistryTestHarness::InstallStringListPolicy(
       KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
   int index = 1;
-  for (const auto& element : policy_value->GetList()) {
+  for (const auto& element : policy_value->GetListDeprecated()) {
     if (!element.is_string())
       continue;
 

@@ -297,12 +297,13 @@ void FontSettingsGetFontListFunction::FontListHasLoaded(
 ExtensionFunction::ResponseValue
 FontSettingsGetFontListFunction::CopyFontsToResult(base::ListValue* fonts) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
-  for (const auto& entry : fonts->GetList()) {
+  for (const auto& entry : fonts->GetListDeprecated()) {
     if (!entry.is_list()) {
       NOTREACHED();
       return Error("");
     }
-    const base::Value::ConstListView font_list_value = entry.GetList();
+    const base::Value::ConstListView font_list_value =
+        entry.GetListDeprecated();
 
     if (font_list_value.size() < 2 || !font_list_value[0].is_string()) {
       NOTREACHED();

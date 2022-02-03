@@ -627,7 +627,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="5075554201838155866">Starta textning</translation>
 <translation id="5078796286268621944">Fel pinkod</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
-<translation id="5090752371472782287">Casta till en <ph name="MANAGER" />-enhet</translation>
 <translation id="5106223312672646208">Anpassa</translation>
 <translation id="5117590920725113268">Visa nästa månad</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
@@ -928,6 +927,7 @@ Nyligen installerad</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Uppdatera</translation>
+<translation id="718361511487535372">Öppna i Google Kalender</translation>
 <translation id="7188494361780961876">Menyn har flyttats till skärmens övre vänstra hörn.</translation>
 <translation id="7189412385142492784">Hår långt är det till Venus</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Denna Chromebook behöver startas om så att en uppdatering tillämpas. Det kan ta upp till en minut.</translation>

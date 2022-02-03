@@ -148,6 +148,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_offline.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/buildflags.h"
@@ -181,6 +182,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/custom_handlers/protocol_handler_throttle.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -675,7 +677,8 @@ bool IsSSLErrorOverrideAllowedForOrigin(const GURL& request_url,
     return false;
 
   base::Value::ConstListView allow_list_urls =
-      prefs->GetList(prefs::kSSLErrorOverrideAllowedForOrigins)->GetList();
+      prefs->GetList(prefs::kSSLErrorOverrideAllowedForOrigins)
+          ->GetListDeprecated();
   if (allow_list_urls.empty())
     return false;
 
@@ -819,7 +822,8 @@ bool IsAutoplayAllowedByPolicy(content::WebContents* contents,
       prefs->GetList(prefs::kAutoplayAllowlist);
   return autoplay_allowlist &&
          prefs->IsManagedPreference(prefs::kAutoplayAllowlist) &&
-         IsURLAllowlisted(contents->GetURL(), autoplay_allowlist->GetList());
+         IsURLAllowlisted(contents->GetURL(),
+                          autoplay_allowlist->GetListDeprecated());
 }
 #endif
 
@@ -4576,53 +4580,6 @@ base::FilePath ChromeContentBrowserClient::GetLoggingFileName(
   return logging::GetLogFileName(command_line);
 }
 
-namespace {
-// TODO(jam): move this to a separate file.
-class ProtocolHandlerThrottle : public blink::URLLoaderThrottle {
- public:
-  explicit ProtocolHandlerThrottle(
-      custom_handlers::ProtocolHandlerRegistry* protocol_handler_registry)
-      : protocol_handler_registry_(protocol_handler_registry) {
-    DCHECK(protocol_handler_registry);
-  }
-  ~ProtocolHandlerThrottle() override = default;
-
-  void WillStartRequest(network::ResourceRequest* request,
-                        bool* defer) override {
-    // Don't translate the urn: scheme URL while loading the resource from the
-    // specified web bundle.
-    // TODO(https://crbug.com/1257045): Remove this when we drop urn: scheme
-    // support in WebBundles.
-    if (request->web_bundle_token_params &&
-        request->url.SchemeIs(url::kUrnScheme)) {
-      return;
-    }
-    TranslateUrl(&request->url);
-  }
-
-  void WillRedirectRequest(
-      net::RedirectInfo* redirect_info,
-      const network::mojom::URLResponseHead& response_head,
-      bool* defer,
-      std::vector<std::string>* to_be_removed_headers,
-      net::HttpRequestHeaders* modified_headers,
-      net::HttpRequestHeaders* modified_cors_exempt_headers) override {
-    TranslateUrl(&redirect_info->new_url);
-  }
-
- private:
-  void TranslateUrl(GURL* url) {
-    if (!protocol_handler_registry_->IsHandledProtocol(url->scheme()))
-      return;
-    GURL translated_url = protocol_handler_registry_->Translate(*url);
-    if (!translated_url.is_empty())
-      *url = translated_url;
-  }
-
-  raw_ptr<custom_handlers::ProtocolHandlerRegistry> protocol_handler_registry_;
-};
-}  // namespace
-
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ChromeContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
@@ -4735,8 +4692,10 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
     auto* factory =
         ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context);
     // null in unit tests.
-    if (factory)
-      result.push_back(std::make_unique<ProtocolHandlerThrottle>(factory));
+    if (factory) {
+      result.push_back(
+          std::make_unique<custom_handlers::ProtocolHandlerThrottle>(*factory));
+    }
   }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -5841,8 +5800,8 @@ std::string ChromeContentBrowserClient::GetUserAgent() {
 std::string ChromeContentBrowserClient::GetUserAgentBasedOnPolicy(
     content::BrowserContext* context) {
   embedder_support::ForceMajorVersionToMinorPosition
-      force_major_version_to_minor =
-          GetForceMajorVersionToMinorPosition(context);
+      force_major_version_to_minor = embedder_support::GetMajorToMinorFromPrefs(
+          Profile::FromBrowserContext(context)->GetPrefs());
   switch (GetUserAgentReductionEnterprisePolicyState(context)) {
     case UserAgentReductionEnterprisePolicyState::kForceDisabled:
       return embedder_support::GetFullUserAgent(force_major_version_to_minor);
@@ -5853,6 +5812,10 @@ std::string ChromeContentBrowserClient::GetUserAgentBasedOnPolicy(
     default:
       return embedder_support::GetUserAgent(force_major_version_to_minor);
   }
+}
+
+std::string ChromeContentBrowserClient::GetFullUserAgent() {
+  return embedder_support::GetFullUserAgent();
 }
 
 std::string ChromeContentBrowserClient::GetReducedUserAgent() {
@@ -6422,22 +6385,6 @@ ChromeContentBrowserClient::GetUserAgentReductionEnterprisePolicyState(
   return UserAgentReductionEnterprisePolicyState::kDefault;
 }
 
-embedder_support::ForceMajorVersionToMinorPosition
-ChromeContentBrowserClient::GetForceMajorVersionToMinorPosition(
-    content::BrowserContext* context) {
-  int policy = Profile::FromBrowserContext(context)->GetPrefs()->GetInteger(
-      prefs::kForceMajorVersionToMinorPositionInUserAgent);
-  switch (policy) {
-    case 0:
-      return embedder_support::ForceMajorVersionToMinorPosition::kDefault;
-    case 1:
-      return embedder_support::ForceMajorVersionToMinorPosition::kForceDisabled;
-    case 2:
-      return embedder_support::ForceMajorVersionToMinorPosition::kForceEnabled;
-  }
-  return embedder_support::ForceMajorVersionToMinorPosition::kDefault;
-}
-
 bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
     content::BrowserContext* browser_context) {
   // The enterprise policy for kOriginAgentClusterDefaultEnabled defaults to
@@ -6456,14 +6403,11 @@ bool ChromeContentBrowserClient::IsFirstPartySetsEnabled() {
 content::mojom::AlternativeErrorPageOverrideInfoPtr
 ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     const GURL& url,
-    content::BrowserContext* browser_context) {
+    content::BrowserContext* browser_context,
+    int32_t error_code) {
 #if BUILDFLAG(IS_ANDROID)
   return nullptr;
 #else
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsDefaultOfflinePage)) {
-    return nullptr;
-  }
-
-  return web_app::GetAppManifestInfo(url, browser_context);
+  return web_app::GetOfflinePageInfo(url, browser_context, error_code);
 #endif  //  BUILDFLAG(IS_ANDROID)
 }

@@ -39,8 +39,11 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_window_builder.h"
-#include "chrome/browser/ash/policy/dlp/mock_dlp_content_manager_ash.h"
 #include "chrome/browser/ui/ash/window_pin_util.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
 #endif
 
 namespace extensions {
@@ -306,7 +309,7 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
   std::unique_ptr<base::ListValue> tabs_list_without_permission(
       RunTabsQueryFunction(browser(), extension.get(), kTitleAndURLQueryInfo));
   ASSERT_TRUE(tabs_list_without_permission);
-  EXPECT_EQ(0u, tabs_list_without_permission->GetList().size());
+  EXPECT_EQ(0u, tabs_list_without_permission->GetListDeprecated().size());
 
   // An extension with "tabs" permission however will see the third tab.
   scoped_refptr<const Extension> extension_with_permission =
@@ -323,9 +326,10 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
       RunTabsQueryFunction(browser(), extension_with_permission.get(),
                            kTitleAndURLQueryInfo));
   ASSERT_TRUE(tabs_list_with_permission);
-  ASSERT_EQ(1u, tabs_list_with_permission->GetList().size());
+  ASSERT_EQ(1u, tabs_list_with_permission->GetListDeprecated().size());
 
-  const base::Value& third_tab_info = tabs_list_with_permission->GetList()[0];
+  const base::Value& third_tab_info =
+      tabs_list_with_permission->GetListDeprecated()[0];
   ASSERT_TRUE(third_tab_info.is_dict());
   absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
   EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
@@ -379,9 +383,10 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
         RunTabsQueryFunction(browser(), extension_with_permission.get(),
                              kTitleAndURLQueryInfo));
     ASSERT_TRUE(tabs_list_with_permission);
-    ASSERT_EQ(1u, tabs_list_with_permission->GetList().size());
+    ASSERT_EQ(1u, tabs_list_with_permission->GetListDeprecated().size());
 
-    const base::Value& third_tab_info = tabs_list_with_permission->GetList()[0];
+    const base::Value& third_tab_info =
+        tabs_list_with_permission->GetListDeprecated()[0];
     ASSERT_TRUE(third_tab_info.is_dict());
     absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
     EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
@@ -394,11 +399,13 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
         RunTabsQueryFunction(browser(), extension_with_permission.get(),
                              kURLQueryInfo));
     ASSERT_TRUE(tabs_list_with_permission);
-    ASSERT_EQ(2u, tabs_list_with_permission->GetList().size());
+    ASSERT_EQ(2u, tabs_list_with_permission->GetListDeprecated().size());
 
-    const base::Value& first_tab_info = tabs_list_with_permission->GetList()[0];
+    const base::Value& first_tab_info =
+        tabs_list_with_permission->GetListDeprecated()[0];
     ASSERT_TRUE(first_tab_info.is_dict());
-    const base::Value& third_tab_info = tabs_list_with_permission->GetList()[1];
+    const base::Value& third_tab_info =
+        tabs_list_with_permission->GetListDeprecated()[1];
     ASSERT_TRUE(third_tab_info.is_dict());
 
     std::vector<int> expected_tabs_ids;
@@ -1165,28 +1172,7 @@ TEST_F(TabsApiUnitTest, TabsGoForwardAndBackWithoutTabId) {
   base::RunLoop().RunUntilIdle();
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
-  scoped_refptr<const Extension> extension_with_tabs_permission =
-      CreateTabsExtension();
-
-  ash::TestWindowBuilder builder;
-  std::unique_ptr<aura::Window> window =
-      builder.SetTestWindowDelegate().AllowAllWindowStates().Build();
-  browser_window()->SetNativeWindow(window.get());
-
-  auto function = base::MakeRefCounted<TabsCreateFunction>();
-
-  function->set_extension(extension_with_tabs_permission.get());
-
-  // In locked fullscreen mode we should not be able to create any tabs.
-  PinWindow(browser_window()->GetNativeWindow(), /*trusted=*/true);
-
-  EXPECT_EQ(tabs_constants::kLockedFullscreenModeNewTabError,
-            extension_function_test_utils::RunFunctionAndReturnError(
-                function.get(), "[{}]", browser(), api_test_utils::NONE));
-}
-
+#if BUILDFLAG(IS_CHROMEOS)
 // Ensure tabs.captureVisibleTab respects any Data Leak Prevention restrictions.
 TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
   // Setup the function and extension.
@@ -1208,8 +1194,8 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
   web_contents_tester->NavigateAndCommit(kGoogle);
 
   // Setup Data Leak Prevention restriction.
-  policy::MockDlpContentManagerAsh mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerAshForTesting scoped_dlp_content_manager_(
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_observer_(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, IsScreenshotApiRestricted(testing::_))
       .Times(1)
@@ -1222,6 +1208,29 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
 
   // Clean up.
   browser()->tab_strip_model()->CloseAllTabs();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(TabsApiUnitTest, DontCreateTabsInLockedFullscreenMode) {
+  scoped_refptr<const Extension> extension_with_tabs_permission =
+      CreateTabsExtension();
+
+  ash::TestWindowBuilder builder;
+  std::unique_ptr<aura::Window> window =
+      builder.SetTestWindowDelegate().AllowAllWindowStates().Build();
+  browser_window()->SetNativeWindow(window.get());
+
+  auto function = base::MakeRefCounted<TabsCreateFunction>();
+
+  function->set_extension(extension_with_tabs_permission.get());
+
+  // In locked fullscreen mode we should not be able to create any tabs.
+  PinWindow(browser_window()->GetNativeWindow(), /*trusted=*/true);
+
+  EXPECT_EQ(tabs_constants::kLockedFullscreenModeNewTabError,
+            extension_function_test_utils::RunFunctionAndReturnError(
+                function.get(), "[{}]", browser(), api_test_utils::NONE));
 }
 
 // Screenshot should return an error when disabled in user profile preferences.

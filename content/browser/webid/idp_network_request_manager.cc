@@ -125,9 +125,13 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
   resource_request->site_for_cookies = site_for_cookies;
   if (send_referrer) {
     resource_request->referrer = initiator.GetURL();
-    resource_request->referrer_policy =
-        net::ReferrerPolicy::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
+    // Since referrer_policy only affects redirects and we disable redirects
+    // below, we don't need to set referrer_policy here.
   }
+  // TODO(cbiesinger): Not following redirects is important for security because
+  // this bypasses CORB. Ensure there is a test added.
+  // https://crbug.com/1155312.
+  resource_request->redirect_mode = network::mojom::RedirectMode::kError;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                       kRequestBodyContentType);
 
@@ -168,7 +172,7 @@ bool ParseAccounts(const base::Value* accounts,
   if (!accounts->is_list())
     return false;
 
-  for (auto& account : accounts->GetList()) {
+  for (auto& account : accounts->GetListDeprecated()) {
     if (!account.is_dict())
       return false;
 
@@ -216,7 +220,7 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
   const base::Value* icons_value = idp_metadata_value.FindKey("icons");
   if (icons_value != nullptr && icons_value->is_list()) {
     std::vector<blink::Manifest::ImageResource> icons;
-    for (const base::Value& icon_value : icons_value->GetList()) {
+    for (const base::Value& icon_value : icons_value->GetListDeprecated()) {
       if (!icon_value.is_dict())
         continue;
 
@@ -846,7 +850,7 @@ IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
     // Since referrer_policy only affects redirects and we disable redirects
     // below, we don't need to set referrer_policy here.
   }
-  // TODO(kenrb): Not following redirects is important for security because
+  // TODO(cbiesinger): Not following redirects is important for security because
   // this bypasses CORB. Ensure there is a test added.
   // https://crbug.com/1155312.
   resource_request->redirect_mode = network::mojom::RedirectMode::kError;

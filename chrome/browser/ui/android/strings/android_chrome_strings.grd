@@ -536,6 +536,15 @@ CHAR_LIMIT guidelines:
       <message name="IDS_AUTOFILL_PAYMENTS_AUTHENTICATOR_SELECTION_DIALOG_NEGATIVE_BUTTON_LABEL" desc="Negative button label for the dialog where the user selects an authenticator from a list of options.">
         Cancel
       </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_VIRTUAL_CARD_UNENROLL_DIALOG_TITLE" desc="Title for the dialog where the user confirms that they wish to unenroll a card from Virtual Cards.">
+        Remove your virtual card?
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_VIRTUAL_CARD_UNENROLL_DIALOG_MESSAGE" desc="Message for the dialog where the user confirms that they wish to unenroll a card from Virtual Cards.">
+        You’ll no longer be able to use your virtual card with Google Pay. <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Learn more about virtual cards<ph name="END_LINK1">&lt;/link1&gt;</ph>
+      </message>
+      <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_VIRTUAL_CARD_UNENROLL_DIALOG_POSITIVE_BUTTON_LABEL" desc="Positive button label for the dialog where the user confirms that they wish to unenroll a card from Virtual Cards.">
+        Remove
+      </message>
 
        <!-- Payment Request section preview strings -->
        <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW" desc="This is a snippet of a payment method a user has saved to Chrome, plus an indication of the number of additional payment methods the user has saved.
@@ -945,6 +954,32 @@ Privacy Sandbox trials are still in active development and are available in sele
         This feature is currently under development.
       </message>
       <message name="IDS_PRIVACY_SANDBOX_DESCRIPTION_PLACEHOLDER" desc="This is only used until final strings are approved and should never be translated." translateable="false">
+        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+      </message>
+
+      <!-- Privacy Sandbox dialog. The strings are preliminary. -->
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_NO_BUTTON" desc="Button to decline enabling Privacy Sandbox features." translateable="false">
+        No thanks
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_DIALOG_YES_BUTTON" desc="Button to accept enabling Privacy Sandbox features." translateable="false">
+        I’m in
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_CONSENT_TITLE" desc="Title for the Privacy Sandbox consent dialog." translateable="false">
+        Help us build a more private web
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_CONSENT_SUBTITLE" desc="Subtitle for the Privacy Sandbox consent dialog." translateable="false">
+        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna.
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_CONSENT_HEADING_ONE" desc="First heading for the Privacy Sandbox consent dialog text." translateable="false">
+        Lorem ipsum dolor sit
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_CONSENT_DESCRIPTION_ONE" desc="First paragraph for the Privacy Sandbox consent dialog text." translateable="false">
+        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_CONSENT_HEADING_TWO" desc="Second heading for the Privacy Sandbox consent dialog text." translateable="false">
+        Lorem ipsum dolor sit
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_CONSENT_DESCRIPTION_TWO" desc="Second paragraph for the Privacy Sandbox consent dialog text." translateable="false">
         Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
       </message>
 

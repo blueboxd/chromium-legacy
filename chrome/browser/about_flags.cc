@@ -1511,7 +1511,7 @@ const FeatureEntry::FeatureVariation kRealboxMatchOmniboxThemeVariations[] = {
      "hover)",
      kRealboxMatchOmniboxThemeVar1, base::size(kRealboxMatchOmniboxThemeVar1),
      nullptr},
-    {"(NTP background on steady state and Omnibox steady state background on "
+    {"(NTP background on steady state and Omnibox active state background on "
      "hover)",
      kRealboxMatchOmniboxThemeVar2, base::size(kRealboxMatchOmniboxThemeVar2),
      nullptr}};
@@ -2890,10 +2890,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSearchRankerQueryName,
      flag_descriptions::kContextualSearchRankerQueryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(assist_ranker::kContextualSearchRankerQuery)},
-    {"contextual-search-second-tap",
-     flag_descriptions::kContextualSearchSecondTapName,
-     flag_descriptions::kContextualSearchSecondTapDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextualSearchSecondTap)},
     {"contextual-search-twv-impl",
      flag_descriptions::kContextualSearchThinWebViewImplementationName,
      flag_descriptions::kContextualSearchThinWebViewImplementationDescription,
@@ -3685,6 +3681,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniVirtualKeyboardSupportName,
      flag_descriptions::kCrostiniVirtualKeyboardSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniVirtualKeyboardSupport)},
+    {"bruschetta", flag_descriptions::kBruschettaName,
+     flag_descriptions::kBruschettaDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kBruschetta)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if (BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || \
      BUILDFLAG(IS_ANDROID)) &&                        \
@@ -4512,6 +4511,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-trash", flag_descriptions::kFilesTrashName,
      flag_descriptions::kFilesTrashDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesTrash)},
+    {"files-web-drive-office", flag_descriptions::kFilesWebDriveOfficeName,
+     flag_descriptions::kFilesWebDriveOfficeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFilesWebDriveOffice)},
     {"force-spectre-v2-mitigation",
      flag_descriptions::kForceSpectreVariant2MitigationName,
      flag_descriptions::kForceSpectreVariant2MitigationDescription, kOsCrOS,
@@ -5300,6 +5302,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStoreHoursAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kStoreHoursAndroid)},
 
+    {"suppress-toolbar-captures",
+     flag_descriptions::kSuppressToolbarCapturesName,
+     flag_descriptions::kSuppressToolbarCapturesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kSuppressToolbarCaptures)},
+
     {"enable-tab-grid-layout", flag_descriptions::kTabGridLayoutAndroidName,
      flag_descriptions::kTabGridLayoutAndroidDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabGridLayoutAndroid,
@@ -5420,14 +5427,14 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(IS_ANDROID)
     {"enable-accessibility-live-caption",
      flag_descriptions::kEnableAccessibilityLiveCaptionName,
-     flag_descriptions::kEnableAccessibilityLiveCaptionDescription, kOsDesktop,
+     flag_descriptions::kEnableAccessibilityLiveCaptionDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kLiveCaption)},
+#endif  // !BUILDFLAG(IS_ANDROID)
 
     {"enable-auto-disable-accessibility",
      flag_descriptions::kEnableAutoDisableAccessibilityName,
      flag_descriptions::kEnableAutoDisableAccessibilityDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kAutoDisableAccessibility)},
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
     {"cct-incognito", flag_descriptions::kCCTIncognitoName,
@@ -6437,6 +6444,10 @@ const FeatureEntry kFeatureEntries[] = {
          "PhotoPickerVideoSupportFeatureVariations")},
 #endif  // BUILDFLAG(IS_ANDROID)
 
+    {"full-user-agent", flag_descriptions::kFullUserAgentName,
+     flag_descriptions::kFullUserAgentDescription, kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(blink::features::kFullUserAgent)},
+
     {"reduce-user-agent", flag_descriptions::kReduceUserAgentName,
      flag_descriptions::kReduceUserAgentDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kReduceUserAgent)},
@@ -6572,6 +6583,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingOnePageOnboardingName,
      flag_descriptions::kNearbySharingOnePageOnboardingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingOnePageOnboarding)},
+    {"nearby-sharing-receive-wifi-credentials",
+     flag_descriptions::kNearbySharingReceiveWifiCredentialsName,
+     flag_descriptions::kNearbySharingReceiveWifiCredentialsDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingReceiveWifiCredentials)},
     {"nearby-sharing-self-share",
      flag_descriptions::kNearbySharingSelfShareName,
      flag_descriptions::kNearbySharingSelfShareDescription, kOsCrOS,
@@ -7929,6 +7945,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(certificate_transparency::features::
                             kCertificateTransparency2022PolicyAllCerts)},
+
+    {"leak-detection-unauthenticated",
+     flag_descriptions::kLeakDetectionUnauthenticated,
+     flag_descriptions::kLeakDetectionUnauthenticatedDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kLeakDetectionUnauthenticated)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

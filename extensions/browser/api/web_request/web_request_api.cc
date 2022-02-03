@@ -292,7 +292,8 @@ bool FromHeaderDictionary(const base::DictionaryValue* header_value,
     *out_value = value->GetString();
   } else if (binary_value) {
     if (!binary_value->is_list() ||
-        !helpers::CharListToString(binary_value->GetList(), out_value)) {
+        !helpers::CharListToString(binary_value->GetListDeprecated(),
+                                   out_value)) {
       return false;
     }
   }
@@ -959,7 +960,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
     if (it.key() == "urls") {
       if (!it.value().is_list())
         return false;
-      for (const auto& item : it.value().GetList()) {
+      for (const auto& item : it.value().GetListDeprecated()) {
         std::string url;
         // TODO(https://crbug.com/1257045): Remove urn: scheme support.
         URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
@@ -983,7 +984,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
     } else if (it.key() == "types") {
       if (!it.value().is_list())
         return false;
-      for (const auto& type : it.value().GetList()) {
+      for (const auto& type : it.value().GetListDeprecated()) {
         std::string type_str;
         if (type.is_string())
           type_str = type.GetString();
@@ -2176,7 +2177,7 @@ std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
     modified_headers->Append(
         helpers::CreateHeaderDictionary(iter.name(), iter.value()));
   }
-  if (!modified_headers->GetList().empty()) {
+  if (!modified_headers->GetListDeprecated().empty()) {
     details->Set(activity_log::kModifiedRequestHeadersKey,
                  std::move(modified_headers));
   }
@@ -2185,7 +2186,7 @@ std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
   for (const std::string& header : delta.deleted_request_headers) {
     deleted_headers->Append(header);
   }
-  if (!deleted_headers->GetList().empty()) {
+  if (!deleted_headers->GetListDeprecated().empty()) {
     details->Set(activity_log::kDeletedRequestHeadersKey,
                  std::move(deleted_headers));
   }
@@ -2800,7 +2801,7 @@ WebRequestInternalEventHandledFunction::Run() {
       }
       EXTENSION_FUNCTION_VALIDATE(headers_value);
 
-      for (const base::Value& elem : headers_value->GetList()) {
+      for (const base::Value& elem : headers_value->GetListDeprecated()) {
         EXTENSION_FUNCTION_VALIDATE(elem.is_dict());
         const base::DictionaryValue& header_value =
             base::Value::AsDictionaryValue(elem);

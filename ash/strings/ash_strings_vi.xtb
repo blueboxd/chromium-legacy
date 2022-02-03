@@ -627,7 +627,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="5075554201838155866">Bắt đầu phụ đề</translation>
 <translation id="5078796286268621944">Mã PIN không chính xác</translation>
 <translation id="5083553833479578423">Mở khóa các tính năng khác của Trợ lý.</translation>
-<translation id="5090752371472782287">Truyền tới thiết bị <ph name="MANAGER" /></translation>
 <translation id="5106223312672646208">Cá nhân hoá</translation>
 <translation id="5117590920725113268">Hiển thị tháng tiếp theo</translation>
 <translation id="5136175204352732067">Đã kết nối bàn phím khác</translation>
@@ -928,6 +927,7 @@ Mới cài đặt</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Làm mới</translation>
+<translation id="718361511487535372">Mở trong Lịch Google</translation>
 <translation id="7188494361780961876">Đã di chuyển trình đơn vào góc trên cùng bên trái màn hình.</translation>
 <translation id="7189412385142492784">Sao Kim cách đây bao xa</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Cần khởi động lại Chromebook này để áp dụng bản cập nhật. Quá trình này có thể mất tối đa 1 phút.</translation>

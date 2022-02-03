@@ -111,6 +111,10 @@
       status: "experimental",
     },
     {
+      name: "AbortSignalTimeout",
+      status: "experimental",
+    },
+    {
       name: "Accelerated2dCanvas",
       settable_from_internals: true,
       status: "stable",
@@ -966,6 +970,10 @@
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
       status: "stable",
+    },
+    {
+      name: "ElementSuperRareData",
+      status: "experimental",
     },
     {
       name: "EncryptedMediaSessionClosedReason",
@@ -2511,10 +2519,6 @@
     {
       name: "WebAuthenticationLargeBlobExtension",
       status: "experimental",
-    },
-    {
-      name: "WebAuthenticationResidentKeyRequirement",
-      status: "stable",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
     // It is also supported in Windows 10 which is handled in runtime_features.cc

@@ -26,13 +26,13 @@ interface QuotaClient {
                      blink.mojom.StorageType type)
       => (int64 usage);
 
-  // Returns a list of storage keys that have data in the `type` storage.
-  GetStorageKeysForType(blink.mojom.StorageType type)
-      => (array<blink.mojom.StorageKey> storage_keys);
-
-  // Returns a list of storage keys that match the `host` and have data in the
+  // Returns a list of storage keys that have data in the default bucket for
   // `type` storage.
-  GetStorageKeysForHost(blink.mojom.StorageType type, string host)
+  //
+  // This method is currently used to bootstrap the buckets table in the quota
+  // database with data produced by old code. No other uses should be added.
+  // We're planning to remove this around 2024.
+  GetStorageKeysForType(blink.mojom.StorageType type)
       => (array<blink.mojom.StorageKey> storage_keys);
 
   // Returns after all data belonging to `storage_key` in the `type` storage

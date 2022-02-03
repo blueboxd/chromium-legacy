@@ -208,7 +208,7 @@ class TestPrinterHandler : public PrinterHandler {
 
   void StartGetPrinters(AddedPrintersCallback added_printers_callback,
                         GetPrintersDoneCallback done_callback) override {
-    if (!printers_.GetList().empty())
+    if (!printers_.GetListDeprecated().empty())
       added_printers_callback.Run(printers_);
     std::move(done_callback).Run();
   }
@@ -648,7 +648,8 @@ class PrintPreviewHandlerTest : public testing::Test {
         static_cast<mojom::PrinterType>(add_data.arg2()->GetInt());
     EXPECT_EQ(expected_type, type);
     ASSERT_TRUE(add_data.arg3());
-    base::Value::ConstListView printer_list = add_data.arg3()->GetList();
+    base::Value::ConstListView printer_list =
+        add_data.arg3()->GetListDeprecated();
     ASSERT_EQ(printer_list.size(), 1u);
     EXPECT_TRUE(printer_list[0].FindKeyOfType("printer_name",
                                               base::Value::Type::STRING));

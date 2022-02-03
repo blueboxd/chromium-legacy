@@ -70,7 +70,6 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1186201132766001848">Jelszavak ellenőrzése</translation>
-<translation id="1195210374336998651">Ugrás az alkalmazás beállításaihoz</translation>
 <translation id="1195558154361252544">Az Ön által engedélyezett webhelyek kivételével a böngésző automatikusan letiltja az értesítéseket</translation>
 <translation id="1197088940767939838">Narancssárga</translation>
 <translation id="1201402288615127009">Tovább</translation>
@@ -841,7 +840,6 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="3587738293690942763">Közép</translation>
 <translation id="3592413004129370115">Italian (boríték)</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Csoportját bármikor visszaállíthatja. Az új csoporthoz való csatlakozás körülbelül egy napig tart.}=1{Csoportját bármikor visszaállíthatja. Az új csoporthoz való csatlakozás körülbelül egy napig tart.}other{Csoportját bármikor visszaállíthatja. Az új csoporthoz való csatlakozás körülbelül {NUM_DAYS} napig tart.}}</translation>
-<translation id="3596012367874587041">Alkalmazásbeállítások</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">A rendszergazda letiltotta az alkalmazást</translation>
 <translation id="3608932978122581043">Adagolás tájolása</translation>
@@ -2439,6 +2437,7 @@ További részletek:
 <translation id="883848425547221593">Egyéb könyvjelzők</translation>
 <translation id="884264119367021077">Szállítási cím</translation>
 <translation id="884923133447025588">Nem található visszavonási mechanizmus.</translation>
+<translation id="8849262850971482943">Használja virtuális kártyáját a plusz biztonság érdekében</translation>
 <translation id="885730110891505394">Megosztás a Google-lal</translation>
 <translation id="8858065207712248076">A Chrome azt javasolja, hogy adjon meg új <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />-jelszót a régi helyett, ha azt más webhelyeken is használta.</translation>
 <translation id="885906927438988819">Ha helyesen írta, <ph name="BEGIN_LINK" />próbálkozzon a Windows hálózati diagnosztikájának futtatásával<ph name="END_LINK" />.</translation>

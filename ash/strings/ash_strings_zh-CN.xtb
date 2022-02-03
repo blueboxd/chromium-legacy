@@ -624,7 +624,6 @@
 <translation id="5075554201838155866">启用字幕</translation>
 <translation id="5078796286268621944">PIN 不正确</translation>
 <translation id="5083553833479578423">启用更多 Google 助理功能。</translation>
-<translation id="5090752371472782287">投射到 <ph name="MANAGER" /> 设备</translation>
 <translation id="5106223312672646208">个性化</translation>
 <translation id="5117590920725113268">显示下一个月</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
@@ -925,6 +924,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />秒后恢复到原分辨率</translation>
 <translation id="7180611975245234373">刷新</translation>
+<translation id="718361511487535372">在 Google 日历中打开</translation>
 <translation id="7188494361780961876">菜单已移至屏幕的左上角。</translation>
 <translation id="7189412385142492784">金星有多远</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />。此 Chromebook 需要重新启动才能让更新生效。此过程最多可能需要 1 分钟的时间。</translation>

@@ -70,7 +70,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1186201132766001848">Kontrollera lösenord</translation>
-<translation id="1195210374336998651">Öppna appinställningarna</translation>
 <translation id="1195558154361252544">Aviseringar blockeras automatiskt på alla webbplatser utom sådana du tillåter</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Nästa</translation>
@@ -843,7 +842,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3587738293690942763">Mellan</translation>
 <translation id="3592413004129370115">Italian (kuvert)</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{Du kan återställa grupptillhörigheten när som helst. Det tar ungefär ett dygn att bli med i en ny grupp.}=1{Du kan återställa grupptillhörigheten när som helst. Det tar ungefär ett dygn att bli med i en ny grupp.}other{Du kan återställa grupptillhörigheten när som helst. Det tar {NUM_DAYS} dygn att bli med i en ny grupp.}}</translation>
-<translation id="3596012367874587041">Appinställningar</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">Appen blockeras av administratören</translation>
 <translation id="3608932978122581043">Ställa in riktning</translation>
@@ -1977,6 +1975,7 @@ Mer information.
 <translation id="7334320624316649418">&amp;Gör om Ändra ordning</translation>
 <translation id="7335157162773372339">Får begära åtkomst till kameran</translation>
 <translation id="7337248890521463931">Visa fler rader</translation>
+<translation id="7337418456231055214">Har det virtuella kortnumret inte fyllts i? Klicka på kortuppgifterna om du vill kopiera dem. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="7337706099755338005">Ej tillgänglig för din plattform.</translation>
 <translation id="733923710415886693">Servercertifikatet har inte lämnats ut via Certifikattransparens.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -2440,6 +2439,7 @@ Mer information:
 <translation id="883848425547221593">Övriga bokmärken</translation>
 <translation id="884264119367021077">Leveransadress</translation>
 <translation id="884923133447025588">Ingen återkallningsmekanism har hittats.</translation>
+<translation id="8849262850971482943">Använd det virtuella kreditkortet för ökad säkerhet</translation>
 <translation id="885730110891505394">Delar med Google</translation>
 <translation id="8858065207712248076">Du rekommenderas att återställa lösenordet för <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> om du har återanvänt det på andra webbplatser.</translation>
 <translation id="885906927438988819">Om stavningen är rätt <ph name="BEGIN_LINK" />testar du att köra nätverksdiagnostik för Windows<ph name="END_LINK" />.</translation>

@@ -140,6 +140,7 @@ extern const base::Feature kCrostiniMultiContainer;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kCrostiniImeSupport;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCrostiniVirtualKeyboardSupport;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kBruschetta;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptAuthV2AlwaysUseActiveEligibleHosts;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -245,6 +246,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kFilesSinglePartitionFormat;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesTrash;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFilesWebDriveOffice;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFiltersInRecents;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kFirmwareUpdaterApp;
 COMPONENT_EXPORT(ASH_CONSTANTS)

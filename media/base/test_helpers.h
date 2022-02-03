@@ -250,7 +250,7 @@ MATCHER_P(SameStatusCode, status, "") {
   }
 }
 
-// Compares an `arg` Status.code() to a test-supplied StatusCode.
+// Compares an `arg` TypedStatus<T>.code() to a test-supplied StatusCode.
 MATCHER_P(HasStatusCode, status_code, "") {
   return arg.code() == status_code;
 }
@@ -515,6 +515,12 @@ MATCHER_P3(DroppedAppendWindowUnusedPreroll,
           base::NumberToString(pts_us) + "us that ends too far (" +
           base::NumberToString(delta_us) + "us) from next buffer with PTS " +
           base::NumberToString(next_pts_us) + "us");
+}
+
+MATCHER_P2(FrameDurationUnknown, frame_type, pts_us, "") {
+  return CONTAINS_STRING(arg, "Unknown duration for " +
+                                  std::string(frame_type) + " frame at PTS " +
+                                  base::NumberToString(pts_us) + "us");
 }
 
 }  // namespace media

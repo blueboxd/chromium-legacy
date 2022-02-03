@@ -339,6 +339,10 @@ const base::Feature kCrostiniImeSupport{"CrostiniImeSupport",
 const base::Feature kCrostiniVirtualKeyboardSupport{
     "CrostiniVirtualKeyboardSupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables support for third party VMs.
+const base::Feature kBruschetta{"Bruschetta",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
 const base::Feature kCryptAuthV2AlwaysUseActiveEligibleHosts{
@@ -634,6 +638,10 @@ const base::Feature kFilesSinglePartitionFormat{
 // Enable files app trash.
 const base::Feature kFilesTrash{"FilesTrash",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables opening Office files located in Files app Drive in Web Drive.
+const base::Feature kFilesWebDriveOffice{"FilesWebDriveOffice",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables filters in Files app Recents view.
 const base::Feature kFiltersInRecents{"FiltersInRecents",
@@ -1568,6 +1576,10 @@ bool IsFileManagerFuseBoxEnabled() {
 
 bool IsFileManagerSwaEnabled() {
   return base::FeatureList::IsEnabled(kFilesSWA);
+}
+
+bool IsFilesWebDriveOfficeEnabled() {
+  return base::FeatureList::IsEnabled(kFilesWebDriveOffice);
 }
 
 bool IsFirmwareUpdaterAppEnabled() {

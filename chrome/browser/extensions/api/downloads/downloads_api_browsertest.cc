@@ -163,10 +163,11 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
            (event_name_ == downloads::OnChanged::kEventName))) {
         // We expect a non-empty list for these events.
         if (!args_.is_list() || !other.args_.is_list() ||
-            args_.GetList().empty() || other.args_.GetList().empty())
+            args_.GetListDeprecated().empty() ||
+            other.args_.GetListDeprecated().empty())
           return false;
-        const base::Value& left_dict = args_.GetList()[0];
-        const base::Value& right_dict = other.args_.GetList()[0];
+        const base::Value& left_dict = args_.GetListDeprecated()[0];
+        const base::Value& right_dict = other.args_.GetListDeprecated()[0];
         if (!left_dict.is_dict() || !right_dict.is_dict())
           return false;
         // Expect that all keys present in both dictionaries are equal. If a key
@@ -1056,7 +1057,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   ASSERT_TRUE(result);
   download_item = NULL;
   ASSERT_TRUE(result->is_list());
-  base::Value::ListView result_list = result->GetList();
+  base::Value::ListView result_list = result->GetListDeprecated();
   ASSERT_EQ(1UL, result_list.size());
   ASSERT_TRUE(result_list[0].is_int());
   EXPECT_EQ(id, result_list[0].GetInt());
@@ -1199,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       RunFunctionAndReturnResult(new DownloadsSearchFunction(), "[{}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
 }
 
 // Test that file existence check should be performed after search.
@@ -1218,7 +1219,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
       RunFunctionAndReturnResult(new DownloadsSearchFunction(), "[{}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
 
   // Check file removal update will eventually come. WaitForEvent() will
   // immediately return if the file is already removed.
@@ -1265,8 +1266,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{\"filenameRegex\": \"foobar\"}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
-  const base::Value& item_value = result->GetList()[0];
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
+  const base::Value& item_value = result->GetListDeprecated()[0];
   ASSERT_TRUE(item_value.is_dict());
   absl::optional<int> item_id = item_value.FindIntKey("id");
   ASSERT_TRUE(item_id);
@@ -1285,8 +1286,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, DownloadExtensionTest_SearchId) {
       base::StringPrintf("[{\"id\": %u}]", items[0]->GetId())));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
-  const base::Value& item_value = result->GetList()[0];
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
+  const base::Value& item_value = result->GetListDeprecated()[0];
   ASSERT_TRUE(item_value.is_dict());
   absl::optional<int> item_id = item_value.FindIntKey("id");
   ASSERT_TRUE(item_id);
@@ -1306,7 +1307,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                  "[{\"id\": 0, \"filename\": \"foobar\"}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(0UL, result->GetList().size());
+  ASSERT_EQ(0UL, result->GetListDeprecated().size());
 }
 
 // Test a single |orderBy| parameter for search().
@@ -1325,9 +1326,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{\"orderBy\": [\"filename\"]}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(2UL, result->GetList().size());
-  const base::Value& item0_value = result->GetList()[0];
-  const base::Value& item1_value = result->GetList()[1];
+  ASSERT_EQ(2UL, result->GetListDeprecated().size());
+  const base::Value& item0_value = result->GetListDeprecated()[0];
+  const base::Value& item1_value = result->GetListDeprecated()[1];
   ASSERT_TRUE(item0_value.is_dict());
   ASSERT_TRUE(item1_value.is_dict());
   const std::string* item0_name = item0_value.FindStringKey("filename");
@@ -1355,9 +1356,9 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{\"orderBy\": []}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(2UL, result->GetList().size());
-  const base::Value& item0_value = result->GetList()[0];
-  const base::Value& item1_value = result->GetList()[1];
+  ASSERT_EQ(2UL, result->GetListDeprecated().size());
+  const base::Value& item0_value = result->GetListDeprecated()[0];
+  const base::Value& item1_value = result->GetListDeprecated()[1];
   ASSERT_TRUE(item0_value.is_dict());
   ASSERT_TRUE(item1_value.is_dict());
   const std::string* item0_name = item0_value.FindStringKey("filename");
@@ -1389,7 +1390,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{\"danger\": \"content\"}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
 }
 
 // Test the |state| option for search().
@@ -1405,7 +1406,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{\"state\": \"in_progress\"}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
 }
 
 // Test the |limit| option for search().
@@ -1419,7 +1420,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       new DownloadsSearchFunction(), "[{\"limit\": 1}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
 }
 
 // Test invalid search parameters.
@@ -1463,8 +1464,8 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                                  "\"limit\": 1}]"));
   ASSERT_TRUE(result.get());
   ASSERT_TRUE(result->is_list());
-  ASSERT_EQ(1UL, result->GetList().size());
-  const base::Value& item_value = result->GetList()[0];
+  ASSERT_EQ(1UL, result->GetListDeprecated().size());
+  const base::Value& item_value = result->GetListDeprecated()[0];
   ASSERT_TRUE(item_value.is_dict());
   const std::string* item_name = item_value.FindStringKey("filename");
   ASSERT_TRUE(item_name);
@@ -1504,9 +1505,9 @@ IN_PROC_BROWSER_TEST_F(
       RunFunctionAndReturnResult(new DownloadsSearchFunction(), "[{}]");
   ASSERT_TRUE(result_value.get());
   ASSERT_TRUE(result_value->is_list());
-  ASSERT_EQ(2UL, result_value->GetList().size());
+  ASSERT_EQ(2UL, result_value->GetListDeprecated().size());
   {
-    const base::Value& result_dict = result_value->GetList()[0];
+    const base::Value& result_dict = result_value->GetListDeprecated()[0];
     ASSERT_TRUE(result_dict.is_dict());
     const std::string* filename = result_dict.FindStringKey("filename");
     ASSERT_TRUE(filename);
@@ -1517,7 +1518,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_FALSE(is_incognito.value());
   }
   {
-    const base::Value& result_dict = result_value->GetList()[1];
+    const base::Value& result_dict = result_value->GetListDeprecated()[1];
     ASSERT_TRUE(result_dict.is_dict());
     const std::string* filename = result_dict.FindStringKey("filename");
     ASSERT_TRUE(filename);
@@ -1535,9 +1536,9 @@ IN_PROC_BROWSER_TEST_F(
       RunFunctionAndReturnResult(new DownloadsSearchFunction(), "[{}]");
   ASSERT_TRUE(result_value.get());
   ASSERT_TRUE(result_value->is_list());
-  ASSERT_EQ(1UL, result_value->GetList().size());
+  ASSERT_EQ(1UL, result_value->GetListDeprecated().size());
   {
-    const base::Value& result_dict = result_value->GetList()[0];
+    const base::Value& result_dict = result_value->GetListDeprecated()[0];
     ASSERT_TRUE(result_dict.is_dict());
     const std::string* filename = result_dict.FindStringKey("filename");
     ASSERT_TRUE(filename);

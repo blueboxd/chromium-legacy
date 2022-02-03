@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
-import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
-import {flushTasks} from 'chrome://test/test_util.js';
+import {BrowserServiceImpl, ensureLazyLoaded} from 'chrome://history/history.js';
+import {flushTasks} from 'chrome://webui-test/test_util.js';
+
+import {TestBrowserService} from './test_browser_service.js';
 
 suite('drawer-test', function() {
   let app;
@@ -12,7 +13,7 @@ suite('drawer-test', function() {
   setup(function() {
     document.body.innerHTML = '';
     const testService = new TestBrowserService();
-    BrowserService.setInstance(testService);
+    BrowserServiceImpl.setInstance(testService);
     app = document.createElement('history-app');
     document.body.appendChild(app);
     return Promise.all([

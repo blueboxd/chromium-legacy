@@ -85,8 +85,9 @@ bool FindDropdownItem(const base::Value& resolvers,
   dict.SetKey("value", base::Value(value));
   dict.SetKey("policy", base::Value(policy));
 
-  return std::find(resolvers.GetList().begin(), resolvers.GetList().end(),
-                   dict) != resolvers.GetList().end();
+  return std::find(resolvers.GetListDeprecated().begin(),
+                   resolvers.GetListDeprecated().end(),
+                   dict) != resolvers.GetListDeprecated().end();
 }
 
 }  // namespace
@@ -159,7 +160,7 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
         return false;
       secure_dns_templates->clear();
       for (const auto& template_str :
-           dict->FindListPath("templates")->GetList()) {
+           dict->FindListPath("templates")->GetListDeprecated()) {
         if (!template_str.is_string())
           return false;
         secure_dns_templates->push_back(template_str.GetString());
@@ -303,7 +304,8 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownList) {
   ASSERT_TRUE(call_data.arg2()->GetBool());
 
   // Check results.
-  base::Value::ConstListView resolver_list = call_data.arg3()->GetList();
+  base::Value::ConstListView resolver_list =
+      call_data.arg3()->GetListDeprecated();
   ASSERT_GE(resolver_list.size(), 1U);
   EXPECT_TRUE(resolver_list[0].FindKey("value")->GetString().empty());
 }
@@ -313,8 +315,11 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, DropdownListContents) {
   handler_->SetProvidersForTesting(entries);
   const base::Value resolver_list = handler_->GetSecureDnsResolverList();
 
-  EXPECT_EQ(entries.size() + 1, resolver_list.GetList().size());
-  EXPECT_TRUE(resolver_list.GetList()[0].FindKey("value")->GetString().empty());
+  EXPECT_EQ(entries.size() + 1, resolver_list.GetListDeprecated().size());
+  EXPECT_TRUE(resolver_list.GetListDeprecated()[0]
+                  .FindKey("value")
+                  ->GetString()
+                  .empty());
   for (const auto* entry : entries) {
     EXPECT_TRUE(FindDropdownItem(resolver_list, entry->ui_name,
                                  entry->doh_server_config.server_template(),

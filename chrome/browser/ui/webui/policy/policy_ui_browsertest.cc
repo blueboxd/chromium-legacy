@@ -321,14 +321,15 @@ void PolicyUITest::VerifyPolicies(
   absl::optional<base::Value> value_ptr = base::JSONReader::Read(json);
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->is_list());
-  base::Value::ConstListView actual_policies = value_ptr->GetList();
+  base::Value::ConstListView actual_policies = value_ptr->GetListDeprecated();
 
   // Verify that the cells contain the expected strings for all policies.
   ASSERT_EQ(expected_policies.size(), actual_policies.size());
   for (size_t i = 0; i < expected_policies.size(); ++i) {
     const std::vector<std::string> expected_policy = expected_policies[i];
     ASSERT_TRUE(actual_policies[i].is_list());
-    base::Value::ConstListView actual_policy = actual_policies[i].GetList();
+    base::Value::ConstListView actual_policy =
+        actual_policies[i].GetListDeprecated();
     ASSERT_EQ(expected_policy.size(), actual_policy.size());
     for (size_t j = 0; j < expected_policy.size(); ++j) {
       const std::string* value = actual_policy[j].GetIfString();

@@ -671,32 +671,24 @@ bool Element::IsFocusableStyle() const {
       !GetDocument().IsActive() || GetDocument().InStyleRecalc() ||
       !GetDocument().NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*this));
 
-  // FIXME: Even if we are not visible, we might have a child that is visible.
-  // Hyatt wants to fix that some day with a "has visible content" flag or the
-  // like.
-  auto IsFocusable = [](const ComputedStyle* style) {
-    return style && !style->IsEnsuredInDisplayNone() &&
-           style->Display() != EDisplay::kContents && !style->IsInert() &&
-           style->Visibility() == EVisibility::kVisible;
-  };
-
-  if (LayoutObject* layout_object = GetLayoutObject()) {
-    if (IsFocusable(layout_object->Style()))
-      return true;
-  }
+  if (LayoutObject* layout_object = GetLayoutObject())
+    return layout_object->StyleRef().IsFocusable();
 
   // If a canvas represents embedded content, its descendants are not rendered.
   // But they are still allowed to be focusable as long as their style allows
   // focus, their canvas is rendered, and its style allows focus.
   if (IsInCanvasSubtree()) {
-    if (!IsFocusable(GetComputedStyle()))
+    const ComputedStyle* style = GetComputedStyle();
+    if (!style || !style->IsFocusable())
       return false;
 
     const HTMLCanvasElement* canvas =
         Traversal<HTMLCanvasElement>::FirstAncestorOrSelf(*this);
     DCHECK(canvas);
-    if (LayoutObject* layout_object = canvas->GetLayoutObject())
-      return layout_object->IsCanvas() && IsFocusable(layout_object->Style());
+    if (LayoutObject* layout_object = canvas->GetLayoutObject()) {
+      return layout_object->IsCanvas() &&
+             layout_object->StyleRef().IsFocusable();
+    }
   }
 
   return false;
@@ -4820,6 +4812,9 @@ bool Element::ForceLegacyLayoutInFormattingContext(
   bool found_fc = DefinitelyNewFormattingContext(*this, new_style);
   bool needs_reattach = false;
 
+  Element* container_recalc_root =
+      GetDocument().GetStyleEngine().GetContainerForContainerStyleRecalc();
+
   // TODO(mstensho): Missing call to SetNeedsReattachLayoutTree() on Document
   // here. We may have to re-attach it if we want to change from LayoutNGView to
   // LayoutView.
@@ -4843,7 +4838,7 @@ bool Element::ForceLegacyLayoutInFormattingContext(
     // CSSContainerQueries rely on LayoutNG being fully shipped before shipping.
     // In the meantime, make sure we do not mark containers for re-attachment
     // since we might be in the process of laying out the container.
-    if (style->IsContainerForContainerQueries(*ancestor))
+    if (container_recalc_root == ancestor)
       break;
 
     found_fc = DefinitelyNewFormattingContext(*ancestor, *style);

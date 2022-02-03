@@ -638,7 +638,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, UpdatePersistentStorage) {
         primary_holding_space_model->items()[0].get();
 
     persisted_holding_space_items.EraseListIter(
-        persisted_holding_space_items.GetList().begin());
+        persisted_holding_space_items.GetListDeprecated().begin());
     primary_holding_space_model->RemoveItem(holding_space_item->id());
 
     EXPECT_EQ(*GetProfile()->GetPrefs()->GetList(
@@ -668,7 +668,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, PersistenceOfInProgressItems) {
   EXPECT_EQ(GetProfile()
                 ->GetPrefs()
                 ->GetList(HoldingSpacePersistenceDelegate::kPersistencePath)
-                ->GetList()
+                ->GetListDeprecated()
                 .size(),
             0u);
 
@@ -732,8 +732,8 @@ TEST_F(HoldingSpaceKeyedServiceTest, PersistenceOfInProgressItems) {
   holding_space_model->UpdateItem(finalized_holding_space_item_ptr->id())
       ->SetBackingFile(file_path, GetFileSystemUrl(GetProfile(), file_path));
 
-  ASSERT_EQ(persisted_holding_space_items.GetList().size(), 2u);
-  persisted_holding_space_items.GetList()[1u] =
+  ASSERT_EQ(persisted_holding_space_items.GetListDeprecated().size(), 2u);
+  persisted_holding_space_items.GetListDeprecated()[1u] =
       finalized_holding_space_item_ptr->Serialize();
 
   EXPECT_EQ(*GetProfile()->GetPrefs()->GetList(
@@ -766,9 +766,9 @@ TEST_F(HoldingSpaceKeyedServiceTest, PersistenceOfInProgressItems) {
       ->SetProgress(
           HoldingSpaceProgress(/*current_bytes=*/100, /*total_bytes=*/100));
 
-  ASSERT_EQ(persisted_holding_space_items.GetList().size(), 2u);
+  ASSERT_EQ(persisted_holding_space_items.GetListDeprecated().size(), 2u);
   persisted_holding_space_items.Insert(
-      persisted_holding_space_items.GetList().begin() + 1u,
+      persisted_holding_space_items.GetListDeprecated().begin() + 1u,
       in_progress_holding_space_item_ptr->Serialize());
 
   EXPECT_EQ(*GetProfile()->GetPrefs()->GetList(
@@ -851,7 +851,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, UpdatePersistentStorageAfterMove) {
               new_file_path.BaseName().LossyDisplayName());
 
     // Verify that persistence has been updated.
-    persisted_holding_space_items.GetList()[i] =
+    persisted_holding_space_items.GetListDeprecated()[i] =
         holding_space_item->Serialize();
     ASSERT_EQ(*GetProfile()->GetPrefs()->GetList(
                   HoldingSpacePersistenceDelegate::kPersistencePath),
@@ -886,7 +886,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, UpdatePersistentStorageAfterMove) {
               new_file_path.BaseName().LossyDisplayName());
 
     // Verify that persistence has been updated.
-    persisted_holding_space_items.GetList()[i] =
+    persisted_holding_space_items.GetListDeprecated()[i] =
         holding_space_item->Serialize();
     ASSERT_EQ(*GetProfile()->GetPrefs()->GetList(
                   HoldingSpacePersistenceDelegate::kPersistencePath),
@@ -1576,7 +1576,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, RemoveItemsFromUnmountedVolumes) {
   EXPECT_EQ(3u, GetProfile()
                     ->GetPrefs()
                     ->GetList(HoldingSpacePersistenceDelegate::kPersistencePath)
-                    ->GetList()
+                    ->GetListDeprecated()
                     .size());
   EXPECT_EQ(3u, holding_space_model->items().size());
 
@@ -1586,7 +1586,7 @@ TEST_F(HoldingSpaceKeyedServiceTest, RemoveItemsFromUnmountedVolumes) {
   EXPECT_EQ(1u, GetProfile()
                     ->GetPrefs()
                     ->GetList(HoldingSpacePersistenceDelegate::kPersistencePath)
-                    ->GetList()
+                    ->GetListDeprecated()
                     .size());
   ASSERT_EQ(1u, holding_space_model->items().size());
   EXPECT_EQ(file_path_2, holding_space_model->items()[0]->file_path());

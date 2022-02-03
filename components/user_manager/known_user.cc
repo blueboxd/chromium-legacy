@@ -226,7 +226,7 @@ const base::Value* KnownUser::FindPrefs(const AccountId& account_id) const {
     return nullptr;
 
   const base::Value* known_users = local_state_->GetList(kKnownUsers);
-  for (const base::Value& element_value : known_users->GetList()) {
+  for (const base::Value& element_value : known_users->GetListDeprecated()) {
     if (element_value.is_dict()) {
       if (UserMatches(account_id, element_value)) {
         return &element_value;
@@ -250,7 +250,7 @@ void KnownUser::SetPath(const AccountId& account_id,
     return;
 
   ListPrefUpdate update(local_state_, kKnownUsers);
-  for (base::Value& element_value : update->GetList()) {
+  for (base::Value& element_value : update->GetListDeprecated()) {
     if (element_value.is_dict()) {
       if (UserMatches(account_id, element_value)) {
         if (opt_value.has_value())
@@ -273,7 +273,7 @@ void KnownUser::SetPath(const AccountId& account_id,
 }
 
 const std::string* KnownUser::FindStringPath(const AccountId& account_id,
-                                             base::StringPiece path) {
+                                             base::StringPiece path) const {
   const base::Value* user_pref_dict = FindPrefs(account_id);
   if (!user_pref_dict)
     return nullptr;
@@ -441,7 +441,7 @@ std::vector<AccountId> KnownUser::GetKnownAccountIds() {
   std::vector<AccountId> result;
 
   const base::Value* known_users = local_state_->GetList(kKnownUsers);
-  for (const base::Value& element_value : known_users->GetList()) {
+  for (const base::Value& element_value : known_users->GetListDeprecated()) {
     if (element_value.is_dict()) {
       const std::string* email = element_value.FindStringKey(kCanonicalEmail);
       const std::string* gaia_id = element_value.FindStringKey(kGAIAIdKey);
@@ -695,11 +695,9 @@ void KnownUser::SetPasswordSyncToken(const AccountId& account_id,
   SetStringPref(account_id, kPasswordSyncToken, token);
 }
 
-std::string KnownUser::GetPasswordSyncToken(const AccountId& account_id) {
-  if (const std::string* token = FindStringPath(account_id, kPasswordSyncToken))
-    return *token;
-  // Return empty string if sync token was not set for the account yet.
-  return std::string();
+const std::string* KnownUser::GetPasswordSyncToken(
+    const AccountId& account_id) const {
+  return FindStringPath(account_id, kPasswordSyncToken);
 }
 
 void KnownUser::SetOnboardingCompletedVersion(
@@ -759,7 +757,7 @@ void KnownUser::RemovePrefs(const AccountId& account_id) {
     return;
 
   ListPrefUpdate update(local_state_, kKnownUsers);
-  base::Value::ListView update_view = update->GetList();
+  base::Value::ListView update_view = update->GetListDeprecated();
   for (auto it = update_view.begin(); it != update_view.end(); ++it) {
     if (UserMatches(account_id, *it)) {
       update->EraseListIter(it);
@@ -781,7 +779,7 @@ void KnownUser::CleanEphemeralUsers() {
 
 void KnownUser::CleanObsoletePrefs() {
   ListPrefUpdate update(local_state_, kKnownUsers);
-  for (base::Value& user_entry : update.Get()->GetList()) {
+  for (base::Value& user_entry : update.Get()->GetListDeprecated()) {
     if (!user_entry.is_dict())
       continue;
     for (const std::string& key : kObsoleteKeys)
@@ -1013,40 +1011,6 @@ void ClearProfileRequiresPolicy(const AccountId& account_id) {
   return KnownUser(local_state).ClearProfileRequiresPolicy(account_id);
 }
 
-void SetLastOnlineSignin(const AccountId& account_id, base::Time time) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetLastOnlineSignin(account_id, time);
-}
-
-base::Time GetLastOnlineSignin(const AccountId& account_id) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return base::Time();
-  return KnownUser(local_state).GetLastOnlineSignin(account_id);
-}
-
-void SetOfflineSigninLimit(const AccountId& account_id,
-                           absl::optional<base::TimeDelta> time_delta) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetOfflineSigninLimit(account_id, time_delta);
-}
-
-absl::optional<base::TimeDelta> GetOfflineSigninLimit(
-    const AccountId& account_id) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return absl::nullopt;
-  return KnownUser(local_state).GetOfflineSigninLimit(account_id);
-}
-
 void SetIsEnterpriseManaged(const AccountId& account_id,
                             bool is_enterprise_managed) {
   PrefService* local_state = GetLocalStateLegacy();
@@ -1082,23 +1046,6 @@ void SetUserLastLoginInputMethodId(const AccountId& account_id,
     return;
   return KnownUser(local_state)
       .SetUserLastLoginInputMethodId(account_id, input_method_id);
-}
-
-void SetPasswordSyncToken(const AccountId& account_id,
-                          const std::string& token) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetPasswordSyncToken(account_id, token);
-}
-
-std::string GetPasswordSyncToken(const AccountId& account_id) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return std::string();
-  return KnownUser(local_state).GetPasswordSyncToken(account_id);
 }
 
 }  // namespace known_user

@@ -627,7 +627,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5075554201838155866">Iniciar legendas</translation>
 <translation id="5078796286268621944">PIN incorreto</translation>
 <translation id="5083553833479578423">Desbloqueie mais funcionalidades do Assistente.</translation>
-<translation id="5090752371472782287">Transmitir para um dispositivo <ph name="MANAGER" /></translation>
 <translation id="5106223312672646208">Personalizar</translation>
 <translation id="5117590920725113268">Mostrar mês seguinte</translation>
 <translation id="5136175204352732067">Teclado diferente ligado</translation>
@@ -928,6 +927,7 @@ Nova instalação</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Atualizar</translation>
+<translation id="718361511487535372">Abrir no Calendário Google</translation>
 <translation id="7188494361780961876">O menu foi movido para o canto superior esquerdo do ecrã.</translation>
 <translation id="7189412385142492784">Qual é a distância para Vénus?</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. É necessário reiniciar o Chromebook para aplicar uma atualização. Esta ação pode demorar até 1 minuto.</translation>

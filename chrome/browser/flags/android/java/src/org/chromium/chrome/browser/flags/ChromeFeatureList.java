@@ -213,6 +213,8 @@ public abstract class ChromeFeatureList {
             "AutofillEnableSupportForMoreStructureInAddresses";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_NAMES =
             "AutofillEnableSupportForMoreStructureInNames";
+    public static final String AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT =
+            "AutofillEnableUpdateVirtualCardEnrollment";
     public static final String ANDROID_LAYOUT_CHANGE_TAB_REPARENT =
             "AndroidLayoutChangeTabReparenting";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
@@ -292,7 +294,6 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_NEW_SETTINGS = "ContextualSearchNewSettings";
     public static final String CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE =
             "ContextualSearchLongpressResolve";
-    public static final String CONTEXTUAL_SEARCH_SECOND_TAP = "ContextualSearchSecondTap";
     public static final String CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE =
             "ContextualSearchTapDisableOverride";
     public static final String CONTEXTUAL_SEARCH_THIN_WEB_VIEW_IMPLEMENTATION =
@@ -489,6 +490,7 @@ public abstract class ChromeFeatureList {
             "SplitCacheByNetworkIsolationKey";
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
     public static final String STORE_HOURS = "StoreHoursAndroid";
+    public static final String SUPPRESS_TOOLBAR_CAPTURES = "SuppressToolbarCaptures";
     public static final String SWAP_ANDROID_SHARE_HUB_ROWS = "SwapAndroidShareHubRows";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";

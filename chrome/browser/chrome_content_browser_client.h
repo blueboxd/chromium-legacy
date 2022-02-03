@@ -638,6 +638,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::string GetUserAgent() override;
   std::string GetUserAgentBasedOnPolicy(
       content::BrowserContext* context) override;
+  std::string GetFullUserAgent() override;
   std::string GetReducedUserAgent() override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
 
@@ -778,9 +779,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context) override;
 
   content::mojom::AlternativeErrorPageOverrideInfoPtr
-  GetAlternativeErrorPageOverrideInfo(
-      const GURL& url,
-      content::BrowserContext* browser_context) override;
+  GetAlternativeErrorPageOverrideInfo(const GURL& url,
+                                      content::BrowserContext* browser_context,
+                                      int32_t error_code) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

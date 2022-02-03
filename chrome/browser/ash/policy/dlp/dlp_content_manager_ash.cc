@@ -100,21 +100,6 @@ DlpContentRestrictionSet DlpContentManagerAsh::GetOnScreenPresentRestrictions()
   return on_screen_restrictions_;
 }
 
-bool DlpContentManagerAsh::IsScreenshotApiRestricted(
-    const ScreenshotArea& area) {
-  const ConfidentialContentsInfo info =
-      GetAreaConfidentialContentsInfo(area, DlpContentRestriction::kScreenshot);
-  MaybeReportEvent(info.restriction_info,
-                   DlpRulesManager::Restriction::kScreenshot);
-  if (IsWarn(info.restriction_info))
-    ReportWarningEvent(info.restriction_info.url,
-                       DlpRulesManager::Restriction::kScreenshot);
-  DlpBooleanHistogram(dlp::kScreenshotBlockedUMA,
-                      IsBlocked(info.restriction_info));
-  // TODO(crbug.com/1252736): Properly handle WARN for screenshots API.
-  return IsBlocked(info.restriction_info) || IsWarn(info.restriction_info);
-}
-
 void DlpContentManagerAsh::CheckScreenshotRestriction(
     const ScreenshotArea& area,
     ash::OnCaptureModeDlpRestrictionChecked callback) {
@@ -409,12 +394,28 @@ DlpContentManagerAsh::GetConfidentialContentsOnScreen(
       // The contents can be in the process of being destroyed during this
       // check, although they have not yet been removed from
       // confidential_web_contents_. For example, this happens when we trigger
-      // the check from OnWindowDestroying().
+      // the check from OnWebContentsDestroyed().
       continue;
     }
     if (entry.second.GetRestrictionLevel(restriction) ==
         info.restriction_info.level) {
       info.confidential_contents.Add(entry.first);
+    }
+  }
+  for (auto& entry : confidential_windows_) {
+    if (!entry.first->IsVisible())
+      continue;
+    if (entry.first->is_destroying()) {
+      // The window can be in the process of being destroyed during this
+      // check, although it has not yet been removed from
+      // confidential_windows. For example, this happens when we trigger
+      // the check from OnWindowDestroying().
+      continue;
+    }
+    if (entry.second.GetRestrictionLevel(restriction) ==
+        info.restriction_info.level) {
+      info.confidential_contents.Add(
+          entry.first, entry.second.GetRestrictionUrl(restriction));
     }
   }
   return info;

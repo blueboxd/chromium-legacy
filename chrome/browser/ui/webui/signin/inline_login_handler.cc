@@ -176,14 +176,14 @@ void InlineLoginHandler::HandleCompleteLoginMessage(
       net::CookiePartitionKeyCollection::Todo(),
       base::BindOnce(&InlineLoginHandler::HandleCompleteLoginMessageWithCookies,
                      weak_ptr_factory_.GetWeakPtr(),
-                     base::ListValue(args->GetList())));
+                     base::ListValue(args->GetListDeprecated())));
 }
 
 void InlineLoginHandler::HandleCompleteLoginMessageWithCookies(
     const base::ListValue& args,
     const net::CookieAccessResultList& cookies,
     const net::CookieAccessResultList& excluded_cookies) {
-  const base::Value& dict = args.GetList()[0];
+  const base::Value& dict = args.GetListDeprecated()[0];
 
   CompleteLoginParams params;
   params.email = dict.FindKey("email")->GetString();
@@ -219,7 +219,7 @@ void InlineLoginHandler::HandleSwitchToFullTabMessage(
 
   // Note: URL string is expected to be in the first argument,
   // but it is not used.
-  CHECK(args->GetList()[0].is_string());
+  CHECK(args->GetListDeprecated()[0].is_string());
 
   Profile* profile = Profile::FromWebUI(web_ui());
   GURL main_frame_url(web_ui()->GetWebContents()->GetLastCommittedURL());

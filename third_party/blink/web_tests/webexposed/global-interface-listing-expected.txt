@@ -10,6 +10,7 @@ interface AbortController
     method constructor
 interface AbortSignal : EventTarget
     static method abort
+    static method timeout
     attribute @@toStringTag
     getter aborted
     getter onabort
@@ -293,6 +294,7 @@ interface AppHistoryNavigateEvent : Event
     method transitionWhile
 interface AppHistoryTransition
     attribute @@toStringTag
+    getter finished
     getter from
     getter navigationType
     method constructor

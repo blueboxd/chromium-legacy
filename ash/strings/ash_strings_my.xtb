@@ -627,7 +627,6 @@
 <translation id="5075554201838155866">စာတန်းများ စတင်ရန်</translation>
 <translation id="5078796286268621944">မမှန်ကန်သည့် ပင်ကုဒ်</translation>
 <translation id="5083553833479578423">နောက်ထပ် Assistant ဝန်ဆောင်မှုများကို ဖွင့်ပါ</translation>
-<translation id="5090752371472782287"><ph name="MANAGER" /> စက်တစ်ခုသို့ ကာစ်လုပ်ရန်</translation>
 <translation id="5106223312672646208">ပုဂ္ဂိုလ်ရေးသီးသန့်ပြင်ဆင်ရန်</translation>
 <translation id="5117590920725113268">လာမည့် လကို ပြရန်</translation>
 <translation id="5136175204352732067">မတူညီသည့် ကီးဘုတ်ကို ချိတ်ဆက်ထားသည်</translation>
@@ -928,6 +927,7 @@
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">စက္ကန့် <ph name="TIMEOUT_SECONDS" /> အတွင်းမှာ ပြတ်သားမှု အဟောင်းဆီကို ပြန်ပြောင်းမည်</translation>
 <translation id="7180611975245234373">ပြန်လည်စတင်ရန်</translation>
+<translation id="718361511487535372">Google Calendar တွင် ဖွင့်ရန်</translation>
 <translation id="7188494361780961876">မီနူးကို ဖန်သားပြင်၏ ဘယ်ဘက်ထိပ်ထောင့်သို့ ရွှေ့လိုက်သည်။</translation>
 <translation id="7189412385142492784">သောကြာဂြိုဟ်က ဘယ်လောက်ဝေးလဲ</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />။ အပ်ဒိတ် အသုံးပြုနိုင်ရန်အတွက် ဤ Chromebook ကို ပြန်လည်စတင်ရန် လိုအပ်သည်။ ၎င်းက ၁ မိနစ်အထိ ကြာနိုင်သည်။</translation>

@@ -68,7 +68,6 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   // 1. Result pre-processing. These filter or modify search results but don't
   // change their scores.
   AddRanker(std::make_unique<QueryHighlighter>());
-  AddRanker(std::make_unique<AnswerRanker>());
   AddRanker(std::make_unique<ContinueRanker>());
   AddRanker(std::make_unique<FilteringRanker>());
   AddRanker(std::make_unique<RemovedResultsRanker>(
@@ -106,8 +105,10 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   AddRanker(std::move(category_ranker));
 
   // 5. Result post-processing.
-  // Nb. the top-match ranker relies on score normalization.
+  // Nb. the best match ranker relies on score normalization, and the answer
+  // ranker relies on the best match ranker.
   AddRanker(std::make_unique<BestMatchRanker>());
+  AddRanker(std::make_unique<AnswerRanker>());
 }
 
 RankerDelegate::~RankerDelegate() {}
@@ -144,6 +145,11 @@ void RankerDelegate::Remove(ChromeSearchResult* result) {
 
 void RankerDelegate::AddRanker(std::unique_ptr<Ranker> ranker) {
   rankers_.emplace_back(std::move(ranker));
+}
+
+void RankerDelegate::OnBurnInPeriodElapsed() {
+  for (auto& ranker : rankers_)
+    ranker->OnBurnInPeriodElapsed();
 }
 
 }  // namespace app_list

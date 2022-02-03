@@ -627,7 +627,6 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="5075554201838155866">Altyazıları başlat</translation>
 <translation id="5078796286268621944">Yanlış PIN</translation>
 <translation id="5083553833479578423">Diğer Asistan özelliklerinin kilidini açın.</translation>
-<translation id="5090752371472782287">Bir <ph name="MANAGER" /> adlı cihaza yayınla</translation>
 <translation id="5106223312672646208">Kişiselleştir</translation>
 <translation id="5117590920725113268">Sonraki ayı göster</translation>
 <translation id="5136175204352732067">Farklı klavye bağlandı</translation>
@@ -928,6 +927,7 @@ Yeni yüklenmiş</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="7180611975245234373">Yenile</translation>
+<translation id="718361511487535372">Google Takvim'de aç</translation>
 <translation id="7188494361780961876">Menü, ekranın sol üst köşesine taşındı.</translation>
 <translation id="7189412385142492784">Venüs ne kadar uzak</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Bir güncellemenin uygulanması için bu Chromebook'un yeniden başlatılması gerekiyor. Bu işlem bir dakika kadar sürebilir.</translation>

@@ -23,7 +23,6 @@
 #include "chrome/android/features/autofill_assistant/jni_headers_public/AssistantAutofillCreditCard_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers_public/AssistantAutofillProfile_jni.h"
 #include "chrome/browser/android/autofill_assistant/client_android.h"
-#include "chrome/browser/android/tab_android.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill_assistant/browser/generic_ui_java_generated_enums.h"
 #include "components/autofill_assistant/browser/service/service.h"
@@ -544,26 +543,18 @@ std::unique_ptr<TriggerContext> CreateTriggerContext(
     const base::android::JavaRef<jobjectArray>& jdevice_only_parameter_values,
     jboolean onboarding_shown,
     jboolean is_direct_action,
-    const base::android::JavaRef<jstring>& jinitial_url) {
+    const base::android::JavaRef<jstring>& jinitial_url,
+    const bool is_custom_tab) {
   auto script_parameters = std::make_unique<ScriptParameters>(
       CreateStringMapFromJava(env, jparameter_names, jparameter_values));
   script_parameters->UpdateDeviceOnlyParameters(CreateStringMapFromJava(
       env, jdevice_only_parameter_names, jdevice_only_parameter_values));
   return std::make_unique<TriggerContext>(
       std::move(script_parameters),
-      SafeConvertJavaStringToNative(env, jexperiment_ids),
-      IsCustomTab(web_contents), onboarding_shown, is_direct_action,
+      SafeConvertJavaStringToNative(env, jexperiment_ids), is_custom_tab,
+      onboarding_shown, is_direct_action,
       SafeConvertJavaStringToNative(env, jinitial_url),
       /* is_in_chrome_triggered = */ false);
-}
-
-bool IsCustomTab(content::WebContents* web_contents) {
-  auto* tab_android = TabAndroid::FromWebContents(web_contents);
-  if (!tab_android) {
-    return false;
-  }
-
-  return tab_android->IsCustomTab();
 }
 
 std::unique_ptr<Service> GetServiceToInject(JNIEnv* env,
@@ -716,7 +707,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateAssistantAutofillCreditCard(
       ConvertUTF8ToJavaString(env, credit_card.server_id()),
       credit_card.instrument_id(),
       ConvertUTF16ToJavaString(env, credit_card.nickname()),
-      url::GURLAndroid::FromNativeGURL(env, credit_card.card_art_url()));
+      url::GURLAndroid::FromNativeGURL(env, credit_card.card_art_url()),
+      static_cast<jint>(credit_card.virtual_card_enrollment_state()));
 }
 
 void PopulateAutofillCreditCardFromJava(
@@ -780,6 +772,10 @@ void PopulateAutofillCreditCardFromJava(
     credit_card->set_card_art_url(
         *url::GURLAndroid::ToNativeGURL(env, jcard_art_url));
   }
+  credit_card->set_virtual_card_enrollment_state(
+      static_cast<autofill::CreditCard::VirtualCardEnrollmentState>(
+          Java_AssistantAutofillCreditCard_getVirtualCardEnrollmentState(
+              env, jcredit_card)));
 }
 
 }  // namespace ui_controller_android_utils

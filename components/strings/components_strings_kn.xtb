@@ -70,7 +70,6 @@
 <translation id="1178581264944972037">ವಿರಾಮ</translation>
 <translation id="1181037720776840403">ತೆಗೆದುಹಾಕು</translation>
 <translation id="1186201132766001848">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
-<translation id="1195210374336998651">ಆ್ಯಪ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
 <translation id="1195558154361252544">ನೀವು ಅನುಮತಿಸಿರುವ ಸೈಟ್‌ಗಳನ್ನು ಹೊರತುಪಡಿಸಿ, ಉಳಿದ ಎಲ್ಲಾ ಸೈಟ್‌ಗಳಿಂದ ಬರುವ ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="1197088940767939838">ಕಿತ್ತಳೆ</translation>
 <translation id="1201402288615127009">ಮುಂದೆ</translation>
@@ -839,7 +838,6 @@
 <translation id="3587738293690942763">ಮಧ್ಯಮ</translation>
 <translation id="3592413004129370115">Italian (Envelope)</translation>
 <translation id="3595699422137460894">{NUM_DAYS,plural, =0{ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ನಿಮ್ಮ ಗುಂಪನ್ನು ರೀಸೆಟ್ ಮಾಡಬಹುದು. ಹೊಸ ಗುಂಪಿಗೆ ಸೇರ್ಪಡೆಗೊಳ್ಳಲು ಒಂದು ದಿನದ ಸಮಯವನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.}=1{ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ನಿಮ್ಮ ಗುಂಪನ್ನು ರೀಸೆಟ್ ಮಾಡಬಹುದು. ಹೊಸ ಗುಂಪಿಗೆ ಸೇರ್ಪಡೆಗೊಳ್ಳಲು ಒಂದು ದಿನದ ಸಮಯವನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.}one{ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ನಿಮ್ಮ ಗುಂಪನ್ನು ರೀಸೆಟ್ ಮಾಡಬಹುದು. ಹೊಸ ಗುಂಪಿಗೆ ಸೇರ್ಪಡೆಗೊಳ್ಳಲು {NUM_DAYS} ದಿನಗಳ ಸಮಯವನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.}other{ನೀವು ಯಾವಾಗ ಬೇಕಾದರೂ ನಿಮ್ಮ ಗುಂಪನ್ನು ರೀಸೆಟ್ ಮಾಡಬಹುದು. ಹೊಸ ಗುಂಪಿಗೆ ಸೇರ್ಪಡೆಗೊಳ್ಳಲು {NUM_DAYS} ದಿನಗಳ ಸಮಯವನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ.}}</translation>
-<translation id="3596012367874587041">ಆ್ಯಪ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3603507503523709">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಿದ್ದಾರೆ</translation>
 <translation id="3608932978122581043">ಫೀಡ್ ಓರಿಯಂಟೇಶನ್</translation>
@@ -1966,6 +1964,7 @@
 <translation id="7334320624316649418">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="7335157162773372339">ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಬಳಸಲು ಕೇಳಬಹುದು</translation>
 <translation id="7337248890521463931">ಇನ್ನಷ್ಟು ಸಾಲುಗಳನ್ನು ತೋರಿಸಿ</translation>
+<translation id="7337418456231055214">ವರ್ಚುವಲ್ ಕಾರ್ಡ್ ಸಂಖ್ಯೆಯನ್ನು ತುಂಬಿಸಿಲ್ಲವೇ? ಕಾರ್ಡ್ ವಿವರಗಳನ್ನು ನಕಲಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ. <ph name="IDS_AUTOFILL_VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LEARN_MORE_LINK_LABEL" /></translation>
 <translation id="7337706099755338005">ನಿಮ್ಮ ಪ್ಲಾಟ್‌ಫಾರ್ಮ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="733923710415886693">ಪ್ರಮಾಣಪತ್ರ ಪಾರದರ್ಶಕತೆಯ ಮೂಲಕ ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಬಹಿರಂಗಪಡಿಸಲಾಗಿಲ್ಲ.</translation>
 <translation id="734600844861828519">11x15</translation>
@@ -2428,6 +2427,7 @@
 <translation id="883848425547221593">ಇತರ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು:</translation>
 <translation id="884264119367021077">ಶಿಪ್ಪಿಂಗ್‌ ವಿಳಾಸ</translation>
 <translation id="884923133447025588">ವಿಫಲವಾದ ಕಾರ್ಯತಂತ್ರ ಪತ್ತೆಯಾಗಿಲ್ಲ.</translation>
+<translation id="8849262850971482943">ಹೆಚ್ಚಿನ ಸುರಕ್ಷತೆಗಾಗಿ ನಿಮ್ಮ ವರ್ಚುವಲ್ ಕಾರ್ಡ್ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="885730110891505394">Google ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳುವುದು</translation>
 <translation id="8858065207712248076">ನೀವು ಇತರ ಸೈಟ್‌ಗಳಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಮರುಬಳಕೆ ಮಾಡಿದ್ದಲ್ಲಿ Chrome ನಿಮ್ಮ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ಪಾಸವರ್ಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಲು ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="885906927438988819">ಕಾಗುಣಿತ ಸರಿಯಾಗಿದ್ದರೆ, <ph name="BEGIN_LINK" />Windows ನೆಟ್‌ವರ್ಕ್ ಡಯಾಗ್ನಾಸ್ಟಿಕ್ಸ್‌‌ ರನ್ ಮಾಡಿ ನೋಡಿ<ph name="END_LINK" />.</translation>

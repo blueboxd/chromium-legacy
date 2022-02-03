@@ -55,6 +55,11 @@ const char kLauncherAppSortDescription[] =
     "To evaluate an enhanced Launcher experience that enables users to reorder "
     "their apps in order to find them more easily.";
 
+const char kLeakDetectionUnauthenticated[] =
+    "Leak detection for signed out users.";
+const char kLeakDetectionUnauthenticatedDescription[] =
+    "Enables leak detection feature for signed out users.";
+
 const char kAllowInsecureLocalhostName[] =
     "Allow invalid certificates for resources loaded from localhost.";
 const char kAllowInsecureLocalhostDescription[] =
@@ -506,7 +511,7 @@ const char kCertificateTransparency2022PolicyName[] =
     "Certificate Transparency 2022 Policy";
 const char kCertificateTransparency2022PolicyDescription[] =
     "Enables the 2022 policy for Certificate Transparency requirements for "
-    "certificates issued after February 1, 2022. This policy increases the "
+    "certificates issued after April 15, 2022. This policy increases the "
     "number of SCTs required for certificates with a lifetime over 180 days, "
     "and replaces the one Google log requirement with log operator diversity "
     "requirements.";
@@ -712,6 +717,13 @@ const char kDocumentTransitionSlowdownFactorName[] =
 const char kDocumentTransitionSlowdownFactorDescription[] =
     "Slows down animations triggered by documentTransition JavaScript API for "
     "debugging.";
+
+const char kEnableAutoDisableAccessibilityName[] = "Auto-disable Accessibility";
+const char kEnableAutoDisableAccessibilityDescription[] =
+    "When accessibility APIs are no longer being requested, automatically "
+    "disables accessibility. This might happen if an assistive technology is "
+    "turned off or if an extension which uses accessibility APIs no longer "
+    "needs them.";
 
 const char kEnableAutofillAddressSavePromptName[] =
     "Autofill Address Save Prompts";
@@ -1383,6 +1395,11 @@ const char kForceUiDirectionName[] = "Force UI direction";
 const char kForceUiDirectionDescription[] =
     "Explicitly force the UI to left-to-right (LTR) or right-to-left (RTL) "
     "mode, overriding the default direction of the UI language.";
+
+const char kFullUserAgentName[] = "Full User-Agent request header";
+const char kFullUserAgentDescription[] =
+    "If set, use the full (non-reduced) user agent string for the User-Agent "
+    "request header and the JS APIs.";
 
 const char kGlobalMediaControlsModernUIName[] =
     "Global Media Controls Modern UI";
@@ -2333,6 +2350,10 @@ const char kSuggestionsWithSubStringMatchDescription[] =
     "Match Autofill suggestions based on substrings (token prefixes) rather "
     "than just prefixes.";
 
+const char kSuppressToolbarCapturesName[] = "Suppress Toolbar Captures";
+const char kSuppressToolbarCapturesDescription[] =
+    "Suppress Toolbar Captures except when certain properties change.";
+
 const char kSyncAutofillWalletOfferDataName[] =
     "Enable syncing autofill offer data";
 const char kSyncAutofillWalletOfferDataDescription[] =
@@ -3054,12 +3075,6 @@ const char kContextualSearchRankerQueryName[] =
 const char kContextualSearchRankerQueryDescription[] =
     "Enables prediction of tap gestures using Assist-Ranker machine learning.";
 
-const char kContextualSearchSecondTapName[] =
-    "Contextual Search second tap triggering";
-const char kContextualSearchSecondTapDescription[] =
-    "Enables triggering on a second tap gesture even when Ranker would "
-    "normally suppress that tap.";
-
 const char kContextualSearchThinWebViewImplementationName[] =
     "Use Contextual Search ThinWebView implementation";
 const char kContextualSearchThinWebViewImplementationDescription[] =
@@ -3649,13 +3664,6 @@ const char kEnableAccessibilityLiveCaptionDescription[] =
     "Enables the live caption feature which generates captions for "
     "media playing in Chrome. Turn the feature on in "
     "chrome://settings/accessibility.";
-
-const char kEnableAutoDisableAccessibilityName[] = "Auto-disable Accessibility";
-const char kEnableAutoDisableAccessibilityDescription[] =
-    "When accessibility APIs are no longer being requested, automatically "
-    "disables accessibility. This might happen if an assistive technology is "
-    "turned off or if an extension which uses accessibility APIs no longer "
-    "needs them.";
 
 const char kCopyLinkToTextName[] = "Copy Link To Text";
 const char kCopyLinkToTextDescription[] =
@@ -4327,6 +4335,10 @@ const char kCrostiniVirtualKeyboardSupportName[] =
 const char kCrostiniVirtualKeyboardSupportDescription[] =
     "Experimental support for the Virtual Keyboard on Crostini.";
 
+const char kBruschettaName[] = "Enable the third party VMs feature";
+const char kBruschettaDescription[] =
+    "Enables UI support for third party/generic VMs";
+
 const char kCryptAuthV2DedupDeviceLastActivityTimeName[] =
     "Dedup devices by last activity time";
 const char kCryptAuthV2DedupDeviceLastActivityTimeDescription[] =
@@ -4780,6 +4792,11 @@ const char kFilesTrashName[] = "Enable Files Trash.";
 const char kFilesTrashDescription[] =
     "Enable trash for My files volume in Files App.";
 
+const char kFilesWebDriveOfficeName[] =
+    "Enable Files App Web Drive Office support.";
+const char kFilesWebDriveOfficeDescription[] =
+    "Enable opening Office files located in Files app Drive in Web Drive.";
+
 const char kForceSpectreVariant2MitigationName[] =
     "Force Spectre variant 2 mitigagtion";
 const char kForceSpectreVariant2MitigationDescription[] =
@@ -5031,6 +5048,11 @@ const char kNearbySharingOnePageOnboardingName[] =
     "Nearby Sharing one-page Onboarding.";
 const char kNearbySharingOnePageOnboardingDescription[] =
     "Enable new One-page onboarding workflow for Nearby Share.";
+
+const char kNearbySharingReceiveWifiCredentialsName[] =
+    "Nearby Sharing Receive WiFi Credentials.";
+const char kNearbySharingReceiveWifiCredentialsDescription[] =
+    "Enables receiving WiFi networks using Nearby Share.";
 
 const char kNearbySharingSelfShareName[] = "Nearby Sharing Self Share";
 const char kNearbySharingSelfShareDescription[] =

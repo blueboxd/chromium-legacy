@@ -334,7 +334,7 @@ const base::Feature kDesktopPWAsWebBundles{"DesktopPWAsWebBundles",
     BUILDFLAG(IS_FUCHSIA)
 // Serves web app settings at chrome://app-settings/<app-id>.
 const base::Feature kDesktopPWAsWebAppSettingsPage{
-    "DesktopPWAsWebAppSettingsPage", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsWebAppSettingsPage", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable DNS over HTTPS (DoH).
@@ -658,6 +658,9 @@ const base::Feature kIncognitoClearBrowsingDataDialogForDesktop{
 // When enabled, removes any entry points to the history UI from Incognito mode.
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kIncognitoParamFilterEnabled{
+    "IncognitoParamFilterEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, shows a demo of in-product help in a WebUI context.
 const base::Feature kIPHInWebUIDemo{"IPHInWebUIDemo",

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/strings/strcat.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -20,6 +21,10 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "components/power_metrics/resource_coalition_mac.h"
+#endif
 
 namespace {
 
@@ -44,6 +49,25 @@ performance_monitor::ProcessMonitor::Metrics GetFakeProcessMetrics() {
   return metrics;
 }
 
+#if BUILDFLAG(IS_MAC)
+power_metrics::CoalitionResourceUsageRate GetFakeResourceUsageRate() {
+  power_metrics::CoalitionResourceUsageRate rate;
+  rate.cpu_time_per_second = 0.1;
+  rate.interrupt_wakeups_per_second = 0.3;
+  rate.platform_idle_wakeups_per_second = 2;
+  rate.bytesread_per_second = 10;
+  rate.byteswritten_per_second = 0.1;
+  rate.gpu_time_per_second = 0.8;
+  rate.energy_impact_per_second = 3.0;
+  rate.power_nw = 1000;
+
+  for (int i = 0; i < COALITION_NUM_THREAD_QOS_TYPES; ++i)
+    rate.qos_time_per_second[i] = i * 0.1;
+
+  return rate;
+}
+#endif  // BUILDFLAG(IS_MAC)
+
 using UkmEntry = ukm::builders::PowerUsageScenariosIntervalData;
 
 class PowerMetricsReporterAccess : public PowerMetricsReporter {
@@ -54,6 +78,9 @@ class PowerMetricsReporterAccess : public PowerMetricsReporter {
   using PowerMetricsReporter::BatteryDischargeMode;
   using PowerMetricsReporter::ReportBatteryHistograms;
   using PowerMetricsReporter::ReportHistograms;
+#if BUILDFLAG(IS_MAC)
+  using PowerMetricsReporter::ReportResourceCoalitionHistograms;
+#endif  // BUILDFLAG(IS_MAC)
 };
 
 using BatteryDischargeMode = PowerMetricsReporterAccess::BatteryDischargeMode;
@@ -85,8 +112,8 @@ class TestProcessMonitor : public performance_monitor::ProcessMonitor {
   TestProcessMonitor& operator=(const TestProcessMonitor& rhs) = delete;
   ~TestProcessMonitor() override = default;
 
-  // Call OnAggregatedMetricsSampled for all the observers with |metrics| as an
-  // argument.
+  // Call OnAggregatedMetricsSampled for all the observers with |metrics|
+  // as an argument.
   void NotifyObserversForOnAggregatedMetricsSampled(const Metrics& metrics) {
     for (auto& obs : GetObserversForTesting())
       obs.OnAggregatedMetricsSampled(metrics);
@@ -1174,3 +1201,111 @@ TEST_F(PowerMetricsReporterUnitTest, MainScreenBrightnessHistogram) {
   histogram_tester_.ExpectBucketCount(
       kMainScreenBrightnessAvailableHistogramName, true, 1);
 }
+
+#if BUILDFLAG(IS_MAC)
+TEST_F(PowerMetricsReporterUnitTest, ReportResourceCoalitionHistograms) {
+  base::HistogramTester histogram_tester;
+  power_metrics::CoalitionResourceUsageRate rate = GetFakeResourceUsageRate();
+
+  std::vector<const char*> suffixes = {"", ".Foo", ".Bar"};
+  PowerMetricsReporterAccess::ReportResourceCoalitionHistograms(rate, suffixes);
+
+  for (const char* scenario_suffix : suffixes) {
+    // These histograms reports the CPU/GPU times as a percentage of time with a
+    // permyriad granularity, 10% (0.1) will be represented as 1000.
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.CPUTime2", scenario_suffix}),
+        rate.cpu_time_per_second * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.GPUTime2", scenario_suffix}),
+        rate.gpu_time_per_second * 10000, 1);
+
+    // These histograms report counts with a millievent/second granularity.
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.InterruptWakeupsPerSecond",
+             scenario_suffix}),
+        rate.interrupt_wakeups_per_second * 1000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition."
+                      "PlatformIdleWakeupsPerSecond",
+                      scenario_suffix}),
+        rate.platform_idle_wakeups_per_second * 1000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.BytesReadPerSecond",
+                      scenario_suffix}),
+        rate.bytesread_per_second * 1000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.BytesWrittenPerSecond",
+             scenario_suffix}),
+        rate.byteswritten_per_second * 1000, 1);
+    // EI is reported in centi-EI so the data needs to be multiplied by 100.0.
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.EnergyImpact",
+                      scenario_suffix}),
+        rate.energy_impact_per_second.value() * 100.0, 1);
+
+    // Power is reported in milliwatts (mj/s), the data is in nj/s so it has to
+    // be divided by 1000000.
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.Power", scenario_suffix}),
+        rate.power_nw / 1000000, 1);
+
+    // The QoS histograms also reports the CPU times as a percentage of time
+    // with a permyriad granularity.
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.QoSLevel.Default",
+                      scenario_suffix}),
+        rate.qos_time_per_second[0] * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.QoSLevel.Maintenance",
+             scenario_suffix}),
+        rate.qos_time_per_second[1] * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.QoSLevel.Background",
+             scenario_suffix}),
+        rate.qos_time_per_second[2] * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.QoSLevel.Utility",
+                      scenario_suffix}),
+        rate.qos_time_per_second[3] * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.QoSLevel.Legacy",
+                      scenario_suffix}),
+        rate.qos_time_per_second[4] * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.QoSLevel.UserInitiated",
+             scenario_suffix}),
+        rate.qos_time_per_second[5] * 10000, 1);
+    histogram_tester.ExpectUniqueSample(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.QoSLevel.UserInteractive",
+             scenario_suffix}),
+        rate.qos_time_per_second[6] * 10000, 1);
+  }
+}
+
+// Verify that no energy impact histogram is reported when
+// `CoalitionResourceUsageRate::energy_impact_per_second` is nullopt.
+TEST_F(PowerMetricsReporterUnitTest,
+       ReportResourceCoalitionHistograms_NoEnergyImpact) {
+  base::HistogramTester histogram_tester;
+  power_metrics::CoalitionResourceUsageRate rate = GetFakeResourceUsageRate();
+  rate.energy_impact_per_second.reset();
+
+  std::vector<const char*> suffixes = {"", ".Foo"};
+  PowerMetricsReporterAccess::ReportResourceCoalitionHistograms(rate, suffixes);
+
+  histogram_tester.ExpectTotalCount(
+      "PerformanceMonitor.ResourceCoalition.EnergyImpact", 0);
+  histogram_tester.ExpectTotalCount(
+      "PerformanceMonitor.ResourceCoalition.EnergyImpact.Foo", 0);
+}
+#endif  // BUILDFLAG(IS_MAC)

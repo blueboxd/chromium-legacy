@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -136,27 +137,11 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
   }
   message_->SetTitle(l10n_util::GetStringUTF16(title_message_id));
 
-  // TODO(crbug.com/1188971): There is no password when federation_origin is
-  // set. Instead we should display federated provider in the description.
-  // GetDisplayFederation() returns federation origin for a given form.
-  const std::u16string masked_password =
-      std::u16string(pending_credentials.password_value.size(), L'•');
-  std::u16string description;
-  if (!account_email_.empty()) {
-    if (update_password) {
-      description = l10n_util::GetStringFUTF16(
-          IDS_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
-          base::UTF8ToUTF16(account_email_));
-    } else {
-      description = l10n_util::GetStringFUTF16(
-          IDS_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
-          base::UTF8ToUTF16(account_email_));
-    }
-  } else {
-    description.append(pending_credentials.username_value)
-        .append(u" ")
-        .append(masked_password);
-  }
+  const bool kIsUnifiedPasswordManager = base::FeatureList::IsEnabled(
+      password_manager::features::kUnifiedPasswordManagerAndroid);
+
+  std::u16string description = GetMessageDescription(
+      pending_credentials, update_password, kIsUnifiedPasswordManager);
   message_->SetDescription(description);
 
   update_password_ = update_password;
@@ -170,8 +155,14 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
   message_->SetPrimaryButtonText(l10n_util::GetStringUTF16(
       GetPrimaryButtonTextId(update_password, use_followup_button_text)));
 
-  message_->SetIconResourceId(
-      ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_INFOBAR_SAVE_PASSWORD));
+  if (kIsUnifiedPasswordManager) {
+    message_->SetIconResourceId(ResourceMapper::MapToJavaDrawableId(
+        IDR_ANDROID_PASSWORD_MANAGER_LOGO_24DP));
+    message_->DisableIconTint();
+  } else {
+    message_->SetIconResourceId(
+        ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_INFOBAR_SAVE_PASSWORD));
+  }
 
   if (!update_password) {
     message_->SetSecondaryIconResourceId(
@@ -182,6 +173,46 @@ void SaveUpdatePasswordMessageDelegate::CreateMessage(bool update_password) {
         &SaveUpdatePasswordMessageDelegate::HandleNeverSaveClicked,
         base::Unretained(this)));
   }
+}
+
+std::u16string SaveUpdatePasswordMessageDelegate::GetMessageDescription(
+    const password_manager::PasswordForm& pending_credentials,
+    bool update_password,
+    bool unified_password_manager) {
+  std::u16string description;
+  if (unified_password_manager) {
+    if (!account_email_.empty()) {
+      description = l10n_util::GetStringFUTF16(
+          update_password
+              ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION
+              : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION,
+          base::UTF8ToUTF16(account_email_));
+    } else {
+      description = l10n_util::GetStringUTF16(
+          update_password
+              ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION
+              : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION);
+    }
+    return description;
+  }
+
+  if (!account_email_.empty()) {
+    description = l10n_util::GetStringFUTF16(
+        update_password
+            ? IDS_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT
+            : IDS_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_GOOGLE_ACCOUNT,
+        base::UTF8ToUTF16(account_email_));
+  } else {
+    // TODO(crbug.com/1188971): There is no password when federation_origin is
+    // set. Instead we should display federated provider in the description.
+    // GetDisplayFederation() returns federation origin for a given form.
+    const std::u16string masked_password =
+        std::u16string(pending_credentials.password_value.size(), L'•');
+    description.append(pending_credentials.username_value)
+        .append(u" ")
+        .append(masked_password);
+  }
+  return description;
 }
 
 int SaveUpdatePasswordMessageDelegate::GetPrimaryButtonTextId(

@@ -85,7 +85,6 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
@@ -174,6 +173,7 @@
 #include "chrome/browser/extensions/preinstalled_apps.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_prefs.h"
@@ -237,6 +237,7 @@
 #include "chrome/browser/cart/cart_service.h"
 #include "chrome/browser/device_api/device_service_impl.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
+#include "chrome/browser/hid/hid_policy_allowed_devices.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/metrics/tab_stats/tab_stats_tracker.h"
@@ -994,6 +995,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   secure_origin_allowlist::RegisterPrefs(registry);
 #if !BUILDFLAG(IS_ANDROID)
   SerialPolicyAllowedPorts::RegisterPrefs(registry);
+  HidPolicyAllowedDevices::RegisterLocalStatePrefs(registry);
 #endif
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
@@ -1850,6 +1852,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 01/2022.
   invalidation::InvalidatorRegistrarWithMemory::
       ClearTopicsWithObsoleteOwnerNames(profile_prefs);
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Added 02/2022.
+  web_app::WebAppProvider::MigrateProfilePrefs(profile);
+#endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

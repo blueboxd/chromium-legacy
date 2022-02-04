@@ -139,8 +139,8 @@
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
+#include "third_party/blink/renderer/core/html/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
@@ -2939,7 +2939,7 @@ bool Element::SkipStyleRecalcForContainer(
   // Store the child_change so that we can continue interleaved style layout
   // from where we left off.
   EnsureElementRareData().EnsureContainerQueryData().SkipStyleRecalc(
-      child_change);
+      child_change.ForceMarkReattachLayoutTree());
 
   GetDocument().GetStyleEngine().SkipStyleRecalcForContainer();
 
@@ -3010,6 +3010,9 @@ void Element::RecalcStyle(const StyleRecalcChange change,
     SetNeedsReattachLayoutTree();
     child_change = child_change.ForceReattachLayoutTree();
     ClearNeedsStyleRecalc();
+  } else if (change.MarkReattachLayoutTree() && GetComputedStyle()) {
+    SetNeedsReattachLayoutTree();
+    DCHECK(!NeedsStyleRecalc());
   }
 
   // We're done with self style, notify the display lock.

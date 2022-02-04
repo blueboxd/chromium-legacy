@@ -7,6 +7,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -37,9 +38,12 @@ class SigninManager : public KeyedService,
   // current UPA, the other cases are if tokens are not loaded but the current
   // UPA's refresh token has been rekoved or tokens are loaded but the current
   // UPA does not have a refresh token. If the UPA is invalid, it needs to be
-  // cleared, |absl::nullopt| is returned. If it is still valid, returns the
+  // cleared, an empty account is returned. If it is still valid, returns the
   // valid UPA.
-  absl::optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
+  CoreAccountInfo ComputeUnconsentedPrimaryAccountInfo() const;
+
+  // KeyedService implementation.
+  void Shutdown() override;
 
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountChanged(
@@ -61,6 +65,9 @@ class SigninManager : public KeyedService,
 
   raw_ptr<PrefService> prefs_;
   raw_ptr<signin::IdentityManager> identity_manager_;
+  base::ScopedObservation<signin::IdentityManager,
+                          signin::IdentityManager::Observer>
+      identity_manager_observation_{this};
 
   // Helper object to listen for changes to the signin allowed preference.
   BooleanPrefMember signin_allowed_;

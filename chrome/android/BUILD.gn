@@ -23,6 +23,7 @@ import("//chrome/browser/commerce/price_tracking/android/java_sources.gni")
 import("//chrome/browser/commerce/subscriptions/android/java_sources.gni")
 import(
     "//chrome/browser/commerce/subscriptions/test/android/test_java_sources.gni")
+import("//chrome/browser/password_manager/buildflags.gni")
 import("//chrome/browser/share/android/java_sources.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
@@ -247,7 +248,6 @@ android_resources("chrome_app_java_resources") {
     "//content/public/android:content_java_resources",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:material_design_java",
-    "//third_party/androidx:androidx_constraintlayout_constraintlayout_java",
     "//third_party/androidx:androidx_gridlayout_gridlayout_java",
     "//third_party/androidx:androidx_preference_preference_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
@@ -598,7 +598,6 @@ android_library("chrome_java") {
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_collection_collection_java",
-    "//third_party/androidx:androidx_constraintlayout_constraintlayout_java",
     "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_customview_customview_java",
@@ -717,6 +716,10 @@ android_library("chrome_java") {
 
   # TODO(crbug.com/1174713): This is temporary to not break downstream targets.
   public_deps = [ "//chrome/browser/notifications:java" ]
+
+  if (password_manager_use_internal_android_resources) {
+    deps += [ "//clank/components/password_manager:java_resources" ]
+  }
 }
 
 # Template for strict mode detection enabling/disabling so that proguard strips out
@@ -887,7 +890,10 @@ java_cpp_template("resource_id_javagen") {
     "$root_gen_dir/device/vr/buildflags/buildflags.h",
   ]
 
-  deps = [ "//device/vr/buildflags" ]
+  deps = [
+    "//chrome/browser/password_manager:password_manager_buildflags",
+    "//device/vr/buildflags",
+  ]
 }
 
 junit_binary("chrome_junit_tests") {

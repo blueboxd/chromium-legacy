@@ -160,14 +160,12 @@ apps::mojom::InstallReason GetHighestPriorityInstallReason(
   }
 }
 
-apps::mojom::InstallSource GetInstallSource(PrefService* prefs,
-                                            const AppId& app_id) {
-  auto install_source = web_app::GetWebAppInstallSource(prefs, app_id);
-  if (!install_source.has_value()) {
+apps::mojom::InstallSource ConvertInstallSourceToMojom(
+    absl::optional<webapps::WebappInstallSource> source) {
+  if (!source)
     return apps::mojom::InstallSource::kUnknown;
-  }
 
-  switch (static_cast<webapps::WebappInstallSource>(install_source.value())) {
+  switch (*source) {
     case webapps::WebappInstallSource::MENU_BROWSER_TAB:
     case webapps::WebappInstallSource::MENU_CUSTOM_TAB:
     case webapps::WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
@@ -192,6 +190,7 @@ apps::mojom::InstallSource GetInstallSource(PrefService* prefs,
     case webapps::WebappInstallSource::SYNC:
       return apps::mojom::InstallSource::kSync;
     case webapps::WebappInstallSource::COUNT:
+      NOTREACHED();
       return apps::mojom::InstallSource::kUnknown;
   }
 }
@@ -499,7 +498,9 @@ std::unique_ptr<apps::App> WebAppPublisherHelper::CreateWebApp(
       apps::ConvertMojomInstallReasonToInstallReason(
           GetHighestPriorityInstallReason(web_app)),
       apps::ConvertMojomInstallSourceToInstallSource(
-          GetInstallSource(profile()->GetPrefs(), web_app->app_id())));
+          ConvertInstallSourceToMojom(
+              provider_->registrar().GetAppInstallSourceForMetrics(
+                  web_app->app_id()))));
 
   app->description = web_app->description();
   app->additional_search_terms = web_app->additional_search_terms();
@@ -593,8 +594,8 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
       apps::PublisherBase::MakeApp(app_type(), web_app->app_id(), readiness,
                                    web_app->name(), install_reason);
 
-  app->install_source =
-      GetInstallSource(profile()->GetPrefs(), web_app->app_id());
+  app->install_source = ConvertInstallSourceToMojom(
+      provider_->registrar().GetAppInstallSourceForMetrics(web_app->app_id()));
 
   GURL install_url;
   if (registrar().HasExternalAppWithInstallSource(
@@ -1151,6 +1152,23 @@ void WebAppPublisherHelper::PublishWindowModeUpdate(
   delegate_->PublishWebApp(std::move(app));
 }
 
+void WebAppPublisherHelper::PublishRunOnOsLoginModeUpdate(
+    const std::string& app_id,
+    RunOnOsLoginMode run_on_os_login_mode) {
+  const WebApp* web_app = GetWebApp(app_id);
+  if (!web_app || !Accepts(app_id)) {
+    return;
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type();
+  app->app_id = app_id;
+  // The runOnOsLogin mode is currently not defined in this CL
+  // hence this function just publishes a normal WebApp.
+  // Changes are plumbed in the next CL.
+  delegate_->PublishWebApp(std::move(app));
+}
+
 std::string WebAppPublisherHelper::GenerateShortcutId() {
   return base::NumberToString(shortcut_id_generator_.GenerateNextId().value());
 }
@@ -1273,6 +1291,12 @@ void WebAppPublisherHelper::OnWebAppUserDisplayModeChanged(
     const AppId& app_id,
     DisplayMode user_display_mode) {
   PublishWindowModeUpdate(app_id, user_display_mode);
+}
+
+void WebAppPublisherHelper::OnWebAppRunOnOsLoginModeChanged(
+    const AppId& app_id,
+    RunOnOsLoginMode run_on_os_login_mode) {
+  PublishRunOnOsLoginModeUpdate(app_id, run_on_os_login_mode);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

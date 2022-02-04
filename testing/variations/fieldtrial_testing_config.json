@@ -268,7 +268,27 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_10000_2022-02-01",
+                    "enable_features": [
+                        "MessagesForAndroidPasswords",
+                        "MessagesForAndroidUpdatePassword"
+                    ]
+                },
+                {
+                    "name": "Enabled_20000_2022-02-01",
+                    "params": {
+                        "save_password_message_dismiss_duration_ms": "20000"
+                    },
+                    "enable_features": [
+                        "MessagesForAndroidPasswords",
+                        "MessagesForAndroidUpdatePassword"
+                    ]
+                },
+                {
+                    "name": "Enabled_15000_2022-02-01",
+                    "params": {
+                        "save_password_message_dismiss_duration_ms": "15000"
+                    },
                     "enable_features": [
                         "MessagesForAndroidPasswords",
                         "MessagesForAndroidUpdatePassword"
@@ -2975,6 +2995,26 @@
             ]
         }
     ],
+    "FasterSetCookie": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FasterSetCookie"
+                    ]
+                }
+            ]
+        }
+    ],
     "FeatureNotificationGuide": [
         {
             "platforms": [
@@ -5058,25 +5098,6 @@
             ]
         }
     ],
-    "PreconnectOnDidFinishNavigation": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_3_seconds",
-                    "params": {
-                        "delay_after_commit_in_ms": "3000"
-                    },
-                    "enable_features": [
-                        "PreconnectOnDidFinishNavigation"
-                    ]
-                }
-            ]
-        }
-    ],
     "PreconnectToSearchDesktop": [
         {
             "platforms": [
@@ -6609,7 +6630,7 @@
             ]
         }
     ],
-    "V8ConcurrentSparkplug-Android": [
+    "V8ConcurrentSparkplugAndroid": [
         {
             "platforms": [
                 "android",

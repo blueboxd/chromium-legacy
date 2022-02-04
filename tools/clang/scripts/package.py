@@ -341,6 +341,13 @@ def main():
         'lib/clang/$V/lib/linux/libclang_rt.builtins-i686-android.a',
         'lib/clang/$V/lib/linux/libclang_rt.builtins-x86_64-android.a',
 
+        # Builtins for Lacros (and potentially Linux, but not used there atm).
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.builtins.a',
+
+        # crtstart/crtend for Linux and Lacros.
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/clang_rt.crtbegin.o',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/clang_rt.crtend.o',
+
         # HWASAN Android runtime.
         'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
 
@@ -498,6 +505,13 @@ def main():
 
   if sys.platform.startswith('linux'):
     os.symlink('llvm-objcopy', os.path.join(pdir, 'bin', 'llvm-strip'))
+
+    # Make `--target=*-cros-linux-gnu` work with
+    # LLVM_ENABLE_PER_TARGET_RUNTIME_DIR=ON.
+    os.symlink(
+        'x86_64-unknown-linux-gnu',
+        os.path.join(pdir, 'lib', 'clang', RELEASE_VERSION, 'lib',
+                     'x86_64-cros-linux-gnu'))
 
   # Copy libc++ headers.
   if sys.platform == 'darwin':

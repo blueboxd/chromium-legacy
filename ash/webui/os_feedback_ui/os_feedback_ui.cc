@@ -11,8 +11,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/url_constants.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace ash {
 
@@ -35,6 +37,15 @@ OSFeedbackUI::OSFeedbackUI(content::WebUI* web_ui)
     : MojoWebUIController(web_ui) {
   auto source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUIOSFeedbackHost));
+
+  // Add ability to request chrome-untrusted://os-feedback URLs.
+  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+  // We need a CSP override to use the chrome-untrusted:// scheme in the host.
+  const std::string csp =
+      std::string("frame-src ") + kChromeUIOSFeedbackUntrustedUrl + ";";
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::FrameSrc, csp);
+
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
@@ -46,6 +57,15 @@ OSFeedbackUI::OSFeedbackUI(content::WebUI* web_ui)
 
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, source.release());
+
+  // Register common permissions for chrome-untrusted:// pages.
+  // TODO(https://crbug.com/1113568): Remove this after common permissions are
+  // granted by default.
+  auto* webui_allowlist = WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin untrusted_origin =
+      url::Origin::Create(GURL(kChromeUIOSFeedbackUntrustedUrl));
+  webui_allowlist->RegisterAutoGrantedPermission(
+      untrusted_origin, ContentSettingsType::JAVASCRIPT);
 }
 
 OSFeedbackUI::~OSFeedbackUI() = default;

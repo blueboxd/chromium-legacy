@@ -37,6 +37,8 @@ source_set("backend") {
     "password_store_android_backend_bridge_impl.cc",
     "password_store_android_backend_bridge_impl.h",
     "password_store_operation_target.h",
+    "password_sync_controller_delegate_android.cc",
+    "password_sync_controller_delegate_android.h",
   ]
 
   public_deps = [ "//base" ]
@@ -172,6 +174,8 @@ android_library("settings_interface_java") {
     "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncherFactory.java",
     "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncherFactoryImpl.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordCheckReferrer.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordCheckupClientHelper.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordCheckupClientHelperFactory.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsAccessor.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsAccessorFactory.java",
   ]

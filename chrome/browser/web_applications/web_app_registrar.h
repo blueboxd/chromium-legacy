@@ -28,6 +28,10 @@ namespace apps {
 struct ShareTarget;
 }  // namespace apps
 
+namespace webapps {
+enum class WebappInstallSource;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver;
@@ -178,6 +182,9 @@ class WebAppRegistrar : public ProfileManagerObserver {
   base::Time GetAppLastLaunchTime(const AppId& app_id) const;
   base::Time GetAppInstallTime(const AppId& app_id) const;
 
+  absl::optional<webapps::WebappInstallSource> GetAppInstallSourceForMetrics(
+      const AppId& app_id) const;
+
   // Returns the "icons" field from the app manifest, use |WebAppIconManager| to
   // load icon bitmap data.
   std::vector<apps::IconInfo> GetAppIconInfos(const AppId& app_id) const;
@@ -293,6 +300,9 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void NotifyWebAppInstalledWithOsHooks(const AppId& app_id);
   void NotifyWebAppUserDisplayModeChanged(const AppId& app_id,
                                           DisplayMode user_display_mode);
+  void NotifyWebAppRunOnOsLoginModeChanged(
+      const AppId& app_id,
+      RunOnOsLoginMode run_on_os_login_mode);
 
   // ProfileManagerObserver:
   void OnProfileMarkedForPermanentDeletion(

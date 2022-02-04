@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/desk_template.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
@@ -77,7 +78,7 @@ std::u16string GetTimeStr(base::Time timestamp) {
   // Returns empty if `timestamp` is out of relative date range, which is
   // yesterday and today as of now. Please see `ui/base/l10n/time_format.h` for
   // more details.
-  date = ui::TimeFormat::RelativeDate(timestamp, NULL);
+  date = ui::TimeFormat::RelativeDate(timestamp, nullptr);
   if (date.empty()) {
     // Syntax `yMMMdjmm` is used by the File App if it's not a relative date.
     // Please note, this might be slightly different for different locales.
@@ -99,7 +100,8 @@ std::u16string GetTimeStr(base::Time timestamp) {
 
 }  // namespace
 
-DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
+DesksTemplatesItemView::DesksTemplatesItemView(
+    const DeskTemplate* desk_template)
     : desk_template_(desk_template->Clone()) {
   auto launch_template_callback =
       base::BindRepeating(&DesksTemplatesItemView::OnGridItemPressed,
@@ -108,7 +110,7 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
   const std::u16string template_name = desk_template_->template_name();
   auto* color_provider = AshColorProvider::Get();
   const bool is_admin_managed =
-      desk_template->source() == DeskTemplateSource::kPolicy;
+      desk_template_->source() == DeskTemplateSource::kPolicy;
 
   views::BoxLayoutView* card_container;
   views::View* spacer;
@@ -188,6 +190,7 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
       base::BindRepeating(&DesksTemplatesItemView::OnDeleteButtonPressed,
                           weak_ptr_factory_.GetWeakPtr()),
       CloseButton::Type::kMedium));
+  delete_button_->SetVectorIcon(kDeleteIcon);
 
   name_view_->set_controller(this);
   name_view_observation_.Observe(name_view_);
@@ -424,7 +427,7 @@ void DesksTemplatesItemView::UpdateTemplateName() {
                        DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
                            /*is_update=*/true, std::move(desk_template));
                      },
-                     std::move(desk_template_)));
+                     desk_template_->Clone()));
 }
 
 void DesksTemplatesItemView::ContentsChanged(
@@ -534,16 +537,6 @@ views::View* DesksTemplatesItemView::TargetForRect(views::View* root,
 }
 
 void DesksTemplatesItemView::OnDeleteTemplate() {
-  // Notify the highlight controller that we're going away.
-  OverviewHighlightController* highlight_controller =
-      Shell::Get()
-          ->overview_controller()
-          ->overview_session()
-          ->highlight_controller();
-  DCHECK(highlight_controller);
-  highlight_controller->OnViewDestroyingOrDisabling(this);
-  highlight_controller->OnViewDestroyingOrDisabling(name_view_);
-
   DesksTemplatesPresenter::Get()->DeleteEntry(
       desk_template_->uuid().AsLowercaseString());
 }
@@ -599,7 +592,7 @@ views::View* DesksTemplatesItemView::GetView() {
 }
 
 void DesksTemplatesItemView::MaybeActivateHighlightedView() {
-  MaybeLaunchTemplate(/*delay=*/false);
+  MaybeLaunchTemplate(/*should_delay=*/false);
 }
 
 void DesksTemplatesItemView::MaybeCloseHighlightedView() {

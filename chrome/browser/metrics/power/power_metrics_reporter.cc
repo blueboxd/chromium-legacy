@@ -20,6 +20,10 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "components/power_metrics/resource_coalition_mac.h"
+#endif  // BUILDFLAG(IS_MAC)
+
 namespace {
 
 constexpr const char* kBatteryDischargeRateHistogramName =
@@ -32,6 +36,34 @@ constexpr const char* kMainScreenBrightnessHistogramName =
     "Power.MainScreenBrightness2";
 constexpr const char* kMainScreenBrightnessAvailableHistogramName =
     "Power.MainScreenBrightnessAvailable";
+
+#if BUILDFLAG(IS_MAC)
+// Reports `proportion` of a time used to a histogram in permyriad (1/100 %).
+// `proportion` is 0.5 if half a CPU core or half total GPU time is used. It can
+// be above 1.0 if more than 1 CPU core is used. CPU and GPU usage is often
+// below 1% so it's useful to report with 1/10000 granularity (otherwise most
+// samples end up in the same bucket).
+void UsageTimeHistogram(const std::string& histogram_name,
+                        double proportion,
+                        int max_proportion) {
+  // Multiplicator to convert `proportion` to permyriad (1/100 %).
+  // For example, 1.0 * kScaleFactor = 10000 1/100 % = 100 %.
+  constexpr int kScaleFactor = 100 * 100;
+
+  base::UmaHistogramCustomCounts(
+      histogram_name, std::lroundl(proportion * kScaleFactor),
+      /* min=*/1, /* exclusive_max=*/max_proportion * kScaleFactor,
+      /* buckets=*/50);
+}
+
+// Max proportion for CPU time histograms. This used to be 64 but was reduced to
+// 2 because data shows that less than 0.2% of samples are above that.
+constexpr int kMaxCPUProportion = 2;
+
+// Max proportion for GPU time histograms. It's not possible to use more than
+// 100% of total GPU time.
+constexpr int kMaxGPUProportion = 1;
+#endif  // BUILDFLAG(IS_MAC)
 
 // Calculates the UKM bucket |value| falls in and returns it. This uses an
 // exponential bucketing approach with an exponent base of 1.3, resulting in
@@ -101,8 +133,8 @@ PowerMetricsReporter::PowerMetricsReporter(
     std::unique_ptr<BatteryLevelProvider> battery_level_provider)
     : data_store_(data_store),
       battery_level_provider_(std::move(battery_level_provider)) {
-  DCHECK(performance_monitor::ProcessMonitor::Get());
-  performance_monitor::ProcessMonitor::Get()->AddObserver(this);
+  DCHECK(ProcessMonitor::Get());
+  ProcessMonitor::Get()->AddObserver(this);
 
   battery_level_provider_->GetBatteryState(
       base::BindOnce(&PowerMetricsReporter::OnFirstBatteryStateSampled,
@@ -117,7 +149,7 @@ PowerMetricsReporter::PowerMetricsReporter(
 }
 
 PowerMetricsReporter::~PowerMetricsReporter() {
-  if (auto* process_monitor = performance_monitor::ProcessMonitor::Get()) {
+  if (auto* process_monitor = ProcessMonitor::Get()) {
     process_monitor->RemoveObserver(this);
   }
 }
@@ -136,13 +168,13 @@ int64_t PowerMetricsReporter::GetBucketForSampleForTesting(
 }
 
 void PowerMetricsReporter::OnAggregatedMetricsSampled(
-    const performance_monitor::ProcessMonitor::Metrics& metrics) {
+    const ProcessMonitor::Metrics& metrics) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  battery_level_provider_->GetBatteryState(
-      base::BindOnce(&PowerMetricsReporter::OnBatteryStateAndMetricsSampled,
-                     weak_factory_.GetWeakPtr(), metrics,
-                     /* scheduled_time=*/base::TimeTicks::Now()));
+  battery_level_provider_->GetBatteryState(base::BindOnce(
+      &PowerMetricsReporter::OnBatteryAndAggregatedProcessMetricsSampled,
+      weak_factory_.GetWeakPtr(), metrics,
+      /* battery_sample_begin_time=*/base::TimeTicks::Now()));
 }
 
 std::vector<const char*> PowerMetricsReporter::GetSuffixesForTesting(
@@ -152,14 +184,19 @@ std::vector<const char*> PowerMetricsReporter::GetSuffixesForTesting(
 
 void PowerMetricsReporter::ReportHistograms(
     const UsageScenarioDataStore::IntervalData& interval_data,
-    const performance_monitor::ProcessMonitor::Metrics& metrics,
+    const ProcessMonitor::Metrics& aggregated_process_metrics,
     base::TimeDelta interval_duration,
     BatteryDischarge battery_discharge) {
   const std::vector<const char*> suffixes = GetSuffixes(interval_data);
-  ReportCPUHistograms(metrics, suffixes);
+  ReportAggregatedProcessMetricsHistograms(aggregated_process_metrics,
+                                           suffixes);
+
   ReportBatteryHistograms(interval_duration, battery_discharge, suffixes);
 #if BUILDFLAG(IS_MAC)
-  RecordCoalitionData(metrics, suffixes);
+  if (aggregated_process_metrics.coalition_data.has_value()) {
+    ReportResourceCoalitionHistograms(
+        aggregated_process_metrics.coalition_data.value(), suffixes);
+  }
 #endif
 }
 
@@ -168,23 +205,22 @@ void PowerMetricsReporter::ReportBatteryHistograms(
     BatteryDischarge battery_discharge,
     const std::vector<const char*>& suffixes) {
   // Ratio by which the time elapsed can deviate from
-  // |performance_monitor::ProcessMonitor::kGatherInterval| without invalidating
-  // this sample.
+  // |ProcessMonitor::kGatherInterval| without invalidating this sample.
   constexpr double kTolerableTimeElapsedRatio = 0.10;
   constexpr double kTolerablePositiveDrift = (1. + kTolerableTimeElapsedRatio);
   constexpr double kTolerableNegativeDrift = (1. - kTolerableTimeElapsedRatio);
 
   if (battery_discharge.mode == BatteryDischargeMode::kDischarging &&
-      interval_duration > performance_monitor::ProcessMonitor::kGatherInterval *
-                              kTolerablePositiveDrift) {
+      interval_duration >
+          ProcessMonitor::kGatherInterval * kTolerablePositiveDrift) {
     // Too much time passed since the last record. Either the task took
     // too long to get executed or system sleep took place.
     battery_discharge.mode = BatteryDischargeMode::kInvalidInterval;
   }
 
   if (battery_discharge.mode == BatteryDischargeMode::kDischarging &&
-      interval_duration < performance_monitor::ProcessMonitor::kGatherInterval *
-                              kTolerableNegativeDrift) {
+      interval_duration <
+          ProcessMonitor::kGatherInterval * kTolerableNegativeDrift) {
     // The recording task executed too early after the previous one, possibly
     // because the previous task took too long to execute.
     battery_discharge.mode = BatteryDischargeMode::kInvalidInterval;
@@ -213,9 +249,9 @@ void PowerMetricsReporter::OnFirstBatteryStateSampled(
     std::move(on_battery_sampled_for_testing_).Run();
 }
 
-void PowerMetricsReporter::OnBatteryStateAndMetricsSampled(
-    const performance_monitor::ProcessMonitor::Metrics& metrics,
-    base::TimeTicks scheduled_time,
+void PowerMetricsReporter::OnBatteryAndAggregatedProcessMetricsSampled(
+    const ProcessMonitor::Metrics& aggregated_process_metrics,
+    base::TimeTicks battery_sample_begin_time,
     const BatteryLevelProvider::BatteryState& battery_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -223,18 +259,19 @@ void PowerMetricsReporter::OnBatteryStateAndMetricsSampled(
   base::TimeDelta interval_duration = now - interval_begin_;
   interval_begin_ = now;
   base::UmaHistogramMicrosecondsTimes(kBatterySamplingDelayHistogramName,
-                                      now - scheduled_time);
+                                      now - battery_sample_begin_time);
 
   auto battery_discharge =
       GetBatteryDischargeDuringInterval(battery_state, interval_duration);
-  ReportUKMsAndHistograms(metrics, interval_duration, battery_discharge);
+  ReportUKMsAndHistograms(aggregated_process_metrics, interval_duration,
+                          battery_discharge);
 
   if (on_battery_sampled_for_testing_)
     std::move(on_battery_sampled_for_testing_).Run();
 }
 
 void PowerMetricsReporter::ReportUKMsAndHistograms(
-    const performance_monitor::ProcessMonitor::Metrics& metrics,
+    const ProcessMonitor::Metrics& aggregated_process_metrics,
     base::TimeDelta interval_duration,
     BatteryDischarge battery_discharge) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -263,27 +300,116 @@ void PowerMetricsReporter::ReportUKMsAndHistograms(
   base::UmaHistogramBoolean(kMainScreenBrightnessAvailableHistogramName,
                             main_screen_brightness.has_value());
 
-  ReportUKMs(interval_data, metrics, interval_duration, battery_discharge,
-             main_screen_brightness);
+  ReportUKMs(interval_data, aggregated_process_metrics, interval_duration,
+             battery_discharge, main_screen_brightness);
 
-  ReportHistograms(interval_data, metrics, interval_duration,
+  ReportHistograms(interval_data, aggregated_process_metrics, interval_duration,
                    battery_discharge);
 }
 
 // static
-void PowerMetricsReporter::ReportCPUHistograms(
-    const performance_monitor::ProcessMonitor::Metrics& metrics,
+void PowerMetricsReporter::ReportAggregatedProcessMetricsHistograms(
+    const ProcessMonitor::Metrics& aggregated_process_metrics,
     const std::vector<const char*>& suffixes) {
   for (const char* suffix : suffixes) {
     std::string complete_suffix = base::StrCat({"Total", suffix});
     performance_monitor::RecordProcessHistograms(complete_suffix.c_str(),
-                                                 metrics);
+                                                 aggregated_process_metrics);
   }
 }
 
+#if BUILDFLAG(IS_MAC)
+// static
+void PowerMetricsReporter::ReportResourceCoalitionHistograms(
+    const power_metrics::CoalitionResourceUsageRate& rate,
+    const std::vector<const char*>& suffixes) {
+  // Calling this function with an empty suffix list is probably a mistake.
+  DCHECK(!suffixes.empty());
+
+  // TODO(crbug.com/1229884): Review the units and buckets once we have
+  // sufficient data from the field.
+
+  for (const char* scenario_suffix : suffixes) {
+    // Suffixes are expected to be empty or starting by a period.
+    DCHECK(::strlen(scenario_suffix) == 0U || scenario_suffix[0] == '.');
+
+    UsageTimeHistogram(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.CPUTime2", scenario_suffix}),
+        rate.cpu_time_per_second, kMaxCPUProportion);
+    UsageTimeHistogram(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.GPUTime2", scenario_suffix}),
+        rate.gpu_time_per_second, kMaxGPUProportion);
+
+    // Report the metrics based on a count (e.g. wakeups) with a millievent/sec
+    // granularity. In theory it doesn't make much sense to talk about a
+    // milliwakeups but the wakeup rate should ideally be lower than one per
+    // second in some scenarios and this will provide more granularity.
+    constexpr int kMilliFactor = 1000;
+    auto scale_sample = [](double sample) -> int {
+      // Round the sample to the nearest integer value.
+      return std::roundl(sample * kMilliFactor);
+    };
+    base::UmaHistogramCounts1M(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.InterruptWakeupsPerSecond",
+             scenario_suffix}),
+        scale_sample(rate.interrupt_wakeups_per_second));
+    base::UmaHistogramCounts1M(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition."
+                      "PlatformIdleWakeupsPerSecond",
+                      scenario_suffix}),
+        scale_sample(rate.platform_idle_wakeups_per_second));
+    base::UmaHistogramCounts10M(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.BytesReadPerSecond",
+                      scenario_suffix}),
+        scale_sample(rate.bytesread_per_second));
+    base::UmaHistogramCounts10M(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.BytesWrittenPerSecond",
+             scenario_suffix}),
+        scale_sample(rate.byteswritten_per_second));
+
+    // EnergyImpact is reported in centi-EI, so scaled up by a factor of 100
+    // for the histogram recording.
+    if (rate.energy_impact_per_second.has_value()) {
+      constexpr double kEnergyImpactScalingFactor = 100.0;
+      base::UmaHistogramCounts100000(
+          base::StrCat({"PerformanceMonitor.ResourceCoalition.EnergyImpact",
+                        scenario_suffix}),
+          std::roundl(rate.energy_impact_per_second.value() *
+                      kEnergyImpactScalingFactor));
+    }
+
+    constexpr int kNanoWattToMilliWatt = 1000 * 1000;
+    // Use a maximum of 100 watts, or 100 * 1000 milliwatts.
+    base::UmaHistogramCounts100000(
+        base::StrCat(
+            {"PerformanceMonitor.ResourceCoalition.Power", scenario_suffix}),
+        std::roundl(rate.power_nw / kNanoWattToMilliWatt));
+
+    auto record_qos_level = [&](size_t index, const char* qos_suffix) {
+      UsageTimeHistogram(
+          base::StrCat({"PerformanceMonitor.ResourceCoalition.QoSLevel.",
+                        qos_suffix, scenario_suffix}),
+          rate.qos_time_per_second[index], kMaxCPUProportion);
+    };
+
+    record_qos_level(THREAD_QOS_DEFAULT, "Default");
+    record_qos_level(THREAD_QOS_MAINTENANCE, "Maintenance");
+    record_qos_level(THREAD_QOS_BACKGROUND, "Background");
+    record_qos_level(THREAD_QOS_UTILITY, "Utility");
+    record_qos_level(THREAD_QOS_LEGACY, "Legacy");
+    record_qos_level(THREAD_QOS_USER_INITIATED, "UserInitiated");
+    record_qos_level(THREAD_QOS_USER_INTERACTIVE, "UserInteractive");
+  }
+}
+#endif  // BUILDFLAG(IS_MAC)
+
 void PowerMetricsReporter::ReportUKMs(
     const UsageScenarioDataStore::IntervalData& interval_data,
-    const performance_monitor::ProcessMonitor::Metrics& metrics,
+    const ProcessMonitor::Metrics& metrics,
     base::TimeDelta interval_duration,
     BatteryDischarge battery_discharge,
     absl::optional<int64_t> main_screen_brightness) const {

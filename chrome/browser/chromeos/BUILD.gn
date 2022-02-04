@@ -1653,6 +1653,8 @@ source_set("chromeos") {
     "../ash/input_method/assistive_suggester.h",
     "../ash/input_method/assistive_suggester_client_filter.cc",
     "../ash/input_method/assistive_suggester_client_filter.h",
+    "../ash/input_method/assistive_suggester_prefs.cc",
+    "../ash/input_method/assistive_suggester_prefs.h",
     "../ash/input_method/assistive_suggester_switch.h",
     "../ash/input_method/assistive_window_controller.cc",
     "../ash/input_method/assistive_window_controller.h",
@@ -2521,6 +2523,8 @@ source_set("chromeos") {
     "../ash/policy/enrollment/private_membership/psm_rlwe_id_provider.h",
     "../ash/policy/enrollment/private_membership/psm_rlwe_id_provider_impl.cc",
     "../ash/policy/enrollment/private_membership/psm_rlwe_id_provider_impl.h",
+    "../ash/policy/enrollment/private_membership/testing_psm_rlwe_id_provider.cc",
+    "../ash/policy/enrollment/private_membership/testing_psm_rlwe_id_provider.h",
     "../ash/policy/enrollment/tpm_enrollment_key_signing_service.cc",
     "../ash/policy/enrollment/tpm_enrollment_key_signing_service.h",
     "../ash/policy/external_data/cloud_external_data_manager_base.cc",
@@ -3634,9 +3638,7 @@ source_set("chromeos") {
   }
 
   if (enable_hibernate) {
-    deps += [
-      "//chromeos/dbus/hiberman",
-    ]
+    deps += [ "//chromeos/dbus/hiberman" ]
   }
 }
 

@@ -384,6 +384,10 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [2580],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/quota/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2590],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/webrtc/resources/resources.grd": {
     "META": {"sizes": {"includes": [20],}},
     "includes": [2600],
@@ -825,10 +829,6 @@
   },
   "extensions/strings/extensions_strings.grd": {
     "messages": [4380],
-  },
-
-  "headless/lib/resources/headless_lib_resources.grd": {
-    "includes": [4400],
   },
 
   "mojo/public/js/mojo_bindings_resources.grd": {

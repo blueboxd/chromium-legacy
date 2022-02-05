@@ -824,6 +824,13 @@
       status: "experimental"
     },
     {
+      // Support for viewport units added by css-values-4.
+      //
+      // https://drafts.csswg.org/css-values-4/#viewport-relative-units
+      name: "CSSViewportUnits4",
+      status: "experimental",
+    },
+    {
       name: "CustomElementDefaultStyle",
       status: "experimental",
     },
@@ -1255,15 +1262,6 @@
     {
       name: "InteractionId",
       status: "stable",
-    },
-    {
-      name: "InterestCohortAPI",
-      origin_trial_feature_name: "InterestCohortAPI",
-      origin_trial_allows_third_party: true,
-    },
-    {
-      name: "InterestCohortFeaturePolicy",
-      status: "experimental",
     },
     {
       name: "KeyboardAccessibleTooltip",
@@ -1758,7 +1756,6 @@
     // TODO(crbug.com/1209835): this feature is getting deprecated.
     {
       name: "PaymentRequestBasicCard",
-      status: "stable",
     },
     {
       name: "PaymentRequestMerchantValidationEvent",

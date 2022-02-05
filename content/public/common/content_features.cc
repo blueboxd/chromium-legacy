@@ -419,7 +419,7 @@ const base::Feature kIdleDetection{"IdleDetection",
 // Note that navigation_start does not take into account the amount of time the
 // renderer spends processing the IPC (that is, executing script).
 const base::Feature kIncludeIpcOverheadInNavigationStart{
-    "IncludeIpcOverheadInNavigationStart", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IncludeIpcOverheadInNavigationStart", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill switch for the GetInstalledRelatedApps API.
 const base::Feature kInstalledApp{"InstalledApp",
@@ -777,7 +777,7 @@ const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
 // Enable the basic-card payment method from the PaymentRequest API. This flag
 // will be used to deprecate basic-card eventually: crbug.com/1209835.
 const base::Feature kPaymentRequestBasicCard{"PaymentRequestBasicCard",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use this feature to experiment terminating a service worker when it doesn't
 // control any clients: https://crbug.com/1043845.

@@ -547,8 +547,10 @@ source_set("chromeos") {
   ]
   if (is_chromeos_ash) {
     deps += [ "//remoting/host/chromeos:host_event_reporter_impl" ]
+    if (use_libfuzzer) {
+      deps += [ "//components/exo/wayland:weston_test_stub" ]
+    }
   }
-
   data_deps = [ ":dbus_service_files" ]
 
   allow_circular_includes_from = [
@@ -5065,6 +5067,7 @@ fuzzer_test("zeroconf_printer_detector_fuzzer") {
     "//base/test:test_support",
     "//chrome/browser",
     "//chrome/browser/chromeos",
+    "//components/exo/wayland:weston_test",
   ]
 }
 
@@ -5080,6 +5083,7 @@ if (use_libfuzzer) {
       "//chromeos/dbus:dbus",
       "//chromeos/tpm",
       "//components:components_tests_pak",
+      "//components/exo/wayland:weston_test",
       "//components/policy/core/browser:internal",
       "//third_party/libprotobuf-mutator",
       "//ui/resources:ui_test_pak",
@@ -5115,6 +5119,7 @@ if (use_libfuzzer) {
       "//base",
       "//chrome/browser",
       "//chrome/browser/chromeos",
+      "//components/exo/wayland:weston_test",
     ]
   }
 
@@ -5125,6 +5130,7 @@ if (use_libfuzzer) {
       "//base",
       "//chrome/browser",
       "//chrome/browser/chromeos",
+      "//components/exo/wayland:weston_test",
     ]
   }
 }

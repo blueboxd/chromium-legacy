@@ -5,16 +5,18 @@
 import './strings.m.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import 'chrome://resources/cr_components/app_management/more_permissions_item.js';
+import 'chrome://resources/cr_components/app_management/run_on_os_login_item.js';
 import 'chrome://resources/cr_components/app_management/permission_item.js';
 import 'chrome://resources/cr_components/app_management/window_mode_item.js';
 import 'chrome://resources/cr_components/app_management/icons.js';
+import 'chrome://resources/cr_components/app_management/uninstall_button.js';
 
 import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {BrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
 import {getAppIcon} from 'chrome://resources/cr_components/app_management/util.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-
+// TODO(crbug.com/1294060): Investigate end-to-end WebAppSettings tests
 export class WebAppSettingsAppElement extends PolymerElement {
   static get is() {
     return 'web-app-settings-app';

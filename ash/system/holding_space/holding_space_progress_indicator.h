@@ -18,9 +18,9 @@ namespace ash {
 
 class HoldingSpaceController;
 class HoldingSpaceItem;
-class HoldingSpaceProgressIconAnimation;
-class HoldingSpaceProgressRingAnimation;
+class ProgressIconAnimation;
 class ProgressIndicatorAnimationRegistry;
+class ProgressRingAnimation;
 
 // A class owning a `ui::Layer` which paints indication of progress.
 // NOTE: The owned `layer()` is not painted if progress == `1.f`.
@@ -34,6 +34,12 @@ class ASH_EXPORT HoldingSpaceProgressIndicator : public ui::LayerOwner,
   HoldingSpaceProgressIndicator& operator=(
       const HoldingSpaceProgressIndicator&) = delete;
   ~HoldingSpaceProgressIndicator() override;
+
+  // Returns an instance which paints indication of progress returned by the
+  // specified `progress_callback`. NOTE: This instance comes pre-wired with an
+  // `animation_registry_` that will manage progress animations as needed.
+  static std::unique_ptr<HoldingSpaceProgressIndicator> CreateDefaultInstance(
+      base::RepeatingCallback<absl::optional<float>()> progress_callback);
 
   // Returns an instance which paints indication of progress for all holding
   // space items in the model attached to the specified `controller`.
@@ -68,6 +74,12 @@ class ASH_EXPORT HoldingSpaceProgressIndicator : public ui::LayerOwner,
   void SetInnerIconVisible(bool visible);
   bool inner_icon_visible() const { return inner_icon_visible_; }
 
+  // Returns the underlying `animation_registry_` in which to look up animations
+  // for the associated `animation_key_`. NOTE: This may return `nullptr`.
+  ProgressIndicatorAnimationRegistry* animation_registry() {
+    return animation_registry_;
+  }
+
   // Returns the underlying `progress_` for which to paint indication.
   // NOTE: If absent, progress is indeterminate.
   // NOTE: If present, progress must be >= `0.f` and <= `1.f`.
@@ -99,14 +111,12 @@ class ASH_EXPORT HoldingSpaceProgressIndicator : public ui::LayerOwner,
   // Invoked when the icon `animation` associated with this progress indicator's
   // `animation_key_` has changed in the `animation_registry_`.
   // NOTE: The specified `animation` may be `nullptr`.
-  void OnProgressIconAnimationChanged(
-      HoldingSpaceProgressIconAnimation* animation);
+  void OnProgressIconAnimationChanged(ProgressIconAnimation* animation);
 
   // Invoked when the ring `animation` associated with this progress indicator's
   // `animation_key_` has changed in the `animation_registry_`.
   // NOTE: The specified `animation` may be `nullptr`.
-  void OnProgressRingAnimationChanged(
-      HoldingSpaceProgressRingAnimation* animation);
+  void OnProgressRingAnimationChanged(ProgressRingAnimation* animation);
 
   // The animation registry in which to look up animations for the associated
   // `animation_key_`. When an animation exists, it will be painted in lieu of

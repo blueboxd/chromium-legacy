@@ -178,6 +178,9 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #define PLATFORM_SPECIFIC_COLOR_IDS \
   E_CPONLY(kColorAshSystemUIMenuBackground) \
+  E_CPONLY(kColorAshSystemUIMenuIcon) \
+  E_CPONLY(kColorAshSystemUIMenuItemBackgroundSelected) \
+  E_CPONLY(kColorAshSystemUIMenuSeparator) \
   E_CPONLY(kColorNativeColor1) \
   E_CPONLY(kColorNativeColor1Shade1) \
   E_CPONLY(kColorNativeColor1Shade2) \

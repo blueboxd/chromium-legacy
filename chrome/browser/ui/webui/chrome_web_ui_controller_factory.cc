@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/webui/domain_reliability_internals_ui.h"
 #include "chrome/browser/ui/webui/download_internals/download_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
-#include "chrome/browser/ui/webui/federated_learning/floc_internals_ui.h"
 #include "chrome/browser/ui/webui/flags/flags_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
@@ -691,8 +690,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<FlagsDeprecatedUI>;
   if (url.host_piece() == chrome::kChromeUIFlagsHost)
     return &NewWebUI<FlagsUI>;
-  if (url.host_piece() == chrome::kChromeUIFlocInternalsHost)
-    return &NewWebUI<FlocInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIGCMInternalsHost)
     return &NewWebUI<GCMInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIInternalsHost)
@@ -777,10 +774,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<IdentityInternalsUI>;
   if (url.host_piece() == chrome::kChromeUINewTabHost)
     return &NewWebUI<NewTabUI>;
-  if (url.host_piece() == chrome::kChromeUINewTabPageHost)
-    return &NewWebUI<NewTabPageUI>;
-  if (url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)
-    return &NewWebUI<NewTabPageThirdPartyUI>;
+  if (!profile->IsOffTheRecord()) {
+    if (url.host_piece() == chrome::kChromeUINewTabPageHost)
+      return &NewWebUI<NewTabPageUI>;
+    if (url.host_piece() == chrome::kChromeUINewTabPageThirdPartyHost)
+      return &NewWebUI<NewTabPageThirdPartyUI>;
+  }
   if (base::FeatureList::IsEnabled(features::kWebUIFeedback)) {
     if (url.host_piece() == chrome::kChromeUIFeedbackHost)
       return &NewWebUI<FeedbackUI>;

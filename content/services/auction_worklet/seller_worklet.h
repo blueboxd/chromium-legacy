@@ -22,6 +22,7 @@
 #include "content/services/auction_worklet/trusted_signals.h"
 #include "content/services/auction_worklet/trusted_signals_request_manager.h"
 #include "content/services/auction_worklet/worklet_loader.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -89,9 +90,12 @@ class SellerWorklet : public mojom::SellerWorklet {
                     const GURL& browser_signal_render_url,
                     double browser_signal_bid,
                     double browser_signal_desirability,
+                    uint32_t browser_signal_data_version,
+                    bool browser_signal_has_data_version,
                     ReportResultCallback callback) override;
   void ConnectDevToolsAgent(
-      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) override;
+      mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
+      override;
 
  private:
   // Contains all data needed for a ScoreAd() call. Destroyed only when its
@@ -143,6 +147,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     GURL browser_signal_render_url;
     double browser_signal_bid;
     double browser_signal_desirability;
+    absl::optional<uint32_t> browser_signal_data_version;
 
     ReportResultCallback callback;
   };
@@ -159,6 +164,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     // V8State, and avoids having to make a copy of the errors vector.
     using ScoreAdCallbackInternal =
         base::OnceCallback<void(double score,
+                                absl::optional<uint32_t> data_version,
                                 absl::optional<GURL> debug_loss_report_url,
                                 absl::optional<GURL> debug_win_report_url,
                                 std::vector<std::string> errors)>;
@@ -192,10 +198,11 @@ class SellerWorklet : public mojom::SellerWorklet {
                       const GURL& browser_signal_render_url,
                       double browser_signal_bid,
                       double browser_signal_desirability,
+                      absl::optional<uint32_t> browser_signal_data_version,
                       ReportResultCallbackInternal callback);
 
     void ConnectDevToolsAgent(
-        mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent);
+        mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent);
 
    private:
     friend class base::DeleteHelper<V8State>;
@@ -206,6 +213,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     void PostScoreAdCallbackToUserThread(
         ScoreAdCallbackInternal callback,
         double score,
+        absl::optional<uint32_t> data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
         std::vector<std::string> errors);
@@ -257,6 +265,7 @@ class SellerWorklet : public mojom::SellerWorklet {
   void DeliverScoreAdCallbackOnUserThread(
       ScoreAdTaskList::iterator task,
       double score,
+      absl::optional<uint32_t> data_version,
       absl::optional<GURL> debug_loss_report_url,
       absl::optional<GURL> debug_win_report_url,
       std::vector<std::string> errors);

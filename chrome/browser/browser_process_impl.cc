@@ -97,8 +97,6 @@
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/federated_learning/floc_constants.h"
-#include "components/federated_learning/floc_sorting_lsh_clusters_service.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -166,6 +164,7 @@
 #else
 #include "chrome/browser/devtools/devtools_auto_opener.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
+#include "chrome/browser/hid/hid_policy_allowed_devices.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
@@ -937,6 +936,15 @@ SerialPolicyAllowedPorts* BrowserProcessImpl::serial_policy_allowed_ports() {
   }
   return serial_policy_allowed_ports_.get();
 }
+
+HidPolicyAllowedDevices* BrowserProcessImpl::hid_policy_allowed_devices() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!hid_policy_allowed_devices_) {
+    hid_policy_allowed_devices_ =
+        std::make_unique<HidPolicyAllowedDevices>(local_state());
+  }
+  return hid_policy_allowed_devices_.get();
+}
 #endif
 
 BuildState* BrowserProcessImpl::GetBuildState() {
@@ -1034,14 +1042,6 @@ BrowserProcessImpl::subresource_filter_ruleset_service() {
   if (!created_subresource_filter_ruleset_service_)
     CreateSubresourceFilterRulesetService();
   return subresource_filter_ruleset_service_.get();
-}
-
-federated_learning::FlocSortingLshClustersService*
-BrowserProcessImpl::floc_sorting_lsh_clusters_service() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!floc_sorting_lsh_clusters_service_)
-    CreateFlocSortingLshClustersService();
-  return floc_sorting_lsh_clusters_service_.get();
 }
 
 StartupData* BrowserProcessImpl::startup_data() {
@@ -1308,12 +1308,6 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   subresource_filter_ruleset_service_ =
       subresource_filter::RulesetService::Create(local_state(), user_data_dir);
-}
-
-void BrowserProcessImpl::CreateFlocSortingLshClustersService() {
-  DCHECK(!floc_sorting_lsh_clusters_service_);
-  floc_sorting_lsh_clusters_service_ =
-      std::make_unique<federated_learning::FlocSortingLshClustersService>();
 }
 
 #if !BUILDFLAG(IS_ANDROID)

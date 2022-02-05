@@ -28,6 +28,7 @@ class BuildState;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class GpuModeManager;
+class HidPolicyAllowedDevices;
 class IconManager;
 class MediaFileSystemRegistry;
 class NotificationPlatformBridge;
@@ -59,10 +60,6 @@ class SafeBrowsingService;
 
 namespace subresource_filter {
 class RulesetService;
-}
-
-namespace federated_learning {
-class FlocSortingLshClustersService;
 }
 
 namespace variations {
@@ -221,11 +218,6 @@ class BrowserProcess {
   virtual subresource_filter::RulesetService*
   subresource_filter_ruleset_service() = 0;
 
-  // Returns the service providing versioned storage for a list of limit values
-  // for calculating the floc based on SortingLSH.
-  virtual federated_learning::FlocSortingLshClustersService*
-  floc_sorting_lsh_clusters_service() = 0;
-
   // Returns the StartupData which owns any pre-created objects in //chrome
   // before the full browser starts.
   virtual StartupData* startup_data() = 0;
@@ -268,6 +260,10 @@ class BrowserProcess {
   // Returns the object which keeps track of serial port permissions configured
   // through the policy engine.
   virtual SerialPolicyAllowedPorts* serial_policy_allowed_ports() = 0;
+
+  // Returns the object which keeps track of Human Interface Device (HID)
+  // permissions configured through the policy engine.
+  virtual HidPolicyAllowedDevices* hid_policy_allowed_devices() = 0;
 #endif
 
   virtual BuildState* GetBuildState() = 0;

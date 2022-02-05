@@ -1172,8 +1172,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps_MetaName) {
   }
 }
 
-// http://crbug.com/1294159
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DISABLED_ClientHintsAlps) {
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsAlps) {
   base::HistogramTester histogram_tester;
   SetClientHintExpectationsOnMainFrame(true);
   ASSERT_TRUE(
@@ -1183,9 +1182,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, DISABLED_ClientHintsAlps) {
       content::AcceptCHFrameRestart::kNavigationRestarted, 1);
 }
 
-// http://crbug.com/1294159
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
-                       DISABLED_ClientHintsAlpsNavigationPreload) {
+                       ClientHintsAlpsNavigationPreload) {
   SetClientHintExpectationsOnMainFrame(true);
   const GURL kCreateServiceWorker =
       GetHttp2Url("/service_worker/create_service_worker.html");
@@ -4060,8 +4058,16 @@ class ThirdPartyAcceptChUaReducedOriginTrialBrowserTest
 constexpr char
     ThirdPartyAcceptChUaReducedOriginTrialBrowserTest::kThirdPartyOriginUrl[];
 
+// Flaky with ASAN. crbug.com/1293876
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ThirdPartyIframeUaReducedWithOriginTrialToken \
+  DISABLED_ThirdPartyIframeUaReducedWithOriginTrialToken
+#else
+#define MAYBE_ThirdPartyIframeUaReducedWithOriginTrialToken \
+  ThirdPartyIframeUaReducedWithOriginTrialToken
+#endif
 IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
-                       ThirdPartyIframeUaReducedWithOriginTrialToken) {
+                       MAYBE_ThirdPartyIframeUaReducedWithOriginTrialToken) {
   const GURL top_level_frame_url =
       accept_ch_ua_reduced_cross_origin_iframe_request_url();
   // The first navigation is to opt-into the OT.
@@ -4072,8 +4078,16 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
   EXPECT_EQ(GetLastRequestedURL()->path(), "/simple_3p_ot.html");
 }
 
+// Flaky with ASAN. crbug.com/1293876
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ThirdPartyIframeUaReducedWithAllCookiesBlocked \
+  DISABLED_ThirdPartyIframeUaReducedWithAllCookiesBlocked
+#else
+#define MAYBE_ThirdPartyIframeUaReducedWithAllCookiesBlocked \
+  ThirdPartyIframeUaReducedWithAllCookiesBlocked
+#endif
 IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
-                       ThirdPartyIframeUaReducedWithAllCookiesBlocked) {
+                       MAYBE_ThirdPartyIframeUaReducedWithAllCookiesBlocked) {
   const GURL top_level_frame_url =
       accept_ch_ua_reduced_cross_origin_iframe_request_url();
   const GURL third_party_iframe_url = GURL(kThirdPartyOriginUrl);
@@ -4095,8 +4109,17 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
   EXPECT_EQ(GetLastRequestedURL()->path(), "/simple_3p_ot.html");
 }
 
-IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
-                       ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked) {
+// Flaky with ASAN. crbug.com/1293876
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked \
+  DISABLED_ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked
+#else
+#define MAYBE_ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked \
+  ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked
+#endif
+IN_PROC_BROWSER_TEST_F(
+    ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
+    MAYBE_ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked) {
   // Block third-party cookies.
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
@@ -4128,9 +4151,17 @@ IN_PROC_BROWSER_TEST_F(
       /*ch_ua_reduced_expected=*/true);
 }
 
+// Flaky with ASAN. crbug.com/1293876
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ThirdPartyIframeUaReducedWithSubresourceRedirectRequests \
+  DISABLED_ThirdPartyIframeUaReducedWithSubresourceRedirectRequests
+#else
+#define MAYBE_ThirdPartyIframeUaReducedWithSubresourceRedirectRequests \
+  ThirdPartyIframeUaReducedWithSubresourceRedirectRequests
+#endif
 IN_PROC_BROWSER_TEST_F(
     ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
-    ThirdPartyIframeUaReducedWithSubresourceRedirectRequests) {
+    MAYBE_ThirdPartyIframeUaReducedWithSubresourceRedirectRequests) {
   // The first navigation is to opt-into the OT.  Since there are subresource
   // requests, the last processed requests from the first navigation will have
   // the reduced UA string.

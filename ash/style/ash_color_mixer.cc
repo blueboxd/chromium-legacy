@@ -18,11 +18,21 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   if (!features::IsDarkLightModeEnabled())
     return;
 
-  const SkColor menu_background_color =
-      AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparent80);
+  auto* ash_color_provider = AshColorProvider::Get();
   ui::ColorMixer& mixer = provider->AddMixer();
-  mixer[ui::kColorAshSystemUIMenuBackground] = {menu_background_color};
+  mixer[ui::kColorAshSystemUIMenuBackground] = {
+      ash_color_provider->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparent80)};
+  mixer[ui::kColorAshSystemUIMenuIcon] = {
+      ash_color_provider->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kIconColorPrimary)};
+
+  auto [color, opacity] = ash_color_provider->GetInkDropBaseColorAndOpacity();
+  mixer[ui::kColorAshSystemUIMenuItemBackgroundSelected] = {
+      SkColorSetA(color, opacity * SK_AlphaOPAQUE)};
+  mixer[ui::kColorAshSystemUIMenuSeparator] = {
+      ash_color_provider->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kSeparatorColor)};
 }
 
 }  // namespace ash

@@ -282,7 +282,9 @@ class SourceBuilder {
   int64_t priority_ = 0;
   StoredSource::AttributionLogic attribution_logic_ =
       StoredSource::AttributionLogic::kTruthfully;
-  StoredSource::Id source_id_;
+  // `base::StrongAlias` does not automatically initialize the value here.
+  // Ensure that we don't use uninitialized memory.
+  StoredSource::Id source_id_{0};
   std::vector<int64_t> dedup_keys_;
 };
 
@@ -353,6 +355,8 @@ class ReportBuilder {
   base::GUID external_report_id_;
   absl::optional<AttributionReport::EventLevelData::Id> report_id_;
 };
+
+bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
 
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b);
 

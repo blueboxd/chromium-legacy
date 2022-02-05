@@ -590,7 +590,7 @@
 
   [self stickFakeOmniboxToTop];
 
-  if (IsWebChannelsEnabled()) {
+  if (IsWebChannelsEnabled() && self.feedHeaderViewController) {
     [self stickFeedHeaderToTop];
   }
 }
@@ -659,6 +659,8 @@
 // Pins feed header to top of the NTP when scrolled into the feed, below the
 // omnibox.
 - (void)stickFeedHeaderToTop {
+  DCHECK(self.feedHeaderViewController);
+
   [NSLayoutConstraint deactivateConstraints:self.feedHeaderConstraints];
 
   self.feedHeaderConstraints = @[
@@ -883,6 +885,9 @@
         recordBrokenNTPHierarchy:BrokenNTPHierarchyRelationship::
                                      kContentSuggestionsParent];
   }
+  [self ensureView:self.feedHeaderViewController.view
+             isSubviewOf:self.collectionView
+      withRelationshipID:BrokenNTPHierarchyRelationship::kFeedHeaderParent];
   [self ensureView:self.collectionView
              isSubviewOf:self.discoverFeedWrapperViewController.discoverFeed
                              .view

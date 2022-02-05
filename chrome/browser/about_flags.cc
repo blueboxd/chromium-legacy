@@ -1976,6 +1976,20 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      base::size(kStartSurfaceAndroid_SingleSurfaceSingleTab), nullptr},
 };
 
+const FeatureEntry::FeatureParam kFeatureNotificationGuide_low_engaged[] = {
+    {"enable_feature_incognito_tab", "true"},
+    {"enable_feature_ntp_suggestion_card", "true"},
+    {"enable_feature_voice_search", "true"}};
+
+const FeatureEntry::FeatureParam kFeatureNotificationGuide_default_browser[] = {
+    {"enable_feature_default_browser", "true"}};
+
+const FeatureEntry::FeatureVariation kFeatureNotificationGuideVariations[] = {
+    {"Low engaged users", kFeatureNotificationGuide_low_engaged,
+     base::size(kFeatureNotificationGuide_low_engaged), nullptr},
+    {"Default browser", kFeatureNotificationGuide_default_browser,
+     base::size(kFeatureNotificationGuide_default_browser), nullptr},
+};
 const FeatureEntry::FeatureParam kWebFeed_accelerator[] = {
     {"intro_style", "accelerator"}};
 
@@ -3853,7 +3867,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"global-media-controls-cast-start-stop",
      flag_descriptions::kGlobalMediaControlsCastStartStopName,
      flag_descriptions::kGlobalMediaControlsCastStartStopDescription,
-     kOsWin | kOsMac | kOsLinux | kOsFuchsia,
+     kOsDesktop,
      FEATURE_VALUE_TYPE(media_router::kGlobalMediaControlsCastStartStop)},
     {"allow-all-sites-to-initiate-mirroring",
      flag_descriptions::kAllowAllSitesToInitiateMirroringName,
@@ -3964,8 +3978,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     "AddToHomescreen")},
     {"feature-notification-guide",
      flag_descriptions::kFeatureNotificationGuideName,
-     flag_descriptions::kFeatureNotificationGuideDescription, kOsAll,
-     FEATURE_VALUE_TYPE(feature_guide::features::kFeatureNotificationGuide)},
+     flag_descriptions::kFeatureNotificationGuideDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         feature_guide::features::kFeatureNotificationGuide,
+         kFeatureNotificationGuideVariations,
+         "FeatureNotificationGuide")},
     {"feature-notification-guide-skip-check-for-low-engaged-users",
      flag_descriptions::
          kFeatureNotificationGuideSkipCheckForLowEngagedUsersName,
@@ -7951,6 +7968,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLeakDetectionUnauthenticatedDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          password_manager::features::kLeakDetectionUnauthenticated)},
+
+    {"origin-agent-cluster-default",
+     flag_descriptions::kOriginAgentClusterDefaultName,
+     flag_descriptions::kOriginAgentClusterDefaultDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kOriginAgentClusterDefaultEnabled)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

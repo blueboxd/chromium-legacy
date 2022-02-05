@@ -620,9 +620,9 @@
     "args": ["--disable-blink-features=PaymentRequestTotalOptional"]
   },
   {
-    "prefix": "basic-card-disabled",
+    "prefix": "basic-card-enabled",
     "bases": ["payments/payment-request-interface.html", "http/tests/payments/payment-instruments.html"],
-    "args": ["--disable-blink-features=PaymentRequestBasicCard"]
+    "args": ["--enable-blink-features=PaymentRequestBasicCard", "--enable-features=PaymentRequestBasicCard"]
   },
   {
     "prefix": "json-modules",
@@ -789,11 +789,6 @@
     "args": [ "--enable-features=BackForwardCache" ]
   },
   {
-    "prefix": "interest-cohort-api-origin-trial",
-    "bases": [ "http/tests/origin_trials/webexposed/interest-cohort-origin-trial-interfaces.html" ],
-    "args": [ "--enable-features=InterestCohortAPIOriginTrial" ]
-  },
-  {
     "prefix": "third-party-storage-partitioning",
     "bases": [
       "external/wpt/web-locks/partitioned-web-locks.tentative.https.html",
@@ -802,7 +797,8 @@
       "external/wpt/service-workers/service-worker/partitioned-service-worker-getRegistrations.tentative.https.html",
       "external/wpt/service-workers/service-worker/partitioned-service-worker-matchAll.tentative.https.html",
       "external/wpt/service-workers/service-worker/partitioned-service-worker-claim.tentative.https.html",
-      "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html"
+      "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html",
+      "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html"
     ],
     "args": [ "--enable-features=ThirdPartyStoragePartitioning" ]
   },

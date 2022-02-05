@@ -192,8 +192,6 @@ class BrowserProcessImpl : public BrowserProcess,
   safe_browsing::SafeBrowsingService* safe_browsing_service() override;
   subresource_filter::RulesetService* subresource_filter_ruleset_service()
       override;
-  federated_learning::FlocSortingLshClustersService*
-  floc_sorting_lsh_clusters_service() override;
 
   StartupData* startup_data() override;
 
@@ -216,6 +214,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
 #if !BUILDFLAG(IS_ANDROID)
   SerialPolicyAllowedPorts* serial_policy_allowed_ports() override;
+  HidPolicyAllowedDevices* hid_policy_allowed_devices() override;
 #endif
 
   BuildState* GetBuildState() override;
@@ -243,8 +242,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateBackgroundPrintingManager();
   void CreateSafeBrowsingService();
   void CreateSubresourceFilterRulesetService();
-  void CreateFlocBlocklistService();
-  void CreateFlocSortingLshClustersService();
   void CreateOptimizationGuideService();
   void CreateStatusTray();
   void CreateBackgroundModeManager();
@@ -346,9 +343,6 @@ class BrowserProcessImpl : public BrowserProcess,
   std::unique_ptr<subresource_filter::RulesetService>
       subresource_filter_ruleset_service_;
 
-  std::unique_ptr<federated_learning::FlocSortingLshClustersService>
-      floc_sorting_lsh_clusters_service_;
-
   bool shutting_down_ = false;
 
   bool tearing_down_ = false;
@@ -433,6 +427,7 @@ class BrowserProcessImpl : public BrowserProcess,
   base::OnceClosure quit_closure_;
 
   std::unique_ptr<SerialPolicyAllowedPorts> serial_policy_allowed_ports_;
+  std::unique_ptr<HidPolicyAllowedDevices> hid_policy_allowed_devices_;
 
   BuildState build_state_;
 #endif

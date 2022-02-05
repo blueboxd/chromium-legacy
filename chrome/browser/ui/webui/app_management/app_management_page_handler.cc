@@ -127,15 +127,15 @@ std::vector<std::string> GetSupportedLinks(Profile* profile,
 AppManagementPageHandler::AppManagementPageHandler(
     mojo::PendingReceiver<app_management::mojom::PageHandler> receiver,
     mojo::PendingRemote<app_management::mojom::Page> page,
-    Profile* profile)
+    Profile* profile,
+    Delegate& delegate)
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
-      profile_(profile)
+      profile_(profile),
+      delegate_(delegate),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      ,
-      shelf_delegate_(this, profile)
+      shelf_delegate_(this, profile),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      ,
       preferred_apps_list_handle_(
           apps::AppServiceProxyFactory::GetForProfile(profile)
               ->PreferredApps()) {
@@ -243,7 +243,7 @@ void AppManagementPageHandler::SetResizeLocked(const std::string& app_id,
 void AppManagementPageHandler::Uninstall(const std::string& app_id) {
   apps::AppServiceProxyFactory::GetForProfile(profile_)->Uninstall(
       app_id, apps::mojom::UninstallSource::kAppManagement,
-      nullptr /* parent_window */);
+      delegate_.GetUninstallAnchorWindow());
 }
 
 void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {
@@ -291,6 +291,17 @@ void AppManagementPageHandler::SetWindowMode(
 #endif
 }
 
+void AppManagementPageHandler::SetRunOnOsLoginMode(
+    const std::string& app_id,
+    apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
+#if BUILDFLAG(IS_CHROMEOS)
+  NOTREACHED();
+#else
+  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetRunOnOsLoginMode(
+      app_id, run_on_os_login_mode);
+#endif
+}
+
 app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
     const apps::AppUpdate& update) {
   base::flat_map<apps::mojom::PermissionType, apps::mojom::PermissionPtr>
@@ -334,6 +345,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
       ShouldHidePinToShelf(app->id);
   app->window_mode = update.WindowMode();
   app->supported_links = GetSupportedLinks(profile_, app->id);
+  app->run_on_os_login = update.RunOnOsLogin();
 
   return app;
 }

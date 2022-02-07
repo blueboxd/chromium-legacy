@@ -33,6 +33,10 @@ bool SystemEngine::BindRequest(
     const std::string& ime_spec,
     mojo::PendingReceiver<mojom::InputMethod> receiver,
     mojo::PendingRemote<mojom::InputMethodHost> host) {
+  if (!decoder_entry_points_) {
+    return false;
+  }
+
   auto receiver_pipe_handle = receiver.PassPipe().release().value();
   auto host_pipe_version = host.version();
   auto host_pipe_handle = host.PassPipe().release().value();
@@ -43,12 +47,16 @@ bool SystemEngine::BindRequest(
 
 bool SystemEngine::BindConnectionFactory(
     mojo::PendingReceiver<mojom::ConnectionFactory> receiver) {
-  // TODO(b/209697256): Pass and bind receiver in shared library.
-  return false;
+  if (!decoder_entry_points_)
+    return false;
+  auto receiver_pipe_handle = receiver.PassPipe().release().value();
+  return decoder_entry_points_->initialize_connection_factory(
+      receiver_pipe_handle);
 }
 
 bool SystemEngine::IsConnected() {
-  return decoder_entry_points_->is_input_method_connected();
+  return decoder_entry_points_ &&
+         decoder_entry_points_->is_input_method_connected();
 }
 
 }  // namespace ime

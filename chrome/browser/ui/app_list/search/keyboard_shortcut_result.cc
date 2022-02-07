@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/app_list/search/keyboard_shortcut_result.h"
 
+#include "base/i18n/rtl.h"
+#include "base/strings/string_util.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
 
 namespace app_list {
@@ -18,8 +21,20 @@ using chromeos::string_matching::TokenizedStringMatch;
 // TODO(crbug.com/1290682): Complete implementation.
 KeyboardShortcutResult::KeyboardShortcutResult(const KeyboardShortcutData& data,
                                                double relevance)
-    : description_(data.description_message) {
+    : description_(data.description) {
   set_relevance(relevance);
+  SetTitle(data.description);
+  SetResultType(ResultType::kKeyboardShortcut);
+  SetMetricsType(ash::KEYBOARD_SHORTCUT);
+  SetDisplayType(DisplayType::kList);
+  SetCategory(Category::kHelp);
+
+  // Set the details to the display name of the Keyboard Shortcut Viewer app.
+  std::u16string sanitized_name = base::CollapseWhitespace(
+      l10n_util::GetStringUTF16(IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER),
+      true);
+  base::i18n::SanitizeUserSuppliedString(&sanitized_name);
+  SetDetails(sanitized_name);
 }
 
 // TODO(crbug.com/1290682): Implement.

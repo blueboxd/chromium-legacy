@@ -11,6 +11,7 @@
 #include "ash/public/cpp/external_arc/message_center/arc_notification_item.h"
 #include "ash/public/cpp/message_center/arc_notification_constants.h"
 #include "ash/style/ash_color_provider.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -29,6 +30,13 @@
 #include "ui/views/painter.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ArcNotificationView*)
+
+namespace {
+// The animation duration must be 360ms because it's separately defined in
+// Android side.
+constexpr base::TimeDelta kArcNotificationAnimationDuration =
+    base::Milliseconds(360);
+}  // namespace
 
 namespace ash {
 
@@ -172,13 +180,26 @@ void ArcNotificationView::OnSnoozeButtonPressed(const ui::Event& event) {
 
 void ArcNotificationView::OnThemeChanged() {
   message_center::MessageView::OnThemeChanged();
-  focus_painter_ = views::Painter::CreateSolidFocusPainter(
-      GetColorProvider()->GetColor(ui::kColorFocusableBorderFocused),
-      gfx::Insets(0, 1, 3, 2));
+
+  // TODO(yhanada): Migrate to views::FocusRing to support rounded-corner ring.
+  if (ash::features::IsNotificationsRefreshEnabled()) {
+    focus_painter_ = views::Painter::CreateSolidFocusPainter(
+        GetColorProvider()->GetColor(ui::kColorFocusableBorderFocused), 2,
+        gfx::Insets(3, 3));
+  } else {
+    focus_painter_ = views::Painter::CreateSolidFocusPainter(
+        GetColorProvider()->GetColor(ui::kColorFocusableBorderFocused),
+        gfx::Insets(0, 1, 3, 2));
+  }
 }
 
 void ArcNotificationView::OnContainerAnimationEnded() {
   content_view_->OnContainerAnimationEnded();
+}
+
+base::TimeDelta ArcNotificationView::GetBoundsAnimationDuration(
+    const message_center::Notification&) const {
+  return kArcNotificationAnimationDuration;
 }
 
 void ArcNotificationView::OnSlideChanged(bool in_progress) {

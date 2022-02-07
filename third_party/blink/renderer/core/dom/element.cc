@@ -606,6 +606,20 @@ void EnqueueAutofocus(Element& element) {
   top_document.EnqueueAutofocusCandidate(element);
 }
 
+bool MaySkipNGBlockNodeLayout(const LayoutObject& layout_object) {
+  // Return true if we are not guaranteed that the layout_object will hit the
+  // LayoutNG code path during layout, which is a problem for container queries.
+  //
+  // Out-of-flow positioned replaced elements take the legacy path for layout
+  // if the container for positioning is a legacy object. That is the case for
+  // LayoutView, which is a legacy object but does not otherwise force
+  // legacy layout objects.
+  return layout_object.ForceLegacyLayout() ||
+         (!RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
+          layout_object.IsOutOfFlowPositioned() &&
+          layout_object.IsLayoutReplaced());
+}
+
 }  // namespace
 
 Element::Element(const QualifiedName& tag_name,
@@ -2679,12 +2693,6 @@ void Element::AttachLayoutTree(AttachContext& context) {
   if (being_rendered) {
     AdjustForceLegacyLayout(style, &children_context.force_legacy_layout);
 
-    if (children_context.force_legacy_layout) {
-      GetDocument()
-          .GetStyleEngine()
-          .RecalcStyleForContainerDescendantsInLegacyLayoutTree(*this);
-    }
-
     LegacyLayout legacy = children_context.force_legacy_layout
                               ? LegacyLayout::kForce
                               : LegacyLayout::kAuto;
@@ -2713,6 +2721,19 @@ void Element::AttachLayoutTree(AttachContext& context) {
     children_context.parent = nullptr;
   }
   children_context.use_previous_in_flow = true;
+
+  if (children_context.force_legacy_layout ||
+      (being_rendered && !children_context.parent) ||
+      (layout_object && MaySkipNGBlockNodeLayout(*layout_object))) {
+    // If the created LayoutObject is forced into a legacy object, or if a
+    // LayoutObject was not created, even if we thought it should have been, for
+    // instance because the parent LayoutObject returns false for
+    // IsChildAllowed, we need to complete the skipped style recalc for size
+    // query containers as we would not have an NGBlockNode to resume from.
+    GetDocument()
+        .GetStyleEngine()
+        .RecalcStyleForNonLayoutNGContainerDescendants(*this);
+  }
 
   bool skip_container_descendants = SkippedContainerStyleRecalc();
   bool skip_lock_descendants = ChildStyleRecalcBlockedByDisplayLock();
@@ -2916,7 +2937,7 @@ bool Element::SkipStyleRecalcForContainer(
     LayoutObject* layout_object = GetLayoutObject();
     if (!layout_object || !layout_object->SelfNeedsLayout() ||
         !layout_object->IsEligibleForSizeContainment() ||
-        layout_object->ForceLegacyLayout()) {
+        MaySkipNGBlockNodeLayout(*layout_object)) {
       return false;
     }
   }

@@ -18,10 +18,20 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-namespace performance_manager {
-namespace policies {
+namespace performance_manager::policies {
 
 namespace {
+
+// Whether or not the BFCache of all pages should be flushed when the system
+// is under *moderate* memory pressure. The policy always flushes the bfcache
+// under critical pressure.
+bool IsFlushOnModeratePressureEnabled() {
+  static constexpr base::FeatureParam<bool> flush_on_moderate_pressure{
+      &features::kBFCachePerformanceManagerPolicy, "flush_on_moderate_pressure",
+      false};
+
+  return flush_on_moderate_pressure.Get();
+}
 
 bool PageMightHaveFramesInBFCache(const PageNode* page_node) {
   // TODO(crbug.com/1211368): Use PageState when that actually works.
@@ -52,13 +62,7 @@ void MaybeFlushBFCacheOnUIThread(const WebContentsProxy& contents_proxy) {
 }  // namespace
 
 BFCachePolicy::BFCachePolicy()
-    : flush_on_moderate_pressure_{features::
-                                      BFCachePerformanceManagerPolicyParams::
-                                          GetParams()
-                                              .flush_on_moderate_pressure()},
-      delay_to_flush_background_tab_{
-          features::BFCachePerformanceManagerPolicyParams::GetParams()
-              .delay_to_flush_background_tab()} {}
+    : flush_on_moderate_pressure_{IsFlushOnModeratePressureEnabled()} {}
 
 BFCachePolicy::~BFCachePolicy() = default;
 
@@ -69,66 +73,15 @@ void BFCachePolicy::MaybeFlushBFCache(const PageNode* page_node) {
                                 page_node->GetContentsProxy()));
 }
 
-void BFCachePolicy::MaybeFlushBFCacheLater(const PageNode* page_node) {
-  // If |MaybeFlushBFCacheLater| is called while waiting for the timer,
-  // |MaybeFlushBFCacheLater| will reset the timer.
-  // The use of base::Unretained(this) is safe here because |this| owns the
-  // timer.
-  page_to_flush_timer_[page_node].Start(
-      FROM_HERE, delay_to_flush_background_tab_,
-      base::BindOnce(&BFCachePolicy::MaybeFlushBFCache, base::Unretained(this),
-                     page_node));
-}
-
 void BFCachePolicy::OnPassedToGraph(Graph* graph) {
   DCHECK(graph->HasOnlySystemNode());
   graph_ = graph;
-  graph_->AddPageNodeObserver(this);
   graph_->AddSystemNodeObserver(this);
 }
 
 void BFCachePolicy::OnTakenFromGraph(Graph* graph) {
-  graph_->RemovePageNodeObserver(this);
   graph_->RemoveSystemNodeObserver(this);
   graph_ = nullptr;
-}
-
-void BFCachePolicy::OnIsVisibleChanged(const PageNode* page_node) {
-  if (delay_to_flush_background_tab_.InSeconds() < 0)
-    return;
-
-  // Try to flush the BFCache of pages when they become non-visible. This could
-  // fail if the page still has a pending navigation.
-  if (page_node->GetPageState() == PageState::kActive &&
-      !page_node->IsVisible() && PageMightHaveFramesInBFCache(page_node)) {
-    MaybeFlushBFCacheLater(page_node);
-  } else if (page_node->IsVisible()) {
-    // Remove the timer associated with |page_node| if one exists.
-    page_to_flush_timer_.erase(page_node);
-  }
-}
-
-void BFCachePolicy::OnLoadingStateChanged(
-    const PageNode* page_node,
-    PageNode::LoadingState previous_state) {
-  if (delay_to_flush_background_tab_.InSeconds() < 0)
-    return;
-
-  // Flush the BFCache of pages that finish a navigation while in background.
-  // TODO(sebmarchand): Check if this is really needed.
-  if (!page_node->IsVisible() &&
-      page_node->GetLoadingState() >= PageNode::LoadingState::kLoadedBusy &&
-      PageMightHaveFramesInBFCache(page_node)) {
-    MaybeFlushBFCacheLater(page_node);
-  } else if (page_node->IsVisible()) {
-    // Remove the timer associated with |page_node| if one exists.
-    page_to_flush_timer_.erase(page_node);
-  }
-}
-
-void BFCachePolicy::OnBeforePageNodeRemoved(const PageNode* page_node) {
-  // Remove the timer associated with |page_node| if one exists.
-  page_to_flush_timer_.erase(page_node);
 }
 
 void BFCachePolicy::OnMemoryPressure(
@@ -147,12 +100,11 @@ void BFCachePolicy::OnMemoryPressure(
 
   // Flush the cache of all pages.
   for (auto* page_node : graph_->GetAllPageNodes()) {
-    if (page_node->GetPageState() == PageState::kActive &&
+    if (page_node->GetPageState() == PageNode::PageState::kActive &&
         PageMightHaveFramesInBFCache(page_node)) {
       MaybeFlushBFCache(page_node);
     }
   }
 }
 
-}  // namespace policies
-}  // namespace performance_manager
+}  // namespace performance_manager::policies

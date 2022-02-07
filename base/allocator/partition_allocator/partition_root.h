@@ -78,8 +78,6 @@
 
 namespace base {
 
-class PartitionStatsDumper;
-
 namespace internal {
 // Avoid including partition_address_space.h from this .h file, by moving the
 // call to IsManagedByPartitionAllocBRPPool into the .cc file.
@@ -810,7 +808,9 @@ PartitionAllocGetDirectMapSlotStartInBRPPool(uintptr_t address) {
   return slot_start;
 }
 
-// Gets the address to the beginning of the allocated slot.
+// Gets the address to the beginning of the allocated slot. The input |address|
+// can point anywhere in the slot, including the slot start as well as
+// immediately past the slot.
 //
 // This isn't a general purpose function, it is used specifically for obtaining
 // BackupRefPtr's ref-count. The caller is responsible for ensuring that the
@@ -832,7 +832,7 @@ ALWAYS_INLINE uintptr_t PartitionAllocGetSlotStartInBRPPool(uintptr_t address) {
       PartitionAllocGetDirectMapSlotStartInBRPPool(address);
   if (UNLIKELY(directmap_slot_start))
     return directmap_slot_start;
-  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromObjectInnerAddr(address);
+  auto* slot_span = SlotSpanMetadata<ThreadSafe>::FromAddr(address);
   auto* root = PartitionRoot<ThreadSafe>::FromSlotSpan(slot_span);
   // Double check that ref-count is indeed present.
   PA_DCHECK(root->brp_enabled());

@@ -125,7 +125,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kPwaUpdateDialogForNameAndIcon,
     &features::kQuietNotificationPrompts,
     &features::kRequestDesktopSiteForTablets,
-    &features::kScrollCapture,
     &features::kSearchHistoryLink,
     &features::kShareUsageRanking,
     &features::kShareUsageRankingFixedMore,
@@ -637,7 +636,7 @@ const base::Feature kEnableDuplicateDownloadDialog{
     "EnableDuplicateDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableMixedContentDownloadDialog{
-    "EnableMixedContentDownloadDialog", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableMixedContentDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

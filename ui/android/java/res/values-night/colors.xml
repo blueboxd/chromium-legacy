@@ -14,6 +14,7 @@
     <color name="default_text_color_error">@color/default_text_color_error_light</color>
     <color name="default_text_color_on_accent1_baseline">@color/default_text_color_on_accent1_dark</color>
     <color name="default_text_color_on_accent1_disabled_baseline">@color/default_text_color_disabled_light</color>
+    <color name="default_text_color_on_accent2_container_baseline">@color/baseline_secondary_100</color>
 
     <!-- Common icon colors for drawables. -->
     <color name="default_icon_color_baseline">@color/default_icon_color_light</color>
@@ -60,10 +61,6 @@
     <!-- Colors used for Widgets (checkboxes, switches, buttons, etc)-->
     <color name="default_control_color_normal_baseline">@color/default_control_color_normal_dark</color>
     <color name="default_control_color_active_baseline">@color/default_control_color_active_dark</color>
-
-    <!-- CircularProgressView colors -->
-    <color name="circular_progress_outer_circle_progress_color_small">@color/circular_progress_outer_circle_progress_color_small_dark</color>
-    <color name="circular_progress_icon_color_small_large">@color/circular_progress_icon_color_small_large_dark</color>
 
     <!-- Incognito icon colors -->
     <color name="incognito_icon_filled_bg_color">@color/incognito_icon_filled_bg_color_light</color>

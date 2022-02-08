@@ -124,6 +124,10 @@ constexpr net::NetworkTrafficAnnotationTag kGooglePhotosCountTrafficAnnotation =
           "Not implemented, considered not necessary."
       })");
 
+// The URL to download a photo from a user's Google Photos library.
+constexpr char kGooglePhotosPhotoUrl[] =
+    "https://photosfirstparty-pa.googleapis.com/v1/chromeos/itemById:read";
+
 // The URL to download all visible photos in a user's Google Photos library.
 constexpr char kGooglePhotosPhotosUrl[] =
     "https://photosfirstparty-pa.googleapis.com/v1/chromeos/userItems:read";
@@ -140,9 +144,12 @@ constexpr net::NetworkTrafficAnnotationTag
           "library so that they can pick one as their wallpaper. "
           "Alternatively, the user can select an album within the Google "
           "Photos tile to pick a photo from there. This query fetches photos "
-          "from one of those sources."
-        trigger: "When the user accesses the Google Photos tile within the "
-                 "ChromeOS Wallpaper Picker app."
+          "from one of those sources. This query might also fetch a single "
+          "photo that has already been designated as a device's wallpaper."
+        trigger: "When the user accesses the Google Photos tile or selects a "
+                 "wallpaper photo within the ChromeOS Wallpaper Picker app, or "
+                 "when a device is notified of a new Google Photos wallpaper "
+                 "via cross-device sync."
         data: "OAuth credentials for the user's Google Photos account."
         destination: GOOGLE_OWNED_SERVICE
       }
@@ -687,11 +694,16 @@ GooglePhotosPhotosFetcher::GooglePhotosPhotosFetcher(Profile* profile)
 GooglePhotosPhotosFetcher::~GooglePhotosPhotosFetcher() = default;
 
 void GooglePhotosPhotosFetcher::AddRequestAndStartIfNecessary(
+    const absl::optional<std::string>& item_id,
     const absl::optional<std::string>& album_id,
     const absl::optional<std::string>& resume_token,
     base::OnceCallback<void(GooglePhotosPhotosCbkArgs)> callback) {
   GURL service_url;
-  if (album_id.has_value()) {
+  if (item_id.has_value()) {
+    DCHECK(!album_id.has_value() && !resume_token.has_value());
+    service_url = net::AppendQueryParameter(GURL(kGooglePhotosPhotoUrl),
+                                            "item_id", item_id.value());
+  } else if (album_id.has_value()) {
     service_url = net::AppendQueryParameter(GURL(kGooglePhotosAlbumUrl),
                                             "album_id", album_id.value());
   } else {
@@ -725,19 +737,18 @@ GooglePhotosPhotosCbkArgs GooglePhotosPhotosFetcher::ParseResponse(
       std::vector<ash::personalization_app::mojom::GooglePhotosPhotoPtr>();
   for (const auto& response_photo : response_photos->GetListDeprecated()) {
     const std::string* id = response_photo.FindStringPath("itemId.mediaKey");
-    const std::string* timestamp_seconds_string =
-        response_photo.FindStringPath("creationTimestamp.seconds");
+    const std::string* timestamp_string =
+        response_photo.FindStringPath("creationTimestamp");
     const std::string* url = response_photo.FindStringPath("photo.servingUrl");
 
-    int64_t seconds_after_epoch;
-    if (!id || !timestamp_seconds_string ||
-        !base::StringToInt64(*timestamp_seconds_string, &seconds_after_epoch) ||
-        seconds_after_epoch < 0 || !url) {
+    base::Time timestamp;
+    if (!id || !timestamp_string ||
+        !base::Time::FromUTCString(timestamp_string->c_str(), &timestamp) ||
+        !url) {
       continue;
     }
 
-    std::u16string date = base::TimeFormatFriendlyDate(
-        base::Time::UnixEpoch() + base::Seconds(seconds_after_epoch));
+    std::u16string date = base::TimeFormatFriendlyDate(timestamp);
     parsed_response->photos->push_back(
         ash::personalization_app::mojom::GooglePhotosPhoto::New(*id, date,
                                                                 GURL(*url)));

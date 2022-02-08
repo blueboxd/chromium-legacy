@@ -578,11 +578,6 @@ const char kContextMenuTranslateWithGoogleLensName[] =
 const char kContextMenuTranslateWithGoogleLensDescription[] =
     "Enable a chip for a Translate intent into Google Lens when supported.";
 
-const char kClipboardCustomFormatsName[] = "Clipboard Custom Formats";
-const char kClipboardCustomFormatsDescription[] =
-    "Allows read/write of custom formats with unsanitized clipboard content. "
-    "See crbug.com/106449";
-
 const char kClientStorageAccessContextAuditingName[] =
     "Access contexts for client-side storage";
 const char kClientStorageAccessContextAuditingDescription[] =
@@ -689,12 +684,6 @@ const char kDebugPackedAppDescription[] =
 const char kDebugShortcutsName[] = "Debugging keyboard shortcuts";
 const char kDebugShortcutsDescription[] =
     "Enables additional keyboard shortcuts that are useful for debugging Ash.";
-
-const char kDetectTargetEmbeddingLookalikesName[] =
-    "Detect target embedding domains as lookalikes.";
-const char kDetectTargetEmbeddingLookalikesDescription[] =
-    "Shows a lookalike interstitial when navigating to target embedding domains"
-    "(e.g. google.com.example.com).";
 
 const char kDisableProcessReuse[] = "Disable subframe process reuse";
 const char kDisableProcessReuseDescription[] =
@@ -822,11 +811,6 @@ const char kDesktopPWAsPrefixAppNameInWindowTitleName[] =
 const char kDesktopPWAsPrefixAppNameInWindowTitleDescription[] =
     "Prefix the window title of installed PWAs with the name of the PWA. On "
     "ChromeOS this is visible only in the window/activity switcher.";
-
-const char kDesktopPWAsAppIconShortcutsMenuUIName[] =
-    "Desktop PWAs app icon shortcuts menu UI";
-const char kDesktopPWAsAppIconShortcutsMenuUIDescription[] =
-    "Show web app shortcuts in the shelf context menu";
 
 const char kDesktopPWAsRemoveStatusBarName[] = "Desktop PWAs remove status bar";
 const char kDesktopPWAsRemoveStatusBarDescription[] =
@@ -2848,28 +2832,6 @@ const char kForceMajorVersionInMinorPositionInUserAgentDescription[] =
     "flag is a backup plan for unexpected site-compatibility breakage with "
     "a three digit major version.";
 
-const char kForceMajorVersion100InUserAgentName[] =
-    "Force major version to 100 in User-Agent";
-const char kForceMajorVersion100InUserAgentDescription[] =
-    "Force the Chrome major version in the User-Agent string to 100, which "
-    "allows testing the 3-digit major version number before the actual M100 "
-    "release. This flag is only available from M96-M99. "
-    "If force-major-version-in-minor is enabled this flag will "
-    "have no effect.";
-
-const char kForceMinorVersion100InUserAgentName[] =
-    "Force the minor version to 100 in the User-Agent string";
-const char kForceMinorVersion100InUserAgentDescription[] =
-    "Force the Chrome minor version in the User-Agent string to 100, which "
-    "allows testing a 3-digit minor version number. Currently, the minor "
-    "version is always reported as 0, but due to potential breakage with the "
-    "upcoming major version 100, this flag allows us to test whether setting "
-    "the major version in the minor version part of the User-Agent string "
-    "would be an acceptable alternative. If force-major-version-to-100 is set, "
-    "then this flag has no effect. See crbug.com/1278459 for details."
-    "If force-major-version-in-minor is enabled this flag will "
-    "have no effect.";
-
 // Android ---------------------------------------------------------------------
 
 #if BUILDFLAG(IS_ANDROID)
@@ -3507,10 +3469,6 @@ const char kRequestDesktopSiteForTabletsDescription[] =
     " On tablets with small screens a mobile site will be requested by "
     "default.";
 
-const char kScrollCaptureName[] = "Scroll Capture";
-const char kScrollCaptureDescription[] =
-    "Enables scrolling screenshot capture for web contents.";
-
 const char kSecurePaymentConfirmationAndroidName[] =
     "Secure Payment Confirmation on Android";
 const char kSecurePaymentConfirmationAndroidDescription[] =
@@ -3662,17 +3620,17 @@ const char kAllowAllSitesToInitiateMirroringDescription[] =
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
 
-const char kAppManagementIntentSettingsName[] =
-    "App Management intent settings";
-const char kAppManagementIntentSettingsDescription[] =
-    "Enables and displays the intent settings link handling setting for App "
-    "Management.";
-
 const char kEnableAccessibilityLiveCaptionName[] = "Live Caption";
 const char kEnableAccessibilityLiveCaptionDescription[] =
     "Enables the live caption feature which generates captions for "
     "media playing in Chrome. Turn the feature on in "
     "chrome://settings/accessibility.";
+
+const char kEnableUserCloudSigninRestrictionPolicyName[] =
+    "Cloud User level Signin Restrictions Policy";
+const char kEnableUserCloudSigninRestrictionPolicyDescription[] =
+    "Enable the ManagedAccountsSigninRestrictions policy to be set at a cloud "
+    "user level";
 
 const char kCopyLinkToTextName[] = "Copy Link To Text";
 const char kCopyLinkToTextDescription[] =
@@ -4839,6 +4797,12 @@ const char kFullRestoreForLacrosDescription[] =
 
 const char kFuseBoxName[] = "Enable ChromeOS FuseBox service";
 const char kFuseBoxDescription[] = "ChromeOS FuseBox service.";
+
+const char kGuestOsFilesName[] =
+    "Enabled Guest OS Service + file manager integration";
+const char kGuestOsFilesDescription[] =
+    "The files app sources information about guests from the Guest OS service, "
+    "instead of querying each type individually";
 
 const char kHelpAppBackgroundPageName[] = "Help App Background Page";
 const char kHelpAppBackgroundPageDescription[] =

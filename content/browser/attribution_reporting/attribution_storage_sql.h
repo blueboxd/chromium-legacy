@@ -30,6 +30,8 @@ class Statement;
 
 namespace content {
 
+class AttributionStorageDelegate;
+
 // Provides an implementation of AttributionStorage that is backed by SQLite.
 // This class may be constructed on any sequence but must be accessed and
 // destroyed on the same sequence. The sequence must outlive |this|.
@@ -38,7 +40,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   static void RunInMemoryForTesting();
 
   AttributionStorageSql(const base::FilePath& path_to_database,
-                        std::unique_ptr<Delegate> delegate);
+                        std::unique_ptr<AttributionStorageDelegate> delegate);
   AttributionStorageSql(const AttributionStorageSql& other) = delete;
   AttributionStorageSql& operator=(const AttributionStorageSql& other) = delete;
   AttributionStorageSql(AttributionStorageSql&& other) = delete;
@@ -183,7 +185,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
                                  base::Time trigger_time,
                                  base::Time report_time,
                                  int64_t priority,
-                                 const base::GUID& external_report_id)
+                                 const base::GUID& external_report_id,
+                                 absl::optional<uint64_t> trigger_debug_key)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Initializes the database if necessary, and returns whether the database is
@@ -227,7 +230,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
 
   sql::MetaTable meta_table_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  std::unique_ptr<Delegate> delegate_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::unique_ptr<AttributionStorageDelegate> delegate_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Time at which `DeleteExpiredSources()` was last called. Initialized to
   // the NULL time.

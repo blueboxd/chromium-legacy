@@ -129,8 +129,6 @@ std::unique_ptr<api::WifiLanSocket> WifiLanMedium::ConnectToService(
     return nullptr;
   }
 
-  VLOG(1) << "WifiLanMedium::" << __func__ << ": Connection established with "
-          << connected_socket_parameters->remote_end_point.ToString();
   return std::make_unique<WifiLanSocket>(
       std::move(*connected_socket_parameters));
 }
@@ -187,7 +185,7 @@ void WifiLanMedium::OnConnect(
   VLOG(1) << "WifiLanMedium::" << __func__
           << ": Created TCP connected socket. local_addr="
           << local_addr->ToString() << ", peer_addr=" << peer_addr->ToString();
-  *connected_socket_parameters = {*peer_addr, std::move(tcp_connected_socket),
+  *connected_socket_parameters = {std::move(tcp_connected_socket),
                                   std::move(receive_stream),
                                   std::move(send_stream)};
 
@@ -427,6 +425,13 @@ void WifiLanMedium::OnFirewallHoleCreated(
 // End: ListenForService()
 /*============================================================================*/
 
+absl::optional<std::pair<std::int32_t, std::int32_t>>
+WifiLanMedium::GetDynamicPortRange() {
+  return std::pair<std::int32_t, std::int32_t>(
+      ash::nearby::TcpServerSocketPort::kMin,
+      ash::nearby::TcpServerSocketPort::kMax);
+}
+
 /*============================================================================*/
 // Begin: Not implemented
 /*============================================================================*/
@@ -446,11 +451,6 @@ bool WifiLanMedium::StartDiscovery(const std::string& service_type,
 bool WifiLanMedium::StopDiscovery(const std::string& service_type) {
   NOTIMPLEMENTED();
   return false;
-}
-absl::optional<std::pair<std::int32_t, std::int32_t>>
-WifiLanMedium::GetDynamicPortRange() {
-  NOTIMPLEMENTED();
-  return absl::nullopt;
 }
 /*============================================================================*/
 // End: Not implemented

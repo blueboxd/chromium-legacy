@@ -52,10 +52,6 @@
 namespace updater {
 namespace {
 
-bool IsCOMService() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kComServiceSwitch);
-}
-
 std::wstring GetCOMGroup(const std::wstring& prefix, UpdaterScope scope) {
   return base::StrCat({prefix, base::ASCIIToWide(UpdaterScopeToString(scope))});
 }
@@ -157,9 +153,7 @@ scoped_refptr<ComServerApp> AppServerSingletonInstance() {
   return AppSingletonInstance<ComServerApp>();
 }
 
-ComServerApp::ComServerApp()
-    : com_initializer_(base::win::ScopedCOMInitializer::kMTA) {}
-
+ComServerApp::ComServerApp() = default;
 ComServerApp::~ComServerApp() = default;
 
 void ComServerApp::Stop() {
@@ -228,11 +222,6 @@ void ComServerApp::ActiveDutyInternal(
 }
 
 void ComServerApp::Start(base::OnceCallback<HRESULT()> register_callback) {
-  if (!com_initializer_.Succeeded()) {
-    PLOG(ERROR) << "Failed to initialize COM";
-    Shutdown(-1);
-    return;
-  }
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   CreateWRLModule();
   HRESULT hr = std::move(register_callback).Run();
@@ -268,7 +257,7 @@ bool ComServerApp::SwapInNewVersion() {
     return false;
   }
 
-  if (IsCOMService()) {
+  if (updater_scope() == UpdaterScope::kSystem) {
     AddComServiceWorkItems(updater_path, false, list.get());
   } else {
     for (const CLSID& clsid : GetActiveServers(updater_scope())) {

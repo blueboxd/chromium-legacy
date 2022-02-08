@@ -1534,8 +1534,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   dict.Set("this.is.expanded", std::make_unique<Value>());
   dict.SetKey("this.isnt.expanded", Value());
 
-  EXPECT_FALSE(dict.HasKey("this.is.expanded"));
-  EXPECT_TRUE(dict.HasKey("this"));
+  EXPECT_FALSE(dict.FindKey("this.is.expanded"));
+  EXPECT_TRUE(dict.FindKey("this"));
   Value* value1;
   EXPECT_TRUE(dict.Get("this", &value1));
   DictionaryValue* value2;
@@ -1543,7 +1543,7 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   EXPECT_EQ(value1, value2);
   EXPECT_EQ(1U, value2->DictSize());
 
-  EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
+  EXPECT_TRUE(dict.FindKey("this.isnt.expanded"));
   Value* value3;
   EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
   Value* value4 = dict.FindKey("this.isnt.expanded");
@@ -1558,8 +1558,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
   dict.Set("this.is.expanded", std::make_unique<Value>());
   dict.SetWithoutPathExpansion("this.isnt.expanded", std::make_unique<Value>());
 
-  EXPECT_FALSE(dict.HasKey("this.is.expanded"));
-  EXPECT_TRUE(dict.HasKey("this"));
+  EXPECT_FALSE(dict.FindKey("this.is.expanded"));
+  EXPECT_TRUE(dict.FindKey("this"));
   Value* value1;
   EXPECT_TRUE(dict.Get("this", &value1));
   DictionaryValue* value2;
@@ -1567,7 +1567,7 @@ TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
   EXPECT_EQ(value1, value2);
   EXPECT_EQ(1U, value2->DictSize());
 
-  EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
+  EXPECT_TRUE(dict.FindKey("this.isnt.expanded"));
   Value* value3;
   EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
   Value* value4 = dict.FindKey("this.isnt.expanded");
@@ -1591,8 +1591,6 @@ TEST(ValuesTest, DeepCopy) {
   storage.emplace_back(0);
   storage.emplace_back(1);
   Value* list_weak = original_dict.SetKey("list", Value(std::move(storage)));
-  Value* list_element_0_weak = &list_weak->GetListDeprecated()[0];
-  Value* list_element_1_weak = &list_weak->GetListDeprecated()[1];
 
   Value* dict_weak = original_dict.SetKey(
       "dictionary", base::Value(base::Value::Type::DICTIONARY));
@@ -1661,20 +1659,6 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_list);
   ASSERT_EQ(2U, copy_list->GetListDeprecated().size());
 
-  Value* copy_list_element_0;
-  ASSERT_TRUE(copy_list->Get(0, &copy_list_element_0));
-  ASSERT_TRUE(copy_list_element_0);
-  ASSERT_NE(copy_list_element_0, list_element_0_weak);
-  ASSERT_TRUE(copy_list_element_0->is_int());
-  ASSERT_EQ(0, copy_list_element_0->GetInt());
-
-  Value* copy_list_element_1;
-  ASSERT_TRUE(copy_list->Get(1, &copy_list_element_1));
-  ASSERT_TRUE(copy_list_element_1);
-  ASSERT_NE(copy_list_element_1, list_element_1_weak);
-  ASSERT_TRUE(copy_list_element_1->is_int());
-  ASSERT_EQ(1, copy_list_element_1->GetInt());
-
   copy_value = nullptr;
   ASSERT_TRUE(copy_dict->Get("dictionary", &copy_value));
   ASSERT_TRUE(copy_value);
@@ -1683,7 +1667,7 @@ TEST(ValuesTest, DeepCopy) {
   DictionaryValue* copy_nested_dictionary = nullptr;
   ASSERT_TRUE(copy_value->GetAsDictionary(&copy_nested_dictionary));
   ASSERT_TRUE(copy_nested_dictionary);
-  EXPECT_TRUE(copy_nested_dictionary->HasKey("key"));
+  EXPECT_TRUE(copy_nested_dictionary->FindKey("key"));
 }
 
 TEST(ValuesTest, Equals) {
@@ -2252,15 +2236,6 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("dict", nullptr));
   EXPECT_TRUE(main_dict.GetListWithoutPathExpansion("list", nullptr));
   EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("DNE", nullptr));
-
-  EXPECT_TRUE(main_list.Get(0, nullptr));
-  EXPECT_TRUE(main_list.Get(1, nullptr));
-  EXPECT_TRUE(main_list.Get(2, nullptr));
-  EXPECT_TRUE(main_list.Get(3, nullptr));
-  EXPECT_TRUE(main_list.Get(4, nullptr));
-  EXPECT_TRUE(main_list.Get(5, nullptr));
-  EXPECT_TRUE(main_list.Get(6, nullptr));
-  EXPECT_FALSE(main_list.Get(7, nullptr));
 
   EXPECT_FALSE(main_list.GetDictionary(0, nullptr));
   EXPECT_FALSE(main_list.GetDictionary(1, nullptr));

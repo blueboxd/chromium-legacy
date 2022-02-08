@@ -68,10 +68,6 @@ static_assert(
 namespace {
 
 // Private WebKit accessibility attributes.
-NSString* const NSAccessibilityEditableAncestorAttribute =
-    @"AXEditableAncestor";
-NSString* const NSAccessibilityHighestEditableAncestorAttribute =
-    @"AXHighestEditableAncestor";
 NSString* const NSAccessibilityLoadingProgressAttribute = @"AXLoadingProgress";
 NSString* const NSAccessibilityOwnsAttribute = @"AXOwns";
 NSString* const
@@ -627,15 +623,12 @@ bool content::IsNSRange(id value) {
       {NSAccessibilityDisclosedByRowAttribute, @"disclosedByRow"},
       {NSAccessibilityDisclosureLevelAttribute, @"disclosureLevel"},
       {NSAccessibilityDisclosedRowsAttribute, @"disclosedRows"},
-      {NSAccessibilityEditableAncestorAttribute, @"editableAncestor"},
       {NSAccessibilityEnabledAttribute, @"enabled"},
       {NSAccessibilityEndTextMarkerAttribute, @"endTextMarker"},
       {NSAccessibilityExpandedAttribute, @"expanded"},
       {NSAccessibilityFocusedAttribute, @"focused"},
       {NSAccessibilityHeaderAttribute, @"header"},
       {NSAccessibilityHelpAttribute, @"help"},
-      {NSAccessibilityHighestEditableAncestorAttribute,
-       @"highestEditableAncestor"},
       {NSAccessibilityIndexAttribute, @"index"},
       {NSAccessibilityInsertionPointLineNumberAttribute,
        @"insertionPointLineNumber"},
@@ -734,10 +727,10 @@ bool content::IsNSRange(id value) {
     for (auto it = _owner->PlatformChildrenBegin();
          it != _owner->PlatformChildrenEnd(); ++it) {
       BrowserAccessibilityCocoa* child = it->GetNativeViewAccessible();
-      if ([child isIgnored])
-        [_children addObjectsFromArray:[child children]];
-      else
+      if ([child isIncludedInPlatformTree])
         [_children addObject:child];
+      else
+        [_children addObjectsFromArray:[child children]];
     }
 
     // Also, add indirect children (if any).
@@ -764,7 +757,7 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive] || _gettingChildren)
     return;
   _needsToUpdateChildren = true;
-  if ([self isIgnored]) {
+  if (![self isIncludedInPlatformTree]) {
     BrowserAccessibility* parent = _owner->PlatformGetParent();
     if (parent)
       [parent->GetNativeViewAccessible() childrenChanged];
@@ -930,15 +923,6 @@ bool content::IsNSRange(id value) {
   return nil;
 }
 
-- (id)editableAncestor {
-  if (![self instanceActive])
-    return nil;
-  auto* text_field_ancestor =
-      const_cast<BrowserAccessibility*>(_owner->PlatformGetTextFieldAncestor());
-  return text_field_ancestor ? text_field_ancestor->GetNativeViewAccessible()
-                             : nil;
-}
-
 - (NSNumber*)enabled {
   if (![self instanceActive])
     return nil;
@@ -1007,26 +991,6 @@ bool content::IsNSRange(id value) {
     return nil;
   return NSStringForStringAttribute(_owner,
                                     ax::mojom::StringAttribute::kDescription);
-}
-
-- (id)highestEditableAncestor {
-  if (![self instanceActive])
-    return nil;
-
-  BrowserAccessibilityCocoa* highestEditableAncestor = [self editableAncestor];
-  while (highestEditableAncestor) {
-    BrowserAccessibilityCocoa* ancestorParent =
-        [highestEditableAncestor parent];
-    if (!ancestorParent || ![ancestorParent isKindOfClass:[self class]]) {
-      break;
-    }
-    BrowserAccessibilityCocoa* higherAncestor =
-        [ancestorParent editableAncestor];
-    if (!higherAncestor)
-      break;
-    highestEditableAncestor = higherAncestor;
-  }
-  return highestEditableAncestor;
 }
 
 - (NSNumber*)index {
@@ -1128,16 +1092,6 @@ bool content::IsNSRange(id value) {
       std::lower_bound(lineStarts.begin(), lineStarts.end(),
                        caretPosition->AsTextPosition()->text_offset());
   return @(std::distance(lineStarts.begin(), iterator));
-}
-
-// Returns whether or not this node should be ignored in the
-// accessibility tree.
-- (BOOL)isIgnored {
-  if (![self instanceActive])
-    return YES;
-
-  return [[self role] isEqualToString:NSAccessibilityUnknownRole] ||
-         _owner->IsInvisibleOrIgnored();
 }
 
 - (NSString*)language {
@@ -2879,17 +2833,6 @@ bool content::IsNSRange(id value) {
     ]];
   }
 
-  // Caret navigation and text selection attributes.
-  if (_owner->HasState(ax::mojom::State::kEditable)) {
-    // Add ancestor attributes if not a web area.
-    if (!ui::IsPlatformDocument(_owner->GetRole())) {
-      [ret addObjectsFromArray:@[
-        NSAccessibilityEditableAncestorAttribute,
-        NSAccessibilityHighestEditableAncestorAttribute
-      ]];
-    }
-  }
-
   if (_owner->IsTextField()) {
     [ret addObjectsFromArray:@[
       NSAccessibilityInsertionPointLineNumberAttribute,
@@ -3001,15 +2944,6 @@ bool content::IsNSRange(id value) {
     return YES;
 
   return NO;
-}
-
-// Returns whether or not this object should be ignored in the accessibility
-// tree.
-- (BOOL)accessibilityIsIgnored {
-  TRACE_EVENT1("accessibility",
-               "BrowserAccessibilityCocoa::accessibilityIsIgnored",
-               "role=", ui::ToString([self internalRole]));
-  return [self isIgnored];
 }
 
 - (BOOL)isAccessibilityEnabled {

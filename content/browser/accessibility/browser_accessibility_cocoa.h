@@ -128,8 +128,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) id disclosedByRow;
 @property(nonatomic, readonly) NSNumber* disclosureLevel;
 @property(nonatomic, readonly) id disclosedRows;
-// Returns the object at the root of the current edit field, if any.
-@property(nonatomic, readonly) id editableAncestor;
 @property(nonatomic, readonly) NSNumber* enabled;
 // Returns a text marker that points to the last character in the document that
 // can be selected with Voiceover.
@@ -138,9 +136,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) NSNumber* focused;
 @property(nonatomic, readonly) id header;
 @property(nonatomic, readonly) NSString* help;
-// isIgnored returns whether or not the accessibility object
-// should be ignored by the accessibility hierarchy.
-@property(nonatomic, readonly, getter=isIgnored) BOOL ignored;
 // Index of a row, column, or tree item.
 @property(nonatomic, readonly) NSNumber* index;
 @property(nonatomic, readonly) NSNumber* treeItemRowIndex;

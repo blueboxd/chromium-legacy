@@ -620,7 +620,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.PersistentProto.ReadStatus"
-    enum="PersistentProtoReadStatus" expires_after="2022-06-05">
+    enum="PersistentProtoReadStatus" expires_after="2022-08-07">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -1654,7 +1654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.CreateShortcuts.Linux.Result"
-    enum="WebAppCreateShortcutLinuxResult" expires_after="2022-06-05">
+    enum="WebAppCreateShortcutLinuxResult" expires_after="2022-08-07">
   <owner>phillis@chromium.org</owner>
   <owner>cmumford@chromium.org</owner>
   <summary>
@@ -1843,7 +1843,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Apps.Launcher.ProductivityReorderAnimationSmoothness{TabletOrClamshell}"
+    name="Apps.Launcher.ProductivityReorderAnimationSmoothness.{TabletOrClamshell}"
     units="%" expires_after="2022-09-01">
   <owner>andrewxu@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>

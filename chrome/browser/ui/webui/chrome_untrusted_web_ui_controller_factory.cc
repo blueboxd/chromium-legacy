@@ -23,6 +23,8 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/webui/video_tutorials/video_player_ui.h"
+#else
+#include "chrome/browser/ui/webui/feed/feed_ui_config.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -32,6 +34,7 @@
 #include "ash/webui/help_app_ui/help_app_kids_magazine_untrusted_ui.h"
 #include "ash/webui/os_feedback_ui/os_feedback_untrusted_ui.h"
 #include "ash/webui/personalization_app/untrusted_personalization_app_ui_config.h"
+#include "chrome/browser/ash/web_applications/camera_app/camera_app_untrusted_ui_config.h"
 #include "chrome/browser/ash/web_applications/crosh_ui.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_untrusted_ui_config.h"
 #include "chrome/browser/ash/web_applications/media_app/media_app_guest_ui_config.h"
@@ -69,6 +72,8 @@ WebUIConfigList CreateConfigs() {
 
 #if BUILDFLAG(IS_ANDROID)
   register_config(std::make_unique<video_tutorials::VideoPlayerUIConfig>());
+#else
+  register_config(std::make_unique<feed::FeedUIConfig>());
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -78,6 +83,7 @@ WebUIConfigList CreateConfigs() {
   register_config(std::make_unique<MediaAppGuestUIConfig>());
   register_config(std::make_unique<ash::UntrustedPersonalizationAppUIConfig>());
   register_config(std::make_unique<ash::HelpAppUntrustedUIConfig>());
+  register_config(std::make_unique<ash::CameraAppUntrustedUIConfig>());
   register_config(
       std::make_unique<ash::HelpAppKidsMagazineUntrustedUIConfig>());
   if (ash::features::IsProjectorEnabled())
@@ -96,7 +102,6 @@ WebUIConfigList CreateConfigs() {
   register_config(std::make_unique<ash::UntrustedSampleSystemWebAppUIConfig>());
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
   return config_list;
 }
 

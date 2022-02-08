@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/at_exit.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -34,6 +35,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/process_startup_helper.h"
+#include "base/win/scoped_com_initializer.h"
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/app/server/win/service_main.h"
 #include "chrome/updater/win/win_util.h"
@@ -125,8 +127,19 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
 #if BUILDFLAG(IS_WIN)
-  base::win::RegisterInvalidParamHandler();
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  if (!com_initializer.Succeeded()) {
+    PLOG(ERROR) << "Failed to initialize COM";
 
+    // TODO(crbug.com/1294543) - is there a more specific error needed?
+    return -1;
+  }
+  if (FAILED(DisableCOMExceptionHandling())) {
+    // Failing to disable COM exception handling is a critical error.
+    CHECK(false) << "Failed to disable COM exception handling.";
+  }
+  base::win::RegisterInvalidParamHandler();
   VLOG(1) << GetUACState();
 #endif
 
@@ -151,8 +164,8 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
     return MakeAppUpdate()->Run();
 
 #if BUILDFLAG(IS_WIN)
-  if (command_line->HasSwitch(kComServiceSwitch))
-    return ServiceMain::RunComService(command_line);
+  if (command_line->HasSwitch(kWindowsServiceSwitch))
+    return ServiceMain::RunWindowsService(command_line);
 
   if (command_line->HasSwitch(kHealthCheckSwitch)) {
     return 0;
@@ -190,11 +203,21 @@ int HandleUpdaterCommands(UpdaterScope updater_scope,
 const char* GetUpdaterCommand(const base::CommandLine* command_line) {
   // Contains the literals which are associated with specific updater commands.
   const char* commands[] = {
-      kComServiceSwitch,    kCrashHandlerSwitch, kHealthCheckSwitch,
-      kInstallSwitch,       kRecoverSwitch,      kServerSwitch,
-      kTagSwitch,           kTestSwitch,         kUninstallIfUnusedSwitch,
-      kUninstallSelfSwitch, kUninstallSwitch,    kUpdateSwitch,
-      kWakeSwitch,          kHealthCheckSwitch,  kHandoffSwitch,
+      kWindowsServiceSwitch,
+      kCrashHandlerSwitch,
+      kHealthCheckSwitch,
+      kInstallSwitch,
+      kRecoverSwitch,
+      kServerSwitch,
+      kTagSwitch,
+      kTestSwitch,
+      kUninstallIfUnusedSwitch,
+      kUninstallSelfSwitch,
+      kUninstallSwitch,
+      kUpdateSwitch,
+      kWakeSwitch,
+      kHealthCheckSwitch,
+      kHandoffSwitch,
   };
   const char** it = std::find_if(
       std::begin(commands), std::end(commands),

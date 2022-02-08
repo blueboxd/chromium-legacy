@@ -319,9 +319,6 @@ extern const char kContextMenuSearchAndShopWithGoogleLensDescription[];
 extern const char kContextMenuTranslateWithGoogleLensName[];
 extern const char kContextMenuTranslateWithGoogleLensDescription[];
 
-extern const char kClipboardCustomFormatsName[];
-extern const char kClipboardCustomFormatsDescription[];
-
 extern const char kClientStorageAccessContextAuditingName[];
 extern const char kClientStorageAccessContextAuditingDescription[];
 
@@ -359,9 +356,6 @@ extern const char kCompositingBasedThrottlingDescription[];
 
 extern const char kDarkLightTestName[];
 extern const char kDarkLightTestDescription[];
-
-extern const char kDetectTargetEmbeddingLookalikesName[];
-extern const char kDetectTargetEmbeddingLookalikesDescription[];
 
 extern const char kDisableProcessReuse[];
 extern const char kDisableProcessReuseDescription[];
@@ -474,9 +468,6 @@ extern const char kColorProviderRedirectionForThemeProviderDescription[];
 
 extern const char kDesktopPWAsAdditionalWindowingControlsName[];
 extern const char kDesktopPWAsAdditionalWindowingControlsDescription[];
-
-extern const char kDesktopPWAsAppIconShortcutsMenuUIName[];
-extern const char kDesktopPWAsAppIconShortcutsMenuUIDescription[];
 
 extern const char kDesktopPWAsPrefixAppNameInWindowTitleName[];
 extern const char kDesktopPWAsPrefixAppNameInWindowTitleDescription[];
@@ -1631,12 +1622,6 @@ extern const char kShareContextMenuDescription[];
 extern const char kForceMajorVersionInMinorPositionInUserAgentName[];
 extern const char kForceMajorVersionInMinorPositionInUserAgentDescription[];
 
-extern const char kForceMajorVersion100InUserAgentName[];
-extern const char kForceMajorVersion100InUserAgentDescription[];
-
-extern const char kForceMinorVersion100InUserAgentName[];
-extern const char kForceMinorVersion100InUserAgentDescription[];
-
 // Android --------------------------------------------------------------------
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2003,9 +1988,6 @@ extern const char kSwapAndroidShareHubRowsDescription[];
 extern const char kRequestDesktopSiteForTabletsName[];
 extern const char kRequestDesktopSiteForTabletsDescription[];
 
-extern const char kScrollCaptureName[];
-extern const char kScrollCaptureDescription[];
-
 extern const char kSecurePaymentConfirmationAndroidName[];
 extern const char kSecurePaymentConfirmationAndroidDescription[];
 
@@ -2093,11 +2075,11 @@ extern const char kOmniboxPedalsAndroidBatch1Description[];
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
 
-extern const char kAppManagementIntentSettingsName[];
-extern const char kAppManagementIntentSettingsDescription[];
-
 extern const char kEnableAccessibilityLiveCaptionName[];
 extern const char kEnableAccessibilityLiveCaptionDescription[];
+
+extern const char kEnableUserCloudSigninRestrictionPolicyName[];
+extern const char kEnableUserCloudSigninRestrictionPolicyDescription[];
 
 extern const char kCopyLinkToTextName[];
 extern const char kCopyLinkToTextDescription[];
@@ -2774,6 +2756,9 @@ extern const char kFullRestoreForLacrosDescription[];
 
 extern const char kFuseBoxName[];
 extern const char kFuseBoxDescription[];
+
+extern const char kGuestOsFilesName[];
+extern const char kGuestOsFilesDescription[];
 
 extern const char kHelpAppBackgroundPageName[];
 extern const char kHelpAppBackgroundPageDescription[];

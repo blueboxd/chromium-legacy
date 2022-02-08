@@ -8386,6 +8386,41 @@
   "OpenNetworkConfiguration": {
     "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
   },
+  "SecondaryGoogleAccountUsage": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "account_manager.secondary_google_account_usage": {
+            "default_value": "all"
+          }
+        }
+      },
+      {
+        "policies": {
+          "SecondaryGoogleAccountUsage": "primary_account_signin"
+        },
+        "prefs": {
+          "account_manager.secondary_google_account_usage": {
+            "value": "primary_account_signin"
+          }
+        }
+      },
+      {
+        "policies": {
+          "SecondaryGoogleAccountUsage": "all"
+        },
+        "prefs": {
+          "account_manager.secondary_google_account_usage": {
+            "value": "all"
+          }
+        }
+      }
+    ]
+  },
   "GaiaOfflineSigninTimeLimitDays": {
     "os": [
       "chromeos_ash"
@@ -13612,63 +13647,83 @@
     ],
     "policy_pref_mapping_tests": [
       {
-        "policies": {
-          "UsageTimeLimit": {
-            "time_window_limit": {
-              "entries": [
-                {
-                  "effective_day": "WEDNESDAY",
-                  "starts_at": {
-                    "hour": 21,
-                    "minute": 0
-                  },
-                  "ends_at": {
-                    "hour": 7,
-                    "minute": 30
-                  },
-                  "last_updated_millis": "1000000"
-                },
-                {
-                  "effective_day": "SATURDAY",
-                  "starts_at": {
-                    "hour": 14,
-                    "minute": 0
-                  },
-                  "ends_at": {
-                    "hour": 16,
-                    "minute": 15
-                  },
-                  "last_updated_millis": "1400000"
-                }
-              ]
-            },
+        "policies":{
+          "UsageTimeLimit":{
             "time_usage_limit": {
               "monday": {
                 "usage_quota_mins": 120,
                 "last_updated_millis": "1200000"
               },
+              "tuesday": {
+                "usage_quota_mins": 120,
+                "last_updated_millis": "1200000"
+              },
+              "wednesday": {
+                "usage_quota_mins": 120,
+                "last_updated_millis": "1200000"
+              },
               "thursday": {
-                "usage_quota_mins": 15,
-                "last_updated_millis": "1600000"
+                "usage_quota_mins": 120,
+                "last_updated_millis": "1200000"
+              },
+              "friday": {
+                "usage_quota_mins": 120,
+                "last_updated_millis": "1200000"
+              },
+              "saturday": {
+                "usage_quota_mins": 120,
+                "last_updated_millis": "1200000"
+              },
+              "sunday": {
+                "usage_quota_mins": 120,
+                "last_updated_millis": "1200000"
               },
               "reset_at": {
                 "hour": 6,
                 "minute": 0
               }
-            },
-            "overrides": [
-              {
-                "action": "UNLOCK",
-                "created_at_millis": "1250000",
-                "action_specific_data": {
-                  "duration_mins": 30
-                }
-              }
-            ]
+            }
           }
         },
-        "prefs": {
-          "screen_time.limit": {}
+        "prefs":{
+          "screen_time.limit": {
+            "value":{
+              "time_usage_limit": {
+                "monday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "tuesday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "wednesday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "thursday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "friday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "saturday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "sunday": {
+                  "usage_quota_mins": 120,
+                  "last_updated_millis": "1200000"
+                },
+                "reset_at": {
+                  "hour": 6,
+                  "minute": 0
+                }
+              }
+            }
+          }
         }
       }
     ]

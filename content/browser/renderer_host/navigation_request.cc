@@ -150,6 +150,7 @@
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
+#include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "ui/compositor/compositor_lock.h"
@@ -313,9 +314,18 @@ bool NeedsHTTPOrigin(net::HttpRequestHeaders* headers,
   return true;
 }
 
+bool DoesHeaderContainClientHint(
+    const net::HttpRequestHeaders& headers,
+    const network::mojom::WebClientHintsType hint) {
+  std::string header = network::GetClientHintToNameMap().at(hint);
+  std::string value;
+  return headers.GetHeader(header, &value) && value == "?1";
+}
+
 // Computes the value that should be set for the User-Agent header, based on the
-// values of relevant headers like Sec-CH-UA-Reduced.  If `user_agent_override`
-// is non-empty, `user_agent_override` is returned as the header value.
+// values of relevant headers like Sec-CH-UA-Reduced or Sec-CH-UA-Full.  If
+// `user_agent_override` is non-empty, `user_agent_override` is returned as the
+// header value.
 std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
                                   const std::string& user_agent_override,
                                   content::BrowserContext* context) {
@@ -325,13 +335,23 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
     return user_agent_override;
   }
 
+  // If Sec-CH-UA-Full is set on the headers, it means that the token for the
+  // SendFullUserAgentAfterReduction Origin Trial has been validated and we
+  // should send a reduced UA string on the request.
+  const bool full = DoesHeaderContainClientHint(
+      headers, network::mojom::WebClientHintsType::kFullUserAgent);
+
+  if (full) {
+    base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                  UserAgentStringType::kFullVersion);
+    return GetContentClient()->browser()->GetFullUserAgent();
+  }
+
   // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
   // UserAgentReduction Origin Trial has been validated and we should send a
   // reduced UA string on the request.
-  std::string header = network::GetClientHintToNameMap().at(
-      network::mojom::WebClientHintsType::kUAReduced);
-  std::string value;
-  const bool reduced = headers.GetHeader(header, &value) && value == "?1";
+  const bool reduced = DoesHeaderContainClientHint(
+      headers, network::mojom::WebClientHintsType::kUAReduced);
   base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
                                 reduced ? UserAgentStringType::kReducedVersion
                                         : UserAgentStringType::kFullVersion);
@@ -690,7 +710,7 @@ network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
     return network::mojom::RequestDestination::kFencedframe;
 
   if (frame_tree_node->IsMainFrame()) {
-    if (frame_tree_node->current_frame_host()->InsidePortal()) {
+    if (frame_tree_node->frame_tree()->IsPortal()) {
       return network::mojom::RequestDestination::kIframe;
     }
     return network::mojom::RequestDestination::kDocument;
@@ -868,26 +888,36 @@ bool IsOptedInFencedFrame(const net::HttpResponseHeaders& http_headers) {
 }
 
 // If the response does not contain an Accept-CH header, then remove the
-// Sec-CH-UA-Reduced client hint from the Accept-CH cache, if it exists, for the
-// response origin.  The `client_hints` vector also has kUaReduced removed from
-// it if the Accept-CH response header doesn't exist.
-void RemoveUaReducedFromAcceptCH(
+// Sec-CH-UA-Reduced or Sec-CH-UA-Full client hint from the Accept-CH cache, if
+// it exists, for the response origin.  The `client_hints` vector also has
+// kUaReduced or kFullUserAgent removed from it if the Accept-CH response header
+// doesn't exist.
+void RemoveUaReducedAndFullFromAcceptCH(
     const GURL& url,
     ClientHintsControllerDelegate* delegate,
     const network::mojom::URLResponseHead* response,
     std::vector<network::mojom::WebClientHintsType>& client_hints) {
-  if (response && !response->parsed_headers->accept_ch &&
-      base::Contains(client_hints,
-                     network::mojom::WebClientHintsType::kUAReduced)) {
-    // For Chrome to continue to send Sec-CH-UA-Reduced, the server must
-    // continue replying with:
+  if (response && !response->parsed_headers->accept_ch) {
+    // For Chrome to continue to send Sec-CH-UA-Reduced or Sec-CH-UA-Full, the
+    // server must continue replying with:
     //  - a valid Origin Trial token.
-    //  - Accept-CH header with Sec-CH-UA-Reduced as a value.
+    //  - Accept-CH header with Sec-CH-UA-Reduced or Sec-CH-UA-Full as a value.
     //
     // Here, it did not. So it gets removed from the persisted client hints
     // for the next request.
-    base::Erase(client_hints, network::mojom::WebClientHintsType::kUAReduced);
-    PersistAcceptCH(url, delegate, client_hints);
+    std::vector<network::mojom::WebClientHintsType> hints_to_remove = {
+        network::mojom::WebClientHintsType::kUAReduced,
+        network::mojom::WebClientHintsType::kFullUserAgent};
+    bool need_update_storage = false;
+    for (const auto& hint : hints_to_remove) {
+      if (base::Contains(client_hints, hint)) {
+        base::Erase(client_hints, hint);
+        need_update_storage = true;
+      }
+    }
+    if (need_update_storage) {
+      PersistAcceptCH(url, delegate, client_hints);
+    }
   }
 }
 
@@ -1239,7 +1269,10 @@ NavigationRequest::CreateForSynchronousRendererCommit(
   navigation_request->commit_params_->storage_key =
       blink::StorageKey::CreateWithOptionalNonce(
           origin, net::SchemefulSite(top_level_origin),
-          base::OptionalOrNullptr(nonce));
+          base::OptionalOrNullptr(nonce),
+          render_frame_host->ComputeSiteForCookies().IsNull()
+              ? blink::mojom::AncestorChainBit::kCrossSite
+              : blink::mojom::AncestorChainBit::kSameSite);
   navigation_request->web_bundle_navigation_info_ =
       std::move(web_bundle_navigation_info);
   if (subresource_web_bundle_navigation_info) {
@@ -3963,17 +3996,18 @@ void NavigationRequest::OnRedirectChecksComplete(
         source_url, response_head->parsed_headers, response_head->headers.get(),
         browser_context, client_hints_delegate, frame_tree_node_);
     // CriticalClientHintsThrottle issues a 307 internal redirect without the
-    // original headers, and we don't want to remove Sec-CH-UA-Reduced when
-    // Critical-CH is set.  This means that if the site sends a 307 (instead of
-    // a 301 or 302), Sec-CH-UA-Reduced will *not* be removed from the Accept-CH
-    // cache if the Accept-CH header is missing from the redirect response.
+    // original headers, and we don't want to remove Sec-CH-UA-Reduced or
+    // Sec-CH-UA-Full when Critical-CH is set.  This means that if the site
+    // sends a 307 (instead of a 301 or 302), Sec-CH-UA-Reduced or
+    // Sec-CH-UA-Full will *not* be removed from the Accept-CH cache if the
+    // Accept-CH header is missing from the redirect response.
     if (response_head->headers && response_head->headers->response_code() !=
                                       net::HTTP_TEMPORARY_REDIRECT) {
       std::vector<network::mojom::WebClientHintsType> client_hints =
           LookupAcceptCHForCommit(source_url, client_hints_delegate,
                                   frame_tree_node_);
-      RemoveUaReducedFromAcceptCH(source_url, client_hints_delegate,
-                                  response_head, client_hints);
+      RemoveUaReducedAndFullFromAcceptCH(source_url, client_hints_delegate,
+                                         response_head, client_hints);
     }
 
     AddNavigationRequestClientHintsHeaders(
@@ -4324,7 +4358,10 @@ void NavigationRequest::CommitNavigation() {
       render_frame_host_->ComputeTopFrameOrigin(GetOriginToCommit());
   commit_params_->storage_key = blink::StorageKey::CreateWithOptionalNonce(
       GetOriginToCommit(), net::SchemefulSite(top_level_origin),
-      base::OptionalOrNullptr(nonce));
+      base::OptionalOrNullptr(nonce),
+      render_frame_host_->ComputeSiteForCookies().IsNull()
+          ? blink::mojom::AncestorChainBit::kCrossSite
+          : blink::mojom::AncestorChainBit::kSameSite);
 
   if (IsServedFromBackForwardCache() || IsPrerenderedPageActivation()) {
     CommitPageActivation();
@@ -4379,9 +4416,9 @@ void NavigationRequest::CommitNavigation() {
     }
     commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
         common_params_->url, client_hints_delegate, frame_tree_node_);
-    RemoveUaReducedFromAcceptCH(common_params_->url, client_hints_delegate,
-                                response(),
-                                commit_params_->enabled_client_hints);
+    RemoveUaReducedAndFullFromAcceptCH(common_params_->url,
+                                       client_hints_delegate, response(),
+                                       commit_params_->enabled_client_hints);
   }
 
   // Generate a UKM source and track it on NavigationRequest. This will be
@@ -4827,7 +4864,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   DCHECK(!parent == !parent_policies);
   bool set_parent_for_nested_frame_tree =
       !parent &&
-      (frame_tree_node()->current_frame_host()->InsidePortal() ||
+      (frame_tree_node()->frame_tree()->IsPortal() ||
        frame_tree_node()->IsFencedFrameRoot()) &&
       frame_tree_node()->render_manager()->GetOuterDelegateNode();
   if (set_parent_for_nested_frame_tree) {

@@ -82,7 +82,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
-#include "v8.h"
+#include "v8/include/v8.h"
 
 using network::mojom::CredentialsMode;
 using network::mojom::FetchResponseType;
@@ -450,6 +450,8 @@ void FetchManager::Loader::DidReceiveResponse(
       NOTREACHED();
       break;
   }
+  // TODO(crbug.com/1288221): Remove this once the investigation is done.
+  CHECK(tainted_response);
 
   response_has_no_store_header_ = response.CacheControlContainsNoStore();
 

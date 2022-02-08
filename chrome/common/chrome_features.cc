@@ -68,13 +68,6 @@ const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Controls whether intent settings are available in App Management.
-// TODO(crbug/1226925): Do not enable flag unless this has been resolved.
-const base::Feature kAppManagementIntentSettings{
-    "AppManagementIntentSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if !BUILDFLAG(IS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceLoadIconWithoutMojom{
@@ -135,6 +128,11 @@ const base::Feature kAutofillPasswordSurvey{"AutofillPasswordSurvey",
 const base::Feature kBackgroundModeAllowRestart{
     "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+#if !BUILDFLAG(IS_ANDROID)
+const base::Feature kBlockMigratedDefaultChromeAppSync{
+    "BlockMigratedDefaultChromeAppSync", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
@@ -259,14 +257,6 @@ const base::Feature kPreinstalledWebAppInstallation{
 // Whether to run the PreinstalledWebAppDuplicationFixer code during start up.
 const base::Feature kPreinstalledWebAppDuplicationFixer{
     "PreinstalledWebAppDuplicationFixer", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
-// Enables Desktop PWAs shortcuts menu to be visible and executable in ChromeOS,
-// MacOS and Linux.
-const base::Feature kDesktopPWAsAppIconShortcutsMenuUI{
-    "DesktopPWAsAppIconShortcutsMenuUI", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // API that allows PWAs manually minimizing, maximizing and restoring windows.
@@ -905,11 +895,6 @@ const base::Feature kRequestDesktopSiteForTablets{
 const base::Feature kSchedulerConfiguration{"SchedulerConfiguration",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_ANDROID)
-const base::Feature kScrollCapture{"ScrollCapture",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Controls whether SCT audit reports are queued and the rate at which they
 // should be sampled. Default sampling rate is 1/10,000 certificates.

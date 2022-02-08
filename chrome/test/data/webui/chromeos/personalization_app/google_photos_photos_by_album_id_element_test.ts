@@ -77,7 +77,8 @@ export function GooglePhotosPhotosByAlbumIdTest() {
 
     // Expect a request to load photos for the selected album id.
     await wallpaperProvider.whenCalled('fetchGooglePhotosPhotos');
-    assertEquals(wallpaperProvider.getArgs('fetchGooglePhotosPhotos')[0], '1');
+    assertEquals(
+        wallpaperProvider.getArgs('fetchGooglePhotosPhotos')[0][1], '1');
 
     // Start loading photos for the selected album id. Photos should still be
     // absent since they are still not loaded.
@@ -138,5 +139,46 @@ export function GooglePhotosPhotosByAlbumIdTest() {
     googlePhotosPhotosByAlbumIdElement.removeAttribute('album-id');
     await waitAfterNextRender(googlePhotosPhotosByAlbumIdElement);
     assertEquals(querySelectorAll(photoSelector)!.length, 0);
+  });
+
+  test('selects photo', async () => {
+    personalizationStore.setReducersEnabled(true);
+
+    const photo: GooglePhotosPhoto = {
+      id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
+      date: {data: []},
+      url: {url: 'foo.com'}
+    };
+
+    // Initialize Google Photos data in the |personalizationStore|.
+    personalizationStore.data.wallpaper.googlePhotos.photosByAlbumId = {
+      '1': [photo]
+    };
+
+    // Initiallize |googlePhotosPhotosByAlbumIdElement|.
+    googlePhotosPhotosByAlbumIdElement =
+        initElement(GooglePhotosPhotosByAlbumId, {hidden: false});
+    googlePhotosPhotosByAlbumIdElement.setAttribute('album-id', '1');
+    await waitAfterNextRender(googlePhotosPhotosByAlbumIdElement);
+
+    // Verify that the expected |photo| is rendered.
+    const photoSelector = 'wallpaper-grid-item:not([hidden]).photo';
+    const photoEls = querySelectorAll(photoSelector) as WallpaperGridItem[];
+    assertEquals(photoEls.length, 1);
+    assertEquals(photoEls[0]!.imageSrc, photo.url.url);
+    assertEquals(photoEls[0]!.primaryText, undefined);
+    assertEquals(photoEls[0]!.secondaryText, undefined);
+
+    // Select |photo| and verify selection started.
+    photoEls[0]!.click();
+    assertEquals(personalizationStore.data.wallpaper.loading.setImage, 1);
+    assertEquals(personalizationStore.data.wallpaper.loading.selected, true);
+    assertEquals(personalizationStore.data.wallpaper.pendingSelected, photo);
+
+    // Wait for and verify hard-coded selection failure.
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    assertEquals(personalizationStore.data.wallpaper.loading.setImage, 0);
+    assertEquals(personalizationStore.data.wallpaper.loading.selected, false);
+    assertEquals(personalizationStore.data.wallpaper.pendingSelected, null);
   });
 }

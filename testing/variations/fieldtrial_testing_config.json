@@ -1939,8 +1939,12 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "CreateCompositorWorkerContext": "true"
+                    },
                     "enable_features": [
                         "EarlyCodeCache",
+                        "EarlyEstablishGpuChannel",
                         "FontManagerEarlyInit",
                         "NavigationThreadingOptimizations",
                         "OptimizeLookalikeUrlNavigationThrottle",
@@ -1962,8 +1966,12 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "CreateCompositorWorkerContext": "true"
+                    },
                     "enable_features": [
                         "EarlyCodeCache",
+                        "EarlyEstablishGpuChannel",
                         "NavigationThreadingOptimizations",
                         "OptimizeLookalikeUrlNavigationThrottle",
                         "URLLoaderSyncClient"
@@ -2445,27 +2453,6 @@
             ]
         }
     ],
-    "DesktopOmniboxBookmarkPaths": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows",
-                "android",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "OmniboxBookmarkPaths"
-                    ]
-                }
-            ]
-        }
-    ],
     "DesktopReadingListAddFromDialog": [
         {
             "platforms": [
@@ -2878,31 +2865,6 @@
             ]
         }
     ],
-    "EarlyEstablishGpuChannel": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "CreateCompositorWorkerContext": "true"
-                    },
-                    "enable_features": [
-                        "EarlyEstablishGpuChannel"
-                    ]
-                }
-            ]
-        }
-    ],
     "EarlyHintsPreloadForNavigation": [
         {
             "platforms": [
@@ -2918,6 +2880,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "EarlyHintsPreloadForNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnableNewDownloadAPI": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableNewDownloadAPI",
+                    "enable_features": [
+                        "EnableNewDownloadAPI"
                     ]
                 }
             ]
@@ -4014,21 +3991,6 @@
             ]
         }
     ],
-    "MixedContentDownloadDialog": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "EnableMixedContentDownloadDialog"
-                    ]
-                }
-            ]
-        }
-    ],
     "MojoInlineMessagePayloads": [
         {
             "platforms": [
@@ -4222,14 +4184,17 @@
                     "params": {
                         "EntitySuggestionsReduceLatencyDecoderTimeout": "405",
                         "MaxZeroSuggestMatches": "10",
+                        "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
                         "OmniboxMaxURLMatches": "7",
                         "RichAutocompletionAutocompleteNonPrefixAll": "true",
                         "RichAutocompletionAutocompleteTitles": "true",
+                        "ShortBookmarkSuggestionsByTotalInputLengthThreshold": "3",
                         "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
                         "OmniboxAggregateShortcuts",
                         "OmniboxBlurWithEscape",
+                        "OmniboxBookmarkPaths",
                         "OmniboxClosePopupWithEscape",
                         "OmniboxDocumentProviderAso",
                         "OmniboxEntitySuggestionsReduceLatency",
@@ -4239,11 +4204,10 @@
                         "OmniboxPreserveLongerShortcutsText",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
+                        "OmniboxShortBookmarkSuggestionsByTotalInputLength",
                         "OmniboxUIExperimentMaxAutocompleteMatches"
                     ],
-                    "disable_features": [
-                        "OmniboxShortBookmarkSuggestionsByTotalInputLength"
-                    ]
+                    "disable_features": []
                 }
             ]
         },
@@ -5832,6 +5796,22 @@
                     ]
                 }
             ]
+        },
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_120",
+                    "params": {
+                        "TimeoutLengthMs": "120"
+                    },
+                    "enable_features": [
+                        "PreemptiveLinkToTextGeneration"
+                    ]
+                }
+            ]
         }
     ],
     "SidePanelDragAndDrop": [
@@ -6495,6 +6475,23 @@
                     "name": "UseSkiaRenderer",
                     "enable_features": [
                         "UseSkiaRenderer"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UserCloudSigninRestrictionPolicyFetcher": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UserCloudSigninRestrictionPolicyFetcher"
                     ]
                 }
             ]

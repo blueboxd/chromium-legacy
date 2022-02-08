@@ -25,6 +25,8 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/media_query_list.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
@@ -58,6 +60,7 @@
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -70,13 +73,8 @@
 
 namespace blink {
 
-class StyleEngineTest : public testing::Test {
+class StyleEngineTest : public PageTestBase {
  protected:
-  void SetUp() override;
-
-  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
-  StyleEngine& GetStyleEngine() { return GetDocument().GetStyleEngine(); }
-
   bool IsDocumentStyleSheetCollectionClean() {
     return !GetStyleEngine().ShouldUpdateDocumentStyleSheetCollection();
   }
@@ -143,8 +141,17 @@ class StyleEngineTest : public testing::Test {
     return timeline->GetRule();
   }
 
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  void SimulateFrame() {
+    auto new_time = GetAnimationClock().CurrentTime() + base::Milliseconds(100);
+    GetPage().Animator().ServiceScriptedAnimations(new_time);
+  }
+
+  std::unique_ptr<DummyPageHolder> DummyPageHolderWithHTML(String html) {
+    auto holder = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
+    holder->GetDocument().documentElement()->setInnerHTML(html);
+    holder->GetDocument().View()->UpdateAllLifecyclePhasesForTest();
+    return holder;
+  }
 };
 
 class StyleEngineContainerQueryTest : public StyleEngineTest,
@@ -154,10 +161,6 @@ class StyleEngineContainerQueryTest : public StyleEngineTest,
   StyleEngineContainerQueryTest()
       : ScopedCSSContainerQueriesForTest(true), ScopedLayoutNGForTest(true) {}
 };
-
-void StyleEngineTest::SetUp() {
-  dummy_page_holder_ = std::make_unique<DummyPageHolder>(gfx::Size(800, 600));
-}
 
 StyleEngineTest::RuleSetInvalidation
 StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
@@ -3582,6 +3585,162 @@ TEST_F(StyleEngineTest, HasViewportUnitFlags) {
     EXPECT_EQ(data.has_static, document.HasStaticViewportUnits());
     EXPECT_EQ(data.has_dynamic, document.HasDynamicViewportUnits());
   }
+}
+
+TEST_F(StyleEngineTest, DynamicViewportUnitInvalidation) {
+  ScopedCSSViewportUnits4ForTest flag(true);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+  <style>
+    #target_px { width: 1px; }
+    #target_svh { width: 1svh; }
+    #target_dvh { width: 1dvh; }
+  </style>
+  <div id=target_px></div>
+  <div id=target_svh></div>
+  <div id=target_dvh></div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* target_px = GetDocument().getElementById("target_px");
+  Element* target_svh = GetDocument().getElementById("target_svh");
+  Element* target_dvh = GetDocument().getElementById("target_dvh");
+  ASSERT_TRUE(target_px);
+  ASSERT_TRUE(target_svh);
+  ASSERT_TRUE(target_dvh);
+
+  EXPECT_FALSE(target_px->NeedsStyleRecalc());
+  EXPECT_FALSE(target_svh->NeedsStyleRecalc());
+  EXPECT_FALSE(target_dvh->NeedsStyleRecalc());
+
+  // Only dvh should be affected:
+  GetDocument().DynamicViewportUnitsChanged();
+  GetStyleEngine().InvalidateViewportUnitStylesIfNeeded();
+  EXPECT_FALSE(target_px->NeedsStyleRecalc());
+  EXPECT_FALSE(target_svh->NeedsStyleRecalc());
+  EXPECT_TRUE(target_dvh->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(target_px->NeedsStyleRecalc());
+  EXPECT_FALSE(target_svh->NeedsStyleRecalc());
+  EXPECT_FALSE(target_dvh->NeedsStyleRecalc());
+
+  //  svh/dvh should be affected:
+  GetDocument().LayoutViewportWasResized();
+  GetStyleEngine().InvalidateViewportUnitStylesIfNeeded();
+  EXPECT_FALSE(target_px->NeedsStyleRecalc());
+  EXPECT_TRUE(target_svh->NeedsStyleRecalc());
+  EXPECT_TRUE(target_dvh->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(target_px->NeedsStyleRecalc());
+  EXPECT_FALSE(target_svh->NeedsStyleRecalc());
+  EXPECT_FALSE(target_dvh->NeedsStyleRecalc());
+}
+
+TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQuery) {
+  ScopedCSSViewportUnits4ForTest flag(true);
+
+  // Changes in the dynamic viewport should not affect NeedsActiveStyleUpdate
+  // when we don't use dynamic viewport units.
+  {
+    auto holder = DummyPageHolderWithHTML(R"HTML(
+        <style>
+          @media (min-width: 50vh) {
+            :root { color: green; }
+          }
+        </style>
+      )HTML");
+    Document& document = holder->GetDocument();
+
+    EXPECT_FALSE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+    document.DynamicViewportUnitsChanged();
+    EXPECT_FALSE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+  }
+
+  // NeedsActiveStyleUpdate should be set when dv* units are used.
+  {
+    auto holder = DummyPageHolderWithHTML(R"HTML(
+        <style>
+          @media (min-width: 50dvh) {
+            :root { color: green; }
+          }
+        </style>
+      )HTML");
+    Document& document = holder->GetDocument();
+
+    EXPECT_FALSE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+    document.DynamicViewportUnitsChanged();
+    EXPECT_TRUE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+  }
+
+  // Same as the first test, but with media attribute.
+  {
+    auto holder = DummyPageHolderWithHTML(R"HTML(
+        <style media="(min-width: 50vh)">
+          :root { color: green; }
+        </style>
+      )HTML");
+    Document& document = holder->GetDocument();
+
+    EXPECT_FALSE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+    document.DynamicViewportUnitsChanged();
+    EXPECT_FALSE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+  }
+
+  // // Same as the second test, but with media attribute.
+  {
+    auto holder = DummyPageHolderWithHTML(R"HTML(
+      <style media="(min-width: 50dvh)">
+        :root { color: green; }
+      </style>
+    )HTML");
+    Document& document = holder->GetDocument();
+
+    EXPECT_FALSE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+    document.DynamicViewportUnitsChanged();
+    EXPECT_TRUE(document.GetStyleEngine().NeedsActiveStyleUpdate());
+  }
+}
+
+namespace {
+
+class TestMediaQueryListListener : public MediaQueryListListener {
+ public:
+  void NotifyMediaQueryChanged() override { notified = true; }
+  bool notified = false;
+};
+
+}  // namespace
+
+TEST_F(StyleEngineTest, DynamicViewportUnitsInMediaQueryMatcher) {
+  ScopedCSSViewportUnits4ForTest flag(true);
+
+  auto& matcher = GetDocument().GetMediaQueryMatcher();
+  auto* listener = MakeGarbageCollected<TestMediaQueryListListener>();
+  matcher.AddViewportListener(listener);
+
+  // Note: SimulateFrame is responsible for eventually causing dispatch of
+  // pending events to MediaQueryListListener.
+  // See step 10.8 (call to CallMediaQueryListListeners) in
+  // ScriptedAnimationController::ServiceScriptedAnimations.
+
+  auto mq_static = MediaQuerySet::Create("(min-width: 50vh)",
+                                         GetDocument().GetExecutionContext());
+  ASSERT_TRUE(mq_static);
+  matcher.Evaluate(mq_static.get());
+  GetDocument().DynamicViewportUnitsChanged();
+  SimulateFrame();
+  EXPECT_FALSE(listener->notified);
+
+  // Evaluating a media query with dv* units will mark the MediaQueryMatcher
+  // as dependent on such units, hence we should see events when calling
+  // DynamicViewportUnitsChanged after that.
+  auto mq_dynamic = MediaQuerySet::Create("(min-width: 50dvh)",
+                                          GetDocument().GetExecutionContext());
+  ASSERT_TRUE(mq_dynamic);
+  matcher.Evaluate(mq_dynamic.get());
+  GetDocument().DynamicViewportUnitsChanged();
+  SimulateFrame();
+  EXPECT_TRUE(listener->notified);
 }
 
 class StyleEngineSimTest : public SimTest {};

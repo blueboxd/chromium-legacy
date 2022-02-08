@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -114,20 +115,52 @@ ConditionType ConvertMojomConditionTypeToConditionType(
     const apps::mojom::ConditionType& mojom_condition_type);
 
 COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::ConditionType ConvertConditionTypeToMojomConditionType(
+    const ConditionType& condition_type);
+
+COMPONENT_EXPORT(APP_TYPES)
 PatternMatchType ConvertMojomPatternMatchTypeToPatternMatchType(
     const apps::mojom::PatternMatchType& mojom_pattern_match_type);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::PatternMatchType ConvertPatternMatchTypeToMojomPatternMatchType(
+    const PatternMatchType& pattern_match_type);
 
 COMPONENT_EXPORT(APP_TYPES)
 ConditionValuePtr ConvertMojomConditionValueToConditionValue(
     const apps::mojom::ConditionValuePtr& mojom_condition_value);
 
 COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::ConditionValuePtr ConvertConditionValueToMojomConditionValue(
+    const ConditionValuePtr& condition_value);
+
+COMPONENT_EXPORT(APP_TYPES)
 ConditionPtr ConvertMojomConditionToCondition(
     const apps::mojom::ConditionPtr& mojom_condition);
 
 COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::ConditionPtr ConvertConditionToMojomCondition(
+    const ConditionPtr& condition);
+
+COMPONENT_EXPORT(APP_TYPES)
 IntentFilterPtr ConvertMojomIntentFilterToIntentFilter(
     const apps::mojom::IntentFilterPtr& mojom_intent_filter);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::IntentFilterPtr ConvertIntentFilterToMojomIntentFilter(
+    const IntentFilterPtr& intent_filter);
+
+COMPONENT_EXPORT(APP_TYPES)
+base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>>
+ConvertIntentFiltersToMojomIntentFilters(
+    const base::flat_map<std::string, apps::IntentFilters>& intent_filter);
+
+COMPONENT_EXPORT(APP_TYPES)
+base::flat_map<std::string, apps::IntentFilters>
+ConvertMojomIntentFiltersToIntentFilters(
+    const base::flat_map<std::string,
+                         std::vector<apps::mojom::IntentFilterPtr>>&
+        mojom_intent_filter);
 
 }  // namespace apps
 

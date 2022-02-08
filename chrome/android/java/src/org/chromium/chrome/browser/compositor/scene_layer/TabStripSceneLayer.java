@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
+import org.chromium.chrome.browser.compositor.overlays.strip.StripScrim;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.ui.base.LocalizationUtils;
@@ -80,6 +81,16 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
         TabStripSceneLayerJni.get().finishBuildingFrame(mNativePtr, TabStripSceneLayer.this);
     }
 
+    /**
+     * Updates tab strip scrim.
+     * @param scrim
+     */
+    public void updateStripScrim(StripScrim scrim) {
+        TabStripSceneLayerJni.get().updateStripScrim(mNativePtr, TabStripSceneLayer.this,
+                scrim.getX(), scrim.getY(), scrim.getWidth() * mDpToPx, scrim.getHeight() * mDpToPx,
+                scrim.getColor(), scrim.getAlpha());
+    }
+
     private boolean shouldReaddBackground(int orientation) {
         // Sometimes layer trees do not get updated on rotation on Nexus 10.
         // This is a workaround that readds the background to prevent it.
@@ -101,6 +112,8 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
         TabStripSceneLayerJni.get().updateTabStripLayer(mNativePtr, TabStripSceneLayer.this, width,
                 height, yOffset * mDpToPx, layoutHelper.getBackgroundTabBrightness(),
                 layoutHelper.getBrightness(), shouldReaddBackground(layoutHelper.getOrientation()));
+
+        updateStripScrim(layoutHelper.getStripScrim());
 
         CompositorButton newTabButton = layoutHelper.getNewTabButton();
         CompositorButton modelSelectorButton = layoutHelper.getModelSelectorButton();
@@ -164,7 +177,9 @@ public class TabStripSceneLayer extends SceneOverlayLayer {
         void finishBuildingFrame(long nativeTabStripSceneLayer, TabStripSceneLayer caller);
         void updateTabStripLayer(long nativeTabStripSceneLayer, TabStripSceneLayer caller,
                 float width, float height, float yOffset, float backgroundTabBrightness,
-                float brightness, boolean shouldReaddBackground);
+                float brightness, boolean shouldReadBackground);
+        void updateStripScrim(long nativeTabStripSceneLayer, TabStripSceneLayer caller, float x,
+                float y, float width, float height, int color, float alpha);
         void updateNewTabButton(long nativeTabStripSceneLayer, TabStripSceneLayer caller,
                 int resourceId, float x, float y, float width, float height, boolean visible,
                 ResourceManager resourceManager);

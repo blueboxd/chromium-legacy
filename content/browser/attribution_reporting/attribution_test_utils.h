@@ -21,6 +21,7 @@
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
+#include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/rate_limit_table.h"
@@ -81,12 +82,12 @@ class MockAttributionHost : public AttributionHost {
 
 base::GUID DefaultExternalReportID();
 
-class ConfigurableStorageDelegate : public AttributionStorage::Delegate {
+class ConfigurableStorageDelegate : public AttributionStorageDelegate {
  public:
   ConfigurableStorageDelegate();
   ~ConfigurableStorageDelegate() override;
 
-  // AttributionStorage::Delegate
+  // AttributionStorageDelegate
   base::Time GetReportTime(const CommonSourceInfo& source,
                            base::Time trigger_time) const override;
   int GetMaxAttributionsPerSource(
@@ -259,6 +260,8 @@ class SourceBuilder {
   SourceBuilder& SetAttributionLogic(
       StoredSource::AttributionLogic attribution_logic);
 
+  SourceBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
+
   SourceBuilder& SetSourceId(StoredSource::Id source_id);
 
   SourceBuilder& SetDedupKeys(std::vector<int64_t> dedup_keys);
@@ -281,6 +284,7 @@ class SourceBuilder {
   int64_t priority_ = 0;
   StoredSource::AttributionLogic attribution_logic_ =
       StoredSource::AttributionLogic::kTruthfully;
+  absl::optional<uint64_t> debug_key_;
   // `base::StrongAlias` does not automatically initialize the value here.
   // Ensure that we don't use uninitialized memory.
   StoredSource::Id source_id_{0};
@@ -312,6 +316,8 @@ class TriggerBuilder {
 
   TriggerBuilder& SetDedupKey(absl::optional<int64_t> dedup_key);
 
+  TriggerBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
+
   AttributionTrigger Build() const;
 
  private:
@@ -320,7 +326,8 @@ class TriggerBuilder {
   net::SchemefulSite conversion_destination_;
   url::Origin reporting_origin_;
   int64_t priority_ = 0;
-  absl::optional<int64_t> dedup_key_ = absl::nullopt;
+  absl::optional<int64_t> dedup_key_;
+  absl::optional<uint64_t> debug_key_;
 };
 
 // Helper class to construct an `AttributionReport` for tests using default
@@ -340,6 +347,8 @@ class ReportBuilder {
 
   ReportBuilder& SetExternalReportId(base::GUID external_report_id);
 
+  ReportBuilder& SetTriggerDebugKey(absl::optional<uint64_t> trigger_debug_key);
+
   ReportBuilder& SetReportId(
       absl::optional<AttributionReport::EventLevelData::Id> id);
 
@@ -352,6 +361,7 @@ class ReportBuilder {
   base::Time report_time_;
   int64_t priority_ = 0;
   base::GUID external_report_id_;
+  absl::optional<uint64_t> trigger_debug_key_;
   absl::optional<AttributionReport::EventLevelData::Id> report_id_;
 };
 
@@ -359,11 +369,11 @@ bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
 
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b);
 
-bool operator==(const AttributionStorage::Delegate::FakeReport& a,
-                const AttributionStorage::Delegate::FakeReport& b);
+bool operator==(const AttributionStorageDelegate::FakeReport& a,
+                const AttributionStorageDelegate::FakeReport& b);
 
-bool operator<(const AttributionStorage::Delegate::FakeReport& a,
-               const AttributionStorage::Delegate::FakeReport& b);
+bool operator<(const AttributionStorageDelegate::FakeReport& a,
+               const AttributionStorageDelegate::FakeReport& b);
 
 bool operator==(const StorableSource& a, const StorableSource& b);
 
@@ -404,7 +414,7 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source);
 
 std::ostream& operator<<(std::ostream& out,
-                         const AttributionStorage::Delegate::FakeReport&);
+                         const AttributionStorageDelegate::FakeReport&);
 
 std::ostream& operator<<(std::ostream& out, const StorableSource& source);
 
@@ -480,6 +490,11 @@ MATCHER_P(ImpressionTimeIs, matcher, "") {
                             result_listener);
 }
 
+MATCHER_P(SourceDebugKeyIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().debug_key(),
+                            result_listener);
+}
+
 MATCHER_P(DedupKeysAre, matcher, "") {
   return ExplainMatchResult(matcher, arg.dedup_keys(), result_listener);
 }
@@ -504,6 +519,10 @@ MATCHER_P(ReportTimeIs, matcher, "") {
 MATCHER_P(FailedSendAttemptsIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.failed_send_attempts(),
                             result_listener);
+}
+
+MATCHER_P(TriggerDebugKeyIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.trigger_debug_key(), result_listener);
 }
 
 MATCHER_P(EventLevelDataIs, matcher, "") {

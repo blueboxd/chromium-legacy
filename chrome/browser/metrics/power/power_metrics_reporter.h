@@ -30,6 +30,9 @@ class PowerMetricsReporter
     : public performance_monitor::ProcessMonitor::Observer {
  public:
   using ProcessMonitor = performance_monitor::ProcessMonitor;
+#if BUILDFLAG(IS_MAC)
+  using CoalitionResourceUsageRate = power_metrics::CoalitionResourceUsageRate;
+#endif  // BUILDFLAG(IS_MAC)
 
   // |data_store| will be queried at regular interval to report the metrics, it
   // needs to outlive this class.
@@ -83,13 +86,19 @@ class PowerMetricsReporter
     absl::optional<int64_t> rate;
   };
 
-  // Report battery and CPU metrics to generic histograms and histograms with a
-  // scenario suffix derived from |interval_data|.
+  // Report metrics to generic histograms and histograms with a scenario suffix
+  // derived from |interval_data|.
   static void ReportHistograms(
       const UsageScenarioDataStore::IntervalData& interval_data,
       const ProcessMonitor::Metrics& aggregated_process_metrics,
       base::TimeDelta interval_duration,
-      BatteryDischarge battery_discharge);
+      BatteryDischarge battery_discharge
+#if BUILDFLAG(IS_MAC)
+      ,
+      const absl::optional<CoalitionResourceUsageRate>&
+          coalition_resource_usage_rate
+#endif
+  );
 
   // Report battery metrics to histograms with |suffixes|.
   static void ReportBatteryHistograms(base::TimeDelta interval_duration,
@@ -126,11 +135,6 @@ class PowerMetricsReporter
                   base::TimeDelta interval_duration,
                   BatteryDischarge battery_discharge,
                   absl::optional<int64_t> main_screen_brightness) const;
-
-  void ReportUKMsAndHistograms(
-      const ProcessMonitor::Metrics& aggregated_process_metrics,
-      base::TimeDelta interval_duration,
-      BatteryDischarge battery_discharge) const;
 
   // Computes and returns the battery discharge mode and rate during the
   // interval, and reset |battery_state_| to the current state. If the discharge

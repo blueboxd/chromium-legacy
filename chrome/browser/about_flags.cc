@@ -2623,13 +2623,6 @@ const FeatureEntry::FeatureVariation kBookmarksRefreshVariations[] = {
      base::size(kBookmarksRefreshAppMenu), nullptr},
     {"(everything)", kBookmarksRefreshWithEverything,
      base::size(kBookmarksRefreshWithEverything), nullptr}};
-
-const FeatureEntry::FeatureParam kScrollCaptureInMemory[] = {
-    {"in_memory_capture", "true"}};
-
-const FeatureEntry::FeatureVariation kScrollCaptureVariations[] = {
-    {"(in memory capture)", kScrollCaptureInMemory,
-     base::size(kScrollCaptureInMemory), nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::FeatureParam kLargeFaviconFromGoogle96[] = {
@@ -4219,10 +4212,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAriaElementReflectionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableAriaElementReflection)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-cros-ime-assist-autocorrect",
-     flag_descriptions::kImeAssistAutocorrectName,
-     flag_descriptions::kImeAssistAutocorrectDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kAssistAutoCorrect)},
     {"enable-cros-ime-assist-emoji-enhanced",
      flag_descriptions::kImeAssistEmojiEnhancedName,
      flag_descriptions::kImeAssistEmojiEnhancedDescription, kOsCrOS,
@@ -4247,10 +4236,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardDarkModeName,
      flag_descriptions::kVirtualKeyboardDarkModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardDarkMode)},
-    {"enable-cros-ime-system-emoji-picker",
-     flag_descriptions::kImeSystemEmojiPickerName,
-     flag_descriptions::kImeSystemEmojiPickerDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kImeSystemEmojiPicker)},
     {"enable-cros-ime-system-emoji-picker-clipboard",
      flag_descriptions::kImeSystemEmojiPickerClipboardName,
      flag_descriptions::kImeSystemEmojiPickerClipboardDescription, kOsCrOS,
@@ -4267,10 +4252,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosLanguageSettingsUpdate2Name,
      flag_descriptions::kCrosLanguageSettingsUpdate2Description, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLanguageSettingsUpdate2)},
-    {"enable-cros-language-settings-ime-options-in-settings",
-     flag_descriptions::kCrosLanguageSettingsImeOptionsInSettingsName,
-     flag_descriptions::kCrosLanguageSettingsImeOptionsInSettingsDescription,
-     kOsCrOS, FEATURE_VALUE_TYPE(chromeos::features::kImeOptionsInSettings)},
     {"enable-cros-multilingual-typing",
      flag_descriptions::kMultilingualTypingName,
      flag_descriptions::kMultilingualTypingDescription, kOsCrOS,
@@ -4539,6 +4520,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"fuse-box", flag_descriptions::kFuseBoxName,
      flag_descriptions::kFuseBoxDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFuseBox)},
+    {"guest-os-files", flag_descriptions::kGuestOsFilesName,
+     flag_descriptions::kGuestOsFilesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kGuestOsFiles)},
     {"spectre-v2-mitigation", flag_descriptions::kSpectreVariant2MitigationName,
      flag_descriptions::kSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(sandbox::policy::features::kSpectreVariant2Mitigation)},
@@ -4931,7 +4915,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadLaterDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(reading_list::switches::kReadLater,
                                     kReadLaterVariations,
-                                    "ReadLater")},
+                                    "Collections")},
 #else
     {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
      flag_descriptions::kReadLaterDescription, kOsDesktop,
@@ -5430,13 +5414,6 @@ const FeatureEntry kFeatureEntries[] = {
          network::switches::kUnsafelyTreatInsecureOriginAsSecure,
          "")},
 
-    {"detect-target-embedding-lookalikes",
-     flag_descriptions::kDetectTargetEmbeddingLookalikesName,
-     flag_descriptions::kDetectTargetEmbeddingLookalikesDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         lookalikes::features::kDetectTargetEmbeddingLookalikes)},
-
     {"disable-process-reuse", flag_descriptions::kDisableProcessReuse,
      flag_descriptions::kDisableProcessReuseDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDisableProcessReuse)},
@@ -5692,13 +5669,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHardwareMediaKeyHandling,
      flag_descriptions::kHardwareMediaKeyHandlingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kHardwareMediaKeyHandling)},
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"app-management-intent-settings",
-     flag_descriptions::kAppManagementIntentSettingsName,
-     flag_descriptions::kAppManagementIntentSettingsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kAppManagementIntentSettings)},
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -7026,12 +6996,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kContinuousSearch,
                                     kContinuousSearchFeatureVariations,
                                     "ContinuousSearchNavigation")},
-
-    {"scroll-capture", flag_descriptions::kScrollCaptureName,
-     flag_descriptions::kScrollCaptureDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kScrollCapture,
-                                    kScrollCaptureVariations,
-                                    "AndroidScrollCapture")},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"chrome-labs", flag_descriptions::kChromeLabsName,
@@ -7293,15 +7257,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chromeos::features::kLauncherAppSort)},
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
-    {"enable-desktop-pwas-app-icon-shortcuts-menu-ui",
-     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIName,
-     flag_descriptions::kDesktopPWAsAppIconShortcutsMenuUIDescription,
-     kOsCrOS | kOsMac | kOsLinux | kOsFuchsia,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsAppIconShortcutsMenuUI)},
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-input-event-logging",
      flag_descriptions::kEnableInputEventLoggingName,
@@ -7422,10 +7377,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFocusFollowsCursorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(::features::kFocusFollowsCursor)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-    {"clipboard-custom-formats", flag_descriptions::kClipboardCustomFormatsName,
-     flag_descriptions::kClipboardCustomFormatsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kClipboardCustomFormats)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"performant-split-view-resizing",
@@ -7638,7 +7589,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBookmarksRefreshDescription, kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kBookmarksRefresh,
                                     kBookmarksRefreshVariations,
-                                    "BookmarksRefresh")},
+                                    "Collections")},
 #endif
 
     {"enable-tab-audio-muting", flag_descriptions::kTabAudioMutingName,
@@ -7676,14 +7627,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          blink::features::kForceMajorVersionInMinorPositionInUserAgent)},
-    {"force-major-version-to-100",
-     flag_descriptions::kForceMajorVersion100InUserAgentName,
-     flag_descriptions::kForceMajorVersion100InUserAgentDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kForceMajorVersion100InUserAgent)},
-    {"force-minor-version-to-100",
-     flag_descriptions::kForceMinorVersion100InUserAgentName,
-     flag_descriptions::kForceMinorVersion100InUserAgentDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kForceMinorVersion100InUserAgent)},
     {"autofill-enable-offer-notification-for-promo-codes",
      flag_descriptions::kAutofillEnableOfferNotificationForPromoCodesName,
      flag_descriptions::
@@ -7974,6 +7917,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOriginAgentClusterDefaultDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kOriginAgentClusterDefaultEnabled)},
 
+#if !BUILDFLAG(IS_ANDROID)
+    {"enable-user-cloud-signin-restriction-policy",
+     flag_descriptions::kEnableUserCloudSigninRestrictionPolicyName,
+     flag_descriptions::kEnableUserCloudSigninRestrictionPolicyDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         policy::features::kEnableUserCloudSigninRestrictionPolicyFetcher)},
+#endif
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

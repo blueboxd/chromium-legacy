@@ -139,7 +139,7 @@ TEST_F('PrintPreviewPagesSettingsTest', 'NupChangesPages', function() {
 var PrintPreviewPdfToolbarManagerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/test_loader.html?module=print_preview/pdf_toolbar_manager_test.js';
+    return 'chrome://print/test_loader.html?module=print_preview/pdf_toolbar_manager_test.js&host=webui-test';
   }
 
   /** @override */
@@ -165,7 +165,7 @@ TEST_F('PrintPreviewPdfToolbarManagerTest', 'TouchInteraction', function() {
 var PrintPreviewPdfViewerTest = class extends PrintPreviewTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://print/test_loader.html?module=print_preview/pdf_viewer_test.js';
+    return 'chrome://print/test_loader.html?module=print_preview/pdf_viewer_test.js&host=webui-test';
   }
 
   /** @override */

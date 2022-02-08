@@ -934,7 +934,7 @@ void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
 
 bool LocalFrame::BubbleLogicalScrollFromChildFrame(
     mojom::blink::ScrollDirection direction,
-    ScrollGranularity granularity,
+    ui::ScrollGranularity granularity,
     Frame* child) {
   FrameOwner* owner = child->Owner();
   auto* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
@@ -2888,8 +2888,7 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
       if (enable) {
         PictureInPictureController::From(node->GetDocument())
             .EnterPictureInPicture(To<HTMLVideoElement>(media_element),
-                                   nullptr /* promise */,
-                                   nullptr /* options */);
+                                   /*promise=*/nullptr);
       } else {
         PictureInPictureController::From(node->GetDocument())
             .ExitPictureInPicture(To<HTMLVideoElement>(media_element), nullptr);

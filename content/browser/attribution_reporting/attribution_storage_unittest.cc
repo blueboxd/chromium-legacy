@@ -821,7 +821,7 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_ReportNotStored) {
   delegate()->set_max_attributions_per_source(1);
 
   delegate()->set_randomized_response(
-      std::vector<AttributionStorage::Delegate::FakeReport>{});
+      std::vector<AttributionStorageDelegate::FakeReport>{});
   storage()->StoreSource(SourceBuilder().Build());
   delegate()->set_randomized_response(absl::nullopt);
 
@@ -837,7 +837,7 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_Deactivates) {
   delegate()->set_max_attributions_per_source(1);
 
   delegate()->set_randomized_response(
-      std::vector<AttributionStorage::Delegate::FakeReport>{});
+      std::vector<AttributionStorageDelegate::FakeReport>{});
   storage()->StoreSource(SourceBuilder().SetSourceEventId(3).Build());
   delegate()->set_randomized_response(absl::nullopt);
 
@@ -864,7 +864,7 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsNotChanged) {
   });
 
   delegate()->set_randomized_response(
-      std::vector<AttributionStorage::Delegate::FakeReport>{});
+      std::vector<AttributionStorageDelegate::FakeReport>{});
   storage()->StoreSource(SourceBuilder().SetSourceEventId(5).Build());
   delegate()->set_randomized_response(absl::nullopt);
 
@@ -898,7 +898,7 @@ TEST_F(AttributionStorageTest,
   task_environment_.FastForwardBy(base::Milliseconds(1));
 
   delegate()->set_randomized_response(
-      std::vector<AttributionStorage::Delegate::FakeReport>{});
+      std::vector<AttributionStorageDelegate::FakeReport>{});
   storage()->StoreSource(SourceBuilder().Build());
   delegate()->set_randomized_response(absl::nullopt);
 
@@ -1097,7 +1097,7 @@ TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
       .SetSourceType(CommonSourceInfo::SourceType::kEvent)
       .SetPriority(100);
   delegate()->set_randomized_response(
-      std::vector<AttributionStorage::Delegate::FakeReport>{
+      std::vector<AttributionStorageDelegate::FakeReport>{
           {.trigger_data = 7, .report_time = fake_report_time}});
   storage()->StoreSource(builder.Build());
   delegate()->set_randomized_response(absl::nullopt);
@@ -1125,6 +1125,33 @@ TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
 
   EXPECT_THAT(storage()->GetAttributionsToReport(base::Time::Now()),
               ElementsAre(expected_report));
+}
+
+TEST_F(AttributionStorageTest, StoreSource_ReturnsMinFakeReportTime) {
+  const base::Time now = base::Time::Now();
+
+  const struct {
+    AttributionStorageDelegate::RandomizedResponse randomized_response;
+    absl::optional<base::Time> expected;
+  } kTestCases[] = {
+      {absl::nullopt, absl::nullopt},
+      {std::vector<AttributionStorageDelegate::FakeReport>(), absl::nullopt},
+      {std::vector<AttributionStorageDelegate::FakeReport>{
+           {.trigger_data = 0, .report_time = now + base::Days(2)},
+           {.trigger_data = 0, .report_time = now + base::Days(1)},
+           {.trigger_data = 0, .report_time = now + base::Days(3)},
+       },
+       now + base::Days(1)},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    delegate()->set_randomized_response(test_case.randomized_response);
+
+    auto result = storage()->StoreSource(SourceBuilder().Build());
+    EXPECT_EQ(result.status,
+              AttributionStorage::StoreSourceResult::Status::kSuccess);
+    EXPECT_EQ(result.min_fake_report_time, test_case.expected);
+  }
 }
 
 TEST_F(AttributionStorageTest, TriggerPriority) {
@@ -1569,7 +1596,7 @@ TEST_F(AttributionStorageTest, AdjustOfflineReportTimes) {
   EXPECT_EQ(storage()->AdjustOfflineReportTimes(), absl::nullopt);
 
   delegate()->set_offline_report_delay_config(
-      AttributionStorage::Delegate::OfflineReportDelayConfig{
+      AttributionStorageDelegate::OfflineReportDelayConfig{
           .min = base::Hours(1), .max = base::Hours(1)});
   EXPECT_EQ(storage()->AdjustOfflineReportTimes(), absl::nullopt);
 
@@ -1605,7 +1632,7 @@ TEST_F(AttributionStorageTest, AdjustOfflineReportTimes) {
 
 TEST_F(AttributionStorageTest, AdjustOfflineReportTimes_Range) {
   delegate()->set_offline_report_delay_config(
-      AttributionStorage::Delegate::OfflineReportDelayConfig{
+      AttributionStorageDelegate::OfflineReportDelayConfig{
           .min = base::Hours(1), .max = base::Hours(3)});
 
   storage()->StoreSource(SourceBuilder().Build());
@@ -1684,6 +1711,25 @@ TEST_F(AttributionStorageTest, GetAttributionsToReport_Shuffles) {
               ElementsAre(EventLevelDataIs(TriggerDataIs(2)),
                           EventLevelDataIs(TriggerDataIs(1)),
                           EventLevelDataIs(TriggerDataIs(3))));
+}
+
+TEST_F(AttributionStorageTest, SourceDebugKey_RoundTrips) {
+  storage()->StoreSource(
+      SourceBuilder(base::Time::Now()).SetDebugKey(33).Build());
+  EXPECT_THAT(storage()->GetActiveSources(), ElementsAre(SourceDebugKeyIs(33)));
+}
+
+TEST_F(AttributionStorageTest, TriggerDebugKey_RoundTrips) {
+  storage()->StoreSource(
+      SourceBuilder(base::Time::Now()).SetDebugKey(22).Build());
+  EXPECT_EQ(
+      CreateReportStatus::kSuccess,
+      MaybeCreateAndStoreReport(TriggerBuilder().SetDebugKey(33).Build()));
+
+  task_environment_.FastForwardBy(base::Milliseconds(kReportTime));
+  EXPECT_THAT(storage()->GetAttributionsToReport(base::Time::Now()),
+              ElementsAre(AllOf(ReportSourceIs(SourceDebugKeyIs(22)),
+                                TriggerDebugKeyIs(33))));
 }
 
 }  // namespace content

@@ -13,9 +13,10 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "base/values.h"
+#include "content/browser/attribution_reporting/attribution_cookie_checker.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_network_sender.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/send_result.h"
@@ -44,7 +45,28 @@ base::Time GetEventTime(const AttributionSimulationEvent& event) {
   return absl::visit(Visitor{}, event);
 }
 
-class SentReportAccumulator : public AttributionManagerImpl::NetworkSender {
+// TODO(apaseltiner): Consider exposing other behaviors here.
+class AlwaysSetCookieChecker : public AttributionCookieChecker {
+ public:
+  AlwaysSetCookieChecker() = default;
+
+  ~AlwaysSetCookieChecker() override = default;
+
+  AlwaysSetCookieChecker(const AlwaysSetCookieChecker&) = delete;
+  AlwaysSetCookieChecker(AlwaysSetCookieChecker&&) = delete;
+
+  AlwaysSetCookieChecker& operator=(const AlwaysSetCookieChecker&) = delete;
+  AlwaysSetCookieChecker& operator=(AlwaysSetCookieChecker&&) = delete;
+
+ private:
+  // AttributionManagerImpl::CookieChecker:
+  void IsDebugCookieSet(const url::Origin& origin,
+                        base::OnceCallback<void(bool)> callback) override {
+    std::move(callback).Run(true);
+  }
+};
+
+class SentReportAccumulator : public AttributionNetworkSender {
  public:
   SentReportAccumulator(base::Value::ListStorage& reports,
                         bool remove_report_ids)
@@ -90,11 +112,11 @@ struct EventHandler {
   base::raw_ptr<AttributionManagerImpl> manager;
 
   void operator()(StorableSource source) {
-    manager->HandleSourceInternalForTesting(std::move(source));
+    manager->MaybeEnqueueEventForTesting(std::move(source));
   }
 
   void operator()(AttributionTriggerAndTime trigger) {
-    manager->HandleTriggerInternalForTesting(std::move(trigger.trigger));
+    manager->MaybeEnqueueEventForTesting(std::move(trigger.trigger));
   }
 };
 
@@ -104,7 +126,6 @@ base::Value RunAttributionSimulationOrExit(
     const base::Value& input,
     const AttributionSimulationOptions& options) {
   // Prerequisites for using an environment with mock time.
-  TestTimeouts::Initialize();
   content::BrowserTaskEnvironment task_environment(
       base::test::TaskEnvironment::TimeSource::MOCK_TIME);
 
@@ -131,7 +152,9 @@ base::Value RunAttributionSimulationOrExit(
   auto manager = AttributionManagerImpl::CreateForTesting(
       std::move(always_allow_reports_callback), user_data_directory,
       /*special_storage_policy=*/nullptr,
-      std::make_unique<AttributionStorageDelegateImpl>(),
+      std::make_unique<AttributionStorageDelegateImpl>(options.noise_mode,
+                                                       options.delay_mode),
+      std::make_unique<AlwaysSetCookieChecker>(),
       /*network_sender=*/
       std::make_unique<SentReportAccumulator>(reports,
                                               options.remove_report_ids));

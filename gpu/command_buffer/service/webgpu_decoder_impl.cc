@@ -13,10 +13,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/bits.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/numerics/checked_math.h"
+#include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -42,6 +45,11 @@
 #include <dawn_native/D3D12Backend.h>
 #include <dawn_native/VulkanBackend.h>
 #include "ui/gl/gl_angle_util_win.h"
+#endif
+
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #endif
 
 namespace gpu {
@@ -469,7 +477,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::vector<dawn::native::Adapter> dawn_adapters_;
 
   bool enable_unsafe_webgpu_ = false;
-  bool force_webgpu_compat_ = false;
+  WebGPUAdapterName use_webgpu_adapter_ = WebGPUAdapterName::kDefault;
   std::vector<std::string> force_enabled_toggles_;
   std::vector<std::string> force_disabled_toggles_;
 
@@ -928,8 +936,38 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
               memory_tracker)),
       dawn_platform_(new DawnPlatform()),
       memory_transfer_service_(new DawnServiceMemoryTransferService(this)),
-      dawn_instance_(new dawn::native::Instance()),
       wire_serializer_(new WireServerCommandSerializer(client)) {
+  std::string dawn_search_path;
+  base::FilePath module_path;
+#if BUILDFLAG(IS_MAC)
+  if (base::mac::AmIBundled()) {
+    dawn_search_path = base::mac::FrameworkBundlePath()
+                           .Append("Libraries")
+                           .AsEndingWithSeparator()
+                           .MaybeAsASCII();
+  }
+  if (dawn_search_path.empty())
+#endif
+  {
+    if (base::PathService::Get(base::DIR_MODULE, &module_path)) {
+      dawn_search_path = module_path.AsEndingWithSeparator().MaybeAsASCII();
+    }
+  }
+  const char* dawn_search_path_c_str = dawn_search_path.c_str();
+
+  WGPUDawnInstanceDescriptor dawn_instance_desc = {
+      .chain =
+          {
+              .sType = WGPUSType_DawnInstanceDescriptor,
+          },
+      .additionalRuntimeSearchPathsCount = dawn_search_path.empty() ? 0u : 1u,
+      .additionalRuntimeSearchPaths = &dawn_search_path_c_str,
+  };
+  WGPUInstanceDescriptor instance_desc = {
+      .nextInChain = &dawn_instance_desc.chain,
+  };
+  dawn_instance_ = std::make_unique<dawn::native::Instance>(&instance_desc);
+
   dawn_instance_->SetPlatform(dawn_platform_.get());
   switch (gpu_preferences.enable_dawn_backend_validation) {
     case DawnBackendValidationLevel::kDisabled:
@@ -945,7 +983,7 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   }
 
   enable_unsafe_webgpu_ = gpu_preferences.enable_unsafe_webgpu;
-  force_webgpu_compat_ = gpu_preferences.force_webgpu_compat;
+  use_webgpu_adapter_ = gpu_preferences.use_webgpu_adapter;
   force_enabled_toggles_ = gpu_preferences.enabled_dawn_features_list;
   force_disabled_toggles_ = gpu_preferences.disabled_dawn_features_list;
 
@@ -970,7 +1008,7 @@ void WebGPUDecoderImpl::Destroy(bool have_context) {
 }
 
 ContextResult WebGPUDecoderImpl::Initialize() {
-  if (force_webgpu_compat_) {
+  if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
     gl_surface_ = new gl::SurfacelessEGL(gfx::Size(1, 1));
     gl::GLContextAttribs attribs;
     attribs.client_major_es_version = 3;
@@ -1166,7 +1204,7 @@ void WebGPUDecoderImpl::OnRequestDeviceCallback(
 
 void WebGPUDecoderImpl::DiscoverAdapters() {
 #if BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
-  if (force_webgpu_compat_) {
+  if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
     auto getProc = [](const char* pname) {
       return reinterpret_cast<void*>(eglGetProcAddress(pname));
     };
@@ -1218,7 +1256,7 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
       continue;
     }
 
-    if (force_webgpu_compat_) {
+    if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
       if (adapterProperties.backendType == WGPUBackendType_OpenGLES) {
         dawn_adapters_.push_back(adapter);
       }
@@ -1455,6 +1493,9 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
   PowerPreference power_preference =
       static_cast<PowerPreference>(c.power_preference);
   bool force_fallback_adapter = c.force_fallback_adapter;
+  if (use_webgpu_adapter_ == WebGPUAdapterName::kSwiftShader) {
+    force_fallback_adapter = true;
+  }
 
   if (gr_context_type_ != GrContextType::kVulkan) {
 #if BUILDFLAG(IS_LINUX)

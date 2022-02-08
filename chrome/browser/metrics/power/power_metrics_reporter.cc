@@ -186,16 +186,22 @@ void PowerMetricsReporter::ReportHistograms(
     const UsageScenarioDataStore::IntervalData& interval_data,
     const ProcessMonitor::Metrics& aggregated_process_metrics,
     base::TimeDelta interval_duration,
-    BatteryDischarge battery_discharge) {
+    BatteryDischarge battery_discharge
+#if BUILDFLAG(IS_MAC)
+    ,
+    const absl::optional<CoalitionResourceUsageRate>&
+        coalition_resource_usage_rate
+#endif
+) {
   const std::vector<const char*> suffixes = GetSuffixes(interval_data);
   ReportAggregatedProcessMetricsHistograms(aggregated_process_metrics,
                                            suffixes);
 
   ReportBatteryHistograms(interval_duration, battery_discharge, suffixes);
 #if BUILDFLAG(IS_MAC)
-  if (aggregated_process_metrics.coalition_data.has_value()) {
-    ReportResourceCoalitionHistograms(
-        aggregated_process_metrics.coalition_data.value(), suffixes);
+  if (coalition_resource_usage_rate.has_value()) {
+    ReportResourceCoalitionHistograms(coalition_resource_usage_rate.value(),
+                                      suffixes);
   }
 #endif
 }
@@ -263,19 +269,6 @@ void PowerMetricsReporter::OnBatteryAndAggregatedProcessMetricsSampled(
 
   auto battery_discharge =
       GetBatteryDischargeDuringInterval(battery_state, interval_duration);
-  ReportUKMsAndHistograms(aggregated_process_metrics, interval_duration,
-                          battery_discharge);
-
-  if (on_battery_sampled_for_testing_)
-    std::move(on_battery_sampled_for_testing_).Run();
-}
-
-void PowerMetricsReporter::ReportUKMsAndHistograms(
-    const ProcessMonitor::Metrics& aggregated_process_metrics,
-    base::TimeDelta interval_duration,
-    BatteryDischarge battery_discharge) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data_store_.MaybeValid());
 
   UsageScenarioDataStore::IntervalData interval_data =
       data_store_->ResetIntervalData();
@@ -304,7 +297,15 @@ void PowerMetricsReporter::ReportUKMsAndHistograms(
              battery_discharge, main_screen_brightness);
 
   ReportHistograms(interval_data, aggregated_process_metrics, interval_duration,
-                   battery_discharge);
+                   battery_discharge
+#if BUILDFLAG(IS_MAC)
+                   ,
+                   aggregated_process_metrics.coalition_data
+#endif  // BUILDFLAG(IS_MAC)
+  );
+
+  if (on_battery_sampled_for_testing_)
+    std::move(on_battery_sampled_for_testing_).Run();
 }
 
 // static

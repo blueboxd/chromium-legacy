@@ -200,18 +200,6 @@
       'ios_runtime_cache_14_5',
     ],
   },
-  'SIM_IPHONE_6S_15_0': {
-    'args': [
-      '--platform',
-      'iPhone 6s',
-      '--version',
-      '15.0'
-    ],
-    'identifier': 'iPhone 6s 15.0',
-    'mixins': [
-      'ios_runtime_cache_15_0',
-    ],
-  },
   'SIM_IPHONE_6S_15_2': {
     'args': [
       '--platform',
@@ -246,18 +234,6 @@
     'identifier': 'iPhone 6s Plus 14.5',
     'mixins': [
       'ios_runtime_cache_14_5',
-    ],
-  },
-  'SIM_IPHONE_6S_PLUS_15_0': {
-    'args': [
-      '--platform',
-      'iPhone 6s Plus',
-      '--version',
-      '15.0',
-    ],
-    'identifier': 'iPhone 6s Plus 15.0',
-    'mixins': [
-      'ios_runtime_cache_15_0',
     ],
   },
   'SIM_IPHONE_6S_PLUS_15_2': {
@@ -296,18 +272,6 @@
       'ios_runtime_cache_14_5',
     ],
   },
-  'SIM_IPHONE_7_15_0': {
-    'args': [
-      '--platform',
-      'iPhone 7',
-      '--version',
-      '15.0'
-    ],
-    'identifier': 'iPhone 7 15.0',
-    'mixins': [
-      'ios_runtime_cache_15_0',
-    ],
-  },
   'SIM_IPHONE_7_15_2': {
     'args': [
       '--platform',
@@ -342,18 +306,6 @@
     'identifier': 'iPhone SE (1st generation) 14.5',
     'mixins': [
       'ios_runtime_cache_14_5',
-    ],
-  },
-  'SIM_IPHONE_SE_1ST_GEN_15_0': {
-    'args': [
-      '--platform',
-      'iPhone SE (1st generation)',
-      '--version',
-      '15.0',
-    ],
-    'identifier': 'iPhone SE (1st generation) 15.0',
-    'mixins': [
-      'ios_runtime_cache_15_0',
     ],
   },
   'SIM_IPHONE_SE_1ST_GEN_15_2': {
@@ -435,7 +387,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.23',
+          'revision': 'version:99.0.4844.24',
         }
       ],
     },
@@ -507,7 +459,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.23',
+          'revision': 'version:99.0.4844.24',
         }
       ],
     },
@@ -579,7 +531,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.23',
+          'revision': 'version:99.0.4844.24',
         }
       ],
     },
@@ -644,8 +596,8 @@
   'CROS_ATLAS_DEV': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '99.0.4844.14',
-      'cros_img': 'atlas-release/R99-14469.8.0',
+      'cros_chrome_version': '100.0.4863.0',
+      'cros_img': 'atlas-release/R100-14496.0.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_DEV',
@@ -662,8 +614,8 @@
   'CROS_ATLAS_STABLE': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '97.0.4692.102',
-      'cros_img': 'atlas-release/R97-14324.80.0',
+      'cros_chrome_version': '98.0.4758.91',
+      'cros_img': 'atlas-release/R98-14388.52.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_STABLE',
@@ -680,8 +632,8 @@
   'CROS_EVE_DEV': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '99.0.4844.14',
-      'cros_img': 'eve-release/R99-14469.8.0',
+      'cros_chrome_version': '100.0.4863.0',
+      'cros_img': 'eve-release/R100-14496.0.0',
     },
     'enabled': True,
     'identifier': 'EVE_DEV',
@@ -698,8 +650,8 @@
   'CROS_EVE_STABLE': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '97.0.4692.102',
-      'cros_img': 'eve-release/R97-14324.80.0',
+      'cros_chrome_version': '98.0.4758.91',
+      'cros_img': 'eve-release/R98-14388.52.0',
     },
     'enabled': True,
     'identifier': 'EVE_STABLE',
@@ -734,8 +686,8 @@
   'CROS_OCTOPUS_DEV': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '99.0.4844.14',
-      'cros_img': 'octopus-release/R99-14469.8.0',
+      'cros_chrome_version': '100.0.4863.0',
+      'cros_img': 'octopus-release/R100-14496.0.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_DEV',
@@ -752,8 +704,8 @@
   'CROS_OCTOPUS_STABLE': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '97.0.4692.102',
-      'cros_img': 'octopus-release/R97-14324.80.0',
+      'cros_chrome_version': '98.0.4758.91',
+      'cros_img': 'octopus-release/R98-14388.52.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_STABLE',

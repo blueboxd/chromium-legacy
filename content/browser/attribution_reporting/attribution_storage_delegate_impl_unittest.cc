@@ -14,13 +14,14 @@
 #include "content/browser/attribution_reporting/combinatorics.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/stored_source.h"
+#include "content/public/browser/attribution_reporting.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
 
-using FakeReport = ::content::AttributionStorage::Delegate::FakeReport;
+using FakeReport = ::content::AttributionStorageDelegate::FakeReport;
 
 constexpr base::TimeDelta kDefaultExpiry = base::Days(30);
 
@@ -201,10 +202,10 @@ TEST(AttributionStorageDelegateImplTest, NewReportID_IsValidGUID) {
 }
 
 TEST(AttributionStorageDelegateImplTest,
-     RandomizedResponse_DebugModeReturnsNull) {
+     RandomizedResponse_NoNoiseModeReturnsNull) {
   for (auto source_type : kSourceTypes) {
     EXPECT_EQ(
-        AttributionStorageDelegateImpl(/*debug_mode=*/true)
+        AttributionStorageDelegateImpl(AttributionNoiseMode::kNone)
             .GetRandomizedResponse(
                 SourceBuilder().SetSourceType(source_type).BuildCommonInfo()),
         absl::nullopt);

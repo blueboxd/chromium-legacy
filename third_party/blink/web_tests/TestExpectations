@@ -826,6 +826,8 @@ crbug.com/1054894 [ Mac ] http/tests/images/image-decode-in-frame.html [ Failure
 
 crbug.com/819617 [ Linux ] virtual/text-antialias/descent-clip-in-scaled-page.html [ Failure ]
 
+crbug.com/1196414 compositing/composited-replaced-subpixel-location.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # WPT speculative-parsing tests failing
@@ -1916,7 +1918,7 @@ crbug.com/1158554 external/wpt/css/css-conditional/at-supports-046.html [ Failur
 # @container
 crbug.com/1289850 external/wpt/css/css-contain/container-queries/canvas-as-container-004.html [ Failure ]
 crbug.com/1289850 external/wpt/css/css-contain/container-queries/canvas-as-container-006.html [ Failure ]
-crbug.com/1273913 external/wpt/css/css-contain/container-queries/pseudo-elements-002.tentative.html [ Failure ]
+crbug.com/1273913 external/wpt/css/css-contain/container-queries/pseudo-elements-002.html [ Failure ]
 
 # CSS Scrollbars
 crbug.com/891944 external/wpt/css/css-scrollbars/textarea-scrollbar-width-none.html [ Failure ]
@@ -3190,6 +3192,14 @@ crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10.20h2 ] external/wpt/webrtc/RTCDataChannel-bufferedAmount.html [ Crash ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-no-child-yes-port.sub.https.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-yes-child-yes-port.sub.https.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/popups/opener-no-openee-yes-port.sub.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/system-color-compute/external/wpt/css/css-color/parsing/relative-color-computed.html [ Failure Timeout ]
+crbug.com/626703 [ Win10.20h2 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDataChannel-bufferedAmount.html [ Crash ]
+crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/background-fetch.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-border-image-001.https.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-function/filter-function-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-function/filter-function-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/filter-effects/filter-function/filter-function-003.html [ Failure ]
@@ -3302,7 +3312,6 @@ crbug.com/626703 [ Mac11-arm64 ] virtual/no-auto-wpt-origin-isolation/external/w
 crbug.com/626703 [ Mac11-arm64 ] virtual/plz-dedicated-worker/external/wpt/content-security-policy/inside-worker/serviceworker-report-only.https.sub.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/CSS2/normal-flow/width-081.xht [ Crash Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-contain/contain-layout-ignored-cases-no-principal-box-002.html [ Crash Failure ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/1-iframe/parent-no-child-yes-port.sub.https.html [ Crash Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/api/basic/status.h2.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/infrastructure/server/http2-websocket.sub.h2.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/Close-1000-reason.any.worker.html?wpt_flags=h2 [ Timeout ]
@@ -7119,7 +7128,6 @@ crbug.com/1249176 [ Mac11-arm64 ] fast/forms/suggestion-picker/time-suggestion-p
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/local/stylesheet-and-script-load-order-http.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/local/blob/send-sliced-data-blob.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/local/formdata/send-form-data-with-empty-name.html [ Crash ]
-crbug.com/1249176 [ Mac11-arm64 ] media/picture-in-picture/v2/request-picture-in-picture.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] paint/invalidation/selection/invalidation-rect-includes-newline-for-rtl.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] storage/indexeddb/intversion-revert-on-abort.html [ Crash ]
 crbug.com/1249176 [ Mac11-arm64 ] svg/animations/animate-setcurrenttime.html [ Crash ]
@@ -7131,7 +7139,6 @@ crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/network/blocked-
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/inspector-protocol/network/xhr-post-replay-cors.js [ Crash Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/security/cross-origin-shared-worker-allowed.html [ Crash Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] media/autoplay/webaudio-audio-context-init.html [ Crash Pass ]
-crbug.com/1249176 [ Mac11-arm64 ] media/picture-in-picture/v2/detached-iframe.html [ Crash Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/composite-relative-keyframes/external/wpt/css/css-transforms/animation/transform-interpolation-005.html [ Crash Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/2-iframes/parent-no-child1-yes-subdomain-child2-no-port.sub.https.html [ Crash Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/iframe-navigation/parent-no-1-no-same-2-yes-port.sub.https.html [ Crash Pass ]
@@ -7494,9 +7501,6 @@ crbug.com/1285431 [ Mac ] virtual/backface-visibility-interop/compositing/overfl
 crbug.com/1285437 virtual/scroll-unification-prefer_compositing_to_lcd_text/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Timeout ]
 crbug.com/1285436 virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Crash Failure Pass Timeout ]
 
-# Sheriff 2022-01-11
-crbug.com/1286437 [ Mac ] media/picture-in-picture/v2/request-picture-in-picture-twice.html [ Failure Pass ]
-
 # Sheriff 2022-01-12
 crbug.com/1286619 [ Mac ] external/wpt/storage-access-api/storageAccess.testdriver.sub.html [ Failure Pass ]
 
@@ -7607,10 +7611,11 @@ crbug.com/1271296 virtual/no-forced-frame-updates/external/wpt/html/dom/render-b
 crbug.com/1271296 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/script-inserted-script.html [ Skip ]
 
 # Sheriff 2022-02-03
-crbug.com/1293878 [ Mac ] virtual/controls-refresh-hc/fast/forms/color-scheme/datetimelocal-picker/datetimelocal-picker-appearance.html [ Skip ]
+crbug.com/1293878 [ Mac ] virtual/controls-refresh-hc/fast/forms/color-scheme/datetimelocal-picker/datetimelocal-picker-appearance.html [ Failure Pass ]
 crbug.com/1293965 virtual/scroll-unification/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
 crbug.com/1293965 [ Mac ] fast/forms/month/month-picker-appearance-step.html [ Skip ]
 crbug.com/1293965 [ Mac ] fast/forms/color-scheme/week-picker/week-picker-appearance-highlight-es.html [ Skip ]
 
 # Sheriff 2022-02-07
 crbug.com/1289759 [ Linux ] http/tests/loading/slow-parsing-subframe.html [ Failure Pass ]
+crbug.com/1278570 [ Linux ] virtual/gpu-rasterization/images/directly-composited-image-orientation.html [ Failure Pass ]

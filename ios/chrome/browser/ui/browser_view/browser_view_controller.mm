@@ -1120,9 +1120,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   web::WebState* webState = self.currentWebState;
 
   if (webState) {
-    if (self.isNTPActiveForCurrentWebState) {
-      [[self ntpCoordinatorForWebState:webState] dismissModals];
-    }
     [self.dispatcher closeFindInPage];
     [self.textZoomHandler closeTextZoom];
   }
@@ -2632,10 +2629,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     passwordTabHelper->SetDispatcher(self.browser->GetCommandDispatcher());
   }
 
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
-    OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(self);
-  }
-
   NetExportTabHelper::CreateForWebState(webState, self);
   CaptivePortalTabHelper::CreateForWebState(webState, self);
 
@@ -2656,10 +2649,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     passwordTabHelper->SetBaseViewController(nil);
     passwordTabHelper->SetPasswordControllerDelegate(nil);
     passwordTabHelper->SetDispatcher(nil);
-  }
-
-  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
-    OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
   }
 
   // TODO(crbug.com/1173610): Have BrowserCoordinator manage the NTP.

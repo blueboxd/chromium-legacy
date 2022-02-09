@@ -24,19 +24,18 @@ namespace chromeos {
 namespace onc {
 
 TEST(ONCUtils, ProxySettingsToProxyConfig) {
-  std::unique_ptr<base::Value> list_of_tests =
-      test_utils::ReadTestJson("proxy_config.json");
-  ASSERT_TRUE(list_of_tests->is_list());
+  base::Value list_of_tests = test_utils::ReadTestJson("proxy_config.json");
+  ASSERT_TRUE(list_of_tests.is_list());
 
   // Additional ONC -> ProxyConfig test cases to test fixup.
-  std::unique_ptr<base::Value> additional_tests =
+  base::Value additional_tests =
       test_utils::ReadTestJson("proxy_config_from_onc.json");
-  ASSERT_TRUE(additional_tests->is_list());
-  for (const base::Value& value : additional_tests->GetListDeprecated())
-    list_of_tests->Append(value.Clone());
+  ASSERT_TRUE(additional_tests.is_list());
+  for (const base::Value& value : additional_tests.GetListDeprecated())
+    list_of_tests.Append(value.Clone());
 
   int index = 0;
-  for (const base::Value& test_case : list_of_tests->GetListDeprecated()) {
+  for (const base::Value& test_case : list_of_tests.GetListDeprecated()) {
     SCOPED_TRACE("Test case #" + base::NumberToString(index++));
 
     ASSERT_TRUE(test_case.is_dict());
@@ -56,12 +55,11 @@ TEST(ONCUtils, ProxySettingsToProxyConfig) {
 }
 
 TEST(ONCUtils, ProxyConfigToOncProxySettings) {
-  std::unique_ptr<base::Value> list_of_tests(
-      test_utils::ReadTestJson("proxy_config.json"));
-  ASSERT_TRUE(list_of_tests->is_list());
+  base::Value list_of_tests = test_utils::ReadTestJson("proxy_config.json");
+  ASSERT_TRUE(list_of_tests.is_list());
 
   int index = 0;
-  for (const base::Value& test_case : list_of_tests->GetListDeprecated()) {
+  for (const base::Value& test_case : list_of_tests.GetListDeprecated()) {
     SCOPED_TRACE("Test case #" + base::NumberToString(index++));
 
     const base::Value* shill_proxy_config = test_case.FindKey("ProxyConfig");
@@ -78,48 +76,48 @@ TEST(ONCUtils, ProxyConfigToOncProxySettings) {
 }
 
 TEST(ONCPasswordVariable, PasswordAvailable) {
-  const auto wifi_onc = test_utils::ReadTestDictionary(
+  const auto wifi_onc = test_utils::ReadTestDictionaryValue(
       "wifi_eap_ttls_with_password_variable.onc");
 
   EXPECT_TRUE(HasUserPasswordSubsitutionVariable(kNetworkConfigurationSignature,
-                                                 wifi_onc.get()));
+                                                 &wifi_onc));
 }
 
 TEST(ONCPasswordVariable, PasswordNotAvailable) {
-  const auto wifi_onc = test_utils::ReadTestDictionary("wifi_eap_ttls.onc");
+  const auto wifi_onc =
+      test_utils::ReadTestDictionaryValue("wifi_eap_ttls.onc");
 
   EXPECT_FALSE(HasUserPasswordSubsitutionVariable(
-      kNetworkConfigurationSignature, wifi_onc.get()));
+      kNetworkConfigurationSignature, &wifi_onc));
 }
 
 TEST(ONCPasswordVariable, PasswordHarcdoded) {
-  const auto wifi_onc = test_utils::ReadTestDictionary(
+  const auto wifi_onc = test_utils::ReadTestDictionaryValue(
       "wifi_eap_ttls_with_hardcoded_password.onc");
 
   EXPECT_FALSE(HasUserPasswordSubsitutionVariable(
-      kNetworkConfigurationSignature, wifi_onc.get()));
+      kNetworkConfigurationSignature, &wifi_onc));
 }
 
 TEST(ONCPasswordVariable, MultipleNetworksPasswordAvailable) {
-  const auto network_dictionary = test_utils::ReadTestDictionary(
+  const auto network_dictionary = test_utils::ReadTestDictionaryValue(
       "managed_toplevel_with_password_variable.onc");
+  const base::Value* network_list =
+      network_dictionary.FindListKey("NetworkConfigurations");
+  ASSERT_TRUE(network_list);
 
-  const auto network_list = std::make_unique<base::ListValue>(
-      base::ListValue(network_dictionary->FindKey("NetworkConfigurations")
-                          ->GetListDeprecated()));
-
-  EXPECT_TRUE(HasUserPasswordSubsitutionVariable(network_list.get()));
+  EXPECT_TRUE(HasUserPasswordSubsitutionVariable(network_list));
 }
 
 TEST(ONCPasswordVariable, MultipleNetworksPasswordNotAvailable) {
-  const auto network_dictionary = test_utils::ReadTestDictionary(
+  const auto network_dictionary = test_utils::ReadTestDictionaryValue(
       "managed_toplevel_with_no_password_variable.onc");
 
-  const auto network_list = std::make_unique<base::ListValue>(
-      base::ListValue(network_dictionary->FindKey("NetworkConfigurations")
-                          ->GetListDeprecated()));
+  const base::Value* network_list =
+      network_dictionary.FindListKey("NetworkConfigurations");
+  ASSERT_TRUE(network_list);
 
-  EXPECT_FALSE(HasUserPasswordSubsitutionVariable(network_list.get()));
+  EXPECT_FALSE(HasUserPasswordSubsitutionVariable(network_list));
 }
 
 }  // namespace onc

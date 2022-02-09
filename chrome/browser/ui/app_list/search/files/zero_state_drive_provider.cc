@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/drive/file_errors.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -54,7 +55,8 @@ enum class Status {
   kNoResults = 2,
   kPathLocationFailed = 3,
   kAllFilesErrored = 4,
-  kMaxValue = kAllFilesErrored,
+  kDriveDisabled = 5,
+  kMaxValue = kDriveDisabled,
 };
 
 ThrottleInterval MinutesToThrottleInterval(const int minutes) {
@@ -102,6 +104,10 @@ ash::SearchResultDisplayType GetDisplayType() {
   return ash::features::IsProductivityLauncherEnabled()
              ? ash::SearchResultDisplayType::kContinue
              : ash::SearchResultDisplayType::kList;
+}
+
+bool IsDriveDisabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(drive::prefs::kDisableDrive);
 }
 
 }  // namespace
@@ -222,6 +228,9 @@ void ZeroStateDriveProvider::StartZeroState() {
   if (!drive_service_ || !drive_service_->IsMounted()) {
     LogStatus(Status::kDriveFSNotMounted);
     return;
+  } else if (IsDriveDisabled(profile_)) {
+    LogStatus(Status::kDriveDisabled);
+    return;
   }
 
   query_start_time_ = base::TimeTicks::Now();
@@ -302,13 +311,10 @@ std::unique_ptr<FileResult> ZeroStateDriveProvider::MakeListResult(
     const float relevance) {
   const auto reparented_path = ReparentToDriveMount(filepath, drive_service_);
   auto result = std::make_unique<FileResult>(
-      kSchema, reparented_path, std::u16string(),
+      kSchema, reparented_path, absl::nullopt,
       ash::AppListSearchResultType::kZeroStateDrive, GetDisplayType(),
       relevance, std::u16string(), FileResult::Type::kFile, profile_);
-  // If it exists, override the details text with the prediction reason in the
-  // productivity launcher.
-  if (prediction_reason && ash::features::IsProductivityLauncherEnabled())
-    result->SetDetails(base::UTF8ToUTF16(prediction_reason.value()));
+  result->SetDetailsToJustificationString();
   return result;
 }
 

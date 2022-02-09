@@ -27,7 +27,9 @@
 #include "chrome/browser/ui/app_list/search/files/justifications.h"
 #include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "chrome/browser/ui/app_list/search/util/persistent_proto.h"
+#include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using file_manager::file_tasks::FileTasksObserver;
 
@@ -66,6 +68,10 @@ ash::SearchResultDisplayType GetDisplayType() {
   return ash::features::IsProductivityLauncherEnabled()
              ? ash::SearchResultDisplayType::kContinue
              : ash::SearchResultDisplayType::kList;
+}
+
+bool IsDriveDisabled(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(drive::prefs::kDisableDrive);
 }
 
 }  // namespace
@@ -119,7 +125,9 @@ void ZeroStateFileProvider::StartZeroState() {
   query_start_time_ = base::TimeTicks::Now();
   ClearResultsSilently();
 
-  if (!files_ranker_) {
+  // Despite this being for zero-state _local_ files only, we disable all
+  // results in the Continue section if Drive is disabled.
+  if (!files_ranker_ || IsDriveDisabled(profile_)) {
     return;
   }
 
@@ -145,9 +153,10 @@ void ZeroStateFileProvider::SetSearchResults(
     const auto& filepath = valid_results[i].first;
     double score = valid_results[i].second;
     auto result = std::make_unique<FileResult>(
-        kSchema, filepath, std::u16string(),
+        kSchema, filepath, absl::nullopt,
         ash::AppListSearchResultType::kZeroStateFile, GetDisplayType(), score,
         std::u16string(), FileResult::Type::kFile, profile_);
+    result->SetDetailsToJustificationString();
     // TODO(crbug.com/1258415): Only generate thumbnails if the old launcher is
     // enabled. We should implement new thumbnail logic for Continue results if
     // necessary.

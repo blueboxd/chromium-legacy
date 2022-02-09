@@ -1773,7 +1773,6 @@ interface Document : Node
     attribute @@unscopables
     getter URL
     getter activeElement
-    getter addressSpace
     getter adoptedStyleSheets
     getter alinkColor
     getter all
@@ -5826,6 +5825,7 @@ interface Navigator
     getter serviceWorker
     getter storage
     getter storageBuckets
+    getter subApps
     getter usb
     getter userActivation
     getter userAgent
@@ -8635,6 +8635,10 @@ interface StyleSheetList
     method @@iterator
     method constructor
     method item
+interface SubApps
+    attribute @@toStringTag
+    method add
+    method constructor
 interface SubmitEvent : Event
     attribute @@toStringTag
     getter submitter

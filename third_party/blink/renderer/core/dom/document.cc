@@ -53,7 +53,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
-#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -950,13 +949,6 @@ bool Document::DocumentPolicyFeatureObserved(
   }
   parsed_document_policies_[feature_index] = true;
   return false;
-}
-
-String Document::addressSpaceForBindings(ScriptState* script_state) const {
-  // "public" is the lowest-privilege value.
-  if (!script_state->ContextIsValid())
-    return "public";
-  return ExecutionContext::From(script_state)->addressSpaceForBindings();
 }
 
 void Document::ChildrenChanged(const ChildrenChange& change) {
@@ -3621,7 +3613,8 @@ enum class BeforeUnloadUse {
   kNoDialogMultipleConfirmationForNavigation,
   kShowDialog,
   kNoDialogAutoCancelTrue,
-  kMaxValue = kNoDialogAutoCancelTrue,
+  kNotSupportedInFencedFrame,
+  kMaxValue = kNotSupportedInFencedFrame,
 };
 
 void RecordBeforeUnloadUse(BeforeUnloadUse metric) {
@@ -3641,6 +3634,11 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
 
   if (ProcessingBeforeUnload())
     return false;
+
+  if (GetFrame()->IsInFencedFrameTree()) {
+    RecordBeforeUnloadUse(BeforeUnloadUse::kNotSupportedInFencedFrame);
+    return true;
+  }
 
   PageDismissalScope in_page_dismissal;
   auto& before_unload_event = *MakeGarbageCollected<BeforeUnloadEvent>();
@@ -3731,6 +3729,13 @@ void Document::DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info) {
   Element* current_focused_element = FocusedElement();
   if (auto* input = DynamicTo<HTMLInputElement>(current_focused_element))
     input->EndEditing();
+
+  // A frame that is a fenced frame or in fenced frame tree does not support the
+  // unload event.
+  if (GetFrame()->IsInFencedFrameTree()) {
+    load_event_progress_ = kUnloadEventHandled;
+    return;
+  }
 
   // If we've dispatched the pagehide event with 'persisted' set to true, it
   // means we've dispatched the visibilitychange event before too. Also, we

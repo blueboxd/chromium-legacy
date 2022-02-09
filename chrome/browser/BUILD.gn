@@ -2446,7 +2446,7 @@ static_library("browser") {
       "//chrome/browser/ui/webui/chromeos/launcher_internals:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/parent_access:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings",
-      "//chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom",
+      "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom",
       "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings",
       "//chrome/common/chromeos/extensions",
       "//chromeos/components/chromebox_for_meetings/buildflags",
@@ -3677,8 +3677,6 @@ static_library("browser") {
       "content_settings/generated_cookie_prefs.h",
       "content_settings/generated_notification_pref.cc",
       "content_settings/generated_notification_pref.h",
-      "custom_handlers/register_protocol_handler_permission_request.cc",
-      "custom_handlers/register_protocol_handler_permission_request.h",
       "device_api/device_attribute_api.cc",
       "device_api/device_attribute_api.h",
       "device_api/device_service_impl.cc",
@@ -7475,8 +7473,8 @@ grit("resources") {
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/parent_access:mojo_bindings_js",
       "//chrome/browser/ui/webui/chromeos/vm:mojo_bindings_webui_js",
+      "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom:mojom_js",
       "//chrome/browser/ui/webui/settings/chromeos:mojom_js",
-      "//chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom:mojom_js",
       "//ui/webui/resources/cr_components/app_management:mojo_bindings_js",
     ]
   }

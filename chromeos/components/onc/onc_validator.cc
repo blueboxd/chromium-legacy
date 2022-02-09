@@ -850,8 +850,8 @@ bool Validator::ValidateVPN(base::Value* result) {
 }
 
 bool Validator::ValidateIPsec(base::Value* result) {
-  const std::vector<const char*> valid_authentications = {::onc::ipsec::kPSK,
-                                                          ::onc::ipsec::kCert};
+  const std::vector<const char*> valid_authentications = {
+      ::onc::ipsec::kPSK, ::onc::ipsec::kCert, ::onc::ipsec::kEAP};
   if (FieldExistsAndHasNoValidValue(*result, ::onc::ipsec::kAuthenticationType,
                                     valid_authentications) ||
       FieldExistsAndIsEmpty(*result, ::onc::ipsec::kServerCARefs)) {
@@ -870,19 +870,26 @@ bool Validator::ValidateIPsec(base::Value* result) {
       RequireField(*result, ::onc::ipsec::kIKEVersion);
   std::string auth =
       GetStringFromDict(*result, ::onc::ipsec::kAuthenticationType);
-  bool has_server_ca_cert = result->FindKey(::onc::ipsec::kServerCARefs) ||
-                            result->FindKey(::onc::ipsec::kServerCARef);
   if (auth == ::onc::ipsec::kCert) {
     all_required_exist &=
         RequireField(*result, ::onc::client_cert::kClientCertType);
-    if (!has_server_ca_cert) {
-      all_required_exist = false;
-      std::ostringstream msg;
-      msg << "The required field '" << ::onc::ipsec::kServerCARefs
-          << "' is missing.";
-      AddValidationIssue(error_on_missing_field_, msg.str());
-    }
-  } else if (has_server_ca_cert) {
+  }
+
+  // For cert-based or EAP-based authentication, server CA must exist.
+  // For PSK-based authentication, server CA must not exist.
+  bool has_server_ca_cert = result->FindKey(::onc::ipsec::kServerCARefs) ||
+                            result->FindKey(::onc::ipsec::kServerCARef) ||
+                            result->FindKey(::onc::ipsec::kServerCAPEMs);
+  if ((auth == ::onc::ipsec::kCert || auth == ::onc::ipsec::kEAP) &&
+      !has_server_ca_cert) {
+    all_required_exist = false;
+    std::ostringstream msg;
+    msg << "Server CA config is missing (one of the fields "
+        << ::onc::ipsec::kServerCARefs << " or " << ::onc::ipsec::kServerCAPEMs
+        << ").";
+    AddValidationIssue(error_on_missing_field_, msg.str());
+  }
+  if (auth == ::onc::ipsec::kPSK && has_server_ca_cert) {
     std::ostringstream msg;
     msg << "Field '" << ::onc::ipsec::kServerCARefs << "' (or '"
         << ::onc::ipsec::kServerCARef << "') can only be set if '"
@@ -1108,10 +1115,18 @@ bool Validator::ValidateEAP(base::Value* result) {
   const std::vector<const char*> valid_inner_values = {
       ::onc::eap::kAutomatic, ::onc::eap::kGTC, ::onc::eap::kMD5,
       ::onc::eap::kMSCHAPv2, ::onc::eap::kPAP};
-  const std::vector<const char*> valid_outer_values = {
+  std::vector<const char*> valid_outer_values = {
       ::onc::eap::kPEAP,   ::onc::eap::kEAP_TLS, ::onc::eap::kEAP_TTLS,
       ::onc::eap::kLEAP,   ::onc::eap::kEAP_SIM, ::onc::eap::kEAP_FAST,
       ::onc::eap::kEAP_AKA};
+
+  // If this EAP dict is in a IPsec dict (i.e., IPsec is the second-to-last
+  // element in its path), the only valid method is MSCHAPv2.
+  if (path_.size() >= 2) {
+    auto it = std::next(path_.rbegin());
+    if (*it == ::onc::vpn::kIPsec)
+      valid_outer_values = {::onc::eap::kMSCHAPv2};
+  }
 
   if (FieldExistsAndHasNoValidValue(*result, ::onc::eap::kInner,
                                     valid_inner_values) ||

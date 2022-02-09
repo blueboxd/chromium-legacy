@@ -297,9 +297,6 @@
 // timeout, or else an NSError indicating why the operation failed.
 + (NSError*)waitForWebStateZoomScale:(CGFloat)scale;
 
-// Sets value for content setting.
-+ (void)setContentSettings:(ContentSetting)setting;
-
 // Signs the user out from Chrome and then starts clearing the identities.
 //
 // Note: This method does not wait for identities to be cleared from the
@@ -542,7 +539,7 @@
 // Returns whether the NewOverflowMenu feature is enabled.
 + (BOOL)isNewOverflowMenuEnabled;
 
-#pragma mark - Popup Blocking
+#pragma mark - ContentSettings
 
 // Gets the current value of the popup content setting preference for the
 // original browser state.
@@ -551,6 +548,9 @@
 // Sets the popup content setting preference to the given value for the original
 // browser state.
 + (void)setPopupPrefValue:(ContentSetting)value;
+
+// Resets the desktop content setting to its default value.
++ (void)resetDesktopContentSetting;
 
 #pragma mark - Pref Utilities (EG2)
 

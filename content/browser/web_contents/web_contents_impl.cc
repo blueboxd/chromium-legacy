@@ -1476,9 +1476,14 @@ std::vector<FrameTree*> WebContentsImpl::GetOutermostFrameTrees() {
 }
 
 std::vector<RenderFrameHostImpl*> WebContentsImpl::GetOutermostMainFrames() {
+  // Do nothing if the WebContents is currently being initialized or destroyed.
+  if (!GetMainFrame())
+    return {};
+
   std::vector<RenderFrameHostImpl*> result;
 
   for (FrameTree* outermost_frame_tree : GetOutermostFrameTrees()) {
+    DCHECK(outermost_frame_tree->GetMainFrame());
     result.push_back(outermost_frame_tree->GetMainFrame());
   }
 
@@ -2098,6 +2103,22 @@ bool WebContentsImpl::HasPictureInPictureVideo() {
   return has_picture_in_picture_video_;
 }
 
+bool WebContentsImpl::HasPictureInPictureDocument() {
+  return has_picture_in_picture_document_;
+}
+
+void WebContentsImpl::SetHasPictureInPictureCommon(
+    bool has_picture_in_picture) {
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  observers_.NotifyObservers(&WebContentsObserver::MediaPictureInPictureChanged,
+                             has_picture_in_picture);
+
+  // Picture-in-picture state can affect how we notify visibility for non-
+  // visible pages.
+  if (visibility_ != Visibility::VISIBLE)
+    UpdateVisibilityAndNotifyPageAndView(visibility_);
+}
+
 void WebContentsImpl::SetHasPictureInPictureVideo(
     bool has_picture_in_picture_video) {
   OPTIONAL_TRACE_EVENT1("content",
@@ -2107,14 +2128,19 @@ void WebContentsImpl::SetHasPictureInPictureVideo(
   if (has_picture_in_picture_video == has_picture_in_picture_video_)
     return;
   has_picture_in_picture_video_ = has_picture_in_picture_video;
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
-  observers_.NotifyObservers(&WebContentsObserver::MediaPictureInPictureChanged,
-                             has_picture_in_picture_video_);
+  SetHasPictureInPictureCommon(has_picture_in_picture_video);
+}
 
-  // Picture-in-picture state can affect how we notify visibility for non-
-  // visible pages.
-  if (visibility_ != Visibility::VISIBLE)
-    UpdateVisibilityAndNotifyPageAndView(visibility_);
+void WebContentsImpl::SetHasPictureInPictureDocument(
+    bool has_picture_in_picture_document) {
+  OPTIONAL_TRACE_EVENT1("content",
+                        "WebContentsImpl::SetHasPictureInPictureDocument",
+                        "has_pip_document", has_picture_in_picture_document);
+  // If status of |this| is already accurate, there is no need to update.
+  if (has_picture_in_picture_document == has_picture_in_picture_document_)
+    return;
+  has_picture_in_picture_document_ = has_picture_in_picture_document;
+  SetHasPictureInPictureCommon(has_picture_in_picture_document);
 }
 
 bool WebContentsImpl::IsCrashed() {
@@ -3532,6 +3558,8 @@ PageVisibilityState WebContentsImpl::GetPageVisibilityState() const {
 void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     Visibility new_visibility,
     bool is_activity) {
+  DCHECK(!IsBeingDestroyed());
+
   PageVisibilityState page_visibility =
       CalculatePageVisibilityState(new_visibility);
 
@@ -4286,6 +4314,9 @@ bool WebContentsImpl::ShouldIgnoreUnresponsiveRenderer() {
           switches::kDisableHangMonitor))
     return true;
 
+  if (IsBeingDestroyed())
+    return true;
+
   if (suppress_unresponsive_renderer_count_ > 0)
     return true;
 
@@ -4420,6 +4451,9 @@ void WebContentsImpl::GetNFC(
 
 void WebContentsImpl::SendScreenRects() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::SendScreenRects");
+
+  DCHECK(!IsBeingDestroyed());
+
   GetMainFrame()->ForEachRenderFrameHost(
       base::BindRepeating([](RenderFrameHostImpl* render_frame_host) {
         if (render_frame_host->is_local_root()) {
@@ -7141,9 +7175,9 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (IsFullscreen())
     ExitFullscreenMode(false);
 
-  // Ensure any video in Picture-in-Picture is exited in the |delegate_| since
-  // a crashed renderer may not have made a clean exit.
-  if (HasPictureInPictureVideo())
+  // Ensure any video or document in Picture-in-Picture is exited in the
+  // |delegate_| since a crashed renderer may not have made a clean exit.
+  if (HasPictureInPictureVideo() || HasPictureInPictureDocument())
     ExitPictureInPicture();
 
   // Cancel any visible dialogs so they are not left dangling over the sad tab.

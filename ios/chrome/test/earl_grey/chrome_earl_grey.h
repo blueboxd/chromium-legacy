@@ -159,11 +159,6 @@ UIWindow* GetAnyKeyWindow();
 // Programmatically dismisses settings screen.
 - (void)dismissSettings;
 
-#pragma mark - Settings Utilities (EG2)
-
-// Sets value for content setting.
-- (void)setContentSettings:(ContentSetting)setting;
-
 #pragma mark - Sync Utilities (EG2)
 
 // Clears fake sync server data if the server is running.
@@ -664,7 +659,7 @@ UIWindow* GetAnyKeyWindow();
 // Returns whether the NewOverflowMenu feature is enabled.
 - (BOOL)isNewOverflowMenuEnabled;
 
-#pragma mark - Popup Blocking
+#pragma mark - ContentSettings
 
 // Gets the current value of the popup content setting preference for the
 // original browser state.
@@ -673,6 +668,9 @@ UIWindow* GetAnyKeyWindow();
 // Sets the popup content setting preference to the given value for the original
 // browser state.
 - (void)setPopupPrefValue:(ContentSetting)value;
+
+// Resets the desktop content setting to its default value.
+- (void)resetDesktopContentSetting;
 
 #pragma mark - Keyboard utilities
 

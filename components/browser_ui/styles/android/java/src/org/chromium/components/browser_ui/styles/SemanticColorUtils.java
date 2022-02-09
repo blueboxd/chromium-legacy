@@ -21,7 +21,7 @@ public class SemanticColorUtils {
     private static final String TAG = "SemanticColorUtils";
     // Temporarily disabled flag because cached features cannot easily be read from components. For
     // testing changes this can be flipped to true. See https://crrev.com/c/3255853 for context.
-    private static final boolean IS_FULL_DYNAMIC_COLORS = false;
+    private static final boolean IS_FULL_DYNAMIC_COLORS = true;
 
     private static @ColorInt int resolve(
             @AttrRes int attrRes, @ColorRes int colorRes, Context context) {
@@ -122,7 +122,7 @@ public class SemanticColorUtils {
     /** Returns the surface color value of the conceptual dialog_bg_color. */
     public static @ColorInt int getDialogBgColor(Context context) {
         return resolveSurfaceColorElev(
-                R.dimen.dialog_bg_color_elev, R.color.dialog_bg_color, context);
+                R.dimen.dialog_bg_color_elev, R.color.dialog_bg_color_baseline, context);
     }
 
     /** Returns the surface color value of the conceptual sheet_bg_color. */

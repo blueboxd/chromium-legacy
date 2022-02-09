@@ -22,6 +22,7 @@
 #include "media/audio/audio_logging.h"
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
+#include "media/mojo/mojom/audio_processing.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
@@ -38,6 +39,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
     uint32_t shared_memory_count,
     media::UserInputMonitorBase* user_input_monitor,
     bool enable_agc,
+    media::mojom::AudioProcessingConfigPtr processing_config,
     AudioStreamBroker::DeleterCallback deleter,
     mojo::PendingRemote<blink::mojom::RendererAudioInputStreamFactoryClient>
         renderer_factory_client)
@@ -48,6 +50,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
       user_input_monitor_(user_input_monitor),
       enable_agc_(enable_agc),
       deleter_(std::move(deleter)),
+      processing_config_(std::move(processing_config)),
       renderer_factory_client_(std::move(renderer_factory_client)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(renderer_factory_client_);
@@ -118,6 +121,7 @@ void AudioInputStreamBroker::CreateStream(
   // Note that the component id for AudioLog is used to differentiate between
   // several users of the same audio log. Since this audio log is for a single
   // stream, the component id used doesn't matter.
+  // We can move |processing_config_| because this method is only called once.
   constexpr int log_component_id = 0;
   factory->CreateInputStream(
       std::move(stream_receiver), std::move(client), std::move(observer),
@@ -125,7 +129,7 @@ void AudioInputStreamBroker::CreateStream(
           media::AudioLogFactory::AudioComponent::AUDIO_INPUT_CONTROLLER,
           log_component_id, render_process_id(), render_frame_id()),
       device_id_, params_, shared_memory_count_, enable_agc_,
-      std::move(key_press_count_buffer),
+      std::move(key_press_count_buffer), std::move(processing_config_),
       base::BindOnce(&AudioInputStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
 }

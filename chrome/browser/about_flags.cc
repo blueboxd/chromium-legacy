@@ -1813,8 +1813,7 @@ const FeatureEntry::FeatureParam kCommercePriceTracking_PriceAlerts[] = {
 const FeatureEntry::FeatureParam
     kCommercePriceTracking_PriceAlerts_WithOptimizationGuide[] = {
         {"enable_price_tracking", "true"},
-        {"price_tracking_with_optimization_guide", "true"},
-        {"enable_persisted_tab_data_maintenance", "true"}};
+        {"price_tracking_with_optimization_guide", "true"}};
 
 const FeatureEntry::FeatureParam
     kTabGridLayoutAndroid_TabGroupAutoCreation_TabGroupFirst[] = {
@@ -1828,7 +1827,6 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
 const FeatureEntry::FeatureParam kCommercePriceTracking_PriceNotifications[] = {
     {"enable_price_tracking", "true"},
     {"price_tracking_with_optimization_guide", "true"},
-    {"enable_persisted_tab_data_maintenance", "true"},
     {"enable_price_notification", "true"}};
 
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
@@ -2413,6 +2411,29 @@ const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
      base::size(
          kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission),
      nullptr}};
+#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kPermissionIconTimeout6000[] = {
+    {"PermissionIconTimeoutMs", "6000"}};
+const FeatureEntry::FeatureParam kPermissionIconTimeout4000[] = {
+    {"PermissionIconTimeoutMs", "4000"}};
+const FeatureEntry::FeatureParam kPermissionIconTimeout3000[] = {
+    {"PermissionIconTimeoutMs", "3000"}};
+const FeatureEntry::FeatureParam kPermissionIconTimeout2000[] = {
+    {"PermissionIconTimeoutMs", "2000"}};
+
+const FeatureEntry::FeatureVariation
+    kPageInfoDiscoverabilityTimeoutVariations[] = {
+        {"Long (6s)", kPermissionIconTimeout6000,
+         base::size(kPermissionIconTimeout6000), nullptr},
+        {"Medium (4s)", kPermissionIconTimeout4000,
+         base::size(kPermissionIconTimeout4000), nullptr},
+        {"Short (3s)", kPermissionIconTimeout3000,
+         base::size(kPermissionIconTimeout3000), nullptr},
+        {"Extra-Short (2s)", kPermissionIconTimeout2000,
+         base::size(kPermissionIconTimeout2000), nullptr},
+};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -6479,12 +6500,21 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
+    {"page-info-discoverability-timeouts",
+     flag_descriptions::kPageInfoDiscoverabilityTimeoutsName,
+     flag_descriptions::kPageInfoDiscoverabilityTimeoutsDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         page_info::kPageInfoDiscoverability,
+         kPageInfoDiscoverabilityTimeoutVariations,
+         "kPageInfoDiscoverabilityTimeoutVariations")},
+
     {"page-info-history", flag_descriptions::kPageInfoHistoryName,
      flag_descriptions::kPageInfoHistoryDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoHistory)},
     {"page-info-store-info", flag_descriptions::kPageInfoStoreInfoName,
      flag_descriptions::kPageInfoStoreInfoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoStoreInfo)},
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -6984,12 +7014,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTriggerForPrerender2Description, kOsAll,
      FEATURE_VALUE_TYPE(features::kOmniboxTriggerForPrerender2)},
 
-#if !BUILDFLAG(IS_ANDROID)
-    {"webui-branding-update", flag_descriptions::kWebUIBrandingUpdateName,
-     flag_descriptions::kWebUIBrandingUpdateDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebUIBrandingUpdate)},
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_ANDROID)
     {"continuous-search", flag_descriptions::kContinuousSearchName,
      flag_descriptions::kContinuousSearchDescription, kOsAndroid,
@@ -7132,12 +7156,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillAddressSavePromptDescription,
      kOsWin | kOsMac | kOsLinux | kOsCrOS | kOsAndroid | kOsFuchsia,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillAddressProfileSavePrompt)},
-
-    {"detected-source-language-option",
-     flag_descriptions::kDetectedSourceLanguageOptionName,
-     flag_descriptions::kDetectedSourceLanguageOptionDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(language::kDetectedSourceLanguageOption)},
 
 #if BUILDFLAG(IS_ANDROID)
     {"content-languages-in-language-picker",
@@ -7925,6 +7943,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          policy::features::kEnableUserCloudSigninRestrictionPolicyFetcher)},
 #endif
+
+    {"autofill-enable-sending-bcn-in-get-upload-details",
+     flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsName,
+     flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSendingBcnInGetUploadDetails)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

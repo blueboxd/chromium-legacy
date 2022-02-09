@@ -2643,7 +2643,7 @@ interface FeaturePolicy
     method features
     method getAllowlistForFeature
 interface FederatedCredential : Credential
-    static method logout
+    static method logoutRps
     static method revoke
     attribute @@toStringTag
     getter approvedBy
@@ -8235,7 +8235,6 @@ interface Sanitizer
     method sanitizeFor
 interface Scheduler
     attribute @@toStringTag
-    getter currentTaskSignal
     method constructor
     method postTask
 interface Scheduling

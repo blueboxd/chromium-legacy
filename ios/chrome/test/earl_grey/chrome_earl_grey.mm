@@ -719,12 +719,6 @@ UIWindow* GetAnyKeyWindow() {
       [ChromeEarlGreyAppInterface clearAllWebStateBrowsingData]);
 }
 
-#pragma mark - Settings Utilities (EG2)
-
-- (void)setContentSettings:(ContentSetting)setting {
-  [ChromeEarlGreyAppInterface setContentSettings:setting];
-}
-
 #pragma mark - Sync Utilities (EG2)
 
 - (void)clearSyncServerData {
@@ -1262,7 +1256,7 @@ UIWindow* GetAnyKeyWindow() {
   return [ChromeEarlGreyAppInterface isNewOverflowMenuEnabled];
 }
 
-#pragma mark - ScopedBlockPopupsPref
+#pragma mark - ContentSettings
 
 - (ContentSetting)popupPrefValue {
   return [ChromeEarlGreyAppInterface popupPrefValue];
@@ -1271,6 +1265,12 @@ UIWindow* GetAnyKeyWindow() {
 - (void)setPopupPrefValue:(ContentSetting)value {
   return [ChromeEarlGreyAppInterface setPopupPrefValue:value];
 }
+
+- (void)resetDesktopContentSetting {
+  [ChromeEarlGreyAppInterface resetDesktopContentSetting];
+}
+
+#pragma mark - Keyboard utilities
 
 - (NSInteger)registeredKeyCommandCount {
   return [ChromeEarlGreyAppInterface registeredKeyCommandCount];

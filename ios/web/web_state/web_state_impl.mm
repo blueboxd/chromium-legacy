@@ -13,6 +13,7 @@
 #import "ios/web/common/features.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/permissions/permissions.h"
+#import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/web_state_impl_realized_web_state.h"
@@ -179,6 +180,11 @@ void WebStateImpl::OnStateChangedForPermission(Permission permission) {
 
 NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
   return RealizedState()->GetNavigationManager();
+}
+
+int WebStateImpl::GetNavigationItemCount() const {
+  return LIKELY(pimpl_) ? pimpl_->GetNavigationItemCount()
+                        : saved_->GetNavigationItemCount();
 }
 
 WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
@@ -392,6 +398,11 @@ void WebStateImpl::DidRevealWebContent() {
   RealizedState()->DidRevealWebContent();
 }
 
+base::Time WebStateImpl::GetLastActiveTime() const {
+  return LIKELY(pimpl_) ? pimpl_->GetLastActiveTime()
+                        : saved_->GetLastActiveTime();
+}
+
 void WebStateImpl::WasShown() {
   RealizedState()->WasShown();
 }
@@ -532,11 +543,6 @@ const GURL& WebStateImpl::GetVisibleURL() const {
 const GURL& WebStateImpl::GetLastCommittedURL() const {
   return LIKELY(pimpl_) ? pimpl_->GetLastCommittedURL()
                         : saved_->GetLastCommittedURL();
-}
-
-const base::Time WebStateImpl::GetLastCommittedTimestamp() const {
-  return LIKELY(pimpl_) ? pimpl_->GetLastCommittedTimestamp()
-                        : saved_->GetLastCommittedTimestamp();
 }
 
 GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {

@@ -104,6 +104,9 @@ export class ReimagingCalibrationFailedPage extends
           name: this.i18n(ComponentTypeToId[item.component]),
           checked: false,
           failed: item.status === CalibrationStatus.kCalibrationFailed,
+          // Disable components that did not fail calibration so they can't be
+          // selected for calibration again.
+          disabled: item.status !== CalibrationStatus.kCalibrationFailed,
         };
       });
     });
@@ -126,6 +129,12 @@ export class ReimagingCalibrationFailedPage extends
 
   /** @return {!Promise<!StateResult>} */
   onNextButtonClick() {
+    if (this.tryingToSkipWithFailedComponents_()) {
+      this.shadowRoot.querySelector('#failedComponentsDialog').showModal();
+      return Promise.reject(
+          new Error('Attempting to skip with failed components.'));
+    }
+
     return this.skipCalibration_();
   }
 
@@ -157,6 +166,44 @@ export class ReimagingCalibrationFailedPage extends
           })
         },
         ));
+  }
+
+  /**
+   * @param {boolean} componentDisabled
+   * @return {boolean}
+   * @private
+   */
+  isComponentDisabled_(componentDisabled) {
+    return componentDisabled || this.allButtonsDisabled;
+  }
+
+  /** @protected */
+  onSkipDialogButtonClicked_() {
+    this.closeDialog_();
+    this.dispatchEvent(new CustomEvent(
+        'transition-state',
+        {
+          bubbles: true,
+          composed: true,
+          detail: (() => {
+            return this.skipCalibration_();
+          })
+        },
+        ));
+  }
+
+  /** @protected */
+  closeDialog_() {
+    this.shadowRoot.querySelector('#failedComponentsDialog').close();
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  tryingToSkipWithFailedComponents_() {
+    return this.componentCheckboxes_.some(
+        component => component.failed && !component.checked);
   }
 }
 

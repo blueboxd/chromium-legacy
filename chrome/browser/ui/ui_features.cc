@@ -61,7 +61,7 @@ const base::Feature kDownloadBubble{"DownloadBubble",
 #if !defined(ANDROID)
 // Enables "Access Code Cast" UI.
 const base::Feature kAccessCodeCastUI{"AccessCodeCastUI",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables showing the EV certificate details in the Page Info bubble.
@@ -222,11 +222,6 @@ const base::Feature kUnifiedSidePanel{"UnifiedSidePanel",
 // with the current Profile for WebUI bubbles. See https://crbug.com/1177048.
 const base::Feature kWebUIBubblePerProfilePersistence{
     "WebUIBubblePerProfilePersistence", base::FEATURE_DISABLED_BY_DEFAULT};
-
-#if !defined(ANDROID)
-const base::Feature kWebUIBrandingUpdate{"WebUIBrandingUpdate",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Enables the WebUI Download Shelf instead of the Views framework Download
 // Shelf. See https://crbug.com/1180372.

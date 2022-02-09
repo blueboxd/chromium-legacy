@@ -293,6 +293,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTrustedWebActivityQualityEnforcement,
     &kTrustedWebActivityQualityEnforcementForced,
     &kTrustedWebActivityQualityEnforcementWarning,
+    &kShowExtendedPreloadingSetting,
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
     &kUpdateHistoryEntryPointsInIncognito,
@@ -333,6 +334,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
     &page_info::kPageInfoAboutThisSite,
+    &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kLeakDetectionUnauthenticated,
@@ -817,6 +819,9 @@ const base::Feature kTrustedWebActivityQualityEnforcementForced{
 const base::Feature kTrustedWebActivityQualityEnforcementWarning{
     "TrustedWebActivityQualityEnforcementWarning",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kShowExtendedPreloadingSetting{
+    "ShowExtendedPreloadingSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

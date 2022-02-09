@@ -47,6 +47,21 @@
             ]
         }
     ],
+    "AndroidCloseAllTabsModalDialog": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220204",
+                    "enable_features": [
+                        "CloseAllTabsModalDialog"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidContextualSearchM95": [
         {
             "platforms": [
@@ -61,21 +76,6 @@
                     "enable_features": [
                         "ContextualSearchNewSettings",
                         "ContextualSearchTranslations"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AndroidDynamicColor": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20210714",
-                    "enable_features": [
-                        "DynamicColorAndroid"
                     ]
                 }
             ]
@@ -108,6 +108,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FixedUmaSessionResumeOrder"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidFullDynamicColor": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "dynamic_color_full": "true"
+                    },
+                    "enable_features": [
+                        "DynamicColorAndroid"
                     ]
                 }
             ]
@@ -2024,7 +2042,6 @@
                 {
                     "name": "PriceDropIndicators_20210910",
                     "params": {
-                        "enable_persisted_tab_data_maintenance": "true",
                         "enable_price_tracking": "true",
                         "price_tracking_with_optimization_guide": "true"
                     },

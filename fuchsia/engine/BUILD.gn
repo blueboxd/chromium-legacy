@@ -93,6 +93,7 @@ component("web_engine_core") {
     "//components/cast_streaming/public/mojom",
     "//components/cast_streaming/renderer",
     "//components/cdm/renderer",
+    "//components/client_hints/browser:in_memory",
     "//components/embedder_support:browser_util",
     "//components/embedder_support/origin_trials",
     "//components/favicon/content",
@@ -431,6 +432,7 @@ test("web_engine_browsertests") {
     "browser/accessibility_bridge_browsertest.cc",
     "browser/autoplay_browsertest.cc",
     "browser/cast_streaming_browsertest.cc",
+    "browser/client_hints_browsertest.cc",
     "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/fake_navigation_policy_provider.cc",
@@ -475,6 +477,7 @@ test("web_engine_browsertests") {
     "//components/policy/content:safe_sites_navigation_throttle",
     "//components/safe_search_api:safe_search_api",
     "//components/safe_search_api:test_support",
+    "//components/version_info",
     "//content/public/browser",
     "//content/test:test_support",
     "//fuchsia/base",
@@ -619,11 +622,17 @@ test("web_engine_integration_tests") {
   ]
 }
 
-cr_fuchsia_package("web_engine_shell_pkg") {
+fuchsia_component("web_engine_shell_component") {
   testonly = true
   manifest = "test/web_engine_shell.cmx"
-  binary = ":web_engine_shell_exec"
+  data_deps = [ ":web_engine_shell_exec" ]
+  visibility = [ ":*" ]
+}
+
+fuchsia_package("web_engine_shell_pkg") {
+  testonly = true
   package_name = "web_engine_shell"
+  deps = [ ":web_engine_shell_component" ]
 }
 
 fuchsia_package_installer("web_engine_shell") {

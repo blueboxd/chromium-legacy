@@ -8,11 +8,14 @@
 #include <string>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/webui/grit/ash_shimless_rma_resources.h"
 #include "ash/webui/grit/ash_shimless_rma_resources_map.h"
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
 #include "ash/webui/shimless_rma/url_constants.h"
+#include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -77,6 +80,7 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"nextButtonLabel", IDS_SHIMLESS_RMA_NEXT_BUTTON},
       {"skipButtonLabel", IDS_SHIMLESS_RMA_SKIP_BUTTON},
       {"okButtonLabel", IDS_SHIMLESS_RMA_OK_BUTTON},
+      {"retryButtonLabel", IDS_SHIMLESS_RMA_RETRY_BUTTON},
       // Landing page
       {"welcomeTitleText", IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE},
       {"beginRmaWarningText", IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING},
@@ -162,6 +166,12 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_CALIBRATION_FAILED_INSTRUCTIONS},
       {"calibrationFailedRetryButtonLabel",
        IDS_SHIMLESS_RMA_CALIBRATION_FAILED_RETRY_BUTTON_LABEL},
+      {"calibrationFailedDialogTitle",
+       IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TITLE},
+      {"calibrationFailedDialogText",
+       IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TEXT},
+      {"calibrationFailedSkipCalibrationButtonLabel",
+       IDS_SHIMLESS_RMA_CALIBRATION_FAILED_SKIP_CALIBRATION_LABEL},
       // Setup calibration page
       {"setupCalibrationTitleText",
        IDS_SHIMLESS_RMA_SETUP_CALIBRATION_PAGE_TITLE},
@@ -301,6 +311,36 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
 }
 
 }  // namespace
+
+namespace shimless_rma {
+
+/* static */
+bool IsShimlessRmaAllowed() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  // Do not attempt to launch RMA in safe mode as RMA will prevent login, and
+  // any option to attempt repairs.
+  return ash::features::IsShimlessRMAFlowEnabled() &&
+         !command_line.HasSwitch(switches::kRmaNotAllowed) &&
+         !command_line.HasSwitch(switches::kSafeMode);
+}
+
+/* static */
+bool HasLaunchRmaSwitchAndIsAllowed() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  // Do not attempt to launch RMA in safe mode as RMA will prevent login, and
+  // any option to attempt repairs.
+  const bool launch_rma_switch_detected =
+      command_line.HasSwitch(switches::kLaunchRma);
+
+  // Call IsShimlessRmaAllowed() to safe guard from launching Shimless RMA in
+  // in the wrong state.
+  return launch_rma_switch_detected && IsShimlessRmaAllowed();
+}
+
+}  // namespace shimless_rma
 
 ShimlessRMADialogUI::ShimlessRMADialogUI(
     content::WebUI* web_ui,

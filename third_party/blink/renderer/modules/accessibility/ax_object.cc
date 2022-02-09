@@ -757,19 +757,6 @@ void AXObject::RepairMissingParent() const {
 // TODO(accessibility) Consider forcing all ax objects to be created from
 // the top down, eliminating the need for ComputeParent().
 AXObject* AXObject::ComputeParent() const {
-  AXObject* ax_parent = ComputeParentOrNull();
-
-  CHECK(!ax_parent || !ax_parent->IsDetached())
-      << "Computed parent should never be detached:"
-      << "\n* Child: " << GetNode()
-      << "\n* Parent: " << ax_parent->ToString(true, true);
-
-  return ax_parent;
-}
-
-// Same as ComputeParent, but without the extra check for valid parent in the
-// end. This is for use in RestoreParentOrPrune.
-AXObject* AXObject::ComputeParentOrNull() const {
 #if defined(AX_FAIL_FAST_BUILD)
   SANITIZER_CHECK(!IsDetached());
 
@@ -796,6 +783,11 @@ AXObject* AXObject::ComputeParentOrNull() const {
     ax_parent =
         ComputeNonARIAParent(AXObjectCache(), GetNode(), GetLayoutObject());
   }
+
+  CHECK(!ax_parent || !ax_parent->IsDetached())
+      << "Computed parent should never be detached:"
+      << "\n* Child: " << GetNode()
+      << "\n* Parent: " << ax_parent->ToString(true, true);
 
   return ax_parent;
 }
@@ -1314,7 +1306,7 @@ void AXObject::SerializeHTMLAttributes(ui::AXNodeData* node_data) {
       node_data->role == ax::mojom::blink::Role::kMathMLMath) {
     TruncateAndAddStringAttribute(node_data,
                                   ax::mojom::blink::StringAttribute::kInnerHtml,
-                                  element->innerHTML());
+                                  element->innerHTML(), kMaxStaticTextLength);
   }
 #endif
 }
@@ -3134,21 +3126,7 @@ bool AXObject::IsFocusableStyleUsingBestAvailableState() const {
 
   // The best available source of information is now the AX tree, so use that to
   // figure out whether we have focusable style.
-
-  // If we're in a canvas subtree, then use the canvas visibility instead of
-  // self visibility. The elements in a canvas subtree are fallback elements,
-  // which are not necessarily rendered but are allowed to be focusable.
-  if (element->IsInCanvasSubtree()) {
-    const HTMLCanvasElement* canvas =
-        Traversal<HTMLCanvasElement>::FirstAncestorOrSelf(*element);
-    DCHECK(canvas);
-    return canvas->GetLayoutObject() &&
-           canvas->GetLayoutObject()->Style()->Visibility() ==
-               EVisibility::kVisible;
-  }
-
-  return GetLayoutObject() &&
-         GetLayoutObject()->Style()->Visibility() == EVisibility::kVisible;
+  return element->IsBaseElementFocusableStyle(GetLayoutObject());
 }
 
 bool AXObject::CanSetFocusAttribute() const {

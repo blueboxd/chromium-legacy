@@ -94,9 +94,6 @@ extern const char kDefaultChromeAppsMigrationDescription[];
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
 
-extern const char kDetectedSourceLanguageOptionName[];
-extern const char kDetectedSourceLanguageOptionDescription[];
-
 extern const char kLauncherAppSortName[];
 extern const char kLauncherAppSortDescription[];
 
@@ -201,6 +198,9 @@ extern const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[];
 
 extern const char kAutofillEnableOffersInDownstreamName[];
 extern const char kAutofillEnableOffersInDownstreamDescription[];
+
+extern const char kAutofillEnableSendingBcnInGetUploadDetailsName[];
+extern const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[];
 
 extern const char kAutofillEnableStickyManualFallbackForCardsName[];
 extern const char kAutofillEnableStickyManualFallbackForCardsDescription[];
@@ -1890,6 +1890,9 @@ extern const char kOfflineIndicatorV2Description[];
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
 
+extern const char kPageInfoDiscoverabilityTimeoutsName[];
+extern const char kPageInfoDiscoverabilityTimeoutsDescription[];
+
 extern const char kPageInfoHistoryName[];
 extern const char kPageInfoHistoryDescription[];
 
@@ -3122,9 +3125,6 @@ extern const char kDownloadShelfWebUIDescription[];
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-
-extern const char kWebUIBrandingUpdateName[];
-extern const char kWebUIBrandingUpdateDescription[];
 
 extern const char kWebuiFeedbackName[];
 extern const char kWebuiFeedbackDescription[];

@@ -157,7 +157,7 @@ if (android_64bit_target_cpu) {
 }
 
 generate_ui_locale_resources("ui_locale_string_resources") {
-  ui_locales = locales
+  ui_locales = platform_pak_locales
 }
 
 # Resources which are needed in the base module manifest's application tag
@@ -1136,10 +1136,12 @@ junit_binary("chrome_junit_tests") {
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_collection_collection_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_common_java",
+    "//third_party/androidx:androidx_lifecycle_lifecycle_runtime_java",
     "//third_party/androidx:androidx_mediarouter_mediarouter_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_swiperefreshlayout_swiperefreshlayout_java",
@@ -2175,7 +2177,7 @@ if (current_toolchain == default_toolchain) {
       renaming_sources = []
       renaming_destinations = []
 
-      foreach(_locale, locales) {
+      foreach(_locale, platform_pak_locales) {
         renaming_sources +=
             [ "$target_gen_dir/${_variant}_paks/locales/$_locale.pak" ]
         renaming_destinations += [ "locales/$_locale.pak" ]
@@ -2724,7 +2726,7 @@ template("monochrome_public_apk_or_module_tmpl") {
 
       # Ensure the localized resources for all locales are used, even when
       # a smaller set is specified through aapt_locale_allowlist.
-      shared_resources_allowlist_locales = locales
+      shared_resources_allowlist_locales = platform_pak_locales
     }
 
     deps = []

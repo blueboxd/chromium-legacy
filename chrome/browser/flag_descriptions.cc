@@ -131,12 +131,6 @@ extern const char kDefaultChromeAppsMigrationDescription[] =
     "Enable replacing policies to force install Chrome apps with policies to "
     "force install PWAs";
 
-const char kDetectedSourceLanguageOptionName[] =
-    "Use Detected Language string on Desktop and Android";
-const char kDetectedSourceLanguageOptionDescription[] =
-    "Renames the 'Unknown' source language option to 'Detected Language' and "
-    "enables translation of unknown source language pages on Android.";
-
 const char kDetectFormSubmissionOnFormClearName[] =
     "Detect form submission when the form is cleared.";
 const char kDetectFormSubmissionOnFormClearDescription[] =
@@ -344,6 +338,12 @@ const char kAutofillEnableOffersInDownstreamName[] =
 const char kAutofillEnableOffersInDownstreamDescription[] =
     "When enabled, offer data will be retrieved during downstream and shown in "
     "the dropdown list.";
+
+const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
+    "Enable sending billing customer number in GetUploadDetails";
+const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
+    "When enabled the billing customer number will be sent in the "
+    "GetUploadDetails preflight calls.";
 
 const char kAutofillEnableStickyManualFallbackForCardsName[] =
     "Make manual fallback sticky for credit cards";
@@ -3291,6 +3291,11 @@ const char kOfflinePagesLivePageSharingDescription[] =
     "Enables to share current loaded page as offline page by saving as MHTML "
     "first.";
 
+const char kPageInfoDiscoverabilityTimeoutsName[] =
+    "Page info discoverability timeouts";
+const char kPageInfoDiscoverabilityTimeoutsDescription[] =
+    "Configure different timeouts for the permission icon in the omnibox.";
+
 const char kPageInfoHistoryName[] = "Page info history";
 const char kPageInfoHistoryDescription[] =
     "Enable a history sub page to the page info menu, and a button to forget "
@@ -5412,10 +5417,6 @@ const char kDownloadShelfWebUIDescription[] =
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-
-const char kWebUIBrandingUpdateName[] = "WebUI Branding Update";
-const char kWebUIBrandingUpdateDescription[] =
-    "Changes various UI components in WebUI pages to have a more modern look.";
 
 const char kWebuiFeedbackName[] = "WebUI Feedback";
 const char kWebuiFeedbackDescription[] =

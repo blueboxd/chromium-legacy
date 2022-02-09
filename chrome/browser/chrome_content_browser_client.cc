@@ -137,6 +137,7 @@
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webid/identity_dialog_controller.h"
+#include "chrome/browser/ui/webui/chrome_untrusted_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/universal_web_contents_observers.h"
@@ -4839,8 +4840,10 @@ bool IsSystemFeatureDisabled(policy::SystemFeature system_feature) {
 }
 
 bool IsSystemFeatureURLDisabled(const GURL& url) {
-  if (!url.SchemeIs(content::kChromeUIScheme))
+  if (!url.SchemeIs(content::kChromeUIScheme) &&
+      !url.SchemeIs(content::kChromeUIUntrustedScheme)) {
     return false;
+  }
 
   // chrome://os-settings/pwa.html shouldn't be replaced to let the settings app
   // installation complete successfully.
@@ -4854,6 +4857,10 @@ bool IsSystemFeatureURLDisabled(const GURL& url) {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (url.DomainIs(chrome::kChromeUIUntrustedCroshHost)) {
+    return IsSystemFeatureDisabled(policy::SystemFeature::kCrosh);
+  }
+
   if (url.DomainIs(ash::kChromeUIScanningAppHost)) {
     return IsSystemFeatureDisabled(policy::SystemFeature::kScanning);
   }
@@ -5547,16 +5554,28 @@ bool ChromeContentBrowserClient::HandleExternalProtocol(
   return true;
 }
 
-std::unique_ptr<content::OverlayWindow>
-ChromeContentBrowserClient::CreateWindowForPictureInPicture(
-    content::PictureInPictureWindowController* controller) {
-  // Note: content::OverlayWindow::Create() is defined by platform-specific
+std::unique_ptr<content::VideoOverlayWindow>
+ChromeContentBrowserClient::CreateWindowForVideoPictureInPicture(
+    content::VideoPictureInPictureWindowController* controller) {
+  // Note: content::VideoOverlayWindow::Create() is defined by platform-specific
   // implementation in chrome/browser/ui/views. This layering hack, which goes
   // through //content and ContentBrowserClient, allows us to work around the
   // dependency constraints that disallow directly calling
   // chrome/browser/ui/views code either from here or from other code in
   // chrome/browser.
-  return content::OverlayWindow::Create(controller);
+  return content::VideoOverlayWindow::Create(controller);
+}
+
+std::unique_ptr<content::DocumentOverlayWindow>
+ChromeContentBrowserClient::CreateWindowForDocumentPictureInPicture(
+    content::DocumentPictureInPictureWindowController* controller) {
+  // Note: content::DocumentOverlayWindow::Create() is defined by
+  // platform-specific implementation in chrome/browser/ui/views. This layering
+  // hack, which goes through //content and ContentBrowserClient, allows us to
+  // work around the dependency constraints that disallow directly calling
+  // chrome/browser/ui/views code either from here or from other code in
+  // chrome/browser.
+  return content::DocumentOverlayWindow::Create(controller);
 }
 
 void ChromeContentBrowserClient::RegisterRendererPreferenceWatcher(
@@ -5615,6 +5634,8 @@ bool ChromeContentBrowserClient::HandleWebUI(
 #endif  // BUILDFLAG(IS_WIN)
 
   if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
+          browser_context, *url) &&
+      !ChromeUntrustedWebUIControllerFactory::GetInstance()->UseWebUIForURL(
           browser_context, *url)) {
     return false;
   }
@@ -5635,7 +5656,7 @@ bool ChromeContentBrowserClient::HandleWebUI(
 
 #if BUILDFLAG(IS_CHROMEOS)
   if (IsSystemFeatureURLDisabled(*url)) {
-    *url = ReplaceURLHostAndPath(*url, chrome::kChromeUIAppDisabledHost, "");
+    *url = GURL(chrome::kChromeUIAppDisabledURL);
     return true;
   }
 #endif

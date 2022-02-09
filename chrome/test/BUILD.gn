@@ -826,6 +826,8 @@ if (is_android) {
       "../browser/android/customtabs/custom_tabs_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
       "../browser/autofill/android/save_update_address_profile_flow_manager_browsertest.cc",
+      "../browser/autofill/autofill_uitest_util.cc",
+      "../browser/autofill/autofill_uitest_util.h",
       "../browser/browsing_data/access_context_audit_browsertest.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest_base.cc",
       "../browser/browsing_data/browsing_data_remover_browsertest_base.h",
@@ -1610,6 +1612,7 @@ if (!is_android) {
       "../browser/download/download_started_animation_browsertest.cc",
       "../browser/download/save_page_browsertest.cc",
       "../browser/engagement/site_engagement_helper_browsertest.cc",
+      "../browser/enterprise/browser_management/management_service_browsertest.cc",
       "../browser/enterprise/connectors/analysis/content_analysis_dialog_browsertest.cc",
       "../browser/enterprise/connectors/connectors_service_browsertest.cc",
       "../browser/enterprise/reporting/report_scheduler_browsertest.cc",
@@ -1760,6 +1763,7 @@ if (!is_android) {
       "../browser/optimization_guide/browser_test_util.cc",
       "../browser/optimization_guide/browser_test_util.h",
       "../browser/optimization_guide/hints_fetcher_browsertest.cc",
+      "../browser/optimization_guide/optimization_guide_internals_page_browsertest.cc",
       "../browser/optimization_guide/optimization_guide_keyed_service_browsertest.cc",
       "../browser/optimization_guide/page_content_annotations_service_browsertest.cc",
       "../browser/optimization_guide/page_text_observer_browsertest.cc",
@@ -1799,7 +1803,7 @@ if (!is_android) {
       "../browser/permissions/permission_request_manager_browsertest.cc",
       "../browser/permissions/permissions_browsertest.cc",
       "../browser/permissions/permissions_browsertest.h",
-      "../browser/picture_in_picture/picture_in_picture_window_controller_browsertest.cc",
+      "../browser/picture_in_picture/video_picture_in_picture_window_controller_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
       "../browser/policy/policy_network_browsertest.cc",
       "../browser/policy/policy_prefs_browsertest.cc",
@@ -2943,6 +2947,7 @@ if (!is_android) {
         "//components/keep_alive_registry",
         "//components/media_router/browser:test_support",
         "//components/media_router/common:test_support",
+        "//components/optimization_guide/optimization_guide_internals/webui",
         "//components/web_package",
         "//google_apis/common:test_support",
         "//google_apis/drive",
@@ -3844,6 +3849,7 @@ if (!is_android) {
         "//chromeos/dbus/cryptohome:cryptohome_proto",
         "//chromeos/dbus/image_burner",
         "//chromeos/dbus/power",
+        "//chromeos/dbus/rmad:rmad",
         "//chromeos/dbus/services:test_support",
         "//chromeos/dbus/session_manager",
         "//chromeos/dbus/system_clock",
@@ -4220,8 +4226,10 @@ if (is_chromeos_lacros) {
     ]
   }
 
-  # This test target is intended for lacros chrome specific tests that depend
-  # on crosapi, for generic tests, please use 'browser_tests' target instead.
+  # This test target is intended for lacros chrome specific tests that depend on
+  # crosapi, for generic tests, please use 'browser_tests' target instead. These
+  # tests are run in parallel. Most crosapi tests need to run in series. Use
+  # lacros_chrome_browsertests_run_in_series instead.
   test("lacros_chrome_browsertests") {
     use_xvfb = use_xvfb_in_this_config
 
@@ -4232,30 +4240,81 @@ if (is_chromeos_lacros) {
     ]
 
     sources = [
+      # dlp_content_manager_lacros_browsertest.cc should become a unit test.
       "../browser/chromeos/policy/dlp/dlp_content_manager_lacros_browsertest.cc",
       "../browser/chromeos/policy/dlp/dlp_content_manager_test_helper.cc",
       "../browser/chromeos/policy/dlp/dlp_content_manager_test_helper.h",
-      "../browser/lacros/browser_service_lacros_browsertest.cc",
       "../browser/lacros/browser_test_util.cc",
       "../browser/lacros/browser_test_util.h",
       "../browser/lacros/device_attributes_lacros_browsertest.cc",
+
+      # download_controller_client_lacros_browsertest.cc should become a unit
+      # test.
       "../browser/lacros/download_controller_client_lacros_browsertest.cc",
       "../browser/lacros/field_trial_service_lacros_browsertest.cc",
       "../browser/lacros/file_manager_lacros_browsertest.cc",
-      "../browser/lacros/holding_space_service_lacros_browsertest.cc",
       "../browser/lacros/idle_service_lacros_browsertest.cc",
+    ]
+
+    deps = [
+      ":browser_tests_runner",
+      ":test_support",
+      "//chrome/app:command_ids",
+      "//chromeos/crosapi/mojom",
+      "//chromeos/lacros",
+      "//chromeos/lacros:test_support",
+      "//ui/platform_window",
+    ]
+
+    data = [
+      "data/media/",
+      "data/extensions/api_test/login_screen_apis/",
+      "data/extensions/platform_apps/minimal/",
+    ]
+
+    data_deps = [
+      "//build/lacros:lacros_version_metadata",
+      "//chrome:packed_resources",
+      "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
+    ]
+  }
+
+  # This test target is intended for lacros chrome specific tests that depend
+  # on crosapi and must run in series, for those that can run in parallel,
+  # please use lacros_chrome_browsertests target instead.
+  test("lacros_chrome_browsertests_run_in_series") {
+    use_xvfb = use_xvfb_in_this_config
+
+    configs += [ "//build/config:precompiled_headers" ]
+    defines = [
+      "HAS_OUT_OF_PROC_TEST_RUNNER",
+      "CHROME_VERSION_MAJOR=" + chrome_version_major,
+    ]
+
+    sources = [
+      "../browser/chromeos/extensions/login_screen/login_screen_storage/login_screen_storage_apitest.cc",
+      "../browser/lacros/browser_service_lacros_browsertest.cc",
+      "../browser/lacros/browser_test_util.cc",
+      "../browser/lacros/browser_test_util.h",
+      "../browser/lacros/clipboard_lacros_browsertest.cc",
+      "../browser/lacros/crosapi_pref_observer_lacros_browsertest.cc",
+      "../browser/lacros/holding_space_service_lacros_browsertest.cc",
       "../browser/lacros/keystore_service_lacros_browsertest.cc",
       "../browser/lacros/lacros_extension_apps_controller_lacros_browsertest.cc",
+      "../browser/lacros/login_screen_storage_lacros_browsertest.cc",
       "../browser/lacros/login_state_lacros_browsertest.cc",
       "../browser/lacros/machine_learning_service_lacros_browsertest.cc",
       "../browser/lacros/media_session_lacros_browsertest.cc",
       "../browser/lacros/message_center_lacros_browsertest.cc",
       "../browser/lacros/metrics_reporting_lacros_browsertest.cc",
+      "../browser/lacros/net/lacros_extension_proxy_tracker_browsertest.cc",
       "../browser/lacros/net/proxy_config_service_lacros_browsertest.cc",
       "../browser/lacros/networking_attributes_lacros_browsertest.cc",
+      "../browser/lacros/overview_lacros_browsertest.cc",
       "../browser/lacros/popup_lacros_browsertest.cc",
       "../browser/lacros/screen_manager_lacros_browsertest.cc",
       "../browser/lacros/tab_scrubber_lacros_browsertest.cc",
+      "../browser/lacros/tablet_mode_lacros_browsertest.cc",
       "../browser/lacros/web_contents_can_go_back_observer_browsertest.cc",
       "../browser/metrics/structured/lacros_structured_metrics_recorder_browsertest.cc",
       "../browser/ui/browser_navigator_browsertest.cc",
@@ -4290,51 +4349,9 @@ if (is_chromeos_lacros) {
       "data/media/",
       "data/extensions/api_test/login_screen_apis/",
       "data/extensions/platform_apps/minimal/",
+
+      "data/extensions/api_test/login_screen_apis/",
     ]
-
-    data_deps = [
-      "//build/lacros:lacros_version_metadata",
-      "//chrome:packed_resources",
-      "//testing/buildbot/filters:lacros_chrome_browsertests_filters",
-    ]
-  }
-
-  # This test target is intended for lacros chrome specific tests that depend
-  # on crosapi and must run in series, for those that can run in parallel,
-  # please use lacros_chrome_browsertests target instead.
-  test("lacros_chrome_browsertests_run_in_series") {
-    use_xvfb = use_xvfb_in_this_config
-
-    configs += [ "//build/config:precompiled_headers" ]
-    defines = [
-      "HAS_OUT_OF_PROC_TEST_RUNNER",
-      "CHROME_VERSION_MAJOR=" + chrome_version_major,
-    ]
-
-    sources = [
-      "../browser/chromeos/extensions/login_screen/login_screen_storage/login_screen_storage_apitest.cc",
-      "../browser/lacros/browser_test_util.cc",
-      "../browser/lacros/browser_test_util.h",
-      "../browser/lacros/clipboard_lacros_browsertest.cc",
-      "../browser/lacros/crosapi_pref_observer_lacros_browsertest.cc",
-      "../browser/lacros/login_screen_storage_lacros_browsertest.cc",
-      "../browser/lacros/net/lacros_extension_proxy_tracker_browsertest.cc",
-      "../browser/lacros/overview_lacros_browsertest.cc",
-      "../browser/lacros/tablet_mode_lacros_browsertest.cc",
-    ]
-
-    deps = [
-      ":browser_tests_runner",
-      ":test_support",
-      "//chromeos/crosapi/mojom",
-      "//chromeos/lacros",
-      "//chromeos/services/machine_learning/public/cpp",
-      "//chromeos/services/machine_learning/public/cpp:stub",
-      "//chromeos/services/machine_learning/public/mojom",
-      "//ui/platform_window",
-    ]
-
-    data = [ "data/extensions/api_test/login_screen_apis/" ]
 
     data_deps = [
       "//build/lacros:lacros_version_metadata",
@@ -4914,7 +4931,6 @@ test("unit_tests") {
     "../browser/security_events/security_event_recorder_impl_unittest.cc",
     "../browser/segmentation_platform/segmentation_platform_profile_observer_unittest.cc",
     "../browser/signin/e2e_tests/test_accounts_util_unittest.cc",
-    "../browser/ui/autofill/payments/offer_notification_helper_unittest.cc",
 
     # TODO(hashimoto): those tests should be componentized and moved to
     # //components:components_unittests, http://crbug.com/527882.
@@ -7939,7 +7955,8 @@ test("unit_tests") {
       "../browser/ui/views/omnibox/omnibox_match_cell_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_result_view_unittest.cc",
       "../browser/ui/views/omnibox/omnibox_view_views_unittest.cc",
-      "../browser/ui/views/overlay/overlay_window_views_unittest.cc",
+      "../browser/ui/views/overlay/document_overlay_window_views_unittest.cc",
+      "../browser/ui/views/overlay/video_overlay_window_views_unittest.cc",
       "../browser/ui/views/page_action/page_action_icon_view_unittest.cc",
       "../browser/ui/views/page_info/page_info_bubble_view_unittest.cc",
       "../browser/ui/views/page_info/safety_tip_page_info_bubble_view_unittest.cc",

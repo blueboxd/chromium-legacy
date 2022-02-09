@@ -2060,8 +2060,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header. [CHAR_LIMIT=18]">
         Private network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider that supports OpenVPN and L2TP over IPsec.">
-        OpenVPN / L2TP
+      <message name="IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider.">
+        Built-in VPN
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECT" desc="Message on button that disconnects from the current VPN.">
         Disconnect
@@ -2579,6 +2579,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_RESETTING_ESIM" desc="Tooltip message for disabled add cellular button, indicating cellular eSIM is being reset.">
         Your administrator is resetting your eSIM. Wait a few minutes.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_DISABLING_PROFILE" desc="Tooltip message for disabled add cellular button, indicating cellular network profile is being disabled.">
+       Disabling profile. Wait a few minutes.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...
@@ -4454,6 +4457,15 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE" desc="Context menu option title to remove a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
         Remove Suggestion
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT" desc="Text for the privacy notice of the continue section of the launcher in clamshell mode, which shows recent files and apps that the user can continue using.">
+        You’ll see recommendations so you can continue where you left off. You can right-click to remove recommendations.
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT_TABLET" desc="Text for the privacy notice of the continue section of the launcher in tablet mode, which shows recent files and apps that the user can continue using.">
+        You’ll see recommendations so you can continue where you left off.  You can touch &amp; hold to remove recommendations.
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_BUTTON" desc="Text for the privacy notice accepting button in the continue section of the launcher, which shows recent files and apps that the user can continue using.">
+        OK
       </message>
 
       <!-- Launcher / App List -->

@@ -690,6 +690,7 @@ bool IsAXSetter(SEL selector) {
     NSAccessibilityFocusedAttribute,
     NSAccessibilityHelpAttribute,
     NSAccessibilityTopLevelUIElementAttribute,
+    NSAccessibilityVisitedAttribute,
     NSAccessibilityWindowAttribute,
   ];
   // Attributes required for user-editable controls.
@@ -878,6 +879,9 @@ bool IsAXSetter(SEL selector) {
       NSAccessibilityHasPopupAttribute, NSAccessibilityPopupValueAttribute
     ]];
   }
+
+  if (_node->HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts))
+    [axAttributes addObject:NSAccessibilityKeyShortcutsValueAttribute];
 
   return axAttributes.autorelease();
 }
@@ -1191,6 +1195,12 @@ bool IsAXSetter(SEL selector) {
   return @(_node->HasState(ax::mojom::State::kMultiselectable));
 }
 
+- (NSString*)AXKeyShortcutsValue {
+  if (![self instanceActive])
+    return nil;
+  return [self getStringAttribute:ax::mojom::StringAttribute::kKeyShortcuts];
+}
+
 - (id)AXOwns {
   if (![self instanceActive])
     return nil;
@@ -1260,6 +1270,13 @@ bool IsAXSetter(SEL selector) {
 
 - (NSURL*)AXURL {
   return [self accessibilityURL];
+}
+
+- (NSNumber*)AXVisited {
+  if (![self instanceActive])
+    return nil;
+
+  return _node->HasState(ax::mojom::State::kVisited) ? @1 : @0;
 }
 
 - (NSString*)AXHelp {

@@ -416,11 +416,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "autofill-enable-offers-in-downstream",
-    "owners": [ "siyua" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "autofill-enable-sending-bcn-in-get-upload-details",
     "owners": [ "chashivani", "jsaul", "payments-autofill-team@google.com" ],
     "expiry_milestone": 105
@@ -544,6 +539,11 @@
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
     "expiry_milestone": 101
+  },
+  {
+    "name": "block-migrated-default-chrome-app-sync",
+    "owners": [ "alancutter", "desktop-pwas-team@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "bluetooth-advertisement-monitoring",
@@ -1369,11 +1369,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "drag-and-drop-android",
-    "owners": [ "wenyufu", "clank-app-team@google.com" ],
-    "expiry_milestone": 104
-  },
-  {
     "name": "draw-predicted-ink-point",
     "owners": [ "joalmei@microsoft.com" ],
     "expiry_milestone": 98
@@ -1912,6 +1907,11 @@
     "expiry_milestone": 101
   },
   {
+    "name": "enable-discount-consent-v2",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 102
+  },
+  {
     "name": "enable-discover-feed-preview",
     "owners": [ "tinazwang", "sczs" ],
     "expiry_milestone": 101
@@ -2052,6 +2052,11 @@
     "name": "enable-fre-ui-module-ios-with-options",
     "owners": [ "gambard", "veronguyen", "vincb" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "enable-fullscreen-api",
+    "owners": [ "ajuma", "bling-flags@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-future-v8-vm-features",
@@ -4027,7 +4032,7 @@
   {
     "name": "metrickit-crash-reports",
     "owners": [ "olivierrobin", "bling-flags@google.com" ],
-    "expiry_milestone": 103 
+    "expiry_milestone": 103
   },
   {
     "name": "metrics-settings-android",
@@ -4552,7 +4557,12 @@
   {
     "name": "page-content-annotations",
     "owners": [ "sophiechang", "mcrouse", "chrome-intelligence-core@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 102
+  },
+  {
+    "name": "page-entities-page-content-annotations",
+    "owners": [ "sophiechang", "mcrouse", "chrome-intelligence-core@google.com"],
+    "expiry_milestone": 102
   },
   {
     "name": "page-info-about-this-site",
@@ -4581,6 +4591,11 @@
   {
     "name": "page-info-store-info",
     "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 102
+  },
+  {
+    "name": "page-visibility-page-content-annotations",
+    "owners": [ "sophiechang", "mcrouse", "chrome-intelligence-core@google.com"],
     "expiry_milestone": 102
   },
   {
@@ -5552,6 +5567,11 @@
     // exposed in chrome://flags to allow QA and UXers to verify touch-related
     // behavior without access to touch devices.
     "expiry_milestone": -1
+  },
+  {
+    "name": "touch-drag-and-context-menu",
+    "owners": [ "wenyufu", "clank-app-team@google.com" ],
+    "expiry_milestone": 104
   },
   {
     "name": "touch-selection-strategy",

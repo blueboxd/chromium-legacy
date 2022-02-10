@@ -21,12 +21,6 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
-const char kAutofillEnableOffersInDownstreamName[] =
-    "Enable Autofill offers in downstream";
-const char kAutofillEnableOffersInDownstreamDescription[] =
-    "When enabled, offer data will be retrieved during downstream and shown in "
-    "the dropdown list.";
-
 const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
     "Enable sending billing customer number in GetUploadDetails";
 const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
@@ -199,6 +193,10 @@ const char kEnableFREUIModuleIOSDescription[] =
     "Use the new FRE UI module for first run. There are 4 UI options: Identity "
     "switcher at the TOP or BOTTOM and using OLD or NEW strings set for the "
     "sign-in sync screen.";
+
+const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
+const char kEnableFullscreenAPIDescription[] =
+    "Enable the Fullscreen API for web content (iOS 15.4+).";
 
 const char kEnableLongMessageDurationName[] = "Enable long message duration";
 const char kEnableLongMessageDurationDescription[] =

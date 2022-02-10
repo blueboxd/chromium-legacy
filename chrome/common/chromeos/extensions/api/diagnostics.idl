@@ -17,7 +17,9 @@ namespace os.diagnostics {
     cpu_floating_point_accuracy,
     cpu_prime_search,
     cpu_stress,
-    memory
+    memory,
+    nvme_wear_level,
+    smartctl_check
   };
 
   enum RoutineStatus {
@@ -83,6 +85,10 @@ namespace os.diagnostics {
     long length_seconds;
   };
 
+  dictionary RunNvmeWearLevelRequest {
+    long wear_level_threshold;
+  };
+
   dictionary RunRoutineResponse {
     long id;
 
@@ -135,5 +141,12 @@ namespace os.diagnostics {
 
     // Starts memory routine.
     [supportsPromises] static void runMemoryRoutine(RunRoutineCallback callback);
+
+    // Starts NVMe wear level routine.
+    [supportsPromises] static void runNvmeWearLevelRoutine(RunNvmeWearLevelRequest request,
+                                                           RunRoutineCallback callback);
+
+    // Starts SmartctlCheck routine.
+    [supportsPromises] static void runSmartctlCheckRoutine(RunRoutineCallback callback);
   };
 };

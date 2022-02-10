@@ -256,7 +256,7 @@ class BrowserView : public BrowserWindow,
   }
 
   // Accessor for the contents WebView.
-  views::WebView* contents_web_view() { return contents_web_view_; }
+  ContentsWebView* contents_web_view() { return contents_web_view_; }
 
   base::WeakPtr<BrowserView> GetAsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -445,6 +445,8 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
+  bool IsForceFullscreen() const override;
+  void SetForceFullscreen(bool force_fullscreen) override;
   void UpdatePageActionIcon(PageActionIconType type) override;
   autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override;
@@ -1028,6 +1030,10 @@ class BrowserView : public BrowserWindow,
   bool in_process_fullscreen_ = false;
 
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
+
+  // True when we do not want to allow exiting fullscreen, e.g. in Chrome OS
+  // Kiosk session.
+  bool force_fullscreen_ = false;
 
   // The timer used to update frames for tab-loading animations.
   base::RepeatingTimer loading_animation_timer_;

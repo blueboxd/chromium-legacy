@@ -53,9 +53,9 @@
 #include "components/signin/ios/browser/features.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/base/sync_base_switches.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -374,7 +374,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-sync-sandbox", flag_descriptions::kSyncSandboxName,
      flag_descriptions::kSyncSandboxDescription, flags_ui::kOsIos,
      SINGLE_VALUE_TYPE_AND_VALUE(
-         switches::kSyncServiceURL,
+         syncer::kSyncServiceURL,
          "https://chrome-sync.sandbox.google.com/chrome-sync/alpha")},
     {"wallet-service-use-sandbox",
      flag_descriptions::kWalletServiceUseSandboxName,
@@ -466,11 +466,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"expanded-tab-strip", flag_descriptions::kExpandedTabStripName,
      flag_descriptions::kExpandedTabStripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kExpandedTabStrip)},
-    {"autofill-enable-offers-in-downstream",
-     flag_descriptions::kAutofillEnableOffersInDownstreamName,
-     flag_descriptions::kAutofillEnableOffersInDownstreamDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOffersInDownstream)},
     {"shared-highlighting-ios", flag_descriptions::kSharedHighlightingIOSName,
      flag_descriptions::kSharedHighlightingIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSharedHighlightingIOS)},
@@ -630,17 +625,17 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseiOSRPCName,
      flag_descriptions::kSyncTrustedVaultPassphraseiOSRPCDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseiOSRPC)},
+     FEATURE_VALUE_TYPE(::syncer::kSyncTrustedVaultPassphraseiOSRPC)},
     {"sync-trusted-vault-passphrase-promo",
      flag_descriptions::kSyncTrustedVaultPassphrasePromoName,
      flag_descriptions::kSyncTrustedVaultPassphrasePromoDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphrasePromo)},
+     FEATURE_VALUE_TYPE(::syncer::kSyncTrustedVaultPassphrasePromo)},
     {"sync-trusted-vault-passphrase-recovery",
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryName,
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(::switches::kSyncTrustedVaultPassphraseRecovery)},
+     FEATURE_VALUE_TYPE(::syncer::kSyncTrustedVaultPassphraseRecovery)},
     {"wait-threshold-seconds-for-capabilities-api",
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiName,
      flag_descriptions::kWaitThresholdMillisecondsForCapabilitiesApiDescription,
@@ -800,6 +795,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableSendingBcnInGetUploadDetails)},
+    {"enable-fullscreen-api", flag_descriptions::kEnableFullscreenAPIName,
+     flag_descriptions::kEnableFullscreenAPIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kEnableFullscreenAPI)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

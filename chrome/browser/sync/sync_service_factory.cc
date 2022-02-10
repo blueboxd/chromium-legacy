@@ -50,7 +50,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -181,7 +181,7 @@ SyncServiceFactory* SyncServiceFactory::GetInstance() {
 
 // static
 syncer::SyncService* SyncServiceFactory::GetForProfile(Profile* profile) {
-  if (!switches::IsSyncAllowedByFlag()) {
+  if (!syncer::IsSyncAllowedByFlag()) {
     return nullptr;
   }
 
@@ -275,7 +275,7 @@ bool SyncServiceFactory::IsSyncAllowed(Profile* profile) {
   // No SyncServiceImpl created yet - we don't want to create one, so just
   // infer the accessible state by looking at prefs/command line flags.
   syncer::SyncPrefs prefs(profile->GetPrefs());
-  return switches::IsSyncAllowedByFlag() &&
+  return syncer::IsSyncAllowedByFlag() &&
          (!prefs.IsManaged() || prefs.IsLocalSyncEnabled());
 }
 

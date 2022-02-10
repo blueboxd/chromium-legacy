@@ -22,7 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -371,7 +371,7 @@ bool ShouldShowSyncKeysMissingError(const syncer::SyncService* sync_service,
 
   // Guard under the main feature toggle for trusted vault changes.
   if (!base::FeatureList::IsEnabled(
-          switches::kSyncTrustedVaultPassphraseRecovery)) {
+          syncer::kSyncTrustedVaultPassphraseRecovery)) {
     return false;
   }
 
@@ -405,7 +405,7 @@ bool ShouldShowTrustedVaultDegradedRecoverabilityError(
   }
 
   DCHECK(base::FeatureList::IsEnabled(
-      switches::kSyncTrustedVaultPassphraseRecovery));
+      syncer::kSyncTrustedVaultPassphraseRecovery));
 
   // In transport-only mode, IsTrustedVaultRecoverabilityDegraded() returns true
   // even if the user isn't trying to sync any of the encrypted types. The check

@@ -141,6 +141,10 @@ class ASH_EXPORT CaptureModeCameraController
   // of the camera preview.
   void SetShouldShowPreview(bool value);
 
+  // Updates the parent of the `camera_preview_widget_` when necessary. E.g,
+  // capture source type changes, selected recording window changes etc.
+  void MaybeReparentPreviewWidget();
+
   // base::SystemMonitor::DevicesChangedObserver:
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
 
@@ -212,7 +216,7 @@ class ASH_EXPORT CaptureModeCameraController
   base::OneShotTimer camera_reconnect_timer_;
 
   // Set to true when a preview of the currently selected camera (if any) should
-  // be shown. This happens when CaptureModeSession is started or switched to
+  // be shown. This happens when CaptureModeSession is started and switched to
   // a video recording mode before recording starts. It is reset back to false
   // when:
   // - Video recording ends.

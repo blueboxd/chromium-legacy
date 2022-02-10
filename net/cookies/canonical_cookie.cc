@@ -1083,6 +1083,18 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     }
   }
 
+  using ContextRedirectTypeBug1221316 = CookieOptions::SameSiteCookieContext::
+      ContextMetadata::ContextRedirectTypeBug1221316;
+
+  ContextRedirectTypeBug1221316 redirect_type_for_metrics =
+      options.same_site_cookie_context()
+          .GetMetadataForCurrentSchemefulMode()
+          .redirect_type_bug_1221316;
+  if (redirect_type_for_metrics != ContextRedirectTypeBug1221316::kUnset) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.CrossSiteRedirectType.Read",
+                              redirect_type_for_metrics);
+  }
+
   if (status.HasWarningReason(
           CookieInclusionStatus::
               WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION)) {
@@ -1307,6 +1319,18 @@ CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
             SameSiteNonePartyContextType::kSameSiteStrict);
       }
     }
+  }
+
+  using ContextRedirectTypeBug1221316 = CookieOptions::SameSiteCookieContext::
+      ContextMetadata::ContextRedirectTypeBug1221316;
+
+  ContextRedirectTypeBug1221316 redirect_type_for_metrics =
+      options.same_site_cookie_context()
+          .GetMetadataForCurrentSchemefulMode()
+          .redirect_type_bug_1221316;
+  if (redirect_type_for_metrics != ContextRedirectTypeBug1221316::kUnset) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.CrossSiteRedirectType.Write",
+                              redirect_type_for_metrics);
   }
 
   if (access_result.status.HasWarningReason(
@@ -1552,7 +1576,10 @@ bool CanonicalCookie::IsCookiePartitionedValid(
     return true;
   if (partition_has_nonce)
     return true;
-  return prefix == CookiePrefix::COOKIE_PREFIX_HOST && !is_same_party;
+  bool result = prefix == CookiePrefix::COOKIE_PREFIX_HOST && !is_same_party;
+  DLOG_IF(WARNING, !result)
+      << "CanonicalCookie has invalid Partitioned attribute";
+  return result;
 }
 
 CookieAndLineWithAccessResult::CookieAndLineWithAccessResult() = default;

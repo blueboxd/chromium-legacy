@@ -75,9 +75,6 @@ NSString* const
 NSString* const
     NSAccessibilityUIElementsForSearchPredicateParameterizedAttribute =
         @"AXUIElementsForSearchPredicate";
-NSString* const NSAccessibilityVisitedAttribute = @"AXVisited";
-NSString* const NSAccessibilityKeyShortcutsValueAttribute =
-    @"AXKeyShortcutsValue";
 
 // Private attributes for text markers.
 NSString* const NSAccessibilityStartTextMarkerAttribute = @"AXStartTextMarker";
@@ -634,7 +631,6 @@ bool content::IsNSRange(id value) {
       {NSAccessibilityLanguageAttribute, @"language"},
       {NSAccessibilityLinkedUIElementsAttribute, @"linkedUIElements"},
       {NSAccessibilityLoadingProgressAttribute, @"loadingProgress"},
-      {NSAccessibilityKeyShortcutsValueAttribute, @"keyShortcutsValue"},
       {NSAccessibilityMaxValueAttribute, @"maxValue"},
       {NSAccessibilityMinValueAttribute, @"minValue"},
       {NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters"},
@@ -674,7 +670,6 @@ bool content::IsNSRange(id value) {
       {NSAccessibilityVisibleChildrenAttribute, @"visibleChildren"},
       {NSAccessibilityVisibleColumnsAttribute, @"visibleColumns"},
       {NSAccessibilityVisibleRowsAttribute, @"visibleRows"},
-      {NSAccessibilityVisitedAttribute, @"visited"},
       {NSAccessibilityWindowAttribute, @"window"},
       {@"AXLoaded", @"loaded"},
   };
@@ -1149,13 +1144,6 @@ bool content::IsNSRange(id value) {
   BrowserAccessibilityManager* manager = _owner->manager();
   float floatValue = manager->GetTreeData().loading_progress;
   return @(floatValue);
-}
-
-- (NSString*)keyShortcutsValue {
-  if (![self instanceActive])
-    return nil;
-  return NSStringForStringAttribute(_owner,
-                                    ax::mojom::StringAttribute::kKeyShortcuts);
 }
 
 - (NSNumber*)maxValue {
@@ -1940,12 +1928,6 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return nil;
   return [self rows];
-}
-
-- (NSNumber*)visited {
-  if (![self instanceActive])
-    return nil;
-  return @(GetState(_owner, ax::mojom::State::kVisited));
 }
 
 - (id)window {
@@ -2734,7 +2716,6 @@ bool content::IsNSRange(id value) {
                        NSAccessibilityTitleUIElementAttribute,
                        NSAccessibilityTopLevelUIElementAttribute,
                        NSAccessibilityValueAttribute,
-                       NSAccessibilityVisitedAttribute,
                        NSAccessibilityWindowAttribute, nil];
 
   // Specific role attributes.
@@ -2858,9 +2839,6 @@ bool content::IsNSRange(id value) {
 
   if ([self shouldExposeTitleUIElement])
     [ret addObject:NSAccessibilityTitleUIElementAttribute];
-
-  if (_owner->HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts))
-    [ret addObject:NSAccessibilityKeyShortcutsValueAttribute];
 
   // TODO(aboxhall): expose NSAccessibilityServesAsTitleForUIElementsAttribute
   // for elements which are referred to by labelledby or are labels

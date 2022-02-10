@@ -4022,7 +4022,6 @@ EVENT_TYPE(TRUST_TOKEN_OPERATION_BEGIN_SIGNING)
 //    "cors_preflight_policy" : <A policy to decide if CORS-preflight fetch
 //                              should be performed>,
 //    "headers" : <The list of header:value pairs>,
-//    "is_external_request": <Boolean indicating whether request is external>,
 //    "is_revalidating": <Boolean indicating whether request is revalidating>,
 //    "method": <The method ("POST" or "GET" or "HEAD" etc...)>,
 //    "url": <The URL to create a request for>
@@ -4153,3 +4152,25 @@ EVENT_TYPE(WEBSOCKET_SENT_FRAME_HEADER)
 // This event is logged when the browser closes the connection instead of the
 // server.
 EVENT_TYPE(WEBSOCKET_CLOSE_TIMEOUT)
+
+// This event is logged when the WebSocket frame is wrong or weird and the
+// browser closes the connection. It contains the following parameters:
+// {
+//    "code": <WebSocket close code based on
+//    https://datatracker.ietf.org/doc/html/rfc6455#section-7.1.5>,
+//    "reason":<WebSocket close reason based on
+//    https://datatracker.ietf.org/doc/html/rfc6455#section-7.1.6>,
+//    "internal_reason": <Detailed reason>,
+// }
+EVENT_TYPE(WEBSOCKET_INVALID_FRAME)
+
+// Temporarily added to investigate for https://crbug.com/1289379.
+// Logged at TransportSecurityState::ShouldUpgradeToSSL.
+// The following parameters are attached:
+//   {
+//     "host": <host name>
+//     "get_sts_state_result": <boolean>,
+//     "should_upgrade_to_ssl": <boolean>,
+//     "host_found_in_hsts_bypass_list": <boolean>,
+//   }
+EVENT_TYPE(TRANSPORT_SECURITY_STATE_SHOULD_UPGRADE_TO_SSL)

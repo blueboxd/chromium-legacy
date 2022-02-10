@@ -3292,6 +3292,8 @@ static_library("ui") {
       "profile_picker.cc",
       "profile_picker.h",
       "signin/profile_customization_bubble_sync_controller.h",
+      "signin/profile_customization_synced_theme_waiter.cc",
+      "signin/profile_customization_synced_theme_waiter.h",
       "startup/default_browser_infobar_delegate.cc",
       "startup/default_browser_infobar_delegate.h",
       "startup/default_browser_prompt.cc",
@@ -4296,6 +4298,8 @@ static_library("ui") {
       "views/location_bar/find_bar_icon.h",
       "views/location_bar/icon_label_bubble_view.cc",
       "views/location_bar/icon_label_bubble_view.h",
+      "views/location_bar/intent_chip_button.cc",
+      "views/location_bar/intent_chip_button.h",
       "views/location_bar/intent_picker_view.cc",
       "views/location_bar/intent_picker_view.h",
       "views/location_bar/location_bar_bubble_delegate_view.cc",
@@ -4907,6 +4911,7 @@ static_library("ui") {
     }
     if (is_chromeos) {
       sources += [ "views/status_icons/status_tray_chromeos.cc" ]
+      deps += [ "//components/arc/common:arc_intent_helper_constants" ]
     }
     if (is_fuchsia) {
       sources += [

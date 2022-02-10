@@ -333,12 +333,6 @@ const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[] =
     "When enabled, offers will be displayed in the keyboard accessory when "
     "available.";
 
-const char kAutofillEnableOffersInDownstreamName[] =
-    "Enable Autofill offers in downstream";
-const char kAutofillEnableOffersInDownstreamDescription[] =
-    "When enabled, offer data will be retrieved during downstream and shown in "
-    "the dropdown list.";
-
 const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
     "Enable sending billing customer number in GetUploadDetails";
 const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
@@ -631,6 +625,9 @@ const char kDarkLightTestDescription[] =
 const char kDevicePostureName[] = "Device Posture API";
 const char kDevicePostureDescription[] =
     "Enables Device Posture API (foldable devices)";
+
+const char kDiscountConsentV2Name[] = "Discount Consent V2";
+const char kDiscountConsentV2Description[] = "Enables Discount Consent V2";
 
 const char kRestrictedApiOriginsName[] = "Restricted API Origins";
 const char kRestrictedApiOriginsDescription[] =
@@ -1948,6 +1945,11 @@ const char kPageContentAnnotationsName[] = "Page content annotations";
 const char kPageContentAnnotationsDescription[] =
     "Enables page content to be annotated on-device.";
 
+const char kPageEntitiesPageContentAnnotationsName[] =
+    "Page entities content annotations";
+const char kPageEntitiesPageContentAnnotationsDescription[] =
+    "Enables annotating the page entities model for each page load on-device.";
+
 const char kPageInfoAboutThisSiteName[] =
     "'About this site' section in page info";
 const char kPageInfoAboutThisSiteDescription[] =
@@ -1956,6 +1958,12 @@ const char kPageInfoAboutThisSiteDescription[] =
 const char kPageInfoHistoryDesktopName[] = "Page info history";
 const char kPageInfoHistoryDesktopDescription[] =
     "Enable a history section in the page info.";
+
+const char kPageVisibilityPageContentAnnotationsName[] =
+    "Page visibility content annotations";
+const char kPageVisibilityPageContentAnnotationsDescription[] =
+    "Enables annotating the page visibility model for each page load "
+    "on-device.";
 
 const char kParallelDownloadingName[] = "Parallel downloading";
 const char kParallelDownloadingDescription[] =
@@ -3082,10 +3090,6 @@ const char kCpuAffinityRestrictToLittleCoresDescription[] =
     "Restricts Chrome threads to LITTLE cores on devices with big.LITTLE or "
     "similar CPU architectures.";
 
-const char kDragAndDropAndroidName[] = "Drag and drop on Android";
-const char kDragAndDropAndroidDescription[] =
-    "Enable drag and drop images and links from web contents on Android.";
-
 const char kDynamicColorAndroidName[] = "Dynamic colors on Android";
 const char kDynamicColorAndroidDescription[] =
     "Enabled dynamic colors on supported devices, such as Pixel devices "
@@ -3535,6 +3539,12 @@ const char kToolbarIphAndroidDescription[] =
     "Enables in product help bubbles on the toolbar. In particular, the home "
     "button and the tab switcher button.";
 
+const char kTouchDragAndContextMenuName[] =
+    "Simultaneous touch drag and context menu";
+const char kTouchDragAndContextMenuDescription[] =
+    "Enables touch dragging and a context menu to start simultaneously, with"
+    "the assumption that the menu is non-modal.";
+
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
     "When enabled, a badge will be shown on the app menu button if the update "
@@ -3624,6 +3634,12 @@ const char kAllowAllSitesToInitiateMirroringDescription[] =
     "When enabled, allows all websites to request to initiate tab mirroring "
     "via Presentation API. Requires #cast-media-route-provider to also be "
     "enabled";
+
+const char kBlockMigratedDefaultChromeAppSyncName[] =
+    "Block migrated default Chrome app sync";
+const char kBlockMigratedDefaultChromeAppSyncDescription[] =
+    "Prevents Chrome apps that have been migrated to default web apps from "
+    "getting sync installed and creating duplicate entries for the same app.";
 
 const char kEnableAccessibilityLiveCaptionName[] = "Live Caption";
 const char kEnableAccessibilityLiveCaptionDescription[] =

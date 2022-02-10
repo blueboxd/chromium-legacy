@@ -905,10 +905,24 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
       // Note: |frame| PTS is only updated if it survives discontinuity
       // processing.
       presentation_timestamp += *timestamp_offset;
+      if (presentation_timestamp.is_inf()) {
+        MEDIA_LOG(ERROR, media_log_)
+            << "After adjusting by timestampOffset, PTS for "
+            << frame->GetTypeName()
+            << " frame exceeds range allowed by implementation";
+        return false;
+      }
 
       // 4.2. Add timestampOffset to the decode timestamp.
       // Frame DTS is only updated if it survives discontinuity processing.
       decode_timestamp += *timestamp_offset;
+      if (decode_timestamp.is_inf()) {
+        MEDIA_LOG(ERROR, media_log_)
+            << "After adjusting by timestampOffset, DTS for "
+            << frame->GetTypeName()
+            << " frame exceeds range allowed by implementation";
+        return false;
+      }
     }
 
     // 5. Let track buffer equal the track buffer that the coded frame will be
@@ -1010,6 +1024,13 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
       decode_timestamp = frame->GetDecodeTimestamp();
       presentation_timestamp = frame->timestamp();
       frame_end_timestamp = frame->timestamp() + frame->duration();
+    }
+
+    if (frame_end_timestamp.is_inf()) {
+      MEDIA_LOG(ERROR, media_log_)
+          << "Frame end timestamp for " << frame->GetTypeName()
+          << " frame exceeds range allowed by implementation";
+      return false;
     }
 
     if (presentation_timestamp < append_window_start ||

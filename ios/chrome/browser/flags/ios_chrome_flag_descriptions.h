@@ -20,10 +20,6 @@ extern const char kAddPasswordsInSettingsDescription[];
 extern const char kAutofillCreditCardUploadName[];
 extern const char kAutofillCreditCardUploadDescription[];
 
-// Title and description for the flag to control offers in downstream.
-extern const char kAutofillEnableOffersInDownstreamName[];
-extern const char kAutofillEnableOffersInDownstreamDescription[];
-
 // Title and description for the flag enable sending billing customer number in
 // GetUploadDetails preflight call.
 extern const char kAutofillEnableSendingBcnInGetUploadDetailsName[];
@@ -180,6 +176,10 @@ extern const char kEnableFREDefaultBrowserScreenTestingDescription[];
 // Title and description for the flag to enable FRE UI module.
 extern const char kEnableFREUIModuleIOSName[];
 extern const char kEnableFREUIModuleIOSDescription[];
+
+// Title and description for the flag to enable the Fullscreen API.
+extern const char kEnableFullscreenAPIName[];
+extern const char kEnableFullscreenAPIDescription[];
 
 // Title and description for the flag to enable long message duration.
 extern const char kEnableLongMessageDurationName[];

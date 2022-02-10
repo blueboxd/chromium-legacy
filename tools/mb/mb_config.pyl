@@ -362,7 +362,7 @@
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
       'linux-perfetto-rel': 'perfetto_release_bot',
       'linux-upload-perfetto': 'release_bot',
-      'linux-wpt-fyi-rel': 'release_bot_minimal_symbols',
+      'linux-wpt-fyi-rel': 'release_bot_minimal_symbols_dcheck_always_on',
       'linux-wpt-identity-fyi-rel': 'release_bot_minimal_symbols',
       'linux-wpt-input-fyi-rel': 'release_bot_minimal_symbols',
       # TODO(crbug.com/1252626): remove this after the migration.
@@ -1108,6 +1108,7 @@
       'gpu-fyi-try-mac-nvidia-retina-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-try-mac-amd-retina-dbg': 'gpu_tests_debug_bot',
       'gpu-try-mac-intel-dbg': 'gpu_tests_debug_bot',
+      'ios-asan': 'ios_simulator_release_static_asan_bot_xctest',
       'ios-catalyst': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
       'ios-device': 'ios_device_release_compile_only',
       'ios14-beta-simulator': 'ios_simulator_debug_static_bot_xctest',
@@ -2972,6 +2973,10 @@
 
     'release_bot_minimal_symbols': [
       'release_bot', 'minimal_symbols',
+    ],
+
+    'release_bot_minimal_symbols_dcheck_always_on': [
+      'release_bot', 'minimal_symbols', 'dcheck_always_on',
     ],
 
     'release_bot_x86_minimal_symbols': [

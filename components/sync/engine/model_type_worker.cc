@@ -25,6 +25,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -35,7 +36,6 @@
 #include "components/sync/engine/commit_contribution_impl.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/engine/model_type_processor.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
@@ -184,8 +184,7 @@ ModelTypeWorker::ModelTypeWorker(ModelType type,
       model_type_state_(initial_state),
       encryption_enabled_(encryption_enabled),
       passphrase_type_(passphrase_type),
-      min_get_updates_to_ignore_key_(
-          switches::kMinGuResponsesToIgnoreKey.Get()) {
+      min_get_updates_to_ignore_key_(kMinGuResponsesToIgnoreKey.Get()) {
   DCHECK(cryptographer_);
   DCHECK(!AlwaysEncryptedUserTypes().Has(type_) || encryption_enabled_);
 
@@ -837,8 +836,7 @@ bool ModelTypeWorker::ShouldIgnoreUpdatesEncryptedWith(
       min_get_updates_to_ignore_key_) {
     return false;
   }
-  return base::FeatureList::IsEnabled(
-      switches::kIgnoreSyncEncryptionKeysLongMissing);
+  return base::FeatureList::IsEnabled(kIgnoreSyncEncryptionKeysLongMissing);
 }
 
 void ModelTypeWorker::MaybeDropPendingUpdatesEncryptedWith(

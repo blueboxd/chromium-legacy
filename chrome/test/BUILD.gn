@@ -2828,8 +2828,6 @@ if (!is_android) {
         "../browser/ui/views/web_apps/pwa_confirmation_bubble_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_confirmation_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_identity_update_confirmation_view_browsertest.cc",
-        "../browser/ui/web_applications/test/web_app_navigation_browsertest.cc",
-        "../browser/ui/web_applications/test/web_app_navigation_browsertest.h",
       ]
 
       if (enable_background_mode) {
@@ -4123,6 +4121,7 @@ if (!is_android) {
 
     if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
       sources += [
+        "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
         "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_integration_browsertest_mac_win_linux.cc",
         "../browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_browsertest.cc",
@@ -4130,6 +4129,7 @@ if (!is_android) {
     }
 
     if (is_fuchsia) {
+      use_cfv2 = false
       additional_manifest_fragments = [
         "//build/config/fuchsia/test/font_capabilities.test-cmx",
         "//build/config/fuchsia/test/jit_capabilities.test-cmx",
@@ -4318,14 +4318,17 @@ if (is_chromeos_lacros) {
       "../browser/ui/browser_navigator_browsertest.cc",
       "../browser/ui/browser_navigator_browsertest.h",
       "../browser/ui/browser_navigator_browsertest_chromeos.cc",
+      "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
       "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
     ]
 
     deps = [
       ":browser_tests_runner",
       ":test_support",
+      ":test_support_ui",
       "//chrome/app:command_ids",
       "//chrome/browser/metrics/structured",
+      "//chrome/browser/web_applications:web_applications_test_support",
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/lacros:test_support",
@@ -6651,6 +6654,7 @@ test("unit_tests") {
     ]
     deps += [
       "//components/arc/common",
+      "//components/arc/common:arc_intent_helper_constants",
       "//components/arc/common:arc_test_support",
     ]
   }
@@ -6774,6 +6778,7 @@ test("unit_tests") {
       "../browser/nearby_sharing/text_attachment_unittest.cc",
       "../browser/nearby_sharing/webrtc_request_builder_unittest.cc",
       "../browser/nearby_sharing/webrtc_signaling_messenger_unittest.cc",
+      "../browser/nearby_sharing/wifi_credentials_attachment_unittest.cc",
       "../browser/notifications/chrome_ash_message_center_client_unittest.cc",
       "../browser/notifications/web_page_notifier_controller_unittest.cc",
       "../browser/sharesheet/share_action/share_action_unittest.cc",
@@ -7844,6 +7849,7 @@ test("unit_tests") {
       "../browser/signin/signin_manager_unittest.cc",
       "../browser/signin/signin_ui_util_unittest.cc",
       "../browser/signin/signin_util_unittest.cc",
+      "../browser/ui/signin/profile_customization_synced_theme_waiter_unittest.cc",
       "../browser/ui/views/sharing/sharing_dialog_view_unittest.cc",
       "../browser/ui/webui/signin/signin_error_handler_unittest.cc",
       "../browser/upgrade_detector/installed_version_poller_unittest.cc",
@@ -8141,6 +8147,7 @@ test("unit_tests") {
 
     data += [ "//testing/buildbot/filters/fuchsia.unit_tests.filter" ]
 
+    use_cfv2 = false
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/font_capabilities.test-cmx",
 
@@ -8217,6 +8224,8 @@ if (!is_android) {
       "../browser/ui/views/user_education/user_education_test_util.h",
       "../browser/ui/views/web_apps/web_app_integration_test_driver.cc",
       "../browser/ui/views/web_apps/web_app_integration_test_driver.h",
+      "../browser/ui/web_applications/test/web_app_navigation_browsertest.cc",
+      "../browser/ui/web_applications/test/web_app_navigation_browsertest.h",
       "../browser/ui/webui/signin/login_ui_test_utils.cc",
       "../browser/ui/webui/signin/login_ui_test_utils.h",
       "../browser/web_applications/test/profile_test_helper.cc",
@@ -9188,8 +9197,6 @@ source_set("sync_integration_test_support") {
       "../browser/sync/test/integration/extensions_helper.h",
       "../browser/sync/test/integration/fake_server_match_status_checker.cc",
       "../browser/sync/test/integration/fake_server_match_status_checker.h",
-      "../browser/sync/test/integration/feature_toggler.cc",
-      "../browser/sync/test/integration/feature_toggler.h",
       "../browser/sync/test/integration/migration_waiter.cc",
       "../browser/sync/test/integration/migration_waiter.h",
       "../browser/sync/test/integration/migration_watcher.cc",

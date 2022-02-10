@@ -430,10 +430,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
 
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
+  bool is_swangle =
+      gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+      gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader;
 
   // Compute passthrough decoder status before ComputeGpuFeatureInfo below.
   // Do this after GL is initialized so extensions can be queried.
-  if (gles2::UsePassthroughCommandDecoder(command_line)) {
+  // Using SwANGLE forces the passthrough command decoder.
+  if (gpu_preferences_.use_passthrough_cmd_decoder || is_swangle) {
     gpu_info_.passthrough_cmd_decoder =
         gles2::PassthroughCommandDecoderSupported();
 #if BUILDFLAG(IS_ANDROID)
@@ -449,6 +453,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   } else {
     gpu_info_.passthrough_cmd_decoder = false;
   }
+  gpu_preferences_.use_passthrough_cmd_decoder =
+      gpu_info_.passthrough_cmd_decoder;
 
   // We need to collect GL strings (VENDOR, RENDERER) for blocklisting purposes.
   if (!gl_disabled) {
@@ -558,16 +564,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // happens, we will exit_on_context_lost to ensure there are no leaks.
     gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
         EXIT_ON_CONTEXT_LOST);
-
-    // Disable RGB format because ExternalVkImageBacking doesn't handle it
-    // correctly (see https://crbug.com/1269826). This workaround is not
-    // necessary on Android because it uses SharedImageBackingFactoryAHB.
-    // TODO(https://crbug.com/1269826): Remove once RGBX support is fixed in
-    // ExternalVkImageBacking.
-#if !BUILDFLAG(IS_ANDROID)
-    gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
-        DISABLE_GL_RGB_FORMAT);
-#endif
   }
 
   // Collect GPU process info

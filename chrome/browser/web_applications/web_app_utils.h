@@ -37,6 +37,8 @@ const char kMessage[] = "web_app_default_offline_message";
 const char kAppShortName[] = "app_short_name";
 const char kThemeColor[] = "theme_color";
 const char kBackgroundColor[] = "customized_background_color";
+const char kDarkModeBackgroundColor[] = "dark_mode_background_color";
+const char kDarkModeThemeColor[] = "dark_mode_theme_color";
 }  // namespace default_offline
 
 // These functions return true if the WebApp System or its subset is allowed
@@ -174,6 +176,19 @@ void EnableSystemWebAppsInLacrosForTesting();
 // Allow user web apps on profiles other than the main profile.
 void SkipMainProfileCheckForTesting();
 #endif
+
+constexpr char kAppSettingsPageEntryPointsHistogramName[] =
+    "WebApp.AppSettingsPage.EntryPoints";
+
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppSettingsPageEntryPoint enum listing in
+// tools/metrics/histograms/enums.xml.
+enum class AppSettingsPageEntryPoint {
+  kPageInfoView = 0,
+  kChromeAppsPage = 1,
+  kMaxValue = kChromeAppsPage,
+};
 
 }  // namespace web_app
 

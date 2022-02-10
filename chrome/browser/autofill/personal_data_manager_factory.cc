@@ -18,7 +18,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/variations/service/variations_service.h"
 
 namespace autofill {
@@ -89,7 +89,7 @@ KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
                 IdentityManagerFactory::GetForProfile(profile), history_service,
                 strike_database, image_fetcher, profile->IsOffTheRecord());
 
-  if (!switches::IsSyncAllowedByFlag())
+  if (!syncer::IsSyncAllowedByFlag())
     service->OnSyncServiceInitialized(nullptr);
 
   return service;

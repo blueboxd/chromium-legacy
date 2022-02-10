@@ -28,8 +28,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/test/model/fake_sync_change_processor.h"
 #include "components/sync/test/model/sync_error_factory_mock.h"
@@ -206,7 +206,7 @@ TEST_F(ExternalProviderImplChromeOSTest, DISABLED_StandaloneChild) {
 // Normal mode, standalone app should be installed, because sync is disabled.
 // TODO(crbug.com/1181737): Flaky test
 TEST_F(ExternalProviderImplChromeOSTest, DISABLED_SyncDisabled) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(syncer::kDisableSync);
 
   InitServiceWithExternalProviders(true);
 

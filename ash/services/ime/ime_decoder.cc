@@ -16,8 +16,6 @@ namespace ime {
 
 namespace {
 
-absl::optional<ImeDecoder::EntryPoints> g_fake_decoder_entry_points_for_testing;
-
 const char kCrosImeDecoderLib[] = "libimedecoder.so";
 
 // TODO(b/161491092): Add test image path based on value of
@@ -53,10 +51,12 @@ void ImeLoggerBridge(int severity, const char* message) {
 
 }  // namespace
 
-ImeDecoder::ImeDecoder() {
-  if (g_fake_decoder_entry_points_for_testing) {
-    entry_points_ = g_fake_decoder_entry_points_for_testing;
-    return;
+ImeDecoderImpl::ImeDecoderImpl() = default;
+
+absl::optional<ImeDecoder::EntryPoints>
+ImeDecoderImpl::MaybeLoadThenReturnEntryPoints() {
+  if (entry_points_) {
+    return entry_points_;
   }
 
   base::FilePath path = GetImeDecoderLibPath();
@@ -66,7 +66,7 @@ ImeDecoder::ImeDecoder() {
   if (!library.is_valid()) {
     LOG(ERROR) << "Failed to load decoder shared library from: " << path
                << ", error: " << library.GetError()->ToString();
-    return;
+    return absl::nullopt;
   }
 
   EntryPoints entry_points = {
@@ -95,7 +95,7 @@ ImeDecoder::ImeDecoder() {
       !entry_points.close || !entry_points.connect_to_input_method ||
       !entry_points.is_input_method_connected ||
       !entry_points.initialize_connection_factory) {
-    return;
+    return absl::nullopt;
   }
 
   // Optional function pointer.
@@ -109,22 +109,14 @@ ImeDecoder::ImeDecoder() {
 
   library_ = std::move(library);
   entry_points_ = entry_points;
-}
-
-ImeDecoder::~ImeDecoder() = default;
-
-ImeDecoder* ImeDecoder::GetInstance() {
-  static base::NoDestructor<ImeDecoder> instance;
-  return instance.get();
-}
-
-absl::optional<ImeDecoder::EntryPoints> ImeDecoder::GetEntryPoints() const {
   return entry_points_;
 }
 
-void FakeDecoderEntryPointsForTesting(  // IN-TEST
-    const ImeDecoder::EntryPoints& decoder_entry_points) {
-  g_fake_decoder_entry_points_for_testing = decoder_entry_points;
+ImeDecoderImpl::~ImeDecoderImpl() = default;
+
+ImeDecoderImpl* ImeDecoderImpl::GetInstance() {
+  static base::NoDestructor<ImeDecoderImpl> instance;
+  return instance.get();
 }
 
 }  // namespace ime

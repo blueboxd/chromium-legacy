@@ -1122,7 +1122,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"addVirtualCard", IDS_AUTOFILL_ADD_VIRTUAL_CARD},
       {"removeVirtualCard", IDS_AUTOFILL_REMOVE_VIRTUAL_CARD},
       {"editServerCard", IDS_AUTOFILL_EDIT_SERVER_CREDIT_CARD},
-      {"virtualCardEnabled", IDS_AUTOFILL_VIRTUAL_CARD_ENABLED_LABEL}};
+      {"virtualCardEnabled", IDS_AUTOFILL_VIRTUAL_CARD_ENABLED_LABEL},
+      {"unenrollVirtualCardDialogTitle",
+       IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_TITLE},
+      {"unenrollVirtualCardDialogConfirm",
+       IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_CONFIRM_BUTTON_LABEL}};
 
   GURL google_password_manager_url = GetGooglePasswordManagerURL(
       password_manager::ManagePasswordsReferrer::kChromeSettings);
@@ -1237,6 +1241,13 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
           base::FeatureList::IsEnabled(
               autofill::features::
                   kAutofillEnableVirtualCardManagementInDesktopSettingsPage));
+  html_source->AddString(
+      "unenrollVirtualCardDialogLabel",
+      l10n_util::GetStringFUTF16(
+          IDS_AUTOFILL_VIRTUAL_CARD_UNENROLL_DIALOG_LABEL,
+          base::UTF8ToUTF16(
+              autofill::payments::GetVirtualCardEnrollmentSupportUrl()
+                  .spec())));
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -1623,6 +1634,18 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_TITLE},
       {"privacySandboxSpamAndFraudSummary",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_SUMMARY},
+      {"privacySandboxLearnMoreDialogTitle",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_TITLE},
+      {"privacySandboxLearnMoreDialogBrowserInterests",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_BROWSER_INTERESTS},
+      {"privacySandboxLearnMoreDialogWebsiteInterests",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_WEBSITE_INTERESTS},
+      {"privacySandboxLearnMoreDialogDataTypes",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_DATA_TYPES},
+      {"privacySandboxLearnMoreDialogDataUsage",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_DATA_USAGE},
+      {"privacySandboxLearnMoreDialogDataManagement",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_DATA_MANAGEMENT},
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);

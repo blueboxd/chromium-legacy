@@ -1484,8 +1484,9 @@ chromium-metrics-reviews@google.com.
   <owner>alexbn@chromium.org</owner>
   <summary>
     Counts the number of times web apps receive `ERR_INTERNET_DISCONNECTED` and
-    the alternative error page (rather than the dino) is shown.
-    (crbug.com/1280518).
+    the alternative error page (rather than the dino) is shown. Reported when
+    the error page html is being prepared. See
+    `NetErrorHelper::GenerateLocalizedErrorPage` (crbug.com/1280518).
   </summary>
 </histogram>
 
@@ -3098,17 +3099,6 @@ chromium-metrics-reviews@google.com.
     <variant name="Local"/>
     <variant name="Remote"/>
   </token>
-</histogram>
-
-<histogram name="Net.QuicSession.KeyUpdate.Supported"
-    enum="QuicKeyUpdateSupported" expires_after="2022-05-11">
-  <owner>dschinazi@chromium.org</owner>
-  <owner>src/net/quic/OWNERS</owner>
-  <summary>
-    Whether key update was supported by either or both sides of the connection,
-    recorded on connection close. Only logged for connections which reached the
-    1-RTT level.
-  </summary>
 </histogram>
 
 <histogram

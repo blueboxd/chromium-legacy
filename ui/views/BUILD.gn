@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/ozone.gni")
 import("//build/config/ui.gni")
 import("//components/vector_icons/vector_icons.gni")
+import("//skia/features.gni")
 import("//testing/test.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
@@ -1187,7 +1188,7 @@ test("views_unittests") {
     "//base:i18n",
     "//base/test:test_support",
     "//build:chromeos_buildflags",
-    "//cc",
+    "//cc:test_support",
     "//cc/paint",
     "//components/vector_icons",
     "//components/viz/common",
@@ -1267,6 +1268,12 @@ test("views_unittests") {
     }
   }
 
+  if (skia_support_skottie) {
+    sources += [ "controls/animated_image_view_unittest.cc" ]
+
+    deps += [ "//ui/lottie" ]
+  }
+
   if (is_mac) {
     sources += [
       "cocoa/bridged_native_widget_unittest.mm",
@@ -1291,6 +1298,7 @@ test("views_unittests") {
   }
 
   if (is_fuchsia) {
+    use_cfv2 = false
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/font_capabilities.test-cmx",
 

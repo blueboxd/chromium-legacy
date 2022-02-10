@@ -113,6 +113,7 @@
 #include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
 #include "chrome/browser/ui/views/incognito_clear_browsing_data_dialog.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
@@ -882,11 +883,20 @@ BrowserView::~BrowserView() {
 // static
 const BrowserWindow* BrowserWindow::FindBrowserWindowWithWebContents(
     content::WebContents* web_contents) {
-  auto* widget = views::Widget::GetTopLevelWidgetForNativeView(
-      web_contents->GetNativeView());
-  return widget ? BrowserView::GetBrowserViewForNativeWindow(
-                      widget->GetNativeWindow())
-                : nullptr;
+  // Check first to see if the we can find a top level widget for the
+  // `web_contents`. This covers the case of searching for the browser window
+  // associated with a non-tab contents and the active tab contents. Fall back
+  // to searching the tab strip model for a tab contents match. This later
+  // search is necessary as a tab contents can be swapped out of the browser
+  // window's ContentWebView on a tab switch and may disassociate with its top
+  // level NativeView.
+  if (const auto* widget = views::Widget::GetTopLevelWidgetForNativeView(
+          web_contents->GetNativeView())) {
+    return BrowserView::GetBrowserViewForNativeWindow(
+        widget->GetNativeWindow());
+  }
+  const auto* browser = chrome::FindBrowserWithWebContents(web_contents);
+  return browser ? browser->window() : nullptr;
 }
 
 // static
@@ -1118,6 +1128,9 @@ bool BrowserView::IsVisible() const {
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
+  if (IsForceFullscreen())
+    return;
+
   ExitFullscreen();
   GetWidget()->SetBounds(bounds);
 }
@@ -1557,6 +1570,9 @@ void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
+  if (IsForceFullscreen())
+    return;
+
   ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
                     display::kInvalidDisplayId);
 }
@@ -1637,6 +1653,14 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
   return exclusive_access_bubble_ != nullptr;
 }
 
+bool BrowserView::IsForceFullscreen() const {
+  return force_fullscreen_;
+}
+
+void BrowserView::SetForceFullscreen(bool force_fullscreen) {
+  force_fullscreen_ = force_fullscreen;
+}
+
 void BrowserView::RestoreFocus() {
   WebContents* selected_web_contents = GetActiveWebContents();
   if (selected_web_contents)
@@ -1671,6 +1695,13 @@ void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
 }
 
 void BrowserView::UpdatePageActionIcon(PageActionIconType type) {
+  // When present, the intent chip replaces the intent picker page action icon.
+  if (type == PageActionIconType::kIntentPicker &&
+      toolbar_button_provider()->GetIntentChipButton()) {
+    toolbar_button_provider()->GetIntentChipButton()->Update();
+    return;
+  }
+
   PageActionIconView* icon =
       toolbar_button_provider_->GetPageActionIconView(type);
   if (icon)

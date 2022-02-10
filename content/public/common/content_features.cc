@@ -550,6 +550,10 @@ const base::Feature kMouseSubframeNoImplicitCapture{
 const base::Feature kNavigationNetworkResponseQueue{
     "NavigationNetworkResponseQueue", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Preconnects socket at the construction of NavigationRequest.
+const base::Feature kNavigationRequestPreconnect{
+    "NavigationRequestPreconnect", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables optimizations for renderer->browser mojo calls to avoid waiting on
 // the UI thread during navigation.
 const base::Feature kNavigationThreadingOptimizations{
@@ -940,6 +944,14 @@ const base::Feature kSyntheticPointerActions{"SyntheticPointerActions",
 const base::Feature kThreadingOptimizationsOnIO{
     "ThreadingOptimizationsOnIO", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// This feature allows touch dragging and a context menu to occur
+// simultaneously, with the assumption that the menu is non-modal.  Without this
+// feature, a long-press touch gesture can start either a drag or a context-menu
+// in Blink, not both (more precisely, a context menu is shown only if a drag
+// cannot be started).
+const base::Feature kTouchDragAndContextMenu{"TouchDragAndContextMenu",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables async touchpad pinch zoom events. We check the ACK of the first
 // synthetic wheel event in a pinch sequence, then send the rest of the
 // synthetic wheel events of the pinch sequence as non-blocking if the first
@@ -1160,10 +1172,6 @@ const base::Feature kBindingManagementWaiveCpu{
 // that are not relevant to currently enabled accessibility services.
 const base::Feature kOnDemandAccessibilityEvents{
     "OnDemandAccessibilityEvents", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable image and link drag from web content.
-const base::Feature kDragAndDrop{"DragAndDropAndroid",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Request Desktop Site per-site setting for Android.
 // Refer to the launch bug (https://crbug.com/1244979) for more information.

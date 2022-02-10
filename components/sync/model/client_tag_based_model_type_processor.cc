@@ -18,7 +18,6 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -1113,7 +1112,7 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
   std::string type_string = ModelTypeToDebugString(type_);
 
   while (batch->HasNext()) {
-    const auto& [storage_key, data] = batch->Next();
+    auto [storage_key, data] = batch->Next();
 
     // There is an overlap between EntityData fields from the bridge and
     // EntityMetadata fields from the processor's entity, metadata is

@@ -391,49 +391,45 @@ class ComputedStyle : public ComputedStyleBase,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
-  bool AncestorsAffectedByHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByHas;
+  bool AncestorsAffectedByHoverInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByHoverInSubjectHas;
   }
 
-  void SetAncestorsAffectedByHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByHas);
+  void SetAncestorsAffectedByHoverInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
+                                        kAncestorsAffectedByHoverInSubjectHas);
   }
 
-  bool AncestorsAffectedByHoverInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByHoverInHas;
+  bool AncestorsAffectedByActiveInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByActiveInSubjectHas;
   }
 
-  void SetAncestorsAffectedByHoverInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByHoverInHas);
+  void SetAncestorsAffectedByActiveInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
+                                        kAncestorsAffectedByActiveInSubjectHas);
   }
 
-  bool AncestorsAffectedByActiveInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByActiveInHas;
+  bool AncestorsAffectedByFocusInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByFocusInSubjectHas;
   }
 
-  void SetAncestorsAffectedByActiveInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByActiveInHas);
+  void SetAncestorsAffectedByFocusInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
+                                        kAncestorsAffectedByFocusInSubjectHas);
   }
 
-  bool AncestorsAffectedByFocusInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByFocusInHas;
+  bool AncestorsAffectedByFocusVisibleInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByFocusVisibleInSubjectHas;
   }
 
-  void SetAncestorsAffectedByFocusInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByFocusInHas);
-  }
-
-  bool AncestorsAffectedByFocusVisibleInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByFocusVisibleInHas;
-  }
-
-  void SetAncestorsAffectedByFocusVisibleInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByFocusVisibleInHas);
+  void SetAncestorsAffectedByFocusVisibleInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(
+        DynamicRestyleFlagsForSubjectHas() |
+        kAncestorsAffectedByFocusVisibleInSubjectHas);
   }
 
   PseudoId StyleType() const {
@@ -2123,9 +2119,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
 
-  // Utility method which checks if legacy layout is forced for the element in
-  // addition to checking IsContainerForContainerQueries(). Query containers are
-  // not established in legacy layout.
+  // Utility method which checks if legacy layout is forced for the element, or
+  // if the element is rendered as an SVG element, in addition to checking
+  // IsContainerForContainerQueries(). Query containers are not established in
+  // legacy layout or for SVG elements apart from SVG outer roots which behave
+  // as a replaced element.
   bool IsContainerForContainerQueries(const Element& element) const;
 
   bool IsContainerForContainerQueries() const {

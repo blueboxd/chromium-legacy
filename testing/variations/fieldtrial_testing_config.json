@@ -318,21 +318,6 @@
             ]
         }
     ],
-    "AndroidSwitchToTab": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxTabSwitchSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidSystemTracing": [
         {
             "platforms": [
@@ -1070,6 +1055,8 @@
         {
             "platforms": [
                 "android",
+                "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -2050,8 +2037,9 @@
                     ]
                 },
                 {
-                    "name": "PriceDropIndicators_20211117",
+                    "name": "PriceDropIndicators_20220209",
                     "params": {
+                        "price_tracking_opt_out": "true",
                         "price_tracking_with_optimization_guide": "true"
                     },
                     "enable_features": [
@@ -2287,6 +2275,21 @@
             ]
         }
     ],
+    "CrosLazyLoginWebUI": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableLazyLoginWebUILoading"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrosSchedulerCore": [
         {
             "platforms": [
@@ -2511,23 +2514,6 @@
                     "enable_features": [
                         "IPH_DesktopSnoozeFeature",
                         "IPH_DesktopTabGroupsNewGroup"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DestroyProfileOnBrowserClose": [
-        {
-            "platforms": [
-                "windows",
-                "linux",
-                "mac"
-            ],
-            "experiments": [
-                {
-                    "name": "DestroyProfileOnBrowserClose",
-                    "enable_features": [
-                        "DestroyProfileOnBrowserClose"
                     ]
                 }
             ]
@@ -3694,6 +3680,28 @@
             ]
         }
     ],
+    "IncludeIpcOverheadInNavigationStart": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IncludeIpcOverheadInNavigationStart"
+                    ]
+                }
+            ]
+        }
+    ],
     "KeyboardAccessoryAddressIPH": [
         {
             "platforms": [
@@ -3929,6 +3937,21 @@
             ]
         }
     ],
+    "MediaHardwareSecureDecryption": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HardwareSecureDecryptionExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
     "MeetDevicesMojoServices": [
         {
             "platforms": [
@@ -4084,6 +4107,7 @@
             "platforms": [
                 "android",
                 "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
@@ -4266,24 +4290,6 @@
                     "enable_features": [
                         "OmniboxPedalsBatch2NonEnglish",
                         "OmniboxPedalsTranslationConsole"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxPedalsBatch3": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Batch3_Enabled",
-                    "enable_features": [
-                        "OmniboxPedalsBatch3"
                     ]
                 }
             ]
@@ -4747,6 +4753,28 @@
                         "DelayParkingImages",
                         "ParkableImagesToDisk",
                         "UseParkableImageSegmentReader"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PartitionAllocBackupRefPtr": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "brp-mode": "enabled",
+                        "enabled-processes": "non-renderer"
+                    },
+                    "enable_features": [
+                        "PartitionAllocBackupRefPtr"
                     ]
                 }
             ]
@@ -5364,6 +5392,22 @@
                     },
                     "enable_features": [
                         "IPH_ReadLaterContextMenu"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ReadLaterReminderNotification": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220208",
+                    "enable_features": [
+                        "NotificationScheduleService",
+                        "ReadLaterReminderNotification"
                     ]
                 }
             ]
@@ -6753,6 +6797,32 @@
             ]
         }
     ],
+    "V8SlowHistograms": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Control",
+                    "disable_features": [
+                        "V8SlowHistograms"
+                    ]
+                },
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "V8SlowHistograms"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8Sparkplug-Android": [
         {
             "platforms": [
@@ -6940,6 +7010,22 @@
                         "Vulkan"
                     ],
                     "min_os_version": "10.0.0"
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Vulkan",
+                    "enable_features": [
+                        "DefaultANGLEVulkan",
+                        "Vulkan",
+                        "VulkanFromANGLE"
+                    ],
+                    "min_os_version": "5.10.0"
                 }
             ]
         }

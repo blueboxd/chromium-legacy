@@ -15,10 +15,10 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/logging.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/engine/backoff_delay_provider.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 
 using base::TimeTicks;
@@ -201,7 +201,7 @@ base::Time SyncSchedulerImpl::ComputeLastPollOnStart(
     base::Time last_poll,
     base::TimeDelta poll_interval,
     base::Time now) {
-  if (base::FeatureList::IsEnabled(switches::kSyncResetPollIntervalOnStart)) {
+  if (base::FeatureList::IsEnabled(kSyncResetPollIntervalOnStart)) {
     return now;
   }
   // Handle immediate polls on start-up separately.

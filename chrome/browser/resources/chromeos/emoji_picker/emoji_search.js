@@ -45,10 +45,10 @@ export class EmojiSearch extends PolymerElement {
         computed: 'computeEmojiList(emoticonData)',
         observer: 'onEmoticonListChanged'
       },
-      /** @private {!FuseResults} */
+      /** @private {!Array<!EmojiVariants>} */
       emojiResults:
           {type: Array, computed: 'computeSearchResults(search, \'emoji\')'},
-      /** @private {!FuseResults} */
+      /** @private {!Array<!EmojiVariants>} */
       emoticonResults:
           {type: Array, computed: 'computeSearchResults(search, \'emoticon\')'},
       /** @private {!boolean} */
@@ -152,13 +152,34 @@ export class EmojiSearch extends PolymerElement {
       ev.preventDefault();
       ev.stopPropagation();
 
-      // focus first item in result list.
-      const firstButton = this.shadowRoot.querySelector('.result');
-      firstButton.focus();
+      if (!this.v2Enabled) {
+        // focus first item in result list.
+        const firstButton = this.shadowRoot.querySelector('.result');
+        firstButton.focus();
 
-      // if there is only one result, select it on enter.
-      if (isEnter && this.emojiResults.length === 1) {
-        firstButton.querySelector('emoji-button').click();
+        // if there is only one result, select it on enter.
+        if (isEnter && this.emojiResults.length === 1) {
+          firstButton.querySelector('emoji-button').click();
+        }
+      } else {
+        const emojiButton = this.shadowRoot.querySelector('emoji-group')
+                                .shadowRoot.querySelector('emoji-button');
+        const emoticonButton =
+            this.shadowRoot.querySelector('emoticon-group')
+                .shadowRoot.querySelector('.emoticon-button');
+        if (this.emojiResults.length > 0) {
+          emojiButton.shadowRoot.querySelector('#emoji-button').focus();
+        } else if (this.emoticonResults.length > 0) {
+          emoticonButton.focus();
+        }
+        if (isEnter && this.emojiResults.length === 1 &&
+            this.emoticonResults.length === 0) {
+          emojiButton.shadowRoot.querySelector('#emoji-button').click();
+        } else if (
+            isEnter && this.emojiResults.length === 0 &&
+            this.emoticonResults.length === 1) {
+          emoticonButton.click();
+        }
       }
     }
   }
@@ -188,10 +209,12 @@ export class EmojiSearch extends PolymerElement {
   }
 
   onSearchScroll() {
-    this.$['search-shadow'].style.boxShadow =
-        this.shadowRoot.getElementById('results').scrollTop > 0 ?
-        'var(--cr-elevation-3)' :
-        'none';
+    if (!this.v2Enabled) {
+      this.$['search-shadow'].style.boxShadow =
+          this.shadowRoot.getElementById('results').scrollTop > 0 ?
+          'var(--cr-elevation-3)' :
+          'none';
+    }
   }
 
   /**
@@ -222,23 +245,40 @@ export class EmojiSearch extends PolymerElement {
       return [];
     // Add an initial space to force prefix matching only.
     const prefixSearchTerm = ` ${search}`;
+    let fuseResults = [];
     if (!this.v2Enabled) {
-      return this.emojiFuse.search(prefixSearchTerm);
+      fuseResults = this.emojiFuse.search(prefixSearchTerm);
+    } else {
+      switch (category) {
+        case CategoryEnum.EMOJI:
+          fuseResults = this.emojiFuse.search(prefixSearchTerm);
+          break;
+        case CategoryEnum.EMOTICON:
+          fuseResults = this.emoticonFuse.search(prefixSearchTerm);
+          break;
+        default:
+          throw new Error('Unknown category.');
+      }
     }
-    switch (category) {
-      case CategoryEnum.EMOJI:
-        return this.emojiFuse.search(prefixSearchTerm);
-      case CategoryEnum.EMOTICON:
-        return this.emoticonFuse.search(prefixSearchTerm);
-      default:
-        return;
-    }
+    return fuseResults.map(item => item.item);
   }
 
   onResultClick(ev) {
     ev.currentTarget.querySelector('emoji-button')
         .shadowRoot.querySelector('button')
         .click();
+  }
+
+  /**
+   * @param {!Array<!EmojiVariants>} emojiResults
+   * @param {!Array<!EmojiVariants>} emoticonResults
+   * @returns {boolean}
+   */
+  isSearchResultEmpty(emojiResults, emoticonResults) {
+    if (!this.v2Enabled) {
+      return emojiResults.length === 0;
+    }
+    return emojiResults.length === 0 && emoticonResults.length === 0;
   }
 }
 

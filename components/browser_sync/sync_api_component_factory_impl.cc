@@ -33,15 +33,14 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync/driver/model_type_controller.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/engine/sync_engine.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
@@ -235,7 +234,7 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     // disabled.
     // TODO(crbug.com/1112095): Currently the offer data depends on Wallet data
     // sync, but revisit after other offer types are implemented.
-    if (base::FeatureList::IsEnabled(switches::kSyncAutofillWalletOfferData) &&
+    if (base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletOfferData) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_OFFER)) {
       controllers.push_back(CreateWalletModelTypeController(

@@ -196,9 +196,6 @@ extern const char kAutofillEnableOfferNotificationForPromoCodesDescription[];
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryName[];
 extern const char kAutofillEnableOffersInClankKeyboardAccessoryDescription[];
 
-extern const char kAutofillEnableOffersInDownstreamName[];
-extern const char kAutofillEnableOffersInDownstreamDescription[];
-
 extern const char kAutofillEnableSendingBcnInGetUploadDetailsName[];
 extern const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[];
 
@@ -359,6 +356,9 @@ extern const char kDarkLightTestDescription[];
 
 extern const char kDisableProcessReuse[];
 extern const char kDisableProcessReuseDescription[];
+
+extern const char kDiscountConsentV2Name[];
+extern const char kDiscountConsentV2Description[];
 
 extern const char kDoubleBufferCompositingName[];
 extern const char kDoubleBufferCompositingDescription[];
@@ -1100,11 +1100,17 @@ extern const char kOverscrollHistoryNavigationDescription[];
 extern const char kPageContentAnnotationsName[];
 extern const char kPageContentAnnotationsDescription[];
 
+extern const char kPageEntitiesPageContentAnnotationsName[];
+extern const char kPageEntitiesPageContentAnnotationsDescription[];
+
 extern const char kPageInfoAboutThisSiteName[];
 extern const char kPageInfoAboutThisSiteDescription[];
 
 extern const char kPageInfoHistoryDesktopName[];
 extern const char kPageInfoHistoryDesktopDescription[];
+
+extern const char kPageVisibilityPageContentAnnotationsName[];
+extern const char kPageVisibilityPageContentAnnotationsDescription[];
 
 extern const char kParallelDownloadingName[];
 extern const char kParallelDownloadingDescription[];
@@ -1752,9 +1758,6 @@ extern const char kContextualTriggersSelectionSizeDescription[];
 extern const char kCpuAffinityRestrictToLittleCoresName[];
 extern const char kCpuAffinityRestrictToLittleCoresDescription[];
 
-extern const char kDragAndDropAndroidName[];
-extern const char kDragAndDropAndroidDescription[];
-
 extern const char kDynamicColorAndroidName[];
 extern const char kDynamicColorAndroidDescription[];
 
@@ -2021,6 +2024,9 @@ extern const char kThemeRefactorAndroidDescription[];
 extern const char kToolbarIphAndroidName[];
 extern const char kToolbarIphAndroidDescription[];
 
+extern const char kTouchDragAndContextMenuName[];
+extern const char kTouchDragAndContextMenuDescription[];
+
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -2077,6 +2083,9 @@ extern const char kOmniboxPedalsAndroidBatch1Description[];
 
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
+
+extern const char kBlockMigratedDefaultChromeAppSyncName[];
+extern const char kBlockMigratedDefaultChromeAppSyncDescription[];
 
 extern const char kEnableAccessibilityLiveCaptionName[];
 extern const char kEnableAccessibilityLiveCaptionDescription[];

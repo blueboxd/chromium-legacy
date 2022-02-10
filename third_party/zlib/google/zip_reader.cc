@@ -10,6 +10,7 @@
 #include "base/files/file.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -149,6 +150,10 @@ bool ZipReader::Open(const base::FilePath& zip_path) {
   // this safely on Linux. See file_util.h for details.
   zip_file_ = internal::OpenForUnzipping(zip_path.AsUTF8Unsafe());
   if (!zip_file_) {
+    LOG(ERROR) << "Cannot open ZIP archive "
+               << (LOG_IS_ON(INFO)
+                       ? base::StrCat({"'", zip_path.AsUTF8Unsafe(), "'"})
+                       : "(redacted)");
     return false;
   }
 
@@ -164,6 +169,7 @@ bool ZipReader::OpenFromPlatformFile(base::PlatformFile zip_fd) {
   zip_file_ = internal::OpenHandleForUnzipping(zip_fd);
 #endif
   if (!zip_file_) {
+    LOG(ERROR) << "Cannot open ZIP from file handle " << zip_fd;
     return false;
   }
 
@@ -195,17 +201,9 @@ bool ZipReader::AdvanceToNextEntry() {
   if (reached_end_)
     return false;
 
-  unz_file_pos position = {};
-  if (unzGetFilePos(zip_file_, &position) != UNZ_OK)
-    return false;
-  const int current_entry_index = position.num_of_file;
-  // If we are currently at the last entry, then the next position is the
-  // end of the ZIP archive, so mark that we reached the end.
-  if (current_entry_index + 1 == num_entries_) {
+  if (const int err = unzGoToNextFile(zip_file_); err != UNZ_OK) {
     reached_end_ = true;
-  } else {
-    DCHECK_LT(current_entry_index + 1, num_entries_);
-    if (const int err = unzGoToNextFile(zip_file_); err != UNZ_OK) {
+    if (err != UNZ_END_OF_LIST_OF_FILE) {
       LOG(ERROR) << "Cannot go to next entry in ZIP: " << UnzipError(err);
       return false;
     }
@@ -224,9 +222,11 @@ bool ZipReader::OpenCurrentEntryInZip() {
   // Get entry info.
   unz_file_info info = {};
   char path_in_zip[internal::kZipMaxPath] = {};
-  if (unzGetCurrentFileInfo(zip_file_, &info, path_in_zip,
-                            sizeof(path_in_zip) - 1, nullptr, 0, nullptr,
-                            0) != UNZ_OK) {
+  if (const int err = unzGetCurrentFileInfo(zip_file_, &info, path_in_zip,
+                                            sizeof(path_in_zip) - 1, nullptr, 0,
+                                            nullptr, 0);
+      err != UNZ_OK) {
+    LOG(ERROR) << "Cannot get entry from ZIP: " << UnzipError(err);
     return false;
   }
 
@@ -448,13 +448,7 @@ bool ZipReader::OpenInternal() {
   }
 
   num_entries_ = zip_info.number_entry;
-  if (num_entries_ < 0) {
-    LOG(ERROR) << "Cannot get ZIP info: " << UnzipError(num_entries_);
-    return false;
-  }
-
-  // We are already at the end if the ZIP archive is empty.
-  reached_end_ = (num_entries_ == 0);
+  reached_end_ = (num_entries_ <= 0);
   return true;
 }
 

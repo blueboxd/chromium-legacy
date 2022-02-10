@@ -83,6 +83,20 @@
   settings-toggle-button {
     font-weight: 500;
   }
+
+  a {
+    color: var(--cr-link-color);
+    cursor: pointer;
+  }
+
+  .learn-more-section-title {
+    color: var(--cr-primary-text-color);
+    font-size: 0.875rem; /* 14px */
+  }
+
+  .learn-more-section-subtitle {
+    color: var(--cr-primary-text-color);
+  }
 </style>
 
 <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
@@ -103,10 +117,17 @@
           sub-label="$i18n{privacySandboxTrialsSummary}"
           on-change="onApiToggleButtonChange_">
       </settings-toggle-button>
-      <cr-link-row
+      <cr-link-row id="adPersonalizationRow"
         start-icon="privacy-sandbox:ads-click"
         label="$i18n{privacySandboxAdPersonalizationTitle}"
-        sub-label="$i18n{privacySandboxAdPersonalizationSummary}"></cr-link-row>
+        on-click="onAdPersonalizationRowClick_">
+        <div slot="sub-label">
+          $i18n{privacySandboxAdPersonalizationSummary}
+          <a id="learnMoreLink" on-click="onLearnMoreClick_">
+            $i18n{learnMore}
+          </a>
+        </div>
+      </cr-link-row>
       <cr-link-row
         start-icon="privacy-sandbox:insert-chart"
         label="$i18n{privacySandboxAdMeasurementTitle}"
@@ -116,7 +137,94 @@
         label="$i18n{privacySandboxSpamAndFraudTitle}"
         sub-label="$i18n{privacySandboxSpamAndFraudSummary}"></cr-link-row>
     </div>
+    <template is="dom-if"
+        if="[[!showFragment_(privacySandboxSettingsViewEnum_.MAIN,
+                privacySandboxSettingsView_)]]" restamp>
+      <cr-dialog id="dialogWrapper" show-on-attach>
+        <template id="learnMoreDialog" is="dom-if"
+            if="[[showFragment_(
+                    privacySandboxSettingsViewEnum_.LEARN_MORE_DIALOG,
+                    privacySandboxSettingsView_)]]">
+          <div slot="title">$i18n{privacySandboxLearnMoreDialogTitle}</div>
+          <div slot="body">
+            <div class="learn-more-section-title">
+              $i18n{privacySandboxLearnMoreDialogBrowserInterests}
+            </div>
+            <div class="cr-secondary-text">
+              <ul>
+                <li>
+                  <span class="learn-more-section-subtitle">
+                    $i18n{privacySandboxLearnMoreDialogDataTypes}
+                  </span>
+                  <!-- TODO(crbug/1286276): Replace this with real string. -->
+                  $i18n{privacySandboxAdMeasurementSummary}
+                </li>
+                <li>
+                  <span class="learn-more-section-subtitle">
+                    $i18n{privacySandboxLearnMoreDialogDataUsage}
+                  </span>
+                  <!-- TODO(crbug/1286276): Replace this with real string. -->
+                  $i18n{privacySandboxAdMeasurementSummary}
+                </li>
+                <li>
+                  <span class="learn-more-section-subtitle">
+                    $i18n{privacySandboxLearnMoreDialogDataManagement}
+                  </span>
+                  <!-- TODO(crbug/1286276): Replace this with real string. -->
+                  $i18n{privacySandboxAdMeasurementSummary}
+                </li>
+              </ul>
+            </div>
+            <div class="learn-more-section-title">
+              $i18n{privacySandboxLearnMoreDialogWebsiteInterests}
+            </div>
+            <div class="cr-secondary-text">
+              <ul>
+                <li>
+                  <span class="learn-more-section-subtitle">
+                    $i18n{privacySandboxLearnMoreDialogDataTypes}
+                  </span>
+                  <!-- TODO(crbug/1286276): Replace this with real string. -->
+                  $i18n{privacySandboxAdMeasurementSummary}
+                </li>
+                <li>
+                  <span class="learn-more-section-subtitle">
+                    $i18n{privacySandboxLearnMoreDialogDataUsage}
+                  </span>
+                  <!-- TODO(crbug/1286276): Replace this with real string. -->
+                  $i18n{privacySandboxAdMeasurementSummary}
+                </li>
+                <li>
+                  <span class="learn-more-section-subtitle">
+                    $i18n{privacySandboxLearnMoreDialogDataManagement}
+                  </span>
+                  <!-- TODO(crbug/1286276): Replace this with real string. -->
+                  $i18n{privacySandboxAdMeasurementSummary}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </template>
+        <!-- TODO(crbug/1286276): Implement this section. -->
+        <template id="adPersonalizationDialog" is="dom-if"
+            if="[[showFragment_(
+                    privacySandboxSettingsViewEnum_.AD_PERSONALIZATION_DIALOG,
+                    privacySandboxSettingsView_)]]">
+          <div slot="title">This is the second page</div>
+          <div slot="body">
+            This is example text for the second page.
+          </div>
+        </template>
+        <div slot="button-container">
+          <cr-button id="dialogCloseButton" class="action-button"
+              on-click="onDialogClose_">
+            $i18n{ok}
+          </cr-button>
+        </div>
+      </cr-dialog>
+    </template>
   </template>
+
   <template is="dom-if" if="[[!privacySandboxSettings3Enabled_]]">
     <p>$i18nRaw{privacySandboxPageExplanation1Phase2}</p>
     <p>$i18n{privacySandboxPageExplanation2Phase2}</p>

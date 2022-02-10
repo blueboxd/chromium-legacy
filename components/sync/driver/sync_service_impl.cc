@@ -26,6 +26,8 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_util.h"
@@ -33,7 +35,6 @@
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_auth_manager.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
@@ -41,7 +42,6 @@
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/invalidations/switches.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/type_entities_count.h"
@@ -101,11 +101,11 @@ EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
       /*force_short_nudge_delay_for_test=*/false};
 
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
+  if (cl->HasSwitch(kSyncShortInitialRetryOverride)) {
     factory_switches.backoff_override =
         EngineComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
-  if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
+  if (cl->HasSwitch(kSyncShortNudgeDelayForTest)) {
     factory_switches.force_short_nudge_delay_for_test = true;
   }
   return factory_switches;
@@ -173,10 +173,10 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
 
   // If Sync is disabled via command line flag, then SyncServiceImpl
   // shouldn't be instantiated.
-  DCHECK(switches::IsSyncAllowedByFlag());
+  DCHECK(IsSyncAllowedByFlag());
 
   bool should_wait_for_policies =
-      base::FeatureList::IsEnabled(switches::kSyncRequiresPoliciesLoaded);
+      base::FeatureList::IsEnabled(kSyncRequiresPoliciesLoaded);
 
   startup_controller_ = std::make_unique<StartupController>(
       base::BindRepeating(&SyncServiceImpl::GetPreferredDataTypes,
@@ -592,7 +592,7 @@ SyncService::DisableReasonSet SyncServiceImpl::GetDisableReasons() const {
 
   // If Sync is disabled via command line flag, then SyncServiceImpl
   // shouldn't even be instantiated.
-  DCHECK(switches::IsSyncAllowedByFlag());
+  DCHECK(IsSyncAllowedByFlag());
   DisableReasonSet result;
 
   // If local sync is enabled, most disable reasons don't apply.
@@ -1236,9 +1236,8 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   if (!sessions_invalidations_enabled_) {
     types.Remove(SESSIONS);
   }
-  if (!(base::FeatureList::IsEnabled(switches::kUseSyncInvalidations) &&
-        base::FeatureList::IsEnabled(
-            switches::kUseSyncInvalidationsForWalletAndOffer))) {
+  if (!(base::FeatureList::IsEnabled(kUseSyncInvalidations) &&
+        base::FeatureList::IsEnabled(kUseSyncInvalidationsForWalletAndOffer))) {
     types.RemoveAll({AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_OFFER});
   }
   invalidations_service->SetInterestedDataTypes(types);

@@ -17,9 +17,8 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/sync/base/bind_to_task_runner.h"
-#include "components/sync/base/sync_base_switches.h"
-#include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/engine/sync_engine_switches.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/trusted_vault/standalone_trusted_vault_backend.h"
 #include "components/sync/trusted_vault/trusted_vault_access_token_fetcher_impl.h"
 #include "components/sync/trusted_vault/trusted_vault_connection_impl.h"
@@ -39,7 +38,7 @@ constexpr char kDefaultTrustedVaultServiceURL[] =
 GURL ExtractTrustedVaultServiceURLFromCommandLine() {
   std::string string_url =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTrustedVaultServiceURL);
+          kTrustedVaultServiceURL);
   if (string_url.empty()) {
     // Command line switch is not specified or is not a valid ASCII string.
     return GURL(kDefaultTrustedVaultServiceURL);
@@ -210,8 +209,7 @@ StandaloneTrustedVaultClient::StandaloneTrustedVaultClient(
   std::unique_ptr<TrustedVaultConnection> connection;
   GURL trusted_vault_service_gurl =
       ExtractTrustedVaultServiceURLFromCommandLine();
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncTrustedVaultPassphraseRecovery) &&
+  if (base::FeatureList::IsEnabled(kSyncTrustedVaultPassphraseRecovery) &&
       trusted_vault_service_gurl.is_valid()) {
     connection = std::make_unique<TrustedVaultConnectionImpl>(
         trusted_vault_service_gurl, url_loader_factory->Clone(),

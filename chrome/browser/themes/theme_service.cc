@@ -94,6 +94,7 @@ absl::optional<ui::ColorId> ThemeProviderColorIdToColorId(int color_id) {
       {TP::COLOR_ACCENT_BORDER_INACTIVE, kColorAccentBorderInactive},
 #endif  // BUILDFLAG(IS_WIN)
       {TP::COLOR_BOOKMARK_TEXT, kColorBookmarkText},
+      {TP::COLOR_BOOKMARK_FAVICON, kColorBookmarkFavicon},
       {TP::COLOR_DOWNLOAD_SHELF, kColorDownloadShelf},
       {TP::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND,
        kColorDownloadShelfButtonBackground},
@@ -293,23 +294,6 @@ bool ThemeService::BrowserThemeProvider::ShouldUseNativeFrame() const {
 
 bool ThemeService::BrowserThemeProvider::HasCustomImage(int id) const {
   return theme_helper_.HasCustomImage(id, GetThemeSupplier());
-}
-
-bool ThemeService::BrowserThemeProvider::HasCustomColor(int id) const {
-  // COLOR_TOOLBAR_BUTTON_ICON has custom value if it is explicitly specified or
-  // calclated from non {-1, -1, -1} tint (means "no change"). Note that, tint
-  // can have a value other than {-1, -1, -1} even if it is not explicitly
-  // specified (e.g incognito and dark mode).
-  if (id == TP::COLOR_TOOLBAR_BUTTON_ICON) {
-    color_utils::HSL hsl =
-        theme_helper_.GetTint(TP::TINT_BUTTONS, incognito_, GetThemeSupplier());
-    if (hsl.h != -1 || hsl.s != -1 || hsl.l != -1)
-      return true;
-  }
-
-  bool has_custom_color = false;
-  theme_helper_.GetColor(id, incognito_, GetThemeSupplier(), &has_custom_color);
-  return has_custom_color;
 }
 
 base::RefCountedMemory* ThemeService::BrowserThemeProvider::GetRawData(

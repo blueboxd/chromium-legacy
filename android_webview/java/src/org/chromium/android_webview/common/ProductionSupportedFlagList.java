@@ -226,6 +226,8 @@ public final class ProductionSupportedFlagList {
                     "Defers the first commit until FCP or timeout for cross-origin navigations."),
             Flag.baseFeature(BlinkFeatures.EARLY_CODE_CACHE,
                     "Enables fetching the code cache earlier in navigation."),
+            Flag.baseFeature(ContentFeatures.NAVIGATION_REQUEST_PRECONNECT,
+                    "Enables preconnecting for frame requests."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
                     "Schedules tasks related to the navigation network responses on a higher "
                             + "priority task queue."),
@@ -257,5 +259,10 @@ public final class ProductionSupportedFlagList {
                     "Temporarily pauses the compositor early in navigation."),
             Flag.baseFeature(AwFeatures.WEBVIEW_SEND_VARIATIONS_HEADERS,
                     "Whether WebView will send variations headers on URLs where applicable."),
+            Flag.baseFeature(ContentFeatures.INCLUDE_IPC_OVERHEAD_IN_NAVIGATION_START,
+                    "Whether navigation metrics include ipc overhead."),
+            Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK,
+                    "Avoids an unnecessary renderer ipc during navigation for before-unload "
+                            + "handlers."),
     };
 }

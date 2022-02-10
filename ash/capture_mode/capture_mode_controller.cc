@@ -714,6 +714,16 @@ bool CaptureModeController::IsAndroidFilesPath(
   return path == delegate_->GetAndroidFilesPath();
 }
 
+aura::Window* CaptureModeController::GetCameraPreviewParentWindow() const {
+  if (IsActive())
+    return capture_mode_session_->GetCameraPreviewParentWindow();
+
+  if (is_recording_in_progress())
+    return video_recording_watcher_->GetCameraPreviewParentWindow();
+
+  return nullptr;
+}
+
 void CaptureModeController::OnRecordingEnded(
     recording::mojom::RecordingStatus status,
     const gfx::ImageSkia& thumbnail) {

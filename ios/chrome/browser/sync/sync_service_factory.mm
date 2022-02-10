@@ -14,8 +14,8 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/sync_util.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "ios/chrome/browser/application_context.h"
@@ -61,7 +61,7 @@ SyncServiceFactory* SyncServiceFactory::GetInstance() {
 // static
 syncer::SyncService* SyncServiceFactory::GetForBrowserState(
     ChromeBrowserState* browser_state) {
-  if (!switches::IsSyncAllowedByFlag())
+  if (!syncer::IsSyncAllowedByFlag())
     return nullptr;
 
   return static_cast<syncer::SyncService*>(
@@ -71,7 +71,7 @@ syncer::SyncService* SyncServiceFactory::GetForBrowserState(
 // static
 syncer::SyncService* SyncServiceFactory::GetForBrowserStateIfExists(
     ChromeBrowserState* browser_state) {
-  if (!switches::IsSyncAllowedByFlag())
+  if (!syncer::IsSyncAllowedByFlag())
     return nullptr;
 
   return static_cast<syncer::SyncService*>(

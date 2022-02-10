@@ -13,10 +13,10 @@
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/invalidations/switches.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
@@ -170,10 +170,9 @@ class SingleClientWithSyncSendInterestedDataTypesTest : public SyncTest {
  public:
   SingleClientWithSyncSendInterestedDataTypesTest() : SyncTest(SINGLE_CLIENT) {
     override_features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncSendInterestedDataTypes},
-        /*disabled_features=*/{
-            switches::kUseSyncInvalidations,
-            switches::kUseSyncInvalidationsForWalletAndOffer});
+        /*enabled_features=*/{syncer::kSyncSendInterestedDataTypes},
+        /*disabled_features=*/{syncer::kUseSyncInvalidations,
+                               syncer::kUseSyncInvalidationsForWalletAndOffer});
   }
 
   SingleClientWithSyncSendInterestedDataTypesTest(
@@ -221,10 +220,9 @@ class SingleClientWithUseSyncInvalidationsTest : public SyncTest {
  public:
   SingleClientWithUseSyncInvalidationsTest() : SyncTest(SINGLE_CLIENT) {
     override_features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncSendInterestedDataTypes,
-                              switches::kUseSyncInvalidations},
-        /*disabled_features=*/{
-            switches::kUseSyncInvalidationsForWalletAndOffer});
+        /*enabled_features=*/{syncer::kSyncSendInterestedDataTypes,
+                              syncer::kUseSyncInvalidations},
+        /*disabled_features=*/{syncer::kUseSyncInvalidationsForWalletAndOffer});
   }
 
   SingleClientWithUseSyncInvalidationsTest(
@@ -394,9 +392,9 @@ class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
   SingleClientWithUseSyncInvalidationsForWalletAndOfferTest()
       : SyncTest(SINGLE_CLIENT) {
     override_features_.InitWithFeatures(
-        /*enabled_features=*/{switches::kSyncSendInterestedDataTypes,
-                              switches::kUseSyncInvalidations,
-                              switches::kUseSyncInvalidationsForWalletAndOffer},
+        /*enabled_features=*/{syncer::kSyncSendInterestedDataTypes,
+                              syncer::kUseSyncInvalidations,
+                              syncer::kUseSyncInvalidationsForWalletAndOffer},
         /*disabled_features=*/{});
   }
 
@@ -552,7 +550,7 @@ class SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes
   SingleClientSyncInvalidationsTestWithPreDisabledSendInterestedDataTypes()
       : SyncTest(SINGLE_CLIENT) {
     features_override_.InitWithFeatureState(
-        switches::kSyncSendInterestedDataTypes, !content::IsPreTest());
+        syncer::kSyncSendInterestedDataTypes, !content::IsPreTest());
   }
 
   std::string GetLocalCacheGuid() {

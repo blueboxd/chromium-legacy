@@ -1498,6 +1498,8 @@ static_library("browser") {
     "segmentation_platform/segmentation_platform_profile_observer.h",
     "segmentation_platform/segmentation_platform_service_factory.cc",
     "segmentation_platform/segmentation_platform_service_factory.h",
+    "segmentation_platform/ukm_database_client.cc",
+    "segmentation_platform/ukm_database_client.h",
     "send_tab_to_self/receiving_ui_handler.h",
     "send_tab_to_self/receiving_ui_handler_registry.cc",
     "send_tab_to_self/receiving_ui_handler_registry.h",
@@ -4972,6 +4974,7 @@ static_library("browser") {
       "//components/app_restore",
       "//components/arc",
       "//components/arc/common",
+      "//components/arc/common:arc_intent_helper_constants",
       "//components/desks_storage",
       "//components/metrics/structured:neutrino_logging",
       "//components/metrics/structured:neutrino_logging_util",
@@ -5308,6 +5311,7 @@ static_library("browser") {
       "//chromeos/dbus/constants",
       "//chromeos/ui/wm",
       "//components/arc/common",
+      "//components/arc/common:arc_intent_helper_constants",
     ]
     allow_circular_includes_from += [ "//chrome/browser/policy:onc" ]
   }
@@ -5623,6 +5627,8 @@ static_library("browser") {
       "mac/auth_session_request.mm",
       "mac/bluetooth_utility.h",
       "mac/bluetooth_utility.mm",
+      "mac/developer_id_certificate_reauthorize.h",
+      "mac/developer_id_certificate_reauthorize.mm",
       "mac/dock.h",
       "mac/dock.mm",
       "mac/exception_processor.h",
@@ -6303,6 +6309,12 @@ static_library("browser") {
     }
     if (is_mac) {
       sources += [ "printing/printer_manager_dialog_mac.mm" ]
+    }
+    if (is_chromeos_lacros) {
+      sources += [
+        "printing/print_job_utils_lacros.cc",
+        "printing/print_job_utils_lacros.h",
+      ]
     }
     if (is_chromeos) {
       deps += [ "//chromeos/crosapi/mojom" ]
@@ -7997,5 +8009,35 @@ if (!is_android) {
 if (is_chromeos_lacros) {
   proto_library("dlp_policy_event_proto") {
     sources = [ "chromeos/policy/dlp/dlp_policy_event.proto" ]
+  }
+}
+
+if (is_mac) {
+  executable("developer_id_certificate_reauthorize") {
+    # There is no C++ in here, so save ~150kB per architecture by omitting a
+    # copy of libc++.
+    no_default_deps = true
+
+    sources = [
+      "mac/developer_id_certificate_reauthorize.h",
+      "mac/developer_id_certificate_reauthorize_stub_main.c",
+    ]
+    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+    deps = [ "//chrome:chrome_framework+link_nested" ]
+    ldflags = []
+    if (is_component_build) {
+      ldflags += [
+        # The stub is in Product.app/Contents/Frameworks/Product
+        # Framework.framework/Versions/X/Helpers so set rpath up to the base.
+        "-Wl,-rpath,@loader_path/../../../../../../..",
+
+        # ... and up to Contents/Frameworks.
+        "-Wl,-rpath,@executable_path/../../../..",
+      ]
+    }
+    if (enable_stripping) {
+      ldflags += [ "-Wl,-exported_symbols_list," +
+                   rebase_path("../app/app.exports", root_build_dir) ]
+    }
   }
 }

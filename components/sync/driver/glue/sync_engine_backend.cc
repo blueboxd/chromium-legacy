@@ -15,12 +15,12 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/invalidation/public/invalidation_util.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/invalidation_adapter.h"
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/model_type_controller.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/engine_components_factory.h"
@@ -28,7 +28,6 @@
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
-#include "components/sync/invalidations/switches.h"
 #include "components/sync/model/forwarding_model_type_controller_delegate.h"
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_storage_impl.h"
@@ -457,8 +456,8 @@ void SyncEngineBackend::DoOnInvalidatorClientIdChange(
 
 void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::FeatureList::IsEnabled(switches::kSyncSendInterestedDataTypes) &&
-         base::FeatureList::IsEnabled(switches::kUseSyncInvalidations));
+  DCHECK(base::FeatureList::IsEnabled(kSyncSendInterestedDataTypes) &&
+         base::FeatureList::IsEnabled(kUseSyncInvalidations));
 
   sync_pb::SyncInvalidationsPayload payload_message;
   // TODO(crbug.com/1119804): Track parsing failures in a histogram.

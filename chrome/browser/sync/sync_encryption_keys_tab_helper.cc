@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/sync_encryption_keys_extension.mojom.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_user_data.h"
@@ -82,7 +82,7 @@ class EncryptionKeyApi : public chrome::mojom::SyncEncryptionKeysExtension,
       int method_type_hint,
       AddTrustedRecoveryMethodCallback callback) override {
     if (!base::FeatureList::IsEnabled(
-            switches::kSyncTrustedVaultPassphraseRecovery)) {
+            syncer::kSyncTrustedVaultPassphraseRecovery)) {
       return;
     }
 

@@ -7,13 +7,6 @@ import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
 
-# This "allocator" meta-target will forward to the default allocator according
-# to the build settings.
-# TODO(crbug.com/1257213): Remove this, since it was only here for tcmalloc.
-# TODO(crbug.com/1257213): Remove the tcmalloc sources: //third-party/tcmalloc.
-group("allocator") {
-}
-
 buildflag_header("buildflags") {
   header = "buildflags.h"
   _use_partition_alloc_as_malloc = use_allocator == "partition"
@@ -29,6 +22,8 @@ buildflag_header("buildflags") {
   _enable_backup_ref_ptr_slow_checks =
       enable_backup_ref_ptr_slow_checks && _use_backup_ref_ptr
 
+  _record_alloc_info = false
+
   flags = [
     "USE_ALLOCATOR_SHIM=$use_allocator_shim",
     "USE_PARTITION_ALLOC=$use_partition_alloc",
@@ -41,6 +36,8 @@ buildflag_header("buildflags") {
     "NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST=$_never_remove_from_brp_pool_from_blocklist",
 
     "USE_FAKE_BINARY_EXPERIMENT=$use_fake_binary_experiment",
+
+    "RECORD_ALLOC_INFO=$_record_alloc_info",
   ]
 }
 

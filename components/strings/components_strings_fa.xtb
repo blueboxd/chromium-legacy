@@ -434,6 +434,7 @@
 <translation id="2248949050832152960">‏استفاده از WebAuthn</translation>
 <translation id="2250931979407627383">دوختن لبه از چپ</translation>
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
+<translation id="2256115617011615191">راه‌اندازی مجدد در این لحظه</translation>
 <translation id="2258928405015593961">تاریخی را در آینده به‌عنوان تاریخ انقضا وارد کنید و دوباره امتحان کنید</translation>
 <translation id="225943865679747347">کد خطا: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
@@ -1245,7 +1246,6 @@
 <translation id="4819347708020428563">یادداشت‌ها در نمای پیش‌فرض ویرایش شوند؟</translation>
 <translation id="4825496307559726072">‏<ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای ایجاد سریع «کاربرگ‌نگار Google» جدید، کلید «جهش» و سپس «ورود» را فشار دهید</translation>
 <translation id="4825507807291741242">نیرومند</translation>
-<translation id="4829962028570902310">نادیده گرفته شد چون این خط‌مشی را فقط خط‌مشی کاربر ابری می‌تواند تنظیم کند.</translation>
 <translation id="483241715238664915">روشن کردن هشدارها</translation>
 <translation id="4838327282952368871">رؤیایی</translation>
 <translation id="4840250757394056958">‏مشاهده سابقه Chrome</translation>
@@ -1675,6 +1675,7 @@
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">صفحه‌های مربوط به فهرست خواندنتان اینجا نشان داده می‌شوند</translation>
 <translation id="627746635834430766">‏برای اینکه دفعات بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت و نشانی صورت‌حسابتان را در حساب Google خود ذخیره کنید.</translation>
+<translation id="6279183038361895380">برای نمایش نشان‌گر |<ph name="ACCELERATOR" />| را فشار دهید</translation>
 <translation id="6280223929691119688">تحویل به این نشانی ممکن نیست. نشانی دیگری را انتخاب کنید.</translation>
 <translation id="6282194474023008486">کد پستی</translation>
 <translation id="6285507000506177184">‏دکمه «مدیریت بارگیری‌ها در Chrome»؛ برای مدیریت فایل‌هایی که در Chrome بارگیری کرده‌اید، کلید «ورود» را فشار دهید</translation>
@@ -2175,7 +2176,6 @@
 <translation id="7888575728750733395">هدف پرداز چاپ</translation>
 <translation id="7894280532028510793">اگر املا صحیح است، <ph name="BEGIN_LINK" />«عیب‌یابی شبکه» را اجرا کنید<ph name="END_LINK" />.</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
-<translation id="7931318309563332511">ناشناس</translation>
 <translation id="793209273132572360">نشانی به‌روزرسانی شود؟</translation>
 <translation id="7932579305932748336">جلد</translation>
 <translation id="79338296614623784">شماره تلفن معتبری وارد کنید</translation>

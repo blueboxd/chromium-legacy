@@ -200,6 +200,7 @@
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/not_implemented_url_loader_factory.h"
@@ -3660,6 +3661,39 @@ absl::optional<base::UnguessableToken> RenderFrameHostImpl::ComputeNonce(
   return nonce;
 }
 
+url::Origin RenderFrameHostImpl::CalculateTopLevelOriginForStorageKey(
+    const url::Origin& new_rfh_origin) {
+  if (is_main_frame())
+    return new_rfh_origin;
+
+  // Find among the ancestors, the one at the top and its child.
+  RenderFrameHostImpl* ancestor_below_top = nullptr;
+  RenderFrameHostImpl* ancestor_top = nullptr;
+  RenderFrameHostImpl* ancestor_current = this;
+  while (ancestor_current) {
+    ancestor_below_top = ancestor_top;
+    ancestor_top = ancestor_current;
+    ancestor_current = ancestor_current->parent_;
+  }
+
+  // Sites with host permissions are saved in
+  // `browser_context->GetSharedCorsOriginAccessList()` because they are also
+  // used to bypass CORS restrictions. We can reuse this permissions list here
+  // because sites that are explicitly granted access permissions should also be
+  // able to access partitioned storage based not partitioned by the top level
+  // extension URL. A origin will only have access to another origin via
+  // OriginAccessList if the origin is an extension.
+  return GetBrowserContext()
+                     ->GetSharedCorsOriginAccessList()
+                     ->GetOriginAccessList()
+                     .CheckAccessState(
+                         ancestor_top->GetLastCommittedOrigin(),
+                         ancestor_below_top->GetLastCommittedURL()) ==
+                 network::cors::OriginAccessList::AccessState::kAllowed
+             ? ancestor_below_top->GetLastCommittedOrigin()
+             : ancestor_top->GetLastCommittedOrigin();
+}
+
 void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
     const url::Origin& new_frame_creator) {
   // This method should only be called for *new* frames, that haven't committed
@@ -3678,7 +3712,14 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   isolation_info_ = ComputeIsolationInfoInternal(
       new_frame_origin, net::IsolationInfo::RequestType::kOther, anonymous());
   SetLastCommittedOrigin(new_frame_origin);
-  SetStorageKey(blink::StorageKey::FromNetIsolationInfo(isolation_info_));
+  DCHECK(isolation_info_.top_frame_origin().has_value());
+  SetStorageKey(blink::StorageKey::CreateWithOptionalNonce(
+      new_frame_origin,
+      net::SchemefulSite(isolation_info_.top_frame_origin().value()),
+      base::OptionalOrNullptr(isolation_info_.nonce()),
+      ComputeSiteForCookies().IsNull()
+          ? blink::mojom::AncestorChainBit::kCrossSite
+          : blink::mojom::AncestorChainBit::kSameSite));
 
   // Apply private network request policy according to our new origin.
   if (GetContentClient()->browser()->ShouldAllowInsecurePrivateNetworkRequests(
@@ -4458,30 +4499,49 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
               renderer_before_unload_start_time),
           blink::RemoteTimeTicks::FromTimeTicks(
               renderer_before_unload_end_time));
-      blink::LocalTimeTicks browser_before_unload_end_time =
-          converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
-              renderer_before_unload_end_time));
-      before_unload_end_time = browser_before_unload_end_time.ToTimeTicks();
-      if (base::FeatureList::IsEnabled(
-              features::kIncludeIpcOverheadInNavigationStart)) {
-        const blink::LocalTimeTicks browser_before_unload_start_time =
-            converter.ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
-                renderer_before_unload_start_time));
-        browser_to_renderer_ipc_time_delta =
-            browser_before_unload_start_time.ToTimeTicks() -
-            send_before_unload_start_time_;
-      }
-    } else if (base::FeatureList::IsEnabled(
-                   features::kIncludeIpcOverheadInNavigationStart)) {
+      const base::TimeTicks browser_before_unload_start_time =
+          converter
+              .ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
+                  renderer_before_unload_start_time))
+              .ToTimeTicks();
+      const base::TimeTicks browser_before_unload_end_time =
+          converter
+              .ToLocalTimeTicks(blink::RemoteTimeTicks::FromTimeTicks(
+                  renderer_before_unload_end_time))
+              .ToTimeTicks();
+      before_unload_end_time = browser_before_unload_end_time;
+      browser_to_renderer_ipc_time_delta =
+          browser_before_unload_start_time - send_before_unload_start_time_;
+    } else {
       browser_to_renderer_ipc_time_delta =
           (renderer_before_unload_start_time - send_before_unload_start_time_);
+    }
+
+    if (for_legacy) {
+      base::UmaHistogramTimes(
+          "Navigation.OnBeforeUnloadLegacyPostTaskTime",
+          before_unload_completed_time - renderer_before_unload_end_time);
+      // When `for_legacy` is true callers should supply
+      // `send_before_unload_start_time_` as the value for
+      // `renderer_before_unload_start_time`, which means
+      // `browser_to_renderer_ipc_time_delta` should be 0.
+      DCHECK(browser_to_renderer_ipc_time_delta.is_zero());
+    } else {
+      base::UmaHistogramTimes(
+          "Navigation.OnBeforeUnloadBrowserToRendererIpcTime",
+          browser_to_renderer_ipc_time_delta);
+    }
+
+    if (!base::FeatureList::IsEnabled(
+            features::kIncludeIpcOverheadInNavigationStart)) {
+      browser_to_renderer_ipc_time_delta = base::TimeDelta();
     }
 
     base::TimeDelta on_before_unload_overhead_time =
         (before_unload_completed_time - send_before_unload_start_time_) -
         (renderer_before_unload_end_time - renderer_before_unload_start_time);
-    UMA_HISTOGRAM_TIMES("Navigation.OnBeforeUnloadOverheadTime",
-                        on_before_unload_overhead_time);
+    base::UmaHistogramTimes("Navigation.OnBeforeUnloadOverheadTime",
+                            on_before_unload_overhead_time);
 
     frame_tree_node_->navigator().LogBeforeUnloadTime(
         renderer_before_unload_start_time, renderer_before_unload_end_time,
@@ -7318,7 +7378,8 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
     const url::Origin& origin,
     const GURL& url,
     bool is_same_document_navigation,
-    bool is_pdf) {
+    bool is_pdf,
+    bool is_sandboxed) {
   // Note that callers are responsible for avoiding this function in modes that
   // can bypass these rules, such as --disable-web-security or certain Android
   // WebView features like universal access from file URLs.
@@ -7389,7 +7450,8 @@ CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
               .WithStoragePartitionConfig(
                   GetSiteInstance()->GetSiteInfo().storage_partition_config())
               .WithWebExposedIsolationInfo(
-                  GetSiteInstance()->GetWebExposedIsolationInfo())));
+                  GetSiteInstance()->GetWebExposedIsolationInfo())
+              .WithSandbox(is_sandboxed)));
   if (can_commit_status != CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL) {
     LogCanCommitOriginAndUrlFailureReason("cpspi_disallowed_commit");
     return can_commit_status;
@@ -7882,10 +7944,13 @@ void RenderFrameHostImpl::CommitNavigation(
     // navigation attempt is made. It shouldn't reach CommitNavigation.
     CHECK(!is_main_frame());
 
-    // An about:srcdoc document is always same SiteInstance with its parent.
-    // Otherwise, it won't be able to load. The parent's document contains the
-    // iframe and its srcdoc attribute.
-    CHECK_EQ(GetSiteInstance(), parent_->GetSiteInstance());
+    // For a srcdoc iframe, we expect it to either be in its parent's
+    // SiteInstance (either AreIsolatedSandboxedIframesEnabled is false or
+    // both parent and child are sandboxed), or that the two are in different
+    // SiteInstances when only the child is sandboxed.
+    CHECK(GetSiteInstance() == parent_->GetSiteInstance() ||
+          !parent_->GetSiteInstance()->GetSiteInfo().is_sandboxed() &&
+              GetSiteInstance()->GetSiteInfo().is_sandboxed());
   }
 
   // TODO(https://crbug.com/888079): Compute the Origin to commit here.
@@ -10365,12 +10430,14 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
   // be needed to verify the process lock in `CanCommitOriginAndUrl()`, but
   // cannot be derived from the URL and origin alone.
   bool is_pdf = navigation_request && navigation_request->GetUrlInfo().is_pdf;
+  bool is_sandboxed =
+      navigation_request && navigation_request->GetUrlInfo().is_sandboxed;
 
   // Attempts to commit certain off-limits URL should be caught more strictly
   // than our FilterURL checks.  If a renderer violates this policy, it
   // should be killed.
-  switch (
-      CanCommitOriginAndUrl(origin, url, is_same_document_navigation, is_pdf)) {
+  switch (CanCommitOriginAndUrl(origin, url, is_same_document_navigation,
+                                is_pdf, is_sandboxed)) {
     case CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL:
       // The origin and URL are safe to commit.
       break;

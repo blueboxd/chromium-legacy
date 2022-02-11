@@ -1612,6 +1612,8 @@ virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentat
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-041.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-042.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-043.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-044.html [ Pass ]
+virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-fragmentation-045.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-oof-004.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-oof-005.html [ Pass ]
 virtual/layout_ng_grid_frag/external/wpt/css/css-break/grid/grid-item-oof-007.html [ Pass ]
@@ -3211,6 +3213,9 @@ crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-conicGradient.https.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/fetch/private-network-access/service-worker-background-fetch.https.window.html [ Failure Timeout ]
+crbug.com/626703 external/wpt/webmessaging/broadcastchannel/opaque-origin.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/layout_ng_table_frag/external/wpt/css/css-break/table/break-inside-cell-000.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/layout_ng_table_frag/external/wpt/css/css-break/table/break-inside-cell-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] virtual/layout_ng_table_frag/external/wpt/css/css-break/table/sections-and-captions-mixed-order.html [ Failure ]
@@ -3259,13 +3264,10 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/wasm/jsapi/constructor/instantiate-ba
 crbug.com/626703 [ Mac10.13 ] external/wpt/wasm/jsapi/constructor/instantiate-bad-imports.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/video-rvfc/request-video-frame-callback-during-xr-session.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webxr/ar-module/xrSession_interactionMode.https.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/document-referrer.html [ Failure Timeout ]
-crbug.com/626703 [ Mac10.13 ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/document-referrer.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/web-share/share-url-invalid.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webxr/depth-sensing/cpu/depth_sensing_cpu_staleView.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] virtual/scroll-unification/external/wpt/dom/events/scrolling/overscroll-event-fired-to-document.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] virtual/portals/external/wpt/portals/no-portal-in-sandboxed-popup.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-color-adjust/inheritance.html [ Crash Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/fetch.window.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/not-site-per-process/external/wpt/html/browsers/history/the-location-interface/allow_prototype_cycle_through_location.sub.html [ Crash ]
@@ -3408,7 +3410,6 @@ crbug.com/626703 [ Mac10.15 ] virtual/web-bluetooth-new-permissions-backend/wpt_
 crbug.com/626703 [ Mac10.15 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-pranswer.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpReceiver-getParameters.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-iframe-background-mismatch-opaque-cross-origin.sub.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/resource-timing/object-not-found-adds-entry.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCIceConnectionState-candidate-pair.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-helper-test.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Skip Timeout ]
@@ -3976,19 +3977,14 @@ crbug.com/626703 external/wpt/html/browsers/the-window-object/apis-for-creating-
 crbug.com/626703 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-negative-innerwidth-innerheight.html [ Skip Timeout ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/a-element.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/Create-protocols-repeated-case-insensitive.any.worker.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/Create-url-with-space.any.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/abort.any.sharedworker.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/constructor.any.html?wpt_flags=h2 [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/websockets/stream/tentative/constructor.any.sharedworker.html?wpt_flags=h2 [ Failure ]
-crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/websockets/Create-blocked-port.any.worker.html?wpt_flags=h2 [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/websockets/Create-url-with-space.any.html [ Failure ]
-crbug.com/626703 [ Win ] virtual/plz-dedicated-worker/external/wpt/resource-timing/cross-origin-start-end-time-with-redirects.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/webrtc/RTCDTMFSender-ontonechange-long.https.html [ Failure Pass ]
 crbug.com/626703 [ Mac ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCDTMFSender-ontonechange-long.https.html [ Failure Pass ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/dom/idlharness.worker.html [ Failure ]
@@ -4244,6 +4240,8 @@ crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-039.htm
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-041.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-042.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-043.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-044.html [ Failure ]
+crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-045.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-004.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-005.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-oof-007.html [ Failure ]
@@ -6134,9 +6132,6 @@ crbug.com/1050549 http/tests/devtools/console/console-correct-suggestions.js [ F
 # Flaky test
 crbug.com/1173439 http/tests/devtools/service-workers/service-worker-manager.js [ Pass Skip Timeout ]
 
-# Sheriff 2018-01-25
-crbug.com/893869 css3/masking/mask-repeat-space-padding.html [ Failure Pass ]
-
 # V8 roll
 crbug.com/961059 fast/workers/worker-shared-asm-buffer.html [ Skip ]
 
@@ -6699,11 +6694,6 @@ crbug.com/1220317 [ Linux ] external/wpt/media-capabilities/decodingInfoEncrypte
 crbug.com/1220317 [ Linux ] external/wpt/media-capabilities/decodingInfo.any.html [ Crash Failure Pass ]
 crbug.com/1220007 [ Linux ] fullscreen/full-screen-iframe-allowed-video.html [ Failure Pass Timeout ]
 
-# Some flaky gpu canvas compositing
-crbug.com/1221326 virtual/gpu/fast/canvas/canvas-composite-image.html [ Failure Pass ]
-crbug.com/1221327 virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Failure Pass ]
-crbug.com/1221420 virtual/gpu/fast/canvas/canvas-ellipse-zero-lineto.html [ Failure Pass ]
-
 # Sheriff
 crbug.com/1223327 wpt_internal/prerender/unload.html [ Pass Timeout ]
 crbug.com/1223327 virtual/prerender/wpt_internal/prerender/unload.html [ Pass Timeout ]
@@ -7220,7 +7210,6 @@ crbug.com/1256763 [ Linux ] images/color-profile-background-clip-text.html [ Fai
 crbug.com/1259277 fast/events/message-port-multi.html [ Skip ]
 
 # Sheriff 2021-10-26
-crbug.com/1263349 [ Linux ] external/wpt/resource-timing/object-not-found-after-cross-origin-redirect.html [ Failure Pass ]
 crbug.com/1249043 external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Failure Pass ]
 crbug.com/1249043 [ Fuchsia ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
 crbug.com/1249043 [ Linux ] external/wpt/html/cross-origin-embedder-policy/reporting-subresource-corp.https.html [ Failure Pass ]
@@ -7239,9 +7228,6 @@ crbug.com/1263732 http/tests/devtools/tracing/timeline-paint/timeline-paint-imag
 # Sheriff 2021-10-29
 crbug.com/1264670 [ Linux ] http/tests/devtools/resource-tree/resource-tree-frame-add.js [ Failure Pass ]
 crbug.com/1264775 [ Mac11-arm64 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
-crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance.html [ Failure Pass ]
-crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-appearance.html [ Failure Pass ]
-crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1264775 [ Mac10.14 ] external/wpt/webrtc-stats/supported-stats.html [ Failure ]
 
 # Sheriff 2021-11-02
@@ -7253,7 +7239,6 @@ crbug.com/1265311 http/tests/navigation/location-change-repeated-from-blank.html
 # Sheriff 2021-11-03
 crbug.com/1266199 [ Mac10.12 ] fast/css3-text/css3-text-decoration/text-decoration-style-wavy-font-size.html [ Failure Pass ]
 crbug.com/1266221 [ Mac11-arm64 ] virtual/fsa-incognito/external/wpt/file-system-access/sandboxed_FileSystemFileHandle-create-sync-access-handle.https.tentative.window.html [ Failure Pass ]
-crbug.com/1263354 [ Linux ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-adds-entry.html [ Failure Pass Timeout ]
 
 # Sheriff 2021-11-08
 crbug.com/1267734 [ Win7 ] virtual/plz-dedicated-worker/external/wpt/resource-timing/object-not-found-after-TAO-cross-origin-redirect.html [ Failure Pass ]
@@ -7261,7 +7246,6 @@ crbug.com/1267736 [ Win ] http/tests/devtools/bindings/jssourcemap-bindings-over
 
 # Sheriff 2021-11-09
 crbug.com/1269535 http/tests/misc/resource-timing-sizes-multipart.html [ Failure Pass Timeout ]
-crbug.com/1267734 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Failure Pass ]
 
 # This test is flaky on all platforms
 crbug.com/1191846 [ Fuchsia ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Failure Pass ]
@@ -7431,8 +7415,19 @@ crbug.com/1229095 [ Linux ] virtual/gpu/fast/canvas/canvas-getImageData.html [ F
 crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-strict.js [ Pass Timeout ]
 crbug.com/1280736 [ Win10.20h2 ] http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Pass Timeout ]
 
-# crbug.com/1285304 issues (Note - because color-scheme is in SlowTests, this must be Skip):
+# crbug.com/1270510 Picker appearance tests that are flaky
+# Note - because some of these are in SlowTests, they need to be Skipped.
 crbug.com/1285304 fast/forms/color-scheme/suggestion-picker/time-suggestion-picker-appearance.html [ Failure Pass Skip Timeout ]
+crbug.com/1293965 virtual/scroll-unification/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
+crbug.com/1293878 [ Mac ] virtual/controls-refresh-hc/fast/forms/color-scheme/datetimelocal-picker/datetimelocal-picker-appearance.html [ Failure Pass ]
+crbug.com/1293965 [ Mac ] fast/forms/month/month-picker-appearance-step.html [ Skip ]
+crbug.com/1293965 [ Mac ] fast/forms/color-scheme/week-picker/week-picker-appearance-highlight-es.html [ Skip ]
+crbug.com/1295712 [ Mac10.13 ] fast/forms/color-scheme/datetimelocal-picker/datetimelocal-picker-appearance.html [ Failure ]
+crbug.com/1295733 [ Mac11-arm64 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Failure ]
+crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/date-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/month-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1264802 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance.html [ Failure Pass ]
+crbug.com/1293965 [ Win7 ] fast/forms/suggestion-picker/week-suggestion-picker-appearance.html [ Failure Pass ]
 
 # Sheriff 2022-01-04
 crbug.com/1283865 external/wpt/webmessaging/without-ports/020.html [ Failure Pass ]
@@ -7471,13 +7466,9 @@ crbug.com/1233938 http/tests/notifications/click-shared-worker.html [ Pass Timeo
 # Temporarily disable test to allow fixing of devtools path escaping
 crbug.com/1094436 http/tests/devtools/overrides/project-added-with-existing-files-bind.js [ Failure Skip Timeout ]
 crbug.com/1256763 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Failure Pass ]
-crbug.com/1287093 [ Linux ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/document-referrer.html [ Failure Pass ]
-crbug.com/1287093 [ Linux ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/document-referrer.html [ Failure Pass ]
 crbug.com/1288136 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-value-005.https.html [ Failure Pass ]
 
 # Sheriff 2022-01-18
-crbug.com/1287067 [ Fuchsia ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/embedder-require-corp.https.html [ Failure Pass ]
-crbug.com/1287067 [ Win10.20h2 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/embedder-require-corp.https.html [ Failure Pass ]
 crbug.com/1288264 [ Win ] http/tests/fetch/serviceworker-proxied/thorough/redirect-loop-base-https-other-https.html [ Pass Skip Timeout ]
 crbug.com/1288264 [ Win ] http/tests/fetch/window/thorough/cors-preflight2-base-https-other-https.html [ Pass Skip Timeout ]
 crbug.com/1288264 [ Win ] http/tests/fetch/serviceworker/thorough/nocors-base-https-other-https.html [ Pass Skip Timeout ]
@@ -7558,15 +7549,8 @@ crbug.com/1271296 virtual/no-forced-frame-updates/external/wpt/html/dom/render-b
 crbug.com/1271296 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/script-inserted-module-script.tentative.html [ Skip ]
 crbug.com/1271296 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/script-inserted-script.html [ Skip ]
 
-# Sheriff 2022-02-03
-crbug.com/1293878 [ Mac ] virtual/controls-refresh-hc/fast/forms/color-scheme/datetimelocal-picker/datetimelocal-picker-appearance.html [ Failure Pass ]
-crbug.com/1293965 virtual/scroll-unification/fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Skip ]
-crbug.com/1293965 [ Mac ] fast/forms/month/month-picker-appearance-step.html [ Skip ]
-crbug.com/1293965 [ Mac ] fast/forms/color-scheme/week-picker/week-picker-appearance-highlight-es.html [ Skip ]
-
 # Sheriff 2022-02-07
 crbug.com/1289759 [ Linux ] http/tests/loading/slow-parsing-subframe.html [ Failure Pass ]
-crbug.com/1278570 [ Linux ] virtual/gpu-rasterization/images/directly-composited-image-orientation.html [ Failure Pass ]
 
 # Need to unuse the beforeunload event.
 crbug.com/1271408 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/navigate-ancestor.html [ Skip ]
@@ -7611,8 +7595,6 @@ crbug.com/1295317 [ Mac11-arm64 ] virtual/scalefactor200/css3/filters/effect-ref
 # Sheriff 2022-02-09
 crbug.com/1295711 [ Win7 ] virtual/prerender/external/wpt/speculation-rules/prerender/restriction-window-resize.html [ Failure Pass ]
 crbug.com/1295707 [ Mac11 ] virtual/shared_array_buffer_on_desktop/http/tests/devtools/elements/elements-treeoutline-copy.js [ Failure Pass ]
-crbug.com/1295712 [ Mac10.13 ] fast/forms/color-scheme/datetimelocal-picker/datetimelocal-picker-appearance.html [ Failure ]
-crbug.com/1295733 [ Mac11-arm64 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Failure ]
 
 # Disable to skip performance test caused by potential O(n^2) problem in AXObjectCacheImpl::ChildrenChanged
 crbug.com/1293714 external/wpt/css/selectors/invalidation/has-complexity.html [ Skip ]

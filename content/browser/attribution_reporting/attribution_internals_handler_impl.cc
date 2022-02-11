@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_storage.h"
+#include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/send_result.h"
@@ -33,8 +33,6 @@ namespace content {
 
 namespace {
 
-using CreateReportStatus =
-    ::content::AttributionStorage::CreateReportResult::Status;
 using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
 
 using Attributability =
@@ -259,15 +257,20 @@ void AttributionInternalsHandlerImpl::OnReportDropped(
     const AttributionStorage::CreateReportResult& result) {
   mojom::WebUIAttributionReport::Status status;
   switch (result.status()) {
-    case CreateReportStatus::kSuccessDroppedLowerPriority:
-    case CreateReportStatus::kPriorityTooLow:
+    case AttributionTrigger::Result::kSuccessDroppedLowerPriority:
+    case AttributionTrigger::Result::kPriorityTooLow:
       status = mojom::WebUIAttributionReport::Status::kDroppedDueToLowPriority;
       break;
-    case CreateReportStatus::kDroppedForNoise:
+    case AttributionTrigger::Result::kDroppedForNoise:
       status = mojom::WebUIAttributionReport::Status::kDroppedForNoise;
       break;
-    case CreateReportStatus::kRateLimited:
-      status = mojom::WebUIAttributionReport::Status::kDroppedDueToRateLimiting;
+    case AttributionTrigger::Result::kExcessiveReports:
+      status =
+          mojom::WebUIAttributionReport::Status::kDroppedDueToExcessiveReports;
+      break;
+    case AttributionTrigger::Result::kExcessiveReportingOrigins:
+      status = mojom::WebUIAttributionReport::Status::
+          kDroppedDueToExcessiveReportingOrigins;
       break;
     default:
       NOTREACHED();

@@ -317,7 +317,8 @@ void InitializeZygoteSandboxForBrowserProcess(
 
   if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
     if (!parsed_command_line.HasSwitch(sandbox::policy::switches::kNoSandbox)) {
-      LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
+      LOG(ERROR) << "Zygote cannot be disabled if sandbox is enabled."
+                 << " Use --no-zygote together with --no-sandbox";
       exit(EXIT_FAILURE);
     }
     return;
@@ -833,10 +834,10 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-  // If we are on a platform where the default allocator is overridden (shim
-  // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
-  // overriding logic is working correctly. If not causes a hard crash, as its
-  // unexpected absence has security implications.
+  // If we are on a platform where the default allocator is overridden (e.g.
+  // with PartitionAlloc on most platforms) smoke-tests that the overriding
+  // logic is working correctly. If not causes a hard crash, as its unexpected
+  // absence has security implications.
   CHECK(base::allocator::IsAllocatorInitialized());
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)

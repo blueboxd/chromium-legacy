@@ -41,7 +41,7 @@ namespace image_editor {
 
 // Colors for semitransparent overlay.
 static constexpr SkColor kColorSemitransparentOverlayMask =
-    SkColorSetARGB(0x7F, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0x9F, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSemitransparentOverlayVisible =
     SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSelectionRect = SkColorSetRGB(0xEE, 0xEE, 0xEE);
@@ -201,6 +201,8 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
       web_contents_->GetContentNativeView();
   views::Widget* widget =
       views::Widget::GetWidgetForNativeView(web_contents_view);
+  if (!widget)
+    return;
   const gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   location.set_x(location.x() + (widget_bounds.x() - web_contents_bounds.x()));
   location.set_y(location.y() + (widget_bounds.y() - web_contents_bounds.y()));

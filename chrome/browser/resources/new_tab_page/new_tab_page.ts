@@ -16,10 +16,11 @@ export {DomIf} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 export {NtpElement} from './app.js';
 export {BackgroundManager} from './background_manager.js';
 export {CustomizeDialogPage} from './customize_dialog_types.js';
+export {DoodleShareDialogElement} from './doodle_share_dialog.js';
 export {recordDuration, recordLoadDuration, recordOccurence, recordPerdecage} from './metrics_utils.js';
 export {ChromeCartProxy} from './modules/cart/chrome_cart_proxy.js';
-export {chromeCartDescriptor} from './modules/cart/module.js';
-export {chromeCartDescriptor as chromeCartV2Descriptor} from './modules/cart_v2/module.js';
+export {chromeCartDescriptor, ChromeCartModuleElement} from './modules/cart/module.js';
+export {chromeCartDescriptor as chromeCartV2Descriptor, ChromeCartModuleElement as ChromeCartV2ModuleElement} from './modules/cart_v2/module.js';
 export {DriveProxy} from './modules/drive/drive_module_proxy.js';
 export {driveDescriptor, DriveModuleElement} from './modules/drive/module.js';
 export {driveDescriptor as driveV2Descriptor, DriveModuleElement as DriveV2ModuleElement} from './modules/drive_v2/module.js';

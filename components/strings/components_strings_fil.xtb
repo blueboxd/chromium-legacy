@@ -166,6 +166,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="142858679511221695">User ng Cloud</translation>
 <translation id="1428729058023778569">Nakikita mo ang babalang ito dahil hindi sinusuportahan ng site na ito ang HTTPS. <ph name="BEGIN_LEARN_MORE_LINK" />Matuto pa<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1430915738399379752">I-print</translation>
+<translation id="1432187715652018471">Gusto ng page na mag-install ng tagapangasiwa ng serbisyo.</translation>
 <translation id="1432581352905426595">Pamahalaan ang mga search engine</translation>
 <translation id="1436185428532214179">Puwedeng hilinging mag-edit ng mga file at folder sa iyong device</translation>
 <translation id="1442386063175183758">Right gate fold</translation>
@@ -434,6 +435,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="2248949050832152960">Gamitin ang WebAuthn</translation>
 <translation id="2250931979407627383">Edge stitch left</translation>
 <translation id="225207911366869382">Hindi na gimagamit ang halagang ito para sa patakarang ito.</translation>
+<translation id="2256115617011615191">I-restart ngayon</translation>
 <translation id="2258928405015593961">Maglagay ng petsa ng pag-expire sa hinaharap at subukan ulit</translation>
 <translation id="225943865679747347">Code ng error: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">Error sa HTTP</translation>
@@ -1245,7 +1247,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="4819347708020428563">I-edit ang mga anotasyon sa default na view?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, pindutin ang Tab at pagkatapos ay ang Enter para gumawa ng bagong Google Sheet nang mabilis</translation>
 <translation id="4825507807291741242">Mahusay</translation>
-<translation id="4829962028570902310">Binalewala dahil ang patakaran ay puwede lang itakda ng patakaran ng user ng cloud.</translation>
 <translation id="483241715238664915">I-on ang mga babala</translation>
 <translation id="4838327282952368871">Dreamy</translation>
 <translation id="4840250757394056958">Tingnan ang iyong history sa Chrome</translation>
@@ -1675,6 +1676,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Lalabas dito ang mga page mula sa iyong listahan ng babasahin</translation>
 <translation id="627746635834430766">Para mas mabilis na makapagbayad sa susunod, i-save ang iyong card at billing address sa Google Account mo.</translation>
+<translation id="6279183038361895380">Pindutin ang |<ph name="ACCELERATOR" />| upang ipakita ang iyong cursor</translation>
 <translation id="6280223929691119688">Hindi maaaring maghatid sa address na ito. Pumili ng ibang address.</translation>
 <translation id="6282194474023008486">Postal code</translation>
 <translation id="6285507000506177184">Button na Pamahalaan ang mga download sa Chrome, pindutin ang Enter para pamahalaan ang mga file na na-download mo sa Chrome</translation>
@@ -2175,7 +2177,6 @@ Mga karagdagang detalye:
 <translation id="7888575728750733395">Intent sa pag-render ng print</translation>
 <translation id="7894280532028510793">Kung tama ang pagbabaybay, <ph name="BEGIN_LINK" />subukang patakbuhin ang Mga Diagnostic ng Network<ph name="END_LINK" />.</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
-<translation id="7931318309563332511">Hindi Alam</translation>
 <translation id="793209273132572360">I-update ang address?</translation>
 <translation id="7932579305932748336">Coat</translation>
 <translation id="79338296614623784">Maglagay ng wastong numero ng telepono</translation>

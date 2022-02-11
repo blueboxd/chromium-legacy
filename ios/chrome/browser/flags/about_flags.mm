@@ -515,10 +515,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAddPasswordsInSettingsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSupportForAddPasswordsInSettings)},
-    {"edit-passwords-in-settings",
-     flag_descriptions::kEditPasswordsInSettingsName,
-     flag_descriptions::kEditPasswordsInSettingsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(password_manager::features::kEditPasswordsInSettings)},
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
@@ -647,10 +643,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillFillMerchantPromoCodeFields)},
-    {"context-menu-actions-refresh",
-     flag_descriptions::kContextMenuActionsRefreshName,
-     flag_descriptions::kContextMenuActionsRefreshDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kContextMenuActionsRefresh)},
     {"context-menu-phase2",
      flag_descriptions::kWebViewNativeContextMenuPhase2Name,
      flag_descriptions::kWebViewNativeContextMenuPhase2Description,
@@ -789,6 +781,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          password_manager::features::kLeakDetectionUnauthenticated)},
+    {"mute-compromised-passwords",
+     flag_descriptions::kMuteCompromisedPasswordsName,
+     flag_descriptions::kMuteCompromisedPasswordsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
     {"autofill-enable-sending-bcn-in-get-upload-details",
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsName,
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsDescription,
@@ -798,6 +794,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-fullscreen-api", flag_descriptions::kEnableFullscreenAPIName,
      flag_descriptions::kEnableFullscreenAPIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnableFullscreenAPI)},
+    {"context-menu-phase2-screenshot",
+     flag_descriptions::kWebViewNativeContextMenuPhase2ScreenshotName,
+     flag_descriptions::kWebViewNativeContextMenuPhase2ScreenshotDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         web::features::kWebViewNativeContextMenuPhase2Screenshot)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

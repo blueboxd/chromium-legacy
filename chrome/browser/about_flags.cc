@@ -238,6 +238,7 @@
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/app_restore/features.h"
 #include "components/metrics/structured/structured_metrics_features.h"  // nogncheck
@@ -2552,7 +2553,9 @@ constexpr FeatureEntry::FeatureVariation
          base::size(kPlatformProvidedTrustTokenIssuance), nullptr}};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
 constexpr char kAmbientModeAnimationInternalName[] = "ambient-mode-animation";
+#endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
 constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
@@ -3583,6 +3586,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
+    {"improve-reader-mode-prompt",
+     flag_descriptions::kImproveReaderModePromptName,
+     flag_descriptions::kImproveReaderModePromptDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kImproveReaderModePrompt)},
     {"voice-button-in-top-toolbar",
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
@@ -4257,6 +4264,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardDarkModeName,
      flag_descriptions::kVirtualKeyboardDarkModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardDarkMode)},
+    {"enable-cros-virtual-keyboard-new-header",
+     flag_descriptions::kVirtualKeyboardNewHeaderName,
+     flag_descriptions::kVirtualKeyboardNewHeaderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardNewHeader)},
     {"enable-cros-ime-system-emoji-picker-clipboard",
      flag_descriptions::kImeSystemEmojiPickerClipboardName,
      flag_descriptions::kImeSystemEmojiPickerClipboardDescription, kOsCrOS,
@@ -5462,13 +5473,13 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(IS_ANDROID)
     {"enable-accessibility-live-caption",
      flag_descriptions::kEnableAccessibilityLiveCaptionName,
-     flag_descriptions::kEnableAccessibilityLiveCaptionDescription, kOsAll,
+     flag_descriptions::kEnableAccessibilityLiveCaptionDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media::kLiveCaption)},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
     {"enable-auto-disable-accessibility",
      flag_descriptions::kEnableAutoDisableAccessibilityName,
-     flag_descriptions::kEnableAutoDisableAccessibilityDescription, kOsDesktop,
+     flag_descriptions::kEnableAutoDisableAccessibilityDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kAutoDisableAccessibility)},
 
 #if BUILDFLAG(IS_ANDROID)
@@ -5713,6 +5724,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"app-management-app-details",
+     flag_descriptions::kAppManagementAppDetailsName,
+     flag_descriptions::kAppManagementAppDetailsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAppManagementAppDetails)},
+
     {"arc-ghost-window", flag_descriptions::kArcGhostWindowName,
      flag_descriptions::kArcGhostWindowDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(full_restore::features::kArcGhostWindow)},
@@ -6733,12 +6749,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(apps::kAppDiscoveryRemoteUrlSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"chromeos-sharing-hub", flag_descriptions::kChromeOSSharingHubName,
-     flag_descriptions::kChromeOSSharingHubDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kChromeOSSharingHub)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
     {"enable-bluetooth-spp-in-serial-api",
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiName,
      flag_descriptions::kEnableBluetoothSerialPortProfileInSerialApiDescription,
@@ -6750,11 +6760,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAddPasswordsInSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSupportForAddPasswordsInSettings)},
-
-    {"edit-passwords-in-settings",
-     flag_descriptions::kEditPasswordsInSettingsName,
-     flag_descriptions::kEditPasswordsInSettingsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kEditPasswordsInSettings)},
 
     {"mute-compromised-passwords",
      flag_descriptions::kMuteCompromisedPasswordsName,
@@ -7350,11 +7355,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-input-noise-cancellation-ui",
-     flag_descriptions::kEnableInputNoiseCancellationUiName,
-     flag_descriptions::kEnableInputNoiseCancellationUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEnableInputNoiseCancellationUi)},
-
     {"enable-keyboard-backlight-toggle",
      flag_descriptions::kEnableKeyboardBacklightToggleName,
      flag_descriptions::kEnableKeyboardBacklightToggleDescription, kOsCrOS,
@@ -7879,11 +7879,13 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillEnableUpdateVirtualCardEnrollment)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
     {kAmbientModeAnimationInternalName,
      flag_descriptions::kAmbientModeAnimationName,
      flag_descriptions::kAmbientModeAnimationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAmbientModeAnimationFeature)},
-#endif
+#endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     {"lacros-non-syncing-profiles",
@@ -8084,8 +8086,13 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return !ash::features::IsWallpaperWebUIEnabled();
 
   // Features that are only available for Unknown/Canary/Dev channels.
+  bool is_ambient_mode_animation_feature = false;
+#if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
+  is_ambient_mode_animation_feature =
+      !strcmp(kAmbientModeAnimationInternalName, entry.internal_name);
+#endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
   if ((!strcmp(kPersonalizationHubInternalName, entry.internal_name) ||
-       !strcmp(kAmbientModeAnimationInternalName, entry.internal_name)) &&
+       is_ambient_mode_animation_feature) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {

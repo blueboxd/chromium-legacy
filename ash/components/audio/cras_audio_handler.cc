@@ -471,19 +471,20 @@ void CrasAudioHandler::RequestNoiseCancellationSupported(
     OnNoiseCancellationSupportedCallback callback) {
   CrasAudioClient::Get()->GetNoiseCancellationSupported(
       base::BindOnce(&CrasAudioHandler::HandleGetNoiseCancellationSupported,
-                     weak_ptr_factory_.GetWeakPtr()));
-
-  std::move(callback).Run();
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void CrasAudioHandler::HandleGetNoiseCancellationSupported(
+    OnNoiseCancellationSupportedCallback callback,
     absl::optional<bool> noise_cancellation_supported) {
   if (!noise_cancellation_supported.has_value()) {
     LOG(ERROR)
         << "cras_audio_handler: Failed to retrieve noise cancellation support";
-    return;
+  } else {
+    noise_cancellation_supported_ = noise_cancellation_supported.value();
   }
-  noise_cancellation_supported_ = noise_cancellation_supported.value();
+
+  std::move(callback).Run();
 }
 
 void CrasAudioHandler::SetKeyboardMicActive(bool active) {
@@ -1716,8 +1717,7 @@ void CrasAudioHandler::HandleGetNodes(absl::optional<AudioNodeList> node_list) {
   UpdateDevicesAndSwitchActive(node_list.value());
 
   // Always set the input noise cancellation state on NodesChange event.
-  if (features::IsInputNoiseCancellationUiEnabled() &&
-      noise_cancellation_supported()) {
+  if (noise_cancellation_supported()) {
     const AudioDevice* internal_mic =
         GetDeviceByType(AudioDeviceType::kInternalMic);
     if (internal_mic) {

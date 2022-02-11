@@ -79,15 +79,18 @@ CaptureModeSettingsView::CaptureModeSettingsView(CaptureModeSession* session,
       AshColorProvider::ContentLayerType::kSeparatorColor);
 
   if (features::IsCaptureModeSelfieCameraEnabled()) {
-    separator_1_ = AddChildView(std::make_unique<views::Separator>());
-    separator_1_->SetColor(separator_color);
     auto* camera_controller = CaptureModeController::Get()->camera_controller();
     camera_controller->AddObserver(this);
 
+    separator_1_ = AddChildView(std::make_unique<views::Separator>());
+    separator_1_->SetColor(separator_color);
     camera_menu_group_ = AddChildView(std::make_unique<CaptureModeMenuGroup>(
         this, kCaptureModeCameraIcon,
         l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_CAMERA)));
-    AddCameraOptions(camera_controller->available_cameras());
+
+    const CameraInfoList& cameras = camera_controller->available_cameras();
+
+    AddCameraOptions(cameras);
   }
 
   if (!is_in_projector_mode) {
@@ -259,6 +262,13 @@ void CaptureModeSettingsView::OnAvailableCamerasChanged(
     const CameraInfoList& cameras) {
   DCHECK(camera_menu_group_);
   AddCameraOptions(cameras);
+
+  // If the size of the given `cameras` is equal to the size of the current
+  // available cameras, the bounds of the `camera_menu_group_` won't be updated,
+  // hence a layout may not be triggered. This can cause the newly added camera
+  // options to be not visible. We must guarantee that a layout will always
+  // occur by invalidating the layout.
+  camera_menu_group_->InvalidateLayout();
   camera_menu_group_->RefreshOptionsSelections();
   capture_mode_session_->MaybeUpdateSettingsBounds();
 }
@@ -304,16 +314,26 @@ const CameraId* CaptureModeSettingsView::FindCameraIdByOptionId(
 
 void CaptureModeSettingsView::AddCameraOptions(const CameraInfoList& cameras) {
   DCHECK(camera_menu_group_);
-  int camera_option_id_begin = kCameraDevicesBegin;
   camera_menu_group_->DeleteOptions();
   option_camera_id_map_.clear();
-  camera_menu_group_->AddOption(
-      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_CAMERA_OFF), kCameraOff);
-  for (const CameraInfo& camera_info : cameras) {
-    option_camera_id_map_[camera_option_id_begin] = camera_info.camera_id;
-    camera_menu_group_->AddOption(base::UTF8ToUTF16(camera_info.display_name),
-                                  camera_option_id_begin++);
+  const bool has_cameras = !cameras.empty();
+  if (has_cameras) {
+    camera_menu_group_->AddOption(
+        l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_CAMERA_OFF),
+        kCameraOff);
+    int camera_option_id_begin = kCameraDevicesBegin;
+    for (const CameraInfo& camera_info : cameras) {
+      option_camera_id_map_[camera_option_id_begin] = camera_info.camera_id;
+      camera_menu_group_->AddOption(base::UTF8ToUTF16(camera_info.display_name),
+                                    camera_option_id_begin++);
+    }
   }
+  UpdateCameraMenuGroupVisibility(/*visible=*/has_cameras);
+}
+
+void CaptureModeSettingsView::UpdateCameraMenuGroupVisibility(bool visible) {
+  separator_1_->SetVisible(visible);
+  camera_menu_group_->SetVisible(visible);
 }
 
 BEGIN_METADATA(CaptureModeSettingsView, views::View)

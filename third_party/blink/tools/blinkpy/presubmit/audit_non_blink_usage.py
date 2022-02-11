@@ -46,6 +46,7 @@ _CONFIG = [
             'base::ApplyMetadataToPastSamples',
             'base::AutoReset',
             'base::Contains',
+            'base::CpuReductionExperimentFilter',
             'base::CreateSequencedTaskRunner',
             'base::ValuesEquivalent',
             'base::Days',
@@ -1281,6 +1282,7 @@ _CONFIG = [
             'third_party/blink/renderer/modules/webcodecs/',
         ],
         'allowed': [
+            'base::ClampMul',
             'base::PlatformThreadRef',
             'base::WrapRefCounted',
             'cc::kNumYUVPlanes',

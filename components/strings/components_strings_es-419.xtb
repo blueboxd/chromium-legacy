@@ -420,6 +420,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="22081806969704220">Bandeja 3</translation>
 <translation id="2212735316055980242">No se encontró la política.</translation>
 <translation id="2213606439339815911">Recuperando entradas…</translation>
+<translation id="2213612003795704869">Se imprime la página</translation>
 <translation id="2215727959747642672">Edición de archivo</translation>
 <translation id="2218879909401188352">Es posible que los atacantes que se encuentran actualmente en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> instalen apps peligrosas que dañen tu dispositivo, agreguen cargos ocultos en la factura de tu servicio móvil o roben tu información personal. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Sin Internet</translation>
@@ -429,6 +430,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2248949050832152960">Usar WebAuthn</translation>
 <translation id="2250931979407627383">Costura de borde a la izquierda</translation>
 <translation id="225207911366869382">Este valor ya no se utiliza para esta política.</translation>
+<translation id="2256115617011615191">Reiniciar ahora</translation>
 <translation id="2258928405015593961">Ingresa una fecha de vencimiento futura y vuelve a intentarlo</translation>
 <translation id="225943865679747347">Código de error: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
@@ -964,6 +966,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="3990250421422698716">Desplazamiento del borde</translation>
 <translation id="3996311196211510766">El sitio <ph name="ORIGIN" /> solicitó que se aplique una política de origen a todas las solicitudes. Sin embargo, no es posible en este momento.</translation>
+<translation id="4009243425692662128">Se envía el contenido de las páginas que imprimes a Google Cloud o a terceros para su análisis. Por ejemplo, es posible que se analice para detectar datos sensibles.</translation>
 <translation id="4010758435855888356">¿Quieres permitir el acceso al almacenamiento?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF con {COUNT} página}other{Documento PDF con {COUNT} páginas}}</translation>
 <translation id="4023431997072828269">Dado que se está utilizando una conexión no segura para enviar este formulario, otras personas podrán ver tu información.</translation>
@@ -1054,6 +1057,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4250680216510889253">No</translation>
 <translation id="4253168017788158739">Nota</translation>
 <translation id="425582637250725228">Es posible que los cambios que implementaste no se puedan guardar.</translation>
+<translation id="425869179292622354">¿Deseas aumentar su nivel de seguridad con una tarjeta virtual?</translation>
 <translation id="4258748452823770588">Firma no válida</translation>
 <translation id="4261046003697461417">No se pueden realizar anotaciones en documentos protegidos</translation>
 <translation id="4265872034478892965">Permitido por tu administrador</translation>
@@ -1234,7 +1238,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4819347708020428563">¿Quieres editar anotaciones en la vista predeterminada?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, presiona Tab y, luego, Intro para crear una nueva hoja de cálculo de Google rápidamente</translation>
 <translation id="4825507807291741242">Powerful</translation>
-<translation id="4829962028570902310">Se ignoró porque solo la política del usuario basada en la nube puede establecer la política.</translation>
 <translation id="483241715238664915">Activar advertencias</translation>
 <translation id="4838327282952368871">Dreamy</translation>
 <translation id="4840250757394056958">Ver tu historial de Chrome</translation>
@@ -1564,6 +1567,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5921639886840618607">¿Quieres guardar la tarjeta en la Cuenta de Google?</translation>
 <translation id="5922853866070715753">Ya casi</translation>
 <translation id="5932224571077948991">El sitio muestra anuncios intrusivos o engañosos</translation>
+<translation id="5938153366081463283">Agregar tarjeta virtual</translation>
 <translation id="5938793338444039872">Troy</translation>
 <translation id="5946937721014915347">Abriendo <ph name="SITE_NAME" />…</translation>
 <translation id="5951495562196540101">No se puede realizar la inscripción con una cuenta personal (licencia de paquete disponible).</translation>
@@ -1663,6 +1667,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6272383483618007430">Google Actualización</translation>
 <translation id="6276112860590028508">Las páginas de tu lista de lectura aparecen aquí</translation>
 <translation id="627746635834430766">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta y dirección de facturación en tu Cuenta de Google.</translation>
+<translation id="6279183038361895380">Presiona |<ph name="ACCELERATOR" />| para mostrar tu cursor</translation>
 <translation id="6280223929691119688">La dirección de envío no es válida. Selecciona una dirección diferente.</translation>
 <translation id="6282194474023008486">Código postal</translation>
 <translation id="6285507000506177184">Botón Administrar las descargas en Chrome: presiona Intro para administrar los archivos que has descargado en Chrome</translation>
@@ -2163,7 +2168,6 @@ Detalles adicionales:
 <translation id="7888575728750733395">Propósito de conversión para impresión</translation>
 <translation id="7894280532028510793">Si no hay errores, <ph name="BEGIN_LINK" />prueba ejecutar el diagnóstico de red<ph name="END_LINK" />.</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
-<translation id="7931318309563332511">Desconocido</translation>
 <translation id="793209273132572360">¿Quieres actualizar la dirección?</translation>
 <translation id="7932579305932748336">Recubrimiento</translation>
 <translation id="79338296614623784">Ingresa un número de teléfono válido</translation>
@@ -2188,6 +2192,7 @@ Detalles adicionales:
 <translation id="7976214039405368314">Demasiadas solicitudes</translation>
 <translation id="7977538094055660992">Dispositivo de salida</translation>
 <translation id="7977894662897852582">Edp</translation>
+<translation id="7981260203882740562">Está vinculada con</translation>
 <translation id="798134797138789862">Puede solicitar permiso para usar datos y dispositivos de realidad virtual</translation>
 <translation id="7984945080620862648">No puedes visitar <ph name="SITE" /> ahora porque el sitio web envió credenciales confusas que Chrome no puede procesar. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
 <translation id="7986319120639858961"><ph name="CARD_TITLE" /> <ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>

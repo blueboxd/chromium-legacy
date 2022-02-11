@@ -129,12 +129,17 @@ std::vector<const char*> GetSuffixes(
 }  // namespace
 
 PowerMetricsReporter::PowerMetricsReporter(
-    const base::WeakPtr<UsageScenarioDataStore>& data_store,
+    UsageScenarioDataStore* usage_scenario_data_store,
     std::unique_ptr<BatteryLevelProvider> battery_level_provider)
-    : data_store_(data_store),
+    : data_store_(usage_scenario_data_store),
       battery_level_provider_(std::move(battery_level_provider)) {
   DCHECK(ProcessMonitor::Get());
   ProcessMonitor::Get()->AddObserver(this);
+
+  if (!data_store_) {
+    usage_scenario_tracker_ = std::make_unique<UsageScenarioTracker>();
+    data_store_ = usage_scenario_tracker_->data_store();
+  }
 
   battery_level_provider_->GetBatteryState(
       base::BindOnce(&PowerMetricsReporter::OnFirstBatteryStateSampled,
@@ -145,6 +150,8 @@ PowerMetricsReporter::PowerMetricsReporter(
   iopm_power_source_sampling_event_source_.Start(
       base::BindRepeating(&PowerMetricsReporter::OnIOPMPowerSourceSamplingEvent,
                           base::Unretained(this)));
+
+  coalition_resource_usage_provider_.Init();
 #endif
 }
 
@@ -261,18 +268,25 @@ void PowerMetricsReporter::OnBatteryAndAggregatedProcessMetricsSampled(
     const BatteryLevelProvider::BatteryState& battery_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto now = base::TimeTicks::Now();
-  base::TimeDelta interval_duration = now - interval_begin_;
-  interval_begin_ = now;
+  const base::TimeTicks now = base::TimeTicks::Now();
+
+  // Report time it took to sample the battery state.
   base::UmaHistogramMicrosecondsTimes(kBatterySamplingDelayHistogramName,
                                       now - battery_sample_begin_time);
 
+  // Evaluate the interval duration.
+  base::TimeDelta interval_duration = now - interval_begin_;
+  interval_begin_ = now;
+
+  // Evaluate battery discharge mode and rate.
   auto battery_discharge =
       GetBatteryDischargeDuringInterval(battery_state, interval_duration);
 
+  // Get usage scenario data.
   UsageScenarioDataStore::IntervalData interval_data =
       data_store_->ResetIntervalData();
 
+  // Evaluate and report main screen brightness.
   absl::optional<int64_t> main_screen_brightness;
   if (power_details_provider_.get()) {
     absl::optional<double> brightness =
@@ -293,15 +307,18 @@ void PowerMetricsReporter::OnBatteryAndAggregatedProcessMetricsSampled(
   base::UmaHistogramBoolean(kMainScreenBrightnessAvailableHistogramName,
                             main_screen_brightness.has_value());
 
+  // Report UKMs.
   ReportUKMs(interval_data, aggregated_process_metrics, interval_duration,
              battery_discharge, main_screen_brightness);
 
-  ReportHistograms(interval_data, aggregated_process_metrics, interval_duration,
-                   battery_discharge
+  // Report histograms.
+  ReportHistograms(
+      interval_data, aggregated_process_metrics, interval_duration,
+      battery_discharge
 #if BUILDFLAG(IS_MAC)
-                   ,
-                   aggregated_process_metrics.coalition_data
-#endif  // BUILDFLAG(IS_MAC)
+      ,
+      coalition_resource_usage_provider_.GetCoalitionResourceUsageRate()
+#endif
   );
 
   if (on_battery_sampled_for_testing_)
@@ -415,7 +432,6 @@ void PowerMetricsReporter::ReportUKMs(
     BatteryDischarge battery_discharge,
     absl::optional<int64_t> main_screen_brightness) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data_store_.MaybeValid());
 
   // UKM may be unavailable in content_shell or other non-chrome/ builds; it
   // may also be unavailable if browser shutdown has started; so this may be a

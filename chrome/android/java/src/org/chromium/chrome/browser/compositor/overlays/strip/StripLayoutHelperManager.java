@@ -55,7 +55,7 @@ import java.util.List;
  * all input and model events to the proper destination.
  */
 public class StripLayoutHelperManager implements SceneOverlay {
-    private static final long FADE_SCRIM_DURATION_MS = 500;
+    private static final long FADE_SCRIM_DURATION_MS = 200;
     // Caching Variables
     private final RectF mStripFilterArea = new RectF();
 
@@ -387,7 +387,7 @@ public class StripLayoutHelperManager implements SceneOverlay {
     @Override
     public void getVirtualViews(List<VirtualView> views) {
         if (mModelSelectorButton.isVisible()) views.add(mModelSelectorButton);
-        getActiveStripLayoutHelper().getVirtualViews(views);
+        if (!getStripScrim().isVisible()) getActiveStripLayoutHelper().getVirtualViews(views);
     }
 
     @Override

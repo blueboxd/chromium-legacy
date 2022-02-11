@@ -15,12 +15,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// The following #include come before including logging.h. It ensures that
-// WebRTC-style logging is used.
-#define LOGGING_INSIDE_WEBRTC
-
-#include "build/build_config.h"
 #include "third_party/webrtc_overrides/rtc_base/logging.h"
 
 static const int kDefaultVerbosity = 0;

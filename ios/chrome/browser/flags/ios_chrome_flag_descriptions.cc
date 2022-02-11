@@ -83,10 +83,6 @@ const char kContentSuggestionsHeaderMigrationDescription[] =
     "When enabled, the Content Suggestions header will be logically moved to "
     "the Discover feed ScrollView";
 
-const char kContextMenuActionsRefreshName[] = "Context menu actions refresh";
-const char kContextMenuActionsRefreshDescription[] =
-    "When enabled, context menu actions are updated";
-
 const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
     "When enabled use Crashpad to generate crash reports crash collection. "
@@ -350,6 +346,11 @@ const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
     "When enabled, the newly implemented tabstrip can be tested.";
 
+const char kMuteCompromisedPasswordsName[] =
+    "Mute & Unmute compromised passwords in bulk leak check";
+const char kMuteCompromisedPasswordsDescription[] =
+    "Enables muting/unmuting compromised passwords in bulk leak check.";
+
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
 
@@ -571,6 +572,13 @@ const char kWebViewNativeContextMenuPhase2Name[] =
 const char kWebViewNativeContextMenuPhase2Description[] =
     "When enabled, the context menu displayed when long pressing on a link or "
     "an image has a non-live preview.";
+
+const char kWebViewNativeContextMenuPhase2ScreenshotName[] =
+    "Screenshot preview animation for Context Menu";
+
+const char kWebViewNativeContextMenuPhase2ScreenshotDescription[] =
+    "When enabled with phase2, uses a screenshot as transition animation to "
+    "the context menu.";
 
 // Please insert your name/description above in alphabetical order.
 

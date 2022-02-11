@@ -24,7 +24,7 @@
 #include "url/gurl.h"
 
 using AccountList = content::IdpNetworkRequestManager::AccountList;
-using ClientIdMetadata = content::IdpNetworkRequestManager::ClientIdMetadata;
+using ClientMetadata = content::IdpNetworkRequestManager::ClientMetadata;
 using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
 using AccountsRequestCallback =
     content::IdpNetworkRequestManager::AccountsRequestCallback;
@@ -43,8 +43,8 @@ const char kTestIdpUrl[] = "https://idp.test";
 const char kTestRpUrl[] = "https://rp.test";
 const char kTestAccountsEndpoint[] = "https://idp.test/accounts_endpoint";
 const char kTestTokenEndpoint[] = "https://idp.test/token_endpoint";
-const char kTestClientIdMetadataEndpoint[] =
-    "https://idp.test/client_id_metadata_endpoint";
+const char kTestClientMetadataEndpoint[] =
+    "https://idp.test/client_metadata_endpoint";
 const char kTestRevokeEndpoint[] = "https://idp.test/revoke_endpoint";
 
 class IdpNetworkRequestManagerTest : public ::testing::Test {
@@ -116,24 +116,24 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
     return token;
   }
 
-  ClientIdMetadata SendClientIdMetadataRequestAndWaitForResponse(
+  ClientMetadata SendClientMetadataRequestAndWaitForResponse(
       const char* client_id,
       net::HttpStatusCode http_status = net::HTTP_OK) {
     const char response[] = R"({})";
-    GURL client_id_endpoint(kTestClientIdMetadataEndpoint);
+    GURL client_id_endpoint(kTestClientMetadataEndpoint);
     test_url_loader_factory().AddResponse(
         client_id_endpoint.spec() + "?client_id=" + client_id, response,
         http_status);
 
-    ClientIdMetadata data;
+    ClientMetadata data;
     base::RunLoop run_loop;
     auto callback = base::BindLambdaForTesting(
-        [&](FetchStatus status, ClientIdMetadata metadata) {
+        [&](FetchStatus status, ClientMetadata metadata) {
           data = metadata;
           run_loop.Quit();
         });
-    manager().FetchClientIdMetadata(client_id_endpoint, client_id,
-                                    std::move(callback));
+    manager().FetchClientMetadata(client_id_endpoint, client_id,
+                                  std::move(callback));
     run_loop.Run();
     return data;
   }
@@ -211,7 +211,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountSingle) {
   const auto* test_single_account_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "given_name": "Ken",
@@ -235,14 +235,14 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountMultiple) {
   const auto* test_accounts_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "given_name": "Ken",
       "picture": "https://idp.test/profile/1"
     },
     {
-      "sub" : "5678",
+      "account_id" : "5678",
       "email": "sam@idp.test",
       "name": "Sam G. Test",
       "given_name": "Sam",
@@ -267,7 +267,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountOptionalFields) {
   const auto* test_accounts_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -302,7 +302,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountRequiredFields) {
   }
   {
     const auto* test_accounts_missing_email_json = R"({"accounts" : [{
-      "sub" : "1234",
+      "account_id" : "1234",
       "name": "Ken R. Example"
     }]})";
     FetchStatus accounts_response;
@@ -316,7 +316,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountRequiredFields) {
   }
   {
     const auto* test_accounts_missing_name_json = R"({"accounts" : [{
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test"
     }]})";
     FetchStatus accounts_response;
@@ -334,13 +334,13 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountPictureUrl) {
   const auto* test_accounts_json = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "picture": "https://idp.test/profile/1234"
     },
     {
-      "sub" : "567",
+      "account_id" : "567",
       "email": "sam@idp.test",
       "name": "Sam R. Example",
       "picture": "invalid_url"
@@ -366,7 +366,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountUnicode) {
     const auto* json = R"({
      "accounts" : [
         {
-          "sub" : "1234",
+          "account_id" : "1234",
           "email": "ken@idp.test",
           "%s": "%s"
         }
@@ -421,7 +421,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountBranding) {
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -449,7 +449,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountBrandingRemoveAlpha) {
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -474,7 +474,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountBrandingInvalidColor) {
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -499,7 +499,7 @@ TEST_F(IdpNetworkRequestManagerTest,
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -526,7 +526,7 @@ TEST_F(IdpNetworkRequestManagerTest,
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -551,7 +551,7 @@ TEST_F(IdpNetworkRequestManagerTest, ParseAccountBrandingSelectBestSize) {
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -607,7 +607,7 @@ TEST_F(IdpNetworkRequestManagerTest,
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -652,7 +652,7 @@ TEST_F(IdpNetworkRequestManagerTest, AccountRequestReferrer) {
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1234",
+      "account_id" : "1234",
       "email": "ken@idp.test",
       "name": "Ken R. Example"
     }
@@ -684,30 +684,30 @@ TEST_F(IdpNetworkRequestManagerTest, AccountSignedInStatus) {
   const char test_accounts_json[] = R"({
   "accounts" : [
     {
-      "sub" : "1",
+      "account_id" : "1",
       "email": "ken@idp.test",
       "name": "Ken R. Example",
       "approved_clients": ["xxx"]
     },
     {
-      "sub" : "2",
+      "account_id" : "2",
       "email": "jim@idp.test",
       "name": "Jim R. Example",
       "approved_clients": []
     },
     {
-      "sub" : "3",
+      "account_id" : "3",
       "email": "rashida@idp.test",
       "name": "Rashida R. Example",
       "approved_clients": ["yyy"]
     },
     {
-      "sub" : "4",
+      "account_id" : "4",
       "email": "wei@idp.test",
       "name": "Wei R. Example"
     },
     {
-      "sub" : "5",
+      "account_id" : "5",
       "email": "hans@idp.test",
       "name": "Hans R. Example",
       "approved_clients": ["xxx", "yyy"]
@@ -760,20 +760,20 @@ TEST_F(IdpNetworkRequestManagerTest, TokenRequest) {
   ASSERT_EQ("token", token);
 }
 
-// Tests the client id metadata implementation.
-TEST_F(IdpNetworkRequestManagerTest, ClientIdMetadata) {
+// Tests the client metadata implementation.
+TEST_F(IdpNetworkRequestManagerTest, ClientMetadata) {
   bool called = false;
   auto interceptor =
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         called = true;
         std::string url_string =
-            std::string(kTestClientIdMetadataEndpoint) + "?client_id=xxx";
+            std::string(kTestClientMetadataEndpoint) + "?client_id=xxx";
         EXPECT_EQ(GURL(url_string), request.url);
         EXPECT_EQ(request.request_body, nullptr);
         EXPECT_EQ(GURL(kTestRpUrl), request.referrer);
       });
   test_url_loader_factory().SetInterceptor(interceptor);
-  ClientIdMetadata data = SendClientIdMetadataRequestAndWaitForResponse("xxx");
+  ClientMetadata data = SendClientMetadataRequestAndWaitForResponse("xxx");
   ASSERT_TRUE(called);
   ASSERT_EQ("", data.privacy_policy_url);
   ASSERT_EQ("", data.terms_of_service_url);

@@ -349,11 +349,13 @@
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_minimal_symbols_tsan',
       'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on_reclient',
       'linux-blink-v8-oilpan': 'release_bot_enable_v8_oilpan_dcheck_always_on',
+      'linux-blink-v8-sandbox-future-dbg': 'debug_bot_enable_v8_sandbox_future',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_bot_javascript_coverage',
       'linux-code-coverage': 'clang_code_coverage',
       'linux-example-builder': 'release_bot',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
+      'linux-fieldtrial-fyi-rel': 'release_bot_minimal_symbols',
       'linux-headless-shell-rel': 'headless_shell_release_bot',
       'linux-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64',
       'linux-lacros-builder-rel (goma cache silo)': 'lacros_on_linux_release_bot',
@@ -621,7 +623,6 @@
 
       # These should be the same with 'Linux Builder'.
       'linux-rel-swarming': 'gpu_tests_release_bot',
-      'linux-rel-swarming-staging': 'gpu_tests_release_bot',
       'linux-ssd-rel-swarming': 'gpu_tests_release_bot',
 
       # This should be the same with 'Mac Builder'.
@@ -631,7 +632,6 @@
       # This should be the same with 'Win x64 Builder'.
       'win11-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
       'win-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
-      'win-rel-swarming-staging': 'gpu_tests_release_bot_minimal_symbols',
     },
 
     'client.nacl.sdk': {
@@ -1161,6 +1161,7 @@
 
     'tryserver.chromium.rust': {
       'linux-rust-x64-rel': 'release_rust_linux_x64',
+      'linux-rust-intree-x64-rel': 'release_rust_intree_linux_x64',
       'android-rust-arm-rel': 'release_rust_android_arm',
     },
 
@@ -2187,6 +2188,10 @@
       'debug_bot', 'enable_blink_animation_use_time_delta',
     ],
 
+    'debug_bot_enable_v8_sandbox_future': [
+      'debug_bot', 'v8_sandbox_future', 'dcheck_always_on', 'x64',
+    ],
+
     'debug_bot_fuchsia': [
       'debug_bot', 'fuchsia',
     ],
@@ -3073,6 +3078,10 @@
 
     'release_rust_linux_x64': [
       'release_trybot_minimal_symbols', 'enable_rust', 'x64',
+    ],
+
+    'release_rust_intree_linux_x64': [
+      'release_trybot_minimal_symbols', 'enable_rust', 'use_chromium_rust_toolchain', 'x64',
     ],
 
     'release_trybot_minimal_symbols': [
@@ -4041,6 +4050,10 @@
       'gn_args': 'is_ubsan_vptr=true',
     },
 
+    'use_chromium_rust_toolchain': {
+      'gn_args': 'use_chromium_rust_toolchain=true',
+    },
+
     'use_clang_coverage': {
       'gn_args': 'use_clang_coverage=true',
     },
@@ -4091,6 +4104,10 @@
       # TODO(machenbach): Temporarily toggle pointer-compression off while it
       # is on by default.
       'gn_args': 'v8_enable_pointer_compression=false',
+    },
+
+    'v8_sandbox_future': {
+      'gn_args': 'v8_enable_sandbox_future=true',
     },
 
     'vr': {

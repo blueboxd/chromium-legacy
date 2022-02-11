@@ -13,8 +13,10 @@ import androidx.annotation.VisibleForTesting;
 import com.google.flatbuffers.FlatBufferBuilder;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -44,6 +46,32 @@ public class CriticalPersistedTabData extends PersistedTabData {
 
     private static final int UNSPECIFIED_THEME_COLOR = Color.TRANSPARENT;
     private static final String NULL_OPENER_APP_ID = " ";
+    private static final PersistedTabDataMapper<SerializedCriticalPersistedTabData> sMapper =
+            new PersistedTabDataMapper<SerializedCriticalPersistedTabData>() {
+                @Override
+                public SerializedCriticalPersistedTabData map(ByteBuffer byteBuffer) {
+                    if (byteBuffer == null || byteBuffer.limit() == 0) {
+                        return new SerializedCriticalPersistedTabData(null);
+                    }
+                    CriticalPersistedTabDataFlatBuffer criticalPersistedTabDataFlatBuffer = null;
+                    try {
+                        criticalPersistedTabDataFlatBuffer =
+                                CriticalPersistedTabDataFlatBuffer
+                                        .getRootAsCriticalPersistedTabDataFlatBuffer(byteBuffer);
+                    } catch (Exception e) {
+                        // TODO(crbug.com/1294613) Add in some metrics recording how often this
+                        // happens.
+                        Log.e(TAG,
+                                "Failed to deserialize CriticalPersistedTabDataFlatBuffer. "
+                                        + "Details: " + e.getMessage());
+                    }
+                    RecordHistogram.recordBooleanHistogram(
+                            "Tabs.PersistedTabData.Critical.Map.Success",
+                            criticalPersistedTabDataFlatBuffer != null);
+                    return new SerializedCriticalPersistedTabData(
+                            criticalPersistedTabDataFlatBuffer);
+                }
+            };
     public static final long INVALID_TIMESTAMP = -1;
 
     /**
@@ -136,6 +164,30 @@ public class CriticalPersistedTabData extends PersistedTabData {
         deserializeAndLog(data);
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public CriticalPersistedTabData(Tab tab, SerializedCriticalPersistedTabData serialized) {
+        this(tab);
+        mParentId = serialized.getFlatBuffer().parentId();
+        mRootId = serialized.getFlatBuffer().rootId();
+        mTimestampMillis = serialized.getFlatBuffer().timestampMillis();
+        ByteBuffer webContentsState =
+                serialized.getFlatBuffer().webContentsStateBytesAsByteBuffer();
+        mWebContentsState = new WebContentsState(
+                webContentsState == null ? ByteBuffer.allocateDirect(0) : webContentsState.slice());
+        mWebContentsState.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
+        mUrl = mWebContentsState.getVirtualUrlFromState() == null
+                ? GURL.emptyGURL()
+                : new GURL(mWebContentsState.getVirtualUrlFromState());
+        mTitle = mWebContentsState.getDisplayTitleFromState();
+        mContentStateVersion = serialized.getFlatBuffer().contentStateVersion();
+        mOpenerAppId = NULL_OPENER_APP_ID.equals(serialized.getFlatBuffer().openerAppId())
+                ? null
+                : serialized.getFlatBuffer().openerAppId();
+        mThemeColor = serialized.getFlatBuffer().themeColor();
+        mTabLaunchTypeAtCreation = getLaunchType(serialized.getFlatBuffer().launchTypeAtCreation());
+        mUserAgent = getTabUserAgentType(serialized.getFlatBuffer().userAgent());
+    }
+
     /**
      * TODO(crbug.com/1096142) asynchronous from can be removed
      * Acquire {@link CriticalPersistedTabData} from storage
@@ -176,8 +228,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
     public static SerializedCriticalPersistedTabData restore(int tabId, boolean isIncognito) {
         PersistedTabDataConfiguration config =
                 PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, isIncognito);
-        return new SerializedCriticalPersistedTabData(
-                config.getStorage().restore(tabId, config.getId()));
+        return config.getStorage().restore(tabId, config.getId(), sMapper);
     }
 
     /**
@@ -190,8 +241,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
             int tabId, boolean isIncognito, Callback<SerializedCriticalPersistedTabData> callback) {
         PersistedTabDataConfiguration config =
                 PersistedTabDataConfiguration.get(CriticalPersistedTabData.class, isIncognito);
-        config.getStorage().restore(tabId, config.getId(),
-                (res) -> { callback.onResult(new SerializedCriticalPersistedTabData(res)); });
+        config.getStorage().restore(tabId, config.getId(), callback, sMapper);
     }
 
     /**
@@ -200,11 +250,9 @@ public class CriticalPersistedTabData extends PersistedTabData {
      * @param isCriticalPersistedTabDataEnabled true if CriticalPersistedData is enabled
      * as the storage/retrieval method
      */
-    public static void build(Tab tab, SerializedCriticalPersistedTabData serialized,
-            boolean isStorageRetrievalEnabled) {
-        PersistedTabData.build(tab, (data, storage, id, callback) -> {
-            callback.onResult(new CriticalPersistedTabData(tab, data, storage, id));
-        }, serialized.getByteBuffer(), CriticalPersistedTabData.class, (res) -> {});
+    public static void build(Tab tab, SerializedCriticalPersistedTabData serialized) {
+        PersistedTabData.from(
+                tab, USER_DATA_KEY, () -> new CriticalPersistedTabData(tab, serialized));
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -217,6 +265,10 @@ public class CriticalPersistedTabData extends PersistedTabData {
         return criticalPersistedTabData;
     }
 
+    // We are currently using the constructor
+    // CriticalPersistedTabData(Tab tab, SerializedCriticalPersistedTabData serialized) rather than
+    // deserialize as part of deserializing straight after the file read. Assuming this approach
+    // is successful, deserialize on CriticalPersistedTabData will be deprecated.
     @Override
     boolean deserialize(@Nullable ByteBuffer bytes) {
         try (TraceEvent e = TraceEvent.scoped("CriticalPersistedTabData.Deserialize")) {
@@ -226,8 +278,10 @@ public class CriticalPersistedTabData extends PersistedTabData {
             mParentId = deserialized.parentId();
             mRootId = deserialized.rootId();
             mTimestampMillis = deserialized.timestampMillis();
+            ByteBuffer webContentsState = deserialized.webContentsStateBytesAsByteBuffer();
             mWebContentsState =
-                    new WebContentsState(deserialized.webContentsStateBytesAsByteBuffer().slice());
+                    new WebContentsState(webContentsState == null ? ByteBuffer.allocateDirect(0)
+                                                                  : webContentsState.slice());
             mWebContentsState.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
             mUrl = mWebContentsState.getVirtualUrlFromState() == null
                     ? GURL.emptyGURL()
@@ -724,5 +778,11 @@ public class CriticalPersistedTabData extends PersistedTabData {
             SerializedCriticalPersistedTabData serializedCriticalPersistedTabData) {
         return serializedCriticalPersistedTabData == null
                 || serializedCriticalPersistedTabData.isEmpty();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    protected static PersistedTabDataMapper<SerializedCriticalPersistedTabData>
+    getMapperForTesting() {
+        return sMapper;
     }
 }

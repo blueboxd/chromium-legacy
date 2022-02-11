@@ -74,10 +74,6 @@ extern const char kCommercePriceTrackingDescription[];
 extern const char kContentSuggestionsHeaderMigrationName[];
 extern const char kContentSuggestionsHeaderMigrationDescription[];
 
-// Title and description for the flag to enable context menu actions refresh.
-extern const char kContextMenuActionsRefreshName[];
-extern const char kContextMenuActionsRefreshDescription[];
-
 // Title and description for the flag to control which crash generation tool
 // is used.
 extern const char kCrashpadIOSName[];
@@ -324,6 +320,11 @@ extern const char kMetrickitCrashReportDescription[];
 extern const char kModernTabStripName[];
 extern const char kModernTabStripDescription[];
 
+// Title and description for the flag to enable muting/unmuting compromised
+// passwords in bulk leak check.
+extern const char kMuteCompromisedPasswordsName[];
+extern const char kMuteCompromisedPasswordsDescription[];
+
 // Title and description for the flag to enable the new overflow menu.
 extern const char kNewOverflowMenuName[];
 extern const char kNewOverflowMenuDescription[];
@@ -516,6 +517,11 @@ extern const char kWebPageAlternativeTextZoomDescription[];
 // the WebView.
 extern const char kWebViewNativeContextMenuPhase2Name[];
 extern const char kWebViewNativeContextMenuPhase2Description[];
+
+// Title and description for the flag to enable screenshot preview in the phase
+// 2 of context menus in the WebView.
+extern const char kWebViewNativeContextMenuPhase2ScreenshotName[];
+extern const char kWebViewNativeContextMenuPhase2ScreenshotDescription[];
 
 // Please add names and descriptions above in alphabetical order.
 

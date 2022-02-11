@@ -166,6 +166,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="142858679511221695">Skybruker</translation>
 <translation id="1428729058023778569">Du ser denne advarselen fordi dette nettstedet ikke støtter HTTPS. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1430915738399379752">Skriv ut</translation>
+<translation id="1432187715652018471">siden vil installere en tjenestebehandler</translation>
 <translation id="1432581352905426595">Administrer søkemotorer</translation>
 <translation id="1436185428532214179">Kan be om å få redigere filer og mapper på enheten</translation>
 <translation id="1442386063175183758">Høyre vindusfals</translation>
@@ -434,6 +435,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2248949050832152960">Bruk WebAuthn</translation>
 <translation id="2250931979407627383">Kantstifting venstre</translation>
 <translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
+<translation id="2256115617011615191">Start på nytt nå</translation>
 <translation id="2258928405015593961">Oppgi en fremtidig utløpsdato, og prøv på nytt</translation>
 <translation id="225943865679747347">Feilkode: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">HTTP-feil</translation>
@@ -1245,7 +1247,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="4819347708020428563">Vil du redigere annoteringer i standardvisningen?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å opprette et nytt Google-regneark raskt</translation>
 <translation id="4825507807291741242">Kraftfull</translation>
-<translation id="4829962028570902310">Ignorert fordi regelen kun kan angis via brukerinnstillinger i nettskyen.</translation>
 <translation id="483241715238664915">Slå på varsler</translation>
 <translation id="4838327282952368871">Drømmende</translation>
 <translation id="4840250757394056958">Se Chrome-loggen din</translation>
@@ -1675,6 +1676,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="6272383483618007430">Google Oppdatering</translation>
 <translation id="6276112860590028508">Sider fra leselisten din vises her</translation>
 <translation id="627746635834430766">For å betale raskere neste gang, lagre kortet ditt og faktureringsadressen i Google-kontoen din.</translation>
+<translation id="6279183038361895380">Trykk på |<ph name="ACCELERATOR" />| for å se markøren</translation>
 <translation id="6280223929691119688">Kan ikke levere til denne adressen. Velg en annen adresse.</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6285507000506177184">Knappen «Administrer nedlastinger i Chrome» – trykk på Enter for å administrere filer du har lastet ned i Chrome</translation>
@@ -2174,7 +2176,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="7888575728750733395">Gjengivelsesintensjon for utskrift</translation>
 <translation id="7894280532028510793">Hvis stavemåten er korrekt, kan du <ph name="BEGIN_LINK" />prøve å kjøre Nettverksdiagnose<ph name="END_LINK" />.</translation>
 <translation id="7904208859782148177">C3 (konvolutt)</translation>
-<translation id="7931318309563332511">Ukjent</translation>
 <translation id="793209273132572360">Vil du oppdatere adressen?</translation>
 <translation id="7932579305932748336">Belegg</translation>
 <translation id="79338296614623784">Angi et gyldig telefonnummer</translation>

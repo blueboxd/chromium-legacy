@@ -167,6 +167,7 @@
 <translation id="142858679511221695">អ្នកប្រើប្រាស់ពពក</translation>
 <translation id="1428729058023778569">អ្នកមើលឃើញ​ការព្រមាននេះ ដោយសារ​គេហទំព័រនេះ​មិនស្គាល់ HTTPS ទេ។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1430915738399379752">បោះពុម្ព</translation>
+<translation id="1432187715652018471">ទំព័រចង់​ដំឡើងឧបករណ៍​ដោះស្រាយសេវាកម្ម។</translation>
 <translation id="1432581352905426595">គ្រប់គ្រងម៉ាស៊ីនស្វែងរក</translation>
 <translation id="1436185428532214179">អាចស្នើសុំ​កែឯកសារ និងថត​នៅក្នុងឧបករណ៍​របស់អ្នក</translation>
 <translation id="1442386063175183758">បត់ភ្ជិត​ផ្ទាំង​ខាងស្ដាំ</translation>
@@ -426,6 +427,7 @@
 <translation id="22081806969704220">ទម្រទី 3</translation>
 <translation id="2212735316055980242">គោលការណ៍មិនត្រូវបានរកឃើញទេ</translation>
 <translation id="2213606439339815911">កំពុងនាំយកធាតុ...</translation>
+<translation id="2213612003795704869">ទំព័រត្រូវបានបោះពុម្ព</translation>
 <translation id="2215727959747642672">ការកែឯកសារ</translation>
 <translation id="2218879909401188352">ថ្មីៗនេះ​អ្នក​វាយ​ប្រហារ​នៅលើ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> អាច​ដំឡើង​កម្មវិធី​ដែល​មាន​គ្រោះថ្នាក់​ដែល​អាច​ប៉ះពាល់​ដល់ឧបករណ៍របស់អ្នក បន្ថែម​ការចំណាយ​ទៅក្នុង​វិក្កយបត្រ​សេវា​ទូរសព្ទ​ចល័ត​ដោយ​មិន​ឲ្យ​អ្នកដឹង ឬ​លួច​ព័ត៌មាន​ផ្ទាល់ខ្លួន​របស់​អ្នក។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់​បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">គ្មាន​អ៊ីនធឺណិតទេ</translation>
@@ -435,6 +437,7 @@
 <translation id="2248949050832152960">ប្រើ WebAuthn</translation>
 <translation id="2250931979407627383">ដេរគែម​ខាងឆ្វេង</translation>
 <translation id="225207911366869382">តម្លៃនេះត្រូវបានបដិសេធសម្រាប់គោលការណ៍នេះ។</translation>
+<translation id="2256115617011615191">ចាប់ផ្ដើមឡើងវិញឥឡូវនេះ</translation>
 <translation id="2258928405015593961">បញ្ចូល​កាលបរិច្ឆេទ​ផុតកំណត់​ក្នុងពេល​អនាគត រួច​ព្យាយាម​ម្ដងទៀត</translation>
 <translation id="225943865679747347">កំហុសឆ្គងលេខកូដ៖ <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">កំហុសឆ្គង HTTP</translation>
@@ -971,6 +974,7 @@
 <translation id="3990250421422698716">គម្លាតរុញ</translation>
 <translation id="3996311196211510766">គេហទំព័រ <ph name="ORIGIN" /> បានស្នើសុំឱ្យ​អនុវត្ត​គោលការណ៍​ដើម
     ចំពោះ​គ្រប់សំណើ​មក​កាន់​វា ប៉ុន្តែ​គោលការណ៍នេះមិនអាច​អនុវត្ត​បាន​ទេក្នុងពេលបច្ចុប្បន្ន។</translation>
+<translation id="4009243425692662128">ខ្លឹមសារក្នុងទំព័រដែលអ្នកបោះពុម្ពត្រូវបានផ្ញើទៅ Google Cloud ឬភាគីទីបីដើម្បីវិភាគ។ ឧទាហរណ៍ ខ្លឹមសារនោះ​អាចត្រូវបាន​ស្កេន ដើម្បីរកមើល​ទិន្នន័យ​រសើប​។</translation>
 <translation id="4010758435855888356">អនុញ្ញាត​ឱ្យចូលប្រើ​ទំហំផ្ទុក​ដែរទេ?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}other{ឯកសារ PDF ដែលមាន {COUNT} ទំព័រ}}</translation>
 <translation id="4023431997072828269">អ្នកដទៃនឹង​អាចមើលឃើញ​ព័ត៌មានរបស់អ្នក ដោយសារ​ទម្រង់បែបបទនេះ​កំពុងត្រូវបាន​ដាក់បញ្ជូន ដោយប្រើ​ការតភ្ជាប់​ដែលមិនមាន​សុវត្ថិភាព។</translation>
@@ -1247,7 +1251,6 @@
 <translation id="4819347708020428563">កែចំណារនៅក្នុងទិដ្ឋភាពលំនាំដើមឬ?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, ចុច Tab រួចចុច Enter ដើម្បី​បង្កើត​បញ្ជី Google ថ្មីបានរហ័ស</translation>
 <translation id="4825507807291741242">មាន​ឥទ្ធិពល​ខ្លាំង</translation>
-<translation id="4829962028570902310">បានមិនអើពើ ដោយសារគោលការណ៍​អាចត្រូវបានកំណត់​ដោយគោលការណ៍​អ្នកប្រើប្រាស់ពពក​តែប៉ុណ្ណោះ។</translation>
 <translation id="483241715238664915">បើក​ការព្រមាន</translation>
 <translation id="4838327282952368871">ដូចក្ដី​សុបិន</translation>
 <translation id="4840250757394056958">មើលប្រវត្តិ Chrome របស់អ្នក</translation>
@@ -1677,6 +1680,7 @@
 <translation id="6272383483618007430">Google បច្ចុប្បន្នភាព</translation>
 <translation id="6276112860590028508">ទំព័រ​ពីបញ្ជីអាន​របស់​អ្នក​បង្ហាញ​នៅ​ទីនេះ</translation>
 <translation id="627746635834430766">ដើម្បី​បង់ប្រាក់​លឿន​ជាងនេះ​នៅពេល​ក្រោយ សូម​រក្សា​ទុកបណ្ណ និង​អាសយដ្ឋាន​ចេញ​វិក្កយបត្រ​របស់អ្នក​ទៅក្នុង​គណនី Google របស់​អ្នក។</translation>
+<translation id="6279183038361895380">ចុច |<ph name="ACCELERATOR" />| ដើម្បីបង្ហាញទស្សន៍ទ្រនិចរបស់អ្នក</translation>
 <translation id="6280223929691119688">មិនអាចដឹកជញ្ជូនផ្ទាល់ទៅអាសយដ្ឋាននេះបានទេ។ សូមជ្រើសរើសអាសយដ្ឋានផ្សេង។</translation>
 <translation id="6282194474023008486">លេខកូដប្រៃសណីយ៍</translation>
 <translation id="6285507000506177184">ប៊ូតុង "គ្រប់គ្រង​ការទាញយកនៅក្នុង Chrome" ចុច Enter ដើម្បីគ្រប់គ្រង​ឯកសារដែលអ្នក​បានទាញយកនៅក្នុង Chrome</translation>
@@ -2178,7 +2182,6 @@
 <translation id="7888575728750733395">ចេតនានៃ​ការបំប្លែង​ការបោះពុម្ព</translation>
 <translation id="7894280532028510793">ប្រសិនបើ​អក្ខរាវិរុទ្ធគឺត្រឹមត្រូវ <ph name="BEGIN_LINK" />សូមសាកល្បង​ដំណើរការ​ការវិភាគបណ្ដាញ<ph name="END_LINK" />។</translation>
 <translation id="7904208859782148177">C3 (ស្រោម​សំបុត្រ)</translation>
-<translation id="7931318309563332511">មិនស្គាល់</translation>
 <translation id="793209273132572360">ធ្វើបច្ចុប្បន្នភាព​អាសយដ្ឋាន​ដែរទេ?</translation>
 <translation id="7932579305932748336">ស្រោប</translation>
 <translation id="79338296614623784">បញ្ចូលលេខទូរសព្ទដែលត្រឹមត្រូវ</translation>

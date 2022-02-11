@@ -77,6 +77,7 @@ AuctionRunner::Bid::Bid(std::string ad_metadata,
                         GURL render_url,
                         absl::optional<std::vector<GURL>> ad_components,
                         base::TimeDelta bid_duration,
+                        absl::optional<uint32_t> bidding_signals_data_version,
                         const blink::InterestGroup::Ad* bid_ad,
                         BidState* bid_state)
     : ad_metadata(std::move(ad_metadata)),
@@ -84,6 +85,7 @@ AuctionRunner::Bid::Bid(std::string ad_metadata,
       render_url(std::move(render_url)),
       ad_components(std::move(ad_components)),
       bid_duration(bid_duration),
+      bidding_signals_data_version(bidding_signals_data_version),
       interest_group(&bid_state->bidder.interest_group),
       bid_ad(bid_ad),
       bid_state(bid_state) {
@@ -92,10 +94,13 @@ AuctionRunner::Bid::Bid(std::string ad_metadata,
 
 AuctionRunner::Bid::~Bid() = default;
 
-AuctionRunner::ScoredBid::ScoredBid(double score,
-                                    absl::optional<uint32_t> data_version,
-                                    std::unique_ptr<Bid> bid)
-    : score(score), data_version(data_version), bid(std::move(bid)) {
+AuctionRunner::ScoredBid::ScoredBid(
+    double score,
+    absl::optional<uint32_t> scoring_signals_data_version,
+    std::unique_ptr<Bid> bid)
+    : score(score),
+      scoring_signals_data_version(scoring_signals_data_version),
+      bid(std::move(bid)) {
   DCHECK_GT(score, 0);
 }
 
@@ -228,8 +233,9 @@ void AuctionRunner::Auction::StartReportingPhase(
   seller_worklet_handle_->GetSellerWorklet()->ReportResult(
       config_->auction_ad_config_non_shared_params.Clone(),
       top_bid_->bid->interest_group->owner, top_bid_->bid->render_url,
-      top_bid_->bid->bid, top_bid_->score, top_bid_->data_version.value_or(0),
-      top_bid_->data_version.has_value(),
+      top_bid_->bid->bid, top_bid_->score,
+      top_bid_->scoring_signals_data_version.value_or(0),
+      top_bid_->scoring_signals_data_version.has_value(),
       base::BindOnce(&Auction::OnReportSellerResultComplete,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -247,12 +253,8 @@ void AuctionRunner::Auction::ClosePipes() {
 
 AuctionRunner::InterestGroupSet
 AuctionRunner::Auction::GetInterestGroupsThatBid() const {
-  // If this auction has completed and the final result was anything other than
-  // kAllBidsRejected, all bids were thrown away.
-  if (final_auction_result_.has_value() &&
-      *final_auction_result_ != AuctionResult::kAllBidsRejected) {
+  if (!all_bids_scored_)
     return InterestGroupSet();
-  }
 
   InterestGroupSet out;
   for (const BidState& bid_state : bid_states_) {
@@ -268,14 +270,8 @@ AuctionRunner::Auction::GetInterestGroupsThatBid() const {
 void AuctionRunner::Auction::TakeDebugReportUrls(
     std::vector<GURL>& debug_win_report_urls,
     std::vector<GURL>& debug_loss_report_urls) {
-  // Should only send loss report if the auction succeeded, or the seller
-  // rejected all bids. `final_auction_result_` should only be null the in the
-  // case of cancellation.
-  if (!final_auction_result_ ||
-      (*final_auction_result_ != AuctionResult::kSuccess &&
-       *final_auction_result_ != AuctionResult::kAllBidsRejected)) {
+  if (!all_bids_scored_)
     return;
-  }
 
   BidState* top_bidder = nullptr;
   if (top_bid_) {
@@ -314,7 +310,8 @@ std::vector<std::string> AuctionRunner::Auction::TakeErrors() {
 }
 
 AuctionRunner::ScoredBid* AuctionRunner::Auction::top_bid() {
-  DCHECK_EQ(*final_auction_result_, AuctionResult::kSuccess);
+  DCHECK(all_bids_scored_);
+  DCHECK(top_bid_);
   return top_bid_.get();
 }
 
@@ -480,6 +477,8 @@ void AuctionRunner::Auction::OnBidderWorkletGenerateBidFatalError(
     // specific one.
     OnGenerateBidComplete(
         bid_state, auction_worklet::mojom::BidderWorkletBidPtr(),
+        /*bidding_signals_data_version=*/0,
+        /*has_bidding_signals_data_version=*/false,
         /*debug_loss_report_url=*/absl::nullopt,
         /*debug_win_report_url=*/absl::nullopt,
         {base::StrCat({bid_state->bidder.interest_group.bidding_url->spec(),
@@ -490,6 +489,8 @@ void AuctionRunner::Auction::OnBidderWorkletGenerateBidFatalError(
   // Otherwise, use error message from the worklet.
   OnGenerateBidComplete(bid_state,
                         auction_worklet::mojom::BidderWorkletBidPtr(),
+                        /*bidding_signals_data_version=*/0,
+                        /*has_bidding_signals_data_version=*/false,
                         /*debug_loss_report_url=*/absl::nullopt,
                         /*debug_win_report_url=*/absl::nullopt, errors);
 }
@@ -497,12 +498,18 @@ void AuctionRunner::Auction::OnBidderWorkletGenerateBidFatalError(
 void AuctionRunner::Auction::OnGenerateBidComplete(
     BidState* state,
     auction_worklet::mojom::BidderWorkletBidPtr mojo_bid,
+    uint32_t bidding_signals_data_version,
+    bool has_bidding_signals_data_version,
     const absl::optional<GURL>& debug_loss_report_url,
     const absl::optional<GURL>& debug_win_report_url,
     const std::vector<std::string>& errors) {
   DCHECK(!state->made_bid);
   DCHECK_GT(num_bids_not_sent_to_seller_worklet_, 0);
   DCHECK_GT(outstanding_bids_, 0);
+
+  absl::optional<uint32_t> maybe_bidding_signals_data_version;
+  if (has_bidding_signals_data_version)
+    maybe_bidding_signals_data_version = bidding_signals_data_version;
 
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
@@ -516,8 +523,9 @@ void AuctionRunner::Auction::OnGenerateBidComplete(
   // `mojo_bid` is null if the worklet doesn't bid, or if the bidder worklet
   // fails to load / crashes.
   if (mojo_bid) {
-    bid = TryToCreateBid(std::move(mojo_bid), *state, debug_loss_report_url,
-                         debug_win_report_url);
+    bid = TryToCreateBid(std::move(mojo_bid), *state,
+                         maybe_bidding_signals_data_version,
+                         debug_loss_report_url, debug_win_report_url);
     if (bid)
       state->bidder_debug_loss_report_url = std::move(debug_loss_report_url);
   } else {
@@ -652,6 +660,8 @@ void AuctionRunner::Auction::MaybeCompleteBiddingAndScoringPhase() {
   // SellerWorklet by this point.
   DCHECK_EQ(0, num_bids_not_sent_to_seller_worklet_);
 
+  all_bids_scored_ = true;
+
   // If there's no winning bid, fail with kAllBidsRejected if there were any
   // bids. Otherwise, fail with kNoBids.
   if (!top_bid_) {
@@ -747,6 +757,8 @@ void AuctionRunner::Auction::ReportBidWin(
       config_->auction_ad_config_non_shared_params->auction_signals,
       PerBuyerSignals(top_bid_->bid->bid_state), signals_for_winner_arg,
       top_bid_->bid->render_url, top_bid_->bid->bid, config_->seller,
+      top_bid_->bid->bidding_signals_data_version.value_or(0),
+      top_bid_->bid->bidding_signals_data_version.has_value(),
       base::BindOnce(&Auction::OnReportBidWinComplete,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -872,6 +884,7 @@ AuctionRunner::AuctionRunner(AuctionWorkletManager* auction_worklet_manager,
 std::unique_ptr<AuctionRunner::Bid> AuctionRunner::TryToCreateBid(
     auction_worklet::mojom::BidderWorkletBidPtr mojo_bid,
     BidState& bid_state,
+    const absl::optional<uint32_t>& bidding_signals_data_version,
     const absl::optional<GURL>& debug_loss_report_url,
     const absl::optional<GURL>& debug_win_report_url) {
   if (mojo_bid->bid <= 0 || std::isnan(mojo_bid->bid) ||
@@ -930,10 +943,10 @@ std::unique_ptr<AuctionRunner::Bid> AuctionRunner::TryToCreateBid(
     return nullptr;
   }
 
-  return std::make_unique<Bid>(std::move(mojo_bid->ad), mojo_bid->bid,
-                               std::move(mojo_bid->render_url),
-                               std::move(mojo_bid->ad_components),
-                               mojo_bid->bid_duration, matching_ad, &bid_state);
+  return std::make_unique<Bid>(
+      std::move(mojo_bid->ad), mojo_bid->bid, std::move(mojo_bid->render_url),
+      std::move(mojo_bid->ad_components), mojo_bid->bid_duration,
+      bidding_signals_data_version, matching_ad, &bid_state);
 }
 
 void AuctionRunner::StartAuction(

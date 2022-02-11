@@ -68,6 +68,11 @@ const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kAppManagementAppDetails{"AppManagementAppDetails",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if !BUILDFLAG(IS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceLoadIconWithoutMojom{
@@ -923,18 +928,13 @@ const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-const base::Feature kChromeOSSharingHub{"ChromeOSSharingHub",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kSharesheetCopyToClipboard{
     "SharesheetCopyToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
 const base::Feature kShareUsageRanking{"ShareUsageRanking",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kShareUsageRankingFixedMore{
     "ShareUsageRankingFixedMore", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif

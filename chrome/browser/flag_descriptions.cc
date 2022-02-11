@@ -3390,6 +3390,10 @@ const char kReaderModeHeuristicsAllArticles[] = "All articles";
 const char kReaderModeHeuristicsAlwaysOff[] = "Never";
 const char kReaderModeHeuristicsAlwaysOn[] = "Always";
 
+const char kImproveReaderModePromptName[] = "Improve Reader Mode Prompt";
+const char kImproveReaderModePromptDescription[] =
+    "Reduce prompt frequency and polish reader mode related settings.";
+
 const char kReaderModeInCCTName[] = "Reader Mode in CCT";
 const char kReaderModeInCCTDescription[] =
     "Open Reader Mode in Chrome Custom Tabs.";
@@ -3627,6 +3631,11 @@ const char kOmniboxPedalsAndroidBatch1Description[] =
 // Non-Android -----------------------------------------------------------------
 
 #else  // BUILDFLAG(IS_ANDROID)
+
+const char kAppManagementAppDetailsName[] =
+    "Enable App Details in App Management.";
+const char kAppManagementAppDetailsDescription[] =
+    "Show app details on an app's App Management page.";
 
 const char kAllowAllSitesToInitiateMirroringName[] =
     "Allow all sites to initiate mirroring";
@@ -4542,12 +4551,6 @@ const char kEnableInputInDiagnosticsAppName[] =
 const char kEnableInputInDiagnosticsAppDescription[] =
     "Enable input device cards in the Diagnostics App";
 
-const char kEnableInputNoiseCancellationUiName[] =
-    "Enable Input Noise Cancellation UI.";
-const char kEnableInputNoiseCancellationUiDescription[] =
-    "Enable toggling input noise cancellation through the Quick Settings. By "
-    "default, this flag is disabled.";
-
 const char kEnableKeyboardBacklightToggleName[] =
     "Enable Keyboard Backlight Toggle.";
 const char kEnableKeyboardBacklightToggleDescription[] =
@@ -4890,6 +4893,11 @@ const char kVirtualKeyboardDarkModeDescription[] =
     "Enable dark mode colors for the virtual keyboard when dark mode is "
     "active.";
 
+const char kVirtualKeyboardNewHeaderName[] =
+    "Enable new header for virtual keyboard";
+const char kVirtualKeyboardNewHeaderDescription[] =
+    "Enable new header for virtual keyboard to improve navigation.";
+
 const char kImeSystemEmojiPickerName[] = "System emoji picker";
 const char kImeSystemEmojiPickerDescription[] =
     "Controls whether a System emoji picker, or the virtual keyboard is used "
@@ -5149,10 +5157,6 @@ const char kSchedulerConfigurationConservative[] =
     "Disables Hyper-Threading on relevant CPUs.";
 const char kSchedulerConfigurationPerformance[] =
     "Enables Hyper-Threading on relevant CPUs.";
-
-const char kChromeOSSharingHubName[] = "Chrome OS Sharing Hub";
-const char kChromeOSSharingHubDescription[] =
-    "Enables the Sharing Hub (share sheet) on ChromeOS via the Omnibox.";
 
 const char kShowBluetoothDebugLogToggleName[] =
     "Show Bluetooth debug log toggle";

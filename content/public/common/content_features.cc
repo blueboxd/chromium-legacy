@@ -262,13 +262,6 @@ const base::Feature kDocumentPolicy{"DocumentPolicy",
 const base::Feature kDocumentPolicyNegotiation{
     "DocumentPolicyNegotiation", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(IS_WIN)
-// Tries running DWriteFontProxyImpl on the IO thread to see if it improves
-// performance.
-const base::Feature kDWriteFontProxyOnIO{"DWriteFontProxyOnIO",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enable establishing the GPU channel early in renderer startup.
 const base::Feature kEarlyEstablishGpuChannel{
     "EarlyEstablishGpuChannel", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -440,6 +433,13 @@ const base::Feature kInstalledAppsInCbd{"InstalledAppsInCbd",
 const base::Feature kIsolateOrigins{"IsolateOrigins",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
+
+// Allow process isolation of iframes with the 'sandbox' attribute set. Whether
+// or not such an iframe will be isolated may depend on options specified with
+// the attribute. Note: At present, only iframes with origin-restricted
+// sandboxes are isolated.
+const base::Feature kIsolateSandboxedIframes{"IsolateSandboxedIframes",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -651,6 +651,11 @@ const base::Feature kHighPriorityBeforeUnload{
 // Enables the Aggregation Service. See crbug.com/1207974.
 const base::Feature kPrivacySandboxAggregationService = {
     "PrivacySandboxAggregationService", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<std::string>
+    kPrivacySandboxAggregationServiceTrustedServerOriginParam{
+        &kPrivacySandboxAggregationService, "trusted_server_origin",
+        "https://server.example.com"};
 
 // Enables Private Network Access checks for all types of web workers.
 //

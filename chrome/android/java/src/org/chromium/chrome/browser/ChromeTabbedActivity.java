@@ -126,6 +126,7 @@ import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
 import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelperSupplier;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
@@ -192,6 +193,7 @@ import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.messages.MessageDispatcherProvider;
@@ -972,7 +974,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public void onStopWithNative() {
         super.onStopWithNative();
 
-        mTabModelOrchestrator.saveState();
+        saveState();
         mHasDeterminedOverviewStateForCurrentSession = false;
     }
 
@@ -2059,15 +2061,22 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         } else if (id == R.id.close_all_tabs_menu_id) {
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_ALL_TABS_MODAL_DIALOG)) {
                 CloseAllTabsDialog.show(this, getModalDialogManagerSupplier(),
-                        () -> getTabModelSelector().closeAllTabs());
+                        () -> getTabModelSelector().closeAllTabs(), /*isIncognito=*/false);
             } else {
                 // Close both incognito and normal tabs.
                 getTabModelSelector().closeAllTabs();
             }
             RecordUserAction.record("MobileMenuCloseAllTabs");
         } else if (id == R.id.close_all_incognito_tabs_menu_id) {
-            // Close only incognito tabs
-            getTabModelSelector().getModel(true).closeAllTabs();
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CLOSE_ALL_TABS_MODAL_DIALOG)) {
+                CloseAllTabsDialog.show(this, getModalDialogManagerSupplier(),
+                        ()
+                                -> getTabModelSelector().getModel(true).closeAllTabs(),
+                        /*isIncognito=*/true);
+            } else {
+                // Close only incognito tabs
+                getTabModelSelector().getModel(true).closeAllTabs();
+            }
             RecordUserAction.record("MobileMenuCloseAllIncognitoTabs");
         } else if (id == R.id.focus_url_bar) {
             boolean isUrlBarVisible = !mOverviewModeController.overviewVisible()
@@ -2675,6 +2684,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     @VisibleForTesting
     public void saveState() {
         mTabModelOrchestrator.saveState();
+
+        // Save whether the current tab is a search result page into preferences.
+        Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.IS_LAST_VISITED_TAB_SRP,
+                currentStandardTab != null
+                        && UrlUtilitiesJni.get().isGoogleSearchUrl(
+                                currentStandardTab.getUrl().getSpec()));
     }
 
     @Override

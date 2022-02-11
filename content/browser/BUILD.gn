@@ -111,6 +111,7 @@ source_set("browser") {
     "//content/browser/cookie_store:cookie_store_proto",
     "//content/browser/devtools:devtools_background_services_proto",
     "//content/browser/devtools:protocol_sources",
+    "//content/browser/download:proto",
     "//content/browser/file_system_access:proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/payments:payment_app_proto",
@@ -292,8 +293,6 @@ source_set("browser") {
     "$target_gen_dir/devtools/protocol/audits.h",
     "$target_gen_dir/devtools/protocol/background_service.cc",
     "$target_gen_dir/devtools/protocol/background_service.h",
-    "$target_gen_dir/devtools/protocol/base_string_adapter.cc",
-    "$target_gen_dir/devtools/protocol/base_string_adapter.h",
     "$target_gen_dir/devtools/protocol/browser.cc",
     "$target_gen_dir/devtools/protocol/browser.h",
     "$target_gen_dir/devtools/protocol/dom.cc",
@@ -319,7 +318,6 @@ source_set("browser") {
     "$target_gen_dir/devtools/protocol/overlay.h",
     "$target_gen_dir/devtools/protocol/page.cc",
     "$target_gen_dir/devtools/protocol/page.h",
-    "$target_gen_dir/devtools/protocol/protocol.cc",
     "$target_gen_dir/devtools/protocol/protocol.h",
     "$target_gen_dir/devtools/protocol/runtime.cc",
     "$target_gen_dir/devtools/protocol/runtime.h",
@@ -2484,6 +2482,8 @@ source_set("browser") {
     }
     if (use_aura) {
       sources += [
+        "media/capture/aura_window_to_mojo_device_adapter.cc",
+        "media/capture/aura_window_to_mojo_device_adapter.h",
         "media/capture/aura_window_video_capture_device.cc",
         "media/capture/aura_window_video_capture_device.h",
         "media/capture/mouse_cursor_overlay_controller_aura.cc",
@@ -2508,6 +2508,8 @@ source_set("browser") {
       sources += [
         "media/capture/desktop_capturer_lacros.cc",
         "media/capture/desktop_capturer_lacros.h",
+        "media/capture/video_capture_device_proxy_lacros.cc",
+        "media/capture/video_capture_device_proxy_lacros.h",
       ]
     }
   }

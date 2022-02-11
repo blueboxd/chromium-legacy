@@ -150,6 +150,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "app-management-app-details",
+    "owners": [ "ajlinker" ],
+    "expiry_milestone": 104
+  },
+  {
     "name": "app-menu-mobile-site-option",
     "owners": [ "gangwu" ],
     "expiry_milestone": 96
@@ -838,11 +843,6 @@
     "expiry_milestone": 105
   },
   {
-    "name": "context-menu-actions-refresh",
-    "owners": [ "ewannpv@google.com", "gambard@google.com" ],
-    "expiry_milestone": 99
-  },
-  {
     "name": "context-menu-google-lens-chip",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 100
@@ -850,6 +850,10 @@
   { "name":"context-menu-phase2",
       "owners":["gambard", "bling-flags@google.com"],
       "expiry_milestone":100
+  },
+  { "name":"context-menu-phase2-screenshot",
+      "owners":["christianxu", "gambard", "bling-flags@google.com"],
+      "expiry_milestone":103
   },
   {
     "name": "context-menu-popup-style",
@@ -1415,7 +1419,7 @@
   },
   {
     "name": "edit-passwords-in-settings",
-    "owners": [ "fhorschig", "ioanap", "kazinova" ],
+    "owners": [ "fhorschig", "ioanap", "kazinova@google.com" ],
     "expiry_milestone": 98
   },
   {
@@ -1757,6 +1761,11 @@
     "name": "enable-cros-virtual-keyboard-multipaste-suggestion",
     "owners": [ "jiwan", "essential-inputs-team@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "enable-cros-virtual-keyboard-new-header",
+    "owners": ["jopalmer", "essential-inputs-team@google.com"],
+    "expiry_milestone" : 110
   },
   {
     "name": "enable-css-selector-fragment-anchor",
@@ -2199,11 +2208,6 @@
     "name": "enable-input-in-diagnostics-app",
     "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "enable-input-noise-cancellation-ui",
-    "owners": [ "swifton@google.com", "cros-peripherals@google.com" ],
-    "expiry_milestone": 98
   },
   {
     "name": "enable-instant-start",
@@ -3558,6 +3562,12 @@
     // Previews is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "improve-reader-mode-prompt",
+    "owners": ["lazzzis@google.com", "aishwaryarj@google.com",
+               "//chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/OWNERS"],
+    "expiry_milestone": 110
   },
   {
     "name": "improved-desks-keyboard-shortcuts",

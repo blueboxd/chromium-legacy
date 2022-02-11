@@ -23,12 +23,7 @@ namespace content {
 
 namespace {
 
-using AttributionAllowedStatus =
-    ::content::RateLimitTable::AttributionAllowedStatus;
-using CreateReportStatus =
-    ::content::AttributionStorage::CreateReportResult::Status;
 using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
-using StoreSourceResult = ::content::AttributionStorage::StoreSourceResult;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
@@ -177,6 +172,14 @@ SourceBuilder::SourceBuilder(base::Time time)
       reporting_origin_(url::Origin::Create(GURL(kDefaultReportOrigin))) {}
 
 SourceBuilder::~SourceBuilder() = default;
+
+SourceBuilder::SourceBuilder(const SourceBuilder&) = default;
+
+SourceBuilder::SourceBuilder(SourceBuilder&&) = default;
+
+SourceBuilder& SourceBuilder::operator=(const SourceBuilder&) = default;
+
+SourceBuilder& SourceBuilder::operator=(SourceBuilder&&) = default;
 
 SourceBuilder& SourceBuilder::SetExpiry(base::TimeDelta delta) {
   expiry_ = delta;
@@ -475,34 +478,37 @@ bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
   return tie(a) == tie(b);
 }
 
-std::ostream& operator<<(std::ostream& out, CreateReportStatus status) {
+std::ostream& operator<<(std::ostream& out, AttributionTrigger::Result status) {
   switch (status) {
-    case CreateReportStatus::kSuccess:
+    case AttributionTrigger::Result::kSuccess:
       out << "kSuccess";
       break;
-    case CreateReportStatus::kSuccessDroppedLowerPriority:
+    case AttributionTrigger::Result::kSuccessDroppedLowerPriority:
       out << "kSuccessDroppedLowerPriority";
       break;
-    case CreateReportStatus::kInternalError:
+    case AttributionTrigger::Result::kInternalError:
       out << "kInternalError";
       break;
-    case CreateReportStatus::kNoCapacityForConversionDestination:
+    case AttributionTrigger::Result::kNoCapacityForConversionDestination:
       out << "kNoCapacityForConversionDestination";
       break;
-    case CreateReportStatus::kNoMatchingImpressions:
+    case AttributionTrigger::Result::kNoMatchingImpressions:
       out << "kNoMatchingImpressions";
       break;
-    case CreateReportStatus::kDeduplicated:
+    case AttributionTrigger::Result::kDeduplicated:
       out << "kDeduplicated";
       break;
-    case CreateReportStatus::kRateLimited:
-      out << "kRateLimited";
+    case AttributionTrigger::Result::kExcessiveReports:
+      out << "kExcessiveReports";
       break;
-    case CreateReportStatus::kPriorityTooLow:
+    case AttributionTrigger::Result::kPriorityTooLow:
       out << "kPriorityTooLow";
       break;
-    case CreateReportStatus::kDroppedForNoise:
+    case AttributionTrigger::Result::kDroppedForNoise:
       out << "kDroppedForNoise";
+      break;
+    case AttributionTrigger::Result::kExcessiveReportingOrigins:
+      out << "kExcessiveReportingOrigins";
       break;
   }
   return out;
@@ -520,15 +526,15 @@ std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason) {
   return out;
 }
 
-std::ostream& operator<<(std::ostream& out, AttributionAllowedStatus status) {
-  switch (status) {
-    case AttributionAllowedStatus::kAllowed:
+std::ostream& operator<<(std::ostream& out, RateLimitTable::Result result) {
+  switch (result) {
+    case RateLimitTable::Result::kAllowed:
       out << "kAllowed";
       break;
-    case AttributionAllowedStatus::kNotAllowed:
+    case RateLimitTable::Result::kNotAllowed:
       out << "kNotAllowed";
       break;
-    case AttributionAllowedStatus::kError:
+    case RateLimitTable::Result::kError:
       out << "kError";
       break;
   }
@@ -714,16 +720,18 @@ std::ostream& operator<<(std::ostream& out,
              << ",reason=" << deactivated_source.reason << "}";
 }
 
-std::ostream& operator<<(std::ostream& out, StoreSourceResult::Status status) {
+std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
   switch (status) {
-    case StoreSourceResult::Status::kSuccess:
+    case StorableSource::Result::kSuccess:
       return out << "kSuccess";
-    case StoreSourceResult::Status::kInternalError:
+    case StorableSource::Result::kInternalError:
       return out << "kInternalError";
-    case StoreSourceResult::Status::kInsufficientSourceCapacity:
+    case StorableSource::Result::kInsufficientSourceCapacity:
       return out << "kInsufficientSourceCapacity";
-    case StoreSourceResult::Status::kInsufficientUniqueDestinationCapacity:
+    case StorableSource::Result::kInsufficientUniqueDestinationCapacity:
       return out << "kInsufficientUniqueDestinationCapacity";
+    case StorableSource::Result::kExcessiveReportingOrigins:
+      return out << "kExcessiveReportingOrigins";
   }
 }
 

@@ -502,10 +502,6 @@ const base::Feature kEnableIdleInhibit{"EnableIdleInhibit",
 const base::Feature kEnableInputInDiagnosticsApp{
     "EnableInputInDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables noise cancellation UI toggle.
-const base::Feature kEnableInputNoiseCancellationUi{
-    "EnableInputNoiseCancellationUi", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables keyboard backlight toggle.
 const base::Feature kEnableKeyboardBacklightToggle{
     "EnableKeyboardBacklightToggle", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -766,7 +762,11 @@ const base::Feature kSnoopingProtection{"SnoopingProtection",
 
 // Enable or disable dark mode support for the Chrome OS virtual keyboard.
 const base::Feature kVirtualKeyboardDarkMode{"VirtualKeyboardDarkMode",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable or disable a new header bar for the Chrome OS virtual keyboard.
+const base::Feature kVirtualKeyboardNewHeader{
+    "VirtualKeyboardNewHeader", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, used to configure the heuristic rules for some advanced IME
 // features (e.g. auto-correct).
@@ -1320,7 +1320,7 @@ const base::Feature kWallpaperWebUI{"WallpaperWebUI",
 // Enable full screen wallpaper preview in new wallpaper experience. Requires
 // |kWallpaperWebUI| to also be enabled.
 const base::Feature kWallpaperFullScreenPreview{
-    "WallpaperFullScreenPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WallpaperFullScreenPreview", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable Google Photos integration in the new wallpaper experience. Note that
 // this feature flag does not have any effect if `kWallpaperWebUI` is disabled.
@@ -1646,10 +1646,6 @@ bool IsImprovedDesksKeyboardShortcutsEnabled() {
 
 bool IsInputInDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableInputInDiagnosticsApp);
-}
-
-bool IsInputNoiseCancellationUiEnabled() {
-  return base::FeatureList::IsEnabled(kEnableInputNoiseCancellationUi);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {

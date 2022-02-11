@@ -40,7 +40,7 @@ using LoginState = IdentityRequestAccount::LoginState;
 constexpr char kIdpEndpointKey[] = "idp_endpoint";
 constexpr char kTokenEndpointKey[] = "idtoken_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
-constexpr char kClientIdMetadataEndpointKey[] = "client_id_metadata_endpoint";
+constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kRevokeEndpoint[] = "revoke_endpoint";
 
 // Client metadata keys.
@@ -150,9 +150,7 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
 absl::optional<content::IdentityRequestAccount> ParseAccount(
     const base::Value& account,
     const std::string& client_id) {
-  // TODO(yigu): Per spec the account id field should be "account_id" instead of
-  // "sub". Using "sub" temporarily to unblock partner deployment.
-  auto* account_id = account.FindStringKey("sub");
+  auto* account_id = account.FindStringKey("account_id");
   auto* email = account.FindStringKey("email");
   auto* name = account.FindStringKey("name");
   auto* given_name = account.FindStringKey("given_name");
@@ -594,7 +592,7 @@ void IdpNetworkRequestManager::OnWellKnownParsed(
   endpoints.idp = ExtractEndpoint(kIdpEndpointKey);
   endpoints.token = ExtractEndpoint(kTokenEndpointKey);
   endpoints.accounts = ExtractEndpoint(kAccountsEndpointKey);
-  endpoints.client_id_metadata = ExtractEndpoint(kClientIdMetadataEndpointKey);
+  endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
   endpoints.revoke = ExtractEndpoint(kRevokeEndpoint);
 
   std::move(idp_well_known_callback_).Run(FetchStatus::kSuccess, endpoints);
@@ -800,10 +798,10 @@ void IdpNetworkRequestManager::OnLogoutCompleted(
   std::move(logout_callback_).Run();
 }
 
-void IdpNetworkRequestManager::FetchClientIdMetadata(
+void IdpNetworkRequestManager::FetchClientMetadata(
     const GURL& endpoint,
     const std::string& client_id,
-    FetchClientIdMetadataCallback callback) {
+    FetchClientMetadataCallback callback) {
   DCHECK(!url_loader_);
   DCHECK(!client_metadata_callback_);
 
@@ -817,34 +815,33 @@ void IdpNetworkRequestManager::FetchClientIdMetadata(
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
-      base::BindOnce(&IdpNetworkRequestManager::OnClientIdMetadataLoaded,
+      base::BindOnce(&IdpNetworkRequestManager::OnClientMetadataLoaded,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
 }
 
-void IdpNetworkRequestManager::OnClientIdMetadataLoaded(
+void IdpNetworkRequestManager::OnClientMetadataLoaded(
     std::unique_ptr<std::string> response_body) {
   FetchStatus response_error =
       GetResponseError(url_loader_.get(), response_body.get());
   url_loader_.reset();
 
   if (response_error != FetchStatus::kSuccess) {
-    std::move(client_metadata_callback_)
-        .Run(response_error, ClientIdMetadata());
+    std::move(client_metadata_callback_).Run(response_error, ClientMetadata());
     return;
   }
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
-      base::BindOnce(&IdpNetworkRequestManager::OnClientIdMetadataParsed,
+      base::BindOnce(&IdpNetworkRequestManager::OnClientMetadataParsed,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void IdpNetworkRequestManager::OnClientIdMetadataParsed(
+void IdpNetworkRequestManager::OnClientMetadataParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
     std::move(client_metadata_callback_)
-        .Run(FetchStatus::kInvalidResponseError, ClientIdMetadata());
+        .Run(FetchStatus::kInvalidResponseError, ClientMetadata());
     return;
   }
 
@@ -857,7 +854,7 @@ void IdpNetworkRequestManager::OnClientIdMetadataParsed(
     return endpoint->GetString();
   };
 
-  ClientIdMetadata data;
+  ClientMetadata data;
   data.privacy_policy_url = ExtractUrl(kPrivacyPolicyKey);
   data.terms_of_service_url = ExtractUrl(kTermsOfServiceKey);
 

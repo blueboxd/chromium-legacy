@@ -39,6 +39,7 @@ namespace {
 class TestClusteringBackend : public ClusteringBackend {
  public:
   void GetClusters(
+      ClusteringRequestSource clustering_request_source,
       ClustersCallback callback,
       const std::vector<history::AnnotatedVisit>& visits) override {
     callback_ = std::move(callback);
@@ -287,6 +288,7 @@ TEST_F(HistoryClustersServiceTest, HardCapOnVisitsFetchedFromHistory) {
   history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
 
   history_clusters_service_->QueryClusters(
+      ClusteringRequestSource::kKeywordCacheGeneration,
       /*query=*/"", /*begin_time=*/base::Time(), /*end_time=*/base::Time::Now(),
       base::DoNothing(),  // Only need to verify the correct request is sent.
       &task_tracker_);
@@ -318,6 +320,7 @@ TEST_F(HistoryClustersServiceTest, QueryClustersIncompleteAndPersistedVisits) {
                         // a non-visible page transition.
 
   history_clusters_service_->QueryClusters(
+      ClusteringRequestSource::kJourneysPage,
       /*query=*/"", /*begin_time=*/base::Time(), /*end_time=*/base::Time::Now(),
       base::DoNothing(),  // Only need to verify the correct request is sent.
       &task_tracker_);
@@ -337,6 +340,8 @@ TEST_F(HistoryClustersServiceTest, QueryClustersIncompleteAndPersistedVisits) {
   EXPECT_EQ(visits[3].visit_row.visit_id, 5);
 }
 
+// TODO(tommycli): Dramatically simplify this integration test now that we have
+// a unit test for the filtering logic in HistoryClustersUtil.
 TEST_F(HistoryClustersServiceTest, QueryClustersVariousQueries) {
   base::HistogramTester histogram_tester;
   AddHardcodedTestDataToHistoryService();
@@ -378,7 +383,8 @@ TEST_F(HistoryClustersServiceTest, QueryClustersVariousQueries) {
     auto run_loop_quit = run_loop.QuitClosure();
 
     history_clusters_service_->QueryClusters(
-        test_data[i].query, /*begin_time=*/base::Time(),
+        ClusteringRequestSource::kJourneysPage, test_data[i].query,
+        /*begin_time=*/base::Time(),
         /*end_time=*/base::Time(),
         // This "expect" block is not run until after the fake response is sent
         // further down in this method.

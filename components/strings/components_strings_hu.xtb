@@ -166,6 +166,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="142858679511221695">Felhőalapú szolgáltatás – felhasználó</translation>
 <translation id="1428729058023778569">Azért látja ezt a figyelmeztetést, mert ez a webhely nem támogatja a HTTPS-t. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
+<translation id="1432187715652018471">Ez az oldal szolgáltatáskezelőt kíván telepíteni.</translation>
 <translation id="1432581352905426595">Keresőmotorok beállítása</translation>
 <translation id="1436185428532214179">Engedélyt kérhet arra, hogy szerkeszthesse az Ön eszközén található fájlokat és mappákat</translation>
 <translation id="1442386063175183758">Jobb oldalon kihajtható</translation>
@@ -219,6 +220,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="1559572115229829303">&lt;p&gt;Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert az eszköz dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
       &lt;p&gt;Módosítsa a dátumot és az időt a &lt;strong&gt;Beállítások&lt;/strong&gt; alkalmazás &lt;strong&gt;Általános&lt;/strong&gt; részében.&lt;/p&gt;</translation>
+<translation id="1559839503761818503">Adminisztrátora a következő időpontban újra fogja indítani az eszközét: <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="156703335097561114">Hálózati információk, többek között címek, a kezelőfelület beállításai és a kapcsolat minősége</translation>
 <translation id="1567040042588613346">A házirend az elvárt módon működik, de valahol máshol ugyanaz az érték van beállítva, amelyet felülír ez a házirend.</translation>
 <translation id="1569487616857761740">Adja meg a lejárat dátumát</translation>
@@ -434,6 +436,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="2248949050832152960">WebAuthn használata</translation>
 <translation id="2250931979407627383">Éltűzés a bal oldalon</translation>
 <translation id="225207911366869382">Ez az érték elavult ennél a házirendnél.</translation>
+<translation id="2256115617011615191">Újraindítás most</translation>
 <translation id="2258928405015593961">Jövőbeli lejárati dátumot adjon meg, majd próbálja újra.</translation>
 <translation id="225943865679747347">Hibakód: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">HTTP hiba</translation>
@@ -1243,7 +1246,6 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="4819347708020428563">Szeretné a jelöléseket az alapértelmezett nézetben szerkeszteni?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, tartsa lenyomva a Tab billentyűt, majd nyomja meg az Enter billentyűt új Google-táblázat gyors létrehozásához</translation>
 <translation id="4825507807291741242">Erőteljes</translation>
-<translation id="4829962028570902310">Figyelmen kívül hagyva, mert a szabályzatot csak a felhőalapú felhasználói szabályzat állíthatja be.</translation>
 <translation id="483241715238664915">Figyelmeztetések bekapcsolása</translation>
 <translation id="4838327282952368871">Álmodozó</translation>
 <translation id="4840250757394056958">Chrome-előzmények megtekintése</translation>
@@ -1673,6 +1675,7 @@ Ezt egyéb esetben letiltják az Ön adatvédelmi beállításai. Az engedélyez
 <translation id="6272383483618007430">Google Frissítés</translation>
 <translation id="6276112860590028508">Az olvasási listájának adatai itt jelennek meg</translation>
 <translation id="627746635834430766">A következő alkalommal gyorsabban fizethet, ha Google-fiókjába menti kártyáját és számlázási címét.</translation>
+<translation id="6279183038361895380">Az egérmutató megjelenítéséhez nyomja meg a következő billentyűt: |<ph name="ACCELERATOR" />|</translation>
 <translation id="6280223929691119688">Erre a címre nem lehetséges a kézbesítés. Válasszon másik címet.</translation>
 <translation id="6282194474023008486">Irányítószám</translation>
 <translation id="6285507000506177184">Letöltések kezelése a Chrome-ban gomb. Nyomja le az Enter billentyűt a Chrome-ban letöltött fájlok kezeléséhez.</translation>
@@ -1972,6 +1975,7 @@ További részletek:
 <translation id="7304562222803846232">A Google-fiók adatvédelmi beállításainak kezelése</translation>
 <translation id="7305756307268530424">Indítás lassabban</translation>
 <translation id="7308436126008021607">szinkronizálás a háttérben</translation>
+<translation id="7310392214323165548">Az eszköz hamarosan újraindul</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Segítség a kapcsolódáshoz</translation>
 <translation id="7323804146520582233">A(z) „<ph name="SECTION" />” szakasz elrejtése</translation>
@@ -2173,7 +2177,6 @@ További részletek:
 <translation id="7888575728750733395">Nyomatmegjelenítési szándék</translation>
 <translation id="7894280532028510793">Ha helyesen írta, <ph name="BEGIN_LINK" />próbálkozzon a hálózati diagnosztika futtatásával<ph name="END_LINK" />.</translation>
 <translation id="7904208859782148177">C3 (boríték)</translation>
-<translation id="7931318309563332511">Ismeretlen</translation>
 <translation id="793209273132572360">Frissíti a címet?</translation>
 <translation id="7932579305932748336">Bevonat</translation>
 <translation id="79338296614623784">Érvényes telefonszámot adjon meg</translation>

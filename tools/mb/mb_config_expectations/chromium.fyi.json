@@ -855,6 +855,17 @@
       "use_goma": true
     }
   },
+  "linux-blink-v8-sandbox-future-dbg": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": true,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_goma": true,
+      "v8_enable_sandbox_future": true
+    }
+  },
   "linux-chromeos-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -895,6 +906,15 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
+      "use_goma": true
+    }
+  },
+  "linux-fieldtrial-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
       "use_goma": true
     }
   },

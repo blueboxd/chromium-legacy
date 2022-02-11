@@ -219,6 +219,7 @@
 <translation id="1559572115229829303">&lt;p&gt;ไม่สามารถสร้างการเชื่อมต่อส่วนตัวไปที่ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> เนื่องจากวันที่และเวลา (<ph name="DATE_AND_TIME" />) ในอุปกรณ์ไม่ถูกต้อง&lt;/p&gt;
 
       &lt;p&gt;โปรดปรับวันที่และเวลาจากหัวข้อ&lt;strong&gt;ทั่วไป&lt;/strong&gt;ในแอป&lt;strong&gt;การตั้งค่า&lt;/strong&gt;&lt;/p&gt;</translation>
+<translation id="1559839503761818503">ผู้ดูแลระบบจะรีสตาร์ทอุปกรณ์ในวันที่ <ph name="DATE" /> เวลา <ph name="TIME" /></translation>
 <translation id="156703335097561114">ข้อมูลการเชื่อมต่อเครือข่าย เช่น ที่อยู่ การกำหนดค่าอินเทอร์เฟซ และคุณภาพการเชื่อมต่อ</translation>
 <translation id="1567040042588613346">นโยบายนี้ทำงานตามที่ควรจะเป็นแต่มีการตั้งค่าเดียวกันไว้ที่อื่นและถูกแทนที่โดยนโยบายนี้</translation>
 <translation id="1569487616857761740">ป้อนวันที่หมดอายุ</translation>
@@ -430,6 +431,7 @@
 <translation id="2248949050832152960">ใช้ WebAuthn</translation>
 <translation id="2250931979407627383">เย็บขอบด้านซ้าย</translation>
 <translation id="225207911366869382">เลิกใช้งานค่านี้กับนโยบายนี้</translation>
+<translation id="2256115617011615191">รีสตาร์ทเลย</translation>
 <translation id="2258928405015593961">ป้อนวันที่หมดอายุในอนาคตแล้วลองอีกครั้ง</translation>
 <translation id="225943865679747347">รหัสข้อผิดพลาด: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">ข้อผิดพลาดของ HTTP</translation>
@@ -1235,7 +1237,6 @@
 <translation id="4819347708020428563">แก้ไขคำอธิบายประกอบในมุมมองเริ่มต้นใช่ไหม</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" /> กด Tab ตามด้วย Enter เพื่อสร้างชีตใหม่ใน Google ชีตอย่างรวดเร็ว</translation>
 <translation id="4825507807291741242">ทรงพลัง</translation>
-<translation id="4829962028570902310">ถูกละเว้นเนื่องจากนโยบายจะต้องตั้งค่าโดยนโยบายผู้ใช้ระบบคลาวด์เท่านั้น</translation>
 <translation id="483241715238664915">เปิดคำเตือน</translation>
 <translation id="4838327282952368871">ชวนฝัน</translation>
 <translation id="4840250757394056958">ดูประวัติการเข้าชมใน Chrome</translation>
@@ -1665,6 +1666,7 @@
 <translation id="6272383483618007430">Google อัปเดต</translation>
 <translation id="6276112860590028508">หน้าเว็บจากเรื่องรออ่านของคุณจะปรากฏที่นี่</translation>
 <translation id="627746635834430766">เพื่อให้ชำระเงินได้เร็วขึ้นในครั้งถัดไป โปรดบันทึกบัตรและที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google</translation>
+<translation id="6279183038361895380">กด |<ph name="ACCELERATOR" />| เพื่อแสดงเคอร์เซอร์ของคุณ</translation>
 <translation id="6280223929691119688">ไม่สามารถนำส่งสินค้าไปยังที่อยู่นี้ โปรดเลือกที่อยู่อื่น</translation>
 <translation id="6282194474023008486">รหัสไปรษณีย์</translation>
 <translation id="6285507000506177184">ปุ่มจัดการการดาวน์โหลดใน Chrome กด Enter เพื่อจัดการไฟล์ที่คุณดาวน์โหลดใน Chrome</translation>
@@ -1964,6 +1966,7 @@
 <translation id="7304562222803846232">จัดการการตั้งค่าความเป็นส่วนตัวของบัญชี Google</translation>
 <translation id="7305756307268530424">เริ่มโดยให้ช้าลง</translation>
 <translation id="7308436126008021607">การซิงค์ในเบื้องหลัง</translation>
+<translation id="7310392214323165548">อุปกรณ์จะรีสตาร์ทเร็วๆ นี้</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ความช่วยเหลือเกี่ยวกับการเชื่อมต่อ</translation>
 <translation id="7323804146520582233">ซ่อนส่วน "<ph name="SECTION" />"</translation>
@@ -2165,7 +2168,6 @@
 <translation id="7888575728750733395">การปรับค่าสีการพิมพ์</translation>
 <translation id="7894280532028510793">หากการสะกดถูกต้อง ให้<ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยเครือข่าย<ph name="END_LINK" /></translation>
 <translation id="7904208859782148177">C3 (ซองจดหมาย)</translation>
-<translation id="7931318309563332511">ไม่รู้จัก</translation>
 <translation id="793209273132572360">อัปเดตที่อยู่ไหม</translation>
 <translation id="7932579305932748336">เคลือบ</translation>
 <translation id="79338296614623784">ป้อนหมายเลขโทรศัพท์ที่ถูกต้อง</translation>

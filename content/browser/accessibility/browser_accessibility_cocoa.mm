@@ -719,11 +719,11 @@ bool content::IsNSRange(id value) {
     _children.reset([[NSMutableArray alloc] initWithCapacity:childCount]);
     for (auto it = _owner->PlatformChildrenBegin();
          it != _owner->PlatformChildrenEnd(); ++it) {
-      BrowserAccessibilityCocoa* child = it->GetNativeViewAccessible();
+      AXPlatformNodeCocoa* child = it->GetNativeViewAccessible();
       if ([child isIncludedInPlatformTree])
         [_children addObject:child];
       else
-        [_children addObjectsFromArray:[child children]];
+        [_children addObjectsFromArray:[child accessibilityChildren]];
     }
 
     // Also, add indirect children (if any).
@@ -772,8 +772,8 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return nil;
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  for (BrowserAccessibilityCocoa* child in [self children]) {
-    if ([[child role] isEqualToString:NSAccessibilityColumnRole])
+  for (AXPlatformNodeCocoa* child in [self accessibilityChildren]) {
+    if ([[child accessibilityRole] isEqualToString:NSAccessibilityColumnRole])
       [ret addObject:child];
   }
   return ret;
@@ -1039,13 +1039,15 @@ bool content::IsNSRange(id value) {
   if (![self instanceActive])
     return false;
 
-  DCHECK([[toFind role] isEqualToString:NSAccessibilityRowRole]);
-  for (BrowserAccessibilityCocoa* childToCheck in [self children]) {
+  DCHECK([[toFind accessibilityRole] isEqualToString:NSAccessibilityRowRole]);
+  for (BrowserAccessibilityCocoa* childToCheck in
+       [self accessibilityChildren]) {
     if ([toFind isEqual:childToCheck]) {
       return true;
     }
 
-    if ([[childToCheck role] isEqualToString:NSAccessibilityRowRole]) {
+    if ([[childToCheck accessibilityRole]
+            isEqualToString:NSAccessibilityRowRole]) {
       ++(*currentIndex);
     }
 
@@ -1298,11 +1300,6 @@ bool content::IsNSRange(id value) {
 
   std::string labelName = label->GetName();
   return !labelName.empty();
-}
-
-// internal
-- (content::BrowserAccessibilityDelegate*)delegate {
-  return [self instanceActive] ? _owner->manager()->delegate() : nil;
 }
 
 - (content::BrowserAccessibility*)owner {
@@ -2554,7 +2551,7 @@ bool content::IsNSRange(id value) {
   if ([attribute
           isEqualToString:
               NSAccessibilityIndexForChildUIElementParameterizedAttribute]) {
-    if (![parameter isKindOfClass:[BrowserAccessibilityCocoa class]])
+    if (![parameter isKindOfClass:[AXPlatformNodeCocoa class]])
       return nil;
 
     BrowserAccessibilityCocoa* childCocoaObj =
@@ -2857,7 +2854,7 @@ bool content::IsNSRange(id value) {
     return 0;
 
   NSUInteger index = 0;
-  for (BrowserAccessibilityCocoa* childToCheck in [self children]) {
+  for (AXPlatformNodeCocoa* childToCheck in [self accessibilityChildren]) {
     if ([child isEqual:childToCheck])
       return index;
     ++index;

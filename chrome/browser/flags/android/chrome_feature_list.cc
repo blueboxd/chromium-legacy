@@ -253,6 +253,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kQuickActionSearchWidgetAndroid,
     &kReachedCodeProfiler,
+    &kImproveReaderModePrompt,
     &kReaderModeInCCT,
     &kReengagementNotification,
     &kRelatedSearches,
@@ -336,7 +337,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &page_info::kPageInfoAboutThisSite,
     &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
-    &password_manager::features::kEditPasswordsInSettings,
     &password_manager::features::kLeakDetectionUnauthenticated,
     &password_manager::features::kPasswordChange,
     &password_manager::features::kPasswordScriptsFetching,
@@ -660,6 +660,9 @@ const base::Feature kHomepagePromoCard{"HomepagePromoCard",
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kImproveReaderModePrompt{"ImproveReaderModePrompt",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIncognitoReauthenticationForAndroid{
     "IncognitoReauthenticationForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};

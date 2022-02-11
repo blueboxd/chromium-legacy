@@ -67,9 +67,6 @@ CONTENT_EXPORT extern const base::Feature kDesktopPWAsTabStrip;
 CONTENT_EXPORT extern const base::Feature kDevicePosture;
 CONTENT_EXPORT extern const base::Feature kDocumentPolicy;
 CONTENT_EXPORT extern const base::Feature kDocumentPolicyNegotiation;
-#if BUILDFLAG(IS_WIN)
-CONTENT_EXPORT extern const base::Feature kDWriteFontProxyOnIO;
-#endif
 CONTENT_EXPORT extern const base::Feature kEarlyEstablishGpuChannel;
 CONTENT_EXPORT extern const base::Feature kEarlyHintsPreloadForNavigation;
 CONTENT_EXPORT extern const base::Feature kEmbeddingRequiresOptIn;
@@ -105,6 +102,7 @@ CONTENT_EXPORT extern const base::Feature kInstalledAppProvider;
 CONTENT_EXPORT extern const base::Feature kInstalledAppsInCbd;
 CONTENT_EXPORT extern const base::Feature kIsolateOrigins;
 CONTENT_EXPORT extern const char kIsolateOriginsFieldTrialParamName[];
+CONTENT_EXPORT extern const base::Feature kIsolateSandboxedIframes;
 CONTENT_EXPORT extern const base::Feature kLazyFrameLoading;
 CONTENT_EXPORT extern const base::Feature kLazyFrameVisibleLoadTimeMetrics;
 CONTENT_EXPORT extern const base::Feature kLazyImageLoading;
@@ -160,6 +158,8 @@ CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
 CONTENT_EXPORT extern const base::Feature kPictureInPictureV2;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
 CONTENT_EXPORT extern const base::Feature kPrivacySandboxAggregationService;
+CONTENT_EXPORT extern const base::FeatureParam<std::string>
+    kPrivacySandboxAggregationServiceTrustedServerOriginParam;
 CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessForWorkers;
 CONTENT_EXPORT extern const base::Feature
     kPrivateNetworkAccessRespectPreflightResults;

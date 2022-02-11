@@ -20,6 +20,9 @@ extern const base::Feature kOnDeviceClustering;
 // Uses an in-memory cache that stores engagement score.
 extern const base::Feature kUseEngagementScoreCache;
 
+// Splits clustering task into smaller batches.
+extern const base::Feature kSplitClusteringTasksToSmallerBatches;
+
 // Returns the maximum duration between navigations that
 // a visit can be considered for the same cluster.
 base::TimeDelta ClusterNavigationTimeCutoff();
@@ -105,6 +108,12 @@ bool ShouldIncludeCategoriesInKeywords();
 // Whether to exclude keywords from visits that may be considered "noisy" to the
 // user (i.e. highly engaged, non-SRP).
 bool ShouldExcludeKeywordsFromNoisyVisits();
+
+// Returns the default batch size for annotating visits when clustering.
+size_t GetClusteringTasksBatchSize();
+
+// Whether to split the clusters when a search visit is encountered.
+bool ShouldSplitClustersAtSearchVisits();
 
 }  // namespace features
 }  // namespace history_clusters

@@ -67,29 +67,6 @@ group("test") {
   testonly = true
 }
 
-group("policy_testserver_pyproto") {
-  # Python proto files used by chrome/browser/policy/test/policy_testserver.py
-
-  data = [
-    "$root_out_dir/pyproto/components/policy/proto/device_management_backend_pb2.py",
-    "$root_out_dir/pyproto/components/policy/proto/cloud_policy_pb2.py",
-    "$root_out_dir/pyproto/components/policy/proto/policy_common_definitions_pb2.py",
-    "$root_out_dir/pyproto/third_party/shell-encryption/src/serialization_pb2.py",
-    "$root_out_dir/pyproto/third_party/private_membership/src/private_membership_pb2.py",
-    "$root_out_dir/pyproto/third_party/private_membership/src/private_membership_rlwe_pb2.py",
-  ]
-
-  if (!is_android) {
-    # Used by chrome/browser/policy/test/policy_testserver.py
-    data += [ "$root_out_dir/pyproto/components/policy/proto/chrome_extension_policy_pb2.py" ]
-  }
-
-  if (is_chromeos_ash) {
-    # Used by chrome/browser/policy/test/policy_testserver.py
-    data += [ "$root_out_dir/pyproto/components/policy/proto/chrome_device_policy_pb2.py" ]
-  }
-}
-
 if (is_android) {
   android_library("test_support_java") {
     testonly = true
@@ -1128,7 +1105,6 @@ if (!is_android) {
 
     deps = [
       ":browser_tests_runner",
-      ":policy_testserver_pyproto",
       ":sync_integration_test_support",
       ":test_support",
       ":test_support_ui",
@@ -1518,7 +1494,6 @@ if (!is_android) {
       "../browser/accessibility/interstitial_accessibility_browsertest.cc",
       "../browser/accessibility/live_caption_controller_browsertest.cc",
       "../browser/accessibility/live_caption_speech_recognition_host_browsertest.cc",
-      "../browser/alternative_error_page_override_info_browsertest.cc",
       "../browser/apps/guest_view/app_view_browsertest.cc",
       "../browser/apps/guest_view/web_view_browsertest.cc",
       "../browser/apps/platform_apps/app_browsertest.cc",
@@ -2083,6 +2058,7 @@ if (!is_android) {
       "../browser/ui/web_applications/web_app_url_handling_browsertest.cc",
       "../browser/ui/web_applications/web_app_window_controls_overlay_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
+      "../browser/ui/webui/app_service_internals/app_service_internals_browsertest.cc",
       "../browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui_browsertest.cc",
       "../browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui_browsertest.cc",
       "../browser/ui/webui/bookmarks/bookmarks_browsertest.cc",
@@ -2124,6 +2100,7 @@ if (!is_android) {
       "../browser/usb/usb_browsertest.cc",
       "../browser/user_agent/user_agent_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
+      "../browser/web_applications/alternative_error_page_override_info_browsertest.cc",
       "../browser/webauthn/chrome_webauthn_browsertest.cc",
       "../browser/window_placement/window_placement_browsertest.cc",
       "../browser/window_placement/window_placement_permission_context_browsertest.cc",
@@ -3472,6 +3449,7 @@ if (!is_android) {
         "../browser/ash/policy/external_data/device_policy_cloud_external_data_manager_browsertest.cc",
         "../browser/ash/policy/external_data/handlers/device_wilco_dtc_configuration_external_data_handler_browsertest.cc",
         "../browser/ash/policy/external_data/user_cloud_external_data_manager_browsertest.cc",
+        "../browser/ash/policy/handlers/autoclick_policy_browsertest.cc",
         "../browser/ash/policy/handlers/device_i18n_shortcuts_enabled_browsertest.cc",
         "../browser/ash/policy/handlers/device_quirks_policy_browsertest.cc",
         "../browser/ash/policy/handlers/device_system_use_24hour_clock_browsertest.cc",
@@ -4534,7 +4512,7 @@ template("performance_test_suite_template_base") {
     ]
 
     if (build_dawn_tests && !is_chromeos_lacros) {
-      data_deps += [ "//third_party/dawn/src/tests:dawn_perf_tests_temp_group" ]
+      data_deps += [ "//third_party/dawn/src/dawn/tests:dawn_perf_tests" ]
     }
 
     if (!is_chromeos_lacros) {
@@ -5783,12 +5761,14 @@ test("unit_tests") {
       "../browser/mac/auth_session_request_unittest.mm",
       "../browser/mac/exception_processor_unittest.mm",
       "../browser/mac/keystone_glue_unittest.mm",
+      "../browser/metrics/power/coalition_resource_usage_provider_mac_unittest.mm",
+      "../browser/metrics/power/coalition_resource_usage_provider_test_util_mac.cc",
+      "../browser/metrics/power/coalition_resource_usage_provider_test_util_mac.h",
       "../browser/notifications/notification_dispatcher_mojo_unittest.cc",
       "../browser/notifications/notification_platform_bridge_mac_unittest.cc",
       "../browser/notifications/notification_platform_bridge_mac_utils_unittest.cc",
       "../browser/notifications/stub_notification_dispatcher_mac.cc",
       "../browser/notifications/stub_notification_dispatcher_mac.h",
-      "../browser/performance_monitor/resource_coalition_mac_unittest.mm",
       "../browser/policy/browser_dm_token_storage_mac_unittest.cc",
       "../browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper_unit_test.mm",
       "../browser/ui/cocoa/applescript/apple_event_util_unittest.mm",
@@ -6331,7 +6311,6 @@ test("unit_tests") {
       "../browser/ui/webui/settings/metrics_reporting_handler_unittest.cc",
       "../browser/ui/webui/settings/on_startup_handler_unittest.cc",
       "../browser/ui/webui/settings/people_handler_unittest.cc",
-      "../browser/ui/webui/settings/privacy_review_handler_unittest.cc",
       "../browser/ui/webui/settings/privacy_sandbox_handler_unittest.cc",
       "../browser/ui/webui/settings/profile_info_handler_unittest.cc",
       "../browser/ui/webui/settings/recent_site_settings_helper_unittest.cc",
@@ -8323,6 +8302,7 @@ if (!is_android) {
       "//components/prefs",
       "//components/search_engines",
       "//components/security_interstitials/content:security_interstitial_page",
+      "//components/services/app_service/public/cpp:app_types",
       "//components/services/app_service/public/mojom",
       "//components/signin/public/base",
       "//components/signin/public/identity_manager",

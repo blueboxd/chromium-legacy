@@ -1951,6 +1951,9 @@ extern const char kReaderModeHeuristicsAllArticles[];
 extern const char kReaderModeHeuristicsAlwaysOff[];
 extern const char kReaderModeHeuristicsAlwaysOn[];
 
+extern const char kImproveReaderModePromptName[];
+extern const char kImproveReaderModePromptDescription[];
+
 extern const char kReaderModeInCCTName[];
 extern const char kReaderModeInCCTDescription[];
 
@@ -2080,6 +2083,9 @@ extern const char kOmniboxPedalsAndroidBatch1Description[];
 // Non-Android ----------------------------------------------------------------
 
 #else  // !BUILDFLAG(IS_ANDROID)
+
+extern const char kAppManagementAppDetailsName[];
+extern const char kAppManagementAppDetailsDescription[];
 
 extern const char kAllowAllSitesToInitiateMirroringName[];
 extern const char kAllowAllSitesToInitiateMirroringDescription[];
@@ -2598,9 +2604,6 @@ extern const char kEnableInputEventLoggingDescription[];
 extern const char kEnableInputInDiagnosticsAppName[];
 extern const char kEnableInputInDiagnosticsAppDescription[];
 
-extern const char kEnableInputNoiseCancellationUiName[];
-extern const char kEnableInputNoiseCancellationUiDescription[];
-
 extern const char kEnableKeyboardBacklightToggleName[];
 extern const char kEnableKeyboardBacklightToggleDescription[];
 
@@ -2817,6 +2820,9 @@ extern const char kImeAssistPersonalInfoDescription[];
 extern const char kVirtualKeyboardDarkModeName[];
 extern const char kVirtualKeyboardDarkModeDescription[];
 
+extern const char kVirtualKeyboardNewHeaderName[];
+extern const char kVirtualKeyboardNewHeaderDescription[];
+
 extern const char kCrosLanguageSettingsImeOptionsInSettingsName[];
 extern const char kCrosLanguageSettingsImeOptionsInSettingsDescription[];
 
@@ -2961,9 +2967,6 @@ extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
-
-extern const char kChromeOSSharingHubName[];
-extern const char kChromeOSSharingHubDescription[];
 
 extern const char kShowBluetoothDebugLogToggleName[];
 extern const char kShowBluetoothDebugLogToggleDescription[];

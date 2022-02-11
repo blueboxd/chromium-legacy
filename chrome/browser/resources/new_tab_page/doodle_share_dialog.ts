@@ -10,7 +10,7 @@ import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getTemplate} from './doodle_share_dialog.html.js';
 
 import {I18nMixin} from './i18n_setup.js';
@@ -22,15 +22,19 @@ import {WindowProxy} from './window_proxy.js';
  */
 const FACEBOOK_APP_ID: number = 738026486351791;
 
-interface DoodleShareDialogElement {
+export interface DoodleShareDialogElement {
   $: {
     dialog: CrDialogElement,
+    copyButton: HTMLElement,
+    doneButton: HTMLElement,
+    emailButton: HTMLElement,
+    title: HTMLElement,
     url: CrInputElement,
   };
 }
 
 /** Dialog that lets the user share the doodle. */
-class DoodleShareDialogElement extends I18nMixin
+export class DoodleShareDialogElement extends I18nMixin
 (PolymerElement) {
   static get is() {
     return 'ntp-doodle-share-dialog';
@@ -88,6 +92,12 @@ class DoodleShareDialogElement extends I18nMixin
 
   private notifyShare_(channel: DoodleShareChannel) {
     this.dispatchEvent(new CustomEvent('share', {detail: channel}));
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ntp-doodle-share-dialog': DoodleShareDialogElement;
   }
 }
 

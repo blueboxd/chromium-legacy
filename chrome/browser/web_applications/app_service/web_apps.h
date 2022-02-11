@@ -78,7 +78,7 @@ class WebApps : public apps::PublisherBase,
   Profile* profile() const { return profile_; }
   WebAppProvider* provider() const { return provider_; }
 
-  apps::mojom::AppType app_type() { return app_type_; }
+  apps::AppType app_type() { return app_type_; }
 
   WebAppPublisherHelper& publisher_helper() { return publisher_helper_; }
 
@@ -128,8 +128,8 @@ class WebApps : public apps::PublisherBase,
       apps::mojom::RunOnOsLoginMode run_on_os_login_mode) override;
 
   // WebAppPublisherHelper::Delegate overrides.
-  void PublishWebApps(std::vector<apps::mojom::AppPtr> mojom_apps) override;
-  void PublishWebApp(apps::mojom::AppPtr mojom_app) override;
+  void PublishWebApps(std::vector<apps::AppPtr> apps) override;
+  void PublishWebApp(apps::AppPtr app) override;
   void ModifyWebAppCapabilityAccess(
       const std::string& app_id,
       absl::optional<bool> accessing_camera,
@@ -182,7 +182,7 @@ class WebApps : public apps::PublisherBase,
 
   // The app type of the publisher. The app type is kSystemWeb if the web apps
   // are serving from Lacros, and the app type is kWeb for all other cases.
-  const apps::mojom::AppType app_type_;
+  const apps::AppType app_type_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::InstanceRegistry* const instance_registry_;

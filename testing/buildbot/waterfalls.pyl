@@ -2383,14 +2383,6 @@
            'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
-      'linux-rel-swarming-staging': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_linux_gtests',
-        },
-      },
       'linux-ssd-rel-swarming': {
         'mixins': [
           'linux-bionic',
@@ -2413,11 +2405,6 @@
         },
       },
       'win-rel-swarming': {
-        'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
-        },
-      },
-      'win-rel-swarming-staging': {
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
@@ -3195,6 +3182,15 @@
         },
       },
       'linux-blink-v8-oilpan': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'linux-blink-v8-sandbox-future-dbg': {
         'mixins': [
           'linux-bionic',
         ],
@@ -5369,6 +5365,18 @@
           # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
         },
       },
+      'linux-rust-intree-x64-rel' : {
+        'additional_compile_targets': [
+          'mojo_rust',
+          'mojo_rust_extra_tests',
+          'mojo_rust_unittests',
+          'rust_build_tests',
+        ],
+        'test_suites': {
+          'gtest_tests': 'rust_gtests',
+          'isolated_scripts': 'rust_native_tests',
+        },
+      },
       'linux-rust-x64-rel' : {
         'additional_compile_targets': [
           'mojo_rust',
@@ -5381,6 +5389,7 @@
           'isolated_scripts': 'rust_native_tests',
         },
       },
+
     },
   },
   {

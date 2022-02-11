@@ -25,6 +25,8 @@ export enum PrivacySandboxSettingsView {
   MAIN = 'main',
   LEARN_MORE_DIALOG = 'learnMoreDialog',
   AD_PERSONALIZATION_DIALOG = 'adPersonalizationDialog',
+  AD_MEASUREMENT_DIALOG = 'adMeasurementDialog',
+  SPAM_AND_FRAUD_DIALOG = 'spamAndFraudDialog',
 }
 
 const PrivacySandboxAppElementBase = PrefsMixin(PolymerElement);
@@ -152,6 +154,16 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
   private onAdPersonalizationRowClick_() {
     this.privacySandboxSettingsView_ =
         PrivacySandboxSettingsView.AD_PERSONALIZATION_DIALOG;
+  }
+
+  private onAdMeasurementRowClick_() {
+    this.privacySandboxSettingsView_ =
+        PrivacySandboxSettingsView.AD_MEASUREMENT_DIALOG;
+  }
+
+  private onSpamAndFraudRowClick_() {
+    this.privacySandboxSettingsView_ =
+        PrivacySandboxSettingsView.SPAM_AND_FRAUD_DIALOG;
   }
 }
 

@@ -123,6 +123,7 @@
 #include "ipc/ipc_security_test_util.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/mock_http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -554,6 +555,20 @@ std::string SitePerProcessBrowserTest::GetExpectedOrigin(
   GURL url = embedded_test_server()->GetURL(host, "/");
   return url::Origin::Create(url).Serialize();
 }
+
+//
+// SitePerProcessIsolatedSandboxedIframeTest
+//
+class SitePerProcessIsolatedSandboxedIframeTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessIsolatedSandboxedIframeTest() {
+    feature_list_.InitAndEnableFeature(features::kIsolateSandboxedIframes);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 // SitePerProcessIgnoreCertErrorsBrowserTest
 
@@ -2408,6 +2423,300 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessAutoplayBrowserTest,
   EXPECT_TRUE(NavigateFrameToURL(root->child_at(0), bar_url));
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
+}
+
+// A test to verify that an iframe with a fully-restrictive sandbox is rendered
+// in a separate process from its parent frame even if they have the same
+// origin.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       IsolatedSandbox) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  // The child needs to have the same origin as the parent.
+  GURL child_url(main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frame, same-origin.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.sandbox = ''; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check frame-tree.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child->effective_frame_policy().sandbox_flags);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+}
+
+// A test to verify that when an iframe has two sibling subframes, each with a
+// fully-restrictive sandbox, that each of the three gets its own process
+// even though they are all same-origin.
+// Note: using "sandbox = ''" in this and the following tests creates fully
+// restricted sandboxes, which will include the kOrigin case we are interested
+// in.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       IsolatedSandboxSiblingSubframes) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  // The child needs to have the same origin as the parent.
+  GURL child_url(main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frame, same-origin.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame1 = document.createElement('iframe'); "
+        "frame1.sandbox = ''; "
+        "frame1.src = '%s'; "
+        "document.body.appendChild(frame1); "
+        "var frame2 = document.createElement('iframe'); "
+        "frame2.sandbox = ''; "
+        "frame2.src = '%s'; "
+        "document.body.appendChild(frame2);",
+        child_url.spec().c_str(), child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check frame-tree.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(2U, root->child_count());
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child1->effective_frame_policy().sandbox_flags);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child2->effective_frame_policy().sandbox_flags);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child1->current_frame_host()->GetSiteInstance());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child2->current_frame_host()->GetSiteInstance());
+  // Because the siblings are same-site to each other (in fact, same origin) we
+  // expect them to share a process when sandboxed.
+  EXPECT_EQ(child1->current_frame_host()->GetSiteInstance(),
+            child2->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child1->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_TRUE(child2->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       IsolatedSandboxSrcdocSubframe) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frame, with srcdoc content.
+  std::string child_inner_text("srcdoc sandboxed subframe");
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.sandbox = 'allow-scripts'; "
+        "frame.srcdoc = '%s'; "
+        "document.body.appendChild(frame);",
+        child_inner_text.c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  // Verify that the child has only the 'allow-scripts' permission set.
+  EXPECT_EQ(child->effective_frame_policy().sandbox_flags,
+            network::mojom::WebSandboxFlags::kAll &
+                ~network::mojom::WebSandboxFlags::kScripts &
+                ~network::mojom::WebSandboxFlags::kAutomaticFeatures);
+  EXPECT_EQ(std::string(url::kAboutSrcdocURL),
+            child->current_frame_host()->GetLastCommittedURL());
+  EXPECT_TRUE(child->current_frame_host()->GetLastCommittedOrigin().opaque());
+  // Verify that the child's precursor origin matches 'a.com'. Note: we create
+  // the expected value using `main_url` so that the test server port will be
+  // correctly matched.
+  EXPECT_EQ(url::SchemeHostPort(main_url),
+            child->current_origin().GetTupleOrPrecursorTupleIfOpaque());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+  {
+    std::string js_str("document.body.innerText;");
+    EXPECT_EQ(child_inner_text, EvalJs(child->current_frame_host(), js_str));
+  }
+}
+
+// Test to make sure that an iframe with a data:url is appropriately sandboxed.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       SandboxedIframeWithDataURL) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create non-sandboxed child frame with a data URL.
+  std::string data_url_str("data:text/html,dataurl");
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.id = 'test_frame'; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        data_url_str.c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Verify parent and child frames share a SiteInstance
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // Now make subframe sandboxed.
+  {
+    std::string js_str(
+        "var frame = document.getElementById('test_frame'); "
+        "frame.sandbox = ''; ");
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+  }
+  NavigateFrameToURL(child,
+                     embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // Child should now be in a different SiteInstance.
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // Go back and ensure the data: URL committed in the same SiteInstance as the
+  // original navigation.
+  EXPECT_TRUE(web_contents()->GetController().CanGoBack());
+  {
+    TestFrameNavigationObserver frame_observer(child);
+    web_contents()->GetController().GoBack();
+    frame_observer.WaitForCommit();
+  }
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(GURL(data_url_str),
+            child->current_frame_host()->GetLastCommittedURL());
+}
+
+// Test to make sure that a sandboxed child iframe with a data url and a
+// sandboxed parent end up in the same SiteInstance.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       SandboxedParentWithSandboxedChildWithDataURL) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  std::string parent_url_str = main_url.spec();
+  std::string data_url_str("data:text/html,dataurl");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Allow "parent" to have the allow-scripts permissions so it can create
+  // a child.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.sandbox = 'allow-scripts'; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        parent_url_str.c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+
+  // Give the grandchild the allow-scripts permissions so it matches the child.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.sandbox = 'allow-scripts'; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        data_url_str.c_str());
+    EXPECT_TRUE(ExecJs(child->current_frame_host(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+  ASSERT_EQ(1U, child->child_count());
+  FrameTreeNode* grandchild = child->child_at(0);
+  EXPECT_EQ(child->current_frame_host()->GetSiteInstance(),
+            grandchild->current_frame_host()->GetSiteInstance());
+  EXPECT_EQ(GURL(data_url_str),
+            grandchild->current_frame_host()->GetLastCommittedURL());
+}
+
+// Test to make sure that a sandboxed iframe with a (not-explicitly) sandboxed
+// subframe ends up in the same SiteInstance/process as its subframe.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       IsolatedSandboxWithNonSandboxedSubframe) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  // The child needs to have the same origin as the parent.
+  GURL child_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frame, same-origin.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.sandbox = ''; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check child vs. parent.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child->effective_frame_policy().sandbox_flags);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+
+  // Check grandchild vs. child.
+  ASSERT_EQ(1U, child->child_count());
+  FrameTreeNode* grand_child = child->child_at(0);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            grand_child->effective_frame_policy().sandbox_flags);
+  EXPECT_EQ(child->current_frame_host()->GetSiteInstance(),
+            grand_child->current_frame_host()->GetSiteInstance());
 }
 
 // Check that iframe sandbox flags are replicated correctly.
@@ -5697,14 +6006,16 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 class ShowCreatedWindowInterceptor
     : public blink::mojom::LocalMainFrameHostInterceptorForTesting {
  public:
+  // The caller has to guarantee that `render_frame_host` lives at least as long
+  // as ShowCreatedWindowInterceptor.
   ShowCreatedWindowInterceptor(
       RenderFrameHostImpl* render_frame_host,
       base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback)
       : render_frame_host_(render_frame_host),
-        test_callback_(std::move(test_callback)) {
-    render_frame_host_->local_main_frame_host_receiver_for_testing()
-        .SwapImplForTesting(this);
-  }
+        test_callback_(std::move(test_callback)),
+        swapped_impl_(
+            render_frame_host_->local_main_frame_host_receiver_for_testing(),
+            this) {}
 
   ~ShowCreatedWindowInterceptor() override = default;
 
@@ -5740,6 +6051,9 @@ class ShowCreatedWindowInterceptor
   gfx::Rect initial_rect_;
   bool user_gesture_ = false;
   WindowOpenDisposition disposition_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::LocalMainFrameHost>>
+      swapped_impl_;
 };
 
 // Listens for the source WebContents opening the new WebContents then attaches
@@ -5848,16 +6162,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 }
 
 // Intercepts calls to PopupWidgetHost's RequestClosePopup mojo method, and
-// discards it.
+// discards it. The caller has to guarantee that `render_widget_host` lives at
+// least as long as RequestCloseWidgetInterceptor.
 class RequestCloseWidgetInterceptor
     : public blink::mojom::PopupWidgetHostInterceptorForTesting {
  public:
   explicit RequestCloseWidgetInterceptor(
       RenderWidgetHostImpl* render_widget_host)
-      : render_widget_host_(render_widget_host) {
-    render_widget_host_->popup_widget_host_receiver_for_testing()
-        .SwapImplForTesting(this);
-  }
+      : render_widget_host_(render_widget_host),
+        swapped_impl_(
+            render_widget_host_->popup_widget_host_receiver_for_testing(),
+            this) {}
 
   ~RequestCloseWidgetInterceptor() override = default;
 
@@ -5869,10 +6184,15 @@ class RequestCloseWidgetInterceptor
 
  private:
   raw_ptr<RenderWidgetHostImpl> render_widget_host_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::PopupWidgetHost>>
+      swapped_impl_;
 };
 
 // Intercepts calls to PopupWidgetHost's ShowPopup mojo method, and
-// invokes the provided callback.
+// invokes the provided callback. The caller has to guarantee that
+// `render_widget_host` lives at least as long as
+// ShowCreatedPopupWidgetInterceptor.
 class ShowCreatedPopupWidgetInterceptor
     : public blink::mojom::PopupWidgetHostInterceptorForTesting {
  public:
@@ -5880,10 +6200,10 @@ class ShowCreatedPopupWidgetInterceptor
       RenderWidgetHostImpl* render_widget_host,
       base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback)
       : render_widget_host_(render_widget_host),
-        test_callback_(std::move(test_callback)) {
-    render_widget_host_->popup_widget_host_receiver_for_testing()
-        .SwapImplForTesting(this);
-  }
+        test_callback_(std::move(test_callback)),
+        swapped_impl_(
+            render_widget_host_->popup_widget_host_receiver_for_testing(),
+            this) {}
 
   ~ShowCreatedPopupWidgetInterceptor() override = default;
 
@@ -5915,6 +6235,9 @@ class ShowCreatedPopupWidgetInterceptor
   base::OnceCallback<void(int32_t pending_widget_routing_id)> test_callback_;
   ShowPopupCallback show_callback_;
   gfx::Rect initial_rect_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::PopupWidgetHost>>
+      swapped_impl_;
 };
 
 // Listens for the source RenderFrameHost opening the new popup widget then
@@ -6325,10 +6648,10 @@ class DispatchLoadInterceptor
     : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
   explicit DispatchLoadInterceptor(RenderFrameHostImpl* render_frame_host)
-      : render_frame_host_(render_frame_host) {
-    render_frame_host_->local_frame_host_receiver_for_testing()
-        .SwapImplForTesting(this);
-  }
+      : render_frame_host_(render_frame_host),
+        swapped_impl_(
+            render_frame_host_->local_frame_host_receiver_for_testing(),
+            this) {}
 
   ~DispatchLoadInterceptor() override = default;
 
@@ -6341,6 +6664,9 @@ class DispatchLoadInterceptor
 
  private:
   raw_ptr<RenderFrameHostImpl> render_frame_host_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
+      swapped_impl_;
 };
 
 // Test that the renderer isn't killed when a frame generates a load event just
@@ -6372,24 +6698,26 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // SiteInstance, a.com.
   EXPECT_TRUE(child->render_manager()->GetProxyToParent());
 
-  // Intercept calls to the LocalFrameHost::DispatchLoad() method.
-  DispatchLoadInterceptor interceptor(child_rfh);
-
-  // Now, go back to a.com in the subframe and wait for commit.
   {
-    TestFrameNavigationObserver commit_observer(child);
-    web_contents()->GetController().GoBack();
-    commit_observer.WaitForCommit();
+    // Intercept calls to the LocalFrameHost::DispatchLoad() method.
+    DispatchLoadInterceptor interceptor(child_rfh);
+
+    // Now, go back to a.com in the subframe and wait for commit.
+    {
+      TestFrameNavigationObserver commit_observer(child);
+      web_contents()->GetController().GoBack();
+      commit_observer.WaitForCommit();
+    }
+
+    // At this point, the subframe's old RFH for b.com should be pending
+    // deletion, and the subframe's proxy in a.com should've been cleared.
+    EXPECT_TRUE(child_rfh->IsPendingDeletion());
+    EXPECT_FALSE(child->render_manager()->GetProxyToParent());
+
+    // Simulate that the load event is dispatched from |child_rfh| just after
+    // it's become pending deletion.
+    child_rfh->DispatchLoad();
   }
-
-  // At this point, the subframe's old RFH for b.com should be pending
-  // deletion, and the subframe's proxy in a.com should've been cleared.
-  EXPECT_TRUE(child_rfh->IsPendingDeletion());
-  EXPECT_FALSE(child->render_manager()->GetProxyToParent());
-
-  // Simulate that the load event is dispatched from |child_rfh| just after
-  // it's become pending deletion.
-  child_rfh->DispatchLoad();
 
   // In the bug, DispatchLoad killed the b.com renderer.  Ensure that this is
   // not the case. Note that the process kill doesn't happen immediately, so
@@ -12712,6 +13040,9 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessBrowserTouchActionTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessIsolatedSandboxedIframeTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          SitePerProcessIgnoreCertErrorsBrowserTest,

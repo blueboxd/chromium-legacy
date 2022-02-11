@@ -149,7 +149,8 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
 }
 
 // Flaky on Win, Linux and Mac. http://crbug.com/1282122
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_DirectNavigationNoInteraction \
   DISABLED_DirectNavigationNoInteraction
 #else
@@ -180,7 +181,8 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
 }
 
 // TODO(crbug.com/1282087): Flaky on Linux, Windows and Mac.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_DirectNavigationWithQuery DISABLED_DirectNavigationWithQuery
 #else
 #define MAYBE_DirectNavigationWithQuery DirectNavigationWithQuery
@@ -293,7 +295,8 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Assumed to be flaky since the above tests are flaky.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_IndirectNavigation DISABLED_IndirectNavigation
 #else
 #define MAYBE_IndirectNavigation IndirectNavigation
@@ -326,7 +329,8 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest,
 }
 
 // Assumed to be flaky since the above tests are flaky.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_LinkClick DISABLED_LinkClick
 #else
 #define MAYBE_LinkClick LinkClick
@@ -359,7 +363,8 @@ IN_PROC_BROWSER_TEST_F(HistoryClustersMetricsBrowserTest, MAYBE_LinkClick) {
 }
 
 // Assumed to be flaky since the above tests are flaky.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_MAC)
 #define MAYBE_Refresh DISABLED_Refresh
 #else
 #define MAYBE_Refresh Refresh

@@ -166,6 +166,7 @@
 <translation id="142858679511221695">Корисник во облакот</translation>
 <translation id="1428729058023778569">Ја гледате опоменава бидејќи сајтов не поддржува HTTPS. <ph name="BEGIN_LEARN_MORE_LINK" />Дознајте повеќе<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="1430915738399379752">Печати</translation>
+<translation id="1432187715652018471">страница сака да инсталира ракувач на услуги.</translation>
 <translation id="1432581352905426595">Управувајте со пребарувачи</translation>
 <translation id="1436185428532214179">Може да прашува за да изменува датотеки и папки на уредот</translation>
 <translation id="1442386063175183758">Десно превиткување како брошура</translation>
@@ -434,6 +435,7 @@
 <translation id="2248949050832152960">Користи WebAuthn</translation>
 <translation id="2250931979407627383">Шиење на работ лево</translation>
 <translation id="225207911366869382">Оваа вредност е застарена за ова правило.</translation>
+<translation id="2256115617011615191">Рестартирај сега</translation>
 <translation id="2258928405015593961">Внесете датум на истекување во иднина и обидете се повторно</translation>
 <translation id="225943865679747347">Код на грешка: <ph name="ERROR_CODE" /></translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
@@ -1245,7 +1247,6 @@
 <translation id="4819347708020428563">Сакате ли да ги измените прибелешките во стандарден приказ?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, притиснете го копчето Tab, а потоа копчето Enter за да набрзина создадете нова табела на Google</translation>
 <translation id="4825507807291741242">Моќен</translation>
-<translation id="4829962028570902310">Игнорирано бидејќи правилото може да се постави само од политика за корисници во облак.</translation>
 <translation id="483241715238664915">Вклучи опомени</translation>
 <translation id="4838327282952368871">Нереален</translation>
 <translation id="4840250757394056958">Прикажи ја историјата на Chrome</translation>
@@ -1675,6 +1676,7 @@
 <translation id="6272383483618007430">Ажурирање од Google</translation>
 <translation id="6276112860590028508">Страниците од списокот за читање се појавуваат тука</translation>
 <translation id="627746635834430766">За да платите побрзо следниот пат, зачувајте ја картичката и адресата за наплата на вашата сметка на Google.</translation>
+<translation id="6279183038361895380">Притиснете |<ph name="ACCELERATOR" />| за да се покаже покажувачот</translation>
 <translation id="6280223929691119688">Не може да се достави на оваа адреса. Изберете друга.</translation>
 <translation id="6282194474023008486">Поштенски број</translation>
 <translation id="6285507000506177184">Копче „Управувајте со преземањата во Chrome“, притиснете Enter за да управувате со датотеките што сте ги презеле во Chrome</translation>
@@ -2175,7 +2177,6 @@
 <translation id="7888575728750733395">Намера за прикажување на печатењето</translation>
 <translation id="7894280532028510793">Ако правописот е точен, <ph name="BEGIN_LINK" />извршете дијагностика на мрежата<ph name="END_LINK" />.</translation>
 <translation id="7904208859782148177">C3 (плик)</translation>
-<translation id="7931318309563332511">Непознат</translation>
 <translation id="793209273132572360">Да се ажурира адресата?</translation>
 <translation id="7932579305932748336">Омот</translation>
 <translation id="79338296614623784">Внесете важечки телефонски број</translation>

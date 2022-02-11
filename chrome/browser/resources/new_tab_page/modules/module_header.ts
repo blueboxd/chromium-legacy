@@ -5,7 +5,7 @@
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {I18nMixin, loadTimeData} from '../i18n_setup.js';
 
@@ -94,7 +94,8 @@ export class ModuleHeaderElement extends I18nMixin
 
   private onInfoButtonClick_() {
     this.$.actionMenu.close();
-    this.dispatchEvent(new Event('info-button-click', {bubbles: true}));
+    this.dispatchEvent(
+        new Event('info-button-click', {bubbles: true, composed: true}));
   }
 
   private onMenuButtonClick_(e: Event) {

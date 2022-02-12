@@ -358,8 +358,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool DocumentPolicyFeatureObserved(
       mojom::blink::DocumentPolicyFeature feature);
 
-  String addressSpaceForBindings(ScriptState*) const;
-
   bool CanContainRangeEndPoint() const override { return true; }
 
   SelectorQueryCache& GetSelectorQueryCache();
@@ -1198,7 +1196,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Document* ParentDocument() const;
   Document& TopDocument() const;
 
-  // Will only return nullptr in unit tests.
+  // Will only return nullptr if the document has Shutdown() or in unit tests.
+  // See `execution_context_` for details.
   ExecutionContext* GetExecutionContext() const final;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }

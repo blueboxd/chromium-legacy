@@ -156,6 +156,7 @@ class TaskEnvironment::TestTaskTracker
                internal::TaskSource* sequence,
                const TaskTraits& traits) override;
   void BeginCompleteShutdown(base::WaitableEvent& shutdown_event) override;
+  void AssertFlushForTestingAllowed() override;
 
   // Synchronizes accesses to members below.
   mutable Lock lock_;
@@ -824,10 +825,15 @@ bool TaskEnvironment::TestTaskTracker::DisallowRunTasks(TimeDelta timeout) {
   AutoLock auto_lock(lock_);
 
   // Can't disallow run task if there are tasks running.
-  if (!running_tasks_.empty()) {
-    task_completed_cv_.TimedWait(timeout);
-    return false;
+  for (TimeTicks now = subtle::TimeTicksNowIgnoringOverride(),
+                 end = now + timeout;
+       !running_tasks_.empty() && now < end;
+       now = subtle::TimeTicksNowIgnoringOverride()) {
+    task_completed_cv_.TimedWait(end - now);
   }
+  // Timed out waiting for running tasks, yield to caller.
+  if (!running_tasks_.empty())
+    return false;
 
   can_run_tasks_ = false;
   return true;
@@ -907,6 +913,15 @@ void TaskEnvironment::TestTaskTracker::BeginCompleteShutdown(
                 << kTimeout.InSeconds() << " seconds.\n"
                 << failure_tasks;
   base::Process::TerminateCurrentProcessImmediately(-1);
+}
+
+void TaskEnvironment::TestTaskTracker::AssertFlushForTestingAllowed() {
+  AutoLock auto_lock(lock_);
+  ASSERT_TRUE(can_run_tasks_)
+      << "FlushForTesting() requires ThreadPool tasks to be allowed to run or "
+         "it will hang. Note: DisallowRunTasks happens implicitly on-and-off "
+         "during TaskEnvironment::RunUntilIdle and main thread tasks running "
+         "under it should thus never FlushForTesting().";
 }
 
 }  // namespace test

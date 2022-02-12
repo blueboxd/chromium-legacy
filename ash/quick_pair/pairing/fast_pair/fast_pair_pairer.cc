@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/quick_pair/common/account_key_failure.h"
 #include "ash/quick_pair/common/device.h"
@@ -20,6 +21,7 @@
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_handshake_lookup.h"
 #include "ash/quick_pair/repository/fast_pair_repository.h"
 #include "ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/system/model/system_tray_model.h"
 #include "base/bind.h"
@@ -67,6 +69,21 @@ std::string GattErrorToString(
     default:
       NOTREACHED();
       return "";
+  }
+}
+
+bool ShouldBeEnabledForLoginStatus(ash::LoginStatus status) {
+  switch (status) {
+    case ash::LoginStatus::NOT_LOGGED_IN:
+    case ash::LoginStatus::LOCKED:
+    case ash::LoginStatus::KIOSK_APP:
+    case ash::LoginStatus::GUEST:
+    case ash::LoginStatus::PUBLIC:
+      return false;
+    case ash::LoginStatus::USER:
+    case ash::LoginStatus::CHILD:
+    default:
+      return true;
   }
 }
 
@@ -163,7 +180,7 @@ void FastPairPairer::OnGattClientInitializedCallback(
 
       QP_LOG(VERBOSE) << "Key-based pairing changed. Address: "
                       << device_address << ". Found device: "
-                      << ((device_ != nullptr) ? "Yes" : "No") << ".";
+                      << ((bt_device != nullptr) ? "Yes" : "No") << ".";
 
       if (bt_device) {
         bt_device->Pair(this, base::BindOnce(&FastPairPairer::OnPairConnected,
@@ -185,7 +202,7 @@ void FastPairPairer::OnGattClientInitializedCallback(
       // Passkey verification will be skipped and we will directly write an
       // account key to the Provider after a shared secret is established.
       adapter_->RemovePairingDelegate(this);
-      SendAccountKey();
+      AttemptSendAccountKey();
       break;
   }
 }
@@ -301,14 +318,31 @@ void FastPairPairer::OnParseDecryptedPasskey(
   pairing_device->ConfirmPairing();
   std::move(paired_callback_).Run(device_);
   adapter_->RemovePairingDelegate(this);
-  SendAccountKey();
+  AttemptSendAccountKey();
 }
 
-void FastPairPairer::SendAccountKey() {
+void FastPairPairer::AttemptSendAccountKey() {
   // We only send the account key if we're doing an initial or retroactive
-  // pairing.
+  // pairing. For other FastPair protocols, we can consider the paring
+  // procedure complete at this point.
   if (device_->protocol != Protocol::kFastPairInitial &&
       device_->protocol != Protocol::kFastPairRetroactive) {
+    std::move(pairing_procedure_complete_).Run(device_);
+    return;
+  }
+
+  // If there is no signed in user, don't send the account key. This can only
+  // happen in an initial pairing scenario since the retroactive pairing
+  // scenario is disabled in the RetroactivePairingDetector for users who are
+  // not signed in. Because this check happens a long time after the
+  // FastPairPairer is instantiated unlike other classes that disable certain
+  // paths for users who are not signed in, we do not need to check for a
+  // delayed login. At this point, if the user is not logged in, they will not
+  // be.
+  if (!ShouldBeEnabledForLoginStatus(
+          Shell::Get()->session_controller()->login_status())) {
+    QP_LOG(VERBOSE) << __func__ << ": No logged in user to save account key to";
+    std::move(pairing_procedure_complete_).Run(device_);
     return;
   }
 
@@ -381,7 +415,9 @@ void FastPairPairer::DevicePairedChanged(device::BluetoothAdapter* adapter,
   if (device->GetAddress() == device_->ble_address ||
       device->GetAddress() == device_->classic_address()) {
     std::move(paired_callback_).Run(device_);
-    std::move(pairing_procedure_complete_).Run(device_);
+
+    if (pairing_procedure_complete_)
+      std::move(pairing_procedure_complete_).Run(device_);
   }
 }
 

@@ -252,11 +252,16 @@ config("xctest_config") {
   ]
   cflags = common_flags
   ldflags = common_flags
+  swiftflags = common_flags
 
   frameworks = [
     "Foundation.framework",
     "XCTest.framework",
   ]
+}
+
+config("enable_swift_cxx_interop") {
+  swiftflags = [ "-enable-cxx-interop" ]
 }
 
 group("xctest") {

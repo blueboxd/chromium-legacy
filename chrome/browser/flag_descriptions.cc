@@ -351,6 +351,12 @@ const char kAutofillEnableToolbarStatusChipDescription[] =
     "When enabled, Autofill data related icon will be shown in the status "
     "chip next to the profile avatar icon in the toolbar.";
 
+const char kAutofillEnableUnmaskCardRequestSetInstrumentIdName[] =
+    "When enabled, sets non-legacy instrument ID in UnmaskCardRequest";
+const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[] =
+    "When enabled, UnmaskCardRequest will set the card's non-legacy ID when "
+    "available.";
+
 const char kAutofillEnableUpdateVirtualCardEnrollmentName[] =
     "Enable Update Virtual Card Enrollment";
 const char kAutofillEnableUpdateVirtualCardEnrollmentDescription[] =
@@ -1810,6 +1816,13 @@ const char kOmniboxOnFocusSuggestionsContextualWebDescription[] =
     "current URL. Will only work if user is signed-in and syncing, or is "
     "otherwise eligible to send the current page URL to the suggest server.";
 
+const char kOmniboxPedalsBatch3NonEnglishName[] =
+    "Omnibox Pedals batch 3 for non-English locales";
+const char kOmniboxPedalsBatch3NonEnglishDescription[] =
+    "Enable the third batch of Omnibox Pedals (Find your phone, etc.) for "
+    "locales other than 'en' and 'en-GB'. This flag has no effect unless "
+    "\"Omnibox Pedals batch 3\" is also enabled.";
+
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
 const char kOmniboxSpareRendererDescription[] =
@@ -2412,10 +2425,6 @@ const char kCommerceDeveloperDescription[] =
 const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
 const char kCommerceMerchantViewerAndroidDescription[] =
     "Allows users to view merchant trust signals on eligible pages.";
-
-const char kCommercePriceTrackingAndroidName[] = "Price Tracking";
-const char kCommercePriceTrackingAndroidDescription[] =
-    "Allows users to track product prices through Chrome.";
 
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
@@ -3795,13 +3804,6 @@ const char kOmniboxPedalsBatch2NonEnglishDescription[] =
 const char kOmniboxPedalsBatch3Name[] = "Omnibox Pedals batch 3";
 const char kOmniboxPedalsBatch3Description[] =
     "Enable the third batch of Omnibox Pedals.";
-
-const char kOmniboxPedalsBatch3NonEnglishName[] =
-    "Omnibox Pedals batch 3 for non-English locales";
-const char kOmniboxPedalsBatch3NonEnglishDescription[] =
-    "Enable the second batch of Omnibox Pedals (Find your phone, etc.) for "
-    "locales other than 'en' and 'en-GB'. This flag has no effect unless "
-    "\"Omnibox Pedals batch 3\" is also enabled.";
 
 const char kOmniboxPedalsTranslationConsoleName[] =
     "Omnibox Pedals Translation Console";
@@ -5356,6 +5358,11 @@ const char kLauncherNudgeShortIntervalDescription[] =
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+const char kDesktopCaptureLacrosV2Name[] = "Enable Lacros Desktop Capture V2";
+const char kDesktopCaptureLacrosV2Description[] =
+    "Enables the improved desktop/window capturer for doing screen/window "
+    "sharing on Lacros";
+
 const char kLacrosNonSyncingProfilesName[] =
     "Enable non-syncing profiles on lacros";
 const char kLacrosNonSyncingProfilesDescription[] =

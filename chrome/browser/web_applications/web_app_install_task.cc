@@ -887,8 +887,7 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
     DCHECK(background_installation_);
     DCHECK(!(install_params_->add_to_applications_menu ||
              install_params_->add_to_desktop ||
-             install_params_->add_to_quick_launch_bar ||
-             install_params_->run_on_os_login))
+             install_params_->add_to_quick_launch_bar))
         << "Cannot create os hooks for a non-locally installed ";
     CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
     return;
@@ -903,11 +902,17 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
   options.os_hooks[OsHookType::kShortcutsMenu] = true;
   options.add_to_desktop = true;
   options.add_to_quick_launch_bar = kAddAppsToQuickLaunchBarByDefault;
-  options.os_hooks[OsHookType::kRunOnOsLogin] = web_app_info->run_on_os_login;
   // TODO(crbug.com/1087219): Determine if file handlers should be
   // configured from somewhere else rather than always true.
   options.os_hooks[OsHookType::kFileHandlers] = true;
   options.os_hooks[OsHookType::kProtocolHandlers] = true;
+
+  {
+    web_app::RunOnOsLoginMode current_mode =
+        registrar_->GetAppRunOnOsLoginMode(app_id).value;
+    options.os_hooks[OsHookType::kRunOnOsLogin] =
+        current_mode == RunOnOsLoginMode::kWindowed;
+  }
 
   // Apps that can't be uninstalled from users shouldn't register to
   // OS Settings.
@@ -934,8 +939,6 @@ void WebAppInstallTask::OnInstallFinalizedCreateShortcuts(
         install_params_->add_to_applications_menu;
     options.os_hooks[OsHookType::kShortcutsMenu] =
         install_params_->add_to_applications_menu;
-    options.os_hooks[OsHookType::kRunOnOsLogin] =
-        install_params_->run_on_os_login;
     options.add_to_desktop = install_params_->add_to_desktop;
     options.add_to_quick_launch_bar = install_params_->add_to_quick_launch_bar;
   }

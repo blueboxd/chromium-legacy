@@ -165,9 +165,6 @@
       'cc_unittests': {
         'ci_only': True,
       },
-      'chrome_modern_public_bundle_fake_modules_smoke_test': {
-        'ci_only': True,
-      },
       'chrome_modern_public_bundle_smoke_test': {
         'ci_only': True,
       },
@@ -228,12 +225,10 @@
     },
 
     'android_modern_smoke_tests': {
-      'chrome_modern_public_bundle_fake_modules_smoke_test': {},
       'chrome_modern_public_bundle_smoke_test': {},
     },
 
     'android_monochrome_smoke_tests': {
-      'monochrome_public_bundle_fake_modules_smoke_test': {},
       'monochrome_public_bundle_smoke_test': {},
       'monochrome_public_smoke_test': {},
     },
@@ -338,7 +333,6 @@
     },
 
     'android_trichrome_smoke_tests': {
-      'trichrome_chrome_bundle_fake_modules_smoke_test': {},
       'trichrome_chrome_bundle_smoke_test': {},
     },
 
@@ -1115,7 +1109,6 @@
 
     'chromium_swarm_android_gtests': {
       'base_unittests': {},
-      'chrome_modern_public_bundle_fake_modules_smoke_test': {},
       'chrome_modern_public_bundle_smoke_test': {},
       'weblayer_bundle_test': {},
     },
@@ -3069,6 +3062,7 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+          '$$MAGIC_SUBSTITUTION_GPUIsASANFlag',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -3118,14 +3112,14 @@
       },
     },
 
-    'gpu_skia_renderer_vulkan_telemetry_tests': {
+    'gpu_skia_renderer_vulkan_passthrough_telemetry_tests': {
       'vulkan_pixel_skia': {
         'name': 'vulkan_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating',
+          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -3234,6 +3228,7 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
+          '$$MAGIC_SUBSTITUTION_GPUIsASANFlag',
         ],
         'android_args': [
           # TODO(crbug.com/1093085): Remove this once we fix the tests.
@@ -6213,14 +6208,14 @@
     # TODO(jonross): remove this once Vulkan Swiftshader and Vulkan GL interop
     # paths are merged. This should mirror
     # `gpu_fyi_linux_release_telemetry_tests` but with additional
-    # `gpu_skia_renderer_vulkan_telemetry_tests`
+    # `gpu_skia_renderer_vulkan_passthrough_telemetry_tests`
     'gpu_fyi_linux_release_vulkan_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_skia_renderer_vulkan_telemetry_tests',
+      'gpu_skia_renderer_vulkan_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_mac_debug_gtests': [

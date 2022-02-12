@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
 
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/user_education/feature_promo_registry.h"
@@ -22,7 +23,12 @@
 #include "ui/base/interaction/interaction_sequence.h"
 #include "ui/views/interaction/element_tracker_views.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "chrome/browser/ui/views/user_education/help_bubble_factory_mac.h"
+#endif
+
 namespace {
+const char kTabGroupTutorialMetricPrefix[] = "TabGroup";
 
 // kIPHDesktopTabGroupsNewGroupFeature:
 ui::TrackedElement* GetTabGroupsAnchorView(
@@ -45,6 +51,9 @@ const char kTabGroupTutorialId[] = "Tab Group Tutorial";
 
 void RegisterChromeHelpBubbleFactories(HelpBubbleFactoryRegistry& registry) {
   registry.MaybeRegister<HelpBubbleFactoryViews>();
+#if BUILDFLAG(IS_MAC)
+  registry.MaybeRegister<HelpBubbleFactoryMac>();
+#endif
 }
 
 void MaybeRegisterChromeFeaturePromos(FeaturePromoRegistry& registry) {
@@ -209,6 +218,9 @@ void MaybeRegisterChromeTutorials(TutorialRegistry& tutorial_registry) {
         std::string(), HelpBubbleArrow::kTopCenter);
     description.steps.emplace_back(std::move(step4));
 
+    description.histograms =
+        MakeTutorialHistograms<kTabGroupTutorialMetricPrefix>(
+            description.steps.size());
     tutorial_registry.AddTutorial(kTabGroupTutorialId, std::move(description));
   }
 }

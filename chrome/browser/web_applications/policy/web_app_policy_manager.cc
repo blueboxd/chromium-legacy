@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
@@ -127,11 +129,6 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   // No need to install a placeholder because there should be one already.
   install_options.wait_for_windows_closed = true;
   install_options.reinstall_placeholder = true;
-
-  // TODO(crbug.com/1280773): Reevaluate if this is needed.
-  install_options.run_on_os_login = (GetUrlRunOnOsLoginPolicyByUnhashedAppId(
-                                         install_options.install_url.spec()) ==
-                                     RunOnOsLoginPolicy::kRunWindowed);
 
   // If the app is not a placeholder app, ExternallyManagedAppManager will
   // ignore the request.
@@ -234,12 +231,6 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     install_options.wait_for_windows_closed = true;
     install_options.reinstall_placeholder = true;
 
-    // TODO(crbug.com/1280773): Reevaluate if this is needed.
-    install_options.run_on_os_login =
-        (GetUrlRunOnOsLoginPolicyByUnhashedAppId(
-             install_options.install_url.spec()) ==
-         RunOnOsLoginPolicy::kRunWindowed);
-
     absl::optional<AppId> app_id = externally_installed_app_prefs_.LookupAppId(
         install_options.install_url);
     if (app_id) {
@@ -321,22 +312,8 @@ void WebAppPolicyManager::RefreshPolicySettings() {
 
 void WebAppPolicyManager::ApplyPolicySettings() {
   for (const AppId& app_id : app_registrar_->GetAppIds()) {
-    // TODO(crbug.com/1280773): Reevaluate if this code should belong here, or
-    // in WebAppRegistrar.
-    RunOnOsLoginPolicy policy = GetUrlRunOnOsLoginPolicy(app_id);
-    if (policy == RunOnOsLoginPolicy::kBlocked) {
-      sync_bridge_->SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kNotRun);
-      OsHooksOptions os_hooks;
-      os_hooks[OsHookType::kRunOnOsLogin] = true;
-      os_integration_manager_->UninstallOsHooks(app_id, os_hooks,
-                                                base::DoNothing());
-    } else if (policy == RunOnOsLoginPolicy::kRunWindowed) {
-      sync_bridge_->SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kWindowed);
-      InstallOsHooksOptions options;
-      options.os_hooks[OsHookType::kRunOnOsLogin] = true;
-      os_integration_manager_->InstallOsHooks(app_id, base::DoNothing(),
-                                              nullptr, options);
-    }
+    SyncRunOnOsLoginOsIntegrationState(app_registrar_, os_integration_manager_,
+                                       app_id);
   }
 
   for (WebAppPolicyManagerObserver& observer : observers_)
@@ -451,6 +428,10 @@ void WebAppPolicyManager::SetOnAppsSynchronizedCompletedCallbackForTesting(
 void WebAppPolicyManager::SetRefreshPolicySettingsCompletedCallbackForTesting(
     base::OnceClosure callback) {
   refresh_policy_settings_completed_ = std::move(callback);
+}
+
+void WebAppPolicyManager::RefreshPolicySettingsForTesting() {
+  RefreshPolicySettings();
 }
 
 void WebAppPolicyManager::OverrideManifest(

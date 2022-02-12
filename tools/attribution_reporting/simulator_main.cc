@@ -16,7 +16,9 @@
 #include "base/values.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/attribution_reporting.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/test/attribution_simulator.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 namespace {
 
@@ -222,7 +224,8 @@ int ProcessJsonString(const std::string& json_input,
     std::cerr << "failed to deserialize input: " << error_msg << std::endl;
     return 1;
   }
-  base::Value output = content::RunAttributionSimulationOrExit(*input, options);
+  base::Value output =
+      content::RunAttributionSimulationOrExit(std::move(*input), options);
   std::string output_json;
   bool success = base::JSONWriter::WriteWithOptions(output, json_write_options,
                                                     &output_json);
@@ -325,6 +328,12 @@ int main(int argc, char* argv[]) {
   // Required for using mock time in the simulator. Must be initialized exactly
   // once.
   TestTimeouts::Initialize();
+
+  // Ensure that the manager always thinks the browser is online.
+  auto network_connection_tracker =
+      network::TestNetworkConnectionTracker::CreateInstance();
+  content::SetNetworkConnectionTrackerForTesting(
+      network_connection_tracker.get());
 
   switch (input_mode) {
     case InputMode::kSingle: {

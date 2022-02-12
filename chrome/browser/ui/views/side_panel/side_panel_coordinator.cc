@@ -7,17 +7,27 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
+#include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/read_later_side_panel_web_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_combobox_model.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/base/models/simple_combobox_model.h"
 #include "ui/gfx/vector_icon_utils.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -49,13 +59,17 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
 }
 }  // namespace
 
-SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view)
-    : browser_view_(browser_view) {
+SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view,
+                                           SidePanelRegistry* global_registry)
+    : browser_view_(browser_view), global_registry_(global_registry) {
+  combobox_model_ = std::make_unique<SidePanelComboboxModel>();
+  global_registry->AddObserver(this);
   // TODO(pbos): Consider moving creation of SidePanelEntry into other functions
   // that can easily be unit tested.
-  window_registry_.Register(std::make_unique<SidePanelEntry>(
+  global_registry->Register(std::make_unique<SidePanelEntry>(
       SidePanelEntry::Id::kReadingList,
       l10n_util::GetStringUTF16(IDS_READ_LATER_TITLE),
+      ui::ImageModel::FromVectorIcon(kReadLaterIcon, ui::kColorIcon),
       base::BindRepeating(
           [](SidePanelCoordinator* coordinator,
              Browser* browser) -> std::unique_ptr<views::View> {
@@ -64,19 +78,12 @@ SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view)
                                              base::Unretained(coordinator)));
           },
           this, browser_view->browser())));
-  // TODO(corising): Replace ReadLaterSidePanelWebView with a new WebView for
-  // the bookmarks entry.
-  window_registry_.Register(std::make_unique<SidePanelEntry>(
+  global_registry->Register(std::make_unique<SidePanelEntry>(
       SidePanelEntry::Id::kBookmarks,
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE),
-      base::BindRepeating(
-          [](SidePanelCoordinator* coordinator,
-             Browser* browser) -> std::unique_ptr<views::View> {
-            return std::make_unique<ReadLaterSidePanelWebView>(
-                browser, base::BindRepeating(&SidePanelCoordinator::Close,
-                                             base::Unretained(coordinator)));
-          },
-          this, browser_view->browser())));
+      ui::ImageModel::FromVectorIcon(omnibox::kStarIcon, ui::kColorIcon),
+      base::BindRepeating(&SidePanelCoordinator::CreateBookmarksWebView,
+                          base::Unretained(this), browser_view->browser())));
 }
 
 SidePanelCoordinator::~SidePanelCoordinator() = default;
@@ -87,13 +94,22 @@ void SidePanelCoordinator::Show(absl::optional<SidePanelEntry::Id> entry_id) {
     entry_id = SidePanelEntry::Id::kReadingList;
   }
 
-  DCHECK_EQ(2u, window_registry_.entries().size());
   SidePanelEntry* entry = GetEntryForId(entry_id.value());
   if (!entry)
     return;
 
-  if (GetContentView() == nullptr)
+  if (GetContentView() == nullptr) {
     InitializeSidePanel();
+    base::RecordAction(base::UserMetricsAction("SidePanel.Show"));
+    // Record usage for side panel promo.
+    feature_engagement::TrackerFactory::GetForBrowserContext(
+        browser_view_->GetProfile())
+        ->NotifyEvent("side_panel_shown");
+
+    // Close IPH for side panel if shown.
+    browser_view_->browser()->window()->CloseFeaturePromo(
+        feature_engagement::kIPHReadingListInSidePanelFeature);
+  }
 
   PopulateSidePanel(entry);
 }
@@ -108,6 +124,7 @@ void SidePanelCoordinator::Close() {
       l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_PANEL_SHOW));
 
   browser_view_->right_aligned_side_panel()->RemoveChildViewT(content_view);
+  base::RecordAction(base::UserMetricsAction("SidePanel.Hide"));
 }
 
 void SidePanelCoordinator::Toggle() {
@@ -125,7 +142,7 @@ views::View* SidePanelCoordinator::GetContentView() {
 
 SidePanelEntry* SidePanelCoordinator::GetEntryForId(
     SidePanelEntry::Id entry_id) {
-  for (auto const& entry : window_registry_.entries()) {
+  for (auto const& entry : global_registry_->entries()) {
     if (entry.get()->id() == entry_id)
       return entry.get();
   }
@@ -201,7 +218,6 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
   header->SetBackground(views::CreateThemedSolidBackground(
       header.get(), ui::kColorWindowBackground));
 
-  DCHECK_EQ(2u, window_registry_.entries().size());
   header_combobox_ = header->AddChildView(CreateCombobox());
 
   // Create an empty view between branding and buttons to align branding on left
@@ -229,15 +245,6 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
 }
 
 std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
-  std::vector<std::u16string> entry_names;
-  for (auto const& entry : window_registry_.entries())
-    entry_names.push_back(entry.get()->name());
-
-  // TODO(corising): Create new ComboboxModel to hold entry id, name, and icon.
-  // Also make it listen to changes to the window registry.
-  combobox_model_ = std::make_unique<ui::SimpleComboboxModel>(
-      std::vector<ui::SimpleComboboxModel::Item>(entry_names.begin(),
-                                                 entry_names.end()));
   auto combobox = std::make_unique<views::Combobox>(combobox_model_.get());
 
   // TODO(corising): Update this to use the SidePanelEntry::Id to select the
@@ -253,10 +260,30 @@ std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
 }
 
 void SidePanelCoordinator::OnComboboxChanged() {
-  std::u16string entry_name =
-      combobox_model_->GetItemAt(header_combobox_->GetSelectedIndex());
-  for (auto const& entry : window_registry_.entries()) {
-    if (entry.get()->name() == entry_name)
-      Show(entry.get()->id());
+  SidePanelEntry::Id entry_id =
+      combobox_model_->GetIdAt(header_combobox_->GetSelectedIndex());
+  Show(entry_id);
+}
+
+std::unique_ptr<views::View> SidePanelCoordinator::CreateBookmarksWebView(
+    Browser* browser) {
+  auto bookmarks_web_view =
+      std::make_unique<SidePanelWebUIViewT<BookmarksSidePanelUI>>(
+          browser, base::RepeatingClosure(),
+          base::BindRepeating(&SidePanelCoordinator::Close,
+                              base::Unretained(this)),
+          std::make_unique<BubbleContentsWrapperT<BookmarksSidePanelUI>>(
+              GURL(chrome::kChromeUIBookmarksSidePanelURL), browser->profile(),
+              IDS_BOOKMARK_MANAGER_TITLE,
+              /*webui_resizes_host=*/false,
+              /*esc_closes_ui=*/false));
+  if (base::FeatureList::IsEnabled(features::kSidePanelDragAndDrop)) {
+    extensions::BookmarkManagerPrivateDragEventRouter::CreateForWebContents(
+        bookmarks_web_view.get()->contents_wrapper()->web_contents());
   }
+  return bookmarks_web_view;
+}
+
+void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {
+  combobox_model_->AddItem(entry);
 }

@@ -25,13 +25,15 @@ IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTest, ManifestUpdateScope) {
   helper_.CheckLaunchIconShown();
 }
 
-#if BUILDFLAG(IS_WIN)
-IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTest, UninstallFromOS) {
-  helper_.InstallCreateShortcutWindowed("SiteA");
-  helper_.UninstallFromOS("SiteA");
-  helper_.CheckAppNotInList("SiteA");
+IN_PROC_BROWSER_TEST_F(WebAppIntegrationBrowserTest, ManifestUpdateTitle) {
+  helper_.InstallMenuOption("SiteA");
+  helper_.CheckAppTitleSiteA("Site A");
+  helper_.ManifestUpdateTitle("SiteA");
+  helper_.AcceptAppIdUpdateDialog();
+  helper_.ClosePwa();
+  helper_.LaunchFromLaunchIcon("SiteA");
+  helper_.CheckAppTitleSiteA("Site A - Updated name");
 }
-#endif
 
 // Automated tests:
 

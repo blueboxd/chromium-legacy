@@ -113,7 +113,7 @@ struct StateSnapshot {
 };
 std::ostream& operator<<(std::ostream& out, const StateSnapshot& snapshot);
 
-class WebAppIntegrationTestDriver : AppRegistrarObserver {
+class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
  public:
   struct TestDelegate {
     // Exposing normal functionality of testing::InProcBrowserTest:
@@ -145,6 +145,7 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   // https://docs.google.com/spreadsheets/d/1d3iAOAnojp4_WrPky9exz1-mjkeulOJVUav5QYG99MQ/edit#gid=2008870403
 
   // State change actions:
+  void AcceptAppIdUpdateDialog();
   void CloseCustomToolbar();
   void ClosePwa();
   void DisableRunOnOSLoginMode(const std::string& site_mode);
@@ -163,10 +164,12 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   void InstallPolicyAppOsLoginModeBlocked(const std::string& site_mode);
   void LaunchFromChromeApps(const std::string& site_mode);
   void LaunchFromLaunchIcon(const std::string& site_mode);
+  void LaunchFromShortcut(const std::string& site_mode);
   void NavigateBrowser(const std::string& site_mode);
   void NavigatePwaSiteATo(const std::string& site_mode);
   void NavigateNotfoundUrl();
   void NavigateTabbedBrowserToSite(const GURL& url);
+  void ManifestUpdateTitle(const std::string& site_mode);
   void ManifestUpdateDisplayMinimal(const std::string& site_mode);
   void ManifestUpdateScopeSiteAFooTo(const std::string& scope_mode);
   void SetOpenInTab(const std::string& site_mode);
@@ -177,7 +180,7 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   void UninstallFromList(const std::string& site_mode);
   void UninstallFromMenu(const std::string& site_mode);
   void UninstallPolicyApp(const std::string& site_mode);
-  void UninstallFromOS(const std::string& site_mode);
+  void UninstallFromOs(const std::string& site_mode);
 
   // State Check Actions:
   void CheckAppListEmpty();
@@ -186,6 +189,7 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   void CheckAppInListTabbed(const std::string& site_mode);
   void CheckAppNavigationIsStartUrl();
   void CheckAppNotInList(const std::string& site_mode);
+  void CheckAppTitleSiteA(const std::string& title);
   void CheckAppWindowMode(const std::string& site_mode,
                           apps::mojom::WindowMode window_mode);
   void CheckInstallable();
@@ -206,7 +210,7 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   void CheckWindowDisplayStandalone();
 
  protected:
-  // AppRegistrarObserver:
+  // WebAppInstallManagerObserver:
   void OnWebAppManifestUpdated(const AppId& app_id,
                                base::StringPiece old_name) override;
 
@@ -304,8 +308,8 @@ class WebAppIntegrationTestDriver : AppRegistrarObserver {
   AppId active_app_id_;
   raw_ptr<Browser> app_browser_ = nullptr;
 
-  base::ScopedObservation<web_app::WebAppRegistrar,
-                          web_app::AppRegistrarObserver>
+  base::ScopedObservation<web_app::WebAppInstallManager,
+                          web_app::WebAppInstallManagerObserver>
       observation_{this};
   std::unique_ptr<ScopedShortcutOverrideForTesting> shortcut_override_;
 };

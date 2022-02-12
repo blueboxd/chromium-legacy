@@ -50,6 +50,8 @@ constexpr size_t kNumFramesForImageProcessor = limits::kMaxVideoFrames + 1;
 constexpr Fourcc kPreferredRenderableFourccs[] = {
     Fourcc(Fourcc::NV12),
     Fourcc(Fourcc::P010),
+    // Only used for Hana (MT8173). Remove when that device reaches EOL.
+    Fourcc(Fourcc::YV12),
 };
 
 // Picks the preferred compositor renderable format from |candidates|, if any.
@@ -652,11 +654,12 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
   main_frame_pool_->AsPlatformVideoFramePool()->SetCustomFrameAllocator(
       *allocator);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Lacros should always use a PlatformVideoFramePool (because it doesn't need
-  // to handle ARC++/ARCVM requests) with no custom allocator (because buffers
-  // are allocated with minigbm).
+  // Lacros should always use a PlatformVideoFramePool outside of tests (because
+  // it doesn't need to handle ARC++/ARCVM requests) with no custom allocator
+  // (because buffers are allocated with minigbm).
   CHECK(!allocator.has_value());
-  CHECK(main_frame_pool_->AsPlatformVideoFramePool());
+  CHECK(main_frame_pool_->AsPlatformVideoFramePool() ||
+        main_frame_pool_->IsFakeVideoFramePool());
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   // Ash Chrome can use any type of frame pool (because it may get requests from
   // ARC++/ARCVM) but never a custom allocator.

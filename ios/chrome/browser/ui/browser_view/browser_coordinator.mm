@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_type.h"
@@ -49,6 +48,7 @@
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
+#import "ios/chrome/browser/ui/commands/password_suggestion_commands.h"
 #import "ios/chrome/browser/ui/commands/policy_change_commands.h"
 #import "ios/chrome/browser/ui/commands/qr_generation_commands.h"
 #import "ios/chrome/browser/ui/commands/share_highlight_command.h"
@@ -78,6 +78,7 @@
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_coordinator.h"
 #import "ios/chrome/browser/ui/passwords/password_protection_coordinator.h"
+#import "ios/chrome/browser/ui/passwords/password_suggestion_coordinator.h"
 #import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/qr_generator/qr_generator_coordinator.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
@@ -90,6 +91,7 @@
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/webui/net_export_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
@@ -101,6 +103,7 @@
 #import "ios/chrome/browser/web_state_list/view_source_browser_agent.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/text_zoom/text_zoom_api.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -115,9 +118,12 @@
                                   DefaultPromoNonModalPresentationDelegate,
                                   EnterprisePromptCoordinatorDelegate,
                                   FormInputAccessoryCoordinatorNavigator,
+                                  NetExportTabHelperDelegate,
                                   PageInfoCommands,
                                   PasswordBreachCommands,
                                   PasswordProtectionCommands,
+                                  PasswordSuggestionCommands,
+                                  PasswordSuggestionCoordinatorDelegate,
                                   PolicyChangeCommands,
                                   RepostFormTabHelperDelegate,
                                   ToolbarAccessoryCoordinatorDelegate,
@@ -176,6 +182,9 @@
 // Opens downloaded Vcard.
 @property(nonatomic, strong) VcardCoordinator* vcardCoordinator;
 
+// The coordinator that manages net export.
+@property(nonatomic, strong) NetExportCoordinator* netExportCoordinator;
+
 // Weak reference for the next coordinator to be displayed over the toolbar.
 @property(nonatomic, weak) ChromeCoordinator* nextToolbarCoordinator;
 
@@ -192,6 +201,10 @@
 // Coordinator for the password protection UI presentation.
 @property(nonatomic, strong)
     PasswordProtectionCoordinator* passwordProtectionCoordinator;
+
+// Coordinator for the password suggestion UI presentation.
+@property(nonatomic, strong)
+    PasswordSuggestionCoordinator* passwordSuggestionCoordinator;
 
 // Used to display the Print UI. Nil if not visible.
 // TODO(crbug.com/910017): Convert to coordinator.
@@ -271,12 +284,17 @@
   // starting any child coordinator, otherwise they won't be able to resolve
   // handlers.
   NSArray<Protocol*>* protocols = @[
-    @protocol(ActivityServiceCommands), @protocol(BrowserCoordinatorCommands),
+    @protocol(ActivityServiceCommands),
+    @protocol(BrowserCoordinatorCommands),
     @protocol(DefaultPromoCommands),
     @protocol(DefaultBrowserPromoNonModalCommands),
-    @protocol(FindInPageCommands), @protocol(PageInfoCommands),
-    @protocol(PasswordBreachCommands), @protocol(PasswordProtectionCommands),
-    @protocol(TextZoomCommands), @protocol(PolicyChangeCommands)
+    @protocol(FindInPageCommands),
+    @protocol(PageInfoCommands),
+    @protocol(PasswordBreachCommands),
+    @protocol(PasswordProtectionCommands),
+    @protocol(PasswordSuggestionCommands),
+    @protocol(PolicyChangeCommands),
+    @protocol(TextZoomCommands),
   ];
 
   for (Protocol* protocol in protocols) {
@@ -347,6 +365,9 @@
 
   [self.passwordProtectionCoordinator stop];
   self.passwordProtectionCoordinator = nil;
+
+  [self.passwordSuggestionCoordinator stop];
+  self.passwordSuggestionCoordinator = nil;
 
   [self.pageInfoCoordinator stop];
 
@@ -464,9 +485,13 @@
                          browser:self.browser];
   [self.qrScannerCoordinator start];
 
+  /* NetExportCoordinator is created and started by a delegate method */
+
   /* passwordBreachCoordinator is created and started by a BrowserCommand */
 
   /* passwordProtectionCoordinator is created and started by a BrowserCommand */
+
+  /* passwordSuggestionCoordinator is created and started by a BrowserCommand */
 
   /* ReadingListCoordinator is created and started by a BrowserCommand */
 
@@ -537,6 +562,9 @@
   [self.passwordProtectionCoordinator stop];
   self.passwordProtectionCoordinator = nil;
 
+  [self.passwordSuggestionCoordinator stop];
+  self.passwordSuggestionCoordinator = nil;
+
   self.printController = nil;
 
   [self.qrScannerCoordinator stop];
@@ -580,6 +608,9 @@
 
   [self.nonModalPromoCoordinator stop];
   self.nonModalPromoCoordinator = nil;
+
+  [self.netExportCoordinator stop];
+  self.netExportCoordinator = nil;
 }
 
 // Starts mediators owned by this coordinator.
@@ -597,6 +628,7 @@
       browserViewController.downloadManagerCoordinator;
   dependencies.baseViewController = browserViewController;
   dependencies.commandDispatcher = self.browser->GetCommandDispatcher();
+  dependencies.tabHelperDelegate = self;
 
   self.tabLifecycleMediator = [[TabLifecycleMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
@@ -1169,6 +1201,19 @@
   [self.passwordProtectionCoordinator startWithCompletion:completion];
 }
 
+#pragma mark - PasswordSuggestionCommands
+
+- (void)showPasswordSuggestion:(NSString*)passwordSuggestion
+               decisionHandler:(void (^)(BOOL accept))decisionHandler {
+  self.passwordSuggestionCoordinator = [[PasswordSuggestionCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+              passwordSuggestion:passwordSuggestion
+                 decisionHandler:decisionHandler];
+  self.passwordSuggestionCoordinator.delegate = self;
+  [self.passwordSuggestionCoordinator start];
+}
+
 #pragma mark - PolicyChangeCommands
 
 - (void)showForceSignedOutPrompt {
@@ -1262,6 +1307,25 @@
 - (void)hideEnterprisePrompForLearnMore:(BOOL)learnMore {
   [self.enterprisePromptCoordinator stop];
   self.enterprisePromptCoordinator = nil;
+}
+
+#pragma mark - NetExportTabHelperDelegate
+
+- (void)netExportTabHelper:(NetExportTabHelper*)tabHelper
+    showMailComposerWithContext:(ShowMailComposerContext*)context {
+  self.netExportCoordinator = [[NetExportCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+             mailComposerContext:context];
+
+  [self.netExportCoordinator start];
+}
+
+#pragma mark - PasswordSuggestionCoordinatorDelegate
+
+- (void)closePasswordSuggestion {
+  [self.passwordSuggestionCoordinator stop];
+  self.passwordSuggestionCoordinator = nil;
 }
 
 @end

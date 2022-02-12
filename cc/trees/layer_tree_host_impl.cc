@@ -9,10 +9,10 @@
 
 #include <algorithm>
 #include <limits>
-#include <list>
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -24,7 +24,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
@@ -44,22 +43,14 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/input/browser_controls_offset_manager.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
-#include "cc/input/scroll_elasticity_helper.h"
-#include "cc/input/scroll_state.h"
-#include "cc/input/scroll_utils.h"
-#include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scroller_size_metrics.h"
-#include "cc/input/snap_selection_strategy.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
-#include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
@@ -85,11 +76,9 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/software_image_decode_cache.h"
-#include "cc/trees/clip_node.h"
 #include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/debug_rect_history.h"
-#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
@@ -102,11 +91,8 @@
 #include "cc/trees/render_frame_metadata_observer.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
-#include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "components/viz/common/features.h"
-#include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -115,10 +101,9 @@
 #include "components/viz/common/quads/frame_deadline.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
-#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
-#include "components/viz/common/resources/resource_sizes.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/traced_value.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -130,7 +115,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
-#include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -138,8 +122,6 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-
-using ScrollThread = cc::InputHandler::ScrollThread;
 
 namespace cc {
 namespace {
@@ -1898,19 +1880,14 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
-gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
+TargetColorParams LayerTreeHostImpl::GetTargetColorParams(
     gfx::ContentColorUsage content_color_usage) const {
-  constexpr gfx::ColorSpace srgb = gfx::ColorSpace::CreateSRGB();
+  TargetColorParams params;
 
   // If we are likely to software composite the resource, we use sRGB because
   // software compositing is unable to perform color conversion.
   if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider())
-    return srgb;
-
-  if (settings_.prefer_raster_in_srgb &&
-      content_color_usage == gfx::ContentColorUsage::kSRGB) {
-    return srgb;
-  }
+    return params;
 
   // The pending tree will has the most recently updated color space, so use it.
   gfx::DisplayColorSpaces display_cs;
@@ -1918,27 +1895,42 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
     display_cs = pending_tree_->display_color_spaces();
   else if (active_tree_)
     display_cs = active_tree_->display_color_spaces();
+  params.sdr_max_luminance_nits = display_cs.GetSDRMaxLuminanceNits();
 
-  auto result = display_cs.GetOutputColorSpace(gfx::ContentColorUsage::kHDR,
-                                               /*needs_alpha=*/false);
+  if (settings_.prefer_raster_in_srgb &&
+      content_color_usage == gfx::ContentColorUsage::kSRGB) {
+    return params;
+  }
+
+  auto hdr_color_space =
+      display_cs.GetOutputColorSpace(gfx::ContentColorUsage::kHDR,
+                                     /*needs_alpha=*/false);
 
   // Always specify a color space if color correct rasterization is requested
   // (not specifying a color space indicates that no color conversion is
   // required).
-  if (!result.IsValid())
-    return srgb;
+  if (!hdr_color_space.IsValid())
+    return params;
 
   // It's expensive to rasterize in HDR, so we only want to do so when we know
   // we have HDR content to rasterize.
-  if (result.IsHDR() && content_color_usage != gfx::ContentColorUsage::kHDR)
-    return gfx::ColorSpace::CreateDisplayP3D65();
+  if (hdr_color_space.IsHDR() &&
+      content_color_usage != gfx::ContentColorUsage::kHDR) {
+    params.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+    return params;
+  }
 
   // The raster color space should contain sRGB to avoid artifacts during
   // rasterization.
-  if (!CheckColorSpaceContainsSrgb(result))
-    return srgb;
+  if (CheckColorSpaceContainsSrgb(hdr_color_space)) {
+    params.color_space = hdr_color_space;
+  }
 
-  return result;
+  // Only report the HDR capabilities if they are requested.
+  if (content_color_usage == gfx::ContentColorUsage::kHDR)
+    params.hdr_max_luminance_relative = display_cs.GetHDRMaxLuminanceRelative();
+
+  return params;
 }
 
 bool LayerTreeHostImpl::CheckColorSpaceContainsSrgb(
@@ -1957,20 +1949,6 @@ bool LayerTreeHostImpl::CheckColorSpaceContainsSrgb(
   bool result = color_space.Contains(srgb);
   contains_srgb_cache_.Put(color_space, result);
   return result;
-}
-
-float LayerTreeHostImpl::GetSDRWhiteLevel() const {
-  // If we are likely to software composite the resource, we use sRGB because
-  // software compositing is unable to perform color conversion.
-  if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider())
-    return gfx::ColorSpace::kDefaultSDRWhiteLevel;
-
-  // The pending tree will has the most recently updated color space, so use it.
-  if (pending_tree_)
-    return pending_tree_->display_color_spaces().GetSDRMaxLuminanceNits();
-  if (active_tree_)
-    return active_tree_->display_color_spaces().GetSDRMaxLuminanceNits();
-  return gfx::ColorSpace::kDefaultSDRWhiteLevel;
 }
 
 void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
@@ -2369,7 +2347,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
           active_tree_->take_delegated_ink_metadata()) {
     delegated_ink_metadata->set_frame_time(CurrentBeginFrameArgs().frame_time);
     TRACE_EVENT_INSTANT1(
-        "cc", "Delegated Ink Metadata set on compositor frame metadata",
+        "delegated_ink_trails",
+        "Delegated Ink Metadata set on compositor frame metadata",
         TRACE_EVENT_SCOPE_THREAD, "ink metadata",
         delegated_ink_metadata->ToString());
     metadata.delegated_ink_metadata = std::move(delegated_ink_metadata);
@@ -2509,8 +2488,10 @@ absl::optional<EventMetricsSet> LayerTreeHostImpl::DrawLayers(
   auto compositor_frame = GenerateCompositorFrame(frame);
   const auto frame_token = compositor_frame.metadata.frame_token;
   frame->frame_token = frame_token;
+#if DCHECK_IS_ON()
   const viz::BeginFrameId begin_frame_ack_frame_id =
       compositor_frame.metadata.begin_frame_ack.frame_id;
+#endif
 
   EventMetricsSet events_metrics(
       active_tree()->TakeEventsMetrics(),
@@ -3698,7 +3679,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
   // it won't change.
   auto content_color_usage = image.GetContentColorUsage();
   tile_manager_.decoded_image_tracker().QueueImageDecode(
-      image, GetRasterColorSpace(content_color_usage),
+      image, GetTargetColorParams(content_color_usage).color_space,
       base::BindOnce(&LayerTreeHostImpl::ImageDecodeFinished,
                      weak_factory_.GetWeakPtr(), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);

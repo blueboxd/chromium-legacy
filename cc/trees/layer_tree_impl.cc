@@ -858,7 +858,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   presentation_callbacks_.clear();
 
   if (delegated_ink_metadata_) {
-    TRACE_EVENT_INSTANT1("cc", "Delegated ink metadata pushed to tree",
+    TRACE_EVENT_INSTANT1("delegated_ink_trails",
+                         "Delegated ink metadata pushed to tree",
                          TRACE_EVENT_SCOPE_THREAD, "point",
                          delegated_ink_metadata_->point().ToString());
     target_tree->set_delegated_ink_metadata(std::move(delegated_ink_metadata_));
@@ -2841,9 +2842,9 @@ int LayerTreeImpl::GetMSAASampleCountForRaster(
   return host_impl_->GetMSAASampleCountForRaster(display_list);
 }
 
-gfx::ColorSpace LayerTreeImpl::GetRasterColorSpace(
+TargetColorParams LayerTreeImpl::GetTargetColorParams(
     gfx::ContentColorUsage content_color_usage) const {
-  return host_impl_->GetRasterColorSpace(content_color_usage);
+  return host_impl_->GetTargetColorParams(content_color_usage);
 }
 
 void LayerTreeImpl::SetPendingPageScaleAnimation(

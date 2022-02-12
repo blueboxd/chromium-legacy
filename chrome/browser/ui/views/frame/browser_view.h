@@ -71,6 +71,7 @@ class InfoBarContainerView;
 class LocationBarView;
 class SidePanel;
 class SidePanelCoordinator;
+class SidePanelRegistry;
 class StatusBubbleViews;
 class TabSearchBubbleHost;
 class TabStrip;
@@ -221,6 +222,10 @@ class BrowserView : public BrowserWindow,
   }
   views::Widget* contents_border_widget() {
     return GetBrowserViewLayout()->contents_border_widget();
+  }
+  void SetContentBorderBounds(
+      const absl::optional<gfx::Rect>& region_capture_rect) {
+    GetBrowserViewLayout()->SetContentBorderBounds(region_capture_rect);
   }
 
   TabStripRegionView* tab_strip_region_view() const {
@@ -982,6 +987,8 @@ class BrowserView : public BrowserWindow,
   raw_ptr<SidePanel> lens_side_panel_ = nullptr;
 
   std::unique_ptr<SidePanelCoordinator> side_panel_coordinator_;
+
+  std::unique_ptr<SidePanelRegistry> global_side_panel_registry_;
 
   // TODO(pbos): Move this functionality into SidePanel when multiple "panels"
   // are managed within the same object.

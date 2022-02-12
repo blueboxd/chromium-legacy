@@ -557,6 +557,22 @@
             ]
         }
     ],
+    "AutofillAssistantDomAnnotation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "//1": "This launch is gated external to Chrome.",
+                    "name": "Enabled_20220211",
+                    "enable_features": [
+                        "AutofillAssistantAnnotateDom"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillAssistantInCCTTriggering": [
         {
             "platforms": [
@@ -2924,7 +2940,8 @@
                         "segment_selection_ttl_days": "28"
                     },
                     "enable_features": [
-                        "FeatureNotificationGuide"
+                        "FeatureNotificationGuide",
+                        "SegmentationModelLowEngagedUsers"
                     ]
                 }
             ]
@@ -3485,21 +3502,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SynthesizedRestoreSession"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSUMABackgroundSessions": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "IOSUMABackgroundSessions"
                     ]
                 }
             ]
@@ -4519,7 +4521,8 @@
                     },
                     "enable_features": [
                         "LoadModelFileForEachExecution",
-                        "PageContentAnnotations"
+                        "PageContentAnnotations",
+                        "PageVisibilityPageContentAnnotations"
                     ]
                 }
             ]
@@ -4546,7 +4549,9 @@
                         "Journeys",
                         "JourneysOmniboxAction",
                         "LoadModelFileForEachExecution",
-                        "PageContentAnnotations"
+                        "PageContentAnnotations",
+                        "PageEntitiesPageContentAnnotations",
+                        "PageVisibilityPageContentAnnotations"
                     ]
                 }
             ]
@@ -5139,6 +5144,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PushMessagingDisallowSenderIDs"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PwaUpdateDialogForNameAndIcon": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PwaUpdateDialogForNameAndIcon"
                     ]
                 }
             ]
@@ -5805,6 +5825,21 @@
                     "enable_features": [
                         "IPH_SideSearch",
                         "SideSearch"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SingleCellContentSuggestions": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "SingleCellContentSuggestions",
+                    "enable_features": [
+                        "SingleCellContentSuggestions"
                     ]
                 }
             ]

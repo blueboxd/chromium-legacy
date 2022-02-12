@@ -3436,11 +3436,11 @@ This file contains the strings for ash.
         Today <ph name="today_date">$1<ex>August 31, 2021</ex></ph>
       </message>
 
-      <message name="IDS_ASH_CALENDA_INFO_BUTTON" desc="The text for the calendar info button.">
+      <message name="IDS_ASH_CALENDAR_INFO_BUTTON" desc="The text for the calendar info button.">
         Today
       </message>
 
-      <message name="IDS_ASH_CALENDA_TODAY_BUTTON_TOOLTIP" desc="The tooltip label for the calendar info button.">
+      <message name="IDS_ASH_CALENDAR_TODAY_BUTTON_TOOLTIP" desc="The tooltip label for the calendar info button.">
         Go back to today
       </message>
 
@@ -3486,6 +3486,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
         <ph name="event_summary">$1<ex>Lunch break</ex></ph>, 
         <ph name="time_range">$2<ex> 1:00 - 1:30 PM</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar `Open in Google Calendar` button.">
+        There is no event on <ph name="current_month_day">$1<ex>August 20</ex></ph>. Hit enter to open Google calendar in the browser.
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_TOOL_TIP" desc="The tooltip of the calendar `Open in Google Calendar` button.">
+        Open this date in Google Calendar
       </message>
 
       <message name="IDS_ASH_CALENDAR_MON" desc="The single character designator for Monday, which is used in the calendar weekday label.">

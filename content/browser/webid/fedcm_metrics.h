@@ -23,9 +23,9 @@ enum class FedCmRequestIdTokenStatus {
   kUnhandledRequest,
   kNoNetworkManager,
   kNotSelectAccount,
-  kWellKnownHttpNotFound,
-  kWellKnownNoResponse,
-  kWellKnownInvalidResponse,
+  kManifestHttpNotFound,
+  kManifestNoResponse,
+  kManifestInvalidResponse,
   kClientMetadataHttpNotFound,
   kClientMetadataNoResponse,
   kClientMetadataInvalidResponse,
@@ -51,11 +51,11 @@ enum class FedCmRevokeStatus {
   kNoAccountToRevoke,
   kRevokeUrlIsCrossOrigin,
   kRevocationFailedOnServer,
-  kWellKnownHttpNotFound,
-  kWellKnownNoResponse,
-  kWellKnownInvalidResponse,
+  kManifestHttpNotFound,
+  kManifestNoResponse,
+  kManifestInvalidResponse,
 
-  kMaxValue = kWellKnownInvalidResponse
+  kMaxValue = kManifestInvalidResponse
 };
 
 // Records the time from when a call to the API was made to when the accounts
@@ -87,6 +87,10 @@ void RecordRequestIdTokenStatus(FedCmRequestIdTokenStatus status,
 
 // Records the status of the |Revoke| call.
 void RecordRevokeStatus(FedCmRevokeStatus status, ukm::SourceId source_id);
+
+// Records whether a user has left the page where the API is called when the
+// browser is ready to show the accounts dialog.
+void RecordWebContentsVisibilityUponReadyToShowDialog(bool is_visible);
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_WEBID_FEDCM_METRICS_H_

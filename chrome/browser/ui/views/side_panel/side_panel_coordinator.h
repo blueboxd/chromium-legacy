@@ -8,9 +8,11 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
-#include "ui/base/models/simple_combobox_model.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_registry_observer.h"
 
+class Browser;
 class BrowserView;
+class SidePanelComboboxModel;
 
 namespace views {
 class Combobox;
@@ -23,12 +25,13 @@ class View;
 // This class is also responsible for consolidating multiple SidePanelEntry
 // classes across multiple SidePanelRegistry instances, potentially merging them
 // into a single unified side panel.
-class SidePanelCoordinator final {
+class SidePanelCoordinator final : public SidePanelRegistryObserver {
  public:
-  explicit SidePanelCoordinator(BrowserView* browser_view);
+  explicit SidePanelCoordinator(BrowserView* browser_view,
+                                SidePanelRegistry* global_registry);
   SidePanelCoordinator(const SidePanelCoordinator&) = delete;
   SidePanelCoordinator& operator=(const SidePanelCoordinator&) = delete;
-  ~SidePanelCoordinator();
+  ~SidePanelCoordinator() override;
 
   void Show(absl::optional<SidePanelEntry::Id> entry_id = absl::nullopt);
   void Close();
@@ -49,10 +52,17 @@ class SidePanelCoordinator final {
   std::unique_ptr<views::Combobox> CreateCombobox();
   void OnComboboxChanged();
 
-  const raw_ptr<BrowserView> browser_view_;
-  SidePanelRegistry window_registry_;
+  std::unique_ptr<views::View> CreateBookmarksWebView(Browser* browser);
 
-  std::unique_ptr<ui::SimpleComboboxModel> combobox_model_;
+  // SidePanelRegistryObserver:
+  void OnEntryRegistered(SidePanelEntry* entry) override;
+
+  const raw_ptr<BrowserView> browser_view_;
+  raw_ptr<SidePanelRegistry> global_registry_;
+
+  // Used to update SidePanelEntry options in the header_combobox_ based on
+  // their availability in the observed side panel registries.
+  std::unique_ptr<SidePanelComboboxModel> combobox_model_;
   raw_ptr<views::Combobox> header_combobox_ = nullptr;
 
   // TODO(pbos): Add awareness of tab registries here. This probably needs to

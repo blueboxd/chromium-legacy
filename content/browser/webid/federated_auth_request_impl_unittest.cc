@@ -15,6 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webid/fedcm_metrics.h"
 #include "content/browser/webid/federated_auth_request_service.h"
 #include "content/browser/webid/id_token_request_callback_data.h"
@@ -131,7 +132,7 @@ typedef struct {
 typedef struct {
   const char* token;
   absl::optional<UserApproval> initial_permission;
-  absl::optional<FetchStatus> wellknown_fetch_status;
+  absl::optional<FetchStatus> manifest_fetch_status;
   absl::optional<MockClientIdConfiguration> client_metadata;
   const char* idp_endpoint;
   const char* accounts_endpoint;
@@ -200,25 +201,24 @@ static const AuthRequestTestCase kPermissionTestCases[]{
      {kToken, UserApproval::kDenied, absl::nullopt, absl::nullopt, "", "", "",
       "", kPermissionNoop, kMediatedNoop}},
 
-    {"Wellknown file not found",
+    {"FedCM manifest file not found",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kPermission},
      {RequestIdTokenStatus::kError,
-      RequestIdTokenStatus::kErrorFetchingWellKnownHttpNotFound, kEmptyToken},
+      RequestIdTokenStatus::kErrorFetchingManifestHttpNotFound, kEmptyToken},
      {kToken, UserApproval::kApproved, FetchStatus::kHttpNotFoundError,
       absl::nullopt, "", "", "", "", kPermissionNoop, kMediatedNoop}},
 
-    {"Wellknown fetch error",
+    {"FedCM manifest fetch error",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kPermission},
      {RequestIdTokenStatus::kError,
-      RequestIdTokenStatus::kErrorFetchingWellKnownNoResponse, kEmptyToken},
+      RequestIdTokenStatus::kErrorFetchingManifestNoResponse, kEmptyToken},
      {kToken, UserApproval::kApproved, FetchStatus::kNoResponseError,
       absl::nullopt, "", "", "", "", kPermissionNoop, kMediatedNoop}},
 
-    {"Error parsing wellknown for Permission mode",
+    {"Error parsing FedCM manifest for Permission mode",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kPermission},
      {RequestIdTokenStatus::kError,
-      RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse,
-      kEmptyToken},
+      RequestIdTokenStatus::kErrorFetchingManifestInvalidResponse, kEmptyToken},
      {kToken, UserApproval::kApproved, FetchStatus::kInvalidResponseError,
       absl::nullopt, "", kAccountsEndpoint, kTokenEndpoint, "", kPermissionNoop,
       kMediatedNoop}},
@@ -283,20 +283,18 @@ static const AuthRequestTestCase kPermissionTestCases[]{
       kMediatedNoop}}};
 
 static const AuthRequestTestCase kMediatedTestCases[]{
-    {"Error parsing wellknown for Mediated mode missing token endpoint",
+    {"Error parsing FedCM manifest for Mediated mode missing token endpoint",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kMediated},
      {RequestIdTokenStatus::kError,
-      RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse,
-      kEmptyToken},
+      RequestIdTokenStatus::kErrorFetchingManifestInvalidResponse, kEmptyToken},
      {kToken, absl::nullopt, FetchStatus::kInvalidResponseError, absl::nullopt,
       kIdpEndpoint, kAccountsEndpoint, "", kClientMetadataEndpoint,
       kPermissionNoop, kMediatedNoop}},
 
-    {"Error parsing wellknown for Mediated mode missing accounts endpoint",
+    {"Error parsing FedCM manifest for Mediated mode missing accounts endpoint",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kMediated},
      {RequestIdTokenStatus::kError,
-      RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse,
-      kEmptyToken},
+      RequestIdTokenStatus::kErrorFetchingManifestInvalidResponse, kEmptyToken},
      {kToken, absl::nullopt, FetchStatus::kSuccess, absl::nullopt, kIdpEndpoint,
       "", kTokenEndpoint, kClientMetadataEndpoint, kPermissionNoop,
       kMediatedNoop}},
@@ -304,8 +302,7 @@ static const AuthRequestTestCase kMediatedTestCases[]{
      "provider",
      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kMediated},
      {RequestIdTokenStatus::kError,
-      RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse,
-      kEmptyToken},
+      RequestIdTokenStatus::kErrorFetchingManifestInvalidResponse, kEmptyToken},
      {kToken, absl::nullopt, FetchStatus::kSuccess, absl::nullopt, kIdpEndpoint,
       kCrossOriginAccountsEndpoint, kTokenEndpoint, kClientMetadataEndpoint,
       kPermissionNoop, kMediatedNoop}},
@@ -498,7 +495,7 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
     // `FederatedAuthRequestService` derives from `DocumentService` and
     // controls its own lifetime.
     auth_request_service_ = new FederatedAuthRequestService(
-        main_rfh(), request_remote_.BindNewPipeAndPassReceiver());
+        main_test_rfh(), request_remote_.BindNewPipeAndPassReceiver());
     auto mock_request_manager =
         std::make_unique<NiceMock<MockIdpNetworkRequestManager>>(
             provider, url::Origin::Create(GURL(kRpTestOrigin)));
@@ -682,21 +679,21 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
           .Times(0);
     }
 
-    if (test_case.config.wellknown_fetch_status) {
-      EXPECT_CALL(*mock_request_manager_, FetchIdpWellKnown(_))
+    if (test_case.config.manifest_fetch_status) {
+      EXPECT_CALL(*mock_request_manager_, FetchManifest(_))
           .WillOnce(Invoke(
-              [&](IdpNetworkRequestManager::FetchWellKnownCallback callback) {
+              [&](IdpNetworkRequestManager::FetchManifestCallback callback) {
                 IdpNetworkRequestManager::Endpoints endpoints;
                 endpoints.idp = test_case.config.idp_endpoint;
                 endpoints.accounts = test_case.config.accounts_endpoint;
                 endpoints.token = test_case.config.token_endpoint;
                 endpoints.client_metadata =
                     test_case.config.client_metadata_endpoint;
-                std::move(callback).Run(
-                    *test_case.config.wellknown_fetch_status, endpoints);
+                std::move(callback).Run(*test_case.config.manifest_fetch_status,
+                                        endpoints);
               }));
     } else {
-      EXPECT_CALL(*mock_request_manager_, FetchIdpWellKnown(_)).Times(0);
+      EXPECT_CALL(*mock_request_manager_, FetchManifest(_)).Times(0);
     }
 
     if (test_case.config.client_metadata) {
@@ -854,6 +851,8 @@ class FederatedAuthRequestImplTest : public RenderViewHostImplTestHarness {
 
   GURL provider_;
 
+  base::HistogramTester histogram_tester_;
+
  private:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
 };
@@ -899,14 +898,13 @@ TEST_P(BasicFederatedAuthRequestImplTest, FederatedAuthRequestIssue) {
           {RequestIdTokenStatus::kSuccess, absl::nullopt},
           {RequestIdTokenStatus::kApprovalDeclined,
            "User declined the sign-in attempt."},
-          {RequestIdTokenStatus::kErrorFetchingWellKnownHttpNotFound,
-           "The provider's .well-known configuration cannot be found."},
-          {RequestIdTokenStatus::kErrorFetchingWellKnownNoResponse,
+          {RequestIdTokenStatus::kErrorFetchingManifestHttpNotFound,
+           "The provider's FedCM manifest configuration cannot be found."},
+          {RequestIdTokenStatus::kErrorFetchingManifestNoResponse,
            "The response body is empty when fetching the provider's "
-           ".well-known "
-           "configuration."},
-          {RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse,
-           "Provider's .well-known configuration is invalid."},
+           "FedCM manifest configuration."},
+          {RequestIdTokenStatus::kErrorFetchingManifestInvalidResponse,
+           "Provider's FedCM manifest configuration is invalid."},
           {RequestIdTokenStatus::kErrorFetchingSignin,
            "Error attempting to reach the provider's sign-in endpoint."},
           {RequestIdTokenStatus::kErrorInvalidSigninResponse,
@@ -1254,7 +1252,6 @@ TEST_F(BasicFederatedAuthRequestImplTest, AutoSignInWithScreenReader) {
 }
 
 TEST_F(FederatedAuthRequestImplTest, Revoke) {
-  base::HistogramTester histogram_tester;
   constexpr char kAccountId[] = "foo@bar.com";
 
   auto& auth_request = CreateAuthRequest(GURL(kIdpEndpoint));
@@ -1270,9 +1267,9 @@ TEST_F(FederatedAuthRequestImplTest, Revoke) {
       *mock_request_permission_delegate_,
       RevokeRequestPermission(_, url::Origin::Create(GURL(kIdpTestOrigin))));
 
-  EXPECT_CALL(*mock_request_manager_, FetchIdpWellKnown(_))
-      .WillOnce(Invoke(
-          [&](IdpNetworkRequestManager::FetchWellKnownCallback callback) {
+  EXPECT_CALL(*mock_request_manager_, FetchManifest(_))
+      .WillOnce(
+          Invoke([&](IdpNetworkRequestManager::FetchManifestCallback callback) {
             IdpNetworkRequestManager::Endpoints endpoints;
             endpoints.revoke = kRevokeEndpoint;
             std::move(callback).Run(FetchStatus::kSuccess, endpoints);
@@ -1296,16 +1293,14 @@ TEST_F(FederatedAuthRequestImplTest, Revoke) {
 
   ukm_loop.Run();
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Status.Revoke", 1);
-  histogram_tester.ExpectBucketCount("Blink.FedCm.Status.Revoke",
-                                     RevokeStatusForMetrics::kSuccess, 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.Revoke", 1);
+  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.Revoke",
+                                      RevokeStatusForMetrics::kSuccess, 1);
 
   ExpectRevokeStatusUKM(RevokeStatusForMetrics::kSuccess);
 }
 
 TEST_F(FederatedAuthRequestImplTest, RevokeNoPermission) {
-  base::HistogramTester histogram_tester;
-
   constexpr char kAccountId[] = "foo@bar.com";
 
   auto& auth_request = CreateAuthRequest(GURL(kIdpEndpoint));
@@ -1326,17 +1321,15 @@ TEST_F(FederatedAuthRequestImplTest, RevokeNoPermission) {
   EXPECT_EQ(RevokeStatus::kError, status);
 
   ukm_loop.Run();
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Status.Revoke", 1);
-  histogram_tester.ExpectBucketCount("Blink.FedCm.Status.Revoke",
-                                     RevokeStatusForMetrics::kNoAccountToRevoke,
-                                     1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.Revoke", 1);
+  histogram_tester_.ExpectBucketCount(
+      "Blink.FedCm.Status.Revoke", RevokeStatusForMetrics::kNoAccountToRevoke,
+      1);
 
   ExpectRevokeStatusUKM(RevokeStatusForMetrics::kNoAccountToRevoke);
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignUpCase) {
-  base::HistogramTester histogram_tester;
-
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
   auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
@@ -1358,15 +1351,16 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignUpCase) {
 
   ukm_loop.Run();
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 0);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog",
+                                     1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 1);
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
-  histogram_tester.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
-                                     IdTokenStatus::kSuccess, 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
+  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
+                                      IdTokenStatus::kSuccess, 1);
 
   ExpectTimingUKM("Timing.ShowAccountsDialog");
   ExpectTimingUKM("Timing.ContinueOnDialog");
@@ -1378,8 +1372,6 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignUpCase) {
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
-  base::HistogramTester histogram_tester;
-
   const auto& test_case = kSuccessfulMediatedSignUpTestCase;
   auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
   SetMockExpectations(test_case);
@@ -1405,15 +1397,16 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
 
   ukm_loop.Run();
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 0);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog",
+                                     1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 1);
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
-  histogram_tester.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
-                                     IdTokenStatus::kSuccess, 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
+  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
+                                      IdTokenStatus::kSuccess, 1);
 
   ExpectTimingUKM("Timing.ShowAccountsDialog");
   ExpectTimingUKM("Timing.ContinueOnDialog");
@@ -1425,7 +1418,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForSuccessfulSignInCase) {
 }
 
 TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
-  base::HistogramTester histogram_tester;
+  base::HistogramTester histogram_tester_;
 
   AccountList displayed_accounts;
   const AuthRequestTestCase test_case = {
@@ -1482,15 +1475,16 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
   ASSERT_FALSE(displayed_accounts.empty());
   EXPECT_EQ(displayed_accounts[0].login_state, LoginState::kSignUp);
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 0);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 1);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 0);
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ShowAccountsDialog",
+                                     1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.ContinueOnDialog", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.CancelOnDialog", 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.IdTokenResponse", 0);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Timing.TurnaroundTime", 0);
 
-  histogram_tester.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
-  histogram_tester.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
-                                     IdTokenStatus::kNotSelectAccount, 1);
+  histogram_tester_.ExpectTotalCount("Blink.FedCm.Status.RequestIdToken", 1);
+  histogram_tester_.ExpectBucketCount("Blink.FedCm.Status.RequestIdToken",
+                                      IdTokenStatus::kNotSelectAccount, 1);
 
   ExpectTimingUKM("Timing.ShowAccountsDialog");
   ExpectTimingUKM("Timing.CancelOnDialog");
@@ -1499,6 +1493,75 @@ TEST_F(BasicFederatedAuthRequestImplTest, MetricsForNotSelectingAccount) {
   ExpectNoTimingUKM("Timing.TurnaroundTime");
 
   ExpectRequestIdTokenStatusUKM(IdTokenStatus::kNotSelectAccount);
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsVisible) {
+  base::HistogramTester histogram_tester;
+  // Sets the WebContents to visible
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  ASSERT_EQ(web_contents_impl->GetVisibility(), Visibility::VISIBLE);
+
+  const auto& test_case = kSuccessfulMediatedSignUpTestCase;
+  auto& auth_request = CreateAuthRequest(GURL(test_case.inputs.provider));
+  SetMockExpectations(test_case);
+  // Sets specific expectations for sharing permission.
+  NiceMock<MockSharingPermissionDelegate> mock_sharing_permission_delegate;
+  auth_request.SetSharingPermissionDelegateForTests(
+      &mock_sharing_permission_delegate);
+
+  // Pretends that the sharing permission has been granted for this account.
+  EXPECT_CALL(mock_sharing_permission_delegate,
+              HasSharingPermissionForAccount(
+                  url::Origin::Create(GURL(kIdpTestOrigin)), _, "1234"))
+      .WillOnce(Return(true));
+
+  auto auth_response = PerformAuthRequest(
+      test_case.inputs.client_id, test_case.inputs.nonce, test_case.inputs.mode,
+      test_case.inputs.prefer_auto_sign_in);
+  EXPECT_EQ(LoginState::kSignIn, displayed_accounts()[0].login_state);
+
+  histogram_tester.ExpectBucketCount("Blink.FedCm.WebContentsVisible", 1, 1);
+  histogram_tester.ExpectTotalCount("Blink.FedCm.WebContentsVisible", 1);
+}
+
+TEST_F(BasicFederatedAuthRequestImplTest, MetricsForWebContentsInvisible) {
+  base::HistogramTester histogram_tester;
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  web_contents_impl->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  ASSERT_EQ(web_contents_impl->GetVisibility(), Visibility::VISIBLE);
+
+  const AuthRequestTestCase test_case = {
+      "Failed mediated flow due to user leaving the page",
+      {kIdpTestOrigin, kClientId, kNonce, RequestMode::kMediated,
+       kNotPreferAutoSignIn},
+      {RequestIdTokenStatus::kSuccess, RequestIdTokenStatus::kSuccess, kToken},
+      {kToken,
+       absl::nullopt,
+       FetchStatus::kSuccess,
+       kSuccessfulClientId,
+       "",
+       kAccountsEndpoint,
+       kTokenEndpoint,
+       kClientMetadataEndpoint,
+       kPermissionNoop,
+       {FetchStatus::kSuccess, kAccounts, absl::nullopt,
+        /*customized_dialog=*/true}}};
+  CreateAuthRequest(GURL(test_case.inputs.provider));
+  SetMockExpectations(test_case);
+
+  // Sets the WebContents to invisible
+  web_contents_impl->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  ASSERT_NE(web_contents_impl->GetVisibility(), Visibility::VISIBLE);
+
+  PerformAuthRequest(test_case.inputs.client_id, test_case.inputs.nonce,
+                     test_case.inputs.mode,
+                     test_case.inputs.prefer_auto_sign_in);
+
+  histogram_tester.ExpectBucketCount("Blink.FedCm.WebContentsVisible", 0, 1);
+  histogram_tester.ExpectTotalCount("Blink.FedCm.WebContentsVisible", 1);
 }
 
 }  // namespace content

@@ -220,6 +220,7 @@ void WebAppProvider::Shutdown() {
   icon_manager_->Shutdown();
   install_finalizer_->Shutdown();
   registrar_->Shutdown();
+  is_registry_ready_ = false;
 }
 
 void WebAppProvider::StartImpl() {
@@ -330,6 +331,7 @@ void WebAppProvider::ConnectSubsystems() {
                                          registrar_.get(), sync_bridge_.get(),
                                          system_web_app_manager_.get(),
                                          os_integration_manager_.get());
+  registrar_->SetSubsystems(web_app_policy_manager_.get());
   ui_manager_->SetSubsystems(sync_bridge_.get(), os_integration_manager_.get());
   os_integration_manager_->SetSubsystems(sync_bridge_.get(), registrar_.get(),
                                          ui_manager_.get(),
@@ -359,6 +361,7 @@ void WebAppProvider::OnSyncBridgeReady() {
   ui_manager_->Start();
 
   on_registry_ready_.Signal();
+  is_registry_ready_ = true;
 }
 
 void WebAppProvider::CheckIsConnected() const {

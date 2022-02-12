@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/system/time/calendar_model.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -76,7 +77,8 @@ class CalendarEventListContainer : public views::View {
 };
 
 // This view displays a scrollable calendar.
-class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
+class ASH_EXPORT CalendarView : public CalendarModel::Observer,
+                                public CalendarViewController::Observer,
                                 public TrayDetailedView,
                                 public views::ViewObserver {
  public:
@@ -90,9 +92,11 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
 
   void Init();
 
+  // CalendarModel::Observer:
+  void OnEventsFetched(const google_apis::calendar::EventList* events) override;
+
   // CalendarViewController::Observer:
   void OnMonthChanged(const base::Time::Exploded current_month) override;
-  void OnEventsFetched(const google_apis::calendar::EventList* events) override;
   void OpenEventList() override;
   void CloseEventList() override;
 
@@ -152,18 +156,16 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   // the `content_view_`.
   void ScrollDownOneMonth();
 
-  // Scrolls up one month then auto scroll to the current month's first row.
-  void ScrollUpOneMonthAndAutoScroll();
-
-  // Scrolls down one month then auto scroll to the current month's first row.
-  void ScrollDownOneMonthAndAutoScroll();
+  // Scrolls up or down one month then auto scrolls to the current month's first
+  // row.
+  void ScrollOneMonthAndAutoScroll(bool scroll_up);
 
   // Shows the scrolling animation then scrolls one month then auto scroll to
   // the current month's first row.
-  void ScrollOneMonthWithAnimation(bool is_scrolling_up);
+  void ScrollOneMonthWithAnimation(bool scroll_up);
 
-  // Scrolls up/down one row based on `is_scrolling_up`.
-  void ScrollOneRowWithAnimation(bool is_scrolling_up);
+  // Scrolls up/down one row based on `scroll_up`.
+  void ScrollOneRowWithAnimation(bool scroll_up);
 
   // Back to the landing view.
   void ResetToToday();
@@ -273,6 +275,8 @@ class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
   base::RetainingOneShotTimer months_animation_restart_timer_;
 
   base::CallbackListSubscription on_contents_scrolled_subscription_;
+  base::ScopedObservation<CalendarModel, CalendarModel::Observer>
+      scoped_calendar_model_observer_{this};
   base::ScopedObservation<CalendarViewController,
                           CalendarViewController::Observer>
       scoped_calendar_view_controller_observer_{this};

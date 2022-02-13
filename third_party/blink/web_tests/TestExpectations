@@ -3213,6 +3213,10 @@ crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-break/box-decoration-break-clone-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-break/box-decoration-break-clone-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-break/box-decoration-break-clone-004.html [ Failure ]
+crbug.com/626703 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-rects.https.html [ Failure ]
 crbug.com/626703 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-canvasFilter.https.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-conicGradient.https.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/fetch/private-network-access/service-worker-background-fetch.https.window.html [ Failure Timeout ]
@@ -6735,7 +6739,6 @@ crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/m
 crbug.com/1224804 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
 
 # Sheriff 2021-07-13
-crbug.com/1220114 external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass Timeout ]
 crbug.com/1228959 [ Linux ] virtual/scroll-unification/fast/scroll-snap/snaps-after-wheel-scrolling-single-tick.html [ Failure Pass ]
 
 # A number of http/tests/inspector-protocol/network tests are flaky.

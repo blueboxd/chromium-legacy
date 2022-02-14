@@ -179,6 +179,10 @@ const base::Feature kAutoNightLight{"AutoNightLight",
 const base::Feature kAutoScreenBrightness{"AutoScreenBrightness",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables params tuning experiment for autocorrect on Chrome OS.
+const base::Feature kAutocorrectParamsTuning{"AutocorrectParamsTuning",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the persistent desks bar at the top of the screen in clamshell mode
 // when there are more than one desk.
 const base::Feature kBentoBar{"BentoBar", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1908,14 +1912,6 @@ bool IsSyncSettingsCategorizationEnabled() {
 
 bool IsStylusBatteryStatusEnabled() {
   return base::FeatureList::IsEnabled(kStylusBatteryStatus);
-}
-
-bool IsSystemChinesePhysicalTypingEnabled() {
-  return base::FeatureList::IsEnabled(kSystemChinesePhysicalTyping);
-}
-
-bool IsSystemJapanesePhysicalTypingEnabled() {
-  return base::FeatureList::IsEnabled(kSystemJapanesePhysicalTyping);
 }
 
 bool IsTabClusterUIEnabled() {

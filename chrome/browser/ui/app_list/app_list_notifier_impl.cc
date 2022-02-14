@@ -43,12 +43,12 @@ void AppListNotifierImpl::NotifyLaunched(Location location,
                                          const Result& result) {
   launched_result_ = result;
 
-  // Only two UI views appear at once: the app tiles and results list. If a
-  // launch occurs in one, mark the other as 'ignored' rather than abandoned.
-  if (location == Location::kList) {
-    DoStateTransition(Location::kTile, State::kIgnored);
-  } else if (location == Location::kTile) {
-    DoStateTransition(Location::kList, State::kIgnored);
+  // The continue and recent apps appear at the same time. If a launch occurs in
+  // one, mark the other as 'ignored' rather than abandoned.
+  if (location == Location::kContinue) {
+    DoStateTransition(Location::kRecentApps, State::kIgnored);
+  } else if (location == Location::kRecentApps) {
+    DoStateTransition(Location::kContinue, State::kIgnored);
   }
 
   DoStateTransition(location, State::kLaunched);
@@ -65,9 +65,16 @@ void AppListNotifierImpl::NotifySearchQueryChanged(
   // In some cases the query can change after the launcher is closed, in
   // particular this happens when abandoning the launcher with a non-empty
   // query. Only do a state transition if the launcher is open.
-  if (view_ != ash::AppListViewState::kClosed) {
-    DoStateTransition(Location::kList, State::kShown);
-    DoStateTransition(Location::kTile, State::kShown);
+  if (shown_) {
+    if (query.empty()) {
+      DoStateTransition(Location::kList, State::kNone);
+      DoStateTransition(Location::kContinue, State::kShown);
+      DoStateTransition(Location::kRecentApps, State::kShown);
+    } else {
+      DoStateTransition(Location::kList, State::kShown);
+      DoStateTransition(Location::kContinue, State::kNone);
+      DoStateTransition(Location::kRecentApps, State::kNone);
+    }
   }
 
   // Update the stored |query_| after performing the state transitions, so that
@@ -80,48 +87,6 @@ void AppListNotifierImpl::NotifySearchQueryChanged(
   }
 }
 
-void AppListNotifierImpl::NotifyUIStateChanged(ash::AppListViewState view) {
-  // We should ignore certain view state changes entirely:
-  //
-  //  1. noop transitions from and to the same view. These are caused by some
-  //     UI actions (like dragging the launcher around) that end up back in
-  //     the same location.
-  //
-  //  2. kHalf to kFullscreenSearch. This doesn't change the displayed tile and
-  //     list results.
-  //
-  //  3. kPeeking to kFullscreenAllApps. This doesn't change the displayed
-  //     chip results.
-  //
-  //  We should also ignore this if the call comes while the launcher is not
-  //  shown at all. This happens, for example, in the transition between
-  //  clamshell and tablet modes.
-  if (!shown_ || view_ == view ||
-      (view_ == ash::AppListViewState::kHalf &&
-       view == ash::AppListViewState::kFullscreenSearch) ||
-      (view_ == ash::AppListViewState::kPeeking &&
-       view == ash::AppListViewState::kFullscreenAllApps)) {
-    return;
-  }
-  view_ = view;
-
-  if (view == ash::AppListViewState::kHalf ||
-      view == ash::AppListViewState::kFullscreenSearch) {
-    DoStateTransition(Location::kList, State::kShown);
-    DoStateTransition(Location::kTile, State::kShown);
-  } else {
-    DoStateTransition(Location::kList, State::kNone);
-    DoStateTransition(Location::kTile, State::kNone);
-  }
-
-  if (view == ash::AppListViewState::kPeeking ||
-      view == ash::AppListViewState::kFullscreenAllApps) {
-    DoStateTransition(Location::kChip, State::kShown);
-  } else {
-    DoStateTransition(Location::kChip, State::kNone);
-  }
-}
-
 void AppListNotifierImpl::OnAppListVisibilityWillChange(bool shown,
                                                         int64_t display_id) {
   if (shown_ == shown)
@@ -129,11 +94,13 @@ void AppListNotifierImpl::OnAppListVisibilityWillChange(bool shown,
   shown_ = shown;
 
   if (shown) {
-    DoStateTransition(Location::kChip, State::kShown);
+    DoStateTransition(Location::kContinue, State::kShown);
+    DoStateTransition(Location::kRecentApps, State::kShown);
+    // kList is not shown until a search query is entered.
   } else {
-    DoStateTransition(Location::kChip, State::kNone);
     DoStateTransition(Location::kList, State::kNone);
-    DoStateTransition(Location::kTile, State::kNone);
+    DoStateTransition(Location::kContinue, State::kNone);
+    DoStateTransition(Location::kRecentApps, State::kNone);
   }
 }
 

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
@@ -267,7 +268,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ActivateSelfDestroyApp) {
   ASSERT_TRUE(item);
 
   // Activates |item|.
-  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0);
+  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0,
+                       ash::AppListLaunchedFrom::kLaunchedFromGrid);
 }
 
 // Verifies that the first app activation by a new user is recorded.
@@ -300,7 +302,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
   client->ShowAppList();
   ChromeAppListItem* item = model_updater->FindItem(app_id);
   ASSERT_TRUE(item);
-  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0);
+  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0,
+                       ash::AppListLaunchedFrom::kLaunchedFromGrid);
   histogram_tester.ExpectBucketCount(
       "Apps.FirstLauncherActionByNewUsers.ClamshellMode",
       static_cast<int>(ash::AppListLaunchedFrom::kLaunchedFromGrid),
@@ -311,7 +314,8 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest,
       /*expected_bucket_count=*/1);
 
   // Verify that only the first app activation is recorded.
-  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0);
+  client->ActivateItem(/*profile_id=*/0, item->id(), /*event_flags=*/0,
+                       ash::AppListLaunchedFrom::kLaunchedFromGrid);
   histogram_tester.ExpectBucketCount(
       "Apps.FirstLauncherActionByNewUsers.ClamshellMode",
       static_cast<int>(ash::AppListLaunchedFrom::kLaunchedFromGrid),
@@ -403,7 +407,6 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   // Open the app result.
   base::HistogramTester histogram_tester;
   client->OpenSearchResult(model_updater->model_id(), app_result_id,
-                           ash::AppListSearchResultType::kInstalledApp,
                            ui::EF_NONE,
                            ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
                            ash::AppListLaunchType::kAppSearchResult, 0,
@@ -433,7 +436,6 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   browser()->window()->Minimize();
   client->ShowAppList();
   client->OpenSearchResult(model_updater->model_id(), app_result_id,
-                           ash::AppListSearchResultType::kInstalledApp,
                            ui::EF_NONE,
                            ash::AppListLaunchedFrom::kLaunchedFromSearchBox,
                            ash::AppListLaunchType::kAppSearchResult, 0,
@@ -451,6 +453,38 @@ IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, OpenSearchResult) {
   // the bound WeakPtr to fail sequence check on a worker thread.
   // TODO(crbug.com/965065): Remove after fixing AppLaunchEventLogger.
   content::RunAllTasksUntilIdle();
+}
+
+class AppListClientImplLacrosOnlyBrowserTest
+    : public AppListClientImplBrowserTest {
+ public:
+  AppListClientImplLacrosOnlyBrowserTest() {
+    feature_list_.InitWithFeatures(
+        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+         ash::features::kLacrosOnly},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(AppListClientImplLacrosOnlyBrowserTest, ChromeApp) {
+  AppListControllerDelegate* delegate = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(delegate);
+  ASSERT_TRUE(profile());
+  EXPECT_EQ(
+      extensions::LAUNCH_TYPE_INVALID,
+      delegate->GetExtensionLaunchType(profile(), app_constants::kChromeAppId));
+}
+
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ChromeApp) {
+  AppListControllerDelegate* delegate = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(delegate);
+  ASSERT_TRUE(profile());
+  EXPECT_EQ(
+      extensions::LAUNCH_TYPE_REGULAR,
+      delegate->GetExtensionLaunchType(profile(), app_constants::kChromeAppId));
 }
 
 // Test that browser launch time is recorded is recorded in preferences.

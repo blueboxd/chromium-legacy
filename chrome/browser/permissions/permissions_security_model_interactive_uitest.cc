@@ -6,8 +6,10 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/extensions/extension_action_test_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
@@ -20,6 +22,7 @@
 #include "components/permissions/permissions_client.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/browser/disallow_activation_reason.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -30,6 +33,7 @@
 #include "content/public/test/prerender_test_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -1504,6 +1508,108 @@ class PermissionRequestFromExtension : public extensions::ExtensionApiTest {
     return url;
   }
 
+  void EnsurePopupActive() {
+    auto test_util = ExtensionActionTestHelper::Create(browser());
+    EXPECT_TRUE(test_util->HasPopup());
+    EXPECT_TRUE(test_util->WaitForPopup());
+    EXPECT_TRUE(test_util->HasPopup());
+  }
+
+  // Open an extension popup by clicking the browser action button associated
+  // with `id`.
+  content::WebContents* OpenPopupViaToolbar(const std::string& id) {
+    EXPECT_FALSE(id.empty());
+    content::WindowedNotificationObserver popup_observer(
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        content::NotificationService::AllSources());
+    ExtensionActionTestHelper::Create(browser())->Press(id);
+    popup_observer.Wait();
+    EnsurePopupActive();
+    const auto& source =
+        static_cast<const content::Source<content::WebContents>&>(
+            popup_observer.source());
+    return source.ptr();
+  }
+
+  void VerifyExtensionsPopupPage(std::string extension_path) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(web_contents);
+    std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+        std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+    // Enable auto-accept of a permission request.
+    bubble_factory->set_response_type(
+        permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+
+    extensions::ResultCatcher catcher;
+    const extensions::Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII(extension_path));
+
+    ASSERT_TRUE(extension);
+
+    // Open a popup with the extension.
+    content::WebContents* extension_popup =
+        OpenPopupViaToolbar(extension->id());
+    ASSERT_TRUE(extension_popup);
+
+    // Wait for all JS tests to resolve their promises.
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+    // Showing permission prompts is not allowed on the extension's popup page.
+    EXPECT_EQ(0, bubble_factory->TotalRequestCount());
+  }
+
+  void VerifyExtensionsOptionsPage(
+      std::string extension_path,
+      int shown_prompts,
+      permissions::PermissionRequestManager::AutoResponseType type =
+          permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL) {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(web_contents);
+    std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory =
+        std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+
+    // Enable auto-accept of a permission request.
+    bubble_factory->set_response_type(type);
+
+    extensions::ResultCatcher catcher;
+    const extensions::Extension* extension =
+        LoadExtension(test_data_dir_.AppendASCII(extension_path));
+
+    ASSERT_TRUE(extension);
+    ASSERT_TRUE(extensions::OptionsPageInfo::HasOptionsPage(extension));
+
+    GURL options_url = extensions::OptionsPageInfo::GetOptionsPage(extension);
+    EXPECT_TRUE(
+        extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser()));
+
+    // Opening the options page should take the new tab and use it, so we should
+    // have only one tab, and it should be open to the options page.
+    EXPECT_EQ(1, browser()->tab_strip_model()->count());
+    EXPECT_TRUE(content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents()));
+    EXPECT_EQ(options_url, browser()
+                               ->tab_strip_model()
+                               ->GetActiveWebContents()
+                               ->GetLastCommittedURL());
+
+    // Wait for all JS tests to resolve their promises.
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+    // Prompts for: Notifications, Geolocation, Camera, Microphone.
+    EXPECT_EQ(shown_prompts, bubble_factory->TotalRequestCount());
+  }
+
  private:
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
 };
@@ -1874,6 +1980,66 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   // No permission prompt has been shown.
   EXPECT_EQ(0, bubble_factory->TotalRequestCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       PopupPageNoPermissonsV2Test) {
+  VerifyExtensionsPopupPage(
+      "permissions_test/request_from_popup_v2/no_permissions");
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       PopupPageHasPermissonsV2Test) {
+  VerifyExtensionsPopupPage(
+      "permissions_test/request_from_popup_v2/has_permissions");
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       PopupPageNoPermissonsV3Test) {
+  VerifyExtensionsPopupPage(
+      "permissions_test/request_from_popup_v3/no_permissions");
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       PopupPageHasPermissonsV3Test) {
+  VerifyExtensionsPopupPage(
+      "permissions_test/request_from_popup_v3/has_permissions");
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       OptionsPageNoPermissonsV2Test) {
+  VerifyExtensionsOptionsPage(
+      "permissions_test/request_from_options_v2/no_permissions",
+      /*shown_prompts=*/4);
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       OptionsPageHasPermissonsV2Test) {
+  VerifyExtensionsOptionsPage(
+      "permissions_test/request_from_options_v2/has_permissions",
+      /*shown_prompts=*/2);
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       OptionsPageNoPermissonsV3Test) {
+  VerifyExtensionsOptionsPage(
+      "permissions_test/request_from_options_v3/no_permissions",
+      /*shown_prompts=*/4);
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       OptionsPageHasPermissonsV3Test) {
+  VerifyExtensionsOptionsPage(
+      "permissions_test/request_from_options_v3/has_permissions",
+      /*shown_prompts=*/2);
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestFromExtension,
+                       OptionsPageHasPermissonsV3NegativeTest) {
+  VerifyExtensionsOptionsPage(
+      "permissions_test/request_from_options_v3/has_permissions_negative",
+      /*shown_prompts=*/2,
+      permissions::PermissionRequestManager::AutoResponseType::DENY_ALL);
 }
 
 }  // anonymous namespace

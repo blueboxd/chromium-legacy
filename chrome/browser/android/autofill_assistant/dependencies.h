@@ -29,6 +29,8 @@ class Dependencies {
   base::android::ScopedJavaGlobalRef<jobject> GetJavaStaticDependencies() const;
   base::android::ScopedJavaGlobalRef<jobject> CreateInfoPageUtil() const;
   base::android::ScopedJavaGlobalRef<jobject> CreateAccessTokenUtil() const;
+  base::android::ScopedJavaGlobalRef<jobject> CreateImageFetcher() const;
+
   bool IsAccessibilityEnabled() const;
 
   virtual ~Dependencies();
@@ -41,7 +43,7 @@ class Dependencies {
   virtual std::string GetChromeSignedInEmailAddress(
       content::WebContents* web_contents) const = 0;
 
-  virtual AnnotateDomModelService* GetAnnotateDomModelService(
+  virtual AnnotateDomModelService* GetOrCreateAnnotateDomModelService(
       content::BrowserContext* browser_context) const = 0;
 
   virtual bool IsCustomTab(const content::WebContents& web_contents) const = 0;

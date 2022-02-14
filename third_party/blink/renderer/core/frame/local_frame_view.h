@@ -78,6 +78,9 @@ namespace blink {
 class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
+class DeferredShapingDisallowScope;
+class DeferredShapingMinimumTopScope;
+class DeferredShapingViewportScope;
 class DarkModeFilter;
 class DocumentLifecycle;
 class FragmentAnchor;
@@ -470,6 +473,27 @@ class CORE_EXPORT LocalFrameView final
   // passed around the LocalFrameView layout methods can be true while this
   // returns false.
   bool IsSubtreeLayout() const { return !layout_subtree_root_list_.IsEmpty(); }
+
+  // The bottom position of the nearest scrollable ancestor.
+  // This returns kIndefiniteSize if the viewport bottom is not registered.
+  LayoutUnit CurrentViewportBottom() const { return current_viewport_bottom_; }
+  void SetCurrentViewportBottom(base::PassKey<DeferredShapingViewportScope>,
+                                LayoutUnit value) {
+    current_viewport_bottom_ = value;
+  }
+  // The "minimum top" position of the box which is being laid out.
+  LayoutUnit CurrentMinimumTop() const { return current_minimum_top_; }
+  void SetCurrentMinimumTop(base::PassKey<DeferredShapingMinimumTopScope>,
+                            LayoutUnit value) {
+    current_minimum_top_ = value;
+  }
+  // A flag indicating whether the current layout container supports
+  // deferred shaping.
+  bool AllowDeferredShaping() const { return allow_deferred_shaping_; }
+  void SetAllowDeferredShaping(base::PassKey<DeferredShapingDisallowScope>,
+                               bool value) {
+    allow_deferred_shaping_ = value;
+  }
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -1004,6 +1028,10 @@ class CORE_EXPORT LocalFrameView final
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
+
+  LayoutUnit current_viewport_bottom_ = kIndefiniteSize;
+  LayoutUnit current_minimum_top_;
+  bool allow_deferred_shaping_ = false;
 
   bool can_have_scrollbars_;
 

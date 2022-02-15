@@ -724,24 +724,6 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   }
 }
 
-static void AdjustStateForContentVisibility(ComputedStyle& style,
-                                            Element* element) {
-  if (!element)
-    return;
-  auto* context = element->GetDisplayLockContext();
-  // The common case for most elements is that we don't have a context and have
-  // the default (visible) content-visibility value.
-  if (LIKELY(!context &&
-             style.ContentVisibility() == EContentVisibility::kVisible)) {
-    return;
-  }
-
-  if (!context)
-    context = &element->EnsureDisplayLockContext();
-  context->SetRequestedState(style.ContentVisibility());
-  context->AdjustElementStyle(&style);
-}
-
 static void AdjustStyleForInert(ComputedStyle& style, Element* element) {
   if (!element || style.IsForcedInert())
     return;
@@ -860,8 +842,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   } else {
     AdjustStyleForFirstLetter(style);
   }
-
-  AdjustStateForContentVisibility(style, element);
 
   // Make sure our z-index value is only applied if the object is positioned.
   if (style.GetPosition() == EPosition::kStatic &&
@@ -1026,14 +1006,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (style.SpecifiesColumns() ||
         (element && element->GetDocument().Printing()))
       style.SetInsideFragmentationContextWithNondeterministicEngine(true);
-
-    // If the display type has no legacy engine implementation, it will become
-    // monolithic as far as block fragmentation is concerned, so triggering
-    // legacy layout fallback based on the ancestry will be unnecessary, and
-    // besides, bad, since it will be impossible to force this ancestor to do
-    // legacy layout.
-    if (style.DisplayTypeRequiresLayoutNG())
-      style.SetInsideFragmentationContextWithNondeterministicEngine(false);
   }
 }
 }  // namespace blink

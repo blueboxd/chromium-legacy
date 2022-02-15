@@ -654,9 +654,6 @@ CHAR_LIMIT guidelines:
       <message name="IDS_PASSWORD_ENTRY_VIEWER_COPY_STORED_PASSWORD" desc='Content description for the button that copies the stored password.'>
         Copy password
       </message>
-      <message name="IDS_PASSWORD_ENTRY_VIEWER_VIEW_STORED_PASSWORD" desc='Content description for the button that allows users to view the stored password upon reauthentication.'>
-        Unmask password
-      </message>
       <message name="IDS_PASSWORD_ENTRY_VIEWER_SHOW_STORED_PASSWORD" desc='Content description for the button that allows users to view the stored password upon reauthentication.'>
         Show password
       </message>
@@ -900,7 +897,7 @@ Privacy Sandbox trials are still in active development and are available in sele
         Ad measurement
       </message>
       <message name="IDS_PRIVACY_SANDBOX_AD_MEASUREMENT_SUMMARY" desc="Summary of the settings page to explain ad measurement." translateable="false">
-         Advertisers can understand how ads perform
+        Advertisers can understand how ads perform
      </message>
       <message name="IDS_PRIVACY_SANDBOX_SPAM_FRAUD_TITLE" desc="Title of the settings page to configure spam and fraud reduction." translateable="false">
         Spam &amp; fraud reduction
@@ -910,6 +907,12 @@ Privacy Sandbox trials are still in active development and are available in sele
       </message>
       <message name="IDS_PRIVACY_SANDBOX_LEARN_MORE_LINK" desc="Text of a link to explain ad personalization." translateable="false">
        <ph name="BEGIN_LINK">&lt;link&gt;</ph>Learn more about browser-based ad personalization<ph name="END_LINK">&lt;/link&gt;</ph>
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_LEARN_MORE_TITLE_1" desc="Title of the page to learn more about the Topics API for the privacy sandbox." translateable="false">
+       Your interests as estimated by Chrome
+      </message>
+      <message name="IDS_PRIVACY_SANDBOX_LEARN_MORE_DESCRIPTION_1" desc="Description of the page to learn more about the Topics API for the privacy sandbox." translateable="false">
+        <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Lorem ipsum dolor sit amet:<ph name="END_BOLD1">&lt;/b&gt;</ph> Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
       </message>
       <message name="IDS_PRIVACY_SANDBOX_LEARN_MORE_TITLE" desc="Title of the settings page to explain ad personalization." translateable="false">
         About personalized ads
@@ -2701,10 +2704,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Chrome First Run Experience
       </message>
       <message name="IDS_FRE_TOS" desc="Message explaining that use of Chrome is governed by terms of service.">
-        By using Chrome, you agree to the <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Google Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph>, and the <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
+        By using Chrome, you agree to the <ph name="BEGIN_TOS_LINK">&lt;TOS_LINK&gt;</ph>Google Terms of Service<ph name="END_TOS_LINK">&lt;/TOS_LINK&gt;</ph>, and the <ph name="BEGIN_ATOS_LINK">&lt;ATOS_LINK&gt;</ph>Google Chrome and Chrome OS Additional Terms of Service<ph name="END_ATOS_LINK">&lt;/ATOS_LINK&gt;</ph>.
       </message>
       <message name="IDS_FRE_TOS_AND_PRIVACY_CHILD_ACCOUNT" desc="Message explaining that use of Chrome is governed by Chrome's terms of service, and the Google Privacy Policy.">
-        By using Chrome, you agree to the <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Google Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph>, and the <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2">&lt;/LINK2&gt;</ph>. The <ph name="BEGIN_LINK3">&lt;LINK3&gt;</ph>Privacy Policy<ph name="END_LINK3">&lt;/LINK3&gt;</ph> also applies.
+        By using Chrome, you agree to the <ph name="BEGIN_TOS_LINK">&lt;TOS_LINK&gt;</ph>Google Terms of Service<ph name="END_TOS_LINK">&lt;/TOS_LINK&gt;</ph>, and the <ph name="BEGIN_ATOS_LINK">&lt;ATOS_LINK&gt;</ph>Google Chrome and Chrome OS Additional Terms of Service<ph name="END_ATOS_LINK">&lt;/ATOS_LINK&gt;</ph>. The <ph name="BEGIN_PRIVACY_LINK">&lt;PRIVACY_LINK&gt;</ph>Privacy Policy<ph name="END_PRIVACY_LINK">&lt;/PRIVACY_LINK&gt;</ph> also applies.
       </message>
       <message name="IDS_LIGHTWEIGHT_FRE_ASSOCIATED_APP_TOS" desc="Message explaining that use of Chrome is governed by Chrome's terms of service.">
         <ph name="APP_NAME">%1$s<ex>Google Maps</ex></ph> will open in Chrome. By continuing, you agree to the <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Google Terms of Service<ph name="END_LINK1">&lt;/LINK1&gt;</ph>, and the <ph name="BEGIN_LINK2">&lt;LINK2&gt;</ph>Google Chrome and Chrome OS Additional Terms of Service<ph name="END_LINK2">&lt;/LINK2&gt;</ph>.
@@ -2731,9 +2734,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_SIGNIN_FRE_FOOTER" desc="The text is displayed in a footer on the very first screen of Chrome. The link ‘Terms of Service’ opens the Google Terms of Service. Preferably, ensure consistency with the “Usage statistics and crash reports” section of the Chrome Privacy Policy (google.com/chrome/privacy). Separate the first and the second part through a line break.">
         By continuing, you agree to the <ph name="BEGIN_TOS_LINK">&lt;TOS_LINK&gt;</ph>Terms of Service<ph name="END_TOS_LINK">&lt;/TOS_LINK&gt;</ph>.\nTo help improve the app, Chrome sends usage and crash data to Google. <ph name="BEGIN_UMA_LINK">&lt;UMA_LINK&gt;</ph>Manage<ph name="END_UMA_LINK">&lt;/UMA_LINK&gt;</ph>
-      </message>
-      <message name="IDS_SIGNIN_FRE_FOOTER_SUPERVISED_USER" desc="The text is displayed in a footer on the very first screen of Chrome. The link 'Terms of Service' opens the Google Terms of Service. The link 'Privacy Policy' opens the Google Privacy Policy. Preferably, ensure consistency with the “Usage statistics and crash reports” section of the Chrome Privacy Policy (google.com/chrome/privacy). Separate the first and the second sentence through a line break.">
-        By continuing, you agree to the <ph name="BEGIN_TOS_LINK">&lt;TOS_LINK&gt;</ph>Terms of Service<ph name="END_TOS_LINK">&lt;/TOS_LINK&gt;</ph> and <ph name="BEGIN_PRIVACY_LINK">&lt;PRIVACY_LINK&gt;</ph>Privacy\u00A0Policy<ph name="END_PRIVACY_LINK">&lt;/PRIVACY_LINK&gt;</ph>.\nTo help improve the app, Chrome sends usage and crash data to Google. <ph name="BEGIN_UMA_LINK">&lt;UMA_LINK&gt;</ph>Manage<ph name="END_UMA_LINK">&lt;/UMA_LINK&gt;</ph>
       </message>
       <message name="IDS_SIGNIN_FRE_FOOTER_TOS" desc="The text is displayed in a footer on the very first screen of Chrome. The link ‘Terms of Service’ opens the Google Terms of Service.">
         By continuing, you agree to the <ph name="BEGIN_TOS_LINK">&lt;TOS_LINK&gt;</ph>Terms of Service<ph name="END_TOS_LINK">&lt;/TOS_LINK&gt;</ph>.
@@ -5241,6 +5241,20 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_CHROME_REENGAGEMENT_NOTIFICATION_3_DESCRIPTION" desc="The title of a notification shown to suggest that users use Chrome.  Users probably have not opened Chrome in a while.  Promotes data savings and relevant news.">
         Save up to 60% data, read today's news
+      </message>
+
+      <!-- Notification Permission Rationale Dialog Strings-->
+      <message name="IDS_NOTIFICATION_PERMISSION_RATIONALE_DIALOG_TITLE" desc="The title of a dialog shown to users before asking for notification permission.">
+        Chrome notifications make things easier
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_RATIONALE_DIALOG_MESSAGE" desc="The body text of a dialog explaining the benefits of enabling Chrome notifications.">
+        You’ll be able to easily manage media controls, incognito sessions, downloads and more
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_RATIONALE_ACCEPT_BUTTON_TEXT" desc="The text of the positive button on the notification permission prompt dialog">
+        Continue
+      </message>
+      <message name="IDS_NOTIFICATION_PERMISSION_RATIONALE_REJECT_BUTTON_TEXT" desc="The text of the negative button on the notification permission prompt dialog">
+        No thanks
       </message>
 
       <!-- Get Image Descriptions -->

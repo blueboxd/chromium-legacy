@@ -478,6 +478,7 @@ void TestFeedNetwork::SendDiscoverApiRequest(
     base::StringPiece method,
     std::string request_bytes,
     const AccountInfo& account_info,
+    absl::optional<RequestMetadata> request_metadata,
     base::OnceCallback<void(RawResponse)> callback) {
   last_account_info = account_info;
   api_requests_sent_[request_type] = request_bytes;
@@ -854,6 +855,10 @@ void FeedApiTest::RegisterFollowingFeedFollowCountFieldTrial(
     size_t follow_count) {
   register_following_feed_follow_count_field_trial_calls_.push_back(
       follow_count);
+}
+void FeedApiTest::RegisterFeedUserSettingsFieldTrial(base::StringPiece group) {
+  register_feed_user_settings_field_trial_calls_.push_back(
+      static_cast<std::string>(group));
 }
 DisplayMetrics FeedApiTest::GetDisplayMetrics() {
   DisplayMetrics result;

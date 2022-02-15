@@ -165,12 +165,20 @@ class PrivacySandboxService : public KeyedService,
   // Returns the set of eTLD + 1's on which the user was joined to a FLEDGE
   // interest group. Consults with the InterestGroupManager associated with
   // |profile_| and formats the returned data for direct display to the user.
-  void GetFledgeJoiningEtldPlusOneForDisplay(
+  // Virtual to allow mocking in tests.
+  virtual void GetFledgeJoiningEtldPlusOneForDisplay(
       base::OnceCallback<void(std::vector<std::string>)> callback);
 
   // Returns the set of top frames which are blocked from joining the profile to
-  // an interest group.
-  std::vector<std::string> GetBlockedFledgeJoiningTopFramesForDisplay() const;
+  // an interest group. Virtual to allow mocking in tests.
+  virtual std::vector<std::string> GetBlockedFledgeJoiningTopFramesForDisplay()
+      const;
+
+  // Sets Fledge interest group joining to |allowed| for |top_frame_etld_plus1|.
+  // This is a wrapper on the equivalent function on PrivacySandboxSettings.
+  // Virtual to allow mocking in tests.
+  virtual void SetFledgeJoiningAllowed(const std::string& top_frame_etld_plus1,
+                                       bool allowed) const;
 
   // Returns the top topics for the previous N epochs.
   std::vector<privacy_sandbox::CanonicalTopic> GetCurrentTopTopics() const;
@@ -232,6 +240,8 @@ class PrivacySandboxService : public KeyedService,
                            MetricsLoggingOccursCorrectly);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTestNonRegularProfile,
                            NoMetricsRecorded);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDeathTest,
+                           GetRequiredDialogType);
 
   // Should be used only for tests when mocking the service.
   PrivacySandboxService();
@@ -287,6 +297,13 @@ class PrivacySandboxService : public KeyedService,
       base::OnceCallback<void(std::vector<std::string>)> callback,
       std::vector<url::Origin> top_frames);
 
+  // Contains the logic which powers GetRequiredDialogType(). Static to allow
+  // EXPECT_DCHECK_DEATH testing, which does not work well with many of the
+  // other dependencies of this service.
+  static PrivacySandboxService::DialogType GetRequiredDialogTypeInternal(
+      PrefService* pref_service,
+      profile_metrics::BrowserProfileType profile_type);
+
  private:
   raw_ptr<PrivacySandboxSettings> privacy_sandbox_settings_;
   raw_ptr<content_settings::CookieSettings> cookie_settings_;
@@ -311,11 +328,11 @@ class PrivacySandboxService : public KeyedService,
 
   // Fake implementation for current and blocked topics.
   std::set<privacy_sandbox::CanonicalTopic> fake_current_topics_ = {
-      {1, privacy_sandbox::CanonicalTopic::TEST_TAXONOMY},
-      {2, privacy_sandbox::CanonicalTopic::TEST_TAXONOMY}};
+      {1, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
+      {2, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
   std::set<privacy_sandbox::CanonicalTopic> fake_blocked_topics_ = {
-      {3, privacy_sandbox::CanonicalTopic::TEST_TAXONOMY},
-      {4, privacy_sandbox::CanonicalTopic::TEST_TAXONOMY}};
+      {3, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
+      {4, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
 
   base::WeakPtrFactory<PrivacySandboxService> weak_factory_{this};
 };

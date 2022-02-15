@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/command_line.h"
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "chrome/browser/privacy_sandbox/android/jni_headers/PrivacySandboxBridge_jni.h"
@@ -18,6 +20,9 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+const char TOPICS_JAVA_CLASS[] =
+    "org/chromium/chrome/browser/privacy_sandbox/Topic";
+
 PrivacySandboxService* GetPrivacySandboxService() {
   return PrivacySandboxServiceFactory::GetForProfile(
       ProfileManager::GetActiveUserProfile());
@@ -32,7 +37,8 @@ ScopedJavaLocalRef<jobjectArray> ToJavaTopicsArray(
         env, topic.topic_id(), topic.taxonomy_version(),
         ConvertUTF16ToJavaString(env, topic.GetLocalizedRepresentation())));
   }
-  return base::android::ToJavaArrayOfObjects(env, j_topics);
+  return base::android::ToJavaArrayOfObjects(
+      env, base::android::GetClass(env, TOPICS_JAVA_CLASS), j_topics);
 }
 }  // namespace
 
@@ -120,6 +126,12 @@ static void JNI_PrivacySandboxBridge_SetTopicAllowed(JNIEnv* env,
 }
 
 static jint JNI_PrivacySandboxBridge_GetRequiredDialogType(JNIEnv* env) {
+  // If the FRE is disabled, as it is in tests which must not be interrupted
+  // with dialogs, do not attempt to show a dialog.
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch("disable-fre"))
+    return static_cast<int>(PrivacySandboxService::DialogType::kNone);
+
   return static_cast<int>(PrivacySandboxServiceFactory::GetForProfile(
                               ProfileManager::GetActiveUserProfile())
                               ->GetRequiredDialogType());

@@ -40,7 +40,8 @@ class WebAppOfflineTest : public InProcessBrowserTest {
                                 std::string relative_url) {
     GURL target_url(embedded_test_server()->GetURL(relative_url));
     web_app::NavigateToURLAndWait(browser(), target_url);
-    web_app::test::InstallPwaForCurrentUrl(browser());
+    web_app::AppId app_id = web_app::test::InstallPwaForCurrentUrl(browser());
+    WebAppIconWaiter(browser()->profile(), app_id).Wait();
     std::unique_ptr<content::URLLoaderInterceptor> interceptor =
         content::URLLoaderInterceptor::SetupRequestFailForURL(
             target_url, net::ERR_INTERNET_DISCONNECTED);
@@ -58,8 +59,8 @@ class WebAppOfflineTest : public InProcessBrowserTest {
         browser()->profile(), target_url);
     web_app::NavigateToURLAndWait(browser(), target_url);
     registration_waiter.AwaitRegistration();
-    web_app::test::InstallPwaForCurrentUrl(browser());
-
+    web_app::AppId app_id = web_app::test::InstallPwaForCurrentUrl(browser());
+    WebAppIconWaiter(browser()->profile(), app_id).Wait();
     std::unique_ptr<content::URLLoaderInterceptor> interceptor =
         content::URLLoaderInterceptor::SetupRequestFailForURL(
             target_url, net::ERR_INTERNET_DISCONNECTED);

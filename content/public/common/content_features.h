@@ -136,6 +136,7 @@ enum class MBIMode {
 };
 CONTENT_EXPORT extern const base::FeatureParam<MBIMode> kMBIModeParam;
 CONTENT_EXPORT extern const base::Feature kMediaDevicesSystemMonitorCache;
+CONTENT_EXPORT extern const base::Feature kMediaLicenseBackend;
 CONTENT_EXPORT extern const base::Feature kMojoDedicatedThread;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCapture;
 CONTENT_EXPORT extern const base::Feature kMojoVideoCaptureSecondary;
@@ -154,6 +155,7 @@ CONTENT_EXPORT extern const base::Feature kOriginIsolationHeader;
 CONTENT_EXPORT extern const base::Feature kOriginPolicy;
 CONTENT_EXPORT extern const base::Feature kOverscrollHistoryNavigation;
 CONTENT_EXPORT extern const base::Feature kPaymentRequestBasicCard;
+CONTENT_EXPORT extern const base::Feature kPaymentRequestRequiresUserActivation;
 CONTENT_EXPORT extern const base::Feature kPeriodicBackgroundSync;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicyHeader;
 CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
@@ -293,6 +295,7 @@ CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
 CONTENT_EXPORT extern const base::Feature kBigLittleScheduling;
 CONTENT_EXPORT extern const base::Feature kBindingManagementWaiveCpu;
+CONTENT_EXPORT extern const base::Feature kIndependentFlingAnimation;
 CONTENT_EXPORT extern const base::Feature kOnDemandAccessibilityEvents;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteExceptions;
 CONTENT_EXPORT extern const base::Feature kRequestDesktopSiteGlobal;

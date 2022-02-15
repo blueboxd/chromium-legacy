@@ -2072,6 +2072,14 @@ const FeatureEntry::FeatureVariation kLensContextMenuTranslateVariations[] = {
      base::size(kLensContextMenuTranslateHideRemoveIcon), nullptr},
 };
 
+const FeatureEntry::FeatureParam kLensContextMenuSearchOnTablet[] = {
+    {"enableContextMenuSearchOnTablet", "true"}};
+
+const FeatureEntry::FeatureVariation kLensContextMenuSearchVariations[] = {
+    {"(on Tablet)", kLensContextMenuSearchOnTablet,
+     base::size(kLensContextMenuSearchOnTablet), nullptr},
+};
+
 const FeatureEntry::FeatureParam kDynamicColorFull[] = {
     {"dynamic_color_full", "true"}};
 
@@ -2729,6 +2737,16 @@ const FeatureEntry::FeatureVariation kUseMultipleOverlaysVariations[] = {
     {"3", &kMaxOverlays3, 1, nullptr}, {"4", &kMaxOverlays4, 1, nullptr},
     {"5", &kMaxOverlays5, 1, nullptr}, {"6", &kMaxOverlays6, 1, nullptr}};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kGridTabSwitcherForTabletsPolished[] = {
+    {"enable_launch_polish", "true"}};
+
+const FeatureEntry::FeatureVariation kGridTabSwitcherForTabletsVariations[] = {
+    {"(Polished)", kGridTabSwitcherForTabletsPolished,
+     base::size(kGridTabSwitcherForTabletsPolished), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3918,7 +3936,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"web-share", flag_descriptions::kWebShareName,
      flag_descriptions::kWebShareDescription, kOsWin | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebShare)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_LINUX)
     {"ozone-platform-hint", flag_descriptions::kOzonePlatformHintName,
@@ -5939,6 +5957,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enhanced-network-voices", flag_descriptions::kEnhancedNetworkVoicesName,
      flag_descriptions::kEnhancedNetworkVoicesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnhancedNetworkVoices)},
+
+    {"enable-accessibility-os-settings-visibility",
+     flag_descriptions::kAccessibilityOSSettingsVisibilityName,
+     flag_descriptions::kAccessibilityOSSettingsVisibilityDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kAccessibilityOSSettingsVisibility)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"enable-fenced-frames", flag_descriptions::kEnableFencedFramesName,
@@ -6186,7 +6209,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"context-menu-search-with-google-lens",
      flag_descriptions::kContextMenuSearchWithGoogleLensName,
      flag_descriptions::kContextMenuSearchWithGoogleLensDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextMenuSearchWithGoogleLens)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextMenuSearchWithGoogleLens,
+         kLensContextMenuSearchVariations,
+         "ContextMenuSearchWithGoogleLens")},
 
     {"context-menu-shop-with-google-lens",
      flag_descriptions::kContextMenuShopWithGoogleLensName,
@@ -6720,6 +6746,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kCategoricalSearchVariations,
                                     "LauncherCategoricalSearch")},
 
+    {"search-result-inline-icon",
+     flag_descriptions::kSearchResultInlineIconName,
+     flag_descriptions::kSearchResultInlineIconDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kSearchResultInlineIcon)},
+
     {"query-search-burn-in-period",
      flag_descriptions::kQuerySearchBurnInPeriodName,
      flag_descriptions::kQuerySearchBurnInPeriodDescription, kOsCrOS,
@@ -6932,11 +6963,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForNameAndIcon)},
 
-    {"sync-autofill-wallet-offer-data",
-     flag_descriptions::kSyncAutofillWalletOfferDataName,
-     flag_descriptions::kSyncAutofillWalletOfferDataDescription, kOsAll,
-     FEATURE_VALUE_TYPE(syncer::kSyncAutofillWalletOfferData)},
-
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
@@ -6952,6 +6978,23 @@ const FeatureEntry kFeatureEntries[] = {
     {"privacy-advisor", flag_descriptions::kPrivacyAdvisorName,
      flag_descriptions::kPrivacyAdvisorDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kPrivacyAdvisor)},
+
+    {"privacy-sandbox-v3-desktop", flag_descriptions::kPrivacySandboxV3Name,
+     flag_descriptions::kPrivacySandboxV3Description, kOsDesktop,
+     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
+     // multiple related features.
+     SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
+                                 "PrivacySandboxSettings3:disable-dialog-for-"
+                                 "testing/true,InterestGroupStorage,"
+                                 "AdInterestGroupAPI,Fledge,FencedFrames")},
+
+    {"privacy-sandbox-v3-android", flag_descriptions::kPrivacySandboxV3Name,
+     flag_descriptions::kPrivacySandboxV3Description, kOsAndroid,
+     // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
+     // multiple related features when they are available.
+     SINGLE_VALUE_TYPE_AND_VALUE(
+         switches::kEnableFeatures,
+         "PrivacySandboxSettings3:disable-dialog-for-testing/true")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
      flag_descriptions::kAnimatedImageResumeDescription, kOsAll,
@@ -7757,7 +7800,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"grid-tab-switcher-for-tablets",
      flag_descriptions::kGridTabSwitcherForTabletsName,
      flag_descriptions::kGridTabSwitcherForTabletsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kGridTabSwitcherForTablets)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kGridTabSwitcherForTablets,
+                                    kGridTabSwitcherForTabletsVariations,
+                                    "GridTabSwitcherForTablets")},
 
     {"enable-tab-groups-for-tablets",
      flag_descriptions::kTabGroupsForTabletsName,
@@ -7977,6 +8022,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDurableClientHintsCacheName,
      flag_descriptions::kDurableClientHintsCacheDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDurableClientHintsCache)},
+
+    {"edit-context", flag_descriptions::kEditContextName,
+     flag_descriptions::kEditContextDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kEditContext)},
+
+    {"initial-navigation-entry", flag_descriptions::kInitialNavigationEntryName,
+     flag_descriptions::kInitialNavigationEntryDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kInitialNavigationEntry)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -526,6 +526,7 @@ experimental domain Audits
 
   type MixedContentResourceType extends string
     enum
+      AttributionSrc
       Audio
       Beacon
       CSPReport
@@ -1791,6 +1792,16 @@ experimental domain CSS
     returns
       # The resulting CSS container query rule after modification.
       CSSContainerQuery containerQuery
+
+  # Modifies the expression of a supports at-rule.
+  experimental command setSupportsText
+    parameters
+      StyleSheetId styleSheetId
+      SourceRange range
+      string text
+    returns
+      # The resulting CSS Supports rule after modification.
+      CSSSupports supports
 
   # Modifies the rule selector.
   command setRuleSelector

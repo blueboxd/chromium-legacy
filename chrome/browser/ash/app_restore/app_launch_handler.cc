@@ -92,7 +92,7 @@ void AppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
                      update.AppType(), update.AppId()));
 }
 
-void AppLaunchHandler::OnAppTypeInitialized(apps::mojom::AppType app_type) {
+void AppLaunchHandler::OnAppTypeInitialized(apps::AppType app_type) {
   // Do nothing: overridden by subclasses.
 }
 
@@ -114,7 +114,7 @@ void AppLaunchHandler::LaunchApps() {
   auto* cache = &apps::AppServiceProxyFactory::GetForProfile(profile_)
                      ->AppRegistryCache();
   Observe(cache);
-  for (const auto app_type : cache->GetInitializedAppTypes()) {
+  for (const auto app_type : cache->InitializedAppTypes()) {
     OnAppTypeInitialized(app_type);
   }
 

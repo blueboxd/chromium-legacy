@@ -14,8 +14,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -331,12 +333,10 @@ bool SimpleIndexFile::IndexMetadata::CheckIndexMetadata() {
 }
 
 SimpleIndexFile::SimpleIndexFile(
-    const scoped_refptr<base::SequencedTaskRunner>& cache_runner,
-    const scoped_refptr<base::TaskRunner>& worker_pool,
+    scoped_refptr<base::SequencedTaskRunner> cache_runner,
     net::CacheType cache_type,
     const base::FilePath& cache_directory)
-    : cache_runner_(cache_runner),
-      worker_pool_(worker_pool),
+    : cache_runner_(std::move(cache_runner)),
       cache_type_(cache_type),
       cache_directory_(cache_directory),
       index_file_(cache_directory_.AppendASCII(kIndexDirectory)
@@ -352,8 +352,10 @@ void SimpleIndexFile::LoadIndexEntries(base::Time cache_last_modified,
   base::OnceClosure task = base::BindOnce(
       &SimpleIndexFile::SyncLoadIndexEntries, cache_type_, cache_last_modified,
       cache_directory_, index_file_, out_result);
-  worker_pool_->PostTaskAndReply(FROM_HERE, std::move(task),
-                                 std::move(callback));
+  auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      SimpleBackendImpl::kWorkerPoolTaskTraits);
+  task_runner->PostTaskAndReply(FROM_HERE, std::move(task),
+                                std::move(callback));
 }
 
 void SimpleIndexFile::WriteToDisk(net::CacheType cache_type,

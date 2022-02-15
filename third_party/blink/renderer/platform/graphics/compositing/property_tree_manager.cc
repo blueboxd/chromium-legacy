@@ -81,8 +81,7 @@ static void UpdateCcTransformLocalMatrix(
     }
   } else {
     DCHECK(!transform_node.ScrollNode());
-    compositor_node.local.matrix() =
-        TransformationMatrix::ToSkMatrix44(transform_node.Matrix());
+    compositor_node.local = transform_node.Matrix().ToTransform();
     compositor_node.origin = transform_node.Origin();
   }
   compositor_node.needs_local_transform_update = true;
@@ -92,7 +91,7 @@ static void SetTransformTreePageScaleFactor(
     cc::TransformTree* transform_tree,
     cc::TransformNode* page_scale_node) {
   DCHECK(page_scale_node->local.IsScale2d());
-  auto page_scale = page_scale_node->local.Scale2d();
+  auto page_scale = page_scale_node->local.To2dScale();
   DCHECK_EQ(page_scale.x(), page_scale.y());
   transform_tree->set_page_scale_factor(page_scale.x());
 }

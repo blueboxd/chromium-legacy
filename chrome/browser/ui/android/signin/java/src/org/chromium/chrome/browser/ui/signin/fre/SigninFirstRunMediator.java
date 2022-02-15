@@ -28,8 +28,6 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.ChildAccountStatus;
-import org.chromium.components.signin.ChildAccountStatus.Status;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SignoutReason;
@@ -38,6 +36,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
+import java.util.ArrayList;
 import java.util.List;
 
 class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache.Observer,
@@ -243,8 +242,7 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
                 mAccountManagerFacade, accounts, this::onChildAccountStatusReady);
     }
 
-    private void onChildAccountStatusReady(@Status int status, @Nullable Account childAccount) {
-        final boolean isChild = ChildAccountStatus.isChild(status);
+    private void onChildAccountStatusReady(boolean isChild, @Nullable Account childAccount) {
         mModel.set(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED, isChild);
         mModel.set(SigninFirstRunProperties.FOOTER_STRING,
                 getFooterString(isChild, isMetricsReportingDisabledByPolicy()));
@@ -263,21 +261,13 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
                         ? R.string.signin_fre_footer_tos_with_supervised_user
                         : R.string.signin_fre_footer_tos);
 
-        if (!isMetricsReportingDisabled) {
-            footerString += "\n" + mContext.getString(R.string.signin_fre_footer_metrics_reporting);
-        }
-
-        // TOS is always shown. Privacy notice and MetricsReporting depend on conditionals.
-        int spansLength = 1 + (hasChildAccount ? 1 : 0) + (!isMetricsReportingDisabled ? 1 : 0);
-        int spansAppended = 0;
-        SpanApplier.SpanInfo[] spans = new SpanApplier.SpanInfo[spansLength];
-
+        ArrayList<SpanApplier.SpanInfo> spans = new ArrayList<>();
         // Terms of Service SpanInfo.
         final NoUnderlineClickableSpan clickableTermsOfServiceSpan =
                 new NoUnderlineClickableSpan(mContext.getResources(),
                         view -> mDelegate.showInfoPage(R.string.google_terms_of_service_url));
-        spans[spansAppended++] =
-                new SpanApplier.SpanInfo("<TOS_LINK>", "</TOS_LINK>", clickableTermsOfServiceSpan);
+        spans.add(
+                new SpanApplier.SpanInfo("<TOS_LINK>", "</TOS_LINK>", clickableTermsOfServiceSpan));
 
         // Privacy notice Link SpanInfo.
         if (hasChildAccount) {
@@ -285,19 +275,20 @@ class SigninFirstRunMediator implements AccountsChangeObserver, ProfileDataCache
                     new NoUnderlineClickableSpan(mContext.getResources(),
                             view -> mDelegate.showInfoPage(R.string.google_privacy_policy_url));
 
-            spans[spansAppended++] = new SpanApplier.SpanInfo(
-                    "<PRIVACY_LINK>", "</PRIVACY_LINK>", clickablePrivacyPolicySpan);
+            spans.add(new SpanApplier.SpanInfo(
+                    "<PRIVACY_LINK>", "</PRIVACY_LINK>", clickablePrivacyPolicySpan));
         }
 
         // Metrics and Crash Reporting SpanInfo.
         if (!isMetricsReportingDisabled) {
+            footerString += "\n" + mContext.getString(R.string.signin_fre_footer_metrics_reporting);
             final NoUnderlineClickableSpan clickableUMADialogSpan = new NoUnderlineClickableSpan(
                     mContext.getResources(), view -> mDelegate.openUmaDialog());
-            spans[spansAppended++] =
-                    new SpanApplier.SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan);
+            spans.add(
+                    new SpanApplier.SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan));
         }
 
         // Apply spans to footer string.
-        return SpanApplier.applySpans(footerString, spans);
+        return SpanApplier.applySpans(footerString, spans.toArray(new SpanApplier.SpanInfo[0]));
     }
 }

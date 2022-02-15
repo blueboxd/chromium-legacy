@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -39,6 +40,8 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -82,6 +85,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/dialog_test.h"
 #include "ui/views/widget/any_widget_observer.h"
@@ -163,7 +167,8 @@ const base::flat_map<std::string, SkColor> g_app_name_icon_color = {
     {"Site B", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
     {"Site C", SkColorSetARGB(0x00, 0x00, 0x00, 0x00)},
     {"Site A Foo", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
-    {"Site A Bar", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)}};
+    {"Site A Bar", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)},
+    {"Site A - Updated name", SkColorSetARGB(0xFF, 0x00, 0x00, 0x00)}};
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -785,9 +790,75 @@ void WebAppIntegrationTestDriver::LaunchFromShortcut(
     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
     const std::string window_title =
         convert.to_bytes(app_browser->GetWindowTitleForCurrentTab(false));
-    ASSERT_EQ(window_title, g_site_mode_to_app_name.find(site_mode)->second);
+    ASSERT_EQ(window_title, app_state->name);
   }
   AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::LaunchAppSettingsFromAppMenu(
+    const std::string& site_mode) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  BeforeStateChangeAction();
+  absl::optional<AppState> app_state = GetAppBySiteMode(
+      before_state_change_action_state_.get(), profile(), site_mode);
+  ASSERT_TRUE(app_state.has_value())
+      << "No app installed for site: " << site_mode;
+
+  Browser* app_browser = GetAppBrowserForSite(site_mode);
+  ASSERT_TRUE(app_browser);
+
+  // Click App info from app browser.
+  CHECK(chrome::ExecuteCommand(app_browser, IDC_WEB_APP_MENU_APP_INFO));
+
+  content::WebContentsAddedObserver nav_observer;
+
+  // Click settings from page info bubble.
+  views::Widget* page_info_bubble =
+      PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetWidget();
+  EXPECT_TRUE(page_info_bubble);
+
+  views::View* settings_button = page_info_bubble->GetRootView()->GetViewByID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_LINK_OR_BUTTON_SITE_SETTINGS);
+
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kDoDefault;
+  settings_button->HandleAccessibleAction(data);
+
+  // Wait for new web content to be created.
+  nav_observer.GetWebContents();
+
+  AfterStateChangeAction();
+#else
+  NOTREACHED() << "Not implemented on Chrome OS.";
+#endif
+}
+
+void WebAppIntegrationTestDriver::LaunchAppSettingsFromChromeApps(
+    const std::string& site_mode) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  BeforeStateChangeAction();
+  absl::optional<AppState> app_state = GetAppBySiteMode(
+      before_state_change_action_state_.get(), profile(), site_mode);
+  ASSERT_TRUE(app_state.has_value())
+      << "No app installed for site: " << site_mode;
+
+  content::TestWebUI test_web_ui;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  DCHECK(web_contents);
+  test_web_ui.set_web_contents(web_contents);
+  TestAppLauncherHandler handler(/*extension_service=*/nullptr, provider(),
+                                 &test_web_ui);
+  base::ListValue web_app_ids;
+  web_app_ids.Append(app_state->id);
+  content::WebContentsAddedObserver nav_observer;
+  handler.HandleShowAppInfo(&web_app_ids);
+  // Wait for new web content to be created.
+  nav_observer.GetWebContents();
+  AfterStateChangeAction();
+#else
+  NOTREACHED() << "Not implemented on Chrome OS.";
+#endif
 }
 
 void WebAppIntegrationTestDriver::NavigateBrowser(
@@ -828,6 +899,7 @@ void WebAppIntegrationTestDriver::ManifestUpdateTitle(
     const std::string& site_mode) {
   BeforeStateChangeAction();
   ASSERT_EQ("SiteA", site_mode) << "Only site mode of 'SiteA' is supported";
+  ASSERT_TRUE(base::Contains(g_site_mode_to_relative_scope_url, site_mode));
   auto scope_url_path =
       g_site_mode_to_relative_scope_url.find(site_mode)->second;
   std::string str_template =
@@ -842,6 +914,7 @@ void WebAppIntegrationTestDriver::ManifestUpdateDisplayMinimal(
     const std::string& site_mode) {
   BeforeStateChangeAction();
   ASSERT_EQ("SiteA", site_mode) << "Only site mode of 'SiteA' is supported";
+  ASSERT_TRUE(base::Contains(g_site_mode_to_relative_scope_url, site_mode));
   auto scope_url_path =
       g_site_mode_to_relative_scope_url.find(site_mode)->second;
   std::string str_template =
@@ -859,6 +932,7 @@ void WebAppIntegrationTestDriver::ManifestUpdateScopeSiteAFooTo(
   // simplicity, right now only SiteA is supported, so that is just hardcoded in
   // manifest_scope_site_a.json, which is specified in the URL.
   ASSERT_EQ("SiteA", scope_mode) << "Only scope mode of 'SiteA' is supported";
+  ASSERT_TRUE(base::Contains(g_site_mode_to_relative_scope_url, "SiteAFoo"));
   auto scope_url_path =
       g_site_mode_to_relative_scope_url.find("SiteAFoo")->second;
   std::string str_template =
@@ -1152,6 +1226,23 @@ void WebAppIntegrationTestDriver::CheckAppNavigationIsStartUrl() {
   AfterStateCheckAction();
 }
 
+void WebAppIntegrationTestDriver::CheckBrowserNavigationIsAppSettings(
+    const std::string& site_mode) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  BeforeStateCheckAction();
+  absl::optional<AppState> app_state = GetAppBySiteMode(
+      after_state_change_action_state_.get(), profile(), site_mode);
+  ASSERT_TRUE(app_state.has_value());
+
+  ASSERT_TRUE(browser());
+  GURL url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  EXPECT_EQ(url, GURL("chrome://app-settings/" + app_state->id));
+  AfterStateCheckAction();
+#else
+  NOTREACHED() << "Not implemented on Chrome OS.";
+#endif
+}
+
 void WebAppIntegrationTestDriver::CheckAppNotInList(
     const std::string& site_mode) {
   BeforeStateCheckAction();
@@ -1189,6 +1280,7 @@ void WebAppIntegrationTestDriver::CheckPlatformShortcutNotExists(
   // If app_state is still nullptr, the site_mode is manually mapped to get an
   // app_name and app_id remains empty.
   if (!app_state) {
+    ASSERT_TRUE(base::Contains(g_site_mode_to_app_name, site_mode));
     app_name = g_site_mode_to_app_name.find(site_mode)->second;
   } else {
     app_name = app_state->name;
@@ -1768,14 +1860,17 @@ bool WebAppIntegrationTestDriver::IsShortcutAndIconCreated(
   bool shortcut_correct = false;
 
 #if BUILDFLAG(IS_WIN)
+  DCHECK(base::Contains(g_app_name_icon_color, name));
+  SkColor color = g_app_name_icon_color.find(name)->second;
   shortcut_correct =
       (IsShortcutAndIconFoundForProfile(
-           profile, name, shortcut_override_->desktop.GetPath(),
-           g_app_name_icon_color.find(name)->second) &&
+           profile, name, shortcut_override_->desktop.GetPath(), color) &&
        IsShortcutAndIconFoundForProfile(
            profile, name, shortcut_override_->application_menu.GetPath(),
-           g_app_name_icon_color.find(name)->second));
+           color));
 #elif BUILDFLAG(IS_MAC)
+  DCHECK(base::Contains(g_app_name_icon_color, name));
+  SkColor color = g_app_name_icon_color.find(name)->second;
   std::string shortcut_filename = name + ".app";
   base::FilePath app_shortcut_path =
       shortcut_override_->chrome_apps_folder.GetPath().Append(
@@ -1795,8 +1890,7 @@ bool WebAppIntegrationTestDriver::IsShortcutAndIconCreated(
       (base::PathExists(app_shortcut_path) && is_app_profile_found);
   if (shortcut_exists) {
     SkColor icon_pixel_color = GetIconTopLeftColor(app_shortcut_path);
-    shortcut_correct =
-        (icon_pixel_color == g_app_name_icon_color.find(name)->second);
+    shortcut_correct = (icon_pixel_color == color);
   }
 #elif BUILDFLAG(IS_LINUX)
   std::string shortcut_filename =

@@ -145,8 +145,7 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
       device::Pose(pose->position.value_or(gfx::Point3F()),
                    pose->orientation.value_or(gfx::Quaternion()));
 
-  return std::make_unique<TransformationMatrix>(
-      device_pose.ToTransform().matrix());
+  return std::make_unique<TransformationMatrix>(device_pose.ToTransform());
 }
 
 absl::optional<device::mojom::blink::EntityTypeForHitTest>
@@ -232,6 +231,7 @@ constexpr char XRSession::kAnchorsFeatureNotSupported[];
 constexpr char XRSession::kPlanesFeatureNotSupported[];
 constexpr char XRSession::kDepthSensingFeatureNotSupported[];
 constexpr char XRSession::kRawCameraAccessFeatureNotSupported[];
+constexpr char XRSession::kCannotCancelHitTestSource[];
 
 class XRSession::XRSessionResizeObserverDelegate final
     : public ResizeObserver::Delegate {
@@ -1012,7 +1012,7 @@ void XRSession::OnEnvironmentProviderError() {
 void XRSession::ProcessAnchorsData(
     const device::mojom::blink::XRAnchorsData* tracked_anchors_data,
     double timestamp) {
-  TRACE_EVENT0("xr", __func__);
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("xr.debug"), __func__);
 
   if (!tracked_anchors_data) {
     DVLOG(3) << __func__ << ": tracked_anchors_data is null";

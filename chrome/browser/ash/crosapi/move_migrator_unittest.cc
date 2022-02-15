@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
@@ -35,6 +36,9 @@ constexpr char kCacheFilePath[] = "Cache";           // deletable
 constexpr char kDataFilePath[] = "Data";
 constexpr char kDataContent[] = "Hello, World!";
 constexpr int kDataSize = sizeof(kDataContent);
+
+constexpr int64_t kRequiredDiskSpaceForBot =
+    browser_data_migrator_util::kBuffer * 2;
 
 void SetUpProfileDirectory(const base::FilePath& path) {
   // Setup `path` as below.
@@ -72,12 +76,17 @@ void SetUpProfileDirectory(const base::FilePath& path) {
 TEST(MoveMigratorTest, PreMigrationCleanUp) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  ASSERT_GE(base::SysInfo::AmountOfFreeDiskSpace(scoped_temp_dir.GetPath()),
+            kRequiredDiskSpaceForBot);
 
   // `PreMigrationCleanUp()` returns true if there is nothing to delete.
   const base::FilePath original_profile_dir_1 =
       scoped_temp_dir.GetPath().Append("user1");
   EXPECT_TRUE(base::CreateDirectory(original_profile_dir_1));
-  EXPECT_TRUE(MoveMigrator::PreMigrationCleanUp(original_profile_dir_1));
+  MoveMigrator::PreMigrationCleanUpResult result_1 =
+      MoveMigrator::PreMigrationCleanUp(original_profile_dir_1);
+  ASSERT_TRUE(result_1.success);
+  EXPECT_EQ(result_1.extra_bytes_required_to_be_freed, 0u);
 
   // `PreMigrationCleanUp()` deletes any `.../lacros/` directory and returns
   // true.
@@ -91,7 +100,10 @@ TEST(MoveMigratorTest, PreMigrationCleanUp) {
                                 .Append(chrome::kFirstRunSentinel),
                             "", 0),
             0);
-  EXPECT_TRUE(MoveMigrator::PreMigrationCleanUp(original_profile_dir_2));
+  MoveMigrator::PreMigrationCleanUpResult result_2 =
+      MoveMigrator::PreMigrationCleanUp(original_profile_dir_2);
+  ASSERT_TRUE(result_2.success);
+  EXPECT_EQ(result_2.extra_bytes_required_to_be_freed, 0u);
   EXPECT_FALSE(base::PathExists(
       original_profile_dir_2.Append(browser_data_migrator_util::kLacrosDir)));
 
@@ -102,7 +114,12 @@ TEST(MoveMigratorTest, PreMigrationCleanUp) {
   ASSERT_EQ(base::WriteFile(original_profile_dir_3.Append(kCacheFilePath),
                             kDataContent, kDataSize),
             kDataSize);
-  EXPECT_TRUE(MoveMigrator::PreMigrationCleanUp(original_profile_dir_3));
+  MoveMigrator::PreMigrationCleanUpResult result_3 =
+      MoveMigrator::PreMigrationCleanUp(original_profile_dir_3);
+  ASSERT_TRUE(result_3.success);
+  EXPECT_EQ(result_3.extra_bytes_required_to_be_freed, 0u);
+  EXPECT_FALSE(base::PathExists(
+      original_profile_dir_3.Append(browser_data_migrator_util::kLacrosDir)));
   EXPECT_FALSE(base::PathExists(original_profile_dir_3.Append(kCacheFilePath)));
 }
 
@@ -168,6 +185,8 @@ class MoveMigratorMigrateTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+    ASSERT_GE(base::SysInfo::AmountOfFreeDiskSpace(scoped_temp_dir_.GetPath()),
+              kRequiredDiskSpaceForBot);
     original_profile_dir_ = scoped_temp_dir_.GetPath();
 
     SetUpProfileDirectory(original_profile_dir_);
@@ -179,12 +198,12 @@ class MoveMigratorMigrateTest : public ::testing::Test {
 
     base::OnceCallback<void(BrowserDataMigratorImpl::MigrationResult)>
         finished_callback = base::BindOnce(
-            [](BrowserDataMigratorImpl::ResultValue* data_wipe_result,
-               BrowserDataMigratorImpl::ResultValue* data_migration_result,
+            [](BrowserDataMigratorImpl::DataWipeResult* data_wipe_result,
+               BrowserDataMigrator::Result* data_migration_result,
                base::OnceClosure cb,
                BrowserDataMigratorImpl::MigrationResult result) {
-              *data_wipe_result = result.data_wipe;
-              *data_migration_result = result.data_migration;
+              *data_wipe_result = result.data_wipe_result;
+              *data_migration_result = result.data_migration_result;
               std::move(cb).Run();
             },
             &data_wipe_result_, &data_migration_result_,
@@ -244,8 +263,8 @@ class MoveMigratorMigrateTest : public ::testing::Test {
 
   // Updated from `finished_callback` with the corresponding value on
   // `BrowserDataMigratorImpl::MigrationResult`.
-  BrowserDataMigratorImpl::ResultValue data_wipe_result_;
-  BrowserDataMigratorImpl::ResultValue data_migration_result_;
+  BrowserDataMigratorImpl::DataWipeResult data_wipe_result_;
+  BrowserDataMigrator::Result data_migration_result_;
 };
 
 TEST_F(MoveMigratorMigrateTest, Migrate) {
@@ -253,9 +272,9 @@ TEST_F(MoveMigratorMigrateTest, Migrate) {
   run_loop_->Run();
 
   EXPECT_EQ(data_wipe_result_,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded);
-  EXPECT_EQ(data_migration_result_,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded);
+            BrowserDataMigratorImpl::DataWipeResult::kSucceeded);
+  EXPECT_EQ(data_migration_result_.kind,
+            BrowserDataMigrator::ResultKind::kSucceeded);
 
   CheckProfileDirFinalState();
 }
@@ -296,9 +315,9 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromRemoveHardLinks) {
   run_loop_->Run();
 
   EXPECT_EQ(data_wipe_result_,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded);
-  EXPECT_EQ(data_migration_result_,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded);
+            BrowserDataMigratorImpl::DataWipeResult::kSucceeded);
+  EXPECT_EQ(data_migration_result_.kind,
+            BrowserDataMigrator::ResultKind::kSucceeded);
 
   CheckProfileDirFinalState();
 }
@@ -340,9 +359,9 @@ TEST_F(MoveMigratorMigrateTest, MigrateResumeFromMove) {
   run_loop_->Run();
 
   EXPECT_EQ(data_wipe_result_,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded);
-  EXPECT_EQ(data_migration_result_,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded);
+            BrowserDataMigratorImpl::DataWipeResult::kSucceeded);
+  EXPECT_EQ(data_migration_result_.kind,
+            BrowserDataMigrator::ResultKind::kSucceeded);
 
   CheckProfileDirFinalState();
 }

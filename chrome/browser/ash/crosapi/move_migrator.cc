@@ -90,8 +90,8 @@ void MoveMigrator::Migrate() {
           << "This state indicates that migration was marked as completed by"
              "`MoveMigrator` but was not by `BrowserDataMigratorImpl`";
       std::move(finished_callback_)
-          .Run({BrowserDataMigratorImpl::ResultValue::kSucceeded,
-                BrowserDataMigratorImpl::ResultValue::kSucceeded});
+          .Run({BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
+                {BrowserDataMigrator::ResultKind::kSucceeded}});
       return;
   }
 }
@@ -123,7 +123,7 @@ void MoveMigrator::SetResumeStep(PrefService* local_state,
 }
 
 // static
-bool MoveMigrator::PreMigrationCleanUp(
+MoveMigrator::PreMigrationCleanUpResult MoveMigrator::PreMigrationCleanUp(
     const base::FilePath& original_profile_dir) {
   LOG(WARNING) << "Running PreMigrationCleanUp()";
 
@@ -134,7 +134,7 @@ bool MoveMigrator::PreMigrationCleanUp(
     // Delete an existing lacros profile before the migration.
     if (!base::DeletePathRecursively(new_user_dir)) {
       PLOG(ERROR) << "Deleting " << new_user_dir.value() << " failed: ";
-      return false;
+      return {false};
     }
   }
 
@@ -148,7 +148,7 @@ bool MoveMigrator::PreMigrationCleanUp(
     // tmp_user_dir once we start deleting items from the Ash PDD.
     if (!base::DeletePathRecursively(tmp_user_dir)) {
       PLOG(ERROR) << "Deleting " << tmp_user_dir.value() << " failed: ";
-      return false;
+      return {false};
     }
   }
 
@@ -167,15 +167,38 @@ bool MoveMigrator::PreMigrationCleanUp(
     }
   }
 
-  return true;
+  // Now check if there is enough disk space for the migration to be carried
+  // out.
+  browser_data_migrator_util::TargetItems need_copy_items =
+      browser_data_migrator_util::GetTargetItems(
+          original_profile_dir,
+          browser_data_migrator_util::ItemType::kNeedCopy);
+
+  const int64_t extra_bytes_required_to_be_freed =
+      browser_data_migrator_util::ExtraBytesRequiredToBeFreed(
+          need_copy_items.total_size, original_profile_dir);
+
+  return {true, extra_bytes_required_to_be_freed};
 }
 
-void MoveMigrator::OnPreMigrationCleanUp(bool success) {
-  if (!success) {
+void MoveMigrator::OnPreMigrationCleanUp(
+    MoveMigrator::PreMigrationCleanUpResult result) {
+  if (!result.success) {
     LOG(ERROR) << "PreMigrationCleanup() failed.";
     std::move(finished_callback_)
-        .Run({BrowserDataMigratorImpl::ResultValue::kFailed,
-              BrowserDataMigratorImpl::ResultValue::kFailed});
+        .Run({BrowserDataMigratorImpl::DataWipeResult::kFailed,
+              {BrowserDataMigrator::ResultKind::kFailed}});
+    return;
+  }
+
+  if (result.extra_bytes_required_to_be_freed.value() > 0u) {
+    LOG(ERROR) << "Not enough disk space available to carry out the migration "
+                  "safely. Need to free up "
+               << result.extra_bytes_required_to_be_freed.value()
+               << " bytes from " << original_profile_dir_.value();
+    std::move(finished_callback_)
+        .Run({BrowserDataMigratorImpl::DataWipeResult::kFailed,
+              {BrowserDataMigratorImpl::ResultKind::kFailed}});
     return;
   }
 
@@ -253,8 +276,8 @@ void MoveMigrator::OnSetupLacrosDir(bool success) {
   if (!success) {
     LOG(ERROR) << "MoveMigrator::SetupLacrosDir() failed.";
     std::move(finished_callback_)
-        .Run({BrowserDataMigratorImpl::ResultValue::kSucceeded,
-              BrowserDataMigratorImpl::ResultValue::kFailed});
+        .Run({BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
+              {BrowserDataMigrator::ResultKind::kFailed}});
     return;
   }
 
@@ -335,8 +358,8 @@ void MoveMigrator::OnRemoveHardLinksFromOriginalDir(bool success) {
   if (!success) {
     LOG(ERROR) << "Removing hard links have failed.";
     std::move(finished_callback_)
-        .Run({BrowserDataMigratorImpl::ResultValue::kSucceeded,
-              BrowserDataMigratorImpl::ResultValue::kFailed});
+        .Run({BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
+              {BrowserDataMigrator::ResultKind::kFailed}});
     return;
   }
 
@@ -381,16 +404,16 @@ void MoveMigrator::OnMoveTmpDirToLacrosDir(bool success) {
   if (!success) {
     LOG(ERROR) << "Moving tmp dir to lacros dir failed.";
     std::move(finished_callback_)
-        .Run({BrowserDataMigratorImpl::ResultValue::kSucceeded,
-              BrowserDataMigratorImpl::ResultValue::kFailed});
+        .Run({BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
+              {BrowserDataMigrator::ResultKind::kFailed}});
     return;
   }
 
   SetResumeStep(local_state_, user_id_hash_, ResumeStep::kCompleted);
   LOG(WARNING) << "Move migration completed successfully.";
   std::move(finished_callback_)
-      .Run({BrowserDataMigratorImpl::ResultValue::kSucceeded,
-            BrowserDataMigratorImpl::ResultValue::kSucceeded});
+      .Run({BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
+            {BrowserDataMigratorImpl::ResultKind::kSucceeded}});
 }
 
 }  // namespace ash

@@ -113,48 +113,35 @@ _INCLUDE_ORDER_WARNING = (
 # * Full import path.
 # * Sequence of strings to show when the pattern matches.
 # * Sequence of path or filename exceptions to this rule
-_BANNED_JAVA_IMPORTS = (
+_BANNED_JAVA_IMPORTS = ((
+    'java.net.URI;',
+    ('Use org.chromium.url.GURL instead of java.net.URI, where possible.', ),
     (
-      'java.net.URI;',
-      (
-       'Use org.chromium.url.GURL instead of java.net.URI, where possible.',
-      ),
-      (
         'net/android/javatests/src/org/chromium/net/'
         'AndroidProxySelectorTest.java',
         'components/cronet/',
         'third_party/robolectric/local/',
-      ),
     ),
-    (
-      'android.support.test.rule.UiThreadTestRule;',
-      (
-       'Do not use UiThreadTestRule, just use '
-       '@org.chromium.base.test.UiThreadTest on test methods that should run '
-       'on the UI thread. See https://crbug.com/1111893.',
-      ),
-      (),
-    ),
-    (
-      'android.support.test.annotation.UiThreadTest;',
-      (
-        'Do not use android.support.test.annotation.UiThreadTest, use '
-        'org.chromium.base.test.UiThreadTest instead. See '
-        'https://crbug.com/1111893.',
-      ),
-      ()
-    ),
-    (
-      'android.support.test.rule.ActivityTestRule;',
-      (
-        'Do not use ActivityTestRule, use '
-        'org.chromium.base.test.BaseActivityTestRule instead.',
-      ),
-      (
-        'components/cronet/',
-      )
-    )
-)
+), (
+    'android.annotation.TargetApi;',
+    ('Do not use TargetApi, use @androidx.annotation.RequiresApi instead. '
+     'RequiresApi ensures that any calls are guarded by the appropriate '
+     'SDK_INT check. See https://crbug.com/1116486.', ),
+    (),
+), (
+    'android.support.test.rule.UiThreadTestRule;',
+    ('Do not use UiThreadTestRule, just use '
+     '@org.chromium.base.test.UiThreadTest on test methods that should run '
+     'on the UI thread. See https://crbug.com/1111893.', ),
+    (),
+), ('android.support.test.annotation.UiThreadTest;',
+    ('Do not use android.support.test.annotation.UiThreadTest, use '
+     'org.chromium.base.test.UiThreadTest instead. See '
+     'https://crbug.com/1111893.', ),
+    ()), ('android.support.test.rule.ActivityTestRule;',
+          ('Do not use ActivityTestRule, use '
+           'org.chromium.base.test.BaseActivityTestRule instead.', ),
+          ('components/cronet/', )))
 
 # Format: Sequence of tuples containing:
 # * String pattern or, if starting with a slash, a regular expression.
@@ -5770,21 +5757,39 @@ def CheckMPArchApiUsage(input_api, output_api):
             concerning_web_contents_methods, concerning_rfh_methods
         ] for item in sublist) + r')\(')
 
-    uses_concerning_api = False
+    used_apis = set()
     for f in input_api.AffectedFiles(include_deletes=False,
                                      file_filter=source_file_filter):
         for line_num, line in f.ChangedContents():
-            if (concerning_class_pattern.search(line)
-                    or concerning_method_pattern.search(line)):
-                uses_concerning_api = True
-                break
-        if uses_concerning_api:
-            break
+            class_match = concerning_class_pattern.search(line)
+            if class_match:
+                used_apis.add(class_match[0])
+            method_match = concerning_method_pattern.search(line)
+            if method_match:
+                used_apis.add(method_match[1])
 
-    if uses_concerning_api:
-        output_api.AppendCC('mparch-reviews+watch@chromium.org')
+    if not used_apis:
+        return []
 
-    return []
+    output_api.AppendCC('mparch-reviews+watch@chromium.org')
+    message = ('This change uses API(s) that are ambiguous in the presence of '
+               'MPArch features such as bfcache, prerendering, and fenced '
+               'frames.')
+    explaination = (
+        'Please double check whether new code assumes that a WebContents only '
+        'contains a single page at a time. For example, it is discouraged to '
+        'reset per-document state in response to the observation of a '
+        'navigation. See this doc [1] and the comments on the individual APIs '
+        'for guidance and this doc [2] for context. The MPArch review '
+        'watchlist has been CC\'d on this change to help identify any issues.\n'
+        '[1] https://docs.google.com/document/d/13l16rWTal3o5wce4i0RwdpMP5ESELLKr439Faj2BBRo/edit?usp=sharing\n'
+        '[2] https://docs.google.com/document/d/1NginQ8k0w3znuwTiJ5qjYmBKgZDekvEPC22q0I4swxQ/edit?usp=sharing'
+    )
+    return [
+        output_api.PresubmitNotifyResult(message,
+                                         items=list(used_apis),
+                                         long_text=explaination)
+    ]
 
 
 def CheckAssertAshOnlyCode(input_api, output_api):

@@ -286,11 +286,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleShowLoadingTimeoutError);
 }
 
-void SigninScreenHandler::Show(bool oobe_ui) {
+void SigninScreenHandler::Show() {
   CHECK(delegate_);
-
-  // Just initialize internal fields from context and call ShowImpl().
-  oobe_ui_ = oobe_ui;
 
   ShowImpl();
   histogram_helper_->OnScreenShow();
@@ -504,6 +501,7 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  // The pref is deprecated. Remove around 09/2022 (https://crbug.com/1297407)
   registry->RegisterDictionaryPref(prefs::kUsersLastInputMethod);
 }
 
@@ -669,10 +667,6 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {
   UpdateState(NetworkError::ERROR_REASON_LOADING_TIMEOUT);
-}
-
-void SigninScreenHandler::HandleNoPodFocused() {
-  focused_pod_account_id_.reset();
 }
 
 bool SigninScreenHandler::IsGaiaVisible() {

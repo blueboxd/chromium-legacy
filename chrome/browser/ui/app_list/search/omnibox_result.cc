@@ -91,6 +91,7 @@ Subtype MatchTypeToSubtype(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::TILE_NAVSUGGEST:
+    case AutocompleteMatchType::OPEN_TAB:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
       return Subtype::kDomain;
@@ -240,6 +241,7 @@ ash::SearchResultType OmniboxResult::GetSearchResultType() const {
     case AutocompleteMatchType::HISTORY_BODY:
     case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::TILE_NAVSUGGEST:
+    case AutocompleteMatchType::OPEN_TAB:
     case AutocompleteMatchType::NUM_TYPES:
       return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }

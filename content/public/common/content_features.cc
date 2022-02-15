@@ -530,6 +530,11 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 #endif
 };
 
+// Use a custom backend to store media licenses in lieu of the
+// Plugin Private File System.
+const base::Feature kMediaLicenseBackend{"MediaLicenseBackend",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled Mojo uses a dedicated background thread to listen for incoming
 // IPCs. Otherwise it's configured to use Content's IO thread for that purpose.
 const base::Feature kMojoDedicatedThread{"MojoDedicatedThread",
@@ -800,6 +805,9 @@ const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
 // will be used to deprecate basic-card eventually: crbug.com/1209835.
 const base::Feature kPaymentRequestBasicCard{"PaymentRequestBasicCard",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPaymentRequestRequiresUserActivation{
+    "PaymentRequestRequiresUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use this feature to experiment terminating a service worker when it doesn't
 // control any clients: https://crbug.com/1043845.
@@ -1178,6 +1186,10 @@ const base::Feature kBigLittleScheduling{"BigLittleScheduling",
 // affecting cpu scheduling priority.
 const base::Feature kBindingManagementWaiveCpu{
     "BindingManagementWaiveCpu", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Tick fling animation independent from the browser compositor.
+const base::Feature kIndependentFlingAnimation{
+    "IndependentFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows the use of an experimental feature to drop any AccessibilityEvents
 // that are not relevant to currently enabled accessibility services.

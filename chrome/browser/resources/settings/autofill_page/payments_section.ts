@@ -173,6 +173,7 @@ export class SettingsPaymentsSectionElement extends
         'dots-card-menu-click', this.onCreditCardDotsMenuClick_);
     this.addEventListener(
         'remote-card-menu-click', this.onRemoteEditCreditCardClick_);
+    this.addEventListener('unenroll-virtual-card', this.unenrollVirtualCard_);
   }
 
   connectedCallback() {
@@ -298,8 +299,9 @@ export class SettingsPaymentsSectionElement extends
 
 
   private onMenuAddVirtualCardClick_() {
-    // TODO(crbug.com/1281695): Add communication between settings page and
-    // VirtualCardEnrollmentManager.
+    this.paymentsManager_.addVirtualCard(this.activeCreditCard_!.guid!);
+    this.$.creditCardSharedMenu.close();
+    this.activeCreditCard_ = null;
   }
 
   private onMenuRemoveVirtualCardClick_() {
@@ -413,6 +415,13 @@ export class SettingsPaymentsSectionElement extends
     return !!this.activeCreditCard_!.metadata!
                  .isVirtualCardEnrollmentEligible &&
         !!this.activeCreditCard_!.metadata!.isVirtualCardEnrolled;
+  }
+
+  /**
+   * Listens for the unenroll-virtual-card event, and calls the private API.
+   */
+  private unenrollVirtualCard_(event: CustomEvent<string>) {
+    this.paymentsManager_.removeVirtualCard(event.detail);
   }
 }
 

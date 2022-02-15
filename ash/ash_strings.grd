@@ -1217,6 +1217,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DICTATION_HINT_HELP" desc="A hint label in the Dictation bubble UI for performing the help command.">
         "Help"
       </message>
+      <message name="IDS_ASH_DICTATION_HINT_UNSELECT" desc="A hint label in the Dictation bubble UI for performing the unselect command">
+        "Unselect"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_COPY" desc="A hint label in the Dictation bubble UI for performing the copy command">
+        "Copy"
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
@@ -1870,6 +1876,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_MORE" desc="The text of the toast displayed when user tries to launch a template with more than two unavailable apps.">
         <ph name="UNAVAILABLE_APPS_ONE">$1<ex>unavailable app one</ex></ph>, <ph name="UNAVAILABLE_APPS_TWO">$2<ex>unavailable app two</ex></ph>, and <ph name="UNAVAILABLE_APPS_COUNT">$3<ex>unavailable app count</ex></ph> more aren't on this device.
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_TEMPLATE_TOO_LARGE_TOAST" desc="The text of the toast displayed when user tries to save a template whose metadata would exceed the threshold for Chrome Sync. The template is not saved and this toast shows up instead.">
+        Couldn’t save template. Too many windows or tabs.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_MANAGEMENT_STATUS_DESCRIPTION" desc="The text of the description under template item if the desks templates is shared by the administrator.">
         Shared by your administrator
@@ -3156,6 +3165,9 @@ This file contains the strings for ash.
       <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair.">
         Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph> to this Chromebook
       </message>
+      <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_EMAIL_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair that includes the user's email address.">
+        Your <ph name="NAME">$1<ex>Pixel Buds</ex></ph> will appear on devices linked with <ph name="EMAIL">$2<ex>alisha123@gmail.com</ex></ph>
+      </message>
       <message name="IDS_FAST_PAIR_CANCEL_BUTTON" desc="Message on button to tell users to cancel bluetooth device connection with Fast Pair.">
         Cancel
       </message>
@@ -3494,6 +3506,10 @@ This file contains the strings for ash.
 
       <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_TOOL_TIP" desc="The tooltip of the calendar `Open in Google Calendar` button.">
         Open this date in Google Calendar
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_NO_TITLE" desc="The default title for those no title meetings.">
+        (No title)
       </message>
 
       <message name="IDS_ASH_CALENDAR_MON" desc="The single character designator for Monday, which is used in the calendar weekday label.">
@@ -4361,12 +4377,12 @@ Here are some things you can try to get started.
         An error occurred
       </message>
 
-      <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_DRIVEFS" desc="The text of the notification when Projector recording fails due to DriveFS.">
-        Google Drive for desktop is unavailable
+      <message name="IDS_ASH_PROJECTOR_SAVE_FAILURE_TITLE" desc="The title of the notification when saving Projector recording fails.">
+        Can’t save recording
       </message>
 
-      <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_SAVE_SCREENCAST" desc="The text of the notification when Projector recording fails to save the screencast file.">
-        Failed to save screencast
+      <message name="IDS_ASH_PROJECTOR_SAVE_FAILURE_TEXT" desc="The text of the notification when saving Projector recording fails.">
+        Something went wrong. Try again.
       </message>
 
       <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_TRANSCRIPTION" desc="The test of the notification when Projector transcription fails.">
@@ -4773,6 +4789,29 @@ New install
       </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SETTINGS_BUTTON_TEXT" desc="Text in notification button to launch smart privacy settings.">
         Privacy settings
+      </message>
+
+      <!-- USB-C cable notifications - version 2 -->
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_LEARN_MORE" desc="Notification button text. If the user clicks on it, it will send them to a relevant webpage.">
+        Learn More
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_DISPLAY_TITLE" desc="Notification title text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals.">
+        Cable may not support displays
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_DISPLAY_BODY" desc="Notification body text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals.">
+        Your USB-C cable may not connect to diplays properly
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_PERFORMANCE_TITLE" desc="Notification title text for when a user connects something to the USB-C port on their Chromebook and performance is in some way limited by the cable.">
+        Cable may impact performance
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_NO_USB4_SUPPORT_BODY" desc="Notification body text for when a user connects a USB4 device to their Chromebook with a cable that does not support USB4.">
+        Your USB-C cable does not support USB4. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_NO_TBT_SUPPORT_BODY" desc="Notification body text for when a user connects a Thunderbolt device to their Chromebook with a cable that does not support Thunderbolt.">
+        Your USB-C cable does not support Thunderbolt. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_SPEED_LIMITED_BODY" desc="Notification body text for when a user connects a device to their Chromebook with a cable that has a lower maximum data rate than the device.">
+        Your device supports a higher data rate than your cable. Device performance may be limited.
       </message>
     </messages>
   </release>

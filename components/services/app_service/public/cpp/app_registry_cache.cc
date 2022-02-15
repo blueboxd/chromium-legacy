@@ -62,7 +62,7 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas,
 
   if (should_notify_initialized) {
     DCHECK_NE(apps::mojom::AppType::kUnknown, app_type);
-    if (!IsAppTypeInitialized(app_type)) {
+    if (!IsAppTypeInitialized(ConvertMojomAppTypToAppType(app_type))) {
       in_progress_initialized_mojom_app_types_.insert(app_type);
     }
   }
@@ -237,18 +237,8 @@ void AppRegistryCache::SetAccountId(const AccountId& account_id) {
   account_id_ = account_id;
 }
 
-const std::set<apps::mojom::AppType>& AppRegistryCache::GetInitializedAppTypes()
-    const {
-  return initialized_mojom_app_types_;
-}
-
 const std::set<AppType>& AppRegistryCache::InitializedAppTypes() const {
   return initialized_app_types_;
-}
-
-bool AppRegistryCache::IsAppTypeInitialized(
-    apps::mojom::AppType app_type) const {
-  return base::Contains(initialized_mojom_app_types_, app_type);
 }
 
 bool AppRegistryCache::IsAppTypeInitialized(apps::AppType app_type) const {
@@ -266,9 +256,9 @@ void AppRegistryCache::OnMojomAppTypeInitialized() {
 
   for (auto app_type : in_progress_initialized_app_types) {
     for (auto& obs : observers_) {
-      obs.OnAppTypeInitialized(app_type);
+      obs.OnAppTypeInitialized(ConvertMojomAppTypToAppType(app_type));
     }
-    initialized_mojom_app_types_.insert(app_type);
+    initialized_app_types_.insert(ConvertMojomAppTypToAppType(app_type));
   }
 }
 
@@ -310,7 +300,6 @@ void AppRegistryCache::OnAppTypeInitialized() {
       obs.OnAppTypeInitialized(app_type);
     }
     initialized_app_types_.insert(app_type);
-    initialized_mojom_app_types_.insert(mojom_app_type);
   }
 }
 

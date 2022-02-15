@@ -393,18 +393,22 @@ void MergePhoneNumberIntoSelectedContact(
 CollectUserDataAction::LoginDetails::LoginDetails(
     bool _choose_automatically_if_no_stored_login,
     const std::string& _payload,
+    const std::string& _tag,
     const WebsiteLoginManager::Login& _login)
     : choose_automatically_if_no_stored_login(
           _choose_automatically_if_no_stored_login),
       payload(_payload),
+      tag(_tag),
       login(_login) {}
 
 CollectUserDataAction::LoginDetails::LoginDetails(
     bool _choose_automatically_if_no_stored_login,
-    const std::string& _payload)
+    const std::string& _payload,
+    const std::string& _tag)
     : choose_automatically_if_no_stored_login(
           _choose_automatically_if_no_stored_login),
-      payload(_payload) {}
+      payload(_payload),
+      tag(_tag) {}
 
 CollectUserDataAction::LoginDetails::~LoginDetails() = default;
 
@@ -550,7 +554,7 @@ void CollectUserDataAction::OnGetLogins(
     login_details_map_.emplace(
         identifier, std::make_unique<LoginDetails>(
                         login_option.choose_automatically_if_no_stored_login(),
-                        login_option.payload(), login));
+                        login_option.payload(), login_option.tag(), login));
   }
   ShowToUser();
 }
@@ -850,6 +854,10 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
       collect_user_data_options_->request_phone_number_separately = true;
       collect_user_data_options_->phone_number_section_title =
           contact_details.phone_number_section_title();
+      collect_user_data_options_->required_phone_number_data_pieces =
+          std::vector<RequiredDataPiece>(
+              contact_details.phone_number_required_data_piece().begin(),
+              contact_details.phone_number_required_data_piece().end());
     }
 
     if (RequiresContact(*collect_user_data_options_) ||
@@ -965,7 +973,7 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
             identifier,
             std::make_unique<LoginDetails>(
                 login_option.choose_automatically_if_no_stored_login(),
-                login_option.payload()));
+                login_option.payload(), login_option.tag()));
         break;
       }
       case LoginDetailsProto::LoginOptionProto::kPasswordManager: {
@@ -1176,6 +1184,9 @@ bool CollectUserDataAction::IsUserDataComplete(
   // TODO(b/204419253): check for phone number errors
   return user_data::GetContactValidationErrors(selected_profile, options)
              .empty() &&
+         user_data::GetPhoneNumberValidationErrors(
+             user_data.selected_phone_number(), options)
+             .empty() &&
          user_data::GetShippingAddressValidationErrors(shipping_address,
                                                        options)
              .empty() &&
@@ -1232,8 +1243,13 @@ void CollectUserDataAction::WriteProcessedAction(UserData* user_data,
         }
       }
 
-      processed_action_proto_->mutable_collect_user_data_result()
-          ->set_login_payload(login_details->second->payload);
+      auto* result =
+          processed_action_proto_->mutable_collect_user_data_result();
+      if (!login_details->second->tag.empty()) {
+        result->set_login_tag(login_details->second->tag);
+      } else {
+        result->set_login_payload(login_details->second->payload);
+      }
     }
   }
 
@@ -1626,10 +1642,11 @@ void CollectUserDataAction::UpdateSelectedPhoneNumber(UserData* user_data) {
 
   if (!user_data->selected_phone_number() &&
       RequiresPhoneNumberSeparately(*collect_user_data_options_)) {
-    if (!user_data->available_phone_numbers_.empty()) {
-      // TODO(b/204419253): get the most complete instead.
+    int default_selection = user_data::GetDefaultPhoneNumber(
+        *collect_user_data_options_, user_data->available_phone_numbers_);
+    if (default_selection != -1) {
       user_data->SetSelectedPhoneNumber(user_data::MakeUniqueFromProfile(
-          *user_data->available_phone_numbers_[0]->profile));
+          *user_data->available_phone_numbers_[default_selection]->profile));
     }
   }
 }

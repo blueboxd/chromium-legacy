@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "ash/system/time/calendar_view.h"
+#include <memory>
 
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_event_list_view.h"
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_month_view.h"
@@ -115,7 +118,8 @@ class MonthHeaderView : public views::View {
           gfx::Insets(calendar_utils::kDateVerticalPadding, 0))));
       label->SetElideBehavior(gfx::NO_ELIDE);
       label->SetSubpixelRenderingEnabled(false);
-      label->SetTextContext(CONTEXT_CALENDAR_DATE);
+      label->SetFontList(
+          views::style::GetFont(CONTEXT_CALENDAR_DATE, STYLE_EMPHASIZED));
 
       AddChildView(std::move(label));
     }
@@ -162,9 +166,9 @@ class CalendarView::MonthHeaderLabelView : public views::View {
 
     month_label_->SetText(month_name_);
     SetupLabel(month_label_);
-    month_label_->SetBorder(views::CreateEmptyBorder(
-        kLabelVerticalPadding, calendar_utils::kDateHorizontalPadding,
-        kLabelVerticalPadding, 0));
+    month_label_->SetBorder(views::CreateEmptyBorder(kLabelVerticalPadding,
+                                                     kContentHorizontalPadding,
+                                                     kLabelVerticalPadding, 0));
   }
   MonthHeaderLabelView(const MonthHeaderLabelView&) = delete;
   MonthHeaderLabelView& operator=(const MonthHeaderLabelView&) = delete;
@@ -251,8 +255,7 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
                            UnifiedSystemTrayController* controller)
     : TrayDetailedView(delegate),
       controller_(controller),
-      calendar_view_controller_(
-          std::make_unique<CalendarViewController>(controller)),
+      calendar_view_controller_(std::make_unique<CalendarViewController>()),
       scrolling_settled_timer_(
           FROM_HERE,
           kScrollingSettledTimeout,
@@ -286,29 +289,39 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   // Add the header.
   header_ = new CalendarHeaderView(
       calendar_view_controller_->GetOnScreenMonthName(),
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "YYYY"));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "YYYY"));
 
   TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
-  tri_view->SetBorder(views::CreateEmptyBorder(kLabelVerticalPadding,
-                                               kContentHorizontalPadding, 0,
-                                               kContentHorizontalPadding));
+  tri_view->SetBorder(views::CreateEmptyBorder(
+      kLabelVerticalPadding, kContentHorizontalPadding, 0,
+      kContentHorizontalPadding - calendar_utils::kColumnSetPadding));
   tri_view->AddView(TriView::Container::START, header_);
 
-  down_button_ = new IconButton(
+  auto* button_container = new views::View();
+  views::BoxLayout* button_container_layout =
+      button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
+  button_container_layout->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::kEnd);
+  // Aligns button with the calendar dates in the `TableLayout`.
+  button_container_layout->set_between_child_spacing(
+      calendar_utils::kDateHorizontalPadding +
+      calendar_utils::kColumnSetPadding);
+
+  down_button_ = button_container->AddChildView(std::make_unique<IconButton>(
       base::BindRepeating(&CalendarView::OnMonthArrowButtonActivated,
                           base::Unretained(this), /*up=*/false),
       IconButton::Type::kSmallFloating, &vector_icons::kCaretDownIcon,
-      IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION);
-  up_button_ = new IconButton(
+      IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION));
+
+  up_button_ = button_container->AddChildView(std::make_unique<IconButton>(
       base::BindRepeating(&CalendarView::OnMonthArrowButtonActivated,
                           base::Unretained(this), /*up=*/true),
       IconButton::Type::kSmallFloating, &vector_icons::kCaretUpIcon,
-      IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION);
+      IDS_ASH_CALENDAR_UP_BUTTON_ACCESSIBLE_DESCRIPTION));
 
-  tri_view->AddView(TriView::Container::END, down_button_);
-  tri_view->AddView(TriView::Container::END, up_button_);
-
+  tri_view->AddView(TriView::Container::END, button_container);
   AddChildView(tri_view);
 
   // Add month header.
@@ -328,8 +341,8 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
   scroll_view_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
   scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "MMMM yyyy")));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "MMMM yyyy")));
   scroll_view_->SetFocusBehavior(FocusBehavior::ALWAYS);
   on_contents_scrolled_subscription_ =
       scroll_view_->AddContentsScrolledCallback(base::BindRepeating(
@@ -347,7 +360,8 @@ CalendarView::CalendarView(DetailedViewDelegate* delegate,
 
   SetMonthViews();
 
-  scoped_calendar_model_observer_.Observe(controller_->calendar_model());
+  scoped_calendar_model_observer_.Observe(
+      Shell::Get()->system_tray_model()->calendar_model());
   scoped_calendar_view_controller_observer_.Observe(
       calendar_view_controller_.get());
   scoped_view_observer_.AddObservation(scroll_view_);
@@ -483,8 +497,8 @@ void CalendarView::ResetToToday() {
 void CalendarView::UpdateHeaders() {
   header_->UpdateHeaders(
       calendar_view_controller_->GetOnScreenMonthName(),
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "YYYY"));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "YYYY"));
 }
 
 void CalendarView::RestoreHeadersStatus() {
@@ -613,7 +627,8 @@ void CalendarView::OnViewFocused(View* observed_view) {
   // At least one row of the current month is visible on the screen. The
   // to-be-focused cell should be the first non-grayed date cell that is
   // visible, or today's cell if today is in the current month and visible.
-  if (position < (next_label_->y() - row_height)) {
+  if (position < (next_label_->y() - row_height - kMonthVerticalPadding -
+                  kLabelVerticalPadding)) {
     int row_index = 0;
     const int today_index = calendar_view_controller_->today_row() - 1;
     while (position > (PositionOfCurrentMonth() + row_index * row_height))
@@ -726,8 +741,8 @@ void CalendarView::OpenEventList() {
       calendar_view_controller_->selected_date();
   scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_CONTENT_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "MMMM yyyy"),
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "MMMM yyyy"),
       base::TimeFormatWithPattern(selected_date.value(), "MMMMdyyyy")));
   scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                          /*send_native_event=*/true);
@@ -800,8 +815,8 @@ void CalendarView::CloseEventList() {
   // Updates `scroll_view_`'s accessible name without the selected date.
   scroll_view_->GetViewAccessibility().OverrideName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
-      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
-                                  "MMMM yyyy")));
+      base::TimeFormatWithPattern(
+          calendar_view_controller_->currently_shown_date(), "MMMM yyyy")));
   scroll_view_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged,
                                          /*send_native_event=*/true);
   scroll_view_->ClipHeightTo(0, INT_MAX);

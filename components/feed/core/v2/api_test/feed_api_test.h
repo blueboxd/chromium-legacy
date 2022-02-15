@@ -211,6 +211,7 @@ class TestFeedNetwork : public FeedNetwork {
       base::StringPiece method,
       std::string request_bytes,
       const AccountInfo& account_info,
+      absl::optional<RequestMetadata> request_metadata,
       base::OnceCallback<void(RawResponse)> callback) override;
 
   void CancelRequests() override;
@@ -446,6 +447,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   void PrefetchImage(const GURL& url) override;
   void RegisterExperiments(const Experiments& experiments) override {}
   void RegisterFollowingFeedFollowCountFieldTrial(size_t follow_count) override;
+  void RegisterFeedUserSettingsFieldTrial(base::StringPiece group) override;
 
   // For tests.
 
@@ -500,6 +502,7 @@ class FeedApiTest : public testing::Test, public FeedStream::Delegate {
   std::vector<GURL> prefetched_images_;
   base::RepeatingClosure on_clear_all_;
   std::vector<size_t> register_following_feed_follow_count_field_trial_calls_;
+  std::vector<std::string> register_feed_user_settings_field_trial_calls_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

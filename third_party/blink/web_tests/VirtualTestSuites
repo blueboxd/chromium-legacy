@@ -435,7 +435,8 @@
     "prefix": "direct-sockets",
     "bases": ["external/wpt/direct-sockets",
     	      "wpt_internal/direct-sockets"],
-    "args": ["--enable-features=DirectSockets"]
+    "args": ["--enable-features=DirectSockets",
+             "--restricted-api-origins=https://web-platform.test"]
   },
   {
     "prefix": "webrtc-wpt-plan-b",
@@ -586,15 +587,6 @@
               "http/tests/eye-dropper"],
     "args": ["--blink-settings=preferredColorScheme=0",
              "--enable-features=EyeDropper"]
-  },
-  {
-    "prefix": "delayed-animation-updates",
-    "bases": ["external/wpt/css/css-animations",
-              "external/wpt/css/css-transitions",
-              "external/wpt/scroll-animations",
-              "external/wpt/web-animations",
-              "animations"],
-    "args": ["--enable-blink-features=CSSDelayedAnimationUpdates"]
   },
   {
     "prefix": "force-eager",

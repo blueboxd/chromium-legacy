@@ -546,7 +546,8 @@ bool HTMLFrameOwnerElement::LoadImmediatelyIfLazy() {
     return false;
 
   bool lazy_load_pending = lazy_load_frame_observer_->IsLazyLoadPending();
-  lazy_load_frame_observer_->LoadImmediately();
+  if (lazy_load_pending)
+    lazy_load_frame_observer_->LoadImmediately();
   return lazy_load_pending;
 }
 

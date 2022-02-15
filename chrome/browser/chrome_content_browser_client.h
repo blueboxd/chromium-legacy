@@ -231,6 +231,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldUrlUseApplicationIsolationLevel(
       content::BrowserContext* browser_context,
       const GURL& url) override;
+  bool AreDirectSocketsAllowedByPolicy(
+      content::BrowserContext* context) override;
   bool IsFileAccessAllowed(const base::FilePath& path,
                            const base::FilePath& absolute_path,
                            const base::FilePath& profile_path) override;
@@ -873,8 +875,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   embedder_support::ForceMajorVersionToMinorPosition
   GetForceMajorVersionToMinorPosition(content::BrowserContext* context);
-
-  std::unique_ptr<std::vector<url::Origin>> restricted_api_origins_;
 
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.

@@ -8,6 +8,7 @@
 
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/views/app_list_a11y_announcer.h"
 #include "ash/app_list/views/app_list_nudge_controller.h"
 #include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
@@ -39,8 +40,12 @@ const gfx::VectorIcon* GetToastIconForOrder(AppListSortOrder order) {
 
 AppListToastContainerView::AppListToastContainerView(
     AppListNudgeController* nudge_controller,
+    AppListA11yAnnouncer* a11y_announcer,
     bool tablet_mode)
-    : tablet_mode_(tablet_mode), nudge_controller_(nudge_controller) {
+    : a11y_announcer_(a11y_announcer),
+      tablet_mode_(tablet_mode),
+      nudge_controller_(nudge_controller) {
+  DCHECK(a11y_announcer_);
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetMainAxisAlignment(views::LayoutAlignment::kCenter)
       .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
@@ -107,6 +112,12 @@ void AppListToastContainerView::RemoveCurrentView() {
 void AppListToastContainerView::UpdateVisibilityState(VisibilityState state) {
   visibility_state_ = state;
 
+  if (nudge_controller_->is_visible() &&
+      nudge_controller_->current_nudge() !=
+          AppListNudgeController::NudgeType::kReorderNudge) {
+    return;
+  }
+
   AppListNudgeController::NudgeType new_nudge =
       nudge_controller_->ShouldShowReorderNudge()
           ? AppListNudgeController::NudgeType::kReorderNudge
@@ -119,7 +130,8 @@ void AppListToastContainerView::UpdateVisibilityState(VisibilityState state) {
       break;
     case VisibilityState::kShownInBackground:
       // The nudge must be visible to change to inactive state.
-      DCHECK(nudge_controller_->is_visible());
+      if (!nudge_controller_->is_visible())
+        nudge_controller_->SetNudgeVisible(true, new_nudge);
       nudge_controller_->SetNudgeActive(false, new_nudge);
       break;
     case VisibilityState::kHidden:
@@ -161,6 +173,10 @@ void AppListToastContainerView::OnTemporarySortOrderChanged(
                          base::Unretained(this)))
           .Build());
   current_toast_ = ToastType::kReorderUndo;
+}
+
+void AppListToastContainerView::AnnounceSortOrder(AppListSortOrder new_order) {
+  a11y_announcer_->Announce(CalculateToastTextFromOrder(new_order));
 }
 
 views::LabelButton* AppListToastContainerView::GetToastDismissButtonForTest() {

@@ -957,8 +957,13 @@ message CollectUserDataResultProto {
   // If set, this means that the user clicked on one of the terms and conditions
   // links.
   optional int32 terms_link = 5;
-  // The payload of the chosen login option.
-  optional bytes login_payload = 6;
+
+  oneof payload_or_tag {
+    // The payload of the chosen login option, from LoginOptionsProto.payload.
+    bytes login_payload = 6;
+    // The payload of the chosen login option, from LoginOptionsProto.tag.
+    string login_tag = 21;
+  }
   // The values obtained by the generic user interface.
   optional ModelProto model = 9;
   // The memory keys of all non-empty text inputs, corresponding to the memory
@@ -1849,8 +1854,11 @@ message WaitForDomProto {
 
   // Result to include into ProcessedActionProto.
   message Result {
-    // Payload of all matching conditions, if one is set.
+    // Payload of all matching conditions, from ElementConditionProto.payload.
     repeated bytes matching_condition_payloads = 1;
+
+    // Payload of all matching conditions, from ElementConditionProto.tag.
+    repeated string matching_condition_tags = 2;
   }
 }
 
@@ -1874,7 +1882,14 @@ message ElementConditionProto {
 
   // A payload that identifies this condition. WaitForDom puts this payload
   // into the result. This is ignored outside of WaitForDom.
+  //
+  // Prefer using tag.
   optional bytes payload = 5;
+
+  // A tag that is echoed back to WaitForDom.Result if the condition matches.
+  //
+  // This is ignored outside of WaitForDom.
+  optional string tag = 8;
 
   // Optional. If set, the element of |match| will be stored under this
   // identifier on the client. If |require_unique_element| is not set to true,
@@ -2169,7 +2184,12 @@ message PromptProto {
 
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
+    //
+    // Prefer using tag.
     optional bytes server_payload = 5;
+
+    // Tag set by the server. It is put into PromptProto.Result.tag
+    optional string tag = 18;
 
     reserved 4, 6, 8, 12 to 14, 17;
   }
@@ -2219,6 +2239,9 @@ message PromptProto {
     // transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
 
+    // Tag originally set in Choice.tag.
+    optional string choice_tag = 6;
+
     reserved 1;
   }
 }
@@ -2266,6 +2289,9 @@ message ContactDetailsProto {
   // The title of the separate phone number section.
   // Required if |separate_phone_number_section| is true, ignored if false.
   optional string phone_number_section_title = 12;
+  // Defines how to evaluate the validity of the phone number in the separate
+  // section. Ignored if |separate_phone_number_section| is false.
+  repeated RequiredDataPiece phone_number_required_data_piece = 13;
 }
 
 message LoginDetailsProto {
@@ -2295,8 +2321,17 @@ message LoginDetailsProto {
     // description.
     optional string edit_button_content_description = 10;
 
-    // If the option was chosen, this payload will be returned to the server.
-    optional bytes payload = 1;
+    oneof payload_or_tag {
+      // The payload attached to this login option, to be echoed back to the
+      // caller when the option is chosen.
+      //
+      // Prefer using tag.
+      bytes payload = 1;
+
+      // The tag attached to this login option, to be echoed back to the
+      // caller when the option is chosen.
+      string tag = 21;
+    }
 
     // Whether the UI should automatically choose this login option if no
     // password manager login options are available.

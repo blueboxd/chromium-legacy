@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 10
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -153,8 +153,45 @@ struct ArcMemoryDump {
   uint32 private_footprint_kb = 0;
 };
 
-// Deprecated method IDs: 6, 7
-// Next Method ID: 11
+// Describes ChromeOS's memory pressure level, which indicates what priority of
+// apps should be killed to save memory.
+[Extensible]
+enum PressureLevel {
+  kForeground = 0,
+  kPerceptible = 1,
+  kCached = 2,
+};
+
+// The total number of low memory related app kills from various sources.
+struct LowMemoryKillCounts {
+  // Count of apps killed by ARCVM's Linux OOM killer.
+  uint32 guest_oom;
+
+  // Count of apps killed by LMKD with oom_score_adj <= FOREGROUND_APP_ADJ.
+  uint32 lmkd_foreground;
+
+  // Count of apps killed by LMKD with FOREGROUND_APP_ADJ < oom_score_adj <
+  // CACHED_APP_MIN_ADJ.
+  uint32 lmkd_perceptible;
+
+  // Count of apps killed by LMKD with CACHED_APP_MIN_ADJ <= oom_score_adj.
+  uint32 lmkd_cached;
+
+  // Count of app killed by ArcProcessService.ApplyHostMemoryPressure with
+  // state < PROCESS_STATE_TOP || (state == PROCESS_STATE_TOP && focused).
+  uint32 pressure_foreground;
+
+  // Count of app killed by ArcProcessService.ApplyHostMemoryPressure with
+  // (PROCESS_STATE_TOP <= state < PROCESS_STATE_CACHED_ACTIVITY) && !focused.
+  uint32 pressure_perceptible;
+
+  // Count of app killed by ArcProcessService.ApplyHostMemoryPressure with
+  // PROCESS_STATE_CACHED_ACTIVITY <= state
+  uint32 pressure_cached;
+};
+
+// Deprecated method IDs: 6, 7, 10
+// Next Method ID: 13
 interface ProcessInstance {
   // Requests ARC instance to kill a process.
   [MinVersion=1]
@@ -173,10 +210,24 @@ interface ProcessInstance {
   RequestSystemProcessMemoryInfo@9(array<uint32> nspids)
     => (array<ArcMemoryDump> process_dumps);
 
+  // TODO (cwd): Submit http://ag/c/16816223 and https://crrev.com/c/3447769
+  // after M101 to remove the deprecated method.
   // Requests that ARC discard processes at and below the given level to free
   // the given amount of memory.
   // Returns the number of processes killed, and the estimated bytes reclaimed.
   [MinVersion=9]
-  ApplyHostMemoryPressure@10(ProcessState level, int64 reclaim_target)
+  ApplyHostMemoryPressureDeprecated@10(ProcessState level, int64 reclaim_target)
     => (uint32 killed, uint64 reclaimed);
+
+  // Requests that ARC discard processes at and below the given level to free
+  // the given amount of memory.
+  // Returns the number of processes killed, and the estimated bytes reclaimed.
+  [MinVersion=10]
+  ApplyHostMemoryPressure@11(PressureLevel level, int64 reclaim_target)
+    => (uint32 killed, uint64 reclaimed);
+
+  // Requests the number of app kills performed since initialization. Only
+  // available in Android R+/ARCVM.
+  [MinVersion=11]
+  RequestLowMemoryKillCounts@12() => (LowMemoryKillCounts counts);
 };

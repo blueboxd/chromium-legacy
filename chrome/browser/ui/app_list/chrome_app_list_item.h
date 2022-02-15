@@ -67,9 +67,11 @@ class ChromeAppListItem {
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
   const ash::IconColor& icon_color() const { return metadata_->icon_color; }
   bool is_page_break() const { return metadata_->is_page_break; }
+  bool is_new_install() const { return metadata_->is_new_install; }
 
   void SetMetadata(std::unique_ptr<ash::AppListItemMetadata> metadata);
   std::unique_ptr<ash::AppListItemMetadata> CloneMetadata() const;
+  const ash::AppListItemMetadata& metadata() const { return *metadata_; }
 
   // Loads the app icon and call SetIcon to update ash when finished.
   virtual void LoadIcon();

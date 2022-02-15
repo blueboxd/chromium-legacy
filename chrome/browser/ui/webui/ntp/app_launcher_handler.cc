@@ -1161,7 +1161,10 @@ void AppLauncherHandler::HandleRunOnOsLogin(const base::ListValue* args) {
     return;
   }
 
-  web_app::PersistRunOnOsLoginUserChoice(web_app_provider_, app_id, mode);
+  web_app::PersistRunOnOsLoginUserChoice(
+      &web_app_provider_->registrar(),
+      &web_app_provider_->os_integration_manager(),
+      &web_app_provider_->sync_bridge(), app_id, mode);
 }
 
 void AppLauncherHandler::OnFaviconForAppInstallFromLink(
@@ -1189,10 +1192,6 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
                 "Apps.Launcher.InstallAppFromLinkResult", install_result);
             if (!app_launcher_handler)
               return;
-            if (install_result ==
-                web_app::InstallResultCode::kSuccessNewInstall) {
-              app_launcher_handler->InstallOsHooks(app_id);
-            }
             if (install_result !=
                 web_app::InstallResultCode::kSuccessNewInstall) {
               app_launcher_handler->attempting_web_app_install_page_ordinal_ =
@@ -1201,10 +1200,15 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
           },
           weak_ptr_factory_.GetWeakPtr());
 
+  web_app::WebAppInstallParams install_params;
+  install_params.add_to_desktop = true;
+  install_params.add_to_quick_launch_bar = false;
+  install_params.add_to_applications_menu = true;
+
   web_app_provider_->install_manager().InstallWebAppFromInfo(
       std::move(web_app), /*overwrite_existing_manifest_fields=*/false,
-      web_app::ForInstallableSite::kUnknown, webapps::WebappInstallSource::SYNC,
-      std::move(install_complete_callback));
+      web_app::ForInstallableSite::kUnknown, install_params,
+      webapps::WebappInstallSource::SYNC, std::move(install_complete_callback));
 }
 
 void AppLauncherHandler::OnExtensionPreferenceChanged() {

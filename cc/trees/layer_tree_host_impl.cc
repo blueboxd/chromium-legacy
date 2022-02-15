@@ -1867,8 +1867,8 @@ LayerTreeHostImpl::BuildEvictionQueue(TreePriority tree_priority) {
 std::unique_ptr<OccludedTileIterator>
 LayerTreeHostImpl::CreateOccludedTileIterator() {
   return std::make_unique<OccludedTileIterator>(
-      pending_tree_ ? pending_tree_->picture_layers()
-                    : active_tree_->picture_layers());
+      &active_tree_->picture_layers(),
+      pending_tree_ ? &pending_tree_->picture_layers() : nullptr);
 }
 
 void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
@@ -3521,10 +3521,13 @@ void LayerTreeHostImpl::SetNeedsRedraw() {
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
+  // The following may lower the cutoff, but should never raise it.
   if (debug_state_.rasterize_only_visible_content) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
-  } else if (use_gpu_rasterization()) {
+  } else if (use_gpu_rasterization() &&
+             actual.priority_cutoff_when_visible ==
+                 gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   }
@@ -3679,7 +3682,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
   // it won't change.
   auto content_color_usage = image.GetContentColorUsage();
   tile_manager_.decoded_image_tracker().QueueImageDecode(
-      image, GetTargetColorParams(content_color_usage).color_space,
+      image, GetTargetColorParams(content_color_usage),
       base::BindOnce(&LayerTreeHostImpl::ImageDecodeFinished,
                      weak_factory_.GetWeakPtr(), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);

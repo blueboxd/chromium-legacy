@@ -13,7 +13,6 @@
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/system/toast_catalog.h"
@@ -74,6 +73,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -517,6 +517,8 @@ void OverviewGrid::PrepareForOverview() {
 
   grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
+
+  UpdateSaveDeskAsTemplateButton();
 }
 
 void OverviewGrid::PositionWindows(
@@ -1902,15 +1904,16 @@ void OverviewGrid::UpdateSaveDeskAsTemplateButton() {
   PerformFadeInLayer(save_desk_as_template_widget_->GetLayer(),
                      /*animate=*/true);
 
-  // Disable the create templates button if the current number of templates has
+  // Disable the save template button if the current number of templates has
   // reached the max or the current desk has only unsupported apps.
+  auto* save_template = static_cast<SaveDeskTemplateButton*>(
+      save_desk_as_template_widget_->GetContentsView());
   auto* presenter = DesksTemplatesPresenter::Get();
-  auto* desk = DesksController::Get()->active_desk();
   if (presenter->GetEntryCount() >= presenter->GetMaxEntryCount() ||
-      desk->num_supported_windows() == 0) {
-    auto* button = GetSaveDeskAsTemplateButton();
-    DCHECK(button);
-    button->SetState(views::Button::STATE_DISABLED);
+      DesksController::Get()->active_desk()->num_supported_windows() == 0) {
+    save_template->SetEnabled(false);
+  } else {
+    save_template->SetEnabled(true);
   }
 
   // Set the widget position above the overview item window and default width

@@ -372,6 +372,9 @@ extern const char kDnsOverHttpsDescription[];
 extern const char kDnsHttpssvcName[];
 extern const char kDnsHttpssvcDescription[];
 
+extern const char kEditContextName[];
+extern const char kEditContextDescription[];
+
 extern const char kEnableAutomaticSnoozeName[];
 extern const char kEnableAutomaticSnoozeDescription[];
 
@@ -543,6 +546,9 @@ extern const char kEnableTLS13EarlyDataDescription[];
 
 extern const char kEnhancedNetworkVoicesName[];
 extern const char kEnhancedNetworkVoicesDescription[];
+
+extern const char kAccessibilityOSSettingsVisibilityName[];
+extern const char kAccessibilityOSSettingsVisibilityDescription[];
 
 extern const char kPostQuantumCECPQ2Name[];
 extern const char kPostQuantumCECPQ2Description[];
@@ -877,6 +883,9 @@ extern const char kIncognitoNtpRevampDescription[];
 extern const char kIncognitoScreenshotName[];
 extern const char kIncognitoScreenshotDescription[];
 
+extern const char kInitialNavigationEntryName[];
+extern const char kInitialNavigationEntryDescription[];
+
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
@@ -1196,6 +1205,9 @@ extern const char kOmniboxTriggerForPrerender2Description[];
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
 
+extern const char kPrivacySandboxV3Name[];
+extern const char kPrivacySandboxV3Description[];
+
 extern const char kPrivacyReviewName[];
 extern const char kPrivacyReviewDescription[];
 
@@ -1261,6 +1273,9 @@ extern const char kScrollUnificationDescription[];
 
 extern const char kSearchHistoryLinkName[];
 extern const char kSearchHistoryLinkDescription[];
+
+extern const char kSearchResultInlineIconName[];
+extern const char kSearchResultInlineIconDescription[];
 
 extern const char kSecurePaymentConfirmationDebugName[];
 extern const char kSecurePaymentConfirmationDebugDescription[];
@@ -1358,9 +1373,6 @@ extern const char kSystemKeyboardLockDescription[];
 
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
-
-extern const char kSyncAutofillWalletOfferDataName[];
-extern const char kSyncAutofillWalletOfferDataDescription[];
 
 extern const char kSyncSandboxName[];
 extern const char kSyncSandboxDescription[];

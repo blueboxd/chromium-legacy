@@ -502,13 +502,13 @@ const base::Feature kHaTSDesktopDevToolsIssuesHeavyAd{
 const base::Feature kHaTSDesktopDevToolsIssuesCSP{
     "HaTSDesktopDevToolsIssuesCSP", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables the Happiness Tracking System for Desktop Privacy Review.
-const base::Feature kHappinessTrackingSurveysForDesktopPrivacyReview{
-    "HappinessTrackingSurveysForDesktopPrivacyReview",
+// Enables or disables the Happiness Tracking System for Desktop Privacy Guide.
+const base::Feature kHappinessTrackingSurveysForDesktopPrivacyGuide{
+    "HappinessTrackingSurveysForDesktopPrivacyGuide",
     base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<base::TimeDelta>
-    kHappinessTrackingSurveysForDesktopPrivacyReviewTime{
-        &kHappinessTrackingSurveysForDesktopPrivacyReview, "settings-time",
+    kHappinessTrackingSurveysForDesktopPrivacyGuideTime{
+        &kHappinessTrackingSurveysForDesktopPrivacyGuide, "settings-time",
         base::Seconds(20)};
 
 // Enables or disables the Happiness Tracking System for Desktop Privacy
@@ -537,9 +537,8 @@ const base::FeatureParam<bool>
         &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-sandbox",
         false};
 const base::FeatureParam<bool>
-    kHappinessTrackingSurveysForDesktopSettingsPrivacyNoReview{
-        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-review",
-        false};
+    kHappinessTrackingSurveysForDesktopSettingsPrivacyNoGuide{
+        &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "no-guide", false};
 const base::FeatureParam<base::TimeDelta>
     kHappinessTrackingSurveysForDesktopSettingsPrivacyTime{
         &kHappinessTrackingSurveysForDesktopSettingsPrivacy, "settings-time",
@@ -634,7 +633,7 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
 
 // When enabled, users will see updated UI in Incognito NTP
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)

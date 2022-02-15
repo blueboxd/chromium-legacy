@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
@@ -34,6 +35,7 @@
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
@@ -41,6 +43,7 @@
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/wm_event.h"
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
@@ -464,6 +467,29 @@ TEST_F(DesksTemplatesTest, NoWindowsLabelOnTemplateGridShow) {
   EXPECT_FALSE(grid_list[1]->no_windows_widget());
 }
 
+// Tests when user enter desk templates, a11y alert being sent.
+TEST_F(DesksTemplatesTest, InvokeAccessibilityAlertOnEnterDeskTemplates) {
+  TestAccessibilityControllerClient client;
+
+  // At least one entry is required for the templates grid to be shown.
+  AddEntry(base::GUID::GenerateRandomV4(), "template", base::Time::Now());
+
+  // Start overview mode.
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  // Alert for entering overview mode should be sent.
+  EXPECT_EQ(AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
+            client.last_a11y_alert());
+
+  // Enter desks templates
+  ShowDesksTemplatesGrids();
+
+  // Alert for entering templates should be sent.
+  EXPECT_EQ(AccessibilityAlert::DESK_TEMPLATES_MODE_ENTERED,
+            client.last_a11y_alert());
+}
+
 // Tests that overview items are hidden when the desk templates grid is shown.
 TEST_F(DesksTemplatesTest, HideOverviewItemsOnTemplateGridShow) {
   UpdateDisplay("800x600,800x600");
@@ -733,6 +759,48 @@ TEST_F(DesksTemplatesTest, SaveDeskAsTemplateButtonAligned) {
   ClickOnView(new_desk_button);
   ASSERT_FALSE(desks_bar_view->IsZeroState());
   verify_save_desk_widget_bounds();
+}
+
+// Tests that the save desk as template button is enabled and disabled as
+// expected.
+TEST_F(DesksTemplatesTest, SaveTemplateButtonEnabledDisabled) {
+  // Create a test window so that overview grid is not null.
+  auto test_window = CreateAppWindow();
+
+  // Create 6 entries to max out the grid.
+  for (const std::string& name : {"A", "B", "C", "D", "E", "F"})
+    AddEntry(base::GUID::GenerateRandomV4(), name, base::Time::Now());
+
+  // Open overview and expect the save template button to be disabled.
+  ToggleOverview();
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+  WaitForDesksTemplatesUI();
+
+  aura::Window* root = Shell::GetPrimaryRootWindow();
+  auto* button = static_cast<PillButton*>(
+      GetSaveDeskAsTemplateButtonForRoot(root)->GetContentsView());
+  EXPECT_EQ(views::Button::STATE_DISABLED, button->GetState());
+
+  std::vector<DeskTemplate*> entries = GetAllEntries();
+
+  // Exit and reopen overview to delete the template.
+  ToggleOverview();
+  OpenOverviewAndShowTemplatesGrid();
+
+  // Verify that the button is re-enabled after we delete all templates and exit
+  // the templates grid.
+  DeleteTemplate(entries[0]->uuid(), /*expected_current_item_count=*/6);
+  DeleteTemplate(entries[1]->uuid(), /*expected_current_item_count=*/5);
+  DeleteTemplate(entries[2]->uuid(), /*expected_current_item_count=*/4);
+  DeleteTemplate(entries[3]->uuid(), /*expected_current_item_count=*/3);
+  DeleteTemplate(entries[4]->uuid(), /*expected_current_item_count=*/2);
+  DeleteTemplate(entries[5]->uuid(), /*expected_current_item_count=*/1);
+  EXPECT_FALSE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
+
+  button = static_cast<PillButton*>(
+      GetSaveDeskAsTemplateButtonForRoot(root)->GetContentsView());
+  EXPECT_EQ(views::Button::STATE_NORMAL, button->GetState());
 }
 
 // Tests that the save desk as template button is disabled when the maximum
@@ -2555,6 +2623,27 @@ TEST_F(DesksTemplatesTest, TimeStrFormat) {
     EXPECT_EQ(expected_timestr[i],
               DesksTemplatesItemViewTestApi(item_view).time_view()->GetText());
   }
+}
+
+// Test that desk templates can launch snapped windows properly.
+TEST_F(DesksTemplatesTest, SnapWindowTest) {
+  auto test_window = CreateAppWindow();
+
+  WindowState* window_state = WindowState::Get(test_window.get());
+  const WMEvent snap_event(WM_EVENT_SNAP_PRIMARY);
+  window_state->OnWMEvent(&snap_event);
+  EXPECT_EQ(chromeos::WindowStateType::kPrimarySnapped,
+            window_state->GetStateType());
+
+  // Open overview and save a template.
+  OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
+  ASSERT_EQ(1ul, GetAllEntries().size());
+
+  ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
+  WaitForDesksTemplatesUI();
+
+  // Test that overview is still active and there is no crash.
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 }
 
 }  // namespace ash

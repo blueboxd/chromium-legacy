@@ -49,10 +49,6 @@ class SingleThreadTaskRunner;
 class TaskRunner;
 }  // namespace base
 
-namespace quota_internals {
-class QuotaInternalsProxy;
-}  // namespace quota_internals
-
 namespace storage {
 
 class QuotaManagerProxy;
@@ -324,11 +320,18 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Deletes `bucket` data for the specified `quota_client_types`. Pass in
   // QuotaClientType::AllClients() to remove bucket data for all quota clients.
+  //
+  // `callback` is always called. If this QuotaManager gets destroyed during
+  // deletion, `callback` may be called with a kErrorAbort status.
   virtual void DeleteBucketData(const BucketLocator& bucket,
                                 QuotaClientTypes quota_client_types,
                                 StatusCallback callback);
+
   // Deletes buckets of a particular blink::mojom::StorageType with storage keys
   // that match the specified host.
+  //
+  // `callback` is always called. If this QuotaManager gets destroyed during
+  // deletion, `callback` may be called with a kErrorAbort status.
   void DeleteHostData(const std::string& host,
                       blink::mojom::StorageType type,
                       StatusCallback callback);
@@ -435,7 +438,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
  private:
   friend class base::DeleteHelper<QuotaManagerImpl>;
   friend class base::RefCountedDeleteOnSequence<QuotaManagerImpl>;
-  friend class quota_internals::QuotaInternalsProxy;
   friend class MockQuotaManager;
   friend class MockQuotaClient;
   friend class QuotaManagerProxy;
@@ -527,9 +529,24 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void DeleteBucketDataInternal(const BucketLocator& bucket,
                                 QuotaClientTypes quota_client_types,
                                 StatusCallback callback);
-  // Cleans up deleter tasks that have completed.
-  void DidDeleteHostData(HostDataDeleter* deleter);
-  void DidDeleteBucketData(BucketDataDeleter* deleter);
+
+  // Removes the HostDataDeleter that completed its work.
+  //
+  // This method is static because it must call `delete_host_data_callback` even
+  // if the QuotaManagerImpl was destroyed.
+  static void DidDeleteHostData(base::WeakPtr<QuotaManagerImpl> quota_manager,
+                                StatusCallback delete_host_data_callback,
+                                HostDataDeleter* deleter,
+                                blink::mojom::QuotaStatusCode status_code);
+
+  // Removes the BucketDataDeleter that completed its work.
+  //
+  // This method is static because it must call `delete_bucket_data_callback`
+  // even if the QuotaManagerImpl was destroyed.
+  static void DidDeleteBucketData(base::WeakPtr<QuotaManagerImpl> quota_manager,
+                                  StatusCallback delete_bucket_data_callback,
+                                  BucketDataDeleter* deleter,
+                                  blink::mojom::QuotaStatusCode status_code);
 
   // Methods for eviction logic.
   void StartEviction();

@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/time/calendar_unittest_utils.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/test/ash_test_base.h"
@@ -50,17 +52,10 @@ class CalendarMonthViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    tray_model_ =
-        base::MakeRefCounted<UnifiedSystemTrayModel>(/*shelf=*/nullptr);
-    tray_controller_ =
-        std::make_unique<UnifiedSystemTrayController>(tray_model_.get());
-    controller_ =
-        std::make_unique<CalendarViewController>(tray_controller_.get());
+    controller_ = std::make_unique<CalendarViewController>();
   }
 
   void TearDown() override {
-    tray_controller_.reset();
-    tray_model_.reset();
     calendar_month_view_.reset();
     controller_.reset();
 
@@ -76,10 +71,10 @@ class CalendarMonthViewTest : public AshTestBase {
   }
 
   void UploadEvents() {
-    controller_->unified_system_tray_controller()
-        ->calendar_model()
-        ->InsertEvents(CreateMockEventList());
+    Shell::Get()->system_tray_model()->calendar_model()->InsertEvents(
+        CreateMockEventList().get());
   }
+
   void TriggerPaint() {
     gfx::Canvas canvas;
     for (auto* cell : calendar_month_view_->children())
@@ -95,8 +90,6 @@ class CalendarMonthViewTest : public AshTestBase {
  private:
   std::unique_ptr<CalendarMonthView> calendar_month_view_;
   std::unique_ptr<CalendarViewController> controller_;
-  scoped_refptr<UnifiedSystemTrayModel> tray_model_;
-  std::unique_ptr<UnifiedSystemTrayController> tray_controller_;
   static base::Time fake_time_;
 };
 
@@ -227,7 +220,7 @@ TEST_F(CalendarMonthViewTest, UpdateEvents) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 0 event",
+  EXPECT_EQ(u"August 18, 2021, 0 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 
@@ -243,7 +236,7 @@ TEST_F(CalendarMonthViewTest, UpdateEvents) {
   EXPECT_EQ(u"18",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetText());
-  EXPECT_EQ(u"August 18, 2021, 0 event",
+  EXPECT_EQ(u"August 18, 2021, 0 events",
             static_cast<CalendarDateCellView*>(month_view()->children()[17])
                 ->GetTooltipText());
 

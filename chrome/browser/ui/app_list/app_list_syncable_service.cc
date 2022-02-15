@@ -1323,10 +1323,9 @@ void AppListSyncableService::SetAppListPreferredOrder(
   profile_->GetPrefs()->SetInteger(prefs::kAppListPreferredOrder,
                                    static_cast<int>(order));
 
-  // TODO(andrewxu): Return early for color sort because color info on sync
-  // items is not yet well implemented.
   if (order == ash::AppListSortOrder::kCustom ||
-      order == ash::AppListSortOrder::kColor) {
+      (order == ash::AppListSortOrder::kColor &&
+       !ash::features::IsLauncherItemColorSyncEnabled())) {
     return;
   }
 
@@ -1364,13 +1363,13 @@ syncer::StringOrdinal AppListSyncableService::CalculateGlobalFrontPosition()
   return reorder::CalculateFrontPosition(sync_items_);
 }
 
-bool AppListSyncableService::CalculateNewItemPosition(
-    const ChromeAppListItem& new_item,
+bool AppListSyncableService::CalculateItemPositionInPermanentSortOrder(
+    const ash::AppListItemMetadata& metadata,
     const std::vector<const ChromeAppListItem*>& local_items,
     syncer::StringOrdinal* target_position) const {
-  return reorder::CalculateNewItemPosition(GetPermanentSortingOrder(), new_item,
-                                           local_items, &sync_items_,
-                                           target_position);
+  return reorder::CalculateItemPositionInOrder(GetPermanentSortingOrder(),
+                                               metadata, local_items,
+                                               &sync_items_, target_position);
 }
 
 ash::AppListSortOrder AppListSyncableService::GetPermanentSortingOrder() const {
@@ -1752,9 +1751,9 @@ bool AppListSyncableService::UpdateSyncItemFromAppItem(
     changed = true;
   }
 
-  if (ash::features::IsLauncherItemColorSyncEnabled()) {
-    changed =
-        SetIconColorIfChanged(app_item->icon_color(), &sync_item->item_color);
+  if (ash::features::IsLauncherItemColorSyncEnabled() &&
+      SetIconColorIfChanged(app_item->icon_color(), &sync_item->item_color)) {
+    changed = true;
   }
 
   if (sync_item->is_persistent_folder != app_item->is_persistent()) {
@@ -1788,8 +1787,8 @@ void AppListSyncableService::InitNewItemPosition(ChromeAppListItem* new_item) {
 
   // TODO(https://crbug.com/1260877): ideally we would not have to create a
   // one-off vector of items using `GetItems()`.
-  bool is_successful = CalculateNewItemPosition(
-      *new_item, model_updater_->GetItems(), &position);
+  bool is_successful = CalculateItemPositionInPermanentSortOrder(
+      new_item->metadata(), model_updater_->GetItems(), &position);
 
   // If `new_item` cannot be placed following the specified order, `new_item`
   // should be placed at front. Also reset the sorting order.

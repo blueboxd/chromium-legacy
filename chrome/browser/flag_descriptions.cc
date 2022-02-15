@@ -939,6 +939,11 @@ const char kEnhancedNetworkVoicesDescription[] =
     "This option enables high-quality, network-based voices in "
     "Select-to-speak.";
 
+const char kAccessibilityOSSettingsVisibilityName[] =
+    "Accessibility OS Settings Visibility";
+const char kAccessibilityOSSettingsVisibilityDescription[] =
+    "This option enables improvements in Accessibility OS Settings visibility.";
+
 const char kPostQuantumCECPQ2Name[] = "TLS Post-Quantum Confidentiality";
 const char kPostQuantumCECPQ2Description[] =
     "This option enables a post-quantum (i.e. resistent to quantum computers) "
@@ -1168,6 +1173,11 @@ const char kMemlogStackModeDescription[] =
     "trace events as identifiers. It's also possible to do a mix of both.";
 const char kMemlogStackModeNative[] = "Native";
 const char kMemlogStackModeNativeWithThreadNames[] = "Native with thread names";
+
+const char kEditContextName[] = "EditContext API";
+const char kEditContextDescription[] =
+    "Allows web pages to use the experimental EditContext API to better "
+    "control text input.";
 
 const char kEnableAutomaticSnoozeName[] = "Enable Automatic Snooze";
 const char kEnableAutomaticSnoozeDescription[] =
@@ -1539,6 +1549,10 @@ const char kIncognitoScreenshotName[] = "Incognito Screenshot";
 const char kIncognitoScreenshotDescription[] =
     "Enables Incognito screenshots on Android. It will also make Incognito "
     "thumbnails visible.";
+
+const char kInitialNavigationEntryName[] = "Initial NavigationEntry";
+const char kInitialNavigationEntryDescription[] =
+    "Enables creation of initial NavigationEntry on tab creation.";
 
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
@@ -2112,6 +2126,11 @@ const char kPrivacyReviewDescription[] =
     "Shows a new subpage in Settings that helps the user to review various "
     "privacy settings.";
 
+const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
+const char kPrivacySandboxV3Description[] =
+    "Enables an updated Privacy Sandbox UI. Also enables some related "
+    "features.";
+
 const char kProminentDarkModeActiveTabTitleName[] =
     "Prominent Dark Mode Active Tab Titles";
 const char kProminentDarkModeActiveTabTitleDescription[] =
@@ -2219,6 +2238,11 @@ const char kSearchHistoryLinkName[] = "Search History Link";
 const char kSearchHistoryLinkDescription[] =
     "Changes the Clear Browsing Data UI to display a link to clear search "
     "history on My Google Activity.";
+
+extern const char kSearchResultInlineIconName[] = "Search Result Inline Icons";
+extern const char kSearchResultInlineIconDescription[] =
+    "Show iconified text and vector icons "
+    "in launcher search results.";
 
 const char kSecurePaymentConfirmationDebugName[] =
     "Secure Payment Confirmation Debug Mode";
@@ -2367,11 +2391,6 @@ const char kSuggestionsWithSubStringMatchDescription[] =
 const char kSuppressToolbarCapturesName[] = "Suppress Toolbar Captures";
 const char kSuppressToolbarCapturesDescription[] =
     "Suppress Toolbar Captures except when certain properties change.";
-
-const char kSyncAutofillWalletOfferDataName[] =
-    "Enable syncing autofill offer data";
-const char kSyncAutofillWalletOfferDataDescription[] =
-    "When enabled, allows syncing autofill wallet offer data type.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =

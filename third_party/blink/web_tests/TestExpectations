@@ -271,6 +271,10 @@ crbug.com/1276999 document-transition/* [ Skip ]
 crbug.com/1276999 wpt_internal/document-transition/* [ Skip ]
 crbug.com/1276999 virtual/document-transition/* [ Pass ]
 
+crbug.com/1295280 virtual/document-transition/wpt_internal/document-transition/old-content-captures-opacity.html [ Failure ]
+crbug.com/1295281 virtual/document-transition/wpt_internal/document-transition/new-content-captures-different-size.html [ Failure ]
+crbug.com/1295281 virtual/document-transition/wpt_internal/document-transition/old-content-captures-different-size.html [ Failure ]
+
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
 
@@ -1730,6 +1734,9 @@ crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-1.html [ Fail
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/html5-tree/href-click-3.html [ Failure ]
 
+# This test fails as long as legacy layout is forced somewhere in the ancestry.
+crbug.com/989916 external/wpt/mathml/relations/html5-tree/integration-point-4.html [ Failure ]
+
 # These tests fail because they require full support for new text-transform
 # values and mathvariant attribute. Currently, we only support the new
 # text-transform: auto, use the UA rule for the <mi> element and map
@@ -2246,7 +2253,8 @@ crbug.com/1218715 wpt_internal/content-security-policy/reporting-api/reporting-a
 # Sheriff 2021-05-25
 crbug.com/1209900 fast/peerconnection/RTCPeerConnection-reload-sctptransport.html [ Failure Pass ]
 
-crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Pass Skip Timeout ]
+# This test is currently failing everywhere
+crbug.com/846981 fast/webgl/texImage-imageBitmap-from-imageData-resize.html [ Skip ]
 
 # crbug.com/1095379: These fail with a timeout, even when they're given extra time (via SlowTests)
 crbug.com/846656 external/wpt/css/selectors/focus-visible-002.html [ Pass Skip Timeout ]
@@ -3213,9 +3221,39 @@ crbug.com/626703 [ Linux ] external/wpt/url/a-element-xhtml.xhtml [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/url/failure.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/css/css-break/box-decoration-break-clone-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-break/box-decoration-break-clone-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-break/box-decoration-break-clone-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-010.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-011.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-013.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-016.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-017.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-018.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-019.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-020.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-color/deprecated-sameas-022.html [ Failure ]
+crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/response-null-body.any.worker.html [ Failure Timeout ]
+crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/fetch/private-network-access/service-worker-background-fetch.https.window.html [ Failure Timeout ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-002.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-004.html [ Failure ]
+crbug.com/626703 [ Mac11 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure Timeout ]
+crbug.com/626703 [ Linux ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 [ Win ] virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-006.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-010.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-011.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-013.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-016.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-017.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-018.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-019.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-020.html [ Failure ]
+crbug.com/626703 virtual/system-color-compute/external/wpt/css/css-color/deprecated-sameas-022.html [ Failure ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/fetch/private-network-access/service-worker-background-fetch.https.window.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/webmessaging/broadcastchannel/opaque-origin.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/layout_ng_table_frag/external/wpt/css/css-break/table/break-inside-cell-000.html [ Failure ]
@@ -3256,7 +3294,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/scroll-to-text-fragment/scroll-to-tex
 crbug.com/626703 [ Mac11-arm64 ] virtual/plz-dedicated-worker/external/wpt/fetch/private-network-access/worker.https.window.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/webaudio/the-audio-api/the-pannernode-interface/ctor-panner.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
-crbug.com/626703 external/wpt/domxpath/xpath-evaluate-crash.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/data-urls/processing.any.html [ Failure Timeout ]
 crbug.com/626703 [ Mac11 ] external/wpt/mediacapture-record/MediaRecorder-mimetype.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/geometry-background-image-tiled-003.https.html [ Failure ]
@@ -3360,7 +3397,6 @@ crbug.com/626703 [ Win10.20h2 ] external/wpt/html/cross-origin-embedder-policy/c
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/navigation-timing/nav2_test_response_end_and_duration_before_during_and_after_load_event.html [ Timeout ]
 crbug.com/1270841 [ Mac ] external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/workers/constructors/SharedWorker/setting-port-members.html [ Failure Timeout ]
-crbug.com/626703 [ Mac11 ] virtual/css-calc-infinity-and-nan-disabled/external/wpt/css/css-transforms/crashtests/w-negative-002.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/window-parent.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/forced-colors-mode-19.html [ Timeout ]
 crbug.com/626703 [ Mac11 ] virtual/plz-dedicated-worker/external/wpt/fetch/metadata/redirect/multiple-redirect-https-downgrade-upgrade.sub.html [ Timeout ]
@@ -3420,53 +3456,6 @@ crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/getstats.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/webrtc/protocol/ice-state.https.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-videoDetectorTest.html [ Skip Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/webrtc-wpt-plan-b/external/wpt/webrtc/protocol/bundle.https.html [ Timeout ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-box/cssbox-initial.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/css3-transform-perspective.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/parsing/translate-parsing-invalid.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/skewY/svg-skewy-016.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-048.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin/svg-origin-relative-length-invalid-002.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/skewX/svg-skewx-011.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/skewY/svg-skewy-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/animation/transform-interpolation-perspective.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/crashtests/preserve3d-scene-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-box/svgbox-fill-box.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/animation/rotate-interpolation.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/external-styles/svg-external-styles-008.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/parsing/perspective-origin-valid.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/skewX/svg-skewx-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-045.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin/svg-origin-relative-length-invalid-005.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin/svg-origin-length-001.html [ Crash ]
-crbug.com/626703 [ Mac11 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin/svg-origin-length-pt-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-scale-test.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/scale/svg-scale-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/inline-styles/svg-inline-styles-005.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-matrix-004.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-035.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-list-separation/svg-transform-list-separations-011.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-013.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-032.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/parsing/perspective-origin-computed.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transformed-preserve-3d-1.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-list-separation/svg-transform-list-separations-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-input-003.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/subpixel-transform-changes-002.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-016.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin-name-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/translate/svg-translate-050.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/group/svg-transform-group-008.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-percent-001.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-3d-rotateY-stair-above-001.xht [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transforms-support-calc.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/parsing/transform-computed.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/group/svg-transform-nested-023.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/inline-styles/svg-inline-styles-012.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-transformed-td-contains-fixed-position.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin-014.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/matrix/svg-matrix-063.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin/svg-origin-length-cm-005.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform-origin-name-002.html [ Crash ]
 crbug.com/626703 [ Linux ] external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/media-capabilities/encodingInfo.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-finished-add.https.html [ Crash ]
@@ -3475,23 +3464,17 @@ crbug.com/626703 [ Mac11-arm64 ] virtual/document-domain-disabled-by-default/ext
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-user-agent-client-hint-feature/external/wpt/client-hints/http-equiv-accept-ch-non-secure.http.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStream-supported-by-feature-policy.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-ua-ch-platform-feature/external/wpt/client-hints/accept-ch-non-secure.http.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/delayed-animation-updates/external/wpt/css/css-transitions/parsing/transition-invalid.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-user-agent-client-hint-feature/wpt_internal/client-hints/accept_ch_feature_policy_allow_legacy_hints.tentative.sub.https.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-user-agent-client-hint-feature/external/wpt/client-hints/accept-ch-cache-revalidation.https.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/external-styles/svg-external-styles-010.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-01.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/forced-colors-mode-03.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-user-agent-client-hint-feature/external/wpt/client-hints/accept-ch-stickiness/same-origin-iframe.https.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/delayed-animation-updates/external/wpt/web-animations/animation-model/keyframe-effects/effect-value-iteration-composite-operation.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/delayed-animation-updates/external/wpt/web-animations/interfaces/Animation/commitStyles.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-user-agent-client-hint-feature/external/wpt/client-hints/service-workers/new-request-critical.https.window.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/disable-user-agent-client-hint-feature/external/wpt/client-hints/accept-ch-stickiness/same-origin-navigation.https.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/backplate/forced-colors-mode-backplate-11.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/backface-visibility-interop/external/wpt/css/css-transforms/transform3d-perspective-009.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/forced-high-contrast-colors/external/wpt/forced-colors-mode/forced-colors-mode-10.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Crash ]
 crbug.com/626703 [ Mac11-arm64 ] virtual/fractional-scroll-offsets/external/wpt/css/css-position/sticky/position-sticky-nested-left.html [ Crash ]
-crbug.com/626703 [ Mac11-arm64 ] virtual/delayed-animation-updates/external/wpt/web-animations/interfaces/Animation/cancel.html [ Crash ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-sizing/parsing/min-height-invalid.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] virtual/plz-dedicated-worker/external/wpt/xhr/event-loadstart-upload.any.worker.html [ Crash ]
 crbug.com/626703 [ Mac10.15 ] virtual/plz-dedicated-worker/external/wpt/xhr/event-loadstart-upload.any.worker.html [ Crash ]
@@ -4143,6 +4126,9 @@ crbug.com/626703 external/wpt/html/dom/elements/global-attributes/dir_auto-N-EN-
 # Synthetic modules report the wrong location in errors
 crbug.com/994315 virtual/json-modules/external/wpt/html/semantics/scripting-1/the-script-element/json-module/parse-error.html [ Skip ]
 
+# This test crashes.
+crbug.com/1296898 external/wpt/domxpath/xpath-evaluate-crash.html [ Crash ]
+
 # These tests pass on the blink_rel bots but fail on the other builders
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-3-ref.html [ Crash ]
 crbug.com/1051773 external/wpt/css/CSS2/floats/float-nowrap-4.html [ Crash Timeout ]
@@ -4205,6 +4191,9 @@ crbug.com/1223979 external/wpt/css/css-text/word-spacing/word-spacing-001.html [
 
 crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Pass Timeout ]
 
+crbug.com/481431 external/wpt/css/css-break/box-decoration-break-clone-001.html [ Failure ]
+crbug.com/481431 external/wpt/css/css-break/box-decoration-break-clone-002.html [ Failure ]
+crbug.com/481431 external/wpt/css/css-break/box-decoration-break-clone-004.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-003.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-004.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/flex-container-fragmentation-007.tentative.html [ Failure ]
@@ -5072,6 +5061,14 @@ crbug.com/901271 external/wpt/dom/events/Event-dispatch-on-disabled-elements.htm
 # Test is flaky under load
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
 
+# Temporarily disabled to land DevTools CL (https://crrev.com/c/3461550).
+crbug.com/1066909 http/tests/devtools/console/console-link-to-snippet.js [ Failure Pass ]
+crbug.com/1066909 http/tests/devtools/console/console-log-eval-syntax-error.js [ Failure Pass ]
+crbug.com/1066909 http/tests/devtools/console/console-log-syntax-error.js [ Failure Pass ]
+crbug.com/1066909 http/tests/devtools/console/console-message-from-inline-with-url.js [ Failure Pass ]
+crbug.com/1066909 http/tests/devtools/console/console-worker-nested-imports-syntax-error.js [ Failure Pass ]
+crbug.com/1066909 http/tests/devtools/sources/debugger/debugger-autocontinue-on-syntax-error.js [ Failure Pass ]
+
 # Flaky crash due to "bad mojo message".
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Crash Pass ]
 
@@ -5832,7 +5829,6 @@ crbug.com/1087471 [ Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-
 crbug.com/1088475 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries.html [ Failure Pass ]
 crbug.com/1088475 [ Linux ] external/wpt/webvtt/rendering/cues-with-video/processing-model/embedded_style_media_queries_resized.html [ Failure Pass ]
 
-crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvas-zero-size-readback.html [ Crash Pass ]
 crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRect.html [ Failure Pass ]
 crbug.com/1088007 virtual/gpu/fast/canvas/OffscreenCanvasClearRectPartial.html [ Failure Pass ]
 
@@ -6903,7 +6899,6 @@ crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/workle
 crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-local-time-null-2.https.html [ Crash Failure Pass ]
 # Also reported as failing via crbug.com/1233766:
 crbug.com/1233826 [ Mac ] virtual/threaded/external/wpt/animation-worklet/worklet-animation-cancel.https.html [ Crash Failure Pass ]
-crbug.com/1250666 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/overdraw.https.html [ Pass Timeout ]
 crbug.com/1250666 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-paint-error.https.html [ Pass Timeout ]
 # Previously reported as failing via crbug.com/626703:
 crbug.com/1236558 [ Mac ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/no-op-animation.https.html [ Crash Failure Pass ]
@@ -7468,6 +7463,9 @@ crbug.com/1286944 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/cs
 crbug.com/1286944 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-conicGradient.https.html [ Failure ]
 crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-rects.https.html [ Failure ]
 crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-canvasFilter.https.html [ Failure ]
+crbug.com/1286944 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/overdraw.https.html [ Failure Pass Timeout ]
+crbug.com/1286944 [ Mac10.15 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-003.https.html [ Failure ]
+crbug.com/1286944 [ Mac11 ] virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/registered-property-value-001.https.html [ Failure ]
 
 # Sheriff 2022-01-17
 crbug.com/1233938 http/tests/notifications/click-shared-worker.html [ Pass Timeout ]
@@ -7510,6 +7508,7 @@ crbug.com/1291850 external/wpt/mediacapture-insertable-streams/MediaStreamTrackG
 crbug.com/1253323 [ Win ] http/tests/devtools/sources/debugger-breakpoints/nodejs-set-breakpoint.js [ Skip ]
 crbug.com/1253323 http/tests/devtools/persistence/automapping-urlencoded-paths.js [ Skip ]
 crbug.com/1253323 http/tests/devtools/sources/debugger/navigator-view.js [ Skip ]
+crbug.com/1253323 http/tests/devtools/file-system-project.js [ Skip ]
 
 # Sheriff 2022-01-26
 crbug.com/1290978 [ Win ] external/wpt/css/CSS2/normal-flow/crashtests/block-in-inline-ax-crash.html [ Crash Failure Pass Timeout ]
@@ -7611,6 +7610,13 @@ crbug.com/1295707 http/tests/devtools/elements/elements-treeoutline-copy.js [ Fa
 # Disable to skip performance test caused by potential O(n^2) problem in AXObjectCacheImpl::ChildrenChanged
 crbug.com/1293714 external/wpt/css/selectors/invalidation/has-complexity.html [ Skip ]
 
+# The test has a flaky baseline
+crbug.com/1243128 http/tests/devtools/extensions/extensions-useragent.js [ Failure Pass ]
+
 # Sheriff 2022-02-10
 crbug.com/1296106 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure Pass ]
 crbug.com/1296106 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/referrer-policy/gen/srcdoc.meta/strict-origin/iframe-tag.http.html [ Failure Pass ]
+
+# Sheriff 2022-02-15
+crbug.com/1297553 external/wpt/fetch/api/basic/response-null-body.any.sharedworker.html [ Pass Failure ]
+crbug.com/1297587 [ Mac10.12 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Pass Failure ]

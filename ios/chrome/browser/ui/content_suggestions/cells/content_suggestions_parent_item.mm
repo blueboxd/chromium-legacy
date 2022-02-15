@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_tile_view.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
@@ -29,7 +30,9 @@
     NSMutableArray<UITapGestureRecognizer*>* mostVisitedTapRecognizers;
 // The UILongPressGestureRecognizer for the Return To Recent Tab tile.
 @property(nonatomic, strong)
-    UILongPressGestureRecognizer* returnToRecentTabTapRecognizer;
+    UITapGestureRecognizer* returnToRecentTabTapRecognizer;
+@property(nonatomic, strong)
+    UILongPressGestureRecognizer* returnToRecentTabLongPressRecognizer;
 // The UITapGestureRecognizer for the NTP promo view.
 @property(nonatomic, strong) UITapGestureRecognizer* promoTapRecognizer;
 
@@ -50,20 +53,32 @@
 - (void)configureCell:(ContentSuggestionsParentCell*)cell {
   [super configureCell:cell];
 
+  // Remove subviews from StackView in case prepareForReuse was not called (e.g.
+  // itemHasChanged: was called).
+  [cell removeContentViews];
+
   CGFloat horizontalSpacing =
       ContentSuggestionsTilesHorizontalSpacing(cell.traitCollection);
   if (self.returnToRecentItem) {
     ContentSuggestionsReturnToRecentTabView* returnToRecentTabTile =
         [[ContentSuggestionsReturnToRecentTabView alloc]
             initWithConfiguration:self.returnToRecentItem];
-    self.returnToRecentTabTapRecognizer = [[UILongPressGestureRecognizer alloc]
+    self.returnToRecentTabTapRecognizer = [[UITapGestureRecognizer alloc]
         initWithTarget:self.tapTarget
                 action:@selector(contentSuggestionsElementTapped:)];
-    self.returnToRecentTabTapRecognizer.minimumPressDuration =
-        ios::material::kDuration8;
     [returnToRecentTabTile
         addGestureRecognizer:self.returnToRecentTabTapRecognizer];
     self.returnToRecentTabTapRecognizer.enabled = YES;
+    // Add long press functionality for the Return to Recent Tab tile.
+    self.returnToRecentTabLongPressRecognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self.tapTarget
+                    action:@selector(contentSuggestionsElementTapped:)];
+    self.returnToRecentTabLongPressRecognizer.minimumPressDuration =
+        ios::material::kDuration8;
+    self.returnToRecentTabLongPressRecognizer.enabled = YES;
+    [returnToRecentTabTile
+        addGestureRecognizer:self.returnToRecentTabLongPressRecognizer];
     [cell addUIElement:returnToRecentTabTile
         withCustomBottomSpacing:content_suggestions::
                                     kReturnToRecentTabSectionBottomMargin];
@@ -231,12 +246,15 @@
     [_verticalStackView setCustomSpacing:spacing afterView:view];
   }
 }
-
-- (void)prepareForReuse {
-  [super prepareForReuse];
+- (void)removeContentViews {
   for (UIView* view in [self.verticalStackView arrangedSubviews]) {
     [view removeFromSuperview];
   }
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [self removeContentViews];
 }
 
 @end

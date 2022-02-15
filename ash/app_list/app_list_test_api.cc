@@ -24,6 +24,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
@@ -221,9 +222,8 @@ void AppListTestApi::WaitForAppListShowAnimation(bool is_bubble_window) {
   if (!controller->IsVisible()) {
     AppListVisibilityChangedWaiter waiter;
     waiter.Wait();
-    if (!controller->IsVisible()) {
+    if (!controller->IsVisible())
       ADD_FAILURE() << "Launcher is not visible.";
-    }
   }
 
   // Wait for the app list window animation.
@@ -422,9 +422,9 @@ void AppListTestApi::SetFolderViewAnimationCallback(
 }
 
 void AppListTestApi::AddReorderAnimationCallback(
-    AppsGridView::ReorderAnimationCallback callback) {
+    AppsGridView::TestReorderDoneCallbackType callback) {
   DCHECK(features::IsLauncherAppSortEnabled());
-  GetTopLevelAppsGridView()->AddReorderDoneCallbackForTest(std::move(callback));
+  GetTopLevelAppsGridView()->AddReorderCallbackForTest(std::move(callback));
 }
 
 bool AppListTestApi::HasAnyWaitingReorderDoneCallback() const {
@@ -434,6 +434,12 @@ bool AppListTestApi::HasAnyWaitingReorderDoneCallback() const {
 
 void AppListTestApi::DisableAppListNudge(bool disable) {
   AppListNudgeController::SetNudgeDisabledForTest(disable);
+}
+
+void AppListTestApi::ReorderItemInRootByDragAndDrop(int source_index,
+                                                    int target_index) {
+  test::AppsGridViewTestApi(GetTopLevelAppsGridView())
+      .ReorderItemByDragAndDrop(source_index, target_index);
 }
 
 }  // namespace ash

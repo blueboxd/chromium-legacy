@@ -122,7 +122,7 @@ const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
 
 // Controls ARC right click long press compatibility feature.
 const base::Feature kRightClickLongPress{"ArcRightClickLongPress",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARCVM real time vcpu feature on a device with 2 logical cores
 // online.
@@ -212,7 +212,7 @@ const base::FeatureParam<int> kVmMemorySizeMaxMiB{&kVmMemorySize, "max_mib",
 // ARCVM never has it's kernel page cache drop below the level that LMKD will
 // start killing.
 const base::Feature kVmBalloonPolicy{"ArcVmBalloonPolicy",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The maximum amount of kernel page cache ARCVM can have when ChromeOS is under
 // moderate memory pressure. 0 for no limit.

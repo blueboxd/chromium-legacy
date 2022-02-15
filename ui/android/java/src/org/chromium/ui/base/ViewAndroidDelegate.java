@@ -4,7 +4,6 @@
 
 package org.chromium.ui.base;
 
-import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -17,6 +16,8 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.inputmethod.InputConnection;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.MarginLayoutParamsCompat;
 
@@ -39,7 +40,7 @@ public class ViewAndroidDelegate {
     }
 
     private static DragAndDropDelegate sDragAndDropTestDelegate;
-    private DragAndDropDelegate mDragAndDropDelegate;
+    private final DragAndDropDelegateImpl mDragAndDropDelegateImpl;
 
     /**
      * The current container view. This view can be updated with
@@ -68,8 +69,7 @@ public class ViewAndroidDelegate {
 
     protected ViewAndroidDelegate(ViewGroup containerView) {
         mContainerView = containerView;
-        mDragAndDropDelegate = sDragAndDropTestDelegate != null ? sDragAndDropTestDelegate
-                                                                : new DragAndDropDelegateImpl();
+        mDragAndDropDelegateImpl = new DragAndDropDelegateImpl();
     }
 
     /**
@@ -108,6 +108,24 @@ public class ViewAndroidDelegate {
         for (ContainerViewObserver observer : mContainerViewObservers) {
             observer.onUpdateContainerView(containerView);
         }
+    }
+
+    private DragAndDropDelegate getDragAndDropDelegate() {
+        return sDragAndDropTestDelegate != null ? sDragAndDropTestDelegate
+                                                : mDragAndDropDelegateImpl;
+    }
+
+    /**
+     * Get the tracker that records the drag event on the view this delegate attached to. Will
+     * return null if there's no {@link DragStateTracker} set up.
+     */
+    public @Nullable DragStateTracker getDragStateTracker() {
+        return null;
+    }
+
+    /** Return the {@link DragAndDropDelegateImpl} instance for this delegate class. */
+    protected DragStateTracker getDragStateTrackerInternal() {
+        return mDragAndDropDelegateImpl;
     }
 
     /**
@@ -184,7 +202,7 @@ public class ViewAndroidDelegate {
      * @param dropData The drop data presenting the drag target.
      */
     @SuppressWarnings("deprecation")
-    @TargetApi(Build.VERSION_CODES.N)
+    @RequiresApi(Build.VERSION_CODES.N)
     @CalledByNative
     private boolean startDragAndDrop(Bitmap shadowImage, DropDataAndroid dropData) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) return false;
@@ -192,7 +210,7 @@ public class ViewAndroidDelegate {
         ViewGroup containerView = getContainerViewGroup();
         if (containerView == null) return false;
 
-        return mDragAndDropDelegate.startDragAndDrop(containerView, shadowImage, dropData);
+        return getDragAndDropDelegate().startDragAndDrop(containerView, shadowImage, dropData);
     }
 
     @VisibleForTesting
@@ -496,6 +514,12 @@ public class ViewAndroidDelegate {
     @CalledByNative
     protected int[] getDisplayFeature() {
         return null;
+    }
+
+    /** Destroy and clean up dependencies (e.g. drag state tracker if set). */
+    public void destroy() {
+        // TODO(https://crbug.com/1297354): Call this in when destroying WebContents.
+        mDragAndDropDelegateImpl.destroy();
     }
 
     @VisibleForTesting

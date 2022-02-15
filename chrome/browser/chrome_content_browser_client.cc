@@ -46,6 +46,7 @@
 #include "chrome/browser/device_api/managed_configuration_service.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
@@ -518,6 +519,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/isolation_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
 #include "extensions/browser/extension_navigation_throttle.h"
@@ -1018,21 +1020,6 @@ bool URLHasExtensionPermission(extensions::ProcessMap* process_map,
          process_map->Contains(extension->id(), render_process_id);
 }
 
-// Returns the partition domain that should be used when loading content for an
-// app with isolated storage whose scope includes |site|, or nullptr if no such
-// app is installed.
-const std::string* GetStoragePartitionDomainForApp(
-    content::BrowserContext* browser_context,
-    const GURL& site) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kWebAppEnableIsolatedStorage))
-    return nullptr;
-
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  PrefService* prefs = profile->GetPrefs();
-  return web_app::GetStorageIsolationKey(prefs, url::Origin::Create(site));
-}
-
 #endif
 
 mojo::PendingRemote<prerender::mojom::PrerenderCanceler> GetPrerenderCanceler(
@@ -1339,6 +1326,8 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       embedder_support::ForceMajorVersionToMinorPosition::kDefault);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kWindowPlacementAlwaysAllowed, false);
+  registry->RegisterBooleanPref(policy::policy_prefs::kEnableDirectSockets,
+                                true);
 }
 
 // static
@@ -1493,16 +1482,17 @@ ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // TODO(crbug.com/1212263): Isolated PWAs are tracked by origin, but this
   // function takes a site, so it will only work correctly when the site equals
-  // the full origin. This should be removed once we plumb the
-  // StoragePartitionConfig through the navigation system.
-  const std::string* partition_domain =
-      GetStoragePartitionDomainForApp(browser_context, site);
-  if (partition_domain) {
-    DCHECK(!partition_domain->empty());
+  // the full origin.
+  if (content::SiteIsolationPolicy::ShouldUrlUseApplicationIsolationLevel(
+          browser_context, site)) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+    const std::string* isolation_key = web_app::GetStorageIsolationKey(
+        profile->GetPrefs(), url::Origin::Create(site));
+    CHECK(isolation_key);
     // |in_memory| and |partition_name| are only used in guest schemes, so they
     // are cleared here.
     return content::StoragePartitionConfig::Create(
-        browser_context, *partition_domain,
+        browser_context, *isolation_key,
         /*partition_name=*/std::string(),
         /*in_memory=*/false);
   }
@@ -2083,39 +2073,33 @@ void ChromeContentBrowserClient::PersistIsolatedOrigin(
 bool ChromeContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     content::BrowserContext* browser_context,
     const GURL& url) {
-  // For short-term use. Enables isolated application level if the URL is in
-  // the list of URLs set for the kRestrictedApiOrigins flag.
-
-  // Extract allowed origins from kRestrictedApiOrigins flag when
-  // ShouldUrlUseApplicationIsolationLevel is called for the first time.
-  if (!restricted_api_origins_) {
-    restricted_api_origins_ = std::make_unique<std::vector<url::Origin>>();
-
-    std::string cmdline_origins(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kRestrictedApiOrigins));
-
-    std::vector<std::string> origin_strings = base::SplitString(
-        cmdline_origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-
-    for (std::string& origin_string : origin_strings) {
-      GURL allowed_url(origin_string);
-      url::Origin allowed_url_origin = url::Origin::Create(allowed_url);
-      restricted_api_origins_->push_back(allowed_url_origin);
-    }
-  }
-
-  const url::Origin& url_origin = url::Origin::Create(url);
-  for (const url::Origin& allowed_url_origin : *restricted_api_origins_) {
-    if (url_origin.IsSameOriginWith(allowed_url_origin)) {
-      return true;
-    }
-  }
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  return web_app::IsUrlInIsolatedAppScope(profile->GetPrefs(), url);
-#else
+  if (content::SiteIsolationPolicy::IsApplicationIsolationLevelEnabled()) {
+    Profile* profile = Profile::FromBrowserContext(browser_context);
+    return web_app::GetStorageIsolationKey(profile->GetPrefs(),
+                                           url::Origin::Create(url));
+  }
+#endif
   return false;
+}
+
+bool ChromeContentBrowserClient::AreDirectSocketsAllowedByPolicy(
+    content::BrowserContext* context) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // For ChromeOS we check the policy value.
+  // TODO(crbug/1297224): check for device too.
+  Profile* profile = Profile::FromBrowserContext(context);
+  return profile && profile->GetPrefs()->GetBoolean(
+                        policy::policy_prefs::kEnableDirectSockets);
+#elif BUILDFLAG(IS_LINUX)
+  // There are currently no reliable way to determine managed status on Linux.
+  return false;
+#elif BUILDFLAG(IS_MAC)
+  // TODO(crbug/1297224): merge with the block below.
+  return false;
+#else
+  // For other platforms we disable access to the API on managed devices.
+  return !policy::ManagementServiceFactory::GetForPlatform()->IsManaged();
 #endif
 }
 

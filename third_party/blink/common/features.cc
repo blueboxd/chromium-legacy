@@ -851,10 +851,6 @@ const base::Feature kWebAppEnableDarkMode{"WebAppEnableDarkMode",
 const base::Feature kWebAppEnableHandleLinks{"WebAppEnableHandleLinks",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables web apps to request isolated storage.
-const base::Feature kWebAppEnableIsolatedStorage{
-    "WebAppEnableIsolatedStorage", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the "launch_handler" manifest field for web apps.
 // Explainer: https://github.com/WICG/sw-launch/blob/main/launch_handler.md
 const base::Feature kWebAppEnableLaunchHandler{
@@ -1242,6 +1238,11 @@ const base::FeatureParam<double> kScaleTileMemoryLimitFactor{
 
 const base::Feature kDurableClientHintsCache{"DurableClientHintsCache",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, allows web pages to use the experimental EditContext API to
+// better control text input. See crbug.com/999184.
+const base::Feature kEditContext{"EditContext",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

@@ -180,6 +180,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -2914,6 +2915,17 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
       this == GetDocument().documentElement(), IsInTopLayer(),
       IsA<SVGForeignObjectElement>(*this));
 
+  auto* context = GetDisplayLockContext();
+  // The common case for most elements is that we don't have a context and have
+  // the default (visible) content-visibility value.
+  if (UNLIKELY(context ||
+               style->ContentVisibility() != EContentVisibility::kVisible)) {
+    if (!context)
+      context = &EnsureDisplayLockContext();
+    context->SetRequestedState(style->ContentVisibility());
+    context->AdjustElementStyle(style.get());
+  }
+
   return style;
 }
 
@@ -4439,6 +4451,33 @@ Element* Element::GetFocusableArea() const {
   return FocusController::FindFocusableElementInShadowHost(*this);
 }
 
+// https://html.spec.whatwg.org/C/#autofocus-delegate
+// TODO(https://crbug.com/383230): use this more broadly, including in
+// FocusController::FindFocusableElementInShadowHost() which will at that time
+// probably be renamed to "focus delegate".
+Element* Element::GetAutofocusDelegate() const {
+  for (Node& node : NodeTraversal::DescendantsOf(*this)) {
+    auto* element = DynamicTo<Element>(node);
+    if (!element)
+      continue;
+
+    if (!element->IsAutofocusable())
+      continue;
+
+    Element* focusable_area =
+        element->IsFocusable() ? element : element->GetFocusableArea();
+    if (!focusable_area)
+      continue;
+
+    // Step checking click-focusability and focus trigger omitted for now; it
+    // may be needed as part of https://crbug.com/383230.
+
+    return focusable_area;
+  }
+
+  return nullptr;
+}
+
 void Element::focus() {
   focus(FocusParams());
 }
@@ -4889,13 +4928,6 @@ bool Element::ForceLegacyLayoutInFormattingContext(
       break;
     const ComputedStyle* style = ancestor->GetComputedStyle();
 
-    // Some layout types, such as MathML and custom layout, are only implemented
-    // in LayoutNG. We cannot fall back to legacy layout for such elements. If
-    // some descendant wants legacy fallback, while some ancestor in the same
-    // formatting context doesn't support legacy layout, we have ended up in an
-    // impossible situation.
-    DCHECK(!style->DisplayTypeRequiresLayoutNG());
-
     if (style->Display() == EDisplay::kNone)
       break;
 
@@ -5182,12 +5214,6 @@ void Element::AdjustForceLegacyLayout(const ComputedStyle* style,
   // (but see below):
   if (ShouldForceLegacyLayout())
     *should_force_legacy_layout = true;
-
-  // However, any forcing of legacy layout, by this element, or by an acestor,
-  // must be reset here, if the legacy layout engine doesn't support the display
-  // type.
-  if (style && style->DisplayTypeRequiresLayoutNG())
-    *should_force_legacy_layout = false;
 }
 
 ElementIntersectionObserverData* Element::IntersectionObserverData() const {

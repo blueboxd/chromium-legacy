@@ -201,6 +201,9 @@ std::string AccessibilityPrivateEnumForAction(SelectToSpeakPanelAction action) {
 absl::optional<bool> GetDictationOfflineNudgePrefForLocale(
     Profile* profile,
     const std::string& dictation_locale) {
+  if (dictation_locale.empty()) {
+    return absl::nullopt;
+  }
   const base::Value* offline_nudges = profile->GetPrefs()->GetDictionary(
       prefs::kAccessibilityDictationLocaleOfflineNudge);
   return offline_nudges->FindBoolPath(dictation_locale);
@@ -683,21 +686,6 @@ void AccessibilityManager::EnableAutoclick(bool enabled) {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(prefs::kAccessibilityAutoclickEnabled, enabled);
   pref_service->CommitPendingWrite();
-}
-
-void AccessibilityManager::EnableAutoclickWithoutConfirmationDialog(
-    bool enabled) {
-  if (!profile_)
-    return;
-
-  // Updating auto-click pref causes a call to AutoclickController::SetEnabled
-  // with show_confirmation_dialog set to true. By making this call early with
-  // the same enabled parameter value, we cause the next call to be a no-op and
-  // show no confirmation dialog.
-  ash::Shell::Get()->autoclick_controller()->SetEnabled(
-      enabled, /*show_confirmation_dialog=*/false);
-
-  EnableAutoclick(enabled);
 }
 
 bool AccessibilityManager::IsAutoclickEnabled() const {

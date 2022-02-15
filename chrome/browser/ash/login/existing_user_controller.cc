@@ -16,6 +16,7 @@
 #include "ash/components/login/auth/key.h"
 #include "ash/components/login/session/session_termination_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
@@ -287,9 +288,9 @@ absl::optional<EncryptionMigrationMode> GetEncryptionMigrationMode(
     return EncryptionMigrationMode::START_MIGRATION;
   }
 
+  user_manager::KnownUser known_user(g_browser_process->local_state());
   const bool profile_has_policy =
-      user_manager::known_user::GetProfileRequiresPolicy(
-          user_context.GetAccountId()) ==
+      known_user.GetProfileRequiresPolicy(user_context.GetAccountId()) ==
           user_manager::ProfileRequiresPolicy::kPolicyRequired ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kProfileRequiresPolicy);
@@ -686,15 +687,7 @@ void ExistingUserController::ContinuePerformLoginWithoutMigration(
   ContinuePerformLogin(auth_mode, user_context_ecryptfs);
 }
 
-void ExistingUserController::OnSigninScreenReady() {
-  // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
-  VLOG(1) << "OnSigninScreenReady";
-  StartAutoLoginTimer();
-}
-
 void ExistingUserController::OnGaiaScreenReady() {
-  // Used to debug crbug.com/902315. Feel free to remove after that is fixed.
-  VLOG(1) << "OnGaiaScreenReady";
   StartAutoLoginTimer();
 }
 
@@ -920,16 +913,18 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   // If the hibernate service is supported, call it to initiate resume.
 #if BUILDFLAG(ENABLE_HIBERNATE)
-  HibermanClient::Get()->WaitForServiceToBeAvailable(
-      base::BindOnce(&ExistingUserController::OnHibernateServiceAvailable,
-                     weak_factory_.GetWeakPtr(),
-                     user_context));
+  if (features::IsHibernateEnabled()) {
+    HibermanClient::Get()->WaitForServiceToBeAvailable(
+        base::BindOnce(&ExistingUserController::OnHibernateServiceAvailable,
+                       weak_factory_.GetWeakPtr(),
+                       user_context));
 
-#else
-  // The hibernate service is not supported, just continue directly.
-  ContinueAuthSuccessAfterResumeAttempt(user_context, true);
+    return;
+  }
 #endif
 
+  // The hibernate service is not supported, just continue directly.
+  ContinueAuthSuccessAfterResumeAttempt(user_context, true);
   return;
 }
 
@@ -1102,8 +1097,8 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
       user_context.GetUserType() != user_manager::USER_TYPE_CHILD;
 
   user_manager::KnownUser known_user(g_browser_process->local_state());
-  user_manager::known_user::SetIsEnterpriseManaged(user_context.GetAccountId(),
-                                                   is_enterprise_managed);
+  known_user.SetIsEnterpriseManaged(user_context.GetAccountId(),
+                                    is_enterprise_managed);
 
   if (is_enterprise_managed) {
     absl::optional<std::string> manager =
@@ -1687,10 +1682,10 @@ void ExistingUserController::DoCompleteLogin(
   }
   user_context.SetDeviceId(device_id);
 
+  user_manager::KnownUser known_user(g_browser_process->local_state());
   const std::string& gaps_cookie = user_context.GetGAPSCookie();
   if (!gaps_cookie.empty()) {
-    user_manager::known_user::SetGAPSCookie(user_context.GetAccountId(),
-                                            gaps_cookie);
+    known_user.SetGAPSCookie(user_context.GetAccountId(), gaps_cookie);
   }
 
   PerformPreLoginActions(user_context);

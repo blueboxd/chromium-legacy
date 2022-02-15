@@ -6,7 +6,9 @@
 
 #include "base/check_op.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/time/time.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -14,19 +16,6 @@ namespace ash {
 namespace calendar_metrics {
 
 namespace {
-
-// The event types CalendarView is interested in. These are used in histograms,
-// do not remove/renumber entries. If you're adding to this enum with the
-// intention that it will be logged, update the CalendarEventSource listing in
-// enums.xml.
-enum class CalendarEventSource {
-  kInvalid = 0,
-  kTap = 1,
-  kClick = 2,
-  kKeyboard = 3,
-  kStylus = 4,
-  kMaxValue = kStylus
-};
 
 constexpr char kCalendarViewShowSourcePrefix[] = "Ash.Calendar.ShowSource.";
 constexpr char kCalendarDateCellActivated[] = "Ash.Calendar.DateCell.Activated";
@@ -36,6 +25,9 @@ constexpr char kCalendarMonthDownArrowButtonActivated[] =
     "Ash.Calendar.MonthDownArrowButton.Activated";
 constexpr char kCalendarMonthUpArrowButtonActivated[] =
     "Ash.Calendar.MonthUpArrowButton.Activated";
+constexpr char kCalendarMonthDwellTime[] = "Ash.Calendar.MonthDwellTime";
+
+}  // namespace
 
 CalendarEventSource GetEventType(const ui::Event& event) {
   if (event.IsGestureEvent())
@@ -54,10 +46,9 @@ CalendarEventSource GetEventType(const ui::Event& event) {
   return CalendarEventSource::kInvalid;
 }
 
-}  // namespace
-
-void RecordCalendarShowMetrics(CalendarViewShowSource show_source,
-                               const ui::Event& event) {
+void RecordCalendarShowMetrics(
+    CalendarViewShowSource show_source,
+    calendar_metrics::CalendarEventSource event_source) {
   std::string histogram_name = kCalendarViewShowSourcePrefix;
   switch (show_source) {
     case CalendarViewShowSource::kDateView:
@@ -67,12 +58,11 @@ void RecordCalendarShowMetrics(CalendarViewShowSource show_source,
       histogram_name += "TimeView";
       break;
     case CalendarViewShowSource::kAccelerator:
-      DCHECK(event.IsKeyEvent());
       histogram_name += "Keyboard";
       break;
   }
 
-  base::UmaHistogramEnumeration(histogram_name, GetEventType(event));
+  base::UmaHistogramEnumeration(histogram_name, event_source);
 }
 
 void RecordCalendarDateCellActivated(const ui::Event& event) {
@@ -89,6 +79,10 @@ void RecordMonthArrowButtonActivated(bool up, const ui::Event& event) {
 void RecordEventListItemActivated(const ui::Event& event) {
   base::UmaHistogramEnumeration(kCalendarEventListItemActivated,
                                 GetEventType(event));
+}
+
+void RecordMonthDwellTime(const base::TimeDelta& dwell_time) {
+  UMA_HISTOGRAM_TIMES(kCalendarMonthDwellTime, dwell_time);
 }
 
 }  // namespace calendar_metrics

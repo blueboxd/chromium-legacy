@@ -50,15 +50,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
     // returns.
     virtual void OnAppUpdate(const AppUpdate& update) = 0;
 
-    // Called when the publisher for `app_type` has finished initiating apps.
-    // Note that this will not be called for app types initialized prior to this
-    // observer being registered. Observers should call
-    // AppRegistryCache::GetInitializedAppTypes() at the time of starting
-    // observation to get a set of the app types which have been initialized.
-    // TODO(crbug.com/1253250): Remove this interface and use non mojom app type
-    // interface.
-    virtual void OnAppTypeInitialized(apps::mojom::AppType app_type) {}
-
     // Called when the publisher for |app_type| has finished initiating apps.
     // Note that this will not be called for app types initialized prior to this
     // observer being registered. Observers should call
@@ -249,10 +240,8 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
   }
 
   // Returns the set of app types that have so far been initialized.
-  const std::set<apps::mojom::AppType>& GetInitializedAppTypes() const;
   const std::set<AppType>& InitializedAppTypes() const;
 
-  bool IsAppTypeInitialized(apps::mojom::AppType app_type) const;
   bool IsAppTypeInitialized(AppType app_type) const;
 
  private:
@@ -300,7 +289,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppRegistryCache {
 
   // Saves app types which have finished initialization, and
   // OnAppTypeInitialized has be called to notify observers.
-  std::set<apps::mojom::AppType> initialized_mojom_app_types_;
   std::set<AppType> initialized_app_types_;
 
   AccountId account_id_;

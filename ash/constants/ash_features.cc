@@ -570,6 +570,10 @@ const base::Feature kEolWarningNotifications{"EolWarningNotifications",
 // See https://crbug.com/1231305.
 const base::Feature kESimPolicy{"ESimPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable or disable support for touchpad with haptic feedback.
+const base::Feature kExoHapticFeedbackSupport("ExoHapticFeedbackSupport",
+                                              base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enable or disable bubble showing when an application gains any UI lock.
 const base::Feature kExoLockNotification{"ExoLockNotification",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -712,6 +716,9 @@ const base::Feature kHelpAppDiscoverTabNotificationAllChannels{
 // Enable showing search results from the help app in the launcher.
 const base::Feature kHelpAppLauncherSearch{"HelpAppLauncherSearch",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable Chrome OS hibernation features.
+const base::Feature kHibernate{"Hibernate", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the flag to synchronize launcher item colors. It is
 // in effect only when kLauncherAppSort is enabled.
@@ -1608,6 +1615,10 @@ bool IsGaiaReauthEndpointEnabled() {
 
 bool IsGuestOsFilesEnabled() {
   return base::FeatureList::IsEnabled(kGuestOsFiles);
+}
+
+bool IsHibernateEnabled() {
+  return base::FeatureList::IsEnabled(kHibernate);
 }
 
 bool IsHideArcMediaNotificationsEnabled() {

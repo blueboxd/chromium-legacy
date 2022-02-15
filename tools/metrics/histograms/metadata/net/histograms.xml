@@ -145,6 +145,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Net.Certificate.LeafExtendedKeyUsage.{RootType}"
+    enum="NetCertificateEKUStatus" expires_after="2022-08-11">
+  <owner>mattm@chromium.org</owner>
+  <owner>trusty-transport@chromium.org</owner>
+  <summary>
+    For successfully validated server certificates, records information of the
+    leaf certificate's ExtendedKeyUsage extension. The buckets are mutually
+    exclusive (only one value will be logged for a particular verification.)
+  </summary>
+  <token key="RootType">
+    <variant name="KnownRoot"/>
+    <variant name="LegacyKnownRoot"/>
+    <variant name="PrivateRoot"/>
+  </token>
+</histogram>
+
 <histogram name="Net.Certificate.TLSFeatureExtensionWithPrivateRoot"
     enum="Boolean" expires_after="M77">
   <owner>estark@chromium.org</owner>
@@ -246,7 +262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.CertVerifier.InvalidRsaPssParams" enum="Boolean"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>bcb@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -1446,7 +1462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.ErrorPageCounts" enum="NetErrorPageEvents"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>edwardjung@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -1604,6 +1620,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Count of requests which contained a basic auth username and password
     embedded in the URL itself.
+  </summary>
+</histogram>
+
+<histogram name="net.HttpJob.CanIncludeCookies" enum="Boolean"
+    expires_after="2023-02-14">
+  <owner>cfredric@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    Counts the HTTP requests which involve reading from the cookie jar to
+    construct a Cookie header vs. the HTTP requests which are disallowed from
+    including a Cookie header.
   </summary>
 </histogram>
 
@@ -1802,7 +1829,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.HttpTimeToFirstByte.TLS13.Google" units="ms"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>davidben@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -3199,7 +3226,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.NumActiveStreamsOnIdleTimeout" units="streams"
-    expires_after="2022-05-11">
+    expires_after="2022-08-14">
   <owner>renjietang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4338,7 +4365,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.RestrictedCookieManager.SiteForCookiesOK" enum="Boolean"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>morlovich@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -4683,7 +4710,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLHandshakeEarlyDataReason.Google"
-    enum="SSLHandshakeEarlyDataReason" expires_after="2022-06-12">
+    enum="SSLHandshakeEarlyDataReason" expires_after="2022-08-14">
   <owner>davidben@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -4802,6 +4829,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.TCP_Connection_Latency_IPv4_No_Race" units="ms"
     expires_after="M85">
+  <obsolete>
+    Removed 2022-02.
+  </obsolete>
   <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the network
@@ -4812,6 +4842,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.TCP_Connection_Latency_IPv4_Wins_Race" units="ms"
     expires_after="M85">
+  <obsolete>
+    Removed 2022-02.
+  </obsolete>
   <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the IPv4
@@ -4822,6 +4855,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.TCP_Connection_Latency_IPv6_Raceable" units="ms"
     expires_after="M85">
+  <obsolete>
+    Removed 2022-02.
+  </obsolete>
   <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when we race an IPv6
@@ -4832,6 +4868,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Net.TCP_Connection_Latency_IPv6_Solo" units="ms"
     expires_after="M85">
+  <obsolete>
+    Removed 2022-02.
+  </obsolete>
   <owner>mgersh@chromium.org</owner>
   <summary>
     Time from when the Connect() starts until it completes when the network

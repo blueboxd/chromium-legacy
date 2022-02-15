@@ -109,7 +109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.HomePageEngineType" enum="OmniboxSearchEngineType"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -181,7 +181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyElementInteractions"
-    enum="SettingsPrivacyElementInteractions" expires_after="2022-06-12">
+    enum="SettingsPrivacyElementInteractions" expires_after="2022-08-14">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>sauski@chromium.org</owner>
@@ -247,6 +247,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.PrivacySandbox.InvalidTopicIdLocalized" units="units"
+    expires_after="M110">
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Records the Topic ID which was provided for attempted localization, but
+    failed because the ID was outside the supported range.
+
+    Any entry in this histogram is unexpected, and indicates that the model
+    generating Topic IDs is generating IDs which cannot be handled by Chrome UI.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PrivacySandbox.PrivacySandboxReferrer"
     enum="PrivacySandboxReferrer" expires_after="M104">
   <owner>andzaytsev@google.com</owner>
@@ -292,7 +305,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.PasswordsResult"
-    enum="SafetyCheckPasswordsStatus" expires_after="2022-06-12">
+    enum="SafetyCheckPasswordsStatus" expires_after="2022-08-14">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check password check.</summary>
@@ -306,7 +319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.UpdatesResult"
-    enum="SafetyCheckUpdateStatus" expires_after="2022-06-12">
+    enum="SafetyCheckUpdateStatus" expires_after="2022-08-14">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check updates check.</summary>
@@ -407,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>mpearson@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

@@ -27,8 +27,8 @@ constexpr int kDateInOneWeek = 7;
 
 // The padding in each date cell view.
 constexpr int kDateVerticalPadding = 13;
-constexpr int kDateHorizontalPadding = 12;
-constexpr int kColumnSetPadding = 3;
+constexpr int kDateHorizontalPadding = 14;
+constexpr int kColumnSetPadding = 5;
 
 // The insets within a Date cell.
 constexpr gfx::Insets kDateCellInsets{kDateVerticalPadding,
@@ -70,15 +70,13 @@ void SetUpWeekColumns(views::TableLayout* layout);
 SkColor GetPrimaryTextColor();
 SkColor GetSecondaryTextColor();
 
-// Get local midnight on the first day of the month that includes |date|.
-base::Time GetStartOfMonthLocal(const base::Time& date);
+// Get the first day of the month that includes |date|.
+base::Time GetFirstDayOfMonth(const base::Time& date);
 
-// Get local midnight on the first day of the month before the one that includes
-// |date|.
+// Get the first day of the month before the one that includes |date|.
 base::Time GetStartOfPreviousMonthLocal(base::Time date);
 
-// Get local midnight on the first day of the month after the one that includes
-// |date|.
+// Get the first day of the month after the one that includes |date|.
 base::Time GetStartOfNextMonthLocal(base::Time date);
 
 // Get UTC midnight on the first day of the month that includes |date|.

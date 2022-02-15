@@ -12,7 +12,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -54,6 +53,8 @@
 #include "base/system/sys_info.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/wm/features.h"
+#include "components/app_restore/desk_template_read_handler.h"
+#include "components/app_restore/window_properties.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -63,6 +64,7 @@
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -854,11 +856,24 @@ void SplitViewController::OnWindowSnapWMEvent(aura::Window* window,
   if (!ShouldAllowSplitView())
     return;
 
+  const bool in_overview =
+      Shell::Get()->overview_controller()->InOverviewSession();
+
   // In clamshell mode, only if overview is active when receiving the WM event,
   // the window should be snapped in split screen. Otherwise, the window should
   // be snapped normally and should not be managed by SplitViewController.
-  if (split_view_type_ == SplitViewType::kClamshellType &&
-      !Shell::Get()->overview_controller()->InOverviewSession()) {
+  if (split_view_type_ == SplitViewType::kClamshellType && !in_overview)
+    return;
+
+  // If the snap wm event is from desk template launch when in overview, do not
+  // try to snap the window in split screen. Otherwise, overview might be exited
+  // because of window snapping.
+  const int32_t window_id =
+      window->GetProperty(app_restore::kRestoreWindowIdKey);
+  if (in_overview &&
+      WindowRestoreController::Get()->IsRestoringWindow(window) &&
+      app_restore::DeskTemplateReadHandler::Get()->GetWindowInfo(window_id)) {
+    DCHECK(WindowRestoreController::Get()->is_restoring_snap_state());
     return;
   }
 

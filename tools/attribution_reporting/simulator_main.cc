@@ -2,15 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <fstream>
 #include <iostream>
 #include <string>
 
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/json/json_string_value_serializer.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
@@ -29,26 +26,22 @@ constexpr char kSwitchVersion[] = "version";
 constexpr char kSwitchVersionShort[] = "v";
 
 constexpr char kSwitchDelayMode[] = "delay_mode";
-constexpr char kSwitchInputFile[] = "input_file";
 constexpr char kSwitchNoiseMode[] = "noise_mode";
 constexpr char kSwitchRemoveReportIds[] = "remove_report_ids";
 constexpr char kSwitchInputMode[] = "input_mode";
+constexpr char kSwitchCopyInputToOutput[] = "copy_input_to_output";
 
 constexpr const char* kAllowedSwitches[] = {
-    kSwitchHelp,      kSwitchHelpShort,
-    kSwitchVersion,   kSwitchVersionShort,
+    kSwitchHelp,         kSwitchHelpShort,         kSwitchVersion,
+    kSwitchVersionShort,
 
-    kSwitchInputFile, kSwitchDelayMode,
-    kSwitchNoiseMode, kSwitchRemoveReportIds,
-    kSwitchInputMode,
-};
-
-constexpr const char* kRequiredSwitches[] = {
-    kSwitchInputFile,
+    kSwitchDelayMode,    kSwitchNoiseMode,         kSwitchRemoveReportIds,
+    kSwitchInputMode,    kSwitchCopyInputToOutput,
 };
 
 constexpr char kHelpMsg[] = R"(
-attribution_reporting_simulator --input_file=<input_file>
+attribution_reporting_simulator
+  [--copy_input_to_output]
   [--delay_mode=<mode>]
   [--noise_mode=<mode>]
   [--input_mode=<input_mode>]
@@ -62,6 +55,10 @@ metadata.
 Sources and triggers are registered in chronological order according to their
 `source_time` and `trigger_time` fields, respectively.
 
+Input is received by the utility from stdin. The input must be valid JSON
+containing sources and triggers to register in the simulation. The format
+is described below in detail.
+
 Learn more about the Attribution Reporting API at
 https://github.com/WICG/conversion-measurement-api#attribution-reporting-api.
 
@@ -69,11 +66,10 @@ Learn about the meaning of the input and output fields at
 https://github.com/WICG/conversion-measurement-api/blob/main/EVENT.md.
 
 Switches:
-  --input_file=<input_file> - Required path to an input file containing sources
-                              and triggers to register in the simulation.
-                              Input format described below.
+  --copy_input_to_output    - Optional. If present, the input is copied to the
+                              output in a top-level field called `input`.
 
-  --delay_mode=<mode>      -  Optional. One of `default` or `none`. Defaults to
+  --delay_mode=<mode>       - Optional. One of `default` or `none`. Defaults to
                               `default`.
 
                               default: Reports are sent in reporting windows
@@ -188,7 +184,7 @@ Output JSON format:
 
 {
   // List of zero or more reports.
-  reports: [
+  "reports": [
     {
       // Time at which the report would have been sent in seconds since the
       // UNIX epoch.
@@ -204,7 +200,9 @@ Output JSON format:
       },
     },
     ...
-  ]
+  ],
+  // The original input, if the `copy_input_to_output` switch is present.
+  "input": { ... }
 }
 )";
 
@@ -216,16 +214,27 @@ void PrintHelp() {
 
 int ProcessJsonString(const std::string& json_input,
                       const content::AttributionSimulationOptions& options,
+                      bool copy_input_to_output,
                       int json_write_options) {
-  std::string error_msg;
-  std::unique_ptr<base::Value> input =
-      JSONStringValueDeserializer(json_input).Deserialize(nullptr, &error_msg);
-  if (!input) {
-    std::cerr << "failed to deserialize input: " << error_msg << std::endl;
+  base::JSONReader::ValueWithError result =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json_input, base::JSONParserOptions::JSON_PARSE_RFC);
+  if (!result.value) {
+    std::cerr << "failed to deserialize input: " << result.error_message
+              << std::endl;
     return 1;
   }
-  base::Value output =
-      content::RunAttributionSimulationOrExit(std::move(*input), options);
+
+  base::Value input_copy;
+  if (copy_input_to_output)
+    input_copy = result.value->Clone();
+
+  base::Value output = content::RunAttributionSimulationOrExit(
+      std::move(*result.value), options);
+
+  if (copy_input_to_output)
+    output.SetKey("input", std::move(input_copy));
+
   std::string output_json;
   bool success = base::JSONWriter::WriteWithOptions(output, json_write_options,
                                                     &output_json);
@@ -259,8 +268,7 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  if (command_line.GetSwitches().empty() ||
-      command_line.HasSwitch(kSwitchHelp) ||
+  if (command_line.HasSwitch(kSwitchHelp) ||
       command_line.HasSwitch(kSwitchHelpShort)) {
     PrintHelp();
     return 0;
@@ -270,15 +278,6 @@ int main(int argc, char* argv[]) {
       command_line.HasSwitch(kSwitchVersionShort)) {
     std::cout << version_info::GetVersionNumber() << std::endl;
     return 0;
-  }
-
-  for (const char* required_switch : kRequiredSwitches) {
-    if (!command_line.HasSwitch(required_switch)) {
-      std::cerr << "missing required switch `" << required_switch << "`"
-                << std::endl;
-      PrintHelp();
-      return 1;
-    }
   }
 
   auto noise_mode = content::AttributionNoiseMode::kDefault;
@@ -319,6 +318,9 @@ int main(int argc, char* argv[]) {
     }
   }
 
+  const bool copy_input_to_output =
+      command_line.HasSwitch(kSwitchCopyInputToOutput);
+
   content::AttributionSimulationOptions options({
       .noise_mode = noise_mode,
       .delay_mode = delay_mode,
@@ -337,27 +339,18 @@ int main(int argc, char* argv[]) {
 
   switch (input_mode) {
     case InputMode::kSingle: {
+      // Read all of stdin into a big string until a null char, as we don't have
+      // a streaming JSON parser available.
       std::string input_string;
-      bool success = base::ReadFileToString(
-          command_line.GetSwitchValuePath(kSwitchInputFile), &input_string);
-      if (!success) {
-        std::cerr << "failed to read input file." << std::endl;
-        return 1;
-      }
-      return ProcessJsonString(input_string, options,
+      std::getline(std::cin, input_string, '\0');
+      return ProcessJsonString(input_string, options, copy_input_to_output,
                                base::JSONWriter::OPTIONS_PRETTY_PRINT);
     }
     case InputMode::kMulti: {
-      // TODO(csharrison): use base::File if a ReadLine helper ever exists.
-      std::string line;
-      std::ifstream input(command_line.GetSwitchValueASCII(kSwitchInputFile));
-      if (!input.good()) {
-        std::cerr << "failed to read input file." << std::endl;
-        return 1;
-      }
       int ret = 0;
-      while (std::getline(input, line) && ret == 0) {
-        ret = ProcessJsonString(line, options, 0);
+      std::string line;
+      while (std::getline(std::cin, line) && ret == 0) {
+        ret = ProcessJsonString(line, options, copy_input_to_output, 0);
         std::cout << std::endl;
       }
       return ret;

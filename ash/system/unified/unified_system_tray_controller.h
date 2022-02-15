@@ -24,17 +24,12 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace ui {
-class Event;
-}  // namespace ui
-
 namespace gfx {
 class SlideAnimation;
 }  // namespace gfx
 
 namespace ash {
 
-class CalendarModel;
 class DetailedViewController;
 class FeaturePodControllerBase;
 class PaginationController;
@@ -118,7 +113,7 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowMediaControlsDetailedView();
   // Show the detailed view of Calendar. Called from the view.
   void ShowCalendarView(calendar_metrics::CalendarViewShowSource show_source,
-                        const ui::Event& event);
+                        calendar_metrics::CalendarEventSource event_source);
 
   // If you want to add a new detailed view, add here.
 
@@ -179,8 +174,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   bool showing_audio_detailed_view() const {
     return showing_audio_detailed_view_;
   }
-
-  CalendarModel* calendar_model() { return calendar_model_.get(); }
 
  private:
   friend class SystemTrayTestApi;
@@ -266,9 +259,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Controller of brightness slider. Owned.
   std::unique_ptr<UnifiedBrightnessSliderController>
       brightness_slider_controller_;
-
-  // Model for fetching/storing/looking-up any data needed for CalendarView.
-  std::unique_ptr<CalendarModel> calendar_model_;
 
   // If the previous state is expanded or not. Only valid during dragging (from
   // BeginDrag to EndDrag).

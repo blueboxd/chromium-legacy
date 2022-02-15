@@ -1399,8 +1399,7 @@
       'owners': ['file://components/policy/resources/OWNERS', 'okalitova@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:58-', 'chrome_os:58-'],
-      'future_on': ['ios'],
+      'supported_on': ['chrome.*:58-', 'chrome_os:58-', 'ios:99-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -10564,11 +10563,7 @@
       When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
       When this setting is not set, the built-in or the legacy certificate verifier may be used.
 
-      This policy is planned to be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 81, when support for the legacy certificate verifier on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is planned to be removed.
-
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Linux version 83, when support for the legacy certificate verifier on Linux is planned to be removed.
-
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Mac OS X version 104, when support for the legacy certificate verifier on Mac OS X is planned to be removed.
+      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 104, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
       ''',
     },
     {
@@ -30001,7 +29996,67 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
 
                   The state of the First-Party Sets feature determines whether Chrome retrieves the list of First-Party Sets.
                   It also controls whether Chrome supports First-Party Sets related features (e.g. the SameParty cookie attribute).''',
-    }
+    },
+    {
+      'name': 'DeviceEncryptedReportingPipelineEnabled',
+      'owners': ['cros-reporting-team@google.com', 'albertojuarez@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:100-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the Encrypted Reporting Pipeline',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the Encrypted Reporting Pipeline',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 957,
+      'caption': '''Enable the Encrypted Reporting Pipeline''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to True or leaving it unset allows for events, telemetry and info to be
+      reported to the Encrypted Reporting Pipeline. Setting the policy to False disables the Encrypted Reporting Pipeline.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'EnableDirectSockets',
+      'owners': ['file://content/browser/direct_sockets/OWNERS', 'greengrape@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Direct Sockets API.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Direct Sockets API.',
+        }
+      ],
+      'supported_on': ['chrome_os:100-'],
+      'default': True,
+      'example_value': False,
+      'default_for_enterprise_users': False,
+      'tags': [],
+      'id': 958,
+      'caption': '''Enable Direct Sockets API.''',
+      'desc': '''Setting the policy to Enabled lets users use the Direct Sockets API (provided that all other necessary conditions are fulfilled).
+      Setting the policy to Disabled means users will not be able to access the API.
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.'''
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -30475,6 +30530,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenWebUILazyLoading': 'login_web_ui_lazy_loading.enabled',
     'DeviceKeylockerForStorageEncryptionEnabled': 'keylocker_for_storage_encryption_enabled.enabled',
     'DeviceRunAutomaticCleanupOnLogin': 'device_run_automatic_cleanup_on_login.value',
+    'DeviceEncryptedReportingPipelineEnabled': 'device_reporting.encrypted_reporting_pipeline_enabled',
   },
   'policy_atomic_group_definitions': [
     {
@@ -30986,6 +31042,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 956,
+  'highest_id_currently_used': 958,
   'highest_atomic_group_id_currently_used': 41
 }

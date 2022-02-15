@@ -81,7 +81,7 @@ void FullRestoreAppLaunchHandler::LaunchBrowserWhenReady(
                          ->AppRegistryCache();
       Observe(cache);
 
-      for (const auto app_type : cache->GetInitializedAppTypes()) {
+      for (const auto app_type : cache->InitializedAppTypes()) {
         OnAppTypeInitialized(app_type);
       }
     }
@@ -125,14 +125,13 @@ void FullRestoreAppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
     AppLaunchHandler::OnAppUpdate(update);
 }
 
-void FullRestoreAppLaunchHandler::OnAppTypeInitialized(
-    apps::mojom::AppType app_type) {
-  if (app_type == apps::mojom::AppType::kChromeApp) {
+void FullRestoreAppLaunchHandler::OnAppTypeInitialized(apps::AppType app_type) {
+  if (app_type == apps::AppType::kChromeApp) {
     are_chrome_apps_initialized_ = true;
     return;
   }
 
-  if (app_type != apps::mojom::AppType::kWeb)
+  if (app_type != apps::AppType::kWeb)
     return;
 
   are_web_apps_initialized_ = true;

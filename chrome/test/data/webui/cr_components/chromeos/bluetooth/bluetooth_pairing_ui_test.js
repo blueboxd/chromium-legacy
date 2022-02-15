@@ -267,6 +267,10 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     assertTrue(!!getSpinnerPage());
     assertFalse(!!getDeviceSelectionPage());
 
+    await bluetoothConfig.getLastCreatedPairingHandler().waitForFetchDevice();
+    bluetoothConfig.getLastCreatedPairingHandler().completeFetchDevice(
+        device.deviceProperties);
+
     // Wait for DevicePairingHandler.PairDevice() to be called.
     await bluetoothConfig.getLastCreatedPairingHandler().waitForPairDevice();
 
@@ -587,6 +591,36 @@ suite('CrComponentsBluetoothPairingUiTest', function() {
     deviceHandler.completePairDevice(/*success=*/ true);
     await finishedPromise;
   });
+
+  test(
+      'Close dialog after attempting to pair to a device address not found',
+      async function() {
+        await init(/*pairingDeviceAddress=*/ '123456');
+
+        // We should immediately be in the spinner page, not the device
+        // selection page.
+        assertTrue(!!getSpinnerPage());
+        assertFalse(!!getDeviceSelectionPage());
+
+        const deviceHandler = bluetoothConfig.getLastCreatedPairingHandler();
+        await deviceHandler.waitForFetchDevice();
+
+        // Return no device.
+        deviceHandler.completeFetchDevice(null);
+
+        // Pairing is not initialized since device does not exit in discoverable
+        // devices list.
+        assertFalse(!!deviceHandler.getLastPairingDelegate());
+
+        let finishedPromise = eventToPromise('finished', bluetoothPairingUi);
+
+        // Simulate clicking 'Cancel'.
+        const event = new CustomEvent('cancel');
+        const ironPages =
+            bluetoothPairingUi.shadowRoot.querySelector('iron-pages');
+        ironPages.dispatchEvent(event);
+        await finishedPromise;
+      });
 
   test('Pair with a specific device by address, failure', async function() {
     const deviceId1 = '123456';

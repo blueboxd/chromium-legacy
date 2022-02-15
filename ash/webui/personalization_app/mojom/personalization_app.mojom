@@ -114,6 +114,9 @@ struct GooglePhotosPhoto {
     // Unique identifier for this photo.
     string id;
 
+    // Display name of the photo, derived from the photo's server-side filename.
+    string name;
+
     // Human-readable string representation of the date the photo was
     // taken, e.g., "Monday, March 6, 2008", translated into the user's current
     // locale.
@@ -334,6 +337,12 @@ enum TopicSource {
 
   // Art related sources in Backdrop server.
   kArtGallery = 1,
+};
+
+// Temperature unit for screensaver weather section.
+enum TemperatureUnit {
+  kFahrenheit = 1,
+  kCelsius = 2,
 };
 
 // Receives information whenever there are ambient mode pref changes.

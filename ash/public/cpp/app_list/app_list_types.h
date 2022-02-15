@@ -165,6 +165,46 @@ enum class AppListSortOrder {
   kMaxValue = kColor,
 };
 
+// All the events that affect the app list sort order (including the pref order
+// and the temporary order).
+// NOTE: Do not change the order of these as they are used for metrics.
+enum class AppListOrderUpdateEvent {
+  // Add a new item.
+  kItemAdded = 0,
+
+  // Remove an item.
+  kItemRemoved = 1,
+
+  // An item is moved due to sync.
+  kItemSyncMove = 2,
+
+  // An item is moved to a folder.
+  kItemMovedToFolder = 3,
+
+  // An item is moved to the root apps grid.
+  kItemMovedToRoot = 4,
+
+  // Sort reversion is triggered.
+  kRevert = 5,
+
+  // An item is moved but its parent apps grid does not change.
+  kItemMoved = 6,
+
+  // A folder is created.
+  kFolderCreated = 7,
+
+  // A folder is renamed.
+  kFolderRenamed = 8,
+
+  // The app list is hidden.
+  kAppListHidden = 9,
+
+  // User requests to sort.
+  kSortRequested = 10,
+
+  kMaxValue = kSortRequested,
+};
+
 // Lists the reasons that ash requests for item position update.
 enum class RequestPositionUpdateReason {
   // Fix the position when multiple items share the same position.
@@ -232,6 +272,21 @@ ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& os,
 enum class AppListModelStatus {
   kStatusNormal,
   kStatusSyncing,  // Syncing apps or installing synced apps.
+};
+
+// Indicate the state of the apps grid reorder animation.
+enum class AppListReorderAnimationStatus {
+  // No reorder animation is active.
+  kEmpty,
+
+  // Run the animation that fades out the obsolete layout.
+  kFadeOutAnimation,
+
+  // After the fade out animation ends and before the fade in animation starts.
+  kIntermediaryState,
+
+  // Run the animation that fades in the new layout after reordering.
+  kFadeInAnimation
 };
 
 // The UI component the user launched the search result from. Must match
@@ -522,6 +577,10 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Big title text to be displayed prominently on an answer card.
   std::vector<SearchResultTextItem> big_title_vector;
+
+  // Text for keyboard shortcuts displayed below the title. Only used for
+  // keyboard shortcut results.
+  std::vector<SearchResultTextItem> keyboard_shortcut_vector;
 
   // Text to be announced by a screen reader app.
   std::u16string accessible_name;

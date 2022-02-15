@@ -162,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.PartialSwap.ExtraDamage" units="%"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -260,7 +260,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.Draw.Occlusion.Calculation.Time"
-    units="microseconds" expires_after="2022-06-12">
+    units="microseconds" expires_after="2022-08-14">
   <owner>yiyix@chromium.org</owner>
   <owner>chromeos-gfx@chromium.org</owner>
   <summary>
@@ -422,7 +422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.VizDependencyResolvedToGpuStartedDrawUs"
-    units="microseconds" expires_after="2022-06-12">
+    units="microseconds" expires_after="2022-08-14">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -435,7 +435,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.VizScheduledDrawToDependencyResolvedUs"
-    units="microseconds" expires_after="2022-06-12">
+    units="microseconds" expires_after="2022-08-14">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -449,7 +449,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.VizScheduledDrawToGpuStartedDrawUs"
-    units="microseconds" expires_after="2022-06-12">
+    units="microseconds" expires_after="2022-08-14">
   <owner>vasilyt@chromium.org</owner>
   <owner>backer@chromium.org</owner>
   <summary>
@@ -517,7 +517,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.LayersUpdateTime" units="microseconds"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -574,7 +574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.LCDTextDisallowedReasonLayers"
-    enum="LCDTextDisallowedReason" expires_after="2022-06-12">
+    enum="LCDTextDisallowedReason" expires_after="2022-08-14">
   <owner>wangxianzhu@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -584,7 +584,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.NumActiveLayers" units="layers"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -594,7 +594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.NumActivePictureLayers" units="layers"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -786,26 +786,9 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="CompositorLatency" units="microseconds"
-    expires_after="2022-07-24">
-  <owner>sadrul@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the duration of various stages in the pipeline as a single frame goes
-    through the various stages in the compositor. This is reported for frames
-    that went through all the compositor stages in chromium, and was presented
-    to the user.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
-<histogram base="true" name="CompositorLatency.CompositorOnlyFrame"
-    units="microseconds" expires_after="2022-06-19">
+<histogram base="true"
+    name="CompositorLatency.CompositorOnlyFrame{InteractionType}.{StageType}"
+    units="microseconds" expires_after="2023-03-01">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -813,59 +796,134 @@ chromium-metrics-reviews@google.com.
     through the various stages in the compositor in the cases that there is no
     damage from main thread.
 
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
+    This metric uses base::Histogram::FactoryMicrosecondsTimeGet so only users
+    with high resolution clocks will report this metric.
   </summary>
-</histogram>
-
-<histogram base="true" name="CompositorLatency.DroppedFrame"
-    units="microseconds" expires_after="2022-06-26">
-  <owner>sadrul@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the duration of various stages in the pipeline as a single frame goes
-    through the various stages in the compositor. This is reported for frames
-    that the user did not see: this includes frames that are dropped in various
-    stages inside chromium, or even frames that went through all stages in
-    chromium, but ultimately was not presented to the user.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
-<histogram base="true" name="CompositorLatency.MissedDeadlineFrame"
-    units="microseconds" expires_after="2022-06-12">
-  <owner>sadrul@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the duration of various stages in the pipeline as a single frame goes
-    through the various stages in the compositor. This is reported for frames
-    that went through all the compositor stages in chromium, and was presented
-    to the user, but were delayed and missed their deadline.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
+  <token key="InteractionType">
+    <variant name=""/>
+    <variant name=".CanvasAnimation"/>
+    <variant name=".CompositorAnimation"/>
+    <variant name=".JSAnimation"/>
+    <variant name=".MainThreadAnimation"/>
+    <variant name=".PinchZoom"/>
+    <variant name=".RAF"/>
+    <variant name=".ScrollbarScroll"/>
+    <variant name=".TouchScroll"/>
+    <variant name=".WheelScroll"/>
+  </token>
+  <token key="StageType">
+    <variant name="BeginImplFrameToFinishImpl"/>
+    <variant name="ImplFrameDoneToSubmitCompositorFrame"/>
+    <variant name="SendBeginMainFrameToBeginMainAbort"/>
+    <variant name="SubmitCompositorFrameToPresentationCompositorFrame"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.BufferAvailableToBufferReady"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.BufferReadyToLatch"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.LatchToSwapEnd"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.ReceivedCompositorFrameToStartDraw"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapStart"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SubmitToReceiveCompositorFrame"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SwapEndToPresentationCompositorFrame"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToBufferAvailable"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd"/>
+    <variant name="TotalLatency"/>
+  </token>
 </histogram>
 
 <histogram name="CompositorLatency.Type" enum="FrameReportType"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
     Whether frame is dropped or presented meeting or missing the deadline or is
     a compositor only frame.
   </summary>
+</histogram>
+
+<histogram base="true"
+    name="CompositorLatency{ReportType}{InteractionType}.{StageType}"
+    units="microseconds" expires_after="2022-07-24">
+  <owner>sadrul@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the duration of various stages in the pipeline as a single frame goes
+    through the various stages in the compositor {ReportType}.
+
+    This metric uses base::Histogram::FactoryMicrosecondsTimeGet so only users
+    with high resolution clocks will report this metric.
+  </summary>
+  <token key="ReportType">
+    <variant name=""
+        summary="reported for frames that went through all the compositor
+                 stages in chromium, and was presented to the user"/>
+    <variant name=".DroppedFrame"
+        summary="reported for frames that the user did not see: this includes
+                 frames that are dropped in various stages inside chromium,
+                 or even frames that went through all stages in chromium, but
+                 ultimately was not presented to the user"/>
+    <variant name=".MissedDeadlineFrame"
+        summary="reported for frames that went through all the compositor
+                 stages in chromium, and was presented to the user, but were
+                 delayed and missed their deadline"/>
+  </token>
+  <token key="InteractionType">
+    <variant name=""/>
+    <variant name=".CanvasAnimation"/>
+    <variant name=".CompositorAnimation"/>
+    <variant name=".JSAnimation"/>
+    <variant name=".MainThreadAnimation"/>
+    <variant name=".PinchZoom"/>
+    <variant name=".RAF"/>
+    <variant name=".ScrollbarScroll"/>
+    <variant name=".TouchScroll"/>
+    <variant name=".WheelScroll"/>
+  </token>
+  <token key="StageType">
+    <variant name="Activation"/>
+    <variant name="BeginImplFrameToSendBeginMainFrame"/>
+    <variant name="Commit"/>
+    <variant name="EndActivateToSubmitCompositorFrame"/>
+    <variant name="EndCommitToActivation"/>
+    <variant name="SendBeginMainFrameToCommit"/>
+    <variant name="SendBeginMainFrameToCommit.Animate"/>
+    <variant name="SendBeginMainFrameToCommit.BeginMainSentToStarted"/>
+    <variant name="SendBeginMainFrameToCommit.CompositeCommit"/>
+    <variant name="SendBeginMainFrameToCommit.CompositingInputs"/>
+    <variant name="SendBeginMainFrameToCommit.HandleInputEvents"/>
+    <variant name="SendBeginMainFrameToCommit.LayoutUpdate"/>
+    <variant name="SendBeginMainFrameToCommit.Paint"/>
+    <variant name="SendBeginMainFrameToCommit.Prepaint"/>
+    <variant name="SendBeginMainFrameToCommit.StyleUpdate"/>
+    <variant name="SendBeginMainFrameToCommit.UpdateLayers"/>
+    <variant name="SubmitCompositorFrameToPresentationCompositorFrame"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.BufferAvailableToBufferReady"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.BufferReadyToLatch"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.LatchToSwapEnd"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.ReceivedCompositorFrameToStartDraw"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapStart"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SubmitToReceiveCompositorFrame"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SwapEndToPresentationCompositorFrame"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToBufferAvailable"/>
+    <variant
+        name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd"/>
+    <variant name="TotalLatency"/>
+  </token>
 </histogram>
 
 <histogram name="Graphics.PresentationTimestamp.InvalidBeforeSwap" units="ms"
@@ -1011,7 +1069,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2022-08-07">
+<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1065,7 +1123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-06-12">
+    units="%" expires_after="2022-08-14">
   <owner>behdadb@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>
@@ -1079,7 +1137,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.MaxStale" units="ms"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1123,7 +1181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames.AllAnimations"
-    units="%" expires_after="2022-06-12">
+    units="%" expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>ericrk@chromium.org</owner>
   <summary>
@@ -1144,7 +1202,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames.AllInteractions"
-    units="%" expires_after="2022-06-12">
+    units="%" expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>ericrk@chromium.org</owner>
   <summary>
@@ -1165,7 +1223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames.AllSequences"
-    units="%" expires_after="2022-06-12">
+    units="%" expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>ericrk@chromium.org</owner>
   <summary>
@@ -1396,7 +1454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.Stale" units="ms"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>sadrul@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>

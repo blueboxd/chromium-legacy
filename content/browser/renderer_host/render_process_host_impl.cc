@@ -111,6 +111,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
 #include "content/browser/renderer_host/recently_destroyed_hosts.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -2474,9 +2475,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
+  registry->AddInterface(
+      base::BindRepeating(&KeySystemSupportImpl::BindReceiver));
+#endif
 
   AddUIThreadInterface(
       registry.get(),
@@ -3161,7 +3163,12 @@ void RenderProcessHostImpl::NotifyRendererOfLockedStateUpdate() {
   GetRendererInterface()->SetIsCrossOriginIsolated(
       process_lock.GetWebExposedIsolationInfo().is_isolated());
 
+  bool direct_sockets_allowed_by_policy =
+      GetContentClient()->browser()->AreDirectSocketsAllowedByPolicy(
+          GetBrowserContext());
+
   GetRendererInterface()->SetIsDirectSocketEnabled(
+      direct_sockets_allowed_by_policy &&
       process_lock.GetWebExposedIsolationInfo().is_isolated_application());
 
   if (!process_lock.IsASiteOrOrigin())
@@ -3789,6 +3796,14 @@ bool RenderProcessHostImpl::HasOnlyNonLiveRenderFrameHosts() {
     if (RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(rfh_id)) {
       found_rfh_count++;
       if (rfh->IsRenderFrameLive())
+        return false;
+
+      // If this process contains a frame from an inner WebContents, skip the
+      // process leak cleanup for now. Inner WebContents attachment can break
+      // if the process it starts with goes away before it attaches.
+      // TODO(https://crbug.com/1295431): Remove in favor of tracking pending
+      // guest initializations instead.
+      if (rfh->delegate()->IsInnerWebContentsForGuest())
         return false;
     }
   }

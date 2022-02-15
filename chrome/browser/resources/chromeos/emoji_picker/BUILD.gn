@@ -41,6 +41,7 @@ generate_grd("build_grd") {
     "index.html",
     "metadata_extension.js",
     "store.js",
+    "structs/trie.js",
     "types.js",
     "emoji_picker_api_proxy.js",
     "no_results.svg",
@@ -159,27 +160,20 @@ action_foreach("emoji_data_remaining") {
 
 action_foreach("emoticon_data") {
   script = "tools/emoticon_data.py"
-
-  metadata_json = [ "./emoticon_test_ordering.json" ]
-  keyword_xmls = [
-    # later keywords will override earlier keywords for a particular emoji.
-    "//third_party/cldr/src/common/annotations/en.xml",
-    "//third_party/cldr/src/common/annotations/en_001.xml",
-    "//third_party/cldr/src/common/annotationsDerived/en.xml",
-    "//third_party/cldr/src/common/annotationsDerived/en_001.xml",
-  ]
   merged_json = "$target_gen_dir/{{source_name_part}}.json"
 
-  sources = metadata_json
-  inputs = keyword_xmls
+  sources = [
+    "./emoticon_test_ordering.json",
+    "//third_party/emoji-metadata/src/emoticon_ordering.json",
+  ]
+
   outputs = [ merged_json ]
   args = [
-           "--metadata",
-           "{{source}}",
-           "--output",
-           rebase_path(merged_json, root_build_dir),
-           "--keywords",
-         ] + rebase_path(keyword_xmls, root_build_dir)
+    "--metadata",
+    "{{source}}",
+    "--output",
+    rebase_path(merged_json, root_build_dir),
+  ]
 }
 
 js_library("emoji_picker") {
@@ -193,6 +187,7 @@ js_library("emoji_picker") {
     ":events",
     ":store",
     ":text_group_button",
+    ":trie",
     ":types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
@@ -278,6 +273,10 @@ js_library("constants") {
 }
 
 js_library("events") {
+}
+
+js_library("trie") {
+  sources = [ "./structs/trie.js" ]
 }
 
 js_library("store") {

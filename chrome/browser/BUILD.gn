@@ -1017,6 +1017,8 @@ static_library("browser") {
     "password_manager/password_change_success_tracker_factory.h",
     "password_manager/password_reuse_manager_factory.cc",
     "password_manager/password_reuse_manager_factory.h",
+    "password_manager/password_store_backend_sync_delegate_impl.cc",
+    "password_manager/password_store_backend_sync_delegate_impl.h",
     "password_manager/password_store_factory.cc",
     "password_manager/password_store_factory.h",
     "password_manager/password_store_utils.cc",
@@ -4900,8 +4902,6 @@ static_library("browser") {
       "upgrade_detector/installed_version_updater_chromeos.h",
       "upgrade_detector/upgrade_detector_chromeos.cc",
       "upgrade_detector/upgrade_detector_chromeos.h",
-      "webshare/chromeos/sharesheet_client.cc",
-      "webshare/chromeos/sharesheet_client.h",
     ]
     public_deps += [ "//chromeos/components/sharesheet:constants" ]
     deps += [
@@ -4942,7 +4942,6 @@ static_library("browser") {
       "//chrome/browser/supervised_user:supervised_user_unscaled_resources",
       "//chrome/browser/ui/webui/nearby_share:mojom",
       "//chrome/browser/ui/webui/nearby_share/public/mojom",
-      "//chrome/browser/webshare:storage",
       "//chrome/services/sharing/public/cpp",
       "//chrome/services/sharing/public/proto",
       "//chrome/services/speech:lib",
@@ -5052,9 +5051,12 @@ static_library("browser") {
       "apps/app_service/browser_app_instance_tracker.h",
       "apps/intent_helper/common_apps_navigation_throttle.cc",
       "apps/intent_helper/common_apps_navigation_throttle.h",
+      "webshare/chromeos/sharesheet_client.cc",
+      "webshare/chromeos/sharesheet_client.h",
     ]
     deps += [
       "//ash/webui/projector_app/public/cpp",
+      "//chrome/browser/webshare:storage",
       "//components/app_constants",
       "//ui/wm/public",
     ]
@@ -6001,7 +6003,7 @@ static_library("browser") {
     deps += [ "//chrome/browser/lens/region_search" ]
   }
 
-  if (is_win || is_chromeos_ash || is_mac) {
+  if (is_win || is_chromeos || is_mac) {
     sources += [
       "webshare/safe_browsing_request.cc",
       "webshare/safe_browsing_request.h",
@@ -8024,23 +8026,10 @@ if (is_mac) {
     # copy of libc++.
     no_default_deps = true
 
-    sources = [
-      "mac/developer_id_certificate_reauthorize.h",
-      "mac/developer_id_certificate_reauthorize_stub_main.c",
-    ]
+    sources = [ "mac/developer_id_certificate_reauthorize_stub_main.c" ]
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
-    deps = [ "//chrome:chrome_framework+link_nested" ]
+    deps = [ "../common:version_header" ]
     ldflags = []
-    if (is_component_build) {
-      ldflags += [
-        # The stub is in Product.app/Contents/Frameworks/Product
-        # Framework.framework/Versions/X/Helpers so set rpath up to the base.
-        "-Wl,-rpath,@loader_path/../../../../../../..",
-
-        # ... and up to Contents/Frameworks.
-        "-Wl,-rpath,@executable_path/../../../..",
-      ]
-    }
     if (enable_stripping) {
       ldflags += [ "-Wl,-exported_symbols_list," +
                    rebase_path("../app/app.exports", root_build_dir) ]

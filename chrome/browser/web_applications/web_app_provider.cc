@@ -272,7 +272,8 @@ void WebAppProvider::CreateSubsystems(Profile* profile) {
       profile, *registrar, *install_manager_,
       base::MakeRefCounted<FileUtilsWrapper>());
   auto translation_manager = std::make_unique<WebAppTranslationManager>(
-      profile, registrar.get(), base::MakeRefCounted<FileUtilsWrapper>());
+      profile, install_manager_.get(),
+      base::MakeRefCounted<FileUtilsWrapper>());
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(profile);
 
   if (g_os_integration_manager_factory_for_testing) {
@@ -319,8 +320,8 @@ void WebAppProvider::ConnectSubsystems() {
       install_finalizer_.get(), system_web_app_manager_.get(),
       os_integration_manager_.get(), sync_bridge_.get());
   externally_managed_app_manager_->SetSubsystems(
-      registrar_.get(), os_integration_manager_.get(), ui_manager_.get(),
-      install_finalizer_.get(), install_manager_.get());
+      registrar_.get(), ui_manager_.get(), install_finalizer_.get(),
+      install_manager_.get());
   preinstalled_web_app_manager_->SetSubsystems(
       registrar_.get(), ui_manager_.get(),
       externally_managed_app_manager_.get());

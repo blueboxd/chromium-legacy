@@ -147,7 +147,7 @@ def _bootstrap_properties(ctx):
                     if p in builder_properties:
                         non_bootstrapped_properties[p] = builder_properties[p]
 
-                properties_file = "builders/{}/{}/properties.textpb".format(bucket_name, builder_name)
+                properties_file = "builders/{}/{}/properties.json".format(bucket_name, builder_name)
                 non_bootstrapped_properties["$bootstrap/properties"] = {
                     "top_level_project": {
                         "repo": {

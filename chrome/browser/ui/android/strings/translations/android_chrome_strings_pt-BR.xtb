@@ -293,7 +293,7 @@ Toque em qualquer palavra e a mantenha pressionada para pesquisar. Para refinar 
 <translation id="2718352093833049315">Apenas com Wi-Fi</translation>
 <translation id="2718846868787000099">Os sites que você visita podem ver suas preferências para exibir conteúdo nos seus idiomas preferidos</translation>
 <translation id="2723001399770238859">áudio</translation>
-<translation id="2728754400939377704">Classificar por site</translation>
+<translation id="2728754400939377704">Ordenar por site</translation>
 <translation id="2732063072010454421">Tenha uma melhor experiência de pesquisa por voz</translation>
 <translation id="2739256783402597439">2G</translation>
 <translation id="2744248271121720757">Toque em uma palavra para pesquisar instantaneamente ou ver as ações relacionadas</translation>
@@ -659,7 +659,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4837753911714442426">Abrir opções de impressão de página</translation>
 <translation id="4842092870884894799">Mostrando pop-up da criação de senhas</translation>
 <translation id="4842515939542199281">Para pesquisar com a voz, toque no microfone</translation>
-<translation id="4850886885716139402">Visualizar</translation>
+<translation id="4850886885716139402">Ver</translation>
 <translation id="4860895144060829044">Ligar</translation>
 <translation id="4864369630010738180">Fazendo login...</translation>
 <translation id="4866368707455379617">Não é possível instalar <ph name="MODULE" /> para o Chrome</translation>
@@ -1271,7 +1271,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8110087112193408731">Mostrar sua atividade do Chrome no Bem-estar digital?</translation>
 <translation id="8127542551745560481">Editar página inicial</translation>
 <translation id="8130309322784422030">Suas informações de login armazenadas podem estar desatualizadas</translation>
-<translation id="813082847718468539">Visualizar informações do site</translation>
+<translation id="813082847718468539">Ver informações do site</translation>
 <translation id="8137558756159375272">A "Pesquisa por toque" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>
 <translation id="8153351135626613369">O Assistente será exibido quando ele detectar que pode oferecer ajuda nos sites compatíveis</translation>
 <translation id="8156139159503939589">Quais idiomas você lê?</translation>
@@ -1302,7 +1302,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8310344678080805313">Guias padrão</translation>
 <translation id="831192587911042850">Adiciona o site atual à lista de sites que você está seguindo.</translation>
 <translation id="834313815369870491">Nunca traduzir estes sites</translation>
-<translation id="8349013245300336738">Classificar por quantidade de dados usados</translation>
+<translation id="8349013245300336738">Ordenar por quantidade de dados usados</translation>
 <translation id="8352996530981010042">Não foi possível fazer o download das reações. Tente novamente.</translation>
 <translation id="8354977102499939946">Pesquisar rapidamente usando sua voz. Para editar esse atalho, acesse as Configurações.</translation>
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> downloads restaurados</translation>

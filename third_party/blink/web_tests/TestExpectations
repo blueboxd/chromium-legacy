@@ -232,6 +232,11 @@ crbug.com/1123606 http/tests/fenced_frame/* [ Skip ]
 crbug.com/1123606 virtual/fenced-frame-shadow-dom/* [ Pass ]
 crbug.com/1123606 virtual/fenced-frame-mparch/* [ Pass ]
 
+# These tests require shared-storage and fenced-frames
+# Keep this in sync with VirtualTestSuites.
+crbug.com/1218540 wpt_internal/shared_storage/* [ Skip ]
+crbug.com/1218540 virtual/shared-storage/* [ Pass ]
+
 # These tests require the experimental prerender feature.
 # See https://crbug.com/1126305.
 crbug.com/1126305 external/wpt/speculation-rules/prerender/* [ Skip ]
@@ -282,6 +287,9 @@ crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Fa
 
 crbug.com/784956 fast/history/frameset-repeated-name.html [ Failure Pass ]
 
+# These are both related to images not painting as expected, and are primarily CQ hidden flakes
+crbug.com/1284609 images/image-load-reset-on-new-base.html [ Failure Pass ]
+crbug.com/1271092 paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Failure Pass ]
 
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Failure Pass ]
@@ -5061,14 +5069,6 @@ crbug.com/901271 external/wpt/dom/events/Event-dispatch-on-disabled-elements.htm
 # Test is flaky under load
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
 
-# Temporarily disabled to land DevTools CL (https://crrev.com/c/3461550).
-crbug.com/1066909 http/tests/devtools/console/console-link-to-snippet.js [ Failure Pass ]
-crbug.com/1066909 http/tests/devtools/console/console-log-eval-syntax-error.js [ Failure Pass ]
-crbug.com/1066909 http/tests/devtools/console/console-log-syntax-error.js [ Failure Pass ]
-crbug.com/1066909 http/tests/devtools/console/console-message-from-inline-with-url.js [ Failure Pass ]
-crbug.com/1066909 http/tests/devtools/console/console-worker-nested-imports-syntax-error.js [ Failure Pass ]
-crbug.com/1066909 http/tests/devtools/sources/debugger/debugger-autocontinue-on-syntax-error.js [ Failure Pass ]
-
 # Flaky crash due to "bad mojo message".
 crbug.com/906952 editing/pasteboard/file-drag-to-editable.html [ Crash Pass ]
 
@@ -6772,9 +6772,6 @@ crbug.com/996511 external/wpt/service-workers/cache-storage/window/cache-abort.h
 crbug.com/996511 external/wpt/service-workers/service-worker/getregistrations.https.html [ Crash Failure Pass Timeout ]
 crbug.com/996511 http/tests/inspector-protocol/fetch/fetch-cors-preflight-sw.js [ Crash Failure Pass Timeout ]
 
-# Expected to time out, but NOT crash.
-crbug.com/1218540 storage/shared_storage/unimplemented-worklet-operations.html [ Crash Timeout ]
-
 # Sheriff 2021-07-14
 crbug.com/1229039 [ Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Skip Timeout ]
 crbug.com/1229039 [ Mac ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Pass Skip Timeout ]
@@ -7620,3 +7617,8 @@ crbug.com/1296106 [ Mac10.13 ] virtual/plz-dedicated-worker/external/wpt/referre
 # Sheriff 2022-02-15
 crbug.com/1297553 external/wpt/fetch/api/basic/response-null-body.any.sharedworker.html [ Pass Failure ]
 crbug.com/1297587 [ Mac10.12 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Pass Failure ]
+
+# Sheriff 2022-02-16
+crbug.com/1297416 [ Mac Release ] virtual/fenced-frame-shadow-dom/http/tests/fenced_frame/coop-bcg-swap-rendering.html [ Failure Pass ]
+crbug.com/1297416 [ Linux Release ] virtual/fenced-frame-shadow-dom/http/tests/fenced_frame/coop-bcg-swap-rendering.html [ Failure Pass ]
+crbug.com/1297416 [ Win10.20h2 Release ] virtual/fenced-frame-shadow-dom/http/tests/fenced_frame/coop-bcg-swap-rendering.html [ Failure Pass ]

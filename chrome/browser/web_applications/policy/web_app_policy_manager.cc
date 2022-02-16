@@ -24,7 +24,6 @@
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -316,8 +316,7 @@ void WebAppPolicyManager::ApplyPolicySettings() {
                                        app_id);
   }
 
-  for (WebAppPolicyManagerObserver& observer : observers_)
-    observer.OnPolicyChanged();
+  app_registrar_->NotifyWebAppSettingsPolicyChanged();
 }
 
 ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
@@ -395,15 +394,6 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   return install_options;
-}
-
-void WebAppPolicyManager::AddObserver(WebAppPolicyManagerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WebAppPolicyManager::RemoveObserver(
-    WebAppPolicyManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 RunOnOsLoginPolicy WebAppPolicyManager::GetUrlRunOnOsLoginPolicy(

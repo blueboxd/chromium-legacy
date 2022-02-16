@@ -1040,6 +1040,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.CapabilitiesService.HttpResponseCode"
+    enum="HttpResponseCode" expires_after="2023-02-14">
+  <owner>vizcay@google.com</owner>
+  <owner>battre@chromium.org</owner>
+  <summary>
+    HTTP response code of fetching domains' password change capabilities.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.CertificateErrorsWhileSeeingForms"
     enum="PasswordCertificateError" expires_after="M105">
   <owner>battre@chromium.org</owner>
@@ -2300,6 +2309,38 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="PasswordManager.SavedPasswordsCapabilitiesFetcher.AllOriginsResponseTime"
+    units="ms" expires_after="2023-02-14">
+  <owner>vizcay@google.com</owner>
+  <owner>battre@chromium.org</owner>
+  <summary>
+    Response time for fetching password change capabilities for all stored
+    passwords urls. It is also recorded if the fetch fails.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.SavedPasswordsCapabilitiesFetcher.CacheState"
+    enum="PasswordScriptsFetcherCacheState" expires_after="2023-02-14">
+  <owner>vizcay@google.com</owner>
+  <owner>battre@chromium.org</owner>
+  <summary>
+    PasswordScriptsFetcher's cache state when the fetcher is asked to refresh
+    scripts if necessary.
+  </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.SavedPasswordsCapabilitiesFetcher.SingleOriginResponseTime"
+    units="ms" expires_after="2023-02-14">
+  <owner>vizcay@google.com</owner>
+  <owner>battre@chromium.org</owner>
+  <summary>
+    Response time for fetching password change capabilities for a single domain.
+    It is also recorded if the fetch fails.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.SaveUIDismissalReason"
     enum="PasswordManagerUIDismissalReason" expires_after="2022-06-19">
 <!-- Name completed by histogram_suffixes name="PasswordAccountStorageUserState" -->
@@ -2884,6 +2925,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordProtection.InterstitialString"
     enum="PasswordProtectionInterstitialStringType" expires_after="2021-12-26">
+  <obsolete>
+    Removed in M100. This histogram is no longer needed.
+  </obsolete>
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

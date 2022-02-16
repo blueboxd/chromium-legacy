@@ -55,7 +55,6 @@
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -78,6 +77,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -594,13 +594,20 @@ void AppLauncherHandler::OnWebAppUninstalled(const web_app::AppId& app_id) {
       base::Value(!extension_id_prompting_.empty()));
 }
 
-void AppLauncherHandler::OnPolicyChanged() {
+void AppLauncherHandler::OnWebAppRunOnOsLoginModeChanged(
+    const web_app::AppId& app_id,
+    web_app::RunOnOsLoginMode run_on_os_login_mode) {
+  std::unique_ptr<base::DictionaryValue> app_info = GetWebAppInfo(app_id);
+  if (app_info)
+    CallJavascriptFunction("ntp.appAdded", *app_info);
+}
+
+void AppLauncherHandler::OnWebAppSettingsPolicyChanged() {
   HandleGetApps(nullptr);
 }
 
 void AppLauncherHandler::OnAppRegistrarDestroyed() {
   web_apps_observation_.Reset();
-  web_apps_policy_manager_observation_.Reset();
 }
 
 void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
@@ -665,6 +672,7 @@ std::unique_ptr<base::DictionaryValue> AppLauncherHandler::GetWebAppInfo(
 }
 
 void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
+  AllowJavascript();
   base::DictionaryValue dictionary;
 
   // Tell the client whether to show the promo for this view. We don't do this
@@ -719,8 +727,6 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
     install_tracker_observation_.Observe(
         extensions::InstallTracker::Get(profile));
     web_apps_observation_.Observe(&web_app_provider_->registrar());
-    web_apps_policy_manager_observation_.Observe(
-        &web_app_provider_->policy_manager());
   }
 
   has_loaded_apps_ = true;
@@ -1181,24 +1187,22 @@ void AppLauncherHandler::OnFaviconForAppInstallFromLink(
 
   attempting_web_app_install_page_ordinal_ = install_info->page_ordinal;
 
-  web_app::OnceInstallCallback install_complete_callback =
-      base::BindOnce(
-          [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
-             const web_app::AppId& app_id,
-             web_app::InstallResultCode install_result) {
-            // Note: this installation path only happens when the user drags a
-            // link to chrome://apps, hence the specific metric name.
-            base::UmaHistogramEnumeration(
-                "Apps.Launcher.InstallAppFromLinkResult", install_result);
-            if (!app_launcher_handler)
-              return;
-            if (install_result !=
-                web_app::InstallResultCode::kSuccessNewInstall) {
-              app_launcher_handler->attempting_web_app_install_page_ordinal_ =
-                  absl::nullopt;
-            }
-          },
-          weak_ptr_factory_.GetWeakPtr());
+  web_app::OnceInstallCallback install_complete_callback = base::BindOnce(
+      [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
+         const web_app::AppId& app_id,
+         webapps::InstallResultCode install_result) {
+        // Note: this installation path only happens when the user drags a
+        // link to chrome://apps, hence the specific metric name.
+        base::UmaHistogramEnumeration("Apps.Launcher.InstallAppFromLinkResult",
+                                      install_result);
+        if (!app_launcher_handler)
+          return;
+        if (install_result != webapps::InstallResultCode::kSuccessNewInstall) {
+          app_launcher_handler->attempting_web_app_install_page_ordinal_ =
+              absl::nullopt;
+        }
+      },
+      weak_ptr_factory_.GetWeakPtr());
 
   web_app::WebAppInstallParams install_params;
   install_params.add_to_desktop = true;

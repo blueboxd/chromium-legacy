@@ -220,7 +220,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Security.PageInfo.TimeOpen" units="units"
+<histogram name="Security.PageInfo.TimeOpen" units="ms"
     expires_after="2022-07-31">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -245,7 +245,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Security.PageInfo.TimeOpen.Action" units="units"
+<histogram name="Security.PageInfo.TimeOpen.Action" units="ms"
     expires_after="2022-08-14">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -255,7 +255,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Security.PageInfo.TimeOpen.NoAction" units="units"
+<histogram name="Security.PageInfo.TimeOpen.NoAction" units="ms"
     expires_after="2022-08-14">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -665,7 +665,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Security.TimeOnPage2" units="units"
+<histogram base="true" name="Security.TimeOnPage2" units="ms"
     expires_after="2022-08-14">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -795,6 +795,20 @@ chromium-metrics-reviews@google.com.
     Logs whether or not a password form was submitted from a site-isolated
     process that's dedicated to a single site. Recorded when a password form is
     submitted.
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.ORB.CorbVsOrb" enum="CorbVsOrb"
+    expires_after="M106">
+  <owner>creis@chromium.org</owner>
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    Logs whether ORB and CORB would take the same allow-vs-block decision. This
+    should help assess the backcompatibility risk of shipping ORB.
+
+    Logged at the end of lifetime of the ResponseAnalyzer (i.e. after processing
+    each response that is subject to CORB - most NetworkService responses, but
+    also CORB-covered web bundles).
   </summary>
 </histogram>
 

@@ -651,6 +651,10 @@ const base::Feature kFiltersInRecents{"FiltersInRecents",
 const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables Floating Workspace feature on Chrome OS
+const base::Feature kFloatingWorkspace{"FloatingWorkspace",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to allow keeping full screen mode after unlock.
 const base::Feature kFullscreenAfterUnlockAllowed = {
     "FullscreenAfterUnlockAllowed", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -723,7 +727,7 @@ const base::Feature kHibernate{"Hibernate", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables or disables the flag to synchronize launcher item colors. It is
 // in effect only when kLauncherAppSort is enabled.
 const base::Feature kLauncherItemColorSync{"LauncherItemColorSync",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the search service integration in the Help app.
 const base::Feature kHelpAppSearchServiceIntegration{
@@ -1178,6 +1182,10 @@ const base::Feature kSessionManagerLivenessCheck{
 const base::Feature kSettingsAppNotificationSettings{
     "SettingsAppNotificationSettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether theme changes should be animated for the Settings app.
+const base::Feature kSettingsAppThemeChangeAnimation{
+    "SettingsAppThemeChangeAnimation", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables launcher nudge that animates the home button to guide users to open
 // the launcher.
 const base::Feature kShelfLauncherNudge{"ShelfLauncherNudge",
@@ -1510,7 +1518,8 @@ bool IsCryptohomeRecoveryFlowEnabled() {
 }
 
 bool IsDarkLightModeEnabled() {
-  return chromeos::features::IsDarkLightModeEnabled();
+  return base::FeatureList::IsEnabled(kNotificationsRefresh) ||
+         chromeos::features::IsDarkLightModeEnabled();
 }
 
 bool IsDemoModeSWAEnabled() {
@@ -1595,6 +1604,10 @@ bool IsFilesWebDriveOfficeEnabled() {
 
 bool IsFirmwareUpdaterAppEnabled() {
   return base::FeatureList::IsEnabled(kFirmwareUpdaterApp);
+}
+
+bool IsFloatingWorkspaceEnabled() {
+  return base::FeatureList::IsEnabled(kFloatingWorkspace);
 }
 
 bool IsFullscreenAfterUnlockAllowed() {
@@ -1907,6 +1920,11 @@ bool IsSeparateNetworkIconsEnabled() {
 
 bool IsSettingsAppNotificationSettingsEnabled() {
   return base::FeatureList::IsEnabled(kSettingsAppNotificationSettings);
+}
+
+bool IsSettingsAppThemeChangeAnimationEnabled() {
+  return IsDarkLightModeEnabled() &&
+         base::FeatureList::IsEnabled(kSettingsAppThemeChangeAnimation);
 }
 
 bool IsShelfLauncherNudgeEnabled() {

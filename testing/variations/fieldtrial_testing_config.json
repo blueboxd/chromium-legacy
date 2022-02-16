@@ -488,6 +488,42 @@
             ]
         }
     ],
+    "AssistMultiWord": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithGboard_20220216",
+                    "params": {
+                        "group": "gboard"
+                    },
+                    "enable_features": [
+                        "AssistMultiWord"
+                    ]
+                },
+                {
+                    "name": "EnabledWithGboardRelaxedA_20220216",
+                    "params": {
+                        "group": "gboard_relaxed_a"
+                    },
+                    "enable_features": [
+                        "AssistMultiWord"
+                    ]
+                },
+                {
+                    "name": "EnabledWithGboardRelaxedB_20220216",
+                    "params": {
+                        "group": "gboard_relaxed_b"
+                    },
+                    "enable_features": [
+                        "AssistMultiWord"
+                    ]
+                }
+            ]
+        }
+    ],
     "AsyncFontAccess": [
         {
             "platforms": [
@@ -3791,6 +3827,22 @@
             ]
         }
     ],
+    "LanguagePacksSpanishHandwriting": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HandwritingLegacyRecognition",
+                        "LanguagePacksHandwriting"
+                    ]
+                }
+            ]
+        }
+    ],
     "LightweightReactions": [
         {
             "platforms": [
@@ -4175,7 +4227,10 @@
                         "RichAutocompletionAutocompleteNonPrefixAll": "true",
                         "RichAutocompletionAutocompleteTitles": "true",
                         "ShortBookmarkSuggestionsByTotalInputLengthThreshold": "3",
-                        "UIMaxAutocompleteMatches": "8"
+                        "UIMaxAutocompleteMatches": "8",
+                        "ZeroSuggestCacheCounterfactual": "true",
+                        "ZeroSuggestCacheDurationSec": "180",
+                        "ZeroSuggestPrefetchBypassCache": "true"
                     },
                     "enable_features": [
                         "OmniboxAggregateShortcuts",
@@ -4192,7 +4247,8 @@
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichAutocompletion",
                         "OmniboxShortBookmarkSuggestionsByTotalInputLength",
-                        "OmniboxUIExperimentMaxAutocompleteMatches"
+                        "OmniboxUIExperimentMaxAutocompleteMatches",
+                        "ZeroSuggestPrefetching"
                     ],
                     "disable_features": []
                 }
@@ -6448,7 +6504,6 @@
             "platforms": [
                 "linux",
                 "windows",
-                "mac",
                 "chromeos_lacros",
                 "chromeos"
             ],

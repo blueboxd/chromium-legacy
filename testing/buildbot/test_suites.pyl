@@ -44,7 +44,6 @@
           '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         ],
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
           'vr_instrumentation_test',
         ],
@@ -87,7 +86,6 @@
           'shards': 20,
         },
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
           'emulator-8-cores',  # Use 8-core to shorten test runtime.
         ],
@@ -106,14 +104,12 @@
             'org.chromium.chrome.browser.externalnav.UrlOverridingTest.testRedirectionFromIntent*'
         ],
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
         'test': 'chrome_public_test_apk',
       },
       'chrome_public_unit_test_apk': {
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -130,7 +126,6 @@
           '--gtest_filter=TabTest.testTabContext',
         ],
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -177,14 +172,12 @@
           'shards': 20,
         },
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
       'chrome_public_unit_test_apk': {
         'ci_only': True,
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -239,13 +232,11 @@
           'shards': 5,
         },
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
       'chrome_public_unit_test_apk': {
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -345,7 +336,6 @@
           '${buildername}',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -356,7 +346,6 @@
     'android_wpr_record_replay_tests': {
       'chrome_java_test_wpr_tests': {
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -413,7 +402,6 @@
           'shards': 20,
         },
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
         'test': 'chrome_public_test_apk',
@@ -423,7 +411,6 @@
           '--enable-features=BackForwardCache,BackForwardCacheSameSiteForBots,BackForwardCacheNoTimeEviction,ProactivelySwapBrowsingInstance',
         ],
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
         'test': 'chrome_public_unit_test_apk',
@@ -549,13 +536,11 @@
           'shards': 20,
         },
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
       'chrome_public_unit_test_apk': {
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -1606,7 +1591,7 @@
     },
 
     'fieldtrial_browser_tests': {
-      'no_fieldtrial_browser_tests': {
+      'browser_tests_no_field_trial': {
         'args': [
           '--disable-field-trial-config',
         ],
@@ -1614,7 +1599,71 @@
           'shards': 10,
         },
         'test': 'browser_tests',
-      }
+      },
+      'components_browsertests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'components_browsertests',
+      },
+      'content_browsertests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'content_browsertests',
+      },
+      'interactive_ui_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'interactive_ui_tests',
+      },
+      'sync_integration_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'sync_integration_tests',
+      },
+      'xr_browser_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'xr_browser_tests',
+      },
+    },
+
+    'fieldtrial_isolated_scripts': {
+      'telemetry_perf_unittests_no_field_trial': {
+        'args': [
+          '--xvfb',
+          '--jobs=1',
+          '--extra-browser-args=\'--enable-crashpad --disable-field-trial-config\'',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 12,
+        },
+        'resultdb': {
+          'enable': True,
+        },
+        'isolate_name': 'telemetry_perf_unittests',
+      },
+      'telemetry_unittests_no_field_trial': {
+        'args': [
+          '--jobs=1',
+          # Disable GPU compositing, telemetry_unittests runs on VMs.
+          # https://crbug.com/871955
+          '--extra-browser-args=\'--disable-gpu --disable-field-trial-config\'',
+        ],
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/549140
+          'shards': 8,
+        },
+        'resultdb': {
+          'enable': True,
+        },
+        'isolate_name': 'telemetry_unittests',
+      },
     },
 
     'finch_smoke_tests': {
@@ -1818,7 +1867,6 @@
       'maps': {
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -1837,7 +1885,6 @@
       'pixel': {
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -2834,7 +2881,6 @@
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'has_native_resultdb_integration',
           'skia_gold_test',
         ],
@@ -2851,7 +2897,6 @@
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'has_native_resultdb_integration',
           'skia_gold_test',
         ],
@@ -3050,7 +3095,6 @@
           '--weston-use-gl',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -3078,7 +3122,6 @@
           '--weston-use-gl',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -3125,7 +3168,6 @@
           '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -3215,7 +3257,6 @@
           '--weston-use-gl',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -3243,7 +3284,6 @@
           '--weston-use-gl',
         ],
         'mixins': [
-          'chrome-gpu-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -4283,7 +4323,6 @@
     'non_android_chromium_gtests_skia_gold': {
       'views_examples_unittests': {
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -4432,7 +4471,6 @@
         ],
         'test': 'browser_tests',
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
       },
@@ -4520,7 +4558,6 @@
           'shards': 20,
         },
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
           'has_native_resultdb_integration',
         ],
@@ -4531,7 +4568,6 @@
           '--site-per-process',
         ],
         'mixins': [
-          'chrome-gold-service-account',
           'skia_gold_test',
         ],
         'test': 'chrome_public_unit_test_apk',

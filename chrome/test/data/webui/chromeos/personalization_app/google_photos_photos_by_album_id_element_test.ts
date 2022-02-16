@@ -153,12 +153,14 @@ export function GooglePhotosPhotosByAlbumIdTest() {
 
     const photo: GooglePhotosPhoto = {
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
+      name: 'foo',
       date: {data: []},
       url: {url: 'foo.com'}
     };
 
     const anotherPhoto: GooglePhotosPhoto = {
       id: '0ec40478-9712-42e1-b5bf-3e75870ca042',
+      name: 'bar',
       date: {data: []},
       url: {url: 'bar.com'}
     };

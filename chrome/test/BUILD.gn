@@ -2923,6 +2923,7 @@ if (!is_android) {
         deps += [
           "../browser/chromeos/extensions/telemetry/api:browser_tests",
           "//chrome/browser/error_reporting:test_support",
+          "//chromeos/dbus/dlp:dlp",
         ]
       }
 
@@ -3838,6 +3839,7 @@ if (!is_android) {
         "//chromeos/dbus/cros_healthd",
         "//chromeos/dbus/cryptohome",
         "//chromeos/dbus/cryptohome:cryptohome_proto",
+        "//chromeos/dbus/dlp",
         "//chromeos/dbus/image_burner",
         "//chromeos/dbus/power",
         "//chromeos/dbus/rmad:rmad",
@@ -6856,6 +6858,7 @@ test("unit_tests") {
       "../browser/ui/ash/assistant/search_and_assistant_enabled_checker_unittest.cc",
       "../browser/ui/ash/calendar/calendar_keyed_service_unittest.cc",
       "../browser/ui/ash/device_scheduled_reboot/reboot_notification_controller_unittest.cc",
+      "../browser/ui/ash/device_scheduled_reboot/scheduled_reboot_dialog_unittest.cc",
       "../browser/ui/ash/holding_space/holding_space_keyed_service_unittest.cc",
       "../browser/ui/ash/ime_controller_client_impl_unittest.cc",
       "../browser/ui/ash/in_session_auth_dialog_client_unittest.cc",
@@ -7096,6 +7099,7 @@ test("unit_tests") {
       "../browser/extensions/api/management/management_api_unittest.cc",
       "../browser/extensions/api/notifications/extension_notification_handler_unittest.cc",
       "../browser/extensions/api/omnibox/omnibox_unittest.cc",
+      "../browser/extensions/api/omnibox/suggestion_parser_unittest.cc",
       "../browser/extensions/api/passwords_private/password_check_delegate_unittest.cc",
       "../browser/extensions/api/passwords_private/passwords_private_delegate_impl_unittest.cc",
       "../browser/extensions/api/passwords_private/passwords_private_utils_unittest.cc",

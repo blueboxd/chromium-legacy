@@ -1205,11 +1205,11 @@ extern const char kOmniboxTriggerForPrerender2Description[];
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
 
+extern const char kPrivacyGuideName[];
+extern const char kPrivacyGuideDescription[];
+
 extern const char kPrivacySandboxV3Name[];
 extern const char kPrivacySandboxV3Description[];
-
-extern const char kPrivacyReviewName[];
-extern const char kPrivacyReviewDescription[];
 
 extern const char kProminentDarkModeActiveTabTitleName[];
 extern const char kProminentDarkModeActiveTabTitleDescription[];
@@ -1279,6 +1279,9 @@ extern const char kSearchResultInlineIconDescription[];
 
 extern const char kSecurePaymentConfirmationDebugName[];
 extern const char kSecurePaymentConfirmationDebugDescription[];
+
+extern const char kSendTabToSelfSigninPromoName[];
+extern const char kSendTabToSelfSigninPromoDescription[];
 
 extern const char kShoppingListName[];
 extern const char kShoppingListDescription[];

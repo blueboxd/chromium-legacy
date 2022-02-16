@@ -2710,7 +2710,7 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
 
 // TODO(crbug.com/1292184): Flaky failures.
 // SINGLE_AND_MULTI_THREAD_TEST_F(
-//     LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
+//    LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
 
 class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
  public:
@@ -2772,225 +2772,6 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
-
-// Tests that when the LayerTreeHost has received an updated Viewport Rect and
-// viz::LocalSurfaceId that the Impl Frame does not begin until the new tree has
-// been either activated or pushed as the new pending tree.
-class LayerTreeHostTestViewportRectChangeBlockedMainThread
-    : public LayerTreeHostTest {
- public:
-  LayerTreeHostTestViewportRectChangeBlockedMainThread() {
-    scoped_feature_list_.InitAndEnableFeature(features::kSurfaceSyncThrottling);
-  }
-
-  void SetupTree() override {
-    root_layer_ = Layer::Create();
-    root_layer_->SetBounds(initial_size_);
-
-    child_layer_ = FakePictureLayer::Create(&client_);
-    child_layer_->SetBounds(gfx::Size(10, 10));
-    root_layer_->AddChild(child_layer_);
-
-    layer_tree_host()->SetRootLayer(root_layer_);
-    LayerTreeHostTest::SetupTree();
-    client_.set_bounds(root_layer_->bounds());
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  void StopDeferringCommits() { scoped_defer_main_frame_update_.reset(); }
-
-  void ChangeViewportRect() {
-    gfx::Rect rect = layer_tree_host()->device_viewport_rect();
-    rect.set_size(target_size_);
-    GenerateNewLocalSurfaceId();
-    target_local_surface_id_ = GetCurrentLocalSurfaceId();
-    layer_tree_host()->SetViewportRectAndScale(rect, 1.f,
-                                               GetCurrentLocalSurfaceId());
-    // Block Main to simulate it being busy with a long layout.
-    PostGetDeferMainFrameUpdateToMainThread(&scoped_defer_main_frame_update_);
-  }
-
-  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    switch (host_impl->sync_tree()->source_frame_number()) {
-      case 0:
-        initial_local_surface_id_ = GetCurrentLocalSurfaceId();
-
-        // After we have committed the initial tree, enqueue the change to the
-        // viewport rect for the next stage of the test.
-        MainThreadTaskRunner()->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                &LayerTreeHostTestViewportRectChangeBlockedMainThread::
-                    ChangeViewportRect,
-                base::Unretained(this)));
-        break;
-    }
-  }
-
-  void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
-                                  const viz::BeginFrameArgs& args,
-                                  bool has_damage) override {
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case -1:
-        EXPECT_FALSE(host_impl->active_tree()
-                         ->local_surface_id_from_parent()
-                         .is_valid());
-        break;
-      case 0:
-        EXPECT_EQ(initial_local_surface_id_,
-                  host_impl->active_tree()->local_surface_id_from_parent());
-        // Main creates a new |target_local_surface_id_| and posts it back to
-        // the Compositor thread in ChangeViewportRect. However if it is
-        // possible for a new Impl frame to start before the queued setting of
-        // |target_local_surface_id_| has been processed. So ignore those.
-        //
-        // The |source_frame_number| will not advance until a new tree has
-        // been committed. Which will not occur until we've passed here and
-        // called StopDeferringCommits. If the test times out there there is a
-        // bug in syncing the id.
-        if (!host_impl->target_local_surface_id().is_valid())
-          return;
-        EXPECT_EQ(target_local_surface_id_,
-                  host_impl->target_local_surface_id());
-        // On slower configurations more than one frame at the original
-        // |source_frame_number| can be triggered between when we begin allowing
-        // commits again, and before the commit occurs.
-        //
-        // If so do not attempt to re-unblock. Once we have stopped the blocking
-        // the first time, all subsequent Commit/Activate/BeginMainFramme will
-        // be allowed to continue as normal.
-        //
-        // When this occurs there will be a new pending tree. We also expect
-        // there to be damage now, to unblock impl frame production ahead of the
-        // upcoming activation. CC is already build around Activations that can
-        // arrive mid-frame. It does this by delaying non-immediate mode
-        // painting until either Activation arrives, or an internal deadline is
-        // hit.
-        //
-        // The normal flow is:
-        //   Main hasn't committed yet, due to explicitly being blocked.
-        //   BeginImplFrame - we don't have damage
-        //   Main is unblocked by StopDeferringCommits
-        //   Main commits
-        //   Main activates
-        //   BeginImplFrame has new active_tree and starts
-        //
-        // The slower flow is:
-        //   Main hasn't committed yet, due to explicitly being blocked.
-        //   BeginImplFrame - we don't want have damage
-        //   Main is unblocked by StopDeferringCommits
-        //   Main commits
-        //   BeginImplFrame has new pending_tree and starts
-        //   Main activates
-        //   Impl receives activation
-        //   Painting.
-        if (host_impl->pending_tree()) {
-          EXPECT_TRUE(has_damage);
-          return;
-        }
-        // When the |active_tree| in the LayerTreeHostImpl is behind the new
-        // |target_local_surface_id| that the LayerTreeHost is processing,
-        // there should be no damage.
-        EXPECT_FALSE(has_damage)
-            << "target " << target_local_surface_id_.ToString();
-        // Unblock the main thread now to allow for activation of the new
-        // surface.
-        MainThreadTaskRunner()->PostTask(
-            FROM_HERE,
-            base::BindOnce(
-                &LayerTreeHostTestViewportRectChangeBlockedMainThread::
-                    StopDeferringCommits,
-                base::Unretained(this)));
-        break;
-      case 1:
-        // When the main thread has become unblocked and pushed the new tree,
-        // frame production should continue.
-        EXPECT_EQ(target_local_surface_id_,
-                  host_impl->active_tree()->local_surface_id_from_parent());
-        EXPECT_EQ(target_local_surface_id_,
-                  host_impl->target_local_surface_id());
-        EXPECT_TRUE(has_damage);
-        break;
-    }
-  }
-
-  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case -1:
-        EXPECT_EQ(initial_local_surface_id_,
-                  host_impl->pending_tree()->local_surface_id_from_parent());
-        break;
-      case 0:
-        EXPECT_EQ(initial_local_surface_id_,
-                  host_impl->active_tree()->local_surface_id_from_parent());
-        // For single threaded compositing we will not have built a
-        // |pending_tree| yet.
-        if (host_impl->pending_tree()) {
-          EXPECT_EQ(target_local_surface_id_,
-                    host_impl->pending_tree()->local_surface_id_from_parent());
-        }
-        break;
-      case 1:
-        EXPECT_EQ(target_local_surface_id_,
-                  host_impl->active_tree()->local_surface_id_from_parent());
-        break;
-    }
-  }
-
-  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                   LayerTreeHostImpl::FrameData* frame_data,
-                                   DrawResult draw_result) override {
-    // The damage rect will be set before drawing.
-    gfx::Rect root_damage_rect = frame_data->render_passes.back()->damage_rect;
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0:
-        EXPECT_EQ(initial_size_, root_damage_rect.size());
-        break;
-      case 1:
-        EXPECT_EQ(target_size_, root_damage_rect.size());
-        PostSetNeedsRedrawToMainThread();
-        break;
-    }
-    return draw_result;
-  }
-
-  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    // The viz::LocalSurfaceId is not associated with a frame until it is drawn.
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0:
-        EXPECT_EQ(initial_local_surface_id_,
-                  host_impl->last_draw_local_surface_id());
-        break;
-      case 1:
-        EXPECT_EQ(target_local_surface_id_,
-                  host_impl->last_draw_local_surface_id());
-        EndTest();
-        break;
-    }
-  }
-
- private:
-  std::unique_ptr<ScopedDeferMainFrameUpdate> scoped_defer_main_frame_update_;
-
-  viz::LocalSurfaceId initial_local_surface_id_;
-  viz::LocalSurfaceId target_local_surface_id_;
-
-  const gfx::Size initial_size_ = {10, 20};
-  const gfx::Size target_size_ = {20, 30};
-
-  FakeContentLayerClient client_;
-  scoped_refptr<Layer> root_layer_;
-  scoped_refptr<Layer> child_layer_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// TODO(crbug.com/1223226): Disabled on Chrome OS due to flakiness.
-#if !BUILDFLAG(IS_CHROMEOS)
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestViewportRectChangeBlockedMainThread);
-#endif
 
 class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
  public:
@@ -4724,15 +4505,15 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     if (root_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
           static_cast<const LayerTreeHost*>(root_->layer_tree_host())
-              ->thread_unsafe_commit_state()
-              .layers_that_should_push_properties,
+              ->pending_commit_state()
+              ->layers_that_should_push_properties,
           root_.get()));
     }
     if (child2_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
           static_cast<const LayerTreeHost*>(child2_->layer_tree_host())
-              ->thread_unsafe_commit_state()
-              .layers_that_should_push_properties,
+              ->pending_commit_state()
+              ->layers_that_should_push_properties,
           child2_.get()));
     }
     if (leaf_always_pushing_layer_->layer_tree_host()) {
@@ -4740,8 +4521,8 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
       EXPECT_TRUE(
           base::Contains(static_cast<const LayerTreeHost*>(
                              leaf_always_pushing_layer_->layer_tree_host())
-                             ->thread_unsafe_commit_state()
-                             .layers_that_should_push_properties,
+                             ->pending_commit_state()
+                             ->layers_that_should_push_properties,
                          leaf_always_pushing_layer_.get()));
     }
 
@@ -4749,23 +4530,23 @@ class LayerTreeHostTestLayersPushProperties : public LayerTreeHostTest {
     if (child_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
           static_cast<const LayerTreeHost*>(child_->layer_tree_host())
-              ->thread_unsafe_commit_state()
-              .layers_that_should_push_properties,
+              ->pending_commit_state()
+              ->layers_that_should_push_properties,
           child_.get()));
     }
     if (grandchild_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
           static_cast<const LayerTreeHost*>(grandchild_->layer_tree_host())
-              ->thread_unsafe_commit_state()
-              .layers_that_should_push_properties,
+              ->pending_commit_state()
+              ->layers_that_should_push_properties,
           grandchild_.get()));
     }
 
     if (other_root_->layer_tree_host()) {
       EXPECT_FALSE(base::Contains(
           static_cast<const LayerTreeHost*>(other_root_->layer_tree_host())
-              ->thread_unsafe_commit_state()
-              .layers_that_should_push_properties,
+              ->pending_commit_state()
+              ->layers_that_should_push_properties,
           other_root_.get()));
     }
 
@@ -5117,8 +4898,8 @@ class LayerTreeHostTestPropertyChangesDuringUpdateArePushed
 
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            scrollbar_layer_.get()));
         layer_tree_host()->SetNeedsCommit();
 
@@ -5163,13 +4944,13 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         // commit.
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_EQ(0, root_->NumDescendantsThatDrawContent());
         root_->reset_push_properties_count();
@@ -5180,13 +4961,13 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         EXPECT_EQ(0u, child_->push_properties_count());
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         break;
       }
@@ -5195,13 +4976,13 @@ class LayerTreeHostTestSetDrawableCausesCommit : public LayerTreeHostTest {
         EXPECT_EQ(1u, child_->push_properties_count());
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EndTest();
         break;
@@ -5267,28 +5048,28 @@ class LayerTreeHostTestPushPropertiesAddingToTreeRequiresPush
         layer_tree_host()->SetRootLayer(root_);
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
         break;
       case 1:
@@ -5312,28 +5093,28 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
       case 1:
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
@@ -5341,79 +5122,79 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         child_->AddChild(grandchild1_);
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild2_->SetPosition(gfx::PointF(1.f, 1.f));
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         // grandchild2_ will still need a push properties.
@@ -5421,13 +5202,13 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         // grandchild3_ does not need a push properties, so recursing should
@@ -5436,13 +5217,13 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursion
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EndTest();
         break;
@@ -5469,28 +5250,28 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
       case 1:
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         // grandchild2_ will still need a push properties.
@@ -5498,13 +5279,13 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         // grandchild3_ does not need a push properties, so recursing should
@@ -5513,13 +5294,13 @@ class LayerTreeHostTestPushPropertiesRemovingChildStopsRecursionWithPersistence
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EndTest();
         break;
@@ -5542,28 +5323,28 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
       case 1:
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         // Change grandchildren while their parent is not in the tree.
@@ -5574,67 +5355,67 @@ class LayerTreeHostTestPushPropertiesSetPropertiesWhileOutsideTree
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         grandchild2_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         grandchild3_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         EndTest();
@@ -5658,28 +5439,28 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
       case 1:
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         child_->SetPosition(gfx::PointF(1.f, 1.f));
@@ -5688,62 +5469,62 @@ class LayerTreeHostTestPushPropertiesSetPropertyInParentThenChild
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         grandchild2_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         child_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
 
         EndTest();
@@ -5767,28 +5548,28 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
       case 1:
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->SetPosition(gfx::PointF(1.f, 1.f));
@@ -5797,62 +5578,62 @@ class LayerTreeHostTestPushPropertiesSetPropertyInChildThenParent
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild1_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild2_.get()));
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            grandchild3_.get()));
 
         grandchild1_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         grandchild2_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
         EXPECT_TRUE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_.get()));
 
         child_->RemoveFromParent();
 
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            root_.get()));
 
         EndTest();
@@ -6016,8 +5797,8 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
         // The layer type used does not need to push properties every frame.
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_layer_.get()));
 
         // Change the bounds of the child layer, but make it skipped
@@ -6029,8 +5810,8 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
         // The bounds of the child layer were pushed to the impl side.
         EXPECT_FALSE(
             base::Contains(const_cast<const LayerTreeHost*>(layer_tree_host())
-                               ->thread_unsafe_commit_state()
-                               .layers_that_should_push_properties,
+                               ->pending_commit_state()
+                               ->layers_that_should_push_properties,
                            child_layer_.get()));
 
         EndTest();

@@ -26543,6 +26543,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingHubAndroid.SendTabToSelf.ChromeSettingsClicked">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>kmilka@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
@@ -26559,6 +26560,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingHubAndroid.SendTabToSelf.NotSyncing">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>kmilka@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
@@ -31028,6 +31030,24 @@ should be able to be added at any place in this file.
 <action name="TabOverview_PressedCreateNewBrowserButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="TabsSearch.SuggestedActions.SearchHistory">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>mrefaat@chromium.org</owner>
+  <description>
+    The user tapped the suggested search action to search the user's history for
+    the entered search term.
+  </description>
+</action>
+
+<action name="TabsSearch.SuggestedActions.SearchOnWeb">
+  <owner>michaeldo@chromium.org</owner>
+  <owner>mrefaat@chromium.org</owner>
+  <description>
+    The user tapped the suggested search action to search on the web for the
+    entered search term.
+  </description>
 </action>
 
 <action name="TabsSuggestions.Close.Accepted">

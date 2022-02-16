@@ -4813,7 +4813,7 @@
     "expiry_milestone": 94
   },
   {
-    "name": "privacy-review",
+    "name": "privacy-guide",
     "owners": [
       "rainhard",
       "andzaytsev",
@@ -5220,6 +5220,11 @@
     "name": "semantic-colors-debug-override",
     "owners": [ "calamity@chromium.org" ],
     "expiry_milestone": 109
+  },
+  {
+    "name": "send-tab-to-self-signin-promo",
+    "owners": ["victorvianna@google.com", "harrisonsean@google.com"],
+    "expiry_milestone": 104
   },
   {
     "name": "send-tab-to-self-v2",

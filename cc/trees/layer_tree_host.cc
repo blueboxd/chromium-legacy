@@ -70,6 +70,7 @@
 #include "cc/trees/tree_synchronizer.h"
 #include "cc/trees/ukm_manager.h"
 #include "components/viz/common/features.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
@@ -427,6 +428,11 @@ std::unique_ptr<CommitState> LayerTreeHost::ActivateCommitState() {
       ui_resource_manager_->GetUIResourceSizes();
   pending_commit_state()->benchmarks =
       micro_benchmark_controller_.CreateImplBenchmarks();
+
+  // Snapshot PropertyTrees change tracking state prior to resetting it.
+  property_trees()->GetChangeState(
+      pending_commit_state()->property_trees_change_state);
+  property_trees()->ResetAllChangeTracking();
 
   auto active_commit_state = std::move(pending_commit_state_);
   pending_commit_state_ = std::make_unique<CommitState>(*active_commit_state);
@@ -1303,7 +1309,7 @@ void LayerTreeHost::SetViewportRectAndScale(
   // If a new viz::LocalSurfaceId has been provided, and the viewport has
   // changed, we need not begin new frames until it has activated.
   if (previous_local_surface_id != local_surface_id_from_parent &&
-      device_viewport_rect_changed && features::IsSurfaceSyncThrottling()) {
+      device_viewport_rect_changed) {
     SetTargetLocalSurfaceId(local_surface_id_from_parent);
   }
 
@@ -1525,12 +1531,6 @@ void LayerTreeHost::RequestNewLocalSurfaceId() {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetVisualPropertiesUpdateDuration(
-    base::TimeDelta visual_properties_update_duration) {
-  pending_commit_state()->visual_properties_update_duration =
-      visual_properties_update_duration;
-}
-
 void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(IsMainThread());
   DCHECK(!LayerById(layer->id()));
@@ -1550,7 +1550,7 @@ void LayerTreeHost::UnregisterLayer(Layer* layer) {
     mutator_host()->UnregisterElementId(layer->element_id(),
                                         ElementListType::ACTIVE);
   }
-  thread_unsafe_commit_state().layers_that_should_push_properties.erase(layer);
+  pending_commit_state()->layers_that_should_push_properties.erase(layer);
   layer_id_map_.erase(layer->id());
 }
 
@@ -1587,7 +1587,7 @@ void LayerTreeHost::RemoveSurfaceRange(const viz::SurfaceRange& surface_range) {
 }
 
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
-  thread_unsafe_commit_state().layers_that_should_push_properties.insert(layer);
+  pending_commit_state()->layers_that_should_push_properties.insert(layer);
 }
 
 void LayerTreeHost::SetPageScaleFromImplSide(float page_scale) {

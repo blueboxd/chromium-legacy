@@ -58,12 +58,6 @@ const base::Feature kAnonymousUpdateChecks{"AnonymousUpdateChecks",
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// Controls whether web apps can be installed via APKs on Chrome OS.
-const base::Feature kApkWebAppInstalls{"ApkWebAppInstalls",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kAppDiscoveryForOobe{"AppDiscoveryForOobe",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -633,7 +627,7 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
 
 // When enabled, users will see updated UI in Incognito NTP
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
@@ -852,8 +846,8 @@ const base::Feature kPrerenderFallbackToPreconnect{
 const base::Feature kPrivacyAdvisor{"PrivacyAdvisor",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kPrivacyReview{"PrivacyReview",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPrivacyGuide{"PrivacyGuide",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables push subscriptions keeping Chrome running in the
 // background when closed.

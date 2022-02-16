@@ -504,6 +504,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Calendar.ScrollSource" enum="CalendarViewScrollSource"
+    expires_after="2023-02-12">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    The source of scrolling in calendar view. Recorded when the calendar is
+    scrolled and changed to another month (note that scrolls resulting in no
+    month change are not recorded).
+  </summary>
+</histogram>
+
 <histogram name="Ash.Calendar.ShowSource.{ViewShowSource}"
     enum="CalendarEventSource" expires_after="2022-11-10">
   <owner>newcomer@google.com</owner>
@@ -2162,6 +2173,16 @@ chromium-metrics-reviews@google.com.
     Relative smoothness of the bounds change animation of the expand button
     inside a notification view. 100% represents ideally smooth 60 frames per
     second. Emitted when the animation is completed.
+  </summary>
+</histogram>
+
+<histogram name="Ash.NotificationView.NotificationAdded.Type"
+    enum="NotificationViewType" expires_after="2023-02-15">
+  <owner>leandre@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Recorded the types of notification view added to the system. Emitted when
+    each notification is added.
   </summary>
 </histogram>
 

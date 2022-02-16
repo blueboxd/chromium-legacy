@@ -595,8 +595,9 @@ void LayerTreeHostImpl::BeginCommit(int source_frame_number) {
 // safety violations.  Any information that is needed from LayerTreeHost should
 // instead be plumbed through CommitState (see
 // LayerTreeHost::ActivateCommitState() for reference).
-void LayerTreeHostImpl::FinishCommit(CommitState& state,
-                                     ThreadUnsafeCommitState& unsafe_state) {
+void LayerTreeHostImpl::FinishCommit(
+    CommitState& state,
+    const ThreadUnsafeCommitState& unsafe_state) {
   TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::FinishCommit");
   LayerTreeImpl* tree = sync_tree();
   tree->PullPropertiesFrom(state, unsafe_state);
@@ -608,8 +609,6 @@ void LayerTreeHostImpl::FinishCommit(CommitState& state,
 
   for (auto& benchmark : state.benchmarks)
     ScheduleMicroBenchmark(std::move(benchmark));
-
-  unsafe_state.property_trees.ResetAllChangeTracking();
 
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
@@ -2458,9 +2457,6 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
         child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
   }
 
-  metadata.visual_properties_update_duration =
-      active_tree()->visual_properties_update_duration();
-
   return metadata;
 }
 
@@ -2636,8 +2632,15 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
         render_surface->GetDocumentTransitionSharedElementId();
     if (!shared_element_id.valid())
       continue;
+
     DCHECK(
-        !base::Contains(shared_element_render_pass_id_map, shared_element_id));
+        !base::Contains(shared_element_render_pass_id_map, shared_element_id))
+        << "Cannot map " << shared_element_id.ToString() << " to render pass "
+        << render_surface->render_pass_id().GetUnsafeValue()
+        << "; It already maps to render pass "
+        << shared_element_render_pass_id_map[shared_element_id]
+               .render_pass_id.GetUnsafeValue();
+
     shared_element_render_pass_id_map[shared_element_id].render_pass_id =
         render_surface->render_pass_id();
     shared_element_render_pass_id_map[shared_element_id].resource_id =
@@ -3309,8 +3312,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     pending_tree_raster_duration_timer_.reset();
 
     // Process any requests in the UI resource queue.  The request queue is
-    // given in LayerTreeHost::FinishCommitOnImplThread.  This must take place
-    // before the swap.
+    // given in LayerTreeHost::FinishCommit.  This must take place before the
+    // swap.
     pending_tree_->ProcessUIResourceRequestQueue();
 
     if (pending_tree_->needs_full_tree_sync()) {

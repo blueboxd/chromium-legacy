@@ -2121,8 +2121,8 @@ const char kPrivacyAdvisorName[] = "Privacy Advisor";
 const char kPrivacyAdvisorDescription[] =
     "Provides contextual entry points for adjusting privacy settings";
 
-const char kPrivacyReviewName[] = "Privacy Review";
-const char kPrivacyReviewDescription[] =
+const char kPrivacyGuideName[] = "Privacy Guide";
+const char kPrivacyGuideDescription[] =
     "Shows a new subpage in Settings that helps the user to review various "
     "privacy settings.";
 
@@ -2250,6 +2250,11 @@ const char kSecurePaymentConfirmationDebugDescription[] =
     "This flag removes the restriction that PaymentCredential in WebAuthn and "
     "secure payment confirmation in PaymentRequest API must use user verifying "
     "platform authenticators.";
+
+const char kSendTabToSelfSigninPromoName[] = "Send tab to self sign-in promo";
+const char kSendTabToSelfSigninPromoDescription[] =
+    "Enables a sign-in promo if the user attempts to share a tab while being "
+    "signed out";
 
 const char kShoppingListName[] = "Shopping List";
 const char kShoppingListDescription[] = "Enable shopping list in bookmarks.";

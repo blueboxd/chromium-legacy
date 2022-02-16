@@ -13,6 +13,7 @@
 #include "ash/components/phonehub/mutable_phone_model.h"
 #include "ash/components/phonehub/notification_access_manager.h"
 #include "ash/components/phonehub/notification_processor.h"
+#include "ash/components/phonehub/recent_apps_interaction_handler.h"
 #include "ash/components/phonehub/screen_lock_manager_impl.h"
 #include "ash/constants/ash_features.h"
 #include "base/containers/flat_set.h"
@@ -100,6 +101,20 @@ NotificationAccessManager::AccessStatus ComputeNotificationAccessState(
   return NotificationAccessManager::AccessStatus::kAvailableButNotGranted;
 }
 
+NotificationAccessManager::AccessProhibitedReason
+ComputeNotificationAccessProhibitedReason(
+    const proto::PhoneProperties& phone_properties) {
+  if (phone_properties.profile_disable_reason() ==
+      proto::ProfileDisableReason::DISABLE_REASON_DISABLED_BY_POLICY) {
+    return NotificationAccessManager::AccessProhibitedReason::
+        kDisabledByPhonePolicy;
+  }
+  if (phone_properties.profile_type() == proto::ProfileType::WORK_PROFILE) {
+    return NotificationAccessManager::AccessProhibitedReason::kWorkProfile;
+  }
+  return NotificationAccessManager::AccessProhibitedReason::kUnknown;
+}
+
 ScreenLockManager::LockStatus ComputeScreenLockState(
     const proto::PhoneProperties& phone_properties) {
   switch (phone_properties.screen_lock_state()) {
@@ -139,6 +154,19 @@ PhoneStatusModel CreatePhoneStatusModel(const proto::PhoneProperties& proto) {
       proto.battery_percentage());
 }
 
+std::vector<RecentAppsInteractionHandler::UserState> GetUserStates(
+    const RepeatedPtrField<proto::UserState>& user_states) {
+  std::vector<RecentAppsInteractionHandler::UserState> states;
+
+  for (const auto& user_state : user_states) {
+    RecentAppsInteractionHandler::UserState state;
+    state.user_id = user_state.user_id();
+    state.is_enabled = !user_state.is_quiet_mode_enabled();
+    states.emplace_back(state);
+  }
+  return states;
+}
+
 }  // namespace
 
 PhoneStatusProcessor::PhoneStatusProcessor(
@@ -150,7 +178,8 @@ PhoneStatusProcessor::PhoneStatusProcessor(
     ScreenLockManager* screen_lock_manager,
     NotificationProcessor* notification_processor_,
     MultiDeviceSetupClient* multidevice_setup_client,
-    MutablePhoneModel* phone_model)
+    MutablePhoneModel* phone_model,
+    RecentAppsInteractionHandler* recent_apps_interaction_handler)
     : do_not_disturb_controller_(do_not_disturb_controller),
       feature_status_provider_(feature_status_provider),
       message_receiver_(message_receiver),
@@ -159,7 +188,8 @@ PhoneStatusProcessor::PhoneStatusProcessor(
       screen_lock_manager_(screen_lock_manager),
       notification_processor_(notification_processor_),
       multidevice_setup_client_(multidevice_setup_client),
-      phone_model_(phone_model) {
+      phone_model_(phone_model),
+      recent_apps_interaction_handler_(recent_apps_interaction_handler) {
   DCHECK(do_not_disturb_controller_);
   DCHECK(feature_status_provider_);
   DCHECK(message_receiver_);
@@ -222,7 +252,8 @@ void PhoneStatusProcessor::SetReceivedPhoneStatusModelStates(
       phone_properties.profile_type() != proto::ProfileType::WORK_PROFILE);
 
   notification_access_manager_->SetAccessStatusInternal(
-      ComputeNotificationAccessState(phone_properties));
+      ComputeNotificationAccessState(phone_properties),
+      ComputeNotificationAccessProhibitedReason(phone_properties));
 
   if (screen_lock_manager_) {
     screen_lock_manager_->SetLockStatusInternal(
@@ -231,6 +262,11 @@ void PhoneStatusProcessor::SetReceivedPhoneStatusModelStates(
 
   find_my_device_controller_->SetPhoneRingingStatusInternal(
       ComputeFindMyDeviceStatus(phone_properties));
+
+  if (features::IsPhoneHubRecentAppsEnabled()) {
+    recent_apps_interaction_handler_->set_user_states(
+        GetUserStates(phone_properties.user_states()));
+  }
 }
 
 void PhoneStatusProcessor::MaybeSetPhoneModelName(

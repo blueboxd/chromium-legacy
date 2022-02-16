@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <set>
 #include <utility>
+#include <dlfcn.h>
 
 #include "apps/app_lifetime_monitor_factory.h"
 #include "base/bind.h"
@@ -135,9 +136,17 @@ absl::optional<SecRequirementRef> CreateAppShimRequirement() {
   // Look up the code signing flags. If the flags are absent treat this as
   // unsigned. This decision is consistent with the StaticCode source:
   // https://github.com/apple-oss-distributions/Security/blob/Security-60157.40.30.0.1/OSX/libsecurity_codesigning/lib/StaticCode.cpp#L2270
-  CFNumberRef framework_signing_info_flags =
+  static CFStringRef const*kSecCodeInfoFlagsStr = reinterpret_cast<CFStringRef*>(dlsym(((void *) -2), "kSecCodeInfoFlags"));
+
+  CFNumberRef framework_signing_info_flags;
+  if(kSecCodeInfoFlagsStr) {
+    framework_signing_info_flags =
       base::mac::GetValueFromDictionary<CFNumberRef>(framework_signing_info,
-                                                     kSecCodeInfoFlags);
+                                                     *kSecCodeInfoFlagsStr);
+  } else {
+    framework_signing_info_flags = 0;
+  }
+
   if (!framework_signing_info_flags) {
     return absl::nullopt;  // has_value() == false
   }

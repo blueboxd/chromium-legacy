@@ -13,10 +13,8 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_start.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/proto/control.pb.h"
-#include "remoting/protocol/errors.h"
 #include "remoting/protocol/file_transfer_helpers.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -39,26 +37,6 @@ IPC_MESSAGE_CONTROL(ChromotingDaemonMsg_Crash,
                     std::string /* function_name */,
                     std::string /* file_name */,
                     int /* line_number */)
-
-//-----------------------------------------------------------------------------
-// Chromoting messages sent from the network to the daemon process.
-
-// Connects the terminal |terminal_id| (i.e. a remote client) to a desktop
-// session.
-IPC_MESSAGE_CONTROL(ChromotingNetworkHostMsg_ConnectTerminal,
-                    int /* terminal_id */,
-                    remoting::ScreenResolution /* resolution */,
-                    bool /* virtual_terminal */)
-
-// Disconnects the terminal |terminal_id| from the desktop session it was
-// connected to.
-IPC_MESSAGE_CONTROL(ChromotingNetworkHostMsg_DisconnectTerminal,
-                    int /* terminal_id */)
-
-// Changes the screen resolution in the given desktop session.
-IPC_MESSAGE_CONTROL(ChromotingNetworkDaemonMsg_SetScreenResolution,
-                    int /* terminal_id */,
-                    remoting::ScreenResolution /* resolution */)
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the desktop to the network process.
@@ -119,13 +97,6 @@ IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_MouseCursor,
 // Notifies the network process that the active keyboard layout has changed.
 IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_KeyboardChanged,
                     remoting::protocol::KeyboardLayout /* layout */)
-
-IPC_ENUM_TRAITS_MAX_VALUE(remoting::protocol::ErrorCode,
-                          remoting::protocol::ERROR_CODE_MAX)
-
-// Requests the network process to terminate the client session.
-IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_DisconnectSession,
-                    remoting::protocol::ErrorCode /* error */)
 
 // Carries an audio packet from the desktop session agent to the client.
 // |serialized_packet| is a serialized AudioPacket.

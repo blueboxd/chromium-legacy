@@ -7,6 +7,7 @@
 <template>
   <style include="cr-shared-style md-select shimless-fonts">
     :host {
+      --footer-height: 80px;
       --radio-button-top-padding: 20px;
       --title-bottom-margin: 16px;
     }
@@ -116,6 +117,11 @@
       margin-bottom: 40px;
       margin-top: 40px;
       width: 32px;
+    }
+
+    [slot=right-pane] {
+      height: 100%;
+      width: 100%;
     }
   </style>
 </template>

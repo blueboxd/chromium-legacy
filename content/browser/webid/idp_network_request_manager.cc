@@ -53,7 +53,7 @@ constexpr char kAccountsKey[] = "accounts";
 constexpr char kIdpBrandingKey[] = "branding";
 
 // Keys in 'account' dictionary in accounts endpoint.
-constexpr char kAccountIdKey[] = "account_id";
+constexpr char kAccountIdKey[] = "id";
 constexpr char kAccountEmailKey[] = "email";
 constexpr char kAccountNameKey[] = "name";
 constexpr char kAccountGivenNameKey[] = "given_name";
@@ -105,8 +105,9 @@ net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
             "browser-mediated alternative to previously existing federated "
             "sign-in implementations."
           trigger:
-            "A website executes the navigator.id.get() JavaScript method to "
-            "initiate federated user sign-in to a designated provider."
+            "A website executes the navigator.credentials.get() JavaScript "
+            "method to initiate federated user sign-in to a designated "
+            "provider."
           data:
             "An identity request contains a scope of claims specifying what "
             "user information is being requested from the identity provider, "
@@ -170,7 +171,7 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
 absl::optional<content::IdentityRequestAccount> ParseAccount(
     const base::Value& account,
     const std::string& client_id) {
-  auto* account_id = account.FindStringKey(kAccountIdKey);
+  auto* id = account.FindStringKey(kAccountIdKey);
   auto* email = account.FindStringKey(kAccountEmailKey);
   auto* name = account.FindStringKey(kAccountNameKey);
   auto* given_name = account.FindStringKey(kAccountGivenNameKey);
@@ -178,7 +179,7 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
   auto* approved_clients = account.FindListKey(kAccountApprovedClientsKey);
 
   // required fields
-  if (!(account_id && email && name))
+  if (!(id && email && name))
     return absl::nullopt;
 
   absl::optional<LoginState> approved_value;
@@ -198,7 +199,7 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
   }
 
   return content::IdentityRequestAccount(
-      *account_id, *email, *name, given_name ? *given_name : "",
+      *id, *email, *name, given_name ? *given_name : "",
       picture ? GURL(*picture) : GURL(), approved_value);
 }
 

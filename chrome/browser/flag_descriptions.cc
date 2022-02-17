@@ -249,6 +249,15 @@ const char kEnableFirstPartySetsDescription[] =
     "When enabled, Chrome will apply First-Party Sets to features such as the "
     "SameParty cookie attribute.";
 
+extern const char kIsolatedSandboxedIframesName[] =
+    "Isolated sandboxed iframes";
+extern const char kIsolatedSandboxedIframesDescription[] =
+    "When enabled, applies process isolation to iframes with the 'sandbox' "
+    "attribute and without the 'allow-same-origin' permission set on that "
+    "attribute. The current isolation model is that all sandboxed iframes from "
+    "a given site will be placed into the same process, but alternative models "
+    "may be introduced in future experiments.";
+
 const char kDnsOverHttpsName[] = "Secure DNS lookups";
 const char kDnsOverHttpsDescription[] =
     "Enables DNS over HTTPS. When this feature is enabled, your browser may "
@@ -1079,11 +1088,25 @@ const char kEnableWindowsGamingInputDataFetcherDescription[] =
 const char kBlockInsecurePrivateNetworkRequestsName[] =
     "Block insecure private network requests.";
 const char kBlockInsecurePrivateNetworkRequestsDescription[] =
-    "Prevents non-secure contexts from making sub-resource requests to "
-    "more-private IP addresses. An IP address IP1 is more private than IP2 if "
-    "1) IP1 is localhost and IP2 is not, or 2) IP1 is private and IP2 is "
-    "public. This is a first step towards full enforcement of CORS-RFC1918: "
-    "https://wicg.github.io/cors-rfc1918";
+    "Prevents non-secure contexts from making subresource requests to "
+    "more-private IP addresses. See also: "
+    "https://developer.chrome.com/blog/private-network-access-update/";
+
+const char kPrivateNetworkAccessSendPreflightsName[] =
+    "Send Private Network Access preflights";
+const char kPrivateNetworkAccessSendPreflightsDescription[] =
+    "Enables sending Private Network Access preflights ahead of requests to "
+    "more-private IP addresses. Failed preflights display warnings in DevTools "
+    "without failing entire request. See also: "
+    "https://developer.chrome.com/blog/private-network-access-preflight/";
+
+const char kPrivateNetworkAccessRespectPreflightResultsName[] =
+    "Respect the result of Private Network Access preflights";
+const char kPrivateNetworkAccessRespectPreflightResultsDescription[] =
+    "Enables sending Private Network Access preflights ahead of requests to "
+    "more-private IP addresses. These preflight requests must succeed in order "
+    "for the request to proceed. See also: "
+    "https://developer.chrome.com/blog/private-network-access-preflight/";
 
 const char kDeprecateAltClickName[] =
     "Enable Alt+Click deprecation notifications";
@@ -2852,12 +2875,6 @@ const char kExtensionWorkflowJustificationDescription[] =
     "Enables users to justify their extension requests by causing a text field "
     "to appear on the extension request dialog.";
 
-const char kEnterpriseReportingExtensionManifestVersionName[] =
-    "Enterprise reporting of extension manifest versions";
-const char kEnterpriseReportingExtensionManifestVersionDescription[] =
-    "Causes extension manifest versions to be included in the extension info "
-    "section of Chrome Browser Cloud Management reports.";
-
 #if !BUILDFLAG(IS_ANDROID)
 const char kShareContextMenuName[] = "Share context menu";
 const char kShareContextMenuDescription[] =
@@ -3738,6 +3755,10 @@ const char kNtpPhotosModuleName[] = "NTP Photos Module";
 const char kNtpPhotosModuleDescription[] =
     "Shows the Google Photos module on the New Tab Page";
 
+const char kNtpPhotosModuleOptInTitleName[] = "NTP Photos Module Opt In Title";
+const char kNtpPhotosModuleOptInTitleDescription[] =
+    "Determines the title of the NTP Photos Opt-In card";
+
 const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =
     "Shows the recipe tasks module on the New Tab Page.";
@@ -4258,13 +4279,6 @@ const char kCategoricalSearchName[] = "Launcher Categorical Search";
 const char kCategoricalSearchDescription[] =
     "Launcher search results grouped by categories";
 
-const char kQuerySearchBurnInPeriodName[] = "Launcher query search burn-in";
-const char kQuerySearchBurnInPeriodDescription[] =
-    "Enables the use of a burn-in period for the display of launcher query "
-    "search results. Display of results in query search are delayed until the "
-    "burn-in period has elapsed. Only valid when categorical search is "
-    "enabled. Burn-in period duration configurable (unit: milliseconds).";
-
 const char kCellularBypassESimInstallationConnectivityCheckName[] =
     "Bypass eSIM installation connectivity check";
 const char kCellularBypassESimInstallationConnectivityCheckDescription[] =
@@ -4348,7 +4362,7 @@ const char kCrostiniResetLxdDbDescription[] =
     "Recreates the LXD database every time we launch it";
 
 const char kCrostiniUseLxd4Name[] =
-    "Use LXD 4 instead of the default - Irreversible";
+    "Use LXD 4 instead of the default - Dangerous & Irreversible";
 const char kCrostiniUseLxd4Description[] =
     "Uses LXD version 4 instead of the default version. WARNING: Once this is "
     "set you can't unset it without deleting your entire container";
@@ -4467,6 +4481,21 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
     "Enable bidirectional native messaging for DriveFS";
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
+
+const char kCrOSDspBasedAecAllowedName[] =
+    "Allow CRAS to use a DSP-based AEC if available";
+const char kCrOSDspBasedAecAllowedDescription[] =
+    "Allows the system variant of the AEC in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedNsAllowedName[] =
+    "Allow CRAS to use a DSP-based NS if available";
+const char kCrOSDspBasedNsAllowedDescription[] =
+    "Allows the system variant of the NS in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedAgcAllowedName[] =
+    "Allow CRAS to use a DSP-based AGC if available";
+const char kCrOSDspBasedAgcAllowedDescription[] =
+    "Allows the system variant of the AGC in CRAS to be run on DSP ";
 
 const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
 const char kCrOSEnforceSystemAecDescription[] =

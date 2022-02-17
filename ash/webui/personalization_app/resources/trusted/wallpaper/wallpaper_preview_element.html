@@ -65,7 +65,7 @@
 </style>
 <div class="preview-container" id="container">
   <div id="wallpaperLabel">
-    <p>[[i18n('wallpaperLabel')]]</p>
+    <p>$i18n{wallpaperLabel}</p>
     <cr-button id="wallpaperButton" on-click="onClickWallpaper_">
       <iron-icon icon="cr:chevron-right" aria-hidden="true"></iron-icon>
     </cr-button>
@@ -75,7 +75,7 @@
   </template>
   <template is="dom-if" if="[[showImage_]]">
       <div id="imageContainer" class="photo-images-container">
-        <img src="[[getImageSrc_(image_)]]" aria-hidden="true"
+        <img src$="[[getImageSrc_(image_)]]" aria-hidden="true"
             on-click="onClickWallpaper_">
         <div id="shelf"></div>
       </div>

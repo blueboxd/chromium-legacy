@@ -690,6 +690,15 @@ void NavigationControllerImpl::Restore(
   needs_reload_type_ = NeedsReloadType::kRestoreSession;
   entries_.reserve(entries->size());
   for (auto& entry : *entries) {
+    if (entry->GetURL().is_empty()) {
+      // We're trying to restore an entry with an empty URL (e.g. from
+      // persisting the initial NavigationEntry, which is no longer possible but
+      // some old persisted sessions might still contain it). Trying to restore
+      // and navigate to an entry with an empty URL will result in crashes, so
+      // change the URL to about:blank. See also https://crbug.com/1240138.
+      CHECK_EQ(1u, entries->size());
+      entry->SetURL(GURL(url::kAboutBlankURL));
+    }
     entries_.push_back(
         NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
   }
@@ -3870,10 +3879,20 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // when it wants to draw.  See http://crbug.com/11157
   ssl_manager_.DidCommitProvisionalLoad(*details);
 
-  delegate_->NotifyNavigationStateChanged(
-      (details && details->should_stay_as_initial_entry)
-          ? INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
-          : INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS);
+  bool should_fire_navigation_state_changed = true;
+#if BUILDFLAG(IS_ANDROID)
+  if (details && details->should_stay_as_initial_entry) {
+    // For initial NavigationEntries, only fire NavigationStateChanged() if the
+    // embedder wants to hear about it.
+    should_fire_navigation_state_changed =
+        !GetContentClient()
+             ->browser()
+             ->ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
+  }
+#endif
+  if (should_fire_navigation_state_changed)
+    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+
   delegate_->NotifyNavigationEntryCommitted(*details);
 
   // TODO(avi): Remove. http://crbug.com/170921
@@ -4028,12 +4047,23 @@ void NavigationControllerImpl::DiscardNonCommittedEntriesWithCommitDetails(
     return;
   }
   DiscardPendingEntry(false);
-  if (delegate_) {
-    delegate_->NotifyNavigationStateChanged(
-        (commit_details && commit_details->should_stay_as_initial_entry)
-            ? INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
-            : INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS);
+
+  if (!delegate_)
+    return;
+
+  bool should_fire_navigation_state_changed = true;
+#if BUILDFLAG(IS_ANDROID)
+  if (commit_details && commit_details->should_stay_as_initial_entry) {
+    // For initial NavigationEntries, only fire NavigationStateChanged() if the
+    // embedder wants to hear about it.
+    should_fire_navigation_state_changed =
+        !GetContentClient()
+             ->browser()
+             ->ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
   }
+#endif
+  if (should_fire_navigation_state_changed)
+    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
 }
 
 int NavigationControllerImpl::GetEntryIndexWithUniqueID(
@@ -4061,13 +4091,6 @@ void NavigationControllerImpl::InsertEntriesFrom(
   }
   DCHECK(pending_entry_index_ == -1 ||
          pending_entry_ == GetEntryAtIndex(pending_entry_index_));
-  if (!source->frame_tree_.root()->is_on_initial_empty_document()) {
-    // If the source frame tree's root is not on the initial empty document,
-    // also mark this FrameTree's root as such, so that the next navigation
-    // won't replace the latest NavigationEntry due to it still being marked as
-    // "on the initial empty document".
-    frame_tree_.root()->SetNotOnInitialEmptyDocument();
-  }
 }
 
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(

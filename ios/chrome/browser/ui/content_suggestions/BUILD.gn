@@ -90,6 +90,7 @@ source_set("content_suggestions") {
     "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/discover_feed",
     "//ui/base",
     "//ui/strings",
   ]
@@ -133,7 +134,6 @@ source_set("content_suggestions_ui") {
     "content_suggestions_view_controller.mm",
     "content_suggestions_view_controller_audience.h",
     "ntp_home_consumer.h",
-    "ntp_home_delegate.h",
     "user_account_image_update_delegate.h",
   ]
   deps = [

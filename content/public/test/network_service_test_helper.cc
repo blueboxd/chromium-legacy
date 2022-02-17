@@ -121,10 +121,6 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
         case network::mojom::ResolverType::kResolverTypeFailTimeout:
           host_resolver->AddSimulatedTimeoutFailure(rule->host_pattern);
           break;
-        case network::mojom::ResolverType::
-            kResolverTypeFailHTTPSServiceFormRecord:
-          host_resolver->AddSimulatedHTTPSServiceFormRecord(rule->host_pattern);
-          break;
         case network::mojom::ResolverType::kResolverTypeIPLiteral: {
           net::IPAddress ip_address;
           DCHECK(ip_address.AssignFromIPLiteral(rule->replacement));
@@ -224,14 +220,13 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run();
   }
 
-  void SetTestDohServers(
-      const std::vector<net::DnsOverHttpsServerConfig>& doh_servers,
-      SetTestDohServersCallback callback) override {
+  void SetTestDohConfig(const net::DnsOverHttpsConfig& doh_config,
+                        SetTestDohConfigCallback callback) override {
     DCHECK(test_host_resolver_)
         << "Network access for host resolutions must be disabled.";
     have_test_doh_servers_ = true;
     network::NetworkService::GetNetworkServiceForTesting()
-        ->SetTestDohServersForTesting(doh_servers);
+        ->SetTestDohConfigForTesting(doh_config);
     std::move(callback).Run();
   }
 

@@ -53,10 +53,16 @@ class OmniboxProvider : public SearchProvider,
   AppListControllerDelegate* list_controller_;
   absl::optional<chromeos::string_matching::TokenizedString> last_query_;
   base::TimeTicks query_start_time_;
+  AutocompleteInput input_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
   std::unique_ptr<AutocompleteController> controller_;
+
+  // The AutocompleteController can sometimes update its results more than once
+  // after reporting it is done. This flag is set to ensure we only update the
+  // UI once.
+  bool query_finished_ = false;
 
   FaviconCache favicon_cache_;
 };

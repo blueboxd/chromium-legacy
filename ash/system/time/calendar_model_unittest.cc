@@ -199,8 +199,8 @@ class TestableCalendarModel : public CalendarModel {
 
     // Receive the results of the fetch.  Check whether we've set an error code
     // for start_of_month.
-    OnCalendarEventsFetched(GetFetchErrorCode(start_of_month),
-                            std::move(fetched_events));
+    OnEventsFetched(start_of_month, GetFetchErrorCode(start_of_month),
+                    fetched_events.get());
   }
 
  private:
@@ -391,6 +391,78 @@ TEST_F(CalendarModelTest, DayWithEvents_TwoDays) {
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDay(kStartTime1, &events));
   EXPECT_FALSE(events.empty());
+}
+
+TEST_F(CalendarModelTest, ChangeTimeDifference) {
+  const char* kStartTime0 = "23 Oct 2009 11:30 GMT";
+  const char* kEndTime0 = "23 Oct 2009 12:30 GMT";
+  const char* kId0 = "id_0";
+  const char* kSummary0 = "summary_0";
+  const char* kStartTime1 = "24 Oct 2009 07:30 GMT";
+  const char* kEndTime1 = "25 Oct 2009 08:30 GMT";
+  const char* kId1 = "id_1";
+  const char* kSummary1 = "summary_1";
+
+  // Current date is just kStartTime0.
+  base::Time current_date;
+  bool result = base::Time::FromString(kStartTime0, &current_date);
+  DCHECK(result);
+  SetFakeNow(current_date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarModelTest::FakeTimeNow,
+      /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+
+  base::Time now = base::Time::Now();
+  std::set<base::Time> months;
+  calendar_utils::GetSurroundingMonthsUTC(now, 1, months);
+  event_fetcher_ = std::make_unique<TestableCalendarModel>(months);
+
+  // Get ready to inject two events.
+  std::unique_ptr<google_apis::calendar::EventList> event_list =
+      std::make_unique<google_apis::calendar::EventList>();
+  event_list->set_time_zone("America/Los_Angeles");
+  std::unique_ptr<google_apis::calendar::CalendarEvent> event0 =
+      calendar_test_utils::CreateEvent(kId0, kSummary0, kStartTime0, kEndTime0);
+  std::unique_ptr<google_apis::calendar::CalendarEvent> event1 =
+      calendar_test_utils::CreateEvent(kId1, kSummary1, kStartTime1, kEndTime1);
+  SingleDayEventList events;
+
+  // Inject both events.
+  event_list->InjectItemForTesting(std::move(event0));
+  event_list->InjectItemForTesting(std::move(event1));
+  event_fetcher_->InjectEvents(std::move(event_list));
+  event_fetcher_->FetchEvents(months);
+
+  // Based on the tesing timezone "America/Los_Angeles" these 2 events are
+  // distributed into 2 days. Each day has one event.
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDay(kStartTime0, &events));
+
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDay(kStartTime1, &events));
+
+  // Adjusts the time with -10 hours.
+  // kStartTime0 "23 Oct 2009 11:30" -> "23 Oct 2009 1:30".
+  // kStartTime1 "24 Oct 2009 07:30" -> "23 Oct 2009 21:30"
+  // Both events should be on the 23rd.
+  event_fetcher_->RedistributeEvents(/*time_difference_minutes=*/-10 * 60);
+  events.clear();
+  EXPECT_EQ(2, EventsNumberOfDay(kStartTime0, &events));
+
+  events.clear();
+  EXPECT_EQ(0, EventsNumberOfDay(kStartTime1, &events));
+
+  // Adjusts the time with +15 hours.
+  // kStartTime0 "23 Oct 2009 11:30" -> "24 Oct 2009 2:30".
+  // kStartTime1 "24 Oct 2009 07:30" -> "24 Oct 2009 22:30"
+  // Both events should be on the 24rd.
+  event_fetcher_->RedistributeEvents(/*time_difference_minutes=*/15 * 60);
+  events.clear();
+  EXPECT_EQ(0, EventsNumberOfDay(kStartTime0, &events));
+
+  events.clear();
+  EXPECT_EQ(2, EventsNumberOfDay(kStartTime1, &events));
 }
 
 TEST_F(CalendarModelTest, OnlyFetchOnce) {
@@ -597,12 +669,27 @@ TEST_F(CalendarModelTest, PruneEvents) {
   const char* kEndTime8 = "23 Jun 2010 12:30 GMT";
   const char* kId8 = "id_8";
   const char* kSummary8 = "summary_8";
+  const char* kStartTime9 = "23 Jul 2010 11:30 GMT";
+  const char* kEndTime9 = "23 Jul 2010 12:30 GMT";
+  const char* kId9 = "id_9";
+  const char* kSummary9 = "summary_9";
+  const char* kStartTime10 = "23 Aug 2010 11:30 GMT";
+  const char* kEndTime10 = "23 Aug 2010 12:30 GMT";
+  const char* kId10 = "id_10";
+  const char* kSummary10 = "summary_10";
+  const char* kStartTime11 = "23 Sep 2010 11:30 GMT";
+  const char* kEndTime11 = "23 Sep 2010 12:30 GMT";
+  const char* kId11 = "id_11";
+  const char* kSummary11 = "summary_11";
+  const char* kStartTime12 = "23 Oct 2010 11:30 GMT";
+  const char* kEndTime12 = "23 Oct 2010 12:30 GMT";
+  const char* kId12 = "id_12";
+  const char* kSummary12 = "summary_12";
 
-  // Current time is kStartTime1, which means event in the previous month is
-  // kStartTime0 and kStartTime2 is in the next month.  IMPORTANT: because these
-  // three months are the "now" current/prev/next month when the calendar was
-  // opened, they will NOT be pruned.
-  // Current date is just kStartTime1.
+  // Current time is `kStartTime1`, which means event in the previous month is
+  // kStartTime0 and `kStartTime2` is in the next month.  IMPORTANT: because
+  // these three months are the "now" current/prev/next month when the calendar
+  // was opened, they will NOT be pruned. Current date is just `kStartTime1`.
   base::Time current_date;
   bool result = base::Time::FromString(kStartTime1, &current_date);
   DCHECK(result);
@@ -641,6 +728,17 @@ TEST_F(CalendarModelTest, PruneEvents) {
       calendar_test_utils::CreateEvent(kId7, kSummary7, kStartTime7, kEndTime7);
   std::unique_ptr<google_apis::calendar::CalendarEvent> event8 =
       calendar_test_utils::CreateEvent(kId8, kSummary8, kStartTime8, kEndTime8);
+  std::unique_ptr<google_apis::calendar::CalendarEvent> event9 =
+      calendar_test_utils::CreateEvent(kId9, kSummary9, kStartTime9, kEndTime9);
+  std::unique_ptr<google_apis::calendar::CalendarEvent> event10 =
+      calendar_test_utils::CreateEvent(kId10, kSummary10, kStartTime10,
+                                       kEndTime10);
+  std::unique_ptr<google_apis::calendar::CalendarEvent> event11 =
+      calendar_test_utils::CreateEvent(kId11, kSummary11, kStartTime11,
+                                       kEndTime11);
+  std::unique_ptr<google_apis::calendar::CalendarEvent> event12 =
+      calendar_test_utils::CreateEvent(kId12, kSummary12, kStartTime12,
+                                       kEndTime12);
   SingleDayEventList events;
 
   // Inject all events, i.e. pretend the user added all these at some point.
@@ -653,11 +751,16 @@ TEST_F(CalendarModelTest, PruneEvents) {
   event_list->InjectItemForTesting(std::move(event6));
   event_list->InjectItemForTesting(std::move(event7));
   event_list->InjectItemForTesting(std::move(event8));
+  event_list->InjectItemForTesting(std::move(event9));
+  event_list->InjectItemForTesting(std::move(event10));
+  event_list->InjectItemForTesting(std::move(event11));
+  event_list->InjectItemForTesting(std::move(event12));
   event_fetcher_->InjectEvents(std::move(event_list));
 
-  // Fetch events, as if the user just opened the CrOS calendar with kStartTime1
-  // as the currently on-screen month.  This means events from kStartTime0
-  // (prev), kStartTime1 (current), and kStartTime2 (next) will be fetched.
+  // Fetch events, as if the user just opened the CrOS calendar with
+  // `kStartTime1` as the currently on-screen month.  This means events from
+  // `kStartTime0` (prev), `kStartTime1` (current), and `kStartTime2` (next)
+  // will be fetched.
   event_fetcher_->FetchEvents(months);
 
   // Events 0, 1, and 2 should be cached, but not 3.
@@ -670,14 +773,14 @@ TEST_F(CalendarModelTest, PruneEvents) {
   events.clear();
   EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime3, &events));
 
-  // Advance us to kStartTime2 and fetch again.
+  // Advance us to `kStartTime2` and fetch again.
   result = base::Time::FromString(kStartTime2, &current_date);
   DCHECK(result);
   months.clear();
   calendar_utils::GetSurroundingMonthsUTC(current_date, 1, months);
   event_fetcher_->FetchEvents(months);
 
-  // Now kStartTime3 should be cached.
+  // Now `kStartTime3` should be cached.
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime3, &events));
 
@@ -699,12 +802,6 @@ TEST_F(CalendarModelTest, PruneEvents) {
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime5, &events));
 
-  // Now we're about to add a 7th month to the cache, so we're going to need to
-  // prune the least-recently-used prunable month, which is kStartTime3.  So,
-  // kStartTime3 should show up as a day with events before we advance, but not
-  // after, which means we pruned as expected.
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime3, &events));
   result = base::Time::FromString(kStartTime5, &current_date);
   DCHECK(result);
   months.clear();
@@ -712,20 +809,7 @@ TEST_F(CalendarModelTest, PruneEvents) {
   event_fetcher_->FetchEvents(months);
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime6, &events));
-  events.clear();
-  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime3, &events));
 
-  // Verify that our non-prunable months are still present.
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime0, &events));
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime1, &events));
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime2, &events));
-
-  // If we advance again, kStartTime4 should be pruned.
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime4, &events));
   result = base::Time::FromString(kStartTime6, &current_date);
   DCHECK(result);
   months.clear();
@@ -733,20 +817,7 @@ TEST_F(CalendarModelTest, PruneEvents) {
   event_fetcher_->FetchEvents(months);
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime7, &events));
-  events.clear();
-  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime4, &events));
 
-  // Verify that our non-prunable months are still present.
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime0, &events));
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime1, &events));
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime2, &events));
-
-  // If we advance again, kStartTime5 should be pruned.
-  events.clear();
-  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime5, &events));
   result = base::Time::FromString(kStartTime7, &current_date);
   DCHECK(result);
   months.clear();
@@ -754,16 +825,63 @@ TEST_F(CalendarModelTest, PruneEvents) {
   event_fetcher_->FetchEvents(months);
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime8, &events));
-  events.clear();
-  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime5, &events));
 
-  // Verify that our non-prunable months are still present.
+  // Now we're about to add a 10th month to the cache, so we're going to need to
+  // prune the least-recently-used prunable month, which is `kStartTime0`.  So,
+  // `kStartTime0` should show up as a day with events before we advance, but
+  // not after, which means we pruned as expected.
+
+  // If we advance again, `kStartTime0` should be pruned.
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime0, &events));
+  result = base::Time::FromString(kStartTime8, &current_date);
+  DCHECK(result);
+  months.clear();
+  calendar_utils::GetSurroundingMonthsUTC(current_date, 1, months);
+  event_fetcher_->FetchEvents(months);
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime9, &events));
+  events.clear();
+  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime0, &events));
+
+  // If we advance again, `kStartTime1` should be pruned.
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime1, &events));
+  result = base::Time::FromString(kStartTime9, &current_date);
+  DCHECK(result);
+  months.clear();
+  calendar_utils::GetSurroundingMonthsUTC(current_date, 1, months);
+  event_fetcher_->FetchEvents(months);
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime10, &events));
+  events.clear();
+  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime1, &events));
+
+  // If we advance again, `kStartTime2` should be pruned.
   events.clear();
   EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime2, &events));
+  result = base::Time::FromString(kStartTime10, &current_date);
+  DCHECK(result);
+  months.clear();
+  calendar_utils::GetSurroundingMonthsUTC(current_date, 1, months);
+  event_fetcher_->FetchEvents(months);
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime11, &events));
+  events.clear();
+  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime2, &events));
+
+  // If we advance again, `kStartTime3` should be pruned.
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime3, &events));
+  result = base::Time::FromString(kStartTime11, &current_date);
+  DCHECK(result);
+  months.clear();
+  calendar_utils::GetSurroundingMonthsUTC(current_date, 1, months);
+  event_fetcher_->FetchEvents(months);
+  events.clear();
+  EXPECT_EQ(1, EventsNumberOfDayInternal(kStartTime12, &events));
+  events.clear();
+  EXPECT_EQ(0, EventsNumberOfDayInternal(kStartTime3, &events));
 }
 
 TEST_F(CalendarModelTest, RecordFetchResultHistogram_Success) {

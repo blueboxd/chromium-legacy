@@ -85,12 +85,7 @@ bool IsJapaneseEngine(const std::string& engine_id) {
 }
 
 bool IsUsEnglishEngine(const std::string& engine_id) {
-  return (engine_id == "xkb:us::eng" || engine_id == "xkb:us:altgr-intl:eng" ||
-          engine_id == "xkb:us:colemak:eng" ||
-          engine_id == "xkb:us:dvorak:eng" || engine_id == "xkb:us:dvp:eng" ||
-          engine_id == "xkb:us:intl:eng" || engine_id == "xkb:us:intl_pc:eng" ||
-          engine_id == "xkb:us:workman-intl:eng" ||
-          engine_id == "xkb:us:workman:eng");
+  return engine_id == "xkb:us::eng";
 }
 
 bool IsTransliterationEngine(const std::string& engine_id) {
@@ -811,7 +806,7 @@ void NativeInputMethodEngine::ImeObserver::OnTouch(
 
 void NativeInputMethodEngine::ImeObserver::OnBlur(const std::string& engine_id,
                                                   int context_id) {
-  text_client_ = std::nullopt;
+  text_client_ = absl::nullopt;
 
   if (assistive_suggester_->IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();

@@ -601,6 +601,17 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.CrossOtr.ContextMenu.ResponseCodeExperimental"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-01-02">
+  <owner>mreichhoff@chromium.org</owner>
+  <owner>bcl@chromium.org</owner>
+  <summary>
+    Http response code seen when opening links from non-OTR to OTR browsing.
+    Logged when using the &quot;Open Link in Incognito Window&quot; menu item.
+    This metric is currently experimental and will likely be replaced.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.DownloadPolicy.LogArbitraryPolicyPerDownload"
     enum="NavigationDownloadPolicy" expires_after="2020-11-01">
   <owner>csharrison@chromium.org</owner>
@@ -1327,6 +1338,18 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     speculation rules.
   </summary>
   <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram name="Prerender.Experimental.PredictionStatus.DefaultSearchEngine"
+    enum="PrerenderPredictionStatus" expires_after="2022-09-01">
+  <owner>asamidoi@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    Records the prediction status started by omnibox. In particular, this
+    records whether they were used or not. It's recorded when omnibox-initiated
+    navigation finishes. Consider it as a success when the prediction is correct
+    and note that the activation of prerendering may fail.
+  </summary>
 </histogram>
 
 <histogram

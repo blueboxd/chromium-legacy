@@ -41,6 +41,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_recipe.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
@@ -96,7 +97,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // changed default theme assets, if you need themes to recreate their generated
 // images (which are cached), if you changed how missing values are
 // generated, or if you changed any constants.
-const int kThemePackVersion = 82;
+const int kThemePackVersion = 83;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -1069,8 +1070,10 @@ void BrowserThemePack::AddColorMixers(
     int property_id;
     int color_id;
   } kThemePropertiesMap[] = {
-      {TP::COLOR_BOOKMARK_TEXT, kColorBookmarkText},
+      {TP::COLOR_BOOKMARK_TEXT, kColorBookmarkBarForeground},
       {TP::COLOR_DOWNLOAD_SHELF, kColorDownloadShelf},
+      {TP::COLOR_FRAME_ACTIVE, ui::kColorFrameActive},
+      {TP::COLOR_FRAME_INACTIVE, ui::kColorFrameInactive},
       {TP::COLOR_OMNIBOX_TEXT, kColorOmniboxText},
       {TP::COLOR_OMNIBOX_BACKGROUND, kColorOmniboxBackground},
       {TP::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
@@ -1109,15 +1112,12 @@ void BrowserThemePack::AddColorMixers(
        kColorTabGroupContextMenuOrange},
   };
 
-  ui::ColorSet::ColorMap theme_colors;
-  SkColor color;
+  ui::ColorMixer& mixer = provider->AddMixer();
   for (const auto& entry : kThemePropertiesMap) {
+    SkColor color;
     if (GetColor(entry.property_id, &color))
-      theme_colors.insert({entry.color_id, color});
+      mixer[entry.color_id] = {color};
   }
-  if (theme_colors.empty())
-    return;
-  provider->AddMixer().AddSet({kColorSetCustomTheme, std::move(theme_colors)});
 }
 
 // private:

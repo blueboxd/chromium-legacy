@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/webui/app_settings/web_app_settings_ui.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
+#include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
@@ -754,6 +755,27 @@ void WebAppIntegrationTestDriver::LaunchFromLaunchIcon(
   AfterStateChangeAction();
 }
 
+void WebAppIntegrationTestDriver::LaunchFromMenuOption(
+    const std::string& site_mode) {
+  BeforeStateChangeAction();
+  NavigateBrowser(site_mode);
+  absl::optional<AppState> app_state = GetAppBySiteMode(
+      before_state_change_action_state_.get(), profile(), site_mode);
+  auto app_id = app_state->id;
+
+  content::WindowedNotificationObserver app_loaded_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  CHECK(chrome::ExecuteCommand(browser(), IDC_OPEN_IN_PWA_WINDOW));
+  app_loaded_observer.Wait();
+
+  app_browser_ = BrowserList::GetInstance()->GetLastActive();
+  active_app_id_ = app_id;
+  ASSERT_TRUE(AppBrowserController::IsForWebApp(app_browser(), active_app_id_));
+  ASSERT_EQ(GetBrowserWindowTitle(app_browser()), app_state->name);
+  AfterStateChangeAction();
+}
+
 void WebAppIntegrationTestDriver::LaunchFromShortcut(
     const std::string& site_mode) {
   BeforeStateChangeAction();
@@ -787,10 +809,7 @@ void WebAppIntegrationTestDriver::LaunchFromShortcut(
   app_browsers.push_back(BrowserList::GetInstance()->GetLastActive());
 
   for (auto* app_browser : app_browsers) {
-    std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
-    const std::string window_title =
-        convert.to_bytes(app_browser->GetWindowTitleForCurrentTab(false));
-    ASSERT_EQ(window_title, app_state->name);
+    ASSERT_EQ(GetBrowserWindowTitle(app_browser), app_state->name);
   }
   AfterStateChangeAction();
 }
@@ -1118,7 +1137,7 @@ void WebAppIntegrationTestDriver::UninstallPolicyApp(
                                      profile(), site_mode);
   DCHECK(policy_app);
   base::RunLoop run_loop;
-  WebAppTestRegistryObserverAdapter observer(profile());
+  WebAppInstallManagerObserverAdapter observer(profile());
   observer.SetWebAppUninstalledDelegate(
       base::BindLambdaForTesting([&](const AppId& app_id) {
         if (policy_app->id == app_id) {
@@ -1667,6 +1686,12 @@ WebAppIntegrationTestDriver::ConstructStateSnapshot() {
   return std::make_unique<StateSnapshot>(std::move(profile_state_map));
 }
 
+std::string WebAppIntegrationTestDriver::GetBrowserWindowTitle(
+    Browser* browser) {
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+  return convert.to_bytes(browser->GetWindowTitleForCurrentTab(false));
+}
+
 content::WebContents* WebAppIntegrationTestDriver::GetCurrentTab(
     Browser* browser) {
   return browser->tab_strip_model()->GetActiveWebContents();
@@ -1738,7 +1763,7 @@ void WebAppIntegrationTestDriver::InstallPolicyAppInternal(
 
 void WebAppIntegrationTestDriver::UninstallPolicyAppById(const AppId& id) {
   base::RunLoop run_loop;
-  WebAppTestRegistryObserverAdapter observer(profile());
+  WebAppInstallManagerObserverAdapter observer(profile());
   observer.SetWebAppUninstalledDelegate(
       base::BindLambdaForTesting([&](const AppId& app_id) {
         if (id == app_id) {
@@ -1915,10 +1940,14 @@ void WebAppIntegrationTestDriver::SetRunOnOsLoginMode(
   mojo::Remote<app_management::mojom::PageHandler> handler;
   auto delegate =
       WebAppSettingsUI::CreateAppManagementPageHandlerDelegate(profile());
+  base::RunLoop run_loop;
+  web_app::SetRunOnOsLoginOsHooksChangedCallbackForTesting(
+      run_loop.QuitClosure());
   AppManagementPageHandler app_management_page_handler(
       handler.BindNewPipeAndPassReceiver(), page.InitWithNewPipeAndPassRemote(),
       profile(), *delegate);
   app_management_page_handler.SetRunOnOsLoginMode(app_state->id, login_mode);
+  run_loop.Run();
 #endif
 }
 

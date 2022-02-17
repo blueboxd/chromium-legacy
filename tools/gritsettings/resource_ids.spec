@@ -181,6 +181,14 @@
     "META": {"sizes": {"includes": [40]}},
     "includes": [1620],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/image_editor/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [1625],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/image_editor/image_editor_untrusted_resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [1630],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/internals/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [1640],
@@ -593,7 +601,7 @@
   # thus not rushing to update it for now.
   "ash/components/arc/input_overlay/resources/input_overlay_resources.grd": {
     # Big alignment at start of section.
-    "META": {"align": 1000},
+    "META": {"join": 2, "align": 1000},
     "includes": [3500],
   },
   # Chromium strings and Google Chrome strings must start at the same id.

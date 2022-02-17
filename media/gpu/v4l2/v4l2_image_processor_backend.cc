@@ -22,8 +22,10 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
+#include "media/base/status.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
@@ -43,6 +45,8 @@
 namespace media {
 
 namespace {
+
+const char kImageProcessorTraceName[] = "V4L2 Video ImageProcessor";
 
 absl::optional<gfx::GpuMemoryBufferHandle> CreateHandle(
     const VideoFrame* frame) {
@@ -270,8 +274,6 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
     return nullptr;
   }
 
-  // V4L2ImageProcessorBackend supports either DmaBuf-backed or memory-based
-  // video frame for input.
   VideoFrame::StorageType input_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto input_type : input_config.preferred_storage_types) {
     v4l2_memory v4l2_memory_type = InputStorageTypeToV4L2Memory(input_type);
@@ -286,8 +288,6 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
     return nullptr;
   }
 
-  // V4L2ImageProcessorBackend only supports DmaBuf-backed video frame for
-  // output.
   VideoFrame::StorageType output_storage_type = VideoFrame::STORAGE_UNKNOWN;
   for (auto output_type : output_config.preferred_storage_types) {
     v4l2_memory v4l2_memory_type = InputStorageTypeToV4L2Memory(output_type);
@@ -921,7 +921,14 @@ void V4L2ImageProcessorBackend::Dequeue() {
         return;
     }
 
-    output_frame->set_timestamp(job_record->input_frame->timestamp());
+    const auto timestamp = job_record->input_frame->timestamp();
+    auto iter = buffer_tracers_.find(timestamp);
+    if (iter != buffer_tracers_.end()) {
+      iter->second->EndTrace(DecoderStatus::Codes::kOk);
+      buffer_tracers_.erase(iter);
+    }
+
+    output_frame->set_timestamp(timestamp);
     output_frame->set_color_space(job_record->input_frame->ColorSpace());
 
     if (!job_record->legacy_ready_cb.is_null()) {
@@ -976,6 +983,11 @@ bool V4L2ImageProcessorBackend::EnqueueInputRecord(
   DVLOGF(4) << "enqueued frame ts="
             << job_record->input_frame->timestamp().InMilliseconds()
             << " to device.";
+
+  const auto timestamp = job_record->input_frame->timestamp();
+  buffer_tracers_[timestamp] =
+      std::make_unique<ScopedDecodeTrace>(kImageProcessorTraceName,
+                                          /*is_key_frame=*/false, timestamp);
   return true;
 }
 

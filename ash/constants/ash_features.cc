@@ -106,7 +106,7 @@ const base::Feature kAmbientModeNewUrl{"ChromeOSAmbientModeNewUrl",
 
 // Controls whether to enable ARC account restrictions.
 const base::Feature kArcAccountRestrictions{"ArcAccountRestrictions",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable ARC ADB sideloading support.
 const base::Feature kArcAdbSideloadingFeature{
@@ -537,7 +537,7 @@ const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
 
 // Enables skipping of network screen.
 const base::Feature kEnableOobeNetworkScreenSkip{
-    "EnableOobeNetworkScreenSkip", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableOobeNetworkScreenSkip", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables toggling Pciguard settings through Settings UI.
 const base::Feature kEnablePciguardUi{"EnablePciguardUi",
@@ -1206,6 +1206,10 @@ const base::Feature kShowBluetoothDebugLogToggle{
 // Shows the Play Store icon in Demo Mode.
 const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the shutdown confirmation bubble from the login shelf view.
+const base::Feature kShutdownConfirmationBubble{
+    "ShutdownConfirmationBubble", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{

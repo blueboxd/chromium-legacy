@@ -1752,8 +1752,8 @@ static_library("browser") {
     "task_manager/web_contents_tags.h",
     "tracing/background_tracing_field_trial.cc",
     "tracing/background_tracing_field_trial.h",
-    "tracing/background_tracing_metrics_provider.cc",
-    "tracing/background_tracing_metrics_provider.h",
+    "tracing/chrome_background_tracing_metrics_provider.cc",
+    "tracing/chrome_background_tracing_metrics_provider.h",
     "tracing/chrome_tracing_delegate.cc",
     "tracing/chrome_tracing_delegate.h",
     "tracing/trace_event_system_stats_monitor.cc",
@@ -1784,6 +1784,8 @@ static_library("browser") {
     "universal_web_contents_observers.h",
     "update_client/chrome_update_query_params_delegate.cc",
     "update_client/chrome_update_query_params_delegate.h",
+    "url_param_filter/cross_otr_metric_throttle.cc",
+    "url_param_filter/cross_otr_metric_throttle.h",
     "url_param_filter/url_param_filterer.cc",
     "url_param_filter/url_param_filterer.h",
     "usb/frame_usb_services.cc",
@@ -1961,7 +1963,6 @@ static_library("browser") {
     "//chrome/browser/ui/webui/download_shelf:mojo_bindings",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
-    "//chrome/browser/ui/webui/image_editor:mojo_bindings",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/new_tab_page_third_party:mojo_bindings",
@@ -2239,6 +2240,7 @@ static_library("browser") {
     "//components/sync_sessions",
     "//components/tab_count_metrics",
     "//components/tab_groups",
+    "//components/tracing:background_tracing_metrics_provider",
     "//components/tracing:startup_tracing",
     "//components/translate/content/browser",
     "//components/translate/core/browser",
@@ -2364,6 +2366,7 @@ static_library("browser") {
     "//ui/base/clipboard",
     "//ui/base/idle",
     "//ui/base/ime",
+    "//ui/color",
     "//ui/compositor",
     "//ui/events:events_base",
     "//ui/events/devices",
@@ -2865,6 +2868,8 @@ static_library("browser") {
       "android/permissions/permission_settings_bridge.cc",
       "android/policy/policy_auditor.cc",
       "android/preferences/about_settings_bridge.cc",
+      "android/preferences/autofill/autofill_payment_methods_delegate.cc",
+      "android/preferences/autofill/autofill_payment_methods_delegate.h",
       "android/preferences/autofill/autofill_profile_bridge.cc",
       "android/preferences/autofill/autofill_profile_bridge.h",
       "android/preferences/browser_prefs_android.cc",
@@ -4422,6 +4427,7 @@ static_library("browser") {
       "//chrome/browser/support_tool:support_tool_proto",
       "//chrome/browser/ui/color:color_headers",
       "//chrome/browser/ui/webui/access_code_cast:mojo_bindings",
+      "//chrome/browser/ui/webui/image_editor:mojo_bindings",
       "//chrome/browser/ui/webui/tab_strip:mojo_bindings",
       "//chrome/browser/web_applications",
       "//chrome/browser/web_applications/adjustments",
@@ -8016,22 +8022,5 @@ if (!is_android) {
 if (is_chromeos_lacros) {
   proto_library("dlp_policy_event_proto") {
     sources = [ "chromeos/policy/dlp/dlp_policy_event.proto" ]
-  }
-}
-
-if (is_mac) {
-  executable("developer_id_certificate_reauthorize") {
-    # There is no C++ in here, so save ~150kB per architecture by omitting a
-    # copy of libc++.
-    no_default_deps = true
-
-    sources = [ "mac/developer_id_certificate_reauthorize_stub_main.c" ]
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-    deps = [ "../common:version_header" ]
-    ldflags = []
-    if (enable_stripping) {
-      ldflags += [ "-Wl,-exported_symbols_list," +
-                   rebase_path("../app/app.exports", root_build_dir) ]
-    }
   }
 }

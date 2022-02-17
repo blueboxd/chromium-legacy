@@ -113,7 +113,7 @@ class ASH_EXPORT CalendarViewController {
     expanded_area_available_height_ = height;
   }
 
-  int time_difference_hours() { return time_difference_hours_; }
+  int time_difference_minutes() { return time_difference_minutes_; }
 
   // Getters of the today's row position, top and bottom.
   int GetTodayRowTopHeight() const;
@@ -124,11 +124,6 @@ class ASH_EXPORT CalendarViewController {
 
   // The calendar events of the selected date.
   SingleDayEventList SelectedDateEvents();
-
-  // Same as `EventsNumberOfDayInternal`, except that return of any events on
-  // `day` constitutes "use" in the most-recently-used sense, so the month that
-  // includes day will then be promoted to most-recently-used status.
-  int EventsNumberOfDay(base::Time day, SingleDayEventList* events);
 
   // A callback passed into the`CalendarDateCellView`, which is called when the
   // cell is clicked to show the event list view.
@@ -156,12 +151,6 @@ class ASH_EXPORT CalendarViewController {
   friend class CalendarMonthViewTest;
   friend class CalendarViewEventListViewTest;
   friend class CalendarViewTest;
-
-  // Find the event list of the given day.
-  SingleDayEventList FindEvents(base::Time day) const;
-
-  // Records the time a user spends in a calendar month.
-  void RecordMonthDwellTimeMetric();
 
   // The currently shown date, which can be today or the first day of the
   // current month if current month is not today's month.
@@ -202,11 +191,8 @@ class ASH_EXPORT CalendarViewController {
   // The current row index when the event list view is shown.
   int expanded_row_index_ = 0;
 
-  // The time difference between UTC and local time in hour.
-  int time_difference_hours_ = 0;
-
-  // The event list of the currently selected date.
-  SingleDayEventList* selected_date_events_;
+  // The time difference between UTC and local time in minutes.
+  int time_difference_minutes_ = 0;
 
   base::ObserverList<Observer> observers_;
 

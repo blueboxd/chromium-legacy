@@ -94,7 +94,7 @@ class MockAttributionManagerObserver : public AttributionManager::Observer {
               (override));
 
   MOCK_METHOD(void,
-              OnReportDropped,
+              OnTriggerHandled,
               (const AttributionStorage::CreateReportResult& result),
               (override));
 };
@@ -310,9 +310,10 @@ TEST_F(AttributionManagerImplTest, ImpressionConverted_ReportReturnedToWebUI) {
   attribution_manager_->HandleTrigger(conversion);
 
   AttributionReport expected_report =
-      ReportBuilder(builder.BuildStored())
+      ReportBuilder(AttributionInfoBuilder(builder.BuildStored())
+                        .SetTime(base::Time::Now())
+                        .Build())
           .SetTriggerData(conversion.trigger_data())
-          .SetTriggerTime(base::Time::Now())
           .SetReportTime(base::Time::Now() + kFirstReportingWindow)
           .Build();
 
@@ -660,7 +661,7 @@ TEST_F(AttributionManagerImplTest, QueuedReportSent_ObserversNotified) {
   histograms.ExpectBucketCount("Conversions.ReportSendOutcome", 2, 1);
 }
 
-TEST_F(AttributionManagerImplTest, DroppedReport_ObserversNotified) {
+TEST_F(AttributionManagerImplTest, TriggerHandled_ObserversNotified) {
   MockAttributionManagerObserver observer;
   base::ScopedObservation<AttributionManager, AttributionManager::Observer>
       observation(&observer);
@@ -670,13 +671,15 @@ TEST_F(AttributionManagerImplTest, DroppedReport_ObserversNotified) {
   {
     InSequence seq;
 
-    EXPECT_CALL(observer, OnReportDropped).Times(0);
+    EXPECT_CALL(observer, OnTriggerHandled(CreateReportStatusIs(
+                              AttributionTrigger::Result::kSuccess)))
+        .Times(3);
 
     EXPECT_CALL(checkpoint, Call(1));
 
     EXPECT_CALL(
         observer,
-        OnReportDropped(AllOf(
+        OnTriggerHandled(AllOf(
             DroppedReportIs(Optional(EventLevelDataIs(TriggerPriorityIs(1)))),
             CreateReportStatusIs(
                 AttributionTrigger::Result::kSuccessDroppedLowerPriority))));
@@ -685,7 +688,7 @@ TEST_F(AttributionManagerImplTest, DroppedReport_ObserversNotified) {
 
     EXPECT_CALL(
         observer,
-        OnReportDropped(AllOf(
+        OnTriggerHandled(AllOf(
             DroppedReportIs(Optional(EventLevelDataIs(TriggerPriorityIs(-5)))),
             CreateReportStatusIs(
                 AttributionTrigger::Result::kPriorityTooLow))));
@@ -694,13 +697,13 @@ TEST_F(AttributionManagerImplTest, DroppedReport_ObserversNotified) {
 
     EXPECT_CALL(
         observer,
-        OnReportDropped(AllOf(
+        OnTriggerHandled(AllOf(
             DroppedReportIs(Optional(EventLevelDataIs(TriggerPriorityIs(2)))),
             CreateReportStatusIs(
                 AttributionTrigger::Result::kSuccessDroppedLowerPriority))));
     EXPECT_CALL(
         observer,
-        OnReportDropped(AllOf(
+        OnTriggerHandled(AllOf(
             DroppedReportIs(Optional(EventLevelDataIs(TriggerPriorityIs(3)))),
             CreateReportStatusIs(
                 AttributionTrigger::Result::kSuccessDroppedLowerPriority))));

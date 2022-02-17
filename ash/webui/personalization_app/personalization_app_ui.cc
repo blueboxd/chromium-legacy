@@ -90,7 +90,10 @@ void AddStrings(content::WebUIDataSource* source) {
       {"zeroImages", IDS_PERSONALIZATION_APP_NO_IMAGES},
       {"oneImage", IDS_PERSONALIZATION_APP_ONE_IMAGE},
       {"multipleImages", IDS_PERSONALIZATION_APP_MULTIPLE_IMAGES},
+
+      // User/avatar related strings.
       {"avatarLabel", IDS_PERSONALIZATION_APP_AVATAR_LABEL},
+      {"takeWebcamPhoto", IDS_PERSONALIZATION_APP_AVATAR_TAKE_PHOTO},
 
       // Ambient mode related string.
       {"screensaverLabel", IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL},
@@ -119,23 +122,20 @@ void AddStrings(content::WebUIDataSource* source) {
       {"ambientModeWeatherUnitFahrenheit",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_FAHRENHEIT},
       {"ambientModeWeatherUnitCelsius",
-       IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_CELSIUS}};
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_CELSIUS},
+
+      // Google Photos strings
+      {"googlePhotosLabel", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS},
+      {"googlePhotosAlbumsTabLabel",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB},
+      {"googlePhotosPhotosTabLabel",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_PHOTOS_TAB},
+      {"googlePhotosZeroStateMessage",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ZERO_STATE_MESSAGE}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
-
-  if (features::IsWallpaperGooglePhotosIntegrationEnabled()) {
-    static constexpr webui::LocalizedString kGooglePhotosLocalizedStrings[] = {
-        {"googlePhotosLabel", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS},
-        {"googlePhotosAlbumsTabLabel",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB},
-        {"googlePhotosPhotosTabLabel",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_PHOTOS_TAB},
-        {"googlePhotosZeroStateMessage",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ZERO_STATE_MESSAGE}};
-    source->AddLocalizedStrings(kGooglePhotosLocalizedStrings);
-  }
-
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
 }
 
 void AddBooleans(content::WebUIDataSource* source) {
@@ -182,8 +182,7 @@ PersonalizationAppUI::PersonalizationAppUI(
       base::StrCat(
           {"frame-src ", kChromeUIUntrustedPersonalizationAppURL, ";"}));
 
-  // TODO(crbug/1169829) set up trusted types properly to allow Polymer to write
-  // html
+  // TODO(crbug.com/1098690): Trusted Type Polymer
   source->DisableTrustedTypesCSP();
 
   AddResources(source.get());

@@ -19,7 +19,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,9 +43,13 @@ CalendarViewController::CalendarViewController()
       &local_time);
   DCHECK(result);
   int difference_in_minutes = (local_time - currently_shown_date_).InMinutes();
-  // Gives it an extra 1 minute to round the time difference to hours.
+  // Gives it an extra 1 minute to consider the processing time. Adjust the
+  // mintes by using the remainder of 15, since there're half an hour and 45
+  // minutes timezone.
   difference_in_minutes += difference_in_minutes > 0 ? 1 : (-1);
-  time_difference_hours_ = difference_in_minutes / 60;
+  time_difference_minutes_ = difference_in_minutes - difference_in_minutes % 15;
+  Shell::Get()->system_tray_model()->calendar_model()->RedistributeEvents(
+      time_difference_minutes_);
 }
 
 CalendarViewController::~CalendarViewController() {
@@ -56,8 +59,8 @@ CalendarViewController::~CalendarViewController() {
   if (user_journey_time_recorded_)
     return;
 
-  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.Calendar.UserJourneyTime.EventNotLaunched",
-                             base::TimeTicks::Now() - calendar_open_time_);
+  UmaHistogramMediumTimes("Ash.Calendar.UserJourneyTime.EventNotLaunched",
+                          base::TimeTicks::Now() - calendar_open_time_);
 }
 
 void CalendarViewController::AddObserver(Observer* observer) {
@@ -96,14 +99,14 @@ void CalendarViewController::UpdateMonth(
 
 base::Time CalendarViewController::GetOnScreenMonthFirstDayLocal() const {
   return calendar_utils::GetFirstDayOfMonth(
-             currently_shown_date_ + base::Hours(time_difference_hours_)) -
-         base::Hours(time_difference_hours_);
+             currently_shown_date_ + base::Minutes(time_difference_minutes_)) -
+         base::Minutes(time_difference_minutes_);
 }
 
 base::Time CalendarViewController::GetPreviousMonthFirstDayLocal(
     unsigned int num_months) const {
   base::Time prev, current = GetOnScreenMonthFirstDayLocal() +
-                             base::Hours(time_difference_hours_);
+                             base::Minutes(time_difference_minutes_);
 
   DCHECK_GE(num_months, 1UL);
 
@@ -111,20 +114,20 @@ base::Time CalendarViewController::GetPreviousMonthFirstDayLocal(
     prev = calendar_utils::GetStartOfPreviousMonthLocal(current);
   }
 
-  return prev - base::Hours(time_difference_hours_);
+  return prev - base::Minutes(time_difference_minutes_);
 }
 
 base::Time CalendarViewController::GetNextMonthFirstDayLocal(
     unsigned int num_months) const {
   base::Time next, current = GetOnScreenMonthFirstDayLocal() +
-                             base::Hours(time_difference_hours_);
+                             base::Minutes(time_difference_minutes_);
 
   DCHECK_GE(num_months, 1UL);
 
   for (unsigned int i = 0; i < num_months; i++, current = next) {
     next = calendar_utils::GetStartOfNextMonthLocal(current);
   }
-  return next - base::Hours(time_difference_hours_);
+  return next - base::Minutes(time_difference_minutes_);
 }
 
 base::Time CalendarViewController::GetOnScreenMonthFirstDayUTC() const {
@@ -182,9 +185,10 @@ int CalendarViewController::GetTodayRowBottomHeight() const {
 }
 
 void CalendarViewController::FetchEvents() {
-  std::set<base::Time> months{GetPreviousMonthFirstDayUTC(1).UTCMidnight(),
-                              GetOnScreenMonthFirstDayUTC().UTCMidnight(),
-                              GetNextMonthFirstDayUTC(1).UTCMidnight()};
+  std::set<base::Time> months;
+  calendar_utils::GetSurroundingMonthsUTC(
+      GetOnScreenMonthFirstDayUTC().UTCMidnight(),
+      CalendarModel::kNumSurroundingMonthsCached, months);
   Shell::Get()->system_tray_model()->calendar_model()->FetchEvents(months);
 }
 
@@ -193,7 +197,7 @@ SingleDayEventList CalendarViewController::SelectedDateEvents() {
     return std::list<google_apis::calendar::CalendarEvent>();
 
   return Shell::Get()->system_tray_model()->calendar_model()->FindEvents(
-      selected_date_.value());
+      selected_date_.value() + base::Minutes(time_difference_minutes_));
 }
 
 void CalendarViewController::ShowEventListView(base::Time selected_date,
@@ -232,8 +236,8 @@ void CalendarViewController::OnEventListClosed() {
 }
 
 void CalendarViewController::OnCalendarEventWillLaunch() {
-  UMA_HISTOGRAM_MEDIUM_TIMES("Ash.Calendar.UserJourneyTime.EventLaunched",
-                             base::TimeTicks::Now() - calendar_open_time_);
+  UmaHistogramMediumTimes("Ash.Calendar.UserJourneyTime.EventLaunched",
+                          base::TimeTicks::Now() - calendar_open_time_);
   user_journey_time_recorded_ = true;
 }
 

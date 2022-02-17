@@ -1498,6 +1498,21 @@ const FeatureEntry::FeatureVariation kNtpPhotosModuleVariations[] = {
     {" - Fake memories: 4", kNtpPhotosModuleFakeData4,
      base::size(kNtpPhotosModuleFakeData4), nullptr}};
 
+const FeatureEntry::FeatureParam kNtpPhotosModuleOptInRHTitle[] = {
+    {ntp_features::kNtpPhotosModuleOptInTitleParam, "0"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleOptInFavoriteTitle[] = {
+    {ntp_features::kNtpPhotosModuleOptInTitleParam, "1"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleOptInPersonalizedTitle[] = {
+    {ntp_features::kNtpPhotosModuleOptInTitleParam, "2"}};
+
+const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
+    {" - Recent Highlights", kNtpPhotosModuleOptInRHTitle,
+     base::size(kNtpPhotosModuleOptInRHTitle), nullptr},
+    {" - Favorite people", kNtpPhotosModuleOptInFavoriteTitle,
+     base::size(kNtpPhotosModuleOptInFavoriteTitle), nullptr},
+    {" - Personalized title", kNtpPhotosModuleOptInPersonalizedTitle,
+     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr}};
+
 const FeatureEntry::FeatureParam kRealboxMatchOmniboxThemeVar1[] = {
     {ntp_features::kRealboxMatchOmniboxThemeVariantParam, "1"}};
 const FeatureEntry::FeatureParam kRealboxMatchOmniboxThemeVar2[] = {
@@ -2493,29 +2508,6 @@ const FeatureEntry::FeatureVariation kCategoricalSearchVariations[] = {
      base::size(kCategoricalSearch_ByItem), nullptr},
     {"By usage", kCategoricalSearch_ByUsage,
      base::size(kCategoricalSearch_ByUsage), nullptr}};
-
-const FeatureEntry::FeatureParam kQuerySearchBurnInPeriod_50ms[] = {
-    {"burnin_period", "50"}};
-const FeatureEntry::FeatureParam kQuerySearchBurnInPeriod_100ms[] = {
-    {"burnin_period", "100"}};
-const FeatureEntry::FeatureParam kQuerySearchBurnInPeriod_150ms[] = {
-    {"burnin_period", "150"}};
-const FeatureEntry::FeatureParam kQuerySearchBurnInPeriod_500ms[] = {
-    {"burnin_period", "500"}};
-const FeatureEntry::FeatureParam kQuerySearchBurnInPeriod_2000ms[] = {
-    {"burnin_period", "2000"}};
-
-const FeatureEntry::FeatureVariation kQuerySearchBurnInPeriodVariations[] = {
-    {"50ms", kQuerySearchBurnInPeriod_50ms,
-     base::size(kQuerySearchBurnInPeriod_50ms), nullptr},
-    {"100ms", kQuerySearchBurnInPeriod_100ms,
-     base::size(kQuerySearchBurnInPeriod_100ms), nullptr},
-    {"150ms", kQuerySearchBurnInPeriod_150ms,
-     base::size(kQuerySearchBurnInPeriod_150ms), nullptr},
-    {"500ms", kQuerySearchBurnInPeriod_500ms,
-     base::size(kQuerySearchBurnInPeriod_500ms), nullptr},
-    {"2000ms", kQuerySearchBurnInPeriod_2000ms,
-     base::size(kQuerySearchBurnInPeriod_2000ms), nullptr}};
 
 const FeatureEntry::FeatureParam kProductivityLauncher_WithoutContinue[] = {
     {"enable_continue", "false"}};
@@ -4990,6 +4982,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBlockInsecurePrivateNetworkRequestsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBlockInsecurePrivateNetworkRequests)},
 
+    {"private-network-access-send-preflights",
+     flag_descriptions::kPrivateNetworkAccessSendPreflightsName,
+     flag_descriptions::kPrivateNetworkAccessSendPreflightsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPrivateNetworkAccessSendPreflights)},
+
+    {"private-network-access-respect-preflight-results",
+     flag_descriptions::kPrivateNetworkAccessRespectPreflightResultsName,
+     flag_descriptions::kPrivateNetworkAccessRespectPreflightResultsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         features::kPrivateNetworkAccessRespectPreflightResults)},
+
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
@@ -5148,6 +5152,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpPhotosModule,
                                     kNtpPhotosModuleVariations,
                                     "DesktopNtpModules")},
+
+    {"ntp-photos-opt-in-title",
+     flag_descriptions::kNtpPhotosModuleOptInTitleName,
+     flag_descriptions::kNtpPhotosModuleOptInTitleDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ntp_features::kNtpPhotosModuleCustomizedOptInTitle,
+         kNtpPhotosModuleOptInTitleVariations,
+         "DesktopNtpModules")},
 
     {"ntp-recipe-tasks-module", flag_descriptions::kNtpRecipeTasksModuleName,
      flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
@@ -5585,6 +5597,15 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"allow-dsp-based-aec", flag_descriptions::kCrOSDspBasedAecAllowedName,
+     flag_descriptions::kCrOSDspBasedAecAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAecAllowed)},
+    {"allow-dsp-based-ns", flag_descriptions::kCrOSDspBasedNsAllowedName,
+     flag_descriptions::kCrOSDspBasedNsAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrOSDspBasedNsAllowed)},
+    {"allow-dsp-based-agc", flag_descriptions::kCrOSDspBasedAgcAllowedName,
+     flag_descriptions::kCrOSDspBasedAgcAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAgcAllowed)},
     {"enforce-system-aec", flag_descriptions::kCrOSEnforceSystemAecName,
      flag_descriptions::kCrOSEnforceSystemAecDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAec)},
@@ -6056,21 +6077,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          browsing_data::features::kEnableRemovingAllThirdPartyCookies)},
 
-    {"enterprise-reporting-extension-manifest-version",
-     flag_descriptions::kEnterpriseReportingExtensionManifestVersionName,
-     flag_descriptions::kEnterpriseReportingExtensionManifestVersionDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         features::kEnterpriseReportingExtensionManifestVersion)},
-
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
      flag_descriptions::kUnsafeWebGPUDescription,
      kOsMac | kOsLinux | kOsWin | kOsFuchsia,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},
-
-    {"enable-unsafe-fast-js-calls", flag_descriptions::kUnsafeFastJSCallsName,
-     flag_descriptions::kUnsafeFastJSCallsDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableUnsafeFastJSCalls)},
 
 #if BUILDFLAG(IS_ANDROID)
     {"autofill-use-mobile-label-disambiguation",
@@ -6812,13 +6822,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSearchResultInlineIconName,
      flag_descriptions::kSearchResultInlineIconDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kSearchResultInlineIcon)},
-
-    {"query-search-burn-in-period",
-     flag_descriptions::kQuerySearchBurnInPeriodName,
-     flag_descriptions::kQuerySearchBurnInPeriodDescription, kOsCrOS,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(search_features::kQuerySearchBurnInPeriod,
-                                    kQuerySearchBurnInPeriodVariations,
-                                    "LauncherQuerySearchBurnInPeriod")},
 
     {"app-discovery-remote-url-search",
      flag_descriptions::kAppDiscoveryRemoteUrlSearchName,
@@ -8097,6 +8100,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"initial-navigation-entry", flag_descriptions::kInitialNavigationEntryName,
      flag_descriptions::kInitialNavigationEntryDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kInitialNavigationEntry)},
+
+#if !BUILDFLAG(IS_ANDROID)
+    {"enable-isolated-sandboxed-iframes",
+     flag_descriptions::kIsolatedSandboxedIframesName,
+     flag_descriptions::kIsolatedSandboxedIframesDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kIsolateSandboxedIframes)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

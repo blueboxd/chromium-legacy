@@ -494,6 +494,25 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Calendar.FetchEvents.FetchDuration" units="ms"
+    expires_after="2022-11-10">
+  <owner>rtinkoff@google.com</owner>
+  <owner>jiamingc@google.com</owner>
+  <summary>
+    Recorded when a calendar fetch returns. The duration of the fetch request.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Calendar.FetchEvents.PreFetched" units="fetches"
+    expires_after="2022-11-10">
+  <owner>rtinkoff@google.com</owner>
+  <owner>jiamingc@google.com</owner>
+  <summary>
+    Recorded whenever calendar events requested, and are no fetch is required
+    because the fetch has already returned.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Calendar.FetchEvents.Result"
     enum="CalendarEventFetchApiError" expires_after="2022-11-10">
   <owner>rtinkoff@google.com</owner>
@@ -501,6 +520,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded whenever calendar events are fetched. The recorded enum value
     indicates the return code of the fetch request.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Calendar.MonthDwellTime" units="ms"
+    expires_after="2023-02-16">
+  <owner>kradtke@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    Records the time a user spends in a calendar month. Records the time when
+    the user either scrolls to another month or closes the CalendarView.
   </summary>
 </histogram>
 

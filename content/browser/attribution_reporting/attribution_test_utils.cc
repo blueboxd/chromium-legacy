@@ -195,11 +195,12 @@ void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
     observer.OnReportSent(report, info);
 }
 
-void MockAttributionManager::NotifyReportDropped(
+void MockAttributionManager::NotifyTriggerHandled(
     const AttributionStorage::CreateReportResult& result) {
   for (Observer& observer : observers_)
-    observer.OnReportDropped(result);
+    observer.OnTriggerHandled(result);
 }
+
 void MockAttributionManager::SetDataHostManager(
     std::unique_ptr<AttributionDataHostManager> manager) {
   data_host_manager_ = std::move(manager);
@@ -276,7 +277,7 @@ SourceBuilder& SourceBuilder::SetSourceId(StoredSource::Id source_id) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetDedupKeys(std::vector<int64_t> dedup_keys) {
+SourceBuilder& SourceBuilder::SetDedupKeys(std::vector<uint64_t> dedup_keys) {
   dedup_keys_ = std::move(dedup_keys);
   return *this;
 }
@@ -338,7 +339,8 @@ TriggerBuilder& TriggerBuilder::SetPriority(int64_t priority) {
   return *this;
 }
 
-TriggerBuilder& TriggerBuilder::SetDedupKey(absl::optional<int64_t> dedup_key) {
+TriggerBuilder& TriggerBuilder::SetDedupKey(
+    absl::optional<uint64_t> dedup_key) {
   dedup_key_ = dedup_key;
   return *this;
 }
@@ -355,19 +357,34 @@ AttributionTrigger TriggerBuilder::Build() const {
                             priority_, dedup_key_, debug_key_);
 }
 
-ReportBuilder::ReportBuilder(StoredSource source)
-    : source_(std::move(source)),
+AttributionInfoBuilder::AttributionInfoBuilder(StoredSource source)
+    : source_(std::move(source)) {}
+
+AttributionInfoBuilder::~AttributionInfoBuilder() = default;
+
+AttributionInfoBuilder& AttributionInfoBuilder::SetTime(base::Time time) {
+  time_ = time;
+  return *this;
+}
+
+AttributionInfoBuilder& AttributionInfoBuilder::SetDebugKey(
+    absl::optional<uint64_t> debug_key) {
+  debug_key_ = debug_key;
+  return *this;
+}
+
+AttributionInfo AttributionInfoBuilder::Build() const {
+  return AttributionInfo(source_, time_, debug_key_);
+}
+
+ReportBuilder::ReportBuilder(AttributionInfo attribution_info)
+    : attribution_info_(std::move(attribution_info)),
       external_report_id_(DefaultExternalReportID()) {}
 
 ReportBuilder::~ReportBuilder() = default;
 
 ReportBuilder& ReportBuilder::SetTriggerData(uint64_t trigger_data) {
   trigger_data_ = trigger_data;
-  return *this;
-}
-
-ReportBuilder& ReportBuilder::SetTriggerTime(base::Time time) {
-  trigger_time_ = time;
   return *this;
 }
 
@@ -387,12 +404,6 @@ ReportBuilder& ReportBuilder::SetExternalReportId(
   return *this;
 }
 
-ReportBuilder& ReportBuilder::SetTriggerDebugKey(
-    absl::optional<uint64_t> trigger_debug_key) {
-  trigger_debug_key_ = trigger_debug_key;
-  return *this;
-}
-
 ReportBuilder& ReportBuilder::SetReportId(
     absl::optional<AttributionReport::EventLevelData::Id> id) {
   report_id_ = id;
@@ -401,8 +412,7 @@ ReportBuilder& ReportBuilder::SetReportId(
 
 AttributionReport ReportBuilder::Build() const {
   return AttributionReport(
-      source_, trigger_time_, report_time_, external_report_id_,
-      trigger_debug_key_,
+      attribution_info_, report_time_, external_report_id_,
       AttributionReport::EventLevelData(trigger_data_, priority_, report_id_));
 }
 
@@ -422,6 +432,14 @@ bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
                            source.reporting_origin(), source.impression_time(),
                            source.expiry_time(), source.source_type(),
                            source.priority(), source.debug_key());
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const AttributionInfo& a, const AttributionInfo& b) {
+  const auto tie = [](const AttributionInfo& attribution_info) {
+    return std::make_tuple(attribution_info.source, attribution_info.time,
+                           attribution_info.debug_key);
   };
   return tie(a) == tie(b);
 }
@@ -498,9 +516,8 @@ bool operator==(const AttributionReport::AggregatableContributionData& a,
 // sqlite DB and should not be tested.
 bool operator==(const AttributionReport& a, const AttributionReport& b) {
   const auto tie = [](const AttributionReport& report) {
-    return std::make_tuple(report.source(), report.trigger_time(),
-                           report.report_time(), report.external_report_id(),
-                           report.trigger_debug_key(),
+    return std::make_tuple(report.attribution_info(), report.report_time(),
+                           report.external_report_id(),
                            report.failed_send_attempts(), report.data());
   };
   return tie(a) == tie(b);
@@ -524,34 +541,34 @@ bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
 std::ostream& operator<<(std::ostream& out, AttributionTrigger::Result status) {
   switch (status) {
     case AttributionTrigger::Result::kSuccess:
-      out << "kSuccess";
+      out << "success";
       break;
     case AttributionTrigger::Result::kSuccessDroppedLowerPriority:
-      out << "kSuccessDroppedLowerPriority";
+      out << "successDroppedLowerPriority";
       break;
     case AttributionTrigger::Result::kInternalError:
-      out << "kInternalError";
+      out << "internalError";
       break;
     case AttributionTrigger::Result::kNoCapacityForConversionDestination:
-      out << "kNoCapacityForConversionDestination";
+      out << "insufficientDestinationCapacity";
       break;
     case AttributionTrigger::Result::kNoMatchingImpressions:
-      out << "kNoMatchingImpressions";
+      out << "noMatchingSources";
       break;
     case AttributionTrigger::Result::kDeduplicated:
-      out << "kDeduplicated";
+      out << "deduplicated";
       break;
-    case AttributionTrigger::Result::kExcessiveReports:
-      out << "kExcessiveReports";
+    case AttributionTrigger::Result::kExcessiveAttributions:
+      out << "excessiveAttributions";
       break;
     case AttributionTrigger::Result::kPriorityTooLow:
-      out << "kPriorityTooLow";
+      out << "priorityTooLow";
       break;
     case AttributionTrigger::Result::kDroppedForNoise:
-      out << "kDroppedForNoise";
+      out << "noised";
       break;
     case AttributionTrigger::Result::kExcessiveReportingOrigins:
-      out << "kExcessiveReportingOrigins";
+      out << "excessiveReportingOrigins";
       break;
   }
   return out;
@@ -645,6 +662,17 @@ std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
                                     : "null")
              << "}";
 }
+
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionInfo& attribution_info) {
+  return out << "{source=" << attribution_info.source
+             << ",time=" << attribution_info.time << ",debug_key="
+             << (attribution_info.debug_key
+                     ? base::NumberToString(*attribution_info.debug_key)
+                     : "null")
+             << "}";
+}
+
 std::ostream& operator<<(std::ostream& out,
                          const AttributionStorageDelegate::FakeReport& r) {
   return out << "{trigger_data=" << r.trigger_data
@@ -721,14 +749,9 @@ std::ostream& operator<<(
 }  // namespace
 
 std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
-  out << "{source=" << report.source()
-      << ",trigger_time=" << report.trigger_time()
+  out << "{attribution_info=" << report.attribution_info()
       << ",report_time=" << report.report_time()
       << ",external_report_id=" << report.external_report_id()
-      << ",trigger_debug_key="
-      << (report.trigger_debug_key()
-              ? base::NumberToString(*report.trigger_debug_key())
-              : "null")
       << ",failed_send_attempts=" << report.failed_send_attempts()
       << ",data=" << report.data() << "}";
   return out;

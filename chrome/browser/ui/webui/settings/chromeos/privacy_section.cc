@@ -14,6 +14,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/webui/settings/chromeos/metrics_consent_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/peripheral_data_access_handler.h"
@@ -279,7 +280,8 @@ void PrivacySection::AddHandlers(content::WebUI* web_ui) {
 
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::MetricsConsentHandler>(
-          profile(), user_manager::UserManager::Get()));
+          profile(), g_browser_process->metrics_service(),
+          user_manager::UserManager::Get()));
 
   if (IsSecureDnsAvailable())
     web_ui->AddMessageHandler(std::make_unique<::settings::SecureDnsHandler>());
@@ -288,7 +290,10 @@ void PrivacySection::AddHandlers(content::WebUI* web_ui) {
 void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"enableLogging", IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_TITLE},
-      {"enableLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_DESC},
+      // TODO(crbug/1295789): Revert descriptions back to a single description
+      // once per-user crash is ready.
+      {"enableLoggingOwnerDesc", IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_OWNER_DESC},
+      {"enableLoggingUserDesc", IDS_SETTINGS_ENABLE_LOGGING_TOGGLE_USER_DESC},
       {"enableContentProtectionAttestation",
        IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
       {"enableSuggestedContent", IDS_SETTINGS_ENABLE_SUGGESTED_CONTENT_TITLE},

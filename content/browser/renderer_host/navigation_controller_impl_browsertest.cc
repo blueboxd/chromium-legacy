@@ -8537,6 +8537,68 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(url_1, new_root->current_url());
 }
 
+// Verify that calling Restore with an entry that has an empty URL on a
+// fresh/unused NavigationController does not crash.
+// See also https://crbug.com/1240138.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       RestoreEmptyURLEntryAndLoadOnFreshNavigationController) {
+  // 1. Start in a tab and navigate it to about:blank.
+  GURL about_blank_url(url::kAboutBlankURL);
+  EXPECT_TRUE(NavigateToURL(shell(), about_blank_url));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_EQ(about_blank_url, root->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
+
+  // 2. Create a NavigationEntry with the same PageState as |entry1| but with
+  // an empty URL.
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              GURL(), Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
+      std::make_unique<NavigationEntryRestoreContextImpl>();
+  entry1->SetURL(GURL());
+  restored_entry->SetPageState(entry1->GetPageState(), context.get());
+
+  // 3. Restore the empty URL entry in a new tab.
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  new_controller.Restore(0, RestoreType::kRestored, &entries);
+  EXPECT_EQ(0u, entries.size());
+
+  // The restored entry has its URL set to about:blank instead of an empty URL.
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(about_blank_url, new_controller.GetLastCommittedEntry()->GetURL());
+
+  // 4. Call LoadIfNecessary() in the new tab.
+  {
+    TestNavigationObserver restore_observer(new_shell->web_contents());
+    new_controller.LoadIfNecessary();
+    restore_observer.Wait();
+  }
+
+  // After loading, the restored entry's URL stays as "about:blank".
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(about_blank_url, new_controller.GetLastCommittedEntry()->GetURL());
+}
+
 // Verifies that the |frame_unique_name| is set to the correct frame, so that we
 // can match subframe FrameNavigationEntries to newly created frames after
 // back/forward and restore.
@@ -20403,9 +20465,8 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, WindowReloadInIframe) {
 }
 
 namespace {
-// Tracks how many NavigationStateChanged call were triggered with either the
-// INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS flag or the
-// INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS flag.
+// Tracks how many NavigationStateChanged call were triggered with the
+// INVALIDATE_TYPE_ALL flag.
 class AllNavigationStateChangedDelegate : public WebContentsDelegate {
  public:
   AllNavigationStateChangedDelegate() = default;
@@ -20419,29 +20480,19 @@ class AllNavigationStateChangedDelegate : public WebContentsDelegate {
 
   void NavigationStateChanged(WebContents* source,
                               InvalidateTypes changed_flags) override {
-    if (changed_flags ==
-        INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS)
-      keeps_initial_entry_call_count_++;
-    if (changed_flags ==
-        INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS)
-      removes_initial_entry_call_count_++;
+    if (changed_flags == INVALIDATE_TYPE_ALL)
+      call_count_++;
   }
 
-  int keeps_initial_entry_call_count() {
-    return keeps_initial_entry_call_count_;
-  }
-  int removes_initial_entry_call_count() {
-    return removes_initial_entry_call_count_;
-  }
+  int call_count() { return call_count_; }
 
  private:
-  int keeps_initial_entry_call_count_ = 0;
-  int removes_initial_entry_call_count_ = 0;
+  int call_count_ = 0;
 };
 }  // namespace
 
-// Tests that committing iframes under the initial NavigationEntry dispatches
-// the expected NavigationStateChanged calls.
+// Tests that committing iframes and doing same-document navigations with the
+// initial NavigationEntry dispatches the expected NavigationStateChanged calls.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
                        NavigationStateChangedForInitialNavigationEntry) {
   if (!blink::features::IsInitialNavigationEntryEnabled()) {
@@ -20462,10 +20513,9 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(new_contents));
 
   // Observe NavigationStateChanged calls.
-  AllNavigationStateChangedDelegate navigation_state_changed_delegate;
-  new_contents->SetDelegate(&navigation_state_changed_delegate);
-  EXPECT_EQ(0,
-            navigation_state_changed_delegate.keeps_initial_entry_call_count());
+  AllNavigationStateChangedDelegate all_navigation_state_changed_delegate;
+  new_contents->SetDelegate(&all_navigation_state_changed_delegate);
+  EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
   ASSERT_NE(new_contents, shell()->web_contents());
   FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
 
@@ -20490,11 +20540,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // No new NavigationEntry was committed as the last navigation only modifies
     // the existing NavigationEntry, so no NavigationStateChanged calls were
     // triggered.
-    EXPECT_EQ(
-        0, navigation_state_changed_delegate.keeps_initial_entry_call_count());
-    EXPECT_EQ(
-        0,
-        navigation_state_changed_delegate.removes_initial_entry_call_count());
+    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
   }
 
   {
@@ -20512,11 +20558,7 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     // No new NavigationEntry was committed as the last navigation only modifies
     // the existing NavigationEntry, so no NavigationStateChanged calls were
     // triggered.
-    EXPECT_EQ(
-        0, navigation_state_changed_delegate.keeps_initial_entry_call_count());
-    EXPECT_EQ(
-        0,
-        navigation_state_changed_delegate.removes_initial_entry_call_count());
+    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
   }
 
   {
@@ -20536,16 +20578,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_EQ(1, controller.GetEntryCount());
     EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
 
-    // 2 INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS
-    // NavigationStateChanged calls were triggered when committing the new
-    // NavigationEntry:
+    // 2 INVALIDATE_TYPE_ALL NavigationStateChanged calls were triggered when
+    // committing the new NavigationEntry which keeps the "initial" status:
     // #1 was triggered by DiscardNonCommittedEntries().
     // #2 is triggered by NotifyNavigationEntryCommitted().
-    EXPECT_EQ(
-        2, navigation_state_changed_delegate.keeps_initial_entry_call_count());
-    EXPECT_EQ(
-        0,
-        navigation_state_changed_delegate.removes_initial_entry_call_count());
+    // Note that this is different from the _Ignore test below, which wouldn't
+    // fire the events because the client chooses to ignore the updates.
+    EXPECT_EQ(2, all_navigation_state_changed_delegate.call_count());
   }
 
   {
@@ -20563,19 +20602,324 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
     EXPECT_EQ(1, controller.GetEntryCount());
     EXPECT_FALSE(controller.GetLastCommittedEntry()->IsInitialEntry());
 
-    // No INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS
-    // NavigationStateChanged calls were triggered, because the new
-    // NavigationEntry is not an initial NavigationEntry. Instead, we fired
-    // 2 INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
-    // NavigationStateChanged calls:
+    // 2 additional INVALIDATE_TYPE_ALL NavigationStateChanged calls were
+    // triggered (increasing the count to 4), and they're not for the initial
+    // NavigationEntry.
     // #1 was triggered by DiscardNonCommittedEntries().
     // #2 is triggered by NotifyNavigationEntryCommitted().
-    EXPECT_EQ(
-        2, navigation_state_changed_delegate.keeps_initial_entry_call_count());
-    EXPECT_EQ(
-        2,
-        navigation_state_changed_delegate.removes_initial_entry_call_count());
+    EXPECT_EQ(4, all_navigation_state_changed_delegate.call_count());
   }
+}
+
+#if BUILDFLAG(IS_ANDROID)
+// ContentBrowserClient that ignores NavigationStateChanged calls for initial
+// NavigationEntries.
+class IgnoreInitialEntryNavigationStateChangedContentBrowserClient
+    : public TestContentBrowserClient {
+ public:
+  IgnoreInitialEntryNavigationStateChangedContentBrowserClient() = default;
+
+  IgnoreInitialEntryNavigationStateChangedContentBrowserClient(
+      const IgnoreInitialEntryNavigationStateChangedContentBrowserClient&) =
+      delete;
+  IgnoreInitialEntryNavigationStateChangedContentBrowserClient& operator=(
+      const IgnoreInitialEntryNavigationStateChangedContentBrowserClient&) =
+      delete;
+
+  bool
+  ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport()
+      override {
+    return true;
+  }
+};
+
+// Same as NavigationStateChangedForInitialNavigationEntry above, but with a
+// client that ignores initial NavigationEntry NavigationStateChangedCalls.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       NavigationStateChangedForInitialNavigationEntry_Ignore) {
+  if (!blink::features::IsInitialNavigationEntryEnabled()) {
+    // The tests below specifically tests the "initial NavigationEntry" state,
+    // which is not used when InitialNavigationEntry is disabled.
+    return;
+  }
+
+  IgnoreInitialEntryNavigationStateChangedContentBrowserClient
+      content_browser_client;
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&content_browser_client);
+
+  GURL url1 = embedded_test_server()->GetURL("/title1.html");
+  GURL url2 = embedded_test_server()->GetURL("/title2.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
+  // Pop open a new window without specifying a URL.
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecJs(root, "var w = window.open()"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  WebContentsImpl* new_contents =
+      static_cast<WebContentsImpl*>(new_shell->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+
+  // Observe NavigationStateChanged calls.
+  AllNavigationStateChangedDelegate all_navigation_state_changed_delegate;
+  new_contents->SetDelegate(&all_navigation_state_changed_delegate);
+  EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
+  ASSERT_NE(new_contents, shell()->web_contents());
+  FrameTreeNode* new_root = new_contents->GetPrimaryFrameTree().root();
+
+  NavigationControllerImpl& controller = new_contents->GetController();
+  // The new window is on the initial NavigationEntry.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
+
+  {
+    // Make a new iframe in the popup.
+    LoadCommittedCapturer capturer(new_contents);
+    std::string script = JsReplace(kAddFrameWithSrcScript, url1);
+    EXPECT_TRUE(ExecJs(new_root, script));
+    capturer.Wait();
+    EXPECT_EQ(url1, new_root->child_at(0)->current_url());
+
+    // The new window is still on the initial NavigationEntry, as the previous
+    // navigation modified the existing entry.
+    EXPECT_EQ(1, controller.GetEntryCount());
+    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
+
+    // No new NavigationEntry was committed as the last navigation only modifies
+    // the existing NavigationEntry, so no NavigationStateChanged calls were
+    // triggered.
+    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
+  }
+
+  {
+    // Navigate the iframe to another URL.
+    FrameNavigateParamsCapturer capturer(new_root->child_at(0));
+    NavigateFrameToURL(new_root->child_at(0), url2);
+    capturer.Wait();
+    EXPECT_EQ(url2, new_root->child_at(0)->current_url());
+    EXPECT_EQ(NAVIGATION_TYPE_AUTO_SUBFRAME, capturer.navigation_type());
+    // The new window is still on the initial NavigationEntry, as the previous
+    // navigation modified the existing entry.
+    EXPECT_EQ(1, controller.GetEntryCount());
+    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
+
+    // No new NavigationEntry was committed as the last navigation only modifies
+    // the existing NavigationEntry, so no NavigationStateChanged calls were
+    // triggered.
+    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
+  }
+
+  {
+    // Navigate the popup main frame to a same-document URL.
+    FrameNavigateParamsCapturer capturer(new_root);
+    EXPECT_TRUE(ExecJs(new_root, "location.href = '#foo';"));
+    capturer.Wait();
+    EXPECT_EQ(GURL("about:blank#foo"), new_root->current_url());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_EXISTING_ENTRY,
+              capturer.navigation_type());
+    EXPECT_TRUE(capturer.is_same_document());
+
+    // The navigation is a same-document navigation from the initial empty
+    // document, so we committed a new initial NavigationEntry that replaced the
+    // previous initial NavigationEntry.
+    EXPECT_TRUE(capturer.did_replace_entry());
+    EXPECT_EQ(1, controller.GetEntryCount());
+    EXPECT_TRUE(controller.GetLastCommittedEntry()->IsInitialEntry());
+
+    // 0 INVALIDATE_TYPE_ALL NavigationStateChanged calls were triggered even
+    // though we committed a new NavigationEntry, because the new
+    // NavigationEntry keeps the "initial" status:
+    // Note that this is different from the non-Ignore test above, which would
+    // fire the events because the client doesn't choose to ignore the updates.
+    EXPECT_EQ(0, all_navigation_state_changed_delegate.call_count());
+  }
+
+  {
+    // Navigate the popup main frame to another URL.
+    FrameNavigateParamsCapturer capturer(new_root);
+    EXPECT_TRUE(ExecJs(new_root, JsReplace("location.href = $1;", url2)));
+    capturer.Wait();
+    EXPECT_EQ(url2, new_root->current_url());
+    EXPECT_EQ(NAVIGATION_TYPE_MAIN_FRAME_NEW_ENTRY, capturer.navigation_type());
+    EXPECT_TRUE(capturer.did_replace_entry());
+
+    // The navigation is a cross-document navigation from the initial empty
+    // document, so we committed a new non-initial NavigationEntry that
+    // replaced the initial entry.
+    EXPECT_EQ(1, controller.GetEntryCount());
+    EXPECT_FALSE(controller.GetLastCommittedEntry()->IsInitialEntry());
+
+    // 2 INVALIDATE_TYPE_ALL NavigationStateChanged calls were triggered, and
+    // they're not for the initial NavigationEntry.
+    // #1 was triggered by DiscardNonCommittedEntries().
+    // #2 is triggered by NotifyNavigationEntryCommitted().
+    EXPECT_EQ(2, all_navigation_state_changed_delegate.call_count());
+  }
+
+  SetBrowserClientForTesting(old_client);
+}
+#endif
+
+// Tests with InitialNavigationEntry enabled/disabled.
+class NavigationControllerInitialNavigationEntryBrowserTest
+    : public NavigationControllerBrowserTestBase,
+      public testing::WithParamInterface<bool> {
+ protected:
+  void SetUp() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          blink::features::kInitialNavigationEntry);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          blink::features::kInitialNavigationEntry);
+    }
+    NavigationControllerBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verify that calling Restore() with a non-empty entry list on a new
+// NavigationController will not result in an initial NavigationEntry.
+// See https://crbug.com/1295723.
+IN_PROC_BROWSER_TEST_P(
+    NavigationControllerInitialNavigationEntryBrowserTest,
+    RestoreRemovesInitialEmptyDocumentOnFreshNavigationController) {
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1. Start in a tab with 1 NavigationEntry.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_EQ(url_1, root->current_url());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
+
+  // 2. Create a NavigationEntry with the same PageState as |entry1|.
+  std::unique_ptr<NavigationEntryImpl> restored_entry =
+      NavigationEntryImpl::FromNavigationEntry(
+          NavigationController::CreateNavigationEntry(
+              url_1, Referrer(), absl::nullopt, ui::PAGE_TRANSITION_RELOAD,
+              false, std::string(), controller.GetBrowserContext(),
+              nullptr /* blob_url_loader_factory */));
+  EXPECT_EQ(0U, restored_entry->root_node()->children.size());
+  std::unique_ptr<NavigationEntryRestoreContextImpl> context =
+      std::make_unique<NavigationEntryRestoreContextImpl>();
+  restored_entry->SetPageState(entry1->GetPageState(), context.get());
+
+  // 3. Create a new tab and don't navigate it anywhere.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  entries.push_back(std::move(restored_entry));
+  Shell* new_shell = Shell::CreateNewWindow(
+      controller.GetBrowserContext(), GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  // The new tab's root is on the initial NavigationEntry (if the flag is
+  // enabled) and is marked as "on initial empty document" as it hasn't
+  // navigated anywhere.
+  EXPECT_TRUE(new_root->is_on_initial_empty_document());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
+  } else {
+    EXPECT_EQ(0, new_controller.GetEntryCount());
+  }
+
+  // 4. Call Restore() with the entry from the old tab.
+  new_controller.Restore(entries.size() - 1, RestoreType::kRestored, &entries);
+  EXPECT_EQ(0u, entries.size());
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  // The new tab's root is no longer on the initial NavigationEntry but is still
+  // marked as "on initial empty document" after calling Restore().
+  EXPECT_TRUE(new_root->is_on_initial_empty_document());
+  EXPECT_FALSE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
+
+  // 5. Navigate the new tab to another URL.
+  FrameNavigateParamsCapturer capturer(new_root);
+  EXPECT_TRUE(NavigateToURL(new_shell, url_2));
+  capturer.Wait();
+  // The navigation should append a new entry instead of replacing the restored
+  // entry (which is what it would've done if it was still on the
+  // initial NavigationEntry).
+  EXPECT_FALSE(capturer.did_replace_entry());
+  EXPECT_EQ(2, new_controller.GetEntryCount());
+  EXPECT_EQ(url_1, new_controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(url_2, new_controller.GetLastCommittedEntry()->GetURL());
+}
+
+// Verify that calling Restore with an empty set of entries on a fresh/unused
+// NavigationController does not crash, since this may be possible via Android
+// WebView's restoreState() API. See https://crbug.com/1287624.
+IN_PROC_BROWSER_TEST_P(NavigationControllerInitialNavigationEntryBrowserTest,
+                       RestoreEmptyAndLoadOnFreshNavigationController) {
+  // 1. Create a new tab with a new NavigationController, and don't navigate it
+  // anywhere.
+  Shell* new_shell =
+      Shell::CreateNewWindow(shell()->web_contents()->GetBrowserContext(),
+                             GURL::EmptyGURL(), nullptr, gfx::Size());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  NavigationControllerImpl& new_controller =
+      static_cast<NavigationControllerImpl&>(
+          new_shell->web_contents()->GetController());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    // When InitialNavigationEntry is enabled, the new tab is on the initial
+    // NavigationEntry.
+    EXPECT_EQ(1, new_controller.GetEntryCount());
+    EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+    EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
+  } else {
+    EXPECT_EQ(0, new_controller.GetEntryCount());
+    EXPECT_EQ(-1, new_controller.GetLastCommittedEntryIndex());
+  }
+
+  // 2. Restore an empty set of entries in the new tab, which is possible via
+  // Android WebView's restoreState API.
+  std::vector<std::unique_ptr<NavigationEntry>> entries;
+  new_controller.Restore(-1, RestoreType::kRestored, &entries);
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    // When InitialNavigationEntry is enabled, there is always a valid index,
+    // and the initial NavigationEntry is kept to ensure that there is always
+    // at least 1 entry.
+    EXPECT_EQ(1, new_controller.GetEntryCount());
+    EXPECT_EQ(0, new_controller.GetLastCommittedEntryIndex());
+    EXPECT_TRUE(new_controller.GetLastCommittedEntry()->IsInitialEntry());
+  } else {
+    EXPECT_EQ(0, new_controller.GetEntryCount());
+    EXPECT_EQ(-1, new_controller.GetLastCommittedEntryIndex());
+  }
+
+  // 3. Call LoadIfNecessary() in the new tab.
+  ASSERT_EQ(0u, entries.size());
+  new_controller.LoadIfNecessary();
+  // No navigation had started, as there's no non-initial NavigationEntry to
+  // load.
+  EXPECT_FALSE(new_root->navigation_request());
+  EXPECT_EQ(nullptr, new_controller.GetPendingEntry());
+
+  // 4. Navigate the new tab to another URL.
+  FrameNavigateParamsCapturer capturer(new_root);
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, url));
+  capturer.Wait();
+  // The navigation should replace the initial NavigationEntry (if it existed).
+  EXPECT_EQ(blink::features::IsInitialNavigationEntryEnabled(),
+            capturer.did_replace_entry());
+  EXPECT_EQ(1, new_controller.GetEntryCount());
+  EXPECT_EQ(url, new_controller.GetLastCommittedEntry()->GetURL());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -20658,4 +21002,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(testing::ValuesIn(RenderDocumentFeatureLevelValues()),
                      testing::Bool()),
     LoadDataWithBaseURLBrowserTest::DescribeParams);
+INSTANTIATE_TEST_SUITE_P(All,
+                         NavigationControllerInitialNavigationEntryBrowserTest,
+                         testing::Bool());
 }  // namespace content

@@ -242,9 +242,9 @@ FormDataImporter::FormDataImporter(AutofillClient* client,
       personal_data_manager_(personal_data_manager),
       app_locale_(app_locale),
       virtual_card_enrollment_manager_(
-          std::make_unique<VirtualCardEnrollmentManager>(
-              client,
-              personal_data_manager)) {
+          std::make_unique<VirtualCardEnrollmentManager>(personal_data_manager,
+                                                         payments_client,
+                                                         client)) {
 }
 
 FormDataImporter::~FormDataImporter() = default;
@@ -675,6 +675,24 @@ bool FormDataImporter::ImportAddressProfileForSection(
   const std::string predicted_country_code = GetPredictedCountryCode(
       candidate_profile, client_->GetVariationConfigCountryCode(), app_locale_,
       import_log_buffer);
+  bool did_complement_country = false;
+  // If the form doesn't contain a country field, complement the profile using
+  // |predicted_country_code|. To give users the opportunity to edit, this is
+  // only done with explicit save prompts enabled.
+  // TODO(crbug.com/1297032): Cleanup kAutofillComplementCountryCodeOnImport
+  // check when launched.
+  if (!has_invalid_country &&
+      candidate_profile.GetRawInfo(ADDRESS_HOME_COUNTRY).empty() &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillAddressProfileSavePrompt) &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillComplementCountryCodeOnImport)) {
+    candidate_profile.SetInfoWithVerificationStatus(
+        AutofillType(ADDRESS_HOME_COUNTRY),
+        base::ASCIIToUTF16(predicted_country_code), app_locale_,
+        VerificationStatus::kObserved);
+    did_complement_country = true;
+  }
 
   // Construct the phone number. Reject the whole profile if the number is
   // invalid.
@@ -771,7 +789,10 @@ bool FormDataImporter::ImportAddressProfileForSection(
   DCHECK(!personal_data_manager_->IsOffTheRecord());
 
   import_candidates.push_back(AddressProfileImportCandidate{
-      candidate_profile, form.source_url(), all_fulfilled});
+      .profile = candidate_profile,
+      .url = form.source_url(),
+      .all_requirements_fulfilled = all_fulfilled,
+      .did_complement_country = did_complement_country});
 
   // Return true if a compelete importable profile was found.
   return all_fulfilled;
@@ -791,7 +812,8 @@ bool FormDataImporter::ProcessAddressProfileImportCandidates(
         continue;
       address_profile_save_manager_->ImportProfileFromForm(
           candidate.profile, app_locale_, candidate.url,
-          /*allow_only_silent_updates=*/false);
+          /*allow_only_silent_updates=*/false,
+          candidate.did_complement_country);
       // Limit the number of importable profiles to 2.
       if (++imported_profiles >= 2)
         return true;
@@ -844,7 +866,7 @@ bool FormDataImporter::ProcessCreditCardImportCandidate(
     if (imported_credit_card->virtual_card_enrollment_state() ==
         CreditCard::VirtualCardEnrollmentState::UNENROLLED_AND_ELIGIBLE) {
       virtual_card_enrollment_manager_->OfferVirtualCardEnroll(
-          imported_credit_card.get(), VirtualCardEnrollmentSource::kDownstream);
+          *imported_credit_card, VirtualCardEnrollmentSource::kDownstream);
       return true;
     }
   }

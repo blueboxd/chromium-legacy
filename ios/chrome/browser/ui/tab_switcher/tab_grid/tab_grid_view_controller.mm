@@ -508,6 +508,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.remoteTabsViewController dismissModals];
 }
 
+- (void)setCurrentPageAndPageControl:(TabGridPage)page animated:(BOOL)animated {
+  if (self.topToolbar.pageControl.selectedPage != page)
+    [self.topToolbar.pageControl setSelectedPage:page animated:animated];
+  if (self.currentPage != page) {
+    [self scrollToPage:page animated:animated];
+  }
+}
+
 #pragma mark - Public Properties
 
 - (id<GridConsumer>)regularTabsConsumer {
@@ -1777,16 +1785,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   return 12;
 }
 
-// Sets both the current page and page control's selected page to |page|.
-// Animation is used if |animated| is YES.
-- (void)setCurrentPageAndPageControl:(TabGridPage)page animated:(BOOL)animated {
-  if (self.topToolbar.pageControl.selectedPage != page)
-    [self.topToolbar.pageControl setSelectedPage:page animated:animated];
-  if (self.currentPage != page) {
-    [self scrollToPage:page animated:animated];
-  }
-}
-
 - (void)setupSearchUI {
   self.scrimView = [[UIControl alloc] init];
   self.scrimView.backgroundColor = [UIColor colorNamed:kScrimBackgroundColor];
@@ -1855,17 +1853,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)searchBar:(UISearchBar*)searchBar textDidChange:(NSString*)searchText {
   [self updateScrimVisibilityForText:searchText];
 
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      [self.incognitoTabsDelegate searchItemsWithText:searchText];
-      break;
-    case TabGridPageRegularTabs:
-      [self.regularTabsDelegate searchItemsWithText:searchText];
-      break;
-    case TabGridPageRemoteTabs:
-      self.remoteTabsViewController.searchTerms = searchText;
-      break;
-  }
+  [self.incognitoTabsDelegate searchItemsWithText:searchText];
+  [self.regularTabsDelegate searchItemsWithText:searchText];
+  self.remoteTabsViewController.searchTerms = searchText;
 }
 
 - (void)updateScrimVisibilityForText:(NSString*)searchText {
@@ -1941,6 +1931,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // Record when an incognito tab is opened.
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridOpenIncognitoTab"));
+  }
+
+  if (IsTabsSearchEnabled()) {
+    // TODO(crbug.com/1297859): Log selecting tabs as a result of search.
+    if (self.tabGridMode == TabGridModeSearch &&
+        [self.regularTabsDelegate isItemWithIDSelected:itemID]) {
+      // That can happen when the search result that was selected is from
+      // another window. In that case don't change the active page for this
+      // window and don't close the tab grid.
+      // TODO(crbug.com/1297859): Log selecting tabs from other windows.
+      return;
+    }
   }
   self.activePage = self.currentPage;
   // When the tab grid is peeked, selecting an item should not close the grid

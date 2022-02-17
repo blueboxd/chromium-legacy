@@ -277,6 +277,7 @@ crbug.com/828984 [ angle-d3d11 win amd ] conformance2/textures/canvas_sub_rectan
 crbug.com/828984 [ angle-d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-rgb9_e5-rgb-float.html [ RetryOnFailure ]
 crbug.com/844483 [ angle-d3d11 win amd ] conformance2/textures/canvas_sub_rectangle/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/1297265 [ win7 passthrough amd-0x6613 angle-d3d11 ] conformance2/renderbuffers/multisampled-stencil-renderbuffer-initialization.html [ RetryOnFailure ]
+crbug.com/1298096 [ win7 passthrough amd-0x6613 angle-d3d11 ] conformance2/textures/canvas_sub_rectangle/tex-3d-r16f-red-half_float.html [ RetryOnFailure ]
 
 
 # Recent AMD drivers seem to have a regression with 3D textures.
@@ -336,8 +337,6 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal ] conformance/ogles/GL
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] conformance2/rendering/fs-color-type-mismatch-color-buffer-type.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/sub.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/occlusionquery_conservative.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/occlusionquery_strict.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.4_samples.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.8_samples.html [ Failure ]
@@ -793,8 +792,6 @@ crbug.com/1175229 [ android android-pixel-4 angle-opengles passthrough ] conform
 crbug.com/1175232 [ android android-pixel-4 angle-opengles passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 
 crbug.com/1191030 [ android android-pixel-4 ] conformance/textures/misc/video-rotation.html [ Failure ]
-
-crbug.com/1293967 [ android android-pixel-4 ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 crbug.com/1239079 [ android no-passthrough ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]
 

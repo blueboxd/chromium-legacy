@@ -67,13 +67,6 @@ testing::AssertionResult AggregatableReportsEqual(
     const AggregationServicePayload& expected_payload = expected.payloads()[i];
     const AggregationServicePayload& actual_payload = actual.payloads()[i];
 
-    if (expected_payload.origin != actual_payload.origin) {
-      return testing::AssertionFailure()
-             << "Expected origin " << expected_payload.origin
-             << " at payload index " << i
-             << ", actual: " << actual_payload.origin;
-    }
-
     if (expected_payload.payload != actual_payload.payload) {
       return testing::AssertionFailure()
              << "Expected payloads at payload index " << i << " to match";
@@ -167,6 +160,11 @@ testing::AssertionResult SharedInfoEqual(
            << "Expected report_id " << expected.report_id
            << ", actual: " << actual.report_id;
   }
+  if (expected.debug_mode != actual.debug_mode) {
+    return testing::AssertionFailure()
+           << "Expected debug_mode " << expected.debug_mode
+           << ", actual: " << actual.debug_mode;
+  }
 
   return testing::AssertionSuccess();
 }
@@ -176,13 +174,14 @@ AggregatableReportRequest CreateExampleRequest(
   return AggregatableReportRequest::Create(
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
-                 /*bucket=*/123, /*value=*/456, processing_type,
-                 url::Origin::Create(GURL("https://reporting.example"))),
+                 /*bucket=*/123, /*value=*/456, processing_type),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/base::Time::Now(),
                  /*privacy_budget_key=*/"example_budget_key",
                  /*report_id=*/
-                 base::GUID::GenerateRandomV4()))
+                 base::GUID::GenerateRandomV4(),
+                 url::Origin::Create(GURL("https://reporting.example")),
+                 AggregatableReportSharedInfo::DebugMode::kDisabled))
       .value();
 }
 
@@ -197,7 +196,8 @@ AggregatableReportRequest CloneReportRequest(
 AggregatableReport CloneAggregatableReport(const AggregatableReport& report) {
   std::vector<AggregationServicePayload> payloads;
   for (const AggregationServicePayload& payload : report.payloads()) {
-    payloads.emplace_back(payload.origin, payload.payload, payload.key_id);
+    payloads.emplace_back(payload.payload, payload.key_id,
+                          payload.debug_cleartext_payload);
   }
 
   return AggregatableReport(std::move(payloads), report.shared_info());
@@ -256,6 +256,17 @@ std::ostream& operator<<(
       return out << "kTwoParty";
     case AggregationServicePayloadContents::ProcessingType::kSingleServer:
       return out << "kSingleServer";
+  }
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AggregatableReportSharedInfo::DebugMode& debug_mode) {
+  switch (debug_mode) {
+    case AggregatableReportSharedInfo::DebugMode::kDisabled:
+      return out << "kDisabled";
+    case AggregatableReportSharedInfo::DebugMode::kEnabled:
+      return out << "kEnabled";
   }
 }
 

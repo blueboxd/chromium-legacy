@@ -18,6 +18,8 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_content_restriction_set.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "content/public/browser/media_stream_request.h"
 #include "url/gurl.h"
 
@@ -36,7 +38,9 @@ class DlpWarnNotifier;
 // WebContents and whether any of them are currently visible.
 // If any confidential WebContents is visible, the corresponding restrictions
 // will be enforced according to the current enterprise policy.
-class DlpContentManager : public DlpContentObserver {
+class DlpContentManager : public DlpContentObserver,
+                          public BrowserListObserver,
+                          public TabStripModelObserver {
  public:
   DlpContentManager(const DlpContentManager&) = delete;
   DlpContentManager& operator=(const DlpContentManager&) = delete;
@@ -75,13 +79,16 @@ class DlpContentManager : public DlpContentObserver {
   // Called when screen share is started.
   // |state_change_callback| will be called when restricted content will appear
   // or disappear in the captured area to pause/resume the share.
+  // |source_callback| will be called only to update the source for a tab share
+  // before resuming the capture.
   // |stop_callback| will be called after a user dismisses a warning.
   virtual void OnScreenShareStarted(
       const std::string& label,
       std::vector<content::DesktopMediaID> screen_share_ids,
       const std::u16string& application_title,
       base::RepeatingClosure stop_callback,
-      content::MediaStreamUI::StateChangeCallback state_change_callback) = 0;
+      content::MediaStreamUI::StateChangeCallback state_change_callback,
+      content::MediaStreamUI::SourceCallback source_callback) = 0;
 
   // Called when screen share is stopped.
   virtual void OnScreenShareStopped(
@@ -111,7 +118,8 @@ class DlpContentManager : public DlpContentObserver {
         const content::DesktopMediaID& media_id,
         const std::u16string& application_title,
         base::OnceClosure stop_callback,
-        content::MediaStreamUI::StateChangeCallback state_change_callback);
+        content::MediaStreamUI::StateChangeCallback state_change_callback,
+        content::MediaStreamUI::SourceCallback source_callback);
     ~ScreenShareInfo();
 
     bool operator==(const ScreenShareInfo& other) const;
@@ -165,6 +173,7 @@ class DlpContentManager : public DlpContentObserver {
     std::u16string application_title_;
     base::OnceClosure stop_callback_;
     content::MediaStreamUI::StateChangeCallback state_change_callback_;
+    content::MediaStreamUI::SourceCallback source_callback_;
     State state_ = State::kRunning;
     NotificationState notification_state_ =
         NotificationState::kNotShowingNotification;
@@ -214,6 +223,19 @@ class DlpContentManager : public DlpContentObserver {
       const DlpContentRestrictionSet& restriction_set) override;
   void OnWebContentsDestroyed(content::WebContents* web_contents) override;
 
+  // BrowserListObserver overrides:
+  void OnBrowserAdded(Browser* browser) override;
+  void OnBrowserRemoved(Browser* browser) override;
+
+  // TabStripModelObserver overrides:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
+  // Called when tab was probably moved, but without change of the visibility.
+  virtual void TabLocationMaybeChanged(content::WebContents* web_contents) = 0;
+
   // Helper to remove |web_contents| from the confidential set.
   virtual void RemoveFromConfidential(content::WebContents* web_contents);
 
@@ -240,12 +262,15 @@ class DlpContentManager : public DlpContentObserver {
       content::WebContents* web_contents) const = 0;
 
   // Adds screen share to be tracked in |running_screen_shares_|.
+  // Callbacks are used to control the screen share state in case it should be
+  // paused, resumed or completely stopped by DLP.
   void AddScreenShare(
       const std::string& label,
       const content::DesktopMediaID& media_id,
       const std::u16string& application_title,
       base::RepeatingClosure stop_callback,
-      content::MediaStreamUI::StateChangeCallback state_change_callback);
+      content::MediaStreamUI::StateChangeCallback state_change_callback,
+      content::MediaStreamUI::SourceCallback source_callback);
 
   // Removes screen share from |running_screen_shares_|.
   void RemoveScreenShare(const std::string& label,

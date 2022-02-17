@@ -509,6 +509,7 @@ void MediaStreamDispatcherHost::FocusCapturedSurface(const std::string& label,
 
 void MediaStreamDispatcherHost::Crop(const base::UnguessableToken& device_id,
                                      const base::Token& crop_id,
+                                     uint32_t crop_version,
                                      CropCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -522,12 +523,13 @@ void MediaStreamDispatcherHost::Crop(const base::UnguessableToken& device_id,
                      crop_id),
       base::BindOnce(&MediaStreamDispatcherHost::OnCropValidationComplete,
                      weak_factory_.GetWeakPtr(), device_id, crop_id,
-                     std::move(callback)));
+                     crop_version, std::move(callback)));
 }
 
 void MediaStreamDispatcherHost::OnCropValidationComplete(
     const base::UnguessableToken& device_id,
     const base::Token& crop_id,
+    uint32_t crop_version,
     CropCallback callback,
     bool crop_id_passed_validation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -536,8 +538,9 @@ void MediaStreamDispatcherHost::OnCropValidationComplete(
     std::move(callback).Run(media::mojom::CropRequestResult::kErrorGeneric);
     return;
   }
-  media_stream_manager_->video_capture_manager()->Crop(device_id, crop_id,
-                                                       std::move(callback));
+
+  media_stream_manager_->video_capture_manager()->Crop(
+      device_id, crop_id, crop_version, std::move(callback));
 }
 #endif
 

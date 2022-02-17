@@ -12,8 +12,11 @@
 // clang-format off
 #define COMMON_CHROME_COLOR_IDS \
   /* Bookmark Bar output colors. */ \
-  E(kColorBookmarkText, ThemeProperties::COLOR_BOOKMARK_TEXT, \
-    kChromeColorsStart) \
+  E(kColorBookmarkBarBackground, \
+    ThemeProperties::COLOR_BOOKMARK_BAR_BACKGROUND, kChromeColorsStart) \
+  E(kColorBookmarkBarForeground, ThemeProperties::COLOR_BOOKMARK_TEXT) \
+  E(kColorBookmarkBarSeparator, ThemeProperties::COLOR_BOOKMARK_SEPARATOR) \
+  E(kColorBookmarkButtonIcon, ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON) \
   E(kColorBookmarkFavicon, ThemeProperties::COLOR_BOOKMARK_FAVICON) \
   E_CPONLY(kColorBookmarkFolderIcon) \
   /* Download Shelf output colors. */ \
@@ -103,6 +106,8 @@
   E(kColorToolbarButtonIcon, ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON) \
   E(kColorToolbarContentAreaSeparator, \
     ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR) \
+  E(kColorToolbarSeparator, \
+    ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR) \
   E(kColorToolbarText, ThemeProperties::COLOR_TOOLBAR_TEXT)
 
 #if BUILDFLAG(IS_WIN)
@@ -129,14 +134,5 @@ enum ChromeColorIds : ui::ColorId {
 #include "ui/color/color_id_macros.inc"
 
 // clang-format on
-
-static_assert(ui::ColorId{kChromeColorsEnd} <= ui::ColorId{ui::kUiColorsLast},
-              "Embedder colors must not exceed allowed space");
-
-enum ChromeColorSetIds : ui::ColorSetId {
-  kColorSetCustomTheme = ui::kUiColorSetsEnd,
-
-  kChromeColorSetsEnd,
-};
 
 #endif  // CHROME_BROWSER_UI_COLOR_CHROME_COLOR_ID_H_

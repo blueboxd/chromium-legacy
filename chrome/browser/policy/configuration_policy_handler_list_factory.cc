@@ -68,6 +68,7 @@
 #include "components/custom_handlers/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/enterprise/browser/reporting/cloud_profile_reporting_policy_handler.h"
+#include "components/enterprise/browser/reporting/cloud_reporting_frequency_policy_handler.h"
 #include "components/enterprise/browser/reporting/cloud_reporting_policy_handler.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/content/copy_prevention_settings_policy_handler.h"
@@ -1599,12 +1600,18 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kForceMajorVersionToMinorPositionInUserAgent,
     prefs::kForceMajorVersionToMinorPositionInUserAgent,
     base::Value::Type::INTEGER},
-  { key::kWindowPlacementAlwaysAllowed,
-    policy_prefs::kWindowPlacementAlwaysAllowed,
-    base::Value::Type::BOOLEAN },
   { key::kEnableDirectSockets,
     policy_prefs::kEnableDirectSockets,
     base::Value::Type::BOOLEAN },
+  { key::kDefaultWindowPlacementSetting,
+    prefs::kManagedDefaultWindowPlacementSetting,
+    base::Value::Type::INTEGER },
+  { key::kWindowPlacementAllowedForUrls,
+    prefs::kManagedWindowPlacementAllowedForUrls,
+    base::Value::Type::LIST },
+  { key::kWindowPlacementBlockedForUrls,
+    prefs::kManagedWindowPlacementBlockedForUrls,
+    base::Value::Type::LIST },
 };
 // clang-format on
 
@@ -1676,6 +1683,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<
           enterprise_reporting::CloudProfileReportingPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<
+          enterprise_reporting::CloudReportingFrequencyPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceSafeSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceYouTubeSafetyModePolicyHandler>());
   handlers->AddHandler(std::make_unique<IncognitoModePolicyHandler>());

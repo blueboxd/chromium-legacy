@@ -16,8 +16,11 @@
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "google_apis/common/api_error_codes.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
+
+class CalendarEventFetch;
 
 // A simple std::list of calendar events, used to store a single day's events
 // in EventMap. Not to be confused with google_apis::calendar::EventList,
@@ -27,10 +30,14 @@ using SingleDayEventList = std::list<google_apis::calendar::CalendarEvent>;
 // Controller of the `CalendarView`.
 class ASH_EXPORT CalendarModel {
  public:
-  explicit CalendarModel(const std::set<base::Time>& non_prunable_months);
+  explicit CalendarModel(const std::set<base::Time>& base_months);
   CalendarModel(const CalendarModel& other) = delete;
   CalendarModel& operator=(const CalendarModel& other) = delete;
   virtual ~CalendarModel();
+
+  // Number of months, before and after the month currently on-display, that we
+  // cache-ahead.
+  static constexpr int kNumSurroundingMonthsCached = 2;
 
   // Maps a day, i.e. midnight on the day of the event's start_time, to a
   // SingleDayEventList.
@@ -53,9 +60,6 @@ class ASH_EXPORT CalendarModel {
   // Requests events that fall in |months|.
   void FetchEvents(const std::set<base::Time>& months);
 
-  // Requests events that fall in the set of non-prunable "base" months.
-  void FetchEventsForBaseMonths();
-
   // Same as `FindEvents`, except that return of any events on `day` constitutes
   // "use" in the most-recently-used sense, so the month that includes day will
   // then be promoted to most-recently-used status.  Use this to get events if
@@ -67,6 +71,16 @@ class ASH_EXPORT CalendarModel {
   // this if you don't care about making the month in which |day| resides less
   // likely to be pruned if we need to trim down to stay within storage limits.
   SingleDayEventList FindEvents(base::Time day) const;
+
+  // Redistributes all the fetched events to the date map with the
+  // `time_difference_minutes_`. This only happens once per calendar view's life
+  // cycle.
+  void RedistributeEvents(int time_difference_minutes);
+
+  // Updates the time difference in minutes.
+  void set_time_difference_minutes(int minutes) {
+    time_difference_minutes_ = minutes;
+  }
 
  protected:
   // Fetch events for |start_of_month| if we haven't already done so since the
@@ -88,27 +102,23 @@ class ASH_EXPORT CalendarModel {
   void InsertEventInMonth(SingleMonthEventMap& month,
                           const google_apis::calendar::CalendarEvent* event);
 
+  // Returns the event's `start_time` midnight adjusted by the
+  // `time_difference_minutes_`. So the each event will be mapped to the date
+  // map by the local device/set time.
+  base::Time GetStartTimeMidnightAdjusted(
+      const google_apis::calendar::CalendarEvent* event) const;
+
   // Insert EventList |events| in the EventCache.
   void InsertEvents(const google_apis::calendar::EventList* events);
 
   // Free up months of events as needed to keep us within storage limits.
   void PruneEventCache();
 
-  // Invoked when events requested via FetchEvents() are ready, or if the
-  // request failed.
-  void OnCalendarEventsFetched(
-      google_apis::ApiErrorCode error,
-      std::unique_ptr<google_apis::calendar::EventList> events);
-
   // Returns true if we've already fetched events for |start_of_month| since the
   // calendar was opened, false otherwise.
   bool IsMonthAlreadyFetched(base::Time start_of_month) const;
 
   // Officially declare the month denoted by |start_of_month| as "fetched."
-  // If the month is non-prunable then we won't attempt to fetch it again unless
-  // the calendar is closed and re-opened.  If the month is prunable then we'll
-  // attempt a re-fetch if it gets pruned and our visible window includes it
-  // again.
   void MarkMonthAsFetched(base::Time start_of_month);
 
   // Add a month to the queue of months eligible for pruning when we need to
@@ -122,6 +132,11 @@ class ASH_EXPORT CalendarModel {
   int EventsNumberOfDayInternal(base::Time day,
                                 SingleDayEventList* events) const;
 
+  // Actual callback invoked when an event fetch is complete.
+  void OnEventsFetched(base::Time start_of_month,
+                       google_apis::ApiErrorCode error,
+                       const google_apis::calendar::EventList* events);
+
   // Internal storage for fetched events, with each fetched month having a map
   // of days to events.
   MonthToEventsMap event_months_;
@@ -130,11 +145,11 @@ class ASH_EXPORT CalendarModel {
   // most-recently-used (MRU) order.
   std::deque<base::Time> prunable_months_mru_;
 
-  // The set of months exempt from pruning.
-  const std::set<base::Time> non_prunable_months_;
+  // All fetch requests that are still in-progress.
+  std::map<base::Time, std::unique_ptr<CalendarEventFetch>> pending_fetches_;
 
-  // The set of months exempt from pruning that have been fetched.
-  std::set<base::Time> non_prunable_months_fetched_;
+  // Time difference between the UTC time and the local time in minutes.
+  absl::optional<int> time_difference_minutes_;
 
   base::ObserverList<Observer> observers_;
 

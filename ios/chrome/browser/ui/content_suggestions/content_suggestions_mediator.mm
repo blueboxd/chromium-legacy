@@ -197,11 +197,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   _mostVisitedSites.reset();
 }
 
+- (void)refreshMostVisitedTiles {
+  // Refresh in case there are new MVT to show.
+  _mostVisitedSites->RefreshTiles();
+  _mostVisitedSites->Refresh();
+}
+
 - (void)reloadAllData {
-  if (IsSingleNtpEnabled()) {
-    // Refresh in case there are new MVT to show.
-    _mostVisitedSites->Refresh();
-  }
   NSArray<ContentSuggestionsSectionInformation*>* sections =
       [self sectionsInfo];
   NSMutableDictionary<NSNumber*, NSArray*>* items =
@@ -335,7 +337,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.freshMostVisitedItems addObject:item];
   }
 
-  if ([self.mostVisitedItems count] > 0) {
+  if (!IsSingleNtpEnabled() && [self.mostVisitedItems count] > 0) {
     // If some content is already displayed to the user, do not update without a
     // user action.
     return;

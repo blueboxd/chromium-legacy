@@ -126,7 +126,7 @@ TextVector KeyboardShortcutResult::CreateTextVectorFromTemplateString(
       continue;
     }
 
-    const int index = piece[0] - '1';
+    const size_t index = static_cast<size_t>(piece[0] - '1');
     if (index >= replacement_strings.size()) {
       DLOG(ERROR) << "Placeholder $" << index
                   << " number exceeds number of replacement components.";
@@ -314,8 +314,8 @@ void KeyboardShortcutResult::UpdateIcon() {
   // KeyboardShortcutResult is promoted to an answer card.
   gfx::ImageSkia icon =
       gfx::CreateVectorIcon(chromeos::kKeyboardShortcutsIcon,
-                            kSystemIconDimension, SK_ColorTRANSPARENT);
-  SetIcon(IconInfo(icon, kSystemIconDimension));
+                            GetAppIconDimension(), SK_ColorTRANSPARENT);
+  SetIcon(IconInfo(icon, GetAppIconDimension()));
 }
 
 }  // namespace app_list

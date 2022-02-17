@@ -535,6 +535,8 @@ NetworkContext::NetworkContext(
 
   CreateURLLoaderFactoryForCertNetFetcher(
       std::move(url_loader_factory_for_cert_net_fetcher_receiver));
+
+  SetBlockTrustTokens(params_->block_trust_tokens);
 }
 
 NetworkContext::NetworkContext(
@@ -733,15 +735,20 @@ void NetworkContext::GetHasTrustTokensAnswerer(
   // Only called when Trust Tokens is enabled, i.e. trust_token_store_ is
   // non-null.
   DCHECK(trust_token_store_);
+  DCHECK(network_service_);
 
   absl::optional<SuitableTrustTokenOrigin> suitable_top_frame_origin =
       SuitableTrustTokenOrigin::Create(top_frame_origin);
+
+  const SynchronousTrustTokenKeyCommitmentGetter* const key_commitment_getter =
+      network_service_->trust_token_key_commitments();
 
   // It's safe to dereference |suitable_top_frame_origin| here as, during the
   // process of vending the HasTrustTokensAnswerer, the browser ensures that
   // the requesting context's top frame origin is suitable for Trust Tokens.
   auto answerer = std::make_unique<HasTrustTokensAnswerer>(
-      std::move(*suitable_top_frame_origin), trust_token_store_.get());
+      std::move(*suitable_top_frame_origin), trust_token_store_.get(),
+      key_commitment_getter);
 
   has_trust_tokens_answerers_.Add(std::move(answerer), std::move(receiver));
 }
@@ -797,6 +804,10 @@ void NetworkContext::DeleteStoredTrustTokens(
         std::move(callback).Run(status);
       },
       std::move(*suitable_issuer_origin), std::move(callback)));
+}
+
+void NetworkContext::SetBlockTrustTokens(bool block) {
+  block_trust_tokens_ = block;
 }
 
 void NetworkContext::OnProxyLookupComplete(

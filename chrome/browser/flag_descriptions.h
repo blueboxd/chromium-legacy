@@ -381,6 +381,9 @@ extern const char kEnableAutomaticSnoozeDescription[];
 extern const char kEnableFirstPartySetsName[];
 extern const char kEnableFirstPartySetsDescription[];
 
+extern const char kIsolatedSandboxedIframesName[];
+extern const char kIsolatedSandboxedIframesDescription[];
+
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
@@ -585,6 +588,12 @@ extern const char kEnableWindowsGamingInputDataFetcherDescription[];
 
 extern const char kBlockInsecurePrivateNetworkRequestsName[];
 extern const char kBlockInsecurePrivateNetworkRequestsDescription[];
+
+extern const char kPrivateNetworkAccessSendPreflightsName[];
+extern const char kPrivateNetworkAccessSendPreflightsDescription[];
+
+extern const char kPrivateNetworkAccessRespectPreflightResultsName[];
+extern const char kPrivateNetworkAccessRespectPreflightResultsDescription[];
 
 extern const char kDeprecateAltClickName[];
 extern const char kDeprecateAltClickDescription[];
@@ -1635,9 +1644,6 @@ extern const char kUsePassthroughCommandDecoderDescription[];
 extern const char kExtensionWorkflowJustificationName[];
 extern const char kExtensionWorkflowJustificationDescription[];
 
-extern const char kEnterpriseReportingExtensionManifestVersionName[];
-extern const char kEnterpriseReportingExtensionManifestVersionDescription[];
-
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kShareContextMenuName[];
 extern const char kShareContextMenuDescription[];
@@ -2146,6 +2152,9 @@ extern const char kNtpDummyModulesDescription[];
 extern const char kNtpPhotosModuleName[];
 extern const char kNtpPhotosModuleDescription[];
 
+extern const char kNtpPhotosModuleOptInTitleName[];
+extern const char kNtpPhotosModuleOptInTitleDescription[];
+
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];
 
@@ -2448,9 +2457,6 @@ extern const char kCameraAppDocumentManualCropDescription[];
 extern const char kCategoricalSearchName[];
 extern const char kCategoricalSearchDescription[];
 
-extern const char kQuerySearchBurnInPeriodName[];
-extern const char kQuerySearchBurnInPeriodDescription[];
-
 extern const char kCellularBypassESimInstallationConnectivityCheckName[];
 extern const char kCellularBypassESimInstallationConnectivityCheckDescription[];
 
@@ -2561,6 +2567,15 @@ extern const char kQuickSettingsPWANotificationsDescription[];
 
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
+
+extern const char kCrOSDspBasedAecAllowedName[];
+extern const char kCrOSDspBasedAecAllowedDescription[];
+
+extern const char kCrOSDspBasedNsAllowedName[];
+extern const char kCrOSDspBasedNsAllowedDescription[];
+
+extern const char kCrOSDspBasedAgcAllowedName[];
+extern const char kCrOSDspBasedAgcAllowedDescription[];
 
 extern const char kCrOSEnforceSystemAecName[];
 extern const char kCrOSEnforceSystemAecDescription[];

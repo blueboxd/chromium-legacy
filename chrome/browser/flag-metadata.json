@@ -88,6 +88,21 @@
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 101
   },
+   {
+    "name": "allow-dsp-based-aec",
+    "owners": [ "peah" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "allow-dsp-based-agc",
+    "owners": [ "peah" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "allow-dsp-based-ns",
+    "owners": [ "peah" ],
+    "expiry_milestone": 110
+  },
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
@@ -418,7 +433,7 @@
   {
     "name": "autofill-enable-offers-in-clank-keyboard-accessory",
     "owners": [ "siyua", "siashah@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 106
   },
   {
     "name": "autofill-enable-sending-bcn-in-get-upload-details",
@@ -551,7 +566,7 @@
   {
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 107
   },
   {
     "name": "block-migrated-default-chrome-app-sync",
@@ -843,7 +858,7 @@
   {
     "name": "content-languages-in-language-picker",
     "owners": [ "sclittle", "basiaz@google.com", "chrome-language@google.com" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 105
   },
   {
     "name": "content-suggestions-header-migration",
@@ -2253,6 +2268,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "enable-isolated-sandboxed-iframes",
+    "owners": [ "wjmaclean@chromium.org", "alexmos@chromium.org", "creis@chromium.org" ],
+    "expiry_milestone": 114
+  },
+  {
     "name": "enable-javascript-harmony",
     "owners": [ "adamk", "hablich" ],
     // This flag is used by web developers to test upcoming javascript features.
@@ -2875,7 +2895,7 @@
   {
     "name": "enable-translate-sub-frames",
     "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 110
   },
   {
     "name": "enable-tts-lacros-support",
@@ -2898,11 +2918,6 @@
     "name": "enable-universal-links",
     "owners": [ "avi", "olivierli" ],
     "expiry_milestone": 101
-  },
-  {
-    "name": "enable-unsafe-fast-js-calls",
-    "owners": [ "mslekova", "enga", "v8-fast-api@google.com" ],
-    "expiry_milestone": 98
   },
   {
     "name": "enable-unsafe-webgpu",
@@ -3077,7 +3092,7 @@
   {
     "name": "enable-winrt-geolocation-implementation",
     "owners": [ "pelavall@microsoft.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "enable-wireguard",
@@ -3100,7 +3115,7 @@
     "owners": ["jennyz", "erikchen"],
     "expiry_milestone": 130
   },
-   {
+  {
     "name": "enforce-system-aec",
     "owners": [ "peah" ],
     "expiry_milestone": 100
@@ -3139,11 +3154,6 @@
     "name": "enhanced-network-voices",
     "owners": ["joelriley@google.com", "leileilei@google.com"],
     "expiry_milestone": 100
-  },
-  {
-    "name": "enterprise-reporting-extension-manifest-version",
-    "owners": [ "igorruvinov", "zmin" ],
-    "expiry_milestone": 105
   },
   {
     "name": "esim-policy",
@@ -4255,6 +4265,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "ntp-photos-opt-in-title",
+    "owners": [ "mplg", "tiborg"],
+    "expiry_milestone":105
+  },
+  {
     "name": "ntp-realbox-match-omnibox-theme",
     "owners": [ "mahmadi", "mfacey" ],
     "expiry_milestone": 105
@@ -4838,6 +4853,16 @@
     "expiry_milestone": 103
   },
   {
+    "name": "private-network-access-respect-preflight-results",
+    "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
+    "expiry_milestone": 107
+  },
+  {
+    "name": "private-network-access-send-preflights",
+    "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
+    "expiry_milestone": 107
+  },
+  {
     "name": "productivity-launcher",
     "owners": [ "cros-system-ui-eng@google.com" ],
     "expiry_milestone": 101
@@ -4871,11 +4896,6 @@
     "name": "pwa-update-dialog-for-name-and-icon",
     "owners": [ "finnur", "beverloo" ],
     "expiry_milestone": 110
-  },
-  {
-    "name": "query-search-burn-in-period",
-    "owners": [ "tby", "thanhdng", "wrong", "amandadeacon" ],
-    "expiry_milestone": 103
   },
   {
     "name": "query-tiles",

@@ -174,7 +174,7 @@ Value::Value(Type type) {
       data_.emplace<int>(0);
       return;
     case Type::DOUBLE:
-      data_.emplace<DoubleStorage>(bit_cast<DoubleStorage>(0.0));
+      data_.emplace<DoubleStorage>(0.0);
       return;
     case Type::STRING:
       data_.emplace<std::string>();
@@ -197,13 +197,8 @@ Value::Value(bool value) : data_(value) {}
 
 Value::Value(int value) : data_(value) {}
 
-Value::Value(double value) : data_(bit_cast<DoubleStorage>(value)) {
-  if (!std::isfinite(value)) {
-    NOTREACHED() << "Non-finite (i.e. NaN or positive/negative infinity) "
-                 << "values cannot be represented in JSON";
-    data_ = bit_cast<DoubleStorage>(0.0);
-  }
-}
+Value::Value(double value)
+    : data_(absl::in_place_type_t<DoubleStorage>(), value) {}
 
 Value::Value(StringPiece value) : Value(std::string(value)) {}
 
@@ -274,8 +269,12 @@ Value::Value(absl::monostate) {}
 
 Value::Value(DoubleStorage storage) : data_(std::move(storage)) {}
 
-double Value::AsDoubleInternal() const {
-  return bit_cast<double>(absl::get<DoubleStorage>(data_));
+Value::DoubleStorage::DoubleStorage(double v) : v_(bit_cast<decltype(v_)>(v)) {
+  if (!std::isfinite(v)) {
+    NOTREACHED() << "Non-finite (i.e. NaN or positive/negative infinity) "
+                 << "values cannot be represented in JSON";
+    v_ = bit_cast<decltype(v_)>(0.0);
+  }
 }
 
 Value Value::Clone() const {
@@ -351,7 +350,7 @@ int Value::GetInt() const {
 
 double Value::GetDouble() const {
   if (is_double())
-    return AsDoubleInternal();
+    return absl::get<DoubleStorage>(data_);
   if (is_int())
     return GetInt();
   CHECK(false);
@@ -427,6 +426,8 @@ Value::Dict::const_iterator Value::Dict::cend() const {
 }
 
 bool Value::Dict::contains(base::StringPiece key) const {
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
+
   return storage_.contains(key);
 }
 
@@ -464,6 +465,8 @@ void Value::Dict::Merge(const Dict& dict) {
 }
 
 const Value* Value::Dict::Find(StringPiece key) const {
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
+
   auto it = storage_.find(key);
   return it != storage_.end() ? it->second.get() : nullptr;
 }
@@ -524,6 +527,8 @@ Value::List* Value::Dict::FindList(StringPiece key) {
 }
 
 Value* Value::Dict::Set(StringPiece key, Value&& value) {
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
+
   auto wrapped_value = std::make_unique<Value>(std::move(value));
   auto* raw_value = wrapped_value.get();
   storage_.insert_or_assign(key, std::move(wrapped_value));
@@ -575,10 +580,14 @@ Value* Value::Dict::Set(StringPiece key, List&& value) {
 }
 
 bool Value::Dict::Remove(StringPiece key) {
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
+
   return storage_.erase(key) > 0;
 }
 
 absl::optional<Value> Value::Dict::Extract(StringPiece key) {
+  DCHECK(IsStringUTF8AllowingNoncharacters(key));
+
   auto it = storage_.find(key);
   if (it == storage_.end())
     return absl::nullopt;
@@ -589,6 +598,7 @@ absl::optional<Value> Value::Dict::Extract(StringPiece key) {
 
 const Value* Value::Dict::FindByDottedPath(StringPiece path) const {
   DCHECK(!path.empty());
+  DCHECK(IsStringUTF8AllowingNoncharacters(path));
 
   const Dict* current_dict = this;
   const Value* current_value = nullptr;
@@ -663,6 +673,7 @@ Value::List* Value::Dict::FindListByDottedPath(StringPiece path) {
 
 Value* Value::Dict::SetByDottedPath(StringPiece path, Value&& value) {
   DCHECK(!path.empty());
+  DCHECK(IsStringUTF8AllowingNoncharacters(path));
 
   Dict* current_dict = this;
   Value* current_value = nullptr;
@@ -738,6 +749,7 @@ bool Value::Dict::RemoveByDottedPath(StringPiece path) {
 
 absl::optional<Value> Value::Dict::ExtractByDottedPath(StringPiece path) {
   DCHECK(!path.empty());
+  DCHECK(IsStringUTF8AllowingNoncharacters(path));
 
   // Use recursion instead of PathSplitter here, as it simplifies code for
   // removing dictionaries that become empty if a value matching `path` is
@@ -1386,32 +1398,7 @@ std::unique_ptr<Value> Value::CreateDeepCopy() const {
 }
 
 bool operator==(const Value& lhs, const Value& rhs) {
-  if (lhs.type() != rhs.type())
-    return false;
-
-  switch (lhs.type()) {
-    case Value::Type::NONE:
-      return true;
-    case Value::Type::BOOLEAN:
-      return lhs.GetBool() == rhs.GetBool();
-    case Value::Type::INTEGER:
-      return lhs.GetInt() == rhs.GetInt();
-    case Value::Type::DOUBLE:
-      // TODO(dcheng): Make DoubleStorage comparable so we can just default to
-      // absl::variant's operator==.
-      return lhs.AsDoubleInternal() == rhs.AsDoubleInternal();
-    case Value::Type::STRING:
-      return lhs.GetString() == rhs.GetString();
-    case Value::Type::BINARY:
-      return lhs.GetBlob() == rhs.GetBlob();
-    case Value::Type::DICTIONARY:
-      return lhs.GetDict() == rhs.GetDict();
-    case Value::Type::LIST:
-      return lhs.GetList() == rhs.GetList();
-  }
-
-  NOTREACHED();
-  return false;
+  return lhs.data_ == rhs.data_;
 }
 
 bool operator!=(const Value& lhs, const Value& rhs) {
@@ -1419,32 +1406,7 @@ bool operator!=(const Value& lhs, const Value& rhs) {
 }
 
 bool operator<(const Value& lhs, const Value& rhs) {
-  if (lhs.type() != rhs.type())
-    return lhs.type() < rhs.type();
-
-  switch (lhs.type()) {
-    case Value::Type::NONE:
-      return false;
-    case Value::Type::BOOLEAN:
-      return lhs.GetBool() < rhs.GetBool();
-    case Value::Type::INTEGER:
-      return lhs.GetInt() < rhs.GetInt();
-    case Value::Type::DOUBLE:
-      // TODO(dcheng): Make DoubleStorage comparable so we can just default to
-      // absl::variant's operator<.
-      return lhs.AsDoubleInternal() < rhs.AsDoubleInternal();
-    case Value::Type::STRING:
-      return lhs.GetString() < rhs.GetString();
-    case Value::Type::BINARY:
-      return lhs.GetBlob() < rhs.GetBlob();
-    case Value::Type::DICTIONARY:
-      return lhs.GetDict() < rhs.GetDict();
-    case Value::Type::LIST:
-      return lhs.GetList() < rhs.GetList();
-  }
-
-  NOTREACHED();
-  return false;
+  return lhs.data_ < rhs.data_;
 }
 
 bool operator>(const Value& lhs, const Value& rhs) {
@@ -1820,6 +1782,10 @@ void ListValue::Swap(ListValue* other) {
   CHECK(other->is_list());
   list().swap(other->list());
 }
+
+ValueView::ValueView(const Value& value)
+    : data_view_(
+          value.Visit([](const auto& member) { return ViewType(member); })) {}
 
 ValueSerializer::~ValueSerializer() = default;
 

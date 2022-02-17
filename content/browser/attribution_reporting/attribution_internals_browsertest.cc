@@ -366,76 +366,104 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   OverrideWebUIAttributionManager();
 
-  manager_.NotifyReportSent(ReportBuilder(SourceBuilder(now).BuildStored())
-                                .SetReportTime(now + base::Hours(3))
-                                .Build(),
-                            SendResult(SendResult::Status::kSent,
-                                       /*http_response_code=*/200));
-  manager_.NotifyReportSent(ReportBuilder(SourceBuilder(now).BuildStored())
-                                .SetReportTime(now + base::Hours(4))
-                                .SetPriority(-1)
-                                .Build(),
-                            SendResult(SendResult::Status::kDropped,
-                                       /*http_response_code=*/0));
-  manager_.NotifyReportSent(ReportBuilder(SourceBuilder(now).BuildStored())
-                                .SetReportTime(now + base::Hours(5))
-                                .SetPriority(-2)
-                                .Build(),
-                            SendResult(SendResult::Status::kFailure,
-                                       /*http_response_code=*/0));
+  manager_.NotifyReportSent(
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+          .SetReportTime(now + base::Hours(3))
+          .Build(),
+      SendResult(SendResult::Status::kSent,
+                 /*http_response_code=*/200));
+  manager_.NotifyReportSent(
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+          .SetReportTime(now + base::Hours(4))
+          .SetPriority(-1)
+          .Build(),
+      SendResult(SendResult::Status::kDropped,
+                 /*http_response_code=*/0));
+  manager_.NotifyReportSent(
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+          .SetReportTime(now + base::Hours(5))
+          .SetPriority(-2)
+          .Build(),
+      SendResult(SendResult::Status::kFailure,
+                 /*http_response_code=*/0));
   ON_CALL(manager_, GetPendingReportsForInternalUse)
       .WillByDefault(InvokeCallback<std::vector<AttributionReport>>(
           {ReportBuilder(
-               SourceBuilder(now)
-                   .SetSourceType(CommonSourceInfo::SourceType::kEvent)
-                   .SetAttributionLogic(
-                       StoredSource::AttributionLogic::kFalsely)
-                   .BuildStored())
+               AttributionInfoBuilder(
+                   SourceBuilder(now)
+                       .SetSourceType(CommonSourceInfo::SourceType::kEvent)
+                       .SetAttributionLogic(
+                           StoredSource::AttributionLogic::kFalsely)
+                       .BuildStored())
+                   .Build())
                .SetReportTime(now)
                .SetPriority(13)
                .Build()}));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
       AttributionTrigger::Result::kPriorityTooLow,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(1))
           .SetPriority(11)
           .Build()));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
       AttributionTrigger::Result::kDroppedForNoise,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(2))
           .SetPriority(12)
           .Build()));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
-      AttributionTrigger::Result::kExcessiveReports,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
+      AttributionTrigger::Result::kExcessiveAttributions,
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(6))
           .SetPriority(-3)
           .Build()));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
       AttributionTrigger::Result::kExcessiveReportingOrigins,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(7))
           .SetPriority(-4)
           .Build()));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
       AttributionTrigger::Result::kDeduplicated,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(8))
           .SetPriority(-5)
           .Build()));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
       AttributionTrigger::Result::kNoCapacityForConversionDestination,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(9))
           .SetPriority(-6)
           .Build()));
-  manager_.NotifyReportDropped(AttributionStorage::CreateReportResult(
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
       AttributionTrigger::Result::kInternalError,
-      ReportBuilder(SourceBuilder(now).BuildStored())
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
           .SetReportTime(now + base::Hours(10))
           .SetPriority(-7)
           .Build()));
+
+  // This shouldn't result in a row, as registration succeeded.
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
+      AttributionTrigger::Result::kSuccess, /*dropped_report=*/absl::nullopt,
+      /*dropped_report_source_deactivation_reason=*/absl::nullopt,
+      /*report_time=*/base::Time()));
+
+  // These shouldn't result in a row, as `CreateReportResult::dropped_report()`
+  // is null.
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
+      AttributionTrigger::Result::kInternalError));
+  manager_.NotifyTriggerHandled(AttributionStorage::CreateReportResult(
+      AttributionTrigger::Result::kNoMatchingImpressions));
 
   {
     static constexpr char wait_script[] = R"(
@@ -457,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[3].children[8].innerText === "Sent: HTTP 200" &&
             table.children[4].children[8].innerText === "Prohibited by browser policy" &&
             table.children[5].children[8].innerText === "Network error" &&
-            table.children[6].children[8].innerText === "Dropped due to excessive reports" &&
+            table.children[6].children[8].innerText === "Dropped due to excessive attributions" &&
             table.children[7].children[8].innerText === "Dropped due to excessive reporting origins" &&
             table.children[8].children[8].innerText === "Deduplicated" &&
             table.children[9].children[8].innerText === "No report capacity for destination site" &&
@@ -493,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[7].children[8].innerText === "Sent: HTTP 200" &&
             table.children[6].children[8].innerText === "Prohibited by browser policy" &&
             table.children[5].children[8].innerText === "Network error" &&
-            table.children[4].children[8].innerText === "Dropped due to excessive reports" &&
+            table.children[4].children[8].innerText === "Dropped due to excessive attributions" &&
             table.children[3].children[8].innerText === "Dropped due to excessive reporting origins" &&
             table.children[2].children[8].innerText === "Deduplicated" &&
             table.children[1].children[8].innerText === "No report capacity for destination site" &&
@@ -531,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
             table.children[3].children[8].innerText === "Sent: HTTP 200" &&
             table.children[4].children[8].innerText === "Prohibited by browser policy" &&
             table.children[5].children[8].innerText === "Network error" &&
-            table.children[6].children[8].innerText === "Dropped due to excessive reports" &&
+            table.children[6].children[8].innerText === "Dropped due to excessive attributions" &&
             table.children[7].children[8].innerText === "Dropped due to excessive reporting origins" &&
             table.children[8].children[8].innerText === "Deduplicated" &&
             table.children[9].children[8].innerText === "No report capacity for destination site" &&
@@ -559,10 +587,12 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   OverrideWebUIAttributionManager();
 
-  AttributionReport report = ReportBuilder(SourceBuilder(now).BuildStored())
-                                 .SetReportTime(now)
-                                 .SetPriority(7)
-                                 .Build();
+  AttributionReport report =
+      ReportBuilder(
+          AttributionInfoBuilder(SourceBuilder(now).BuildStored()).Build())
+          .SetReportTime(now)
+          .SetPriority(7)
+          .Build();
   EXPECT_CALL(manager_, GetPendingReportsForInternalUse)
       .WillOnce(InvokeCallback<std::vector<AttributionReport>>({report}));
 
@@ -668,7 +698,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   EXPECT_CALL(manager_, GetPendingReportsForInternalUse)
       .WillOnce(InvokeCallback<std::vector<AttributionReport>>(
-          {ReportBuilder(SourceBuilder().BuildStored())
+          {ReportBuilder(
+               AttributionInfoBuilder(SourceBuilder().BuildStored()).Build())
                .SetPriority(7)
                .SetReportId(AttributionReport::EventLevelData::Id(5))
                .Build()}))

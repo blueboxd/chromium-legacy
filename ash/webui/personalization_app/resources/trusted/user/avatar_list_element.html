@@ -17,7 +17,7 @@
     </div>
   </template>
   <template is="dom-if" if="[[profileImage_]]">
-    <img id="profileImage" src="[[profileImage_.url]]"
+    <img id="profileImage" src$="[[profileImage_.url]]"
         on-click="onSelectProfileImage_"
         on-keypress="onSelectProfileImage_">
   </template>
@@ -26,4 +26,6 @@
         on-click="onSelectDefaultImage_" on-keypress="onSelectDefaultImage_">
   </template>
 </div>
-<avatar-camera id="avatarCamera" open="{{shouldShowCameraUi_}}"></avatar-camera>
+<template is="dom-if" if="[[shouldShowCameraUi_]]" restamp>
+  <avatar-camera on-close="onCameraClosed_"></avatar-camera>
+</template>

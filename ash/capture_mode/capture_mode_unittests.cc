@@ -382,11 +382,6 @@ class CaptureModeTest : public AshTestBase {
     return absl::nullopt;
   }
 
-  void StartVideoRecordingImmediately() {
-    CaptureModeController::Get()->StartVideoRecordingImmediatelyForTesting();
-    WaitForRecordingToStart();
-  }
-
   // Start Capture Mode with source region and type image.
   CaptureModeController* StartImageRegionCapture() {
     return StartCaptureSession(CaptureModeSource::kRegion,
@@ -458,29 +453,6 @@ class CaptureModeTest : public AshTestBase {
     loop.Run();
   }
 
-  base::FilePath WaitForCaptureFileToBeSaved() {
-    base::FilePath result;
-    base::RunLoop run_loop;
-    ash::CaptureModeTestApi().SetOnCaptureFileSavedCallback(
-        base::BindLambdaForTesting([&](const base::FilePath& path) {
-          result = path;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return result;
-  }
-
-  base::FilePath CreateCustomFolder(const std::string& custom_folder_name) {
-    base::FilePath custom_folder = CaptureModeController::Get()
-                                       ->delegate_for_testing()
-                                       ->GetUserDefaultDownloadsFolder()
-                                       .Append(custom_folder_name);
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    const bool result = base::CreateDirectory(custom_folder);
-    DCHECK(result);
-    return custom_folder;
-  }
-
   base::FilePath CreateFolderOnDriveFS(const std::string& custom_folder_name) {
     auto* test_delegate = CaptureModeController::Get()->delegate_for_testing();
     base::FilePath mount_point_path;
@@ -497,6 +469,16 @@ class CaptureModeTest : public AshTestBase {
     prefix.append(Shell::Get()->IsInTabletMode() ? ".TabletMode"
                                                  : ".ClamshellMode");
     return prefix;
+  }
+
+  void OpenSettingsView() {
+    CaptureModeSession* session =
+        CaptureModeController::Get()->capture_mode_session();
+    DCHECK(session);
+    ClickOnView(CaptureModeSessionTestApi(session)
+                    .GetCaptureModeBarView()
+                    ->settings_button(),
+                GetEventGenerator());
   }
 };
 
@@ -2367,7 +2349,8 @@ TEST_P(CaptureModeSaveFileTest, SaveCapturedFileWithCustomFolder) {
   EXPECT_EQ(file_saved_path.DirName(), default_folder);
 
   // Now create an available custom folder and set it for custom capture folder.
-  const base::FilePath available_custom_folder = CreateCustomFolder("test");
+  const base::FilePath available_custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
   controller->SetCustomCaptureFolder(available_custom_folder);
 
   capture_folder = controller->GetCurrentCaptureFolder();
@@ -2390,7 +2373,8 @@ TEST_P(CaptureModeSaveFileTest, CaptureModeSaveToLocationMetric) {
   // includes default downloads folder, local customized folder, root drive and
   // a specific folder on drive.
   const auto downloads_folder = test_delegate->GetUserDefaultDownloadsFolder();
-  const base::FilePath custom_folder = CreateCustomFolder("test");
+  const base::FilePath custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
   base::FilePath mount_point_path;
   test_delegate->GetDriveFsMountPointPath(&mount_point_path);
   const auto root_drive_folder = mount_point_path.Append("root");
@@ -3343,17 +3327,26 @@ TEST_F(CaptureModeTest, DisplayRotation) {
 
   auto* controller = StartImageRegionCapture();
   SelectRegion(gfx::Rect(1200, 400));
+  OpenSettingsView();
 
-  // Rotate the primary display by 90 degrees. Test that the region and capture
-  // bar fit within the rotated bounds, and the capture label widget is still
-  // centered in the region.
+  // Rotate the primary display by 90 degrees. Test that the region, capture
+  // bar and capture settings fit within the rotated bounds, and the capture
+  // label widget is still centered in the region.
   Shell::Get()->display_manager()->SetDisplayRotation(
       WindowTreeHostManager::GetPrimaryDisplayId(), display::Display::ROTATE_90,
       display::Display::RotationSource::USER);
   const gfx::Rect rotated_root_bounds(600, 1200);
   EXPECT_TRUE(rotated_root_bounds.Contains(controller->user_capture_region()));
-  EXPECT_TRUE(rotated_root_bounds.Contains(
-      GetCaptureModeBarView()->GetBoundsInScreen()));
+  const gfx::Rect capture_bar_bounds =
+      GetCaptureModeBarView()->GetBoundsInScreen();
+  const gfx::Rect settings_bounds =
+      CaptureModeSettingsTestApi().GetSettingsView()->GetBoundsInScreen();
+  EXPECT_TRUE(rotated_root_bounds.Contains(capture_bar_bounds));
+  EXPECT_TRUE(rotated_root_bounds.Contains(settings_bounds));
+  // Verify that the space between the bottom of the settings and the top
+  // of the capture bar is `kSpaceBetweenCaptureBarAndSettingsMenu`.
+  EXPECT_EQ(capture_bar_bounds.y() - settings_bounds.bottom(),
+            capture_mode::kSpaceBetweenCaptureBarAndSettingsMenu);
   views::Widget* capture_label_widget = GetCaptureModeLabelWidget();
   ASSERT_TRUE(capture_label_widget);
   EXPECT_EQ(controller->user_capture_region().CenterPoint(),
@@ -5458,8 +5451,7 @@ TEST_F(CaptureModeSettingsTest, NudgeDoesNotShowForAllUserTypes) {
     SimulateUserLogin("example@gmail.com", test_case.user_type);
 
     auto* controller = StartImageRegionCapture();
-    EXPECT_EQ(test_case.can_see_nudge,
-              controller->CanShowFolderSelectionNudge());
+    EXPECT_EQ(test_case.can_see_nudge, controller->CanShowUserNudge());
 
     auto* nudge_controller = GetUserNudgeController();
     EXPECT_EQ(test_case.can_see_nudge, !!nudge_controller);
@@ -5533,7 +5525,8 @@ TEST_F(CaptureModeSettingsTest, SelectFolderFromDialog) {
 
   // Accepting the dialog with a folder selection should dismiss it and add a
   // new option for the custom selected folder in the settings menu.
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   dialog_factory->AcceptPath(custom_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_FALSE(IsFolderSelectionDialogShown());
@@ -5592,7 +5585,8 @@ TEST_F(CaptureModeSettingsTest, DismissDialogWithoutSelection) {
 TEST_F(CaptureModeSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   StartImageRegionCapture();
 
@@ -5615,7 +5609,8 @@ TEST_F(CaptureModeSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   EXPECT_TRUE(IsFolderSelectionDialogShown());
 
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
-  const base::FilePath new_folder(CreateCustomFolder("test1"));
+  const base::FilePath new_folder(
+      CreateCustomFolderInUserDownloadsPath("test1"));
   dialog_factory->AcceptPath(new_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_FALSE(IsFolderSelectionDialogShown());
@@ -5666,7 +5661,8 @@ TEST_F(CaptureModeSettingsTest,
   EXPECT_TRUE(IsFolderSelectionDialogShown());
 
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
-  const base::FilePath new_folder(CreateCustomFolder("test"));
+  const base::FilePath new_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   dialog_factory->AcceptPath(new_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_EQ(custom_folder_view, test_api.GetCustomFolderOptionIfAny());
@@ -5680,7 +5676,8 @@ TEST_F(CaptureModeSettingsTest,
 TEST_F(CaptureModeSettingsTest, DeleteCustomFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   StartImageRegionCapture();
 
@@ -5747,7 +5744,8 @@ TEST_F(CaptureModeSettingsTest, AcceptDefaultDownloadsFolderFromDialog) {
 TEST_F(CaptureModeSettingsTest, SwitchWhichFolderToUserFromOptions) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_path((CreateCustomFolder("test")));
+  const base::FilePath custom_path(
+      (CreateCustomFolderInUserDownloadsPath("test")));
   controller->SetCustomCaptureFolder(custom_path);
   StartImageRegionCapture();
   auto* event_generator = GetEventGenerator();
@@ -5988,7 +5986,8 @@ TEST_F(CaptureModeSettingsTest,
        KeyboardNavigationForRemovingCustomFolderOption) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   StartImageRegionCapture();
 
@@ -6069,7 +6068,8 @@ TEST_F(CaptureModeSettingsTest, KeyboardNavigationForAddingCustomFolderOption) {
 
   // Select the custom folder. Wait for the settings menu to be refreshed. The
   // custom folder option should be added to the settings menu and checked.
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   dialog_factory->AcceptPath(custom_folder);
@@ -6164,7 +6164,8 @@ TEST_P(CaptureModeHistogramTest, CaptureModeSwitchToDefaultReasonMetric) {
       controller->delegate_for_testing()->GetUserDefaultDownloadsFolder();
   const base::FilePath non_available_custom_folder(
       FILE_PATH_LITERAL("/home/test"));
-  const base::FilePath available_custom_folder = CreateCustomFolder("test");
+  const base::FilePath available_custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
 
   histogram_tester.ExpectBucketCount(
       GetCaptureModeHistogramName(kHistogramNameBase),

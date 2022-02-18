@@ -1355,6 +1355,7 @@
       'filepath': 'ash/components/proximity_auth/'\
                   '|ash/multi_device_setup/'\
                   '|ash/resources/multidevice_resources.grdp'\
+                  '|ash/services/multidevice_setup/'\
                   '|ash/services/secure_channel/'\
                   '|chrome/browser/ash/cryptauth/'\
                   '|chrome/browser/ash/device_sync/'\
@@ -2784,7 +2785,8 @@
                                 'sullivan@chromium.org'],
     'spellcheck': ['rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org'],
-    'startup': ['nicolaso+watch@chromium.org',
+    'startup': ['cmfcmf+watch@chromium.org',
+                'nicolaso+watch@chromium.org',
                 'ydago+watch@chromium.org'],
     'storage_service': ['dmurph+watching-storageservice@chromium.org'],
     'structured_headers': ['iclelland+watch@chromium.org'],

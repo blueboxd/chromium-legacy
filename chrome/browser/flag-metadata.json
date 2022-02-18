@@ -88,21 +88,6 @@
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 101
   },
-   {
-    "name": "allow-dsp-based-aec",
-    "owners": [ "peah" ],
-    "expiry_milestone": 110
-  },
-  {
-    "name": "allow-dsp-based-agc",
-    "owners": [ "peah" ],
-    "expiry_milestone": 110
-  },
-  {
-    "name": "allow-dsp-based-ns",
-    "owners": [ "peah" ],
-    "expiry_milestone": 110
-  },
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
@@ -2034,6 +2019,11 @@
     "expiry_milestone": 96
   },
   {
+    "name": "enable-experimental-accessibility-dictation-with-pumpkin",
+    "owners": [ "akihiroota"],
+    "expiry_milestone": 104
+  },
+  {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 106
@@ -3115,7 +3105,7 @@
     "owners": ["jennyz", "erikchen"],
     "expiry_milestone": 130
   },
-  {
+   {
     "name": "enforce-system-aec",
     "owners": [ "peah" ],
     "expiry_milestone": 100
@@ -4265,6 +4255,11 @@
     "expiry_milestone": 100
   },
   {
+    "name": "ntp-photos-opt-in-art-work",
+    "owners": [ "mplg", "tiborg"],
+    "expiry_milestone":105
+  },
+  {
     "name": "ntp-photos-opt-in-title",
     "owners": [ "mplg", "tiborg"],
     "expiry_milestone":105
@@ -4557,6 +4552,11 @@
     "name": "omnibox-zero-suggest-prefetching",
     "owners": [ "mahmadi", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "optimization-guide-debug-logs",
+    "owners": [ "rajendrant", "robertogden", "chrome-intelligence-core@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "optimization-guide-model-downloading",
@@ -5049,7 +5049,7 @@
   {
     "name": "reduce-user-agent",
     "owners": [ "aarontag", "miketaylr"],
-    "expiry_milestone": 100
+    "expiry_milestone": 113
   },
   {
     "name": "reengagement-notification",
@@ -5235,6 +5235,11 @@
     "name": "search-result-inline-icon",
     "owners": ["yulunwu"],
     "expiry_milestone": 103
+  },
+  {
+    "name": "search-suggestion-for-prerender2",
+    "owners": [ "//content/browser/prerender/OWNERS" ],
+    "expiry_milestone": 104
   },
   {
     "name": "semantic-colors-debug-override",

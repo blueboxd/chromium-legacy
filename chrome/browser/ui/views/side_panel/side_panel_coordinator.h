@@ -48,11 +48,16 @@ class SidePanelCoordinator final : public SidePanelRegistryObserver {
   // and populates the side panel with the provided SidePanelEntry.
   void PopulateSidePanel(SidePanelEntry* entry);
 
+  // Returns the last active entry or the reading list entry if no last active
+  // entry exists.
+  SidePanelEntry::Id GetLastActiveEntry() const;
+
   std::unique_ptr<views::View> CreateHeader();
   std::unique_ptr<views::Combobox> CreateCombobox();
   void OnComboboxChanged();
 
   std::unique_ptr<views::View> CreateBookmarksWebView(Browser* browser);
+  std::unique_ptr<views::View> CreateReaderModeWebView(Browser* browser);
 
   // SidePanelRegistryObserver:
   void OnEntryRegistered(SidePanelEntry* entry) override;

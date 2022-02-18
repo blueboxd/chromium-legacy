@@ -617,8 +617,10 @@ void CaptureModeSession::Shutdown() {
 
     // Kill the camera preview when the capture mode session ends without
     // starting any recording.
-    if (controller_->camera_controller())
+    if (controller_->camera_controller() &&
+        !controller_->is_recording_in_progress()) {
       controller_->camera_controller()->SetShouldShowPreview(false);
+    }
   }
 }
 
@@ -652,7 +654,7 @@ void CaptureModeSession::OnCaptureSourceChanged(CaptureModeSource new_source) {
       GetMessageIdForCaptureSource(new_source, /*for_toggle_alert=*/true));
 
   auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
+  if (camera_controller && !controller_->is_recording_in_progress())
     camera_controller->MaybeReparentPreviewWidget();
 }
 
@@ -1018,7 +1020,12 @@ void CaptureModeSession::OnDisplayMetricsChanged(
   DCHECK_EQ(parent->layer(), layer()->parent());
   layer()->SetBounds(parent->bounds());
 
+  // We need to update the capture bar bounds first and then settings bounds.
+  // The sequence matters here since settings bounds depend on capture bar
+  // bounds.
   RefreshBarWidgetBounds();
+  MaybeUpdateSettingsBounds();
+
   if (capture_label_widget_)
     UpdateCaptureLabelWidget(CaptureLabelAnimation::kNone);
   layer()->SchedulePaint(layer()->bounds());
@@ -1227,7 +1234,7 @@ void CaptureModeSession::MaybeCreateUserNudge() {
   if (is_in_projector_mode_)
     return;
 
-  if (!controller_->CanShowFolderSelectionNudge())
+  if (!controller_->CanShowUserNudge())
     return;
 
   user_nudge_controller_ = std::make_unique<UserNudgeController>(
@@ -2179,7 +2186,7 @@ void CaptureModeSession::MaybeChangeRoot(aura::Window* new_root) {
   UpdateRootWindowDimmers();
 
   auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
+  if (camera_controller && !controller_->is_recording_in_progress())
     camera_controller->MaybeReparentPreviewWidget();
 }
 

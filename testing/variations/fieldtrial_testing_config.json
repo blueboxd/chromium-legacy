@@ -1279,6 +1279,23 @@
             ]
         }
     ],
+    "BrowserSwitcherNoneIsGreylist": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BrowserSwitcherNoneIsGreylist"
+                    ]
+                }
+            ]
+        }
+    ],
     "BrowsingDataLifetimeManager": [
         {
             "platforms": [
@@ -1902,7 +1919,9 @@
                         "FontManagerEarlyInit",
                         "NavigationRequestPreconnect",
                         "NavigationThreadingOptimizations",
+                        "OptimizeEarlyNavigation",
                         "OptimizeLookalikeUrlNavigationThrottle",
+                        "PrefetchAndroidFonts",
                         "URLLoaderSyncClient"
                     ]
                 }
@@ -3356,6 +3375,21 @@
             ]
         }
     ],
+    "IOSDefaultPageModeSetting": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DefaultRequestedMode"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSEnableUnrealizedWebStates": [
         {
             "platforms": [
@@ -4245,25 +4279,6 @@
             ]
         }
     ],
-    "OmniboxPedalsBatch2NonEnglish": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxPedalsBatch2NonEnglish",
-                        "OmniboxPedalsTranslationConsole"
-                    ]
-                }
-            ]
-        }
-    ],
     "OmniboxPedalsBatch3NonEnglish": [
         {
             "platforms": [
@@ -4387,23 +4402,6 @@
                     },
                     "enable_features": [
                         "OneTimeGeolocationPermission"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OptimizeEarlyNavigation": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OptimizeEarlyNavigation"
                     ]
                 }
             ]
@@ -5088,23 +5086,6 @@
             ]
         }
     ],
-    "PrefetchAndroidFonts": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PrefetchAndroidFonts"
-                    ]
-                }
-            ]
-        }
-    ],
     "PrewarmSearchResultsPageFonts": [
         {
             "platforms": [
@@ -5399,6 +5380,21 @@
                     "disable_features": [
                         "RelatedSearchesAlternateUx",
                         "RelatedSearchesSimplifiedUx"
+                    ]
+                }
+            ]
+        }
+    ],
+    "RemoveExcessNTPs": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "RemoveExcessNTPs"
                     ]
                 }
             ]
@@ -5813,6 +5809,21 @@
                     "name": "SingleCellContentSuggestions",
                     "enable_features": [
                         "SingleCellContentSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SingleNTP": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SingleNTP"
                     ]
                 }
             ]

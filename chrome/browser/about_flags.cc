@@ -119,6 +119,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/page_info/core/features.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/paint_preview/features/features.h"
@@ -1513,6 +1514,25 @@ const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Personalized title", kNtpPhotosModuleOptInPersonalizedTitle,
      base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr}};
 
+const FeatureEntry::FeatureParam kNtpPhotosModuleLogo1ArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "1"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleLogo2ArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "2"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleIllustrationsArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "3"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleStockpileArtWork[] = {
+    {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "4"}};
+
+const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInArtWorkVariations[] =
+    {{" - Artwork with Logo - 1", kNtpPhotosModuleLogo1ArtWork,
+      base::size(kNtpPhotosModuleLogo1ArtWork), nullptr},
+     {" - Artwork with Logo - 2", kNtpPhotosModuleLogo2ArtWork,
+      base::size(kNtpPhotosModuleLogo2ArtWork), nullptr},
+     {" - Artwork with Illustrations", kNtpPhotosModuleIllustrationsArtWork,
+      base::size(kNtpPhotosModuleIllustrationsArtWork), nullptr},
+     {" - Artwork with Stockpile", kNtpPhotosModuleStockpileArtWork,
+      base::size(kNtpPhotosModuleStockpileArtWork), nullptr}};
+
 const FeatureEntry::FeatureParam kRealboxMatchOmniboxThemeVar1[] = {
     {ntp_features::kRealboxMatchOmniboxThemeVariantParam, "1"}};
 const FeatureEntry::FeatureParam kRealboxMatchOmniboxThemeVar2[] = {
@@ -1809,7 +1829,6 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
-    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -4388,6 +4407,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalAccessibilityDictationHintsDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityDictationHints)},
+    {"enable-experimental-accessibility-dictation-with-pumpkin",
+     flag_descriptions::kExperimentalAccessibilityDictationWithPumpkinName,
+     flag_descriptions::
+         kExperimentalAccessibilityDictationWithPumpkinDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         features::kExperimentalAccessibilityDictationWithPumpkin)},
     {"enable-experimental-accessibility-switch-access-text",
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextName,
      flag_descriptions::kExperimentalAccessibilitySwitchAccessTextDescription,
@@ -4925,6 +4951,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDynamicMaxAutocomplete,
                                     kOmniboxDynamicMaxAutocompleteVariations,
                                     "OmniboxBundledExperimentV1")},
+    {"optimization-guide-debug-logs",
+     flag_descriptions::kOptimizationGuideDebugLogsName,
+     flag_descriptions::kOptimizationGuideDebugLogsDescription, kOsAll,
+     SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
 
     {"history-journeys", flag_descriptions::kJourneysName,
      flag_descriptions::kJourneysDescription, kOsDesktop,
@@ -5152,6 +5182,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpPhotosModule,
                                     kNtpPhotosModuleVariations,
                                     "DesktopNtpModules")},
+
+    {"ntp-photos-opt-in-art-work",
+     flag_descriptions::kNtpPhotosModuleOptInArtWorkName,
+     flag_descriptions::kNtpPhotosModuleOptInArtWorkDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ntp_features::kNtpPhotosModuleCustomizedOptInArtWork,
+         kNtpPhotosModuleOptInArtWorkVariations,
+         "DesktopNtpModules")},
 
     {"ntp-photos-opt-in-title",
      flag_descriptions::kNtpPhotosModuleOptInTitleName,
@@ -5597,15 +5635,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"allow-dsp-based-aec", flag_descriptions::kCrOSDspBasedAecAllowedName,
-     flag_descriptions::kCrOSDspBasedAecAllowedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAecAllowed)},
-    {"allow-dsp-based-ns", flag_descriptions::kCrOSDspBasedNsAllowedName,
-     flag_descriptions::kCrOSDspBasedNsAllowedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrOSDspBasedNsAllowed)},
-    {"allow-dsp-based-agc", flag_descriptions::kCrOSDspBasedAgcAllowedName,
-     flag_descriptions::kCrOSDspBasedAgcAllowedDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAgcAllowed)},
     {"enforce-system-aec", flag_descriptions::kCrOSEnforceSystemAecName,
      flag_descriptions::kCrOSEnforceSystemAecDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAec)},
@@ -7125,6 +7154,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTriggerForPrerender2Name,
      flag_descriptions::kOmniboxTriggerForPrerender2Description, kOsAll,
      FEATURE_VALUE_TYPE(features::kOmniboxTriggerForPrerender2)},
+    {"search-suggestion-for-prerender2",
+     flag_descriptions::kSupportSearchSuggestionForPrerender2Name,
+     flag_descriptions::kSupportSearchSuggestionForPrerender2Description,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kSupportSearchSuggestionForPrerender2)},
 
 #if BUILDFLAG(IS_ANDROID)
     {"continuous-search", flag_descriptions::kContinuousSearchName,

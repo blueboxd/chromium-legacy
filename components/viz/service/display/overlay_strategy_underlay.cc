@@ -23,7 +23,7 @@ OverlayStrategyUnderlay::OverlayStrategyUnderlay(
 OverlayStrategyUnderlay::~OverlayStrategyUnderlay() {}
 
 bool OverlayStrategyUnderlay::Attempt(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -90,14 +90,14 @@ bool OverlayStrategyUnderlay::Attempt(
 }
 
 void OverlayStrategyUnderlay::ProposePrioritized(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_pass_list,
     SurfaceDamageRectList* surface_damage_rect_list,
     const PrimaryPlane* primary_plane,
-    OverlayProposedCandidateList* candidates,
+    std::vector<OverlayProposedCandidate>* candidates,
     std::vector<gfx::Rect>* content_bounds) {
   auto* render_pass = render_pass_list->back().get();
   QuadList& quad_list = render_pass->quad_list;
@@ -133,7 +133,7 @@ void OverlayStrategyUnderlay::ProposePrioritized(
 }
 
 bool OverlayStrategyUnderlay::AttemptPrioritized(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,

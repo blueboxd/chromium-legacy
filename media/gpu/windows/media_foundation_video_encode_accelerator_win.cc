@@ -37,8 +37,6 @@
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-using media::MediaBufferScopedPointer;
-
 namespace media {
 
 namespace {
@@ -201,8 +199,12 @@ struct MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef {
 // attributes are not supported by Windows 7, setting them will return errors.
 // See bug: http://crbug.com/777659.
 MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator(
-    bool compatible_with_win7)
-    : compatible_with_win7_(compatible_with_win7),
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds)
+    : compatible_with_win7_(
+          gpu_preferences.enable_media_foundation_vea_on_windows7),
+      disable_dynamic_framerate_update_(
+          gpu_workarounds.disable_dynamic_video_encode_framerate_update),
       frame_rate_(kMaxFrameRateNumerator / kMaxFrameRateDenominator),
       bitrate_(Bitrate::ConstantBitrate(kDefaultTargetBitrate)),
       input_required_(false),
@@ -421,7 +423,7 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
   RETURN_ON_HR_FAILURE(hr, "Failed to create sample", false);
 
   if (config.input_format == PIXEL_FORMAT_NV12 &&
-      base::FeatureList::IsEnabled(media::kMediaFoundationD3D11VideoCapture)) {
+      base::FeatureList::IsEnabled(kMediaFoundationD3D11VideoCapture)) {
     dxgi_device_manager_ = DXGIDeviceManager::Create();
     if (!dxgi_device_manager_) {
       DLOG(ERROR) << "Failed to create DXGIDeviceManager";
@@ -525,7 +527,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
-    const media::Bitrate& bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
   DVLOG(3) << __func__ << ": bitrate=" << bitrate.ToString()
            << ": framerate=" << framerate;
@@ -1252,7 +1254,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   int temporal_id = 0;
   if (!AssignTemporalId(output_buffer, size, &temporal_id, keyframe)) {
     DLOG(ERROR) << "Parse temporalId failed.";
-    NotifyError(media::VideoEncodeAccelerator::Error::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::Error::kPlatformFailureError);
     return;
   }
   DVLOG(3) << "Encoded data with size:" << size << " keyframe " << keyframe;
@@ -1402,7 +1404,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
-    const media::Bitrate& bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
   DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
@@ -1415,6 +1417,11 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   framerate = base::clamp(framerate, 1u, uint32_t{kMaxFrameRateNumerator});
 
   if (frame_rate_ != framerate) {
+    // When dynamic framerate update is disabled, fallback from current encoder.
+    if (disable_dynamic_framerate_update_) {
+      DLOG(ERROR) << "Dynamic encode framerate update disabled.";
+      NotifyError(kPlatformFailureError);
+    }
     HRESULT hr = MFSetAttributeRatio(imf_output_media_type_.Get(),
                                      MF_MT_FRAME_RATE, framerate, 1);
     RETURN_ON_HR_FAILURE(hr, "Couldn't set frame rate for output type", );
@@ -1582,8 +1589,8 @@ HRESULT MediaFoundationVideoEncodeAccelerator::InitializeD3DVideoProcessing(
                                        &scaled_d3d11_texture);
   RETURN_ON_HR_FAILURE(hr, "Failed to create texture", hr);
 
-  hr = media::SetDebugName(scaled_d3d11_texture.Get(),
-                           "MFVideoEncodeAccelerator_ScaledTexture");
+  hr = SetDebugName(scaled_d3d11_texture.Get(),
+                    "MFVideoEncodeAccelerator_ScaledTexture");
   RETURN_ON_HR_FAILURE(hr, "Failed to set debug name", hr);
 
   D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_desc = {};

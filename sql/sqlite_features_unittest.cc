@@ -292,6 +292,133 @@ TEST_F(SQLiteFeaturesTest, CachedRegexp) {
   EXPECT_EQ(7, s.ColumnInt(0));
 }
 
+// The "No Isolation Between Operations On The Same Database Connection" section
+// in https://sqlite.org/isolation.html implies that it's safe to issue multiple
+// concurrent SELECTs against the same area.
+//
+// Chrome code is allowed to rely on this guarantee. So, we test for it here, to
+// catch any regressions introduced by SQLite upgrades.
+TEST_F(SQLiteFeaturesTest, ConcurrentSelects) {
+  ASSERT_TRUE(db_.Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY, t TEXT)"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(2, 'two')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(3, 'three')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(4, 'four')"));
+
+  static const char kSelectAllSql[] = "SELECT id,t FROM rows";
+  static const char kSelectEvenSql[] = "SELECT id,t FROM rows WHERE id%2=0";
+
+  sql::Statement select1(db_.GetCachedStatement(SQL_FROM_HERE, kSelectEvenSql));
+  sql::Statement select2(db_.GetCachedStatement(SQL_FROM_HERE, kSelectEvenSql));
+  sql::Statement select3(db_.GetCachedStatement(SQL_FROM_HERE, kSelectAllSql));
+
+  ASSERT_TRUE(select1.Step());
+  EXPECT_EQ(select1.ColumnInt(0), 2);
+  EXPECT_EQ(select1.ColumnString(1), "two");
+
+  ASSERT_TRUE(select2.Step());
+  EXPECT_EQ(select2.ColumnInt(0), 2);
+  EXPECT_EQ(select2.ColumnString(1), "two");
+
+  ASSERT_TRUE(select3.Step());
+  EXPECT_EQ(select3.ColumnInt(0), 2);
+  EXPECT_EQ(select3.ColumnString(1), "two");
+
+  ASSERT_TRUE(select1.Step());
+  EXPECT_EQ(select1.ColumnInt(0), 4);
+  EXPECT_EQ(select1.ColumnString(1), "four");
+
+  ASSERT_TRUE(select3.Step());
+  EXPECT_EQ(select3.ColumnInt(0), 3);
+  EXPECT_EQ(select3.ColumnString(1), "three");
+
+  ASSERT_TRUE(select2.Step());
+  EXPECT_EQ(select2.ColumnInt(0), 4);
+  EXPECT_EQ(select2.ColumnString(1), "four");
+
+  EXPECT_FALSE(select2.Step());
+
+  ASSERT_TRUE(select3.Step());
+  EXPECT_EQ(select3.ColumnInt(0), 4);
+  EXPECT_EQ(select3.ColumnString(1), "four");
+
+  select2.Reset(/*clear_bound_vars=*/true);
+  ASSERT_TRUE(select2.Step());
+  EXPECT_EQ(select2.ColumnInt(0), 2);
+  EXPECT_EQ(select2.ColumnString(1), "two");
+
+  EXPECT_FALSE(select1.Step());
+}
+
+// The "No Isolation Between Operations On The Same Database Connection" section
+// in https://sqlite.org/isolation.html states that it's safe to DELETE a row
+// that was just returned by sqlite_step() executing a SELECT statement.
+//
+// Chrome code is allowed to rely on this guarantee. So, we test for it here, to
+// catch any regressions introduced by SQLite upgrades.
+TEST_F(SQLiteFeaturesTest, DeleteCurrentlySelectedRow) {
+  ASSERT_TRUE(db_.Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY, t TEXT)"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(2, 'two')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(3, 'three')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(4, 'four')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(5, 'five')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(6, 'six')"));
+
+  static const char kSelectEvenSql[] = "SELECT id,t FROM rows WHERE id%2=0";
+  sql::Statement select(db_.GetCachedStatement(SQL_FROM_HERE, kSelectEvenSql));
+
+  ASSERT_TRUE(select.Step());
+  ASSERT_EQ(select.ColumnInt(0), 2);
+  ASSERT_EQ(select.ColumnString(1), "two");
+  ASSERT_TRUE(db_.Execute("DELETE FROM rows WHERE id=2"));
+
+  ASSERT_TRUE(select.Step());
+  ASSERT_EQ(select.ColumnInt(0), 4);
+  ASSERT_EQ(select.ColumnString(1), "four");
+  ASSERT_TRUE(db_.Execute("DELETE FROM rows WHERE id=4"));
+
+  ASSERT_TRUE(select.Step());
+  ASSERT_EQ(select.ColumnInt(0), 6);
+  ASSERT_EQ(select.ColumnString(1), "six");
+  ASSERT_TRUE(db_.Execute("DELETE FROM rows WHERE id=6"));
+
+  EXPECT_FALSE(select.Step());
+}
+
+// The "No Isolation Between Operations On The Same Database Connection" section
+// in https://sqlite.org/isolation.html states that it's safe to DELETE a row
+// that was previously by sqlite_step() executing a SELECT statement.
+//
+// Chrome code is allowed to rely on this guarantee. So, we test for it here, to
+// catch any regressions introduced by SQLite upgrades.
+TEST_F(SQLiteFeaturesTest, DeletePreviouslySelectedRows) {
+  ASSERT_TRUE(db_.Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY, t TEXT)"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(2, 'two')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(3, 'three')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(4, 'four')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(5, 'five')"));
+  ASSERT_TRUE(db_.Execute("INSERT INTO rows VALUES(6, 'six')"));
+
+  static const char kSelectEvenSql[] = "SELECT id,t FROM rows WHERE id%2=0";
+  sql::Statement select(db_.GetCachedStatement(SQL_FROM_HERE, kSelectEvenSql));
+
+  ASSERT_TRUE(select.Step());
+  ASSERT_EQ(select.ColumnInt(0), 2);
+  ASSERT_EQ(select.ColumnString(1), "two");
+
+  ASSERT_TRUE(select.Step());
+  ASSERT_EQ(select.ColumnInt(0), 4);
+  ASSERT_EQ(select.ColumnString(1), "four");
+  ASSERT_TRUE(db_.Execute("DELETE FROM rows WHERE id=2"));
+
+  ASSERT_TRUE(select.Step());
+  ASSERT_EQ(select.ColumnInt(0), 6);
+  ASSERT_EQ(select.ColumnString(1), "six");
+  ASSERT_TRUE(db_.Execute("DELETE FROM rows WHERE id=4"));
+  ASSERT_TRUE(db_.Execute("DELETE FROM rows WHERE id=6"));
+
+  EXPECT_FALSE(select.Step());
+}
+
 #if BUILDFLAG(IS_APPLE)
 // If a database file is marked to be excluded from backups, verify that journal
 // files are also excluded.

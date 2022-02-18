@@ -49,7 +49,6 @@
 #include "content/browser/origin_agent_cluster_isolation_state.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/process_lock.h"
-#include "content/browser/renderer_host/commit_deferring_condition.h"
 #include "content/browser/renderer_host/cookie_utils.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -88,6 +87,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_hints_controller_delegate.h"
+#include "content/public/browser/commit_deferring_condition.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_controller.h"
@@ -894,26 +894,28 @@ bool IsOptedInFencedFrame(const net::HttpResponseHeaders& http_headers) {
 }
 
 // If the response does not contain an Accept-CH header, then remove the
-// Sec-CH-UA-Reduced or Sec-CH-UA-Full client hint from the Accept-CH cache, if
-// it exists, for the response origin.  The `client_hints` vector also has
-// kUaReduced or kFullUserAgent removed from it if the Accept-CH response header
-// doesn't exist.
-void RemoveUaReducedAndFullFromAcceptCH(
+// Sec-CH-UA-Reduced, Sec-CH-UA-Full, or Sec-CH-Partitioned-Cookies, client
+// hint from the Accept-CH cache, if it exists, for the response origin.  The
+// `client_hints` vector also has kUaReduced or kFullUserAgent removed from it
+// if the Accept-CH response header doesn't exist.
+void RemoveOriginTrialHintsFromAcceptCH(
     const GURL& url,
     ClientHintsControllerDelegate* delegate,
     const network::mojom::URLResponseHead* response,
     std::vector<network::mojom::WebClientHintsType>& client_hints) {
   if (response && !response->parsed_headers->accept_ch) {
-    // For Chrome to continue to send Sec-CH-UA-Reduced or Sec-CH-UA-Full, the
-    // server must continue replying with:
+    // For Chrome to continue to send Sec-CH-UA-Reduced, Sec-CH-UA-Full, or
+    // Sec-CH-Partitioned-Cookies, the server must continue replying with:
     //  - a valid Origin Trial token.
-    //  - Accept-CH header with Sec-CH-UA-Reduced or Sec-CH-UA-Full as a value.
+    //  - Accept-CH header with Sec-CH-UA-Reduced, Sec-CH-UA-Full, or
+    //  Sec-CH-Partitioned-Cookies as a value.
     //
     // Here, it did not. So it gets removed from the persisted client hints
     // for the next request.
     std::vector<network::mojom::WebClientHintsType> hints_to_remove = {
         network::mojom::WebClientHintsType::kUAReduced,
-        network::mojom::WebClientHintsType::kFullUserAgent};
+        network::mojom::WebClientHintsType::kFullUserAgent,
+        network::mojom::WebClientHintsType::kPartitionedCookies};
     bool need_update_storage = false;
     for (const auto& hint : hints_to_remove) {
       if (base::Contains(client_hints, hint)) {
@@ -1723,9 +1725,14 @@ void NavigationRequest::BeginNavigation() {
 
   MaybeAssignInvalidPrerenderFrameTreeNodeId();
 
+  bool need_url_mapping = NeedFencedFrameURLMapping();
+  frame_tree_node_->SetFencedFrameModeIfNeeded(
+      need_url_mapping ? FrameTreeNode::FencedFrameMode::kOpaque
+                       : FrameTreeNode::FencedFrameMode::kDefault);
+
   // If this is a fenced frame with a urn:uuid, then convert it to a url before
   // starting the navigation; otherwise, proceed directly with the navigation.
-  if (NeedFencedFrameURLMapping()) {
+  if (need_url_mapping) {
     FencedFrameURLMapping& fenced_frame_urls_map = GetFencedFrameURLMap();
 
     // If the mapping finishes synchronously, OnFencedFrameURLMappingComplete
@@ -4036,7 +4043,7 @@ void NavigationRequest::OnRedirectChecksComplete(
       std::vector<network::mojom::WebClientHintsType> client_hints =
           LookupAcceptCHForCommit(source_url, client_hints_delegate,
                                   frame_tree_node_);
-      RemoveUaReducedAndFullFromAcceptCH(source_url, client_hints_delegate,
+      RemoveOriginTrialHintsFromAcceptCH(source_url, client_hints_delegate,
                                          response_head, client_hints);
     }
 
@@ -4445,7 +4452,7 @@ void NavigationRequest::CommitNavigation() {
     }
     commit_params_->enabled_client_hints = LookupAcceptCHForCommit(
         common_params_->url, client_hints_delegate, frame_tree_node_);
-    RemoveUaReducedAndFullFromAcceptCH(common_params_->url,
+    RemoveOriginTrialHintsFromAcceptCH(common_params_->url,
                                        client_hints_delegate, response(),
                                        commit_params_->enabled_client_hints);
   }
@@ -4497,7 +4504,8 @@ void NavigationRequest::CommitNavigation() {
 
   if (!IsSameDocument()) {
     commit_params_->app_history_entry_arrays =
-        GetNavigationController()->GetAppHistoryEntryVectors(this);
+        GetNavigationController()->GetAppHistoryEntryVectors(frame_tree_node_,
+                                                             this);
   }
 
   if (early_hints_manager_) {
@@ -4565,6 +4573,29 @@ void NavigationRequest::CommitPageActivation() {
     DCHECK(activated_entry || restarting_back_forward_cached_navigation_);
     if (!activated_entry)
       return;
+
+    // Restore appHistory entries, since they will probably have changed since
+    // the page entered bfcache. We must update all frames, not just the top
+    // frame, because it is possible (though unlikely) that an iframe's entries
+    // have changed, too.
+    activated_entry->render_frame_host()->ForEachRenderFrameHost(
+        base::BindRepeating(
+            [](content::RenderFrameHost* navigating_rfh,
+               NavigationRequest* request, content::RenderFrameHost* rfh) {
+              RenderFrameHostImpl* rfhi =
+                  static_cast<RenderFrameHostImpl*>(rfh);
+              // |request| is given as a parameter to
+              // GetAppHistoryEntryVectors() only for the frame being committed
+              // (i.e., the top frame).
+              auto entry_arrays =
+                  rfhi->frame_tree()->controller().GetAppHistoryEntryVectors(
+                      rfhi->frame_tree_node(),
+                      navigating_rfh == rfh ? request : nullptr);
+              rfhi->GetAssociatedLocalFrame()->SetAppHistoryEntriesForRestore(
+                  std::move(entry_arrays));
+              return content::RenderFrameHost::FrameIterationAction::kContinue;
+            },
+            activated_entry->render_frame_host(), this));
 
     base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
     ReadyToCommitNavigation(false /* is_error */);
@@ -4771,6 +4802,7 @@ bool NavigationRequest::IsAllowedByCSPDirective(
     bool has_followed_redirect,
     bool url_upgraded_after_redirect,
     bool is_response_check,
+    bool is_opaque_fenced_frame,
     network::CSPContext::CheckCSPDisposition disposition) {
   GURL url;
   // If this request was upgraded in the net stack, downgrade the URL back to
@@ -4795,7 +4827,7 @@ bool NavigationRequest::IsAllowedByCSPDirective(
   return context->IsAllowedByCsp(
       policies, directive, url, commit_params_->original_url,
       has_followed_redirect, is_response_check, common_params_->source_location,
-      disposition, begin_params_->is_form_submission);
+      disposition, begin_params_->is_form_submission, is_opaque_fenced_frame);
 }
 
 net::Error NavigationRequest::CheckCSPDirectives(
@@ -4817,7 +4849,8 @@ net::Error NavigationRequest::CheckCSPDirectives(
         !IsAllowedByCSPDirective(
             initiator_policies->content_security_policies, &initiator_context,
             network::mojom::CSPDirectiveName::FormAction, has_followed_redirect,
-            url_upgraded_after_redirect, is_response_check, disposition)) {
+            url_upgraded_after_redirect, is_response_check,
+            /*is_opaque_fenced_frame=*/false, disposition)) {
       // net::ERR_ABORTED is used instead of net::ERR_BLOCKED_BY_CSP. This is
       // a better user experience as the user is not presented with an error
       // page. However if other CSP directives like frame-src are violated, it
@@ -4833,7 +4866,8 @@ net::Error NavigationRequest::CheckCSPDirectives(
               initiator_policies->content_security_policies, &initiator_context,
               network::mojom::CSPDirectiveName::NavigateTo,
               has_followed_redirect, url_upgraded_after_redirect,
-              is_response_check, disposition)) {
+              is_response_check, /*is_opaque_fenced_frame=*/false,
+              disposition)) {
         // net::ERR_ABORTED is used instead of net::ERR_BLOCKED_BY_CSP. This is
         // a better user experience as the user is not presented with an error
         // page. However if other CSP directives life frame-src are violated, it
@@ -4849,7 +4883,8 @@ net::Error NavigationRequest::CheckCSPDirectives(
                 &initiator_context,
                 network::mojom::CSPDirectiveName::PrefetchSrc,
                 has_followed_redirect, url_upgraded_after_redirect,
-                is_response_check, disposition)) {
+                is_response_check, /*is_opaque_fenced_frame=*/false,
+                disposition)) {
           error = net::ERR_BLOCKED_BY_CSP;
         }
       }
@@ -4857,15 +4892,18 @@ net::Error NavigationRequest::CheckCSPDirectives(
   }
 
   // [frame-src] or [fenced-frame-src]
-  if (parent_policies &&
-      !IsAllowedByCSPDirective(
-          parent_policies->content_security_policies, &parent_context,
-          frame_tree_node_->IsFencedFrameRoot()
-              ? network::mojom::CSPDirectiveName::FencedFrameSrc
-              : network::mojom::CSPDirectiveName::FrameSrc,
-          has_followed_redirect, url_upgraded_after_redirect, is_response_check,
-          disposition)) {
-    error = net::ERR_BLOCKED_BY_CSP;
+  if (parent_policies) {
+    bool is_opaque_fenced_frame = frame_tree_node_->fenced_frame_mode() ==
+                                  FrameTreeNode::FencedFrameMode::kOpaque;
+    if (!IsAllowedByCSPDirective(
+            parent_policies->content_security_policies, &parent_context,
+            frame_tree_node_->IsFencedFrameRoot()
+                ? network::mojom::CSPDirectiveName::FencedFrameSrc
+                : network::mojom::CSPDirectiveName::FrameSrc,
+            has_followed_redirect, url_upgraded_after_redirect,
+            is_response_check, is_opaque_fenced_frame, disposition)) {
+      error = net::ERR_BLOCKED_BY_CSP;
+    }
   }
 
   return error;

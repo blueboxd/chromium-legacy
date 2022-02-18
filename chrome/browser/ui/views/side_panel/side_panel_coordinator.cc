@@ -21,11 +21,13 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
+#include "chrome/browser/ui/webui/read_later/side_panel/reader_mode/reader_mode_side_panel_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/vector_icon_utils.h"
@@ -84,14 +86,23 @@ SidePanelCoordinator::SidePanelCoordinator(BrowserView* browser_view,
       ui::ImageModel::FromVectorIcon(omnibox::kStarIcon, ui::kColorIcon),
       base::BindRepeating(&SidePanelCoordinator::CreateBookmarksWebView,
                           base::Unretained(this), browser_view->browser())));
+  if (features::IsReaderModeSidePanelEnabled()) {
+    global_registry->Register(std::make_unique<SidePanelEntry>(
+        SidePanelEntry::Id::kReaderMode,
+        l10n_util::GetStringUTF16(IDS_READER_MODE_TITLE),
+        ui::ImageModel::FromVectorIcon(kReaderModeIcon, ui::kColorIcon),
+        base::BindRepeating(&SidePanelCoordinator::CreateReaderModeWebView,
+                            base::Unretained(this), browser_view->browser())));
+  }
 }
 
 SidePanelCoordinator::~SidePanelCoordinator() = default;
 
 void SidePanelCoordinator::Show(absl::optional<SidePanelEntry::Id> entry_id) {
   if (!entry_id.has_value()) {
-    // TODO(corising): Handle reopening to the last seen entry.
-    entry_id = SidePanelEntry::Id::kReadingList;
+    // TODO(corising): Handle choosing between last active entries when there
+    // are multiple registries.
+    entry_id = GetLastActiveEntry();
   }
 
   SidePanelEntry* entry = GetEntryForId(entry_id.value());
@@ -196,6 +207,13 @@ void SidePanelCoordinator::PopulateSidePanel(SidePanelEntry* entry) {
   DCHECK(content_wrapper);
   content_wrapper->RemoveAllChildViews();
   content_wrapper->AddChildView(entry->CreateContent());
+  entry->OnEntryShown();
+}
+
+SidePanelEntry::Id SidePanelCoordinator::GetLastActiveEntry() const {
+  return global_registry_->last_active_entry().has_value()
+             ? global_registry_->last_active_entry().value()
+             : SidePanelEntry::Id::kReadingList;
 }
 
 std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
@@ -246,10 +264,8 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
 
 std::unique_ptr<views::Combobox> SidePanelCoordinator::CreateCombobox() {
   auto combobox = std::make_unique<views::Combobox>(combobox_model_.get());
-
-  // TODO(corising): Update this to use the SidePanelEntry::Id to select the
-  // correct index once a new combobox model is created.
-  combobox->SetSelectedIndex(0);
+  combobox->SetSelectedIndex(
+      combobox_model_->GetIndexForId(GetLastActiveEntry()));
   // TODO(corising): Replace this with something appropriate.
   combobox->SetAccessibleName(
       combobox_model_->GetItemAt(combobox->GetSelectedIndex()));
@@ -282,6 +298,18 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateBookmarksWebView(
         bookmarks_web_view.get()->contents_wrapper()->web_contents());
   }
   return bookmarks_web_view;
+}
+
+std::unique_ptr<views::View> SidePanelCoordinator::CreateReaderModeWebView(
+    Browser* browser) {
+  return std::make_unique<SidePanelWebUIViewT<ReaderModeSidePanelUI>>(
+      browser, base::RepeatingClosure(),
+      base::BindRepeating(&SidePanelCoordinator::Close, base::Unretained(this)),
+      std::make_unique<BubbleContentsWrapperT<ReaderModeSidePanelUI>>(
+          GURL(chrome::kChromeUIReaderModeSidePanelURL), browser->profile(),
+          IDS_READER_MODE_TITLE,
+          /*webui_resizes_host=*/false,
+          /*esc_closes_ui=*/false));
 }
 
 void SidePanelCoordinator::OnEntryRegistered(SidePanelEntry* entry) {

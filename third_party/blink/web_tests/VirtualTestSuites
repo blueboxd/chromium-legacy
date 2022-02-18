@@ -271,11 +271,6 @@
     "args": ["--enable-blink-features=LayoutNGFlexFragmentation"]
   },
   {
-    "prefix": "layout_ng_grid_frag",
-    "bases": ["external/wpt/css/css-break/grid"],
-    "args": ["--enable-blink-features=LayoutNGGridFragmentation"]
-  },
-  {
     "prefix": "layout_ng_table_frag",
     "bases": ["external/wpt/css/css-break/table",
               "external/wpt/css/css-multicol/table"],
@@ -767,6 +762,14 @@
     "args": [ "--enable-features=BackForwardCache" ]
   },
   {
+    "prefix": "bfcache-same-site",
+    "bases": [ "external/wpt/app-history/app-history-entry/entries-after-bfcache.html",
+               "external/wpt/app-history/app-history-entry/entries-after-bfcache-in-iframe.html",
+               "external/wpt/app-history/per-entry-events/dispose-after-bfcache.html" ],
+    "args": [ "--enable-features=BackForwardCache:enable_same_site/true",
+              "--disable-field-trial-config" ]
+  },
+  {
     "prefix": "third-party-storage-partitioning",
     "bases": [
       "external/wpt/web-locks/partitioned-web-locks.tentative.https.html",
@@ -1082,5 +1085,11 @@
       "--enable-features=SystemCursorSizeSupported",
       "--disable-headless-mode"
     ]
+  },
+  {
+    "prefix": "document-pip",
+    "bases": [],
+    "args": ["--enable-features=PictureInPictureV2",
+             "--enable-blink-features=PictureInPictureV2"]
   }
 ]

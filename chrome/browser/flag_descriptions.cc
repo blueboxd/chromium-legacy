@@ -1912,6 +1912,12 @@ const char kOopRasterizationDDLDescription[] =
     "process  "
     "Must also enable OOP rasterization";
 
+const char kOptimizationGuideDebugLogsName[] =
+    "Enable optimization guide debug logs";
+const char kOptimizationGuideDebugLogsDescription[] =
+    "Enables the optimization guide to log and save debug messages that can be "
+    "shown in the internals page.";
+
 const char kOptimizationGuideModelDownloadingName[] =
     "Allow optimization guide model downloads";
 const char kOptimizationGuideModelDownloadingDescription[] =
@@ -2139,6 +2145,12 @@ const char kOmniboxTriggerForPrerender2Name[] =
     "Omnibox trigger for Prerender2";
 const char kOmniboxTriggerForPrerender2Description[] =
     "Enables the new omnibox trigger prerenderer implementation.";
+
+const char kSupportSearchSuggestionForPrerender2Name[] =
+    "Prerender search suggestions";
+const char kSupportSearchSuggestionForPrerender2Description[] =
+    "Allows Prerender2 to prerender search suggestions provided by the default "
+    "search engine. Requires chrome://flags/#enable-prerender2 to be enabled";
 
 const char kPrivacyAdvisorName[] = "Privacy Advisor";
 const char kPrivacyAdvisorDescription[] =
@@ -3759,6 +3771,11 @@ const char kNtpPhotosModuleOptInTitleName[] = "NTP Photos Module Opt In Title";
 const char kNtpPhotosModuleOptInTitleDescription[] =
     "Determines the title of the NTP Photos Opt-In card";
 
+const char kNtpPhotosModuleOptInArtWorkName[] =
+    "NTP Photos Module Opt In ArtWork";
+const char kNtpPhotosModuleOptInArtWorkDescription[] =
+    "Determines the art work in the NTP Photos Opt-In card";
+
 const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =
     "Shows the recipe tasks module on the New Tab Page.";
@@ -4482,21 +4499,6 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
 
-const char kCrOSDspBasedAecAllowedName[] =
-    "Allow CRAS to use a DSP-based AEC if available";
-const char kCrOSDspBasedAecAllowedDescription[] =
-    "Allows the system variant of the AEC in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedNsAllowedName[] =
-    "Allow CRAS to use a DSP-based NS if available";
-const char kCrOSDspBasedNsAllowedDescription[] =
-    "Allows the system variant of the NS in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedAgcAllowedName[] =
-    "Allow CRAS to use a DSP-based AGC if available";
-const char kCrOSDspBasedAgcAllowedDescription[] =
-    "Allows the system variant of the AGC in CRAS to be run on DSP ";
-
 const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
 const char kCrOSEnforceSystemAecDescription[] =
     "Enforces using the system variant in CrAS of the AEC";
@@ -4788,6 +4790,12 @@ const char kExperimentalAccessibilityDictationHintsName[] =
     "Experimental accessibility dictation UI hints.";
 const char kExperimentalAccessibilityDictationHintsDescription[] =
     "Enables UI hints for the accessibility dictation feature.";
+
+const char kExperimentalAccessibilityDictationWithPumpkinName[] =
+    "Experimental accessibility dictation using the pumpkin semantic parser.";
+const char kExperimentalAccessibilityDictationWithPumpkinDescription[] =
+    "Enables the pumpkin semantic parser for the accessibility dictation "
+    "feature.";
 
 const char kExperimentalAccessibilitySwitchAccessTextName[] =
     "Enable enhanced Switch Access text input.";

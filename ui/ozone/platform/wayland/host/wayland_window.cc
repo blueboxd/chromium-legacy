@@ -271,23 +271,7 @@ void WaylandWindow::PrepareForShutdown() {
 }
 
 void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {
-  gfx::Rect adjusted_bounds_px = bounds_px;
-
-  if (const auto min_size = delegate_->GetMinimumSizeForWindow()) {
-    if (min_size->width() > 0 && adjusted_bounds_px.width() < min_size->width())
-      adjusted_bounds_px.set_width(min_size->width());
-    if (min_size->height() > 0 &&
-        adjusted_bounds_px.height() < min_size->height())
-      adjusted_bounds_px.set_height(min_size->height());
-  }
-  if (const auto max_size = delegate_->GetMaximumSizeForWindow()) {
-    if (max_size->width() > 0 && adjusted_bounds_px.width() > max_size->width())
-      adjusted_bounds_px.set_width(max_size->width());
-    if (max_size->height() > 0 &&
-        adjusted_bounds_px.height() > max_size->height())
-      adjusted_bounds_px.set_height(max_size->height());
-  }
-
+  gfx::Rect adjusted_bounds_px = AdjustBoundsToConstraintsPx(bounds_px);
   if (bounds_px_ == adjusted_bounds_px)
     return;
   bounds_px_ = adjusted_bounds_px;
@@ -536,13 +520,9 @@ void WaylandWindow::OnDragEnter(const gfx::PointF& point,
   if (!drop_handler)
     return;
 
-  auto location_px = gfx::ScalePoint(TranslateLocationToRootWindow(point),
-                                     window_scale(), window_scale());
-
-  // Wayland sends locations in DIP so they need to be translated to
-  // physical pixels.
   // TODO(crbug.com/1102857): get the real event modifier here.
-  drop_handler->OnDragEnter(location_px, std::move(data), operation,
+  drop_handler->OnDragEnter(ToRootWindowPixel(point), std::move(data),
+                            operation,
                             /*modifiers=*/0);
 }
 
@@ -551,13 +531,8 @@ int WaylandWindow::OnDragMotion(const gfx::PointF& point, int operation) {
   if (!drop_handler)
     return 0;
 
-  auto location_px = gfx::ScalePoint(TranslateLocationToRootWindow(point),
-                                     window_scale(), window_scale());
-
-  // Wayland sends locations in DIP so they need to be translated to
-  // physical pixels.
   // TODO(crbug.com/1102857): get the real event modifier here.
-  return drop_handler->OnDragMotion(location_px, operation,
+  return drop_handler->OnDragMotion(ToRootWindowPixel(point), operation,
                                     /*modifiers=*/0);
 }
 
@@ -700,6 +675,20 @@ gfx::PointF WaylandWindow::TranslateLocationToRootWindow(
   gfx::Vector2d offset =
       GetBounds().origin() - root_window->GetBounds().origin();
   return location + gfx::Vector2dF(offset);
+}
+
+gfx::PointF WaylandWindow::ToRootWindowPixel(const gfx::PointF& location_dp) {
+  // Wayland sends coordinates in "surface-local" coordinates. In the common
+  // case, this is in DP. However, when we use surface pixel coordinates, the
+  // location is in relative pixels (so it shouldn't be scaled). Surface pixel
+  // coordinates are used to support fractional scaling in Lacros. Wayland
+  // scaling isn't used because Wayland only supports integer scaling.
+  // See crbug.com/1294417.
+  gfx::PointF location_px = TranslateLocationToRootWindow(location_dp);
+  if (!connection_->surface_submission_in_pixel_coordinates())
+    location_px.Scale(window_scale());
+
+  return location_px;
 }
 
 WaylandWindow* WaylandWindow::GetTopMostChildWindow() {
@@ -974,6 +963,26 @@ void WaylandWindow::ProcessPendingBoundsDip(uint32_t serial) {
     if (pending_configures_.size() <= 1)
       ApplyPendingBounds();
   }
+}
+
+gfx::Rect WaylandWindow::AdjustBoundsToConstraintsPx(
+    const gfx::Rect& bounds_px) {
+  gfx::Rect adjusted_bounds_px = bounds_px;
+  if (const auto min_size = delegate_->GetMinimumSizeForWindow()) {
+    if (min_size->width() > 0 && adjusted_bounds_px.width() < min_size->width())
+      adjusted_bounds_px.set_width(min_size->width());
+    if (min_size->height() > 0 &&
+        adjusted_bounds_px.height() < min_size->height())
+      adjusted_bounds_px.set_height(min_size->height());
+  }
+  if (const auto max_size = delegate_->GetMaximumSizeForWindow()) {
+    if (max_size->width() > 0 && adjusted_bounds_px.width() > max_size->width())
+      adjusted_bounds_px.set_width(max_size->width());
+    if (max_size->height() > 0 &&
+        adjusted_bounds_px.height() > max_size->height())
+      adjusted_bounds_px.set_height(max_size->height());
+  }
+  return adjusted_bounds_px;
 }
 
 bool WaylandWindow::ProcessVisualSizeUpdate(const gfx::Size& size_px,

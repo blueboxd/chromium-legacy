@@ -990,12 +990,9 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 // TabStrip, public:
 
 TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
-    : tab_container_(AddChildView(std::make_unique<TabContainer>())),
-      controller_(std::move(controller)),
-      layout_helper_(std::make_unique<TabStripLayoutHelper>(
-          controller_.get(),
-          base::BindRepeating(&TabContainer::tabs_view_model,
-                              base::Unretained(tab_container_)))),
+    : controller_(std::move(controller)),
+      tab_container_(
+          AddChildView(std::make_unique<TabContainer>(controller_.get()))),
       bounds_animator_(tab_container_),
       hover_card_controller_(std::make_unique<TabHoverCardController>(this)),
       drag_context_(std::make_unique<TabDragContextImpl>(this)) {
@@ -1005,7 +1002,6 @@ TabStrip::TabStrip(std::unique_ptr<TabStripController> controller)
   views::SetCascadingThemeProviderColor(this, views::kCascadingBackgroundColor,
                                         ThemeProperties::COLOR_TOOLBAR);
   Init();
-  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
   SetProperty(views::kElementIdentifierKey, kTabStripElementId);
 }
@@ -1077,39 +1073,7 @@ void TabStrip::SetBackgroundOffset(int background_offset) {
 }
 
 bool TabStrip::IsRectInWindowCaption(const gfx::Rect& rect) {
-  // If there is no control at this location, the hit is in the caption area.
-  const views::View* v = GetEventHandlerForRect(rect);
-  if (v == this)
-    return true;
-
-  // When the window has a top drag handle, a thin strip at the top of inactive
-  // tabs and the new tab button is treated as part of the window drag handle,
-  // to increase draggability.  This region starts 1 DIP above the top of the
-  // separator.
-  const int drag_handle_extension = TabStyle::GetDragHandleExtension(height());
-
-  // Disable drag handle extension when tab shapes are visible.
-  bool extend_drag_handle = !controller_->IsFrameCondensed() &&
-                            !controller_->EverHasVisibleBackgroundTabShapes();
-
-  // A hit on the tab is not in the caption unless it is in the thin strip
-  // mentioned above.
-  const int tab_index = tab_container_->tabs_view_model()->GetIndexOfView(v);
-  if (IsValidModelIndex(tab_index)) {
-    Tab* tab = tab_at(tab_index);
-    gfx::Rect tab_drag_handle = tab->GetMirroredBounds();
-    tab_drag_handle.set_height(drag_handle_extension);
-    return extend_drag_handle && !tab->IsActive() &&
-           tab_drag_handle.Intersects(rect);
-  }
-
-  // |v| is some other view (e.g. a close button in a tab) and therefore |rect|
-  // is in client area.
-  return false;
-}
-
-bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  return IsRectInWindowCaption(gfx::Rect(point, gfx::Size(1, 1)));
+  return tab_container_->IsRectInWindowCaption(rect);
 }
 
 bool TabStrip::IsTabStripCloseable() const {
@@ -1139,10 +1103,12 @@ void TabStrip::UpdateLoadingAnimations(const base::TimeDelta& elapsed_time) {
 }
 
 void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
-  Tab* tab = tab_container_->AddTab(std::make_unique<Tab>(this), model_index);
+  const bool pinned = data.pinned;
+  Tab* tab = tab_container_->AddTab(
+      std::make_unique<Tab>(this), model_index,
+      pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
   tab->set_context_menu_controller(&context_menu_controller_);
   tab->AddObserver(this);
-  const bool pinned = data.pinned;
   selected_tabs_.IncrementFrom(model_index);
 
   // Setting data must come after all state from the model has been updated
@@ -1153,15 +1119,12 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
   // Don't animate the first tab, it looks weird, and don't animate anything
   // if the containing window isn't visible yet.
   if (GetTabCount() > 1 && GetWidget() && GetWidget()->IsVisible()) {
-    StartInsertTabAnimation(model_index,
-                            pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
+    StartInsertTabAnimation(model_index);
   } else {
-    layout_helper_->InsertTabAt(
-        model_index, tab, pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
     CompleteAnimationAndLayout();
   }
 
-  UpdateAccessibleTabIndices();
+  tab_container_->UpdateAccessibleTabIndices();
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabAdded(model_index);
@@ -1209,13 +1172,11 @@ void TabStrip::MoveTab(int from_model_index,
 
   selected_tabs_.Move(from_model_index, to_model_index, /*length=*/1);
 
-  layout_helper_->MoveTab(moving_tab->group(), from_model_index,
-                          to_model_index);
-  layout_helper_->SetTabPinned(
+  tab_container_->layout_helper()->SetTabPinned(
       to_model_index, pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
   StartMoveTabAnimation();
 
-  UpdateAccessibleTabIndices();
+  tab_container_->UpdateAccessibleTabIndices();
 
   for (TabStripObserver& observer : observers_)
     observer.OnTabMoved(from_model_index, to_model_index);
@@ -1226,7 +1187,7 @@ void TabStrip::RemoveTabAt(content::WebContents* contents,
                            bool was_active) {
   StartRemoveTabAnimation(model_index, was_active);
 
-  UpdateAccessibleTabIndices();
+  tab_container_->UpdateAccessibleTabIndices();
 
   UpdateHoverCard(nullptr, HoverCardUpdateType::kTabRemoved);
 
@@ -1310,7 +1271,7 @@ void TabStrip::SetTabData(int model_index, TabRendererData data) {
     UpdateHoverCard(tab, HoverCardUpdateType::kTabDataChanged);
 
   if (pinned_state_changed) {
-    layout_helper_->SetTabPinned(
+    tab_container_->layout_helper()->SetTabPinned(
         model_index, pinned ? TabPinned::kPinned : TabPinned::kUnpinned);
     if (GetWidget() && GetWidget()->IsVisible())
       StartPinnedTabAnimation();
@@ -1339,7 +1300,8 @@ void TabStrip::AddTabToGroup(absl::optional<tab_groups::TabGroupId> group,
 void TabStrip::OnGroupCreated(const tab_groups::TabGroupId& group) {
   auto group_view =
       std::make_unique<TabGroupViews>(tab_container_, this, group);
-  layout_helper_->InsertGroupHeader(group, group_view->header());
+  tab_container_->layout_helper()->InsertGroupHeader(group,
+                                                     group_view->header());
   group_views_[group] = std::move(group_view);
 }
 
@@ -1411,7 +1373,7 @@ void TabStrip::ToggleTabGroup(const tab_groups::TabGroupId& group,
 void TabStrip::OnGroupMoved(const tab_groups::TabGroupId& group) {
   DCHECK(group_views_[group]);
 
-  layout_helper_->UpdateGroupHeaderIndex(group);
+  tab_container_->layout_helper()->UpdateGroupHeaderIndex(group);
 
   TabGroupHeader* group_header = group_views_[group]->header();
   const int first_tab_model_index =
@@ -1422,7 +1384,7 @@ void TabStrip::OnGroupMoved(const tab_groups::TabGroupId& group) {
 
 void TabStrip::OnGroupClosed(const tab_groups::TabGroupId& group) {
   bounds_animator_.StopAnimatingView(group_header(group));
-  layout_helper_->RemoveGroupHeader(group);
+  tab_container_->layout_helper()->RemoveGroupHeader(group);
 
   UpdateIdealBounds();
   AnimateToIdealBounds();
@@ -1557,8 +1519,8 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
     }
 
     new_active_tab->ActiveStateChanged();
-    layout_helper_->SetActiveTab(selected_tabs_.active(),
-                                 new_selection.active());
+    tab_container_->layout_helper()->SetActiveTab(selected_tabs_.active(),
+                                                  new_selection.active());
     if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
       ScrollTabToVisible(new_selection.active());
     }
@@ -1655,7 +1617,7 @@ TabDragContext* TabStrip::GetDragContext() {
 }
 
 int TabStrip::GetPinnedTabCount() const {
-  return layout_helper_->GetPinnedTabCount();
+  return tab_container_->layout_helper()->GetPinnedTabCount();
 }
 
 bool TabStrip::IsAnimating() const {
@@ -1751,7 +1713,7 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
     // If the tab is already closing, close the next tab. We do this so that the
     // user can rapidly close tabs by clicking the close button and not have
     // the animations interfere with that.
-    std::vector<Tab*> all_tabs = layout_helper_->GetTabs();
+    std::vector<Tab*> all_tabs = tab_container_->layout_helper()->GetTabs();
     auto it = std::find(all_tabs.begin(), all_tabs.end(), tab);
     while (it < all_tabs.end() && (*it)->closing()) {
       it++;
@@ -2130,13 +2092,14 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   // tabs, need an adjusted z-value. Find that group, if it exists.
   absl::optional<tab_groups::TabGroupId> dragging_tabs_current_group =
       absl::nullopt;
+
   TabDragController* drag_controller = drag_context_->GetDragController();
   if (drag_controller) {
     dragging_tabs_current_group = drag_controller->group();
   }
 
   if (!dragging_tabs_current_group.has_value()) {
-    for (const Tab* tab : layout_helper_->GetTabs()) {
+    for (const Tab* tab : tab_container_->layout_helper()->GetTabs()) {
       if (tab->dragging()) {
         dragging_tabs_current_group = tab->group();
         break;
@@ -2166,9 +2129,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
 }
 
 gfx::Size TabStrip::GetMinimumSize() const {
-  const int minimum_width = layout_helper_->CalculateMinimumWidth();
-
-  return gfx::Size(minimum_width, GetLayoutConstant(TAB_HEIGHT));
+  return tab_container_->GetMinimumSize();
 }
 
 gfx::Size TabStrip::CalculatePreferredSize() const {
@@ -2181,8 +2142,8 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     // The visual order of the tabs can be out of sync with the logical order,
     // so we have to check all of them to find the visually trailing-most one.
     int max_x = 0;
-    for (auto* tab : layout_helper_->GetTabs()) {
-      max_x = std::max(max_x, tab->bounds().right());
+    for (auto* child : tab_container_->children()) {
+      max_x = std::max(max_x, child->bounds().right());
     }
     // The tabs span from 0 to |max_x|, so |max_x| is the current width
     // occupied by tabs. We report the current width as our preferred width so
@@ -2190,29 +2151,13 @@ gfx::Size TabStrip::CalculatePreferredSize() const {
     // tabs.
     preferred_width = max_x;
   } else {
-    preferred_width = override_available_width_for_tabs_
-                          ? override_available_width_for_tabs_.value()
-                          : layout_helper_->CalculatePreferredWidth();
+    preferred_width =
+        override_available_width_for_tabs_
+            ? override_available_width_for_tabs_.value()
+            : tab_container_->layout_helper()->CalculatePreferredWidth();
   }
 
   return gfx::Size(preferred_width, GetLayoutConstant(TAB_HEIGHT));
-}
-
-views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  if (!HitTestPoint(point))
-    return nullptr;
-
-  // Return any view that isn't a Tab or this TabStrip immediately. We don't
-  // want to interfere.
-  views::View* v = View::GetTooltipHandlerForPoint(point);
-  if (v && v != this && !views::IsViewClass<Tab>(v))
-    return v;
-
-  views::View* tab = FindTabHitByPoint(point);
-  if (tab)
-    return tab;
-
-  return this;
 }
 
 bool TabStrip::CanDrop(const OSExchangeData& data) {
@@ -2239,7 +2184,6 @@ int TabStrip::OnDragUpdated(const ui::DropTargetEvent& event) {
   TabDragController::OnSystemDragAndDropUpdated(event);
   return ui::DragDropTypes::DRAG_MOVE;
 }
-
 void TabStrip::OnDragExited() {
   DCHECK(WantsToReceiveAllDragEvents());
   TabDragController::OnSystemDragAndDropExited();
@@ -2255,7 +2199,8 @@ BrowserRootView::DropIndex TabStrip::GetDropIndex(
   // original (and therefore non-mirrored) positions of the tabs.
   const int x = GetMirroredXInView(event.x());
 
-  std::vector<TabSlotView*> views = layout_helper_->GetTabSlotViews();
+  std::vector<TabSlotView*> views =
+      tab_container_->layout_helper()->GetTabSlotViews();
 
   // Loop until we find a tab or group header that intersects |event|'s
   // location.
@@ -2389,9 +2334,7 @@ void TabStrip::NewTabButtonPressed(const ui::Event& event) {
     TouchUMA::RecordGestureAction(TouchUMA::kGestureNewTabTap);
 }
 
-void TabStrip::StartInsertTabAnimation(int model_index, TabPinned pinned) {
-  layout_helper_->InsertTabAt(model_index, tab_at(model_index), pinned);
-
+void TabStrip::StartInsertTabAnimation(int model_index) {
   PrepareForAnimation();
 
   ExitTabClosingMode();
@@ -2462,7 +2405,6 @@ void TabStrip::StartRemoveTabAnimation(int model_index, bool was_active) {
 
   RemoveTabFromViewModel(model_index);
 
-  layout_helper_->RemoveTabAt(model_index, tab);
   UpdateIdealBounds();
   AnimateToIdealBounds();
 
@@ -2552,7 +2494,8 @@ void TabStrip::AnimateToIdealBounds() {
 
     bounds_animator_.AnimateViewTo(
         header,
-        layout_helper_->group_header_ideal_bounds().at(header_pair.first),
+        tab_container_->layout_helper()->group_header_ideal_bounds().at(
+            header_pair.first),
         std::make_unique<TabSlotAnimationDelegate>(
             this, header,
             base::BindRepeating(&TabStrip::OnTabSlotAnimationProgressed,
@@ -2572,7 +2515,8 @@ void TabStrip::SnapToIdealBounds() {
 
   for (const auto& header_pair : group_views_) {
     header_pair.second->header()->SetBoundsRect(
-        layout_helper_->group_header_ideal_bounds().at(header_pair.first));
+        tab_container_->layout_helper()->group_header_ideal_bounds().at(
+            header_pair.first));
     header_pair.second->UpdateBounds();
   }
 
@@ -2582,7 +2526,7 @@ void TabStrip::SnapToIdealBounds() {
 void TabStrip::ExitTabClosingMode() {
   in_tab_close_ = false;
   override_available_width_for_tabs_.reset();
-  layout_helper_->ExitTabClosingMode();
+  tab_container_->layout_helper()->ExitTabClosingMode();
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
@@ -2617,7 +2561,7 @@ void TabStrip::CompleteAnimationAndLayout() {
 void TabStrip::SetTabSlotVisibility() {
   bool last_tab_visible = false;
   absl::optional<tab_groups::TabGroupId> last_tab_group = absl::nullopt;
-  std::vector<Tab*> tabs = layout_helper_->GetTabs();
+  std::vector<Tab*> tabs = tab_container_->layout_helper()->GetTabs();
   for (Tab* tab : base::Reversed(tabs)) {
     absl::optional<tab_groups::TabGroupId> current_group = tab->group();
     if (current_group != last_tab_group && last_tab_group.has_value()) {
@@ -2639,18 +2583,12 @@ void TabStrip::SetTabSlotVisibility() {
   }
 }
 
-void TabStrip::UpdateAccessibleTabIndices() {
-  const int num_tabs = GetTabCount();
-  for (int i = 0; i < num_tabs; ++i)
-    tab_at(i)->GetViewAccessibility().OverridePosInSet(i + 1, num_tabs);
-}
-
 int TabStrip::GetActiveTabWidth() const {
-  return layout_helper_->active_tab_width();
+  return tab_container_->layout_helper()->active_tab_width();
 }
 
 int TabStrip::GetInactiveTabWidth() const {
-  return layout_helper_->inactive_tab_width();
+  return tab_container_->layout_helper()->inactive_tab_width();
 }
 
 const Tab* TabStrip::GetLastVisibleTab() const {
@@ -2719,7 +2657,7 @@ void TabStrip::OnTabCloseAnimationCompleted(Tab* tab) {
   DCHECK(tab->closing());
 
   std::unique_ptr<Tab> deleter(tab);
-  layout_helper_->OnTabDestroyed(tab);
+  tab_container_->layout_helper()->OnTabDestroyed(tab);
 }
 
 void TabStrip::StoppedDraggingView(TabSlotView* view, bool* is_first_view) {
@@ -3153,7 +3091,7 @@ void TabStrip::UpdateIdealBounds() {
   last_available_width_ = GetAvailableWidthForTabStrip();
 
   const int available_width_for_tabs = CalculateAvailableWidthForTabs();
-  layout_helper_->UpdateIdealBounds(available_width_for_tabs);
+  tab_container_->layout_helper()->UpdateIdealBounds(available_width_for_tabs);
 }
 
 int TabStrip::CalculateAvailableWidthForTabs() const {
@@ -3182,47 +3120,6 @@ void TabStrip::StartPinnedTabAnimation() {
   AnimateToIdealBounds();
 }
 
-bool TabStrip::IsPointInTab(Tab* tab,
-                            const gfx::Point& point_in_tabstrip_coords) {
-  if (!tab->GetVisible())
-    return false;
-  gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
-  View::ConvertPointToTarget(this, tab, &point_in_tab_coords);
-  return tab->HitTestPoint(point_in_tab_coords);
-}
-
-Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
-  // Check all tabs, even closing tabs. Mouse events need to reach closing tabs
-  // for users to be able to rapidly middle-click close several tabs.
-  std::vector<Tab*> all_tabs = layout_helper_->GetTabs();
-
-  // The display order doesn't necessarily match the child order, so we iterate
-  // in display order.
-  for (size_t i = 0; i < all_tabs.size(); ++i) {
-    // If we don't first exclude points outside the current tab, the code below
-    // will return the wrong tab if the next tab is selected, the following tab
-    // is active, and |point| is in the overlap region between the two.
-    Tab* tab = all_tabs[i];
-    if (!IsPointInTab(tab, point))
-      continue;
-
-    // Selected tabs render atop unselected ones, and active tabs render atop
-    // everything.  Check whether the next tab renders atop this one and |point|
-    // is in the overlap region.
-    Tab* next_tab = i < (all_tabs.size() - 1) ? all_tabs[i + 1] : nullptr;
-    if (next_tab &&
-        (next_tab->IsActive() ||
-         (next_tab->IsSelected() && !tab->IsSelected())) &&
-        IsPointInTab(next_tab, point))
-      return next_tab;
-
-    // This is the topmost tab for this point.
-    return tab;
-  }
-
-  return nullptr;
-}
-
 void TabStrip::OnTabSlotAnimationProgressed(TabSlotView* view) {
   // The rightmost tab moving might have changed the tabstrip's preferred width.
   PreferredSizeChanged();
@@ -3237,7 +3134,7 @@ void TabStrip::UpdateTabGroupVisuals(tab_groups::TabGroupId group_id) {
 }
 
 const gfx::Rect& TabStrip::ideal_bounds(tab_groups::TabGroupId group) const {
-  return layout_helper_->group_header_ideal_bounds().at(group);
+  return tab_container_->layout_helper()->group_header_ideal_bounds().at(group);
 }
 
 bool TabStrip::OnMouseDragged(const ui::MouseEvent& event) {
@@ -3279,13 +3176,7 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
 
     case ui::ET_GESTURE_LONG_TAP: {
       EndDrag(END_DRAG_CANCEL);
-      gfx::Point local_point = event->location();
-      Tab* tab = FindTabHitByPoint(local_point);
-      if (tab) {
-        ConvertPointToScreen(this, &local_point);
-        controller_->ShowContextMenuForTab(tab, local_point,
-                                           ui::MENU_SOURCE_TOUCH);
-      }
+      tab_container_->HandleLongTap(event);
       break;
     }
 
@@ -3312,26 +3203,6 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
       break;
   }
   event->SetHandled();
-}
-
-views::View* TabStrip::TargetForRect(views::View* root, const gfx::Rect& rect) {
-  CHECK_EQ(root, this);
-
-  if (!views::UsePointBasedTargeting(rect))
-    return views::ViewTargeterDelegate::TargetForRect(root, rect);
-  const gfx::Point point(rect.CenterPoint());
-
-  // Return any view that isn't a Tab or this TabStrip immediately. We don't
-  // want to interfere.
-  views::View* v = views::ViewTargeterDelegate::TargetForRect(root, rect);
-  if (v && v != this && !views::IsViewClass<Tab>(v))
-    return v;
-
-  views::View* tab = FindTabHitByPoint(point);
-  if (tab)
-    return tab;
-
-  return this;
 }
 
 void TabStrip::OnViewFocused(views::View* observed_view) {

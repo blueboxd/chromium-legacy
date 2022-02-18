@@ -492,7 +492,7 @@
 <translation id="2430968933669123598">‏إدارة حساب Google: اضغط على مفتاح Enter لإدارة المعلومات والخصوصية والأمان في حسابك على Google.</translation>
 <translation id="2436186046335138073">هل تريد السماح لـ <ph name="HANDLER_HOSTNAME" /> بفتح كل روابط <ph name="PROTOCOL" />؟</translation>
 <translation id="2438874542388153331">عمل أربعة ثقوب يمينًا</translation>
-<translation id="2450021089947420533">سجلّ أنشطة البحث والتصفُّح</translation>
+<translation id="2450021089947420533">رحلات البحث</translation>
 <translation id="2463739503403862330">ملء</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">اختيار طريقة التسليم للمستخدم</translation>
@@ -750,7 +750,6 @@
 <translation id="3288238092761586174">قد يُطلب من <ph name="URL" /> تنفيذ خطوات إضافية للتحقّق من عملية الدفع التي تجريها.</translation>
 <translation id="3293642807462928945">مزيد من المعلومات عن سياسة <ph name="POLICY_NAME" /></translation>
 <translation id="3295444047715739395">‏عرض كلمات المرور وإدارتها في إعدادات متصفِّح Chrome</translation>
-<translation id="3303795387212510132">هل تريد السماح للتطبيق بفتح روابط <ph name="PROTOCOL_SCHEME" />؟</translation>
 <translation id="3303855915957856445">لم يتم العثور على أي نتائج بحث</translation>
 <translation id="3304073249511302126">البحث عن أجهزة تتضمن بلوتوث</translation>
 <translation id="3308006649705061278">‏الوحدة التنظيمية (OU)</translation>
@@ -885,7 +884,8 @@
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
 <translation id="370665806235115550">جارٍ التحميل...</translation>
 <translation id="3709599264800900598">النص الذي نسخته</translation>
-<translation id="370972442370243704">تفعيل ميزة "سجلّ أنشطة البحث والتصفُّح"</translation>
+<translation id="370972442370243704">تفعيل ميزة "رحلات البحث"
+</translation>
 <translation id="3711895659073496551">تعليق</translation>
 <translation id="3712624925041724820">التراخيص مستنفذة</translation>
 <translation id="3714633008798122362">تقويم الويب</translation>
@@ -1130,6 +1130,7 @@
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="4435702339979719576">بطاقة بريدية)</translation>
 <translation id="443673843213245140">تم إيقاف استخدام الخادم الوكيل ولكن تم تحديد إعداد صريح للخادم الوكيل.</translation>
+<translation id="4441832193888514600">تم التجاهل لأنّ هذه السياسة لا يمكن ضبطها كسياسة مستخدم على السحابة الإلكترونية.</translation>
 <translation id="4450893287417543264">عدم الإظهار مرة أخرى</translation>
 <translation id="4451135742916150903">‏السماح للموقع الإلكتروني بطلب الاتصال بأجهزة HID</translation>
 <translation id="4452328064229197696">‏كلمة المرور التي استخدمتها للتو تم رصدها ضمن عملية اختراق للبيانات. ولتأمين حساباتك، ينصح "مدير كلمات المرور" من Google بالتحقّق من كلمات المرور المحفوظة.</translation>
@@ -1153,7 +1154,8 @@
 <translation id="4508814173490746936">‏تعذّر استخدام ميزة Touch ID</translation>
 <translation id="4509074745930862522">‏<ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />، اضغط على مفتاح التبويب (Tab) ثم مفتاح Enter لترجمة هذه الصفحة باستخدام "ترجمة Google".</translation>
 <translation id="4510487217173779431">‏Chou4 (مغلف)</translation>
-<translation id="4514308731478712184">إيقاف ميزة "سجلّ أنشطة البحث والتصفُّح"</translation>
+<translation id="4514308731478712184">إيقاف ميزة "رحلات البحث"
+</translation>
 <translation id="4515275063822566619">‏يتم أخذ البطاقات والعناوين من Chrome وحسابك على Google (<ph name="ACCOUNT_EMAIL" />)، ويمكنك إدارتها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">‏Comm-10 (مغلف)</translation>
 <translation id="4521157617044179198">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> ملم (<ph name="ORIENTATION" />)</translation>
@@ -1228,6 +1230,7 @@
 <translation id="4757993714154412917">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب. لحماية حساباتك، يقترح متصفِّح Chromium التحقّق من كلمات المرور المحفوظة.</translation>
 <translation id="4758311279753947758">إضافة معلومات الاتصال</translation>
 <translation id="4761104368405085019">استخدام الميكروفون</translation>
+<translation id="4761869838909035636">‏تشغيل ميزة "تأكيد السلامة" في Chrome</translation>
 <translation id="4764776831041365478">قد تكون صفحة الويب على العنوان <ph name="URL" /> غير متاحة مؤقتًا أو قد يكون تم نقلها نهائيًا إلى عنوان ويب جديد.</translation>
 <translation id="4766713847338118463">وضع دبوسَين بالأسفل</translation>
 <translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>

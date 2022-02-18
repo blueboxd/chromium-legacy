@@ -1083,6 +1083,9 @@ extern const char kEnableSearchPrefetchDescription[];
 extern const char kOopRasterizationDDLName[];
 extern const char kOopRasterizationDDLDescription[];
 
+extern const char kOptimizationGuideDebugLogsName[];
+extern const char kOptimizationGuideDebugLogsDescription[];
+
 extern const char kOptimizationGuideModelDownloadingName[];
 extern const char kOptimizationGuideModelDownloadingDescription[];
 
@@ -1210,6 +1213,9 @@ extern const char kPrerender2Description[];
 
 extern const char kOmniboxTriggerForPrerender2Name[];
 extern const char kOmniboxTriggerForPrerender2Description[];
+
+extern const char kSupportSearchSuggestionForPrerender2Name[];
+extern const char kSupportSearchSuggestionForPrerender2Description[];
 
 extern const char kPrivacyAdvisorName[];
 extern const char kPrivacyAdvisorDescription[];
@@ -2155,6 +2161,9 @@ extern const char kNtpPhotosModuleDescription[];
 extern const char kNtpPhotosModuleOptInTitleName[];
 extern const char kNtpPhotosModuleOptInTitleDescription[];
 
+extern const char kNtpPhotosModuleOptInArtWorkName[];
+extern const char kNtpPhotosModuleOptInArtWorkDescription[];
+
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];
 
@@ -2568,15 +2577,6 @@ extern const char kQuickSettingsPWANotificationsDescription[];
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
 
-extern const char kCrOSDspBasedAecAllowedName[];
-extern const char kCrOSDspBasedAecAllowedDescription[];
-
-extern const char kCrOSDspBasedNsAllowedName[];
-extern const char kCrOSDspBasedNsAllowedDescription[];
-
-extern const char kCrOSDspBasedAgcAllowedName[];
-extern const char kCrOSDspBasedAgcAllowedDescription[];
-
 extern const char kCrOSEnforceSystemAecName[];
 extern const char kCrOSEnforceSystemAecDescription[];
 
@@ -2747,6 +2747,9 @@ extern const char kExperimentalAccessibilityDictationCommandsDescription[];
 
 extern const char kExperimentalAccessibilityDictationHintsName[];
 extern const char kExperimentalAccessibilityDictationHintsDescription[];
+
+extern const char kExperimentalAccessibilityDictationWithPumpkinName[];
+extern const char kExperimentalAccessibilityDictationWithPumpkinDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];

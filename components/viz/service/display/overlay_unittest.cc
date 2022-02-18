@@ -40,6 +40,7 @@
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_candidate_temporal_tracker.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
+#include "components/viz/service/display/overlay_proposed_candidate.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -268,7 +269,7 @@ class SizeSortedMultiOverlayProcessor : public MultiOverlayProcessorBase {
 
   // Sort candidates only by their display_rect area.
   void SortProposedOverlayCandidatesPrioritized(
-      Strategy::OverlayProposedCandidateList* proposed_candidates) override {
+      std::vector<OverlayProposedCandidate>* proposed_candidates) override {
     std::sort(proposed_candidates->begin(), proposed_candidates->end(),
               [](const auto& a, const auto& b) {
                 return a.candidate.display_rect.size().GetArea() >
@@ -678,14 +679,14 @@ static void CompareRenderPassLists(
   }
 }
 
-skia::Matrix44 GetIdentityColorMatrix() {
-  return skia::Matrix44(skia::Matrix44::kIdentity_Constructor);
+SkM44 GetIdentityColorMatrix() {
+  return SkM44();
 }
 
-skia::Matrix44 GetNonIdentityColorMatrix() {
-  skia::Matrix44 matrix = GetIdentityColorMatrix();
-  matrix.set(1, 1, 0.5f);
-  matrix.set(2, 2, 0.5f);
+SkM44 GetNonIdentityColorMatrix() {
+  SkM44 matrix = GetIdentityColorMatrix();
+  matrix.setRC(1, 1, 0.5f);
+  matrix.setRC(2, 2, 0.5f);
   return matrix;
 }
 
@@ -1138,7 +1139,7 @@ TEST_F(SingleOverlayOnTopTest, CandidateIdCollision) {
 
   // Code to make sure the 'unique' tracking ids are actually identical.
   OverlayCandidate candidate_a;
-  skia::Matrix44 ident;
+  SkM44 ident;
   auto ret_a = OverlayCandidate::FromDrawQuad(
       resource_provider_.get(), &surface_damage_rect_list, ident, quad_a,
       gfx::RectF(pass->output_rect), &candidate_a);
@@ -1187,7 +1188,7 @@ TEST_F(SingleOverlayOnTopTest, CandidateTrackIdUniqueSurface) {
       kCandidateRect, SurfaceId(FrameSinkId(2, 2), LocalSurfaceId()));
   // Code to make sure the 'unique' tracking ids are actually different.
   OverlayCandidate candidate_a;
-  skia::Matrix44 ident;
+  SkM44 ident;
   SurfaceDamageRectList surface_damage_rect_list;
   auto ret_a = OverlayCandidate::FromDrawQuad(
       resource_provider_.get(), &surface_damage_rect_list, ident, quad_a,
@@ -4939,7 +4940,7 @@ TEST_F(SingleOverlayOnTopTest, IsOverlayRequiredBasic) {
       child_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
       kSmallCandidateRect);
   SurfaceDamageRectList surface_damage_rect_list;
-  skia::Matrix44 default_color = GetIdentityColorMatrix();
+  SkM44 default_color = GetIdentityColorMatrix();
   OverlayCandidate candidate;
   OverlayCandidate::FromDrawQuad(resource_provider_.get(),
                                  &surface_damage_rect_list, default_color,
@@ -4961,7 +4962,7 @@ TEST_F(SingleOverlayOnTopTest, IsOverlayRequiredHwProtectedVideo) {
       kSmallCandidateRect, gfx::ProtectedVideoType::kHardwareProtected,
       YUV_420_BIPLANAR);
   SurfaceDamageRectList surface_damage_rect_list;
-  skia::Matrix44 default_color = GetIdentityColorMatrix();
+  SkM44 default_color = GetIdentityColorMatrix();
   OverlayCandidate candidate;
   OverlayCandidate::FromDrawQuad(resource_provider_.get(),
                                  &surface_damage_rect_list, default_color,
@@ -4984,7 +4985,7 @@ TEST_F(SingleOverlayOnTopTest, RequiredOverlayClippingAndSubsampling) {
       YUV_420_BIPLANAR);
   pass->shared_quad_state_list.back()->clip_rect = kOverlayClipRect;
   SurfaceDamageRectList surface_damage_rect_list;
-  skia::Matrix44 default_color = GetIdentityColorMatrix();
+  SkM44 default_color = GetIdentityColorMatrix();
   OverlayCandidate candidate;
   OverlayCandidate::FromDrawQuad(resource_provider_.get(),
                                  &surface_damage_rect_list, default_color,
@@ -5017,7 +5018,7 @@ TEST_F(SingleOverlayOnTopTest,
       YUV_420_BIPLANAR);
   pass->shared_quad_state_list.back()->clip_rect = kOverlayClipRect;
   SurfaceDamageRectList surface_damage_rect_list;
-  skia::Matrix44 default_color = GetIdentityColorMatrix();
+  SkM44 default_color = GetIdentityColorMatrix();
   gfx::RectF primary_rect(0, 0, 100, 120);
   OverlayProcessorInterface::OutputSurfaceOverlayPlane primary_plane;
   OverlayCandidate candidate;
@@ -5130,7 +5131,7 @@ TEST_F(UnderlayTest, EstimateOccludedDamage) {
         child_provider_.get(), damaged_shared_quad_state, pass.get(),
         kCandidateRects[i]);
 
-    skia::Matrix44 default_color = GetIdentityColorMatrix();
+    SkM44 default_color = GetIdentityColorMatrix();
     OverlayCandidate candidate;
     OverlayCandidate::FromDrawQuad(resource_provider_.get(),
                                    &surface_damage_rect_list, default_color,

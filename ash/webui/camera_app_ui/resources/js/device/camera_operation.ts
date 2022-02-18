@@ -41,9 +41,9 @@ import {
 interface ConfigureCandidate {
   deviceId: string;
   mode: Mode;
-  captureResolution: Resolution;
+  captureResolution: Resolution|null;
   constraints: StreamConstraints;
-  videoSnapshotResolution: Resolution;
+  videoSnapshotResolution: Resolution|null;
 }
 
 export interface EventListener {
@@ -118,7 +118,7 @@ class Reconfigurer {
     return sorted;
   }
 
-  private async getModeCandidates(deviceId: string|null): Promise<Mode[]> {
+  private async getModeCandidates(deviceId: string): Promise<Mode[]> {
     if (this.modeConstraints.exact !== undefined) {
       assert(
           await this.modes.isSupported(this.modeConstraints.exact, deviceId));
@@ -144,8 +144,9 @@ class Reconfigurer {
               this.modes.getFakeResolutionCandidates(mode, deviceId);
           photoRs = resolCandidates.map((c) => c.resolution);
         }
-        const maxResolution =
-            photoRs.reduce((maxR, r) => r.area > maxR.area ? r : maxR);
+        const maxResolution = photoRs.reduce(
+            (maxR, r) =>
+                r !== null && (maxR === null || r.area > maxR.area) ? r : maxR);
         for (const {
                resolution: captureResolution,
                previewCandidates,
@@ -177,11 +178,12 @@ class Reconfigurer {
         return false;
       }
       const modeSupport = state.get(state.State.USE_FAKE_CAMERA) ||
-          this.modes.isSupportPTZ(
-              c.mode,
-              c.captureResolution,
-              this.preview.getResolution(),
-          );
+          (c.captureResolution !== null &&
+           this.modes.isSupportPTZ(
+               c.mode,
+               c.captureResolution,
+               this.preview.getResolution(),
+               ));
       if (!modeSupport) {
         await this.preview.resetPTZ();
         return false;
@@ -214,8 +216,9 @@ class Reconfigurer {
 
       const nextConfig: CameraConfig = {
         deviceId: c.deviceId,
-        facing: (c.deviceId &&
-                 cameraInfo.getCamera3DeviceInfo(c.deviceId)?.facing) ??
+        facing: (c.deviceId !== null ?
+                     cameraInfo.getCamera3DeviceInfo(c.deviceId)?.facing :
+                     null) ??
             Facing.NOT_SET,
         mode: c.mode,
       };
@@ -245,28 +248,32 @@ class Reconfigurer {
       } catch (e) {
         await this.stopStreams();
 
-        let errorToReport = e;
+        let errorToReport: Error;
         // Since OverconstrainedError is not an Error instance.
         if (e instanceof OverconstrainedError) {
           errorToReport =
               new Error(`${e.message} (constraint = ${e.constraint})`);
           errorToReport.name = 'OverconstrainedError';
-        } else if (e.name === 'NotReadableError') {
-          // TODO(b/187879603): Remove this hacked once we understand more
-          // about such error.
-          // We cannot get the camera facing from stream since it might
-          // not be successfully opened. Therefore, we asked the camera
-          // facing via Mojo API.
-          let facing = Facing.NOT_SET;
-          if (deviceOperator !== null) {
-            facing = await deviceOperator.getCameraFacing(c.deviceId);
+        } else {
+          assert(e instanceof Error);
+          if (e.name === 'NotReadableError') {
+            // TODO(b/187879603): Remove this hacked once we understand more
+            // about such error.
+            // We cannot get the camera facing from stream since it might
+            // not be successfully opened. Therefore, we asked the camera
+            // facing via Mojo API.
+            let facing = Facing.NOT_SET;
+            if (deviceOperator !== null) {
+              facing = await deviceOperator.getCameraFacing(c.deviceId);
+            }
+            errorToReport = new Error(`${e.message} (facing = ${facing})`);
+            errorToReport.name = 'NotReadableError';
+          } else {
+            errorToReport = e;
           }
-          errorToReport = new Error(`${e.message} (facing = ${facing})`);
-          errorToReport.name = 'NotReadableError';
         }
         error.reportError(
-            ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR,
-            assertInstanceof(errorToReport, Error));
+            ErrorType.START_CAMERA_FAILURE, ErrorLevel.ERROR, errorToReport);
       }
     }
     return false;
@@ -285,10 +292,12 @@ class Capturer {
   constructor(private readonly modes: Modes) {}
 
   async start(): Promise<() => Promise<void>> {
+    assert(this.modes.current !== null);
     return this.modes.current.startCapture();
   }
 
   stop() {
+    assert(this.modes.current !== null);
     this.modes.current.stopCapture();
   }
 
@@ -414,7 +423,7 @@ export class OperationScheduler {
     }
   }
 
-  async startCapture(): Promise<() => Promise<void>>|null {
+  async startCapture(): Promise<(() => Promise<void>)|null> {
     if (this.ongoingOperationType !== null) {
       return null;
     }

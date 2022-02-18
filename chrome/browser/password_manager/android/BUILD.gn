@@ -207,15 +207,24 @@ android_library("backend_interface_java") {
     "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackend.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackendFactory.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackendFactoryImpl.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSyncControllerDelegate.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSyncControllerDelegateFactory.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSyncControllerDelegateFactoryImpl.java",
   ]
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
-  jar_excluded_patterns = [ "*/PasswordStoreAndroidBackendFactoryImpl.class" ]
+  jar_excluded_patterns = [
+    "*/PasswordStoreAndroidBackendFactoryImpl.class",
+    "*/PasswordSyncControllerDelegateFactoryImpl.class",
+  ]
 }
 
 android_library("backend_interface_public_impl_java") {
-  sources = [ "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackendFactoryImpl.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackendFactoryImpl.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSyncControllerDelegateFactoryImpl.java",
+  ]
 
   deps = [ ":backend_interface_java" ]
 }
@@ -232,6 +241,7 @@ source_set("unit_tests") {
     "password_accessory_controller_impl_unittest.cc",
     "password_generation_controller_impl_unittest.cc",
     "password_store_android_backend_unittest.cc",
+    "password_sync_controller_delegate_android_unittest.cc",
     "save_password_infobar_delegate_android_unittest.cc",
     "save_update_password_message_delegate_unittest.cc",
     "update_password_infobar_delegate_android_unittest.cc",

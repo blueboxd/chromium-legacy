@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/json/json_writer.h"
-#include "base/rand_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/render_frame_host.h"
@@ -39,10 +38,15 @@ using LoginState = IdentityRequestAccount::LoginState;
 
 // fedcm.json configuration keys.
 constexpr char kIdpEndpointKey[] = "idp_endpoint";
-constexpr char kTokenEndpointKey[] = "idtoken_endpoint";
+constexpr char kTokenEndpointKey[] = "id_token_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kRevokeEndpoint[] = "revoke_endpoint";
+
+// Keys in fedcm.json 'branding' dictionary.
+constexpr char kIdpBrandingBackgroundColor[] = "background_color";
+constexpr char kIdpBrandingForegroundColor[] = "color";
+constexpr char kIdpBrandingIcons[] = "icons";
 
 // Client metadata keys.
 constexpr char kPrivacyPolicyKey[] = "privacy_policy_url";
@@ -59,11 +63,6 @@ constexpr char kAccountNameKey[] = "name";
 constexpr char kAccountGivenNameKey[] = "given_name";
 constexpr char kAccountPictureKey[] = "picture";
 constexpr char kAccountApprovedClientsKey[] = "approved_clients";
-
-// Keys in 'branding' dictionary in accounts endpoint.
-constexpr char kIdpBrandingBackgroundColor[] = "background_color";
-constexpr char kIdpBrandingForegroundColor[] = "foreground_color";
-constexpr char kIdpBrandingIcons[] = "icons";
 
 // Keys in 'branding' 'icons' dictionary in accounts endpoint.
 constexpr char kIdpBrandingIconUrl[] = "url";
@@ -127,12 +126,7 @@ net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
 }
 
 void AddCsrfHeader(network::ResourceRequest* request) {
-  // Using a random 64-bit header value. This is just to keep service
-  // implementations from assuming any particular static value.
-  const int kBytes = 64 / 8;
-  std::string webid_header_value;
-  base::Base64Encode(base::RandBytesAsString(kBytes), &webid_header_value);
-  request->headers.SetHeader(kSecFedCmCsrfHeader, webid_header_value);
+  request->headers.SetHeader(kSecFedCmCsrfHeader, kSecFedCmCsrfHeaderValue);
 }
 
 std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
@@ -237,10 +231,9 @@ absl::optional<SkColor> ParseCssColor(const std::string* value) {
 // Parse IdentityProviderMetadata from given value. Overwrites |idp_metadata|
 // with the parsed value.
 void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
-                                   int brand_icon_ideal_size,
-                                   int brand_icon_minimum_size,
-                                   IdentityProviderMetadata& idp_metadata,
-                                   GURL* brand_icon_url) {
+                                   absl::optional<int> brand_icon_ideal_size,
+                                   absl::optional<int> brand_icon_minimum_size,
+                                   IdentityProviderMetadata& idp_metadata) {
   if (!idp_metadata_value.is_dict())
     return;
 
@@ -285,10 +278,14 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
       icons.push_back(icon);
     }
 
-    *brand_icon_url = blink::ManifestIconSelector::FindBestMatchingSquareIcon(
-        icons, brand_icon_ideal_size / kMaskableWebIconSafeZoneRatio,
-        brand_icon_minimum_size / kMaskableWebIconSafeZoneRatio,
-        blink::mojom::ManifestImageResource_Purpose::MASKABLE);
+    if (brand_icon_minimum_size && brand_icon_ideal_size) {
+      idp_metadata.brand_icon_url =
+          blink::ManifestIconSelector::FindBestMatchingSquareIcon(
+              icons,
+              brand_icon_ideal_size.value() / kMaskableWebIconSafeZoneRatio,
+              brand_icon_minimum_size.value() / kMaskableWebIconSafeZoneRatio,
+              blink::mojom::ManifestImageResource_Purpose::MASKABLE);
+    }
   }
 }
 
@@ -328,21 +325,6 @@ IdpNetworkRequestManager::Endpoints::~Endpoints() = default;
 IdpNetworkRequestManager::Endpoints::Endpoints(const Endpoints& other) =
     default;
 
-IdpNetworkRequestManager::AccountRequestInfo::AccountRequestInfo(
-    AccountsRequestCallback callback,
-    int idp_brand_icon_ideal_size,
-    int idp_brand_icon_minimum_size,
-    IdpNetworkRequestManager::BrandIconDownloader idp_brand_icon_downloader,
-    const std::string& client_id)
-    : callback(std::move(callback)),
-      idp_brand_icon_ideal_size(idp_brand_icon_ideal_size),
-      idp_brand_icon_minimum_size(idp_brand_icon_minimum_size),
-      idp_brand_icon_downloader(std::move(idp_brand_icon_downloader)),
-      client_id(client_id) {}
-IdpNetworkRequestManager::AccountRequestInfo::~AccountRequestInfo() = default;
-IdpNetworkRequestManager::AccountRequestInfo::AccountRequestInfo(
-    AccountRequestInfo&&) = default;
-
 // static
 constexpr char IdpNetworkRequestManager::kManifestFilePath[];
 
@@ -371,7 +353,10 @@ IdpNetworkRequestManager::IdpNetworkRequestManager(
 
 IdpNetworkRequestManager::~IdpNetworkRequestManager() = default;
 
-void IdpNetworkRequestManager::FetchManifest(FetchManifestCallback callback) {
+void IdpNetworkRequestManager::FetchManifest(
+    absl::optional<int> idp_brand_icon_ideal_size,
+    absl::optional<int> idp_brand_icon_minimum_size,
+    FetchManifestCallback callback) {
   DCHECK(!url_loader_);
   DCHECK(!idp_manifest_callback_);
 
@@ -398,7 +383,8 @@ void IdpNetworkRequestManager::FetchManifest(FetchManifestCallback callback) {
   url_loader_->DownloadToString(
       loader_factory_.get(),
       base::BindOnce(&IdpNetworkRequestManager::OnManifestLoaded,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), idp_brand_icon_ideal_size,
+                     idp_brand_icon_minimum_size),
       maxResponseSizeInKiB * 1024);
 }
 
@@ -425,9 +411,6 @@ void IdpNetworkRequestManager::SendSigninRequest(
 
 void IdpNetworkRequestManager::SendAccountsRequest(
     const GURL& accounts_url,
-    int idp_brand_icon_ideal_size,
-    int idp_brand_icon_minimum_size,
-    BrandIconDownloader idp_brand_icon_downloader,
     const std::string& client_id,
     AccountsRequestCallback callback) {
   DCHECK(!url_loader_);
@@ -437,12 +420,9 @@ void IdpNetworkRequestManager::SendAccountsRequest(
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
-      base::BindOnce(
-          &IdpNetworkRequestManager::OnAccountsRequestResponse,
-          weak_ptr_factory_.GetWeakPtr(),
-          AccountRequestInfo(std::move(callback), idp_brand_icon_ideal_size,
-                             idp_brand_icon_minimum_size,
-                             std::move(idp_brand_icon_downloader), client_id)),
+      base::BindOnce(&IdpNetworkRequestManager::OnAccountsRequestResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     client_id),
       maxResponseSizeInKiB * 1024);
 }
 
@@ -578,27 +558,34 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
 }
 
 void IdpNetworkRequestManager::OnManifestLoaded(
+    absl::optional<int> idp_brand_icon_ideal_size,
+    absl::optional<int> idp_brand_icon_minimum_size,
     std::unique_ptr<std::string> response_body) {
   FetchStatus response_error =
       GetResponseError(url_loader_.get(), response_body.get());
   url_loader_.reset();
 
   if (response_error != FetchStatus::kSuccess) {
-    std::move(idp_manifest_callback_).Run(response_error, Endpoints());
+    std::move(idp_manifest_callback_)
+        .Run(response_error, Endpoints(), IdentityProviderMetadata());
     return;
   }
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
       base::BindOnce(&IdpNetworkRequestManager::OnManifestParsed,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), idp_brand_icon_ideal_size,
+                     idp_brand_icon_minimum_size));
 }
 
 void IdpNetworkRequestManager::OnManifestParsed(
+    absl::optional<int> idp_brand_icon_ideal_size,
+    absl::optional<int> idp_brand_icon_minimum_size,
     data_decoder::DataDecoder::ValueOrError result) {
   if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
     std::move(idp_manifest_callback_)
-        .Run(FetchStatus::kInvalidResponseError, Endpoints());
+        .Run(FetchStatus::kInvalidResponseError, Endpoints(),
+             IdentityProviderMetadata());
     return;
   }
 
@@ -618,7 +605,16 @@ void IdpNetworkRequestManager::OnManifestParsed(
   endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
   endpoints.revoke = ExtractEndpoint(kRevokeEndpoint);
 
-  std::move(idp_manifest_callback_).Run(FetchStatus::kSuccess, endpoints);
+  const base::Value* idp_metadata_value = response.FindKey(kIdpBrandingKey);
+  IdentityProviderMetadata idp_metadata;
+  if (idp_metadata_value) {
+    ParseIdentityProviderMetadata(*idp_metadata_value,
+                                  idp_brand_icon_ideal_size,
+                                  idp_brand_icon_minimum_size, idp_metadata);
+  }
+
+  std::move(idp_manifest_callback_)
+      .Run(FetchStatus::kSuccess, endpoints, std::move(idp_metadata));
 }
 
 void IdpNetworkRequestManager::OnSigninRequestResponse(
@@ -680,31 +676,31 @@ void IdpNetworkRequestManager::OnSigninRequestParsed(
 }
 
 void IdpNetworkRequestManager::OnAccountsRequestResponse(
-    AccountRequestInfo request_info,
+    AccountsRequestCallback callback,
+    std::string client_id,
     std::unique_ptr<std::string> response_body) {
   FetchStatus response_error =
       GetResponseError(url_loader_.get(), response_body.get());
   url_loader_.reset();
 
   if (response_error != FetchStatus::kSuccess) {
-    std::move(request_info.callback)
-        .Run(response_error, AccountList(), IdentityProviderMetadata());
+    std::move(callback).Run(response_error, AccountList());
     return;
   }
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
       base::BindOnce(&IdpNetworkRequestManager::OnAccountsRequestParsed,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(request_info)));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     client_id));
 }
 
 void IdpNetworkRequestManager::OnAccountsRequestParsed(
-    AccountRequestInfo request_info,
+    AccountsRequestCallback callback,
+    std::string client_id,
     data_decoder::DataDecoder::ValueOrError result) {
   auto Fail = [&]() {
-    std::move(request_info.callback)
-        .Run(FetchStatus::kInvalidResponseError, AccountList(),
-             IdentityProviderMetadata());
+    std::move(callback).Run(FetchStatus::kInvalidResponseError, AccountList());
   };
 
   if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
@@ -716,54 +712,14 @@ void IdpNetworkRequestManager::OnAccountsRequestParsed(
   auto& response = *result.value;
   const base::Value* accounts = response.FindKey(kAccountsKey);
   bool accounts_present =
-      accounts && ParseAccounts(accounts, account_list, request_info.client_id);
+      accounts && ParseAccounts(accounts, account_list, client_id);
 
   if (!accounts_present) {
     Fail();
     return;
   }
 
-  IdentityProviderMetadata idp_metadata;
-  GURL idp_icon_url;
-  const base::Value* idp_metadata_value = response.FindKey(kIdpBrandingKey);
-  if (idp_metadata_value)
-    ParseIdentityProviderMetadata(
-        *idp_metadata_value, request_info.idp_brand_icon_ideal_size,
-        request_info.idp_brand_icon_minimum_size, idp_metadata, &idp_icon_url);
-
-  auto fetch_icon_callback =
-      base::BindOnce(std::move(request_info.idp_brand_icon_downloader),
-                     idp_icon_url, request_info.idp_brand_icon_ideal_size);
-  auto on_icon_fetched_callback = base::BindOnce(
-      &IdpNetworkRequestManager::OnIdentityProviderBrandIconFetched,
-      weak_ptr_factory_.GetWeakPtr(), std::move(request_info),
-      std::move(account_list), std::move(idp_metadata));
-
-  if (idp_icon_url.is_valid()) {
-    std::move(fetch_icon_callback).Run(std::move(on_icon_fetched_callback));
-    return;
-  }
-
-  std::move(on_icon_fetched_callback).Run(0, 404, GURL(), {}, {});
-}
-
-void IdpNetworkRequestManager::OnIdentityProviderBrandIconFetched(
-    AccountRequestInfo request_info,
-    AccountList account_list,
-    IdentityProviderMetadata idp_metadata,
-    int id,
-    int http_status_code,
-    const GURL& image_url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& sizes) {
-  if (bitmaps.size() == 1 && bitmaps[0].width() == bitmaps[0].height() &&
-      bitmaps[0].width() >= request_info.idp_brand_icon_minimum_size) {
-    idp_metadata.brand_icon = bitmaps[0];
-  }
-
-  std::move(request_info.callback)
-      .Run(FetchStatus::kSuccess, std::move(account_list),
-           std::move(idp_metadata));
+  std::move(callback).Run(FetchStatus::kSuccess, std::move(account_list));
 }
 
 void IdpNetworkRequestManager::OnTokenRequestResponse(

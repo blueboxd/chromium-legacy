@@ -156,6 +156,7 @@
 #include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
 #include "chrome/browser/ui/webui/read_later/read_later_ui.h"
 #include "chrome/browser/ui/webui/read_later/side_panel/bookmarks_side_panel_ui.h"
+#include "chrome/browser/ui/webui/read_later/side_panel/reader_mode/reader_mode_side_panel_ui.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
@@ -185,6 +186,7 @@
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "ash/webui/camera_app_ui/camera_app_helper.mojom.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/common/mojom/accessibility_features.mojom.h"
@@ -250,7 +252,6 @@
 #include "chromeos/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
@@ -811,8 +812,13 @@ void PopulateChromeWebUIFrameBinders(
   }
 
   if (features::IsReaderModeSidePanelEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        reader_mode::mojom::PageHandlerFactory, ReadLaterUI>(map);
+    if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+      RegisterWebUIControllerInterfaceBinder<
+          reader_mode::mojom::PageHandlerFactory, ReaderModeSidePanelUI>(map);
+    } else {
+      RegisterWebUIControllerInterfaceBinder<
+          reader_mode::mojom::PageHandlerFactory, ReadLaterUI>(map);
+    }
   }
 
   RegisterWebUIControllerInterfaceBinder<tab_search::mojom::PageHandlerFactory,

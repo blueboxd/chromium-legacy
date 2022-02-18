@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "components/viz/service/display/overlay_processor_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -16,7 +17,7 @@ namespace viz {
 // The promoted quad should have all the property of the framebuffer and it
 // should be possible to use it as such.
 class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
-    : public OverlayProcessorUsingStrategy::Strategy {
+    : public OverlayProcessorStrategy {
  public:
   explicit OverlayStrategyFullscreen(
       OverlayProcessorUsingStrategy* capability_checker);
@@ -27,7 +28,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
 
   ~OverlayStrategyFullscreen() override;
 
-  bool Attempt(const skia::Matrix44& output_color_matrix,
+  bool Attempt(const SkM44& output_color_matrix,
                const OverlayProcessorInterface::FilterOperationsMap&
                    render_pass_backdrop_filters,
                DisplayResourceProvider* resource_provider,
@@ -37,18 +38,18 @@ class VIZ_SERVICE_EXPORT OverlayStrategyFullscreen
                OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 
-  void ProposePrioritized(const skia::Matrix44& output_color_matrix,
+  void ProposePrioritized(const SkM44& output_color_matrix,
                           const OverlayProcessorInterface::FilterOperationsMap&
                               render_pass_backdrop_filters,
                           DisplayResourceProvider* resource_provider,
                           AggregatedRenderPassList* render_pass_list,
                           SurfaceDamageRectList* surface_damage_rect_list,
                           const PrimaryPlane* primary_plane,
-                          OverlayProposedCandidateList* candidates,
+                          std::vector<OverlayProposedCandidate>* candidates,
                           std::vector<gfx::Rect>* content_bounds) override;
 
   bool AttemptPrioritized(
-      const skia::Matrix44& output_color_matrix,
+      const SkM44& output_color_matrix,
       const OverlayProcessorInterface::FilterOperationsMap&
           render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,

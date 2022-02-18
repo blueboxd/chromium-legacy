@@ -82,6 +82,10 @@ struct ExtensionDownloaderTask {
                           bool is_corrupt_reinstall,
                           int request_id,
                           ManifestFetchData::FetchPriority fetch_priority);
+
+  ExtensionDownloaderTask(ExtensionDownloaderTask&&);
+  ExtensionDownloaderTask& operator=(ExtensionDownloaderTask&&);
+
   ~ExtensionDownloaderTask();
 
   std::string id;
@@ -145,7 +149,7 @@ class ExtensionDownloader {
   // In that case, no callbacks will be performed on the |delegate_|. See
   // ExtensionDownloaderTask's description for more details and available
   // parameter.
-  bool AddPendingExtension(const ExtensionDownloaderTask& task);
+  bool AddPendingExtension(ExtensionDownloaderTask task);
 
   // Schedules a fetch of the manifest of all the extensions added with
   // AddExtension() and AddPendingExtension().
@@ -249,17 +253,6 @@ class ExtensionDownloader {
     int oauth2_attempt_count;
   };
 
-  // Parameters for special cases that aren't used for most requests.
-  struct ExtraParams {
-    // Additional data to be passed up in the update request.
-    std::string update_url_data;
-
-    // Indicates whether this extension is being reinstalled due to corruption.
-    bool is_corrupt_reinstall;
-
-    ExtraParams();
-  };
-
   // We limit the number of extensions grouped together in one batch to avoid
   // running into the limits on the length of http GET requests, this represents
   // the key for grouping these extensions.
@@ -292,14 +285,7 @@ class ExtensionDownloader {
   void UpdateURLStats(const GURL& update_url, Manifest::Type extension_type);
 
   // Helper for AddExtension() and AddPendingExtension().
-  bool AddExtensionData(const std::string& id,
-                        const base::Version& version,
-                        Manifest::Type extension_type,
-                        mojom::ManifestLocation extension_location,
-                        const GURL& extension_update_url,
-                        const ExtraParams& extra,
-                        int request_id,
-                        ManifestFetchData::FetchPriority fetch_priority);
+  bool AddExtensionData(const ExtensionDownloaderTask& task);
 
   // Adds all recorded stats taken so far to histogram counts.
   void ReportStats() const;

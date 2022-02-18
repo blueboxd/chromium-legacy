@@ -279,6 +279,7 @@
 #include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
+#include "ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
@@ -386,7 +387,6 @@
 #include "chromeos/services/bluetooth_config/bluetooth_power_controller_impl.h"
 #include "chromeos/services/bluetooth_config/device_name_manager_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_prefs.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
@@ -721,6 +721,12 @@ const char kMediaRouterEnableCloudServices[] =
     "media_router.cloudservices.enabled";
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Deprecated 02/2022
+const char kPhoneHubCameraRollPendingStatePrefName[] =
+    "multidevice_setup.phone_hub_camera_roll_pending_state";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -939,6 +945,10 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterUint64Pref(kFlocIdFinchConfigVersionPrefKey, 0);
   registry->RegisterUint64Pref(kFlocIdSortingLshVersionPrefKey, 0);
   registry->RegisterTimePref(kFlocIdComputeTimePrefKey, base::Time());
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kPhoneHubCameraRollPendingStatePrefName, 0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -1852,6 +1862,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kMediaRouterCloudServicesPrefSet);
   profile_prefs->ClearPref(kMediaRouterEnableCloudServices);
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 02/2022
+  profile_prefs->ClearPref(kPhoneHubCameraRollPendingStatePrefName);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

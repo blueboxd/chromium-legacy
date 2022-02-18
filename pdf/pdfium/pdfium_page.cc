@@ -1568,9 +1568,16 @@ Thumbnail PDFiumPage::GenerateThumbnail(float device_pixel_ratio) {
   // The combination of the `FPDF_REVERSE_BYTE_ORDER` rendering flag and the
   // `FPDFBitmap_BGRA` format when initializing `fpdf_bitmap` results in an RGBA
   // rendering, which is the format required by HTML <canvas>.
+  constexpr int kRenderingFlags = FPDF_ANNOT | FPDF_REVERSE_BYTE_ORDER;
   FPDF_RenderPageBitmap(fpdf_bitmap.get(), GetPage(), /*start_x=*/0,
                         /*start_y=*/0, image_size.width(), image_size.height(),
-                        /*rotate=*/0, FPDF_ANNOT | FPDF_REVERSE_BYTE_ORDER);
+                        ToPDFiumRotation(PageOrientation::kOriginal),
+                        kRenderingFlags);
+
+  // Draw the forms.
+  FPDF_FFLDraw(engine_->form(), fpdf_bitmap.get(), GetPage(), /*start_x=*/0,
+               /*start_y=*/0, image_size.width(), image_size.height(),
+               ToPDFiumRotation(PageOrientation::kOriginal), kRenderingFlags);
 
   return thumbnail;
 }
@@ -1652,22 +1659,6 @@ uint32_t PDFiumPage::CountLinkHighlightOverlaps(
     const std::vector<Highlight>& highlights) {
   return CountOverlaps(links, highlights) + CountInternalTextOverlaps(links) +
          CountInternalTextOverlaps(highlights);
-}
-
-int ToPDFiumRotation(PageOrientation orientation) {
-  // Could use static_cast<int>(orientation), but using an exhaustive switch
-  // will trigger an error if we ever change the definition of
-  // `PageOrientation`.
-  switch (orientation) {
-    case PageOrientation::kOriginal:
-      return 0;
-    case PageOrientation::kClockwise90:
-      return 1;
-    case PageOrientation::kClockwise180:
-      return 2;
-    case PageOrientation::kClockwise270:
-      return 3;
-  }
 }
 
 }  // namespace chrome_pdf

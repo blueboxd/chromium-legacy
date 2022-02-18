@@ -757,6 +757,12 @@ const base::Feature kHideShelfControlsInTabletMode{
 const base::Feature kHoldingSpaceInProgressAnimationV2{
     "HoldingSpaceInProgressAnimationV2", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables delay for the `kHoldingSpaceInProgressAnimationV2` feature so that
+// progress icon animations won't start until any associated holding space tray
+// item previews have had the opportunity to animate in.
+const base::FeatureParam<bool> kHoldingSpaceInProgressAnimationV2DelayEnabled{
+    &kHoldingSpaceInProgressAnimationV2, "delay_enabled", true};
+
 // Enables in-progress downloads integration with the productivity feature that
 // aims to reduce context switching by enabling users to collect content and
 // transfer or access it later.
@@ -858,12 +864,6 @@ const base::Feature kLacrosProfileMigrationForceOff{
 // feature is only limited to googlers only.
 const base::Feature kLacrosProfileMigrationForAnyUser{
     "LacrosProfileMigrationForAnyUser", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables or disables Language Packs for Handwriting Recognition.
-// This feature turns on the download of language-specific Handwriting models
-// via DLC.
-const base::Feature kLanguagePacksHandwriting{
-    "LanguagePacksHandwriting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
@@ -1394,6 +1394,18 @@ const base::Feature kWindowsFollowCursor{"WindowsFollowCursor",
 const base::Feature kDeviceActiveClient{"DeviceActiveClient",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables PSM CheckMembership for daily device active pings
+// on Chrome OS.
+const base::Feature kDeviceActiveClientDailyCheckMembership{
+    "DeviceActiveClientDailyCheckMembership",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables PSM CheckMembership for monthly device active pings
+// on Chrome OS.
+const base::Feature kDeviceActiveClientMonthlyCheckMembership{
+    "DeviceActiveClientMonthlyCheckMembership",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
 const base::Feature kPerUserMetrics{"PerUserMetricsConsent",
@@ -1648,6 +1660,11 @@ bool IsHideShelfControlsInTabletModeEnabled() {
 
 bool IsHoldingSpaceInProgressAnimationV2Enabled() {
   return base::FeatureList::IsEnabled(kHoldingSpaceInProgressAnimationV2);
+}
+
+bool IsHoldingSpaceInProgressAnimationV2DelayEnabled() {
+  return IsHoldingSpaceInProgressAnimationV2Enabled() &&
+         kHoldingSpaceInProgressAnimationV2DelayEnabled.Get();
 }
 
 bool IsHoldingSpaceInProgressDownloadsIntegrationEnabled() {

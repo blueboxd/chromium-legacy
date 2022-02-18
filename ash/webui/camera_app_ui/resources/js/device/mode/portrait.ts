@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../../assert.js';
 import {I18nString} from '../../i18n_string.js';
 import {TakePhotoResult} from '../../mojo/image_capture.js';
 import {Effect} from '../../mojo/type.js';
 import * as toast from '../../toast.js';
 import {
   Facing,
+  Metadata,
   PreviewVideo,
   Resolution,
 } from '../../type.js';
@@ -39,7 +41,7 @@ export class Portrait extends Photo {
   constructor(
       video: PreviewVideo,
       facing: Facing,
-      captureResolution: Resolution,
+      captureResolution: Resolution|null,
       private readonly portraitHandler: PortraitHandler,
   ) {
     super(video, facing, captureResolution, portraitHandler);
@@ -72,7 +74,7 @@ export class Portrait extends Photo {
       throw e;
     }
 
-    const toPhotoResult = async (blob, metadata) => {
+    const toPhotoResult = async (blob: Blob, metadata: Metadata|null) => {
       const image = await util.blobToImage(blob);
       const resolution = new Resolution(image.width, image.height);
       return {blob, timestamp, resolution, metadata};
@@ -110,13 +112,14 @@ export class PortraitFactory extends PhotoFactory {
    */
   constructor(
       constraints: StreamConstraints,
-      captureResolution: Resolution,
+      captureResolution: Resolution|null,
       protected readonly portraitHandler: PortraitHandler,
   ) {
     super(constraints, captureResolution, portraitHandler);
   }
 
   produce(): ModeBase {
+    assert(this.previewVideo !== null);
     return new Portrait(
         this.previewVideo, this.facing, this.captureResolution,
         this.portraitHandler);

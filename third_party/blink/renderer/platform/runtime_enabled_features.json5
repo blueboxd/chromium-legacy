@@ -400,11 +400,11 @@
     },
     {
       name: "ClientHintsMetaNameAcceptCH",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ClientHintThirdPartyDelegation",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ClipboardCustomFormats",
@@ -958,13 +958,6 @@
       name: "DocumentTransition",
     },
     {
-      // Document transitions, including shared element transitions.
-      // See https://github.com/WICG/shared-element-transitions
-      // Note that this uses a viz animation implementation.
-      name: "DocumentTransitionViz",
-      depends_on: ["DocumentTransition"]
-    },
-    {
       name: "DocumentWrite",
     },
     {
@@ -1333,6 +1326,7 @@
       // https://drafts.csswg.org/css-grid-1/#pagination
       name: "LayoutNGGridFragmentation",
       depends_on: ["LayoutNG"],
+      status: "test",
     },
     {
       name: "LayoutNGPrinting",

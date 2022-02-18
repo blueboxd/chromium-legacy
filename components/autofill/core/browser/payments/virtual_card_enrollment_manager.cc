@@ -4,7 +4,9 @@
 
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/metrics/payments/virtual_card_enrollment_metrics.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -158,7 +160,8 @@ void VirtualCardEnrollmentManager::LoadRiskDataAndContinueFlow(
     // use case, so we load risk data using a method that does not require web
     // contents to be present.
     std::move(risk_assessment_function_)
-        .Run(std::move(callback), /*obfuscated_gaia_id=*/0, user_prefs);
+        .Run(/*obfuscated_gaia_id=*/0, user_prefs, std::move(callback), nullptr,
+             gfx::Rect());
   }
 }
 
@@ -195,6 +198,8 @@ void VirtualCardEnrollmentManager::GetDetailsForEnroll() {
       base::BindOnce(
           &VirtualCardEnrollmentManager::OnDidGetDetailsForEnrollResponse,
           weak_ptr_factory_.GetWeakPtr()));
+
+  LogGetDetailsForEnrollmentRequestAttempt(request_details.source);
 }
 
 void VirtualCardEnrollmentManager::OnDidGetDetailsForEnrollResponse(
@@ -202,6 +207,10 @@ void VirtualCardEnrollmentManager::OnDidGetDetailsForEnrollResponse(
     const payments::PaymentsClient::GetDetailsForEnrollmentResponseDetails&
         response) {
   enroll_response_details_received_ = true;
+
+  LogGetDetailsForEnrollmentRequestResult(
+      state_.virtual_card_enrollment_fields.virtual_card_enrollment_source,
+      /*succeeded=*/result == AutofillClient::PaymentsRpcResult::kSuccess);
 
   // Show the virtual card permanent error dialog if server explicitly returned
   // permanent error, show temporary error dialog for the rest of the failure

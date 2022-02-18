@@ -5,13 +5,20 @@
 #ifndef ASH_SYSTEM_TIME_CALENDAR_METRICS_H_
 #define ASH_SYSTEM_TIME_CALENDAR_METRICS_H_
 
+#include <string>
+
 namespace ui {
+class AnimationThroughputReporter;
 class Event;
 }  // namespace ui
 
 namespace base {
 class TimeDelta;
 }  // namespace base
+
+namespace views {
+class View;
+}  // namespace views
 
 namespace ash {
 
@@ -54,6 +61,16 @@ enum class CalendarViewScrollSource {
   kMaxValue = kByStylus
 };
 
+// The keys pressed by a user to navigate the calendar by using the keyboard.
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// CalendarKeyboardNavigationSource enum in enums.xml.
+enum class CalendarKeyboardNavigationSource {
+  kTab = 0,
+  kArrowKeys = 1,
+  kMaxValue = kArrowKeys
+};
+
 // Converts the given event into an appropriate CalendarEventSource.
 CalendarEventSource GetEventType(const ui::Event& event);
 
@@ -71,6 +88,13 @@ void RecordEventListItemActivated(const ui::Event& event);
 void RecordMonthDwellTime(const base::TimeDelta& dwell_time);
 
 void RecordScrollSource(CalendarViewScrollSource source);
+
+ui::AnimationThroughputReporter CreateAnimationReporter(
+    views::View* view,
+    const std::string& animation_histogram_name);
+
+void RecordCalendarKeyboardNavigation(
+    const CalendarKeyboardNavigationSource key_source);
 
 }  // namespace calendar_metrics
 

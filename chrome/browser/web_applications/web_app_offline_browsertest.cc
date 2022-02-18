@@ -219,17 +219,15 @@ class WebAppOfflineDarkModeTest
 #if BUILDFLAG(IS_WIN)
     if (base::win::GetVersion() < base::win::Version::WIN10) {
       GTEST_SKIP();
-    }
-#endif  // BUILDFLAG(IS_WIN)
-
-#if BUILDFLAG(IS_MAC)
-    if (__builtin_available(macOS 12.1, *)) {
     } else {
-      GTEST_SKIP();
+      InProcessBrowserTest::SetUp();
     }
-#endif  // BUILDFLAG(IS_MAC)
-
+#elif BUILDFLAG(IS_MAC)
+    // TODO(crbug.com/1298658): Get this test suite working.
+    GTEST_SKIP();
+#else
     InProcessBrowserTest::SetUp();
+#endif // BUILDFLAG(IS_MAC)
   }
 
  protected:

@@ -214,8 +214,6 @@ experimental domain Accessibility
       # The maximum depth at which descendants of the root node should be retrieved.
       # If omitted, the full tree is returned.
       optional integer depth
-      # Deprecated. This parameter has been renamed to `depth`. If depth is not provided, max_depth will be used.
-      deprecated optional integer max_depth
       # The frame for whose document the AX tree should be retrieved.
       # If omited, the root frame is used.
       optional Page.FrameId frameId
@@ -780,7 +778,7 @@ experimental domain Audits
 
   # Represents the failure reason when a federated authentication reason fails.
   # Should be updated alongside RequestIdTokenStatus in
-  # third_party/blink/public/mojom/webid/federated_auth_request.mojom to include
+  # third_party/blink/public/mojom/devtools/inspector_issue.mojom to include
   # all cases except for success.
   type FederatedAuthRequestIssueReason extends string
     enum

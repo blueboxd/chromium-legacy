@@ -57,6 +57,7 @@
 #elif BUILDFLAG(IS_APPLE)
 #include "components/viz/service/display/overlay_processor_mac.h"
 #elif BUILDFLAG(IS_ANDROID) || defined(USE_OZONE)
+#include "components/viz/service/display/overlay_processor_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
@@ -279,10 +280,10 @@ class GLRendererShaderPixelTest : public cc::PixelTest {
     frame.render_passes_in_draw_order = &render_passes_in_draw_order;
 
     // Set a non-identity color matrix on the output surface.
-    skia::Matrix44 color_matrix(skia::Matrix44::kIdentity_Constructor);
-    color_matrix.set(0, 0, 0.7f);
-    color_matrix.set(1, 1, 0.4f);
-    color_matrix.set(2, 2, 0.5f);
+    SkM44 color_matrix;
+    color_matrix.setRC(0, 0, 0.7f);
+    color_matrix.setRC(1, 1, 0.4f);
+    color_matrix.setRC(2, 2, 0.5f);
     renderer()->output_surface_->set_color_matrix(color_matrix);
 
     TestShaderWithDrawingFrame(program_key, frame, true);
@@ -2606,14 +2607,14 @@ class TestOverlayProcessor : public OverlayProcessorMac {
 
 class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
-  class Strategy : public OverlayProcessorUsingStrategy::Strategy {
+  class TestStrategy : public OverlayProcessorStrategy {
    public:
-    Strategy() = default;
-    ~Strategy() override = default;
+    TestStrategy() = default;
+    ~TestStrategy() override = default;
 
     MOCK_METHOD8(
         Attempt,
-        bool(const skia::Matrix44& output_color_matrix,
+        bool(const SkM44& output_color_matrix,
              const OverlayProcessorInterface::FilterOperationsMap&
                  render_pass_backdrop_filters,
              DisplayResourceProvider* resource_provider,
@@ -2625,13 +2626,13 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
              std::vector<gfx::Rect>* content_bounds));
 
     void ProposePrioritized(
-        const skia::Matrix44& output_color_matrix,
+        const SkM44& output_color_matrix,
         const FilterOperationsMap& render_pass_backdrop_filters,
         DisplayResourceProvider* resource_provider,
         AggregatedRenderPassList* render_pass_list,
         SurfaceDamageRectList* surface_damage_rect_list,
         const PrimaryPlane* primary_plane,
-        OverlayProposedCandidateList* candidates,
+        std::vector<OverlayProposedCandidate>* candidates,
         std::vector<gfx::Rect>* content_bounds) override {
       auto* render_pass = render_pass_list->back().get();
       QuadList& quad_list = render_pass->quad_list;
@@ -2640,7 +2641,7 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
     }
 
     MOCK_METHOD9(AttemptPrioritized,
-                 bool(const skia::Matrix44& output_color_matrix,
+                 bool(const SkM44& output_color_matrix,
                       const FilterOperationsMap& render_pass_backdrop_filters,
                       DisplayResourceProvider* resource_provider,
                       AggregatedRenderPassList* render_pass_list,
@@ -2667,15 +2668,14 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
       OverlayCandidateList* surfaces) override {}
 
-  Strategy& strategy() {
+  TestStrategy& strategy() {
     auto* strategy = strategies_.back().get();
-    return *(static_cast<Strategy*>(strategy));
+    return *(static_cast<TestStrategy*>(strategy));
   }
 
   MOCK_CONST_METHOD0(NeedsSurfaceDamageRectList, bool());
-  explicit TestOverlayProcessor(OutputSurface* output_surface)
-      : OverlayProcessorUsingStrategy() {
-    strategies_.push_back(std::make_unique<Strategy>());
+  explicit TestOverlayProcessor(OutputSurface* output_surface) {
+    strategies_.push_back(std::make_unique<TestStrategy>());
     prioritization_config_.changing_threshold = false;
     prioritization_config_.damage_rate_threshold = false;
   }
@@ -3035,10 +3035,10 @@ TEST_F(GLRendererTest, OutputColorMatrixTest) {
   renderer.SetVisible(true);
 
   // Set a non-identity color matrix on the output surface.
-  skia::Matrix44 color_matrix(skia::Matrix44::kIdentity_Constructor);
-  color_matrix.set(0, 0, 0.7f);
-  color_matrix.set(1, 1, 0.4f);
-  color_matrix.set(2, 2, 0.5f);
+  SkM44 color_matrix;
+  color_matrix.setRC(0, 0, 0.7f);
+  color_matrix.setRC(1, 1, 0.4f);
+  color_matrix.setRC(2, 2, 0.5f);
   output_surface->set_color_matrix(color_matrix);
 
   // Create a root and a child passes to test that the output color matrix is
@@ -3074,7 +3074,7 @@ TEST_F(GLRendererTest, OutputColorMatrixTest) {
             call_count++;
             output_color_matrix_invoked = true;
             float expected_matrix[16];
-            color_matrix.asColMajorf(expected_matrix);
+            color_matrix.getColMajor(expected_matrix);
             for (int i = 0; i < 16; ++i)
               EXPECT_FLOAT_EQ(expected_matrix[i], gl_matrix[i]);
           })));
@@ -3839,13 +3839,13 @@ TEST_F(GLRendererWithMockContextTest,
 #if defined(USE_OZONE) || BUILDFLAG(IS_ANDROID)
 class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
  public:
-  class Strategy : public OverlayProcessorUsingStrategy::Strategy {
+  class TestStrategy : public OverlayProcessorStrategy {
    public:
-    explicit Strategy(const std::vector<gfx::Rect>& content_bounds)
+    explicit TestStrategy(const std::vector<gfx::Rect>& content_bounds)
         : content_bounds_(content_bounds) {}
-    ~Strategy() override = default;
+    ~TestStrategy() override = default;
 
-    bool Attempt(const skia::Matrix44& output_color_matrix,
+    bool Attempt(const SkM44& output_color_matrix,
                  const OverlayProcessorInterface::FilterOperationsMap&
                      render_pass_backdrop_filters,
                  DisplayResourceProvider* resource_provider,
@@ -3860,13 +3860,13 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
     }
 
     void ProposePrioritized(
-        const skia::Matrix44& output_color_matrix,
+        const SkM44& output_color_matrix,
         const FilterOperationsMap& render_pass_backdrop_filters,
         DisplayResourceProvider* resource_provider,
         AggregatedRenderPassList* render_pass_list,
         SurfaceDamageRectList* surface_damage_rect_list,
         const PrimaryPlane* primary_plane,
-        OverlayProposedCandidateList* candidates,
+        std::vector<OverlayProposedCandidate>* candidates,
         std::vector<gfx::Rect>* content_bounds) override {
       auto* render_pass = render_pass_list->back().get();
       QuadList& quad_list = render_pass->quad_list;
@@ -3877,7 +3877,7 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
     }
 
     bool AttemptPrioritized(
-        const skia::Matrix44& output_color_matrix,
+        const SkM44& output_color_matrix,
         const FilterOperationsMap& render_pass_backdrop_filters,
         DisplayResourceProvider* resource_provider,
         AggregatedRenderPassList* render_pass_list,
@@ -3902,12 +3902,14 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
       const std::vector<gfx::Rect>& content_bounds)
       : OverlayProcessorUsingStrategy(), content_bounds_(content_bounds) {
     strategies_.push_back(
-        std::make_unique<Strategy>(std::move(content_bounds_)));
+        std::make_unique<TestStrategy>(std::move(content_bounds_)));
     prioritization_config_.changing_threshold = false;
     prioritization_config_.damage_rate_threshold = false;
   }
 
-  Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
+  TestStrategy& strategy() {
+    return static_cast<TestStrategy&>(*strategies_.back());
+  }
   // Empty mock methods since this test set up uses strategies, which are only
   // for ozone and android.
   MOCK_CONST_METHOD0(NeedsSurfaceDamageRectList, bool());

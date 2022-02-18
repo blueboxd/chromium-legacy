@@ -22,7 +22,6 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/container_finder.h"
 #include "base/bind.h"
@@ -34,7 +33,6 @@
 #include "base/time/time.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -210,8 +208,6 @@ void AppListBubblePresenter::OnZeroStateSearchDone(int64_t display_id) {
     base::TimeTicks time_shown = base::TimeTicks::Now();
 
     bubble_widget_ = CreateBubbleWidget(root_window);
-    bubble_widget_->GetNativeWindow()->SetTitle(l10n_util::GetStringUTF16(
-        IDS_APP_LIST_LAUNCHER_ACCESSIBILITY_ANNOUNCEMENT));
     bubble_widget_->GetNativeWindow()->SetEventTargeter(
         std::make_unique<AppListEventTargeter>(controller_));
     bubble_view_ = bubble_widget_->SetContentsView(
@@ -382,9 +378,15 @@ void AppListBubblePresenter::OnWindowFocused(aura::Window* gained_focus,
       bubble_widget_->GetNativeWindow()->parent();
 
   // If the bubble or one of its children (e.g. an uninstall dialog) gained
-  // focus, the bubble should stay open.
-  if (gained_focus && app_list_container->Contains(gained_focus))
-    return;
+  // focus, the bubble should stay open. Likewise, certain other containers are
+  // allowed to gain focus without closing the launcher (e.g. power menu).
+  // Allowing the other containers is a speculative fix for a bug where the
+  // launcher closes spontaneously.
+  if (gained_focus) {
+    aura::Window* container = ash::GetContainerForWindow(gained_focus);
+    if (container && !ShouldCloseAppListForFocusInContainer(container->GetId()))
+      return;
+  }
 
   // Otherwise, if the bubble or one of its children lost focus, the bubble
   // should close.

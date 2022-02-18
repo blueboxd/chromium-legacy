@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../../assert.js';
 import * as state from '../../state.js';
 import {
   CanceledError,
@@ -55,7 +56,7 @@ export class Photo extends ModeBase {
    */
   constructor(
       video: PreviewVideo, facing: Facing,
-      protected readonly captureResolution: Resolution,
+      protected readonly captureResolution: Resolution|null,
       protected readonly handler: PhotoHandler) {
     super(video, facing);
   }
@@ -155,12 +156,13 @@ export class PhotoFactory extends ModeFactory {
    * @param constraints Constraints for preview stream.
    */
   constructor(
-      constraints: StreamConstraints, captureResolution: Resolution,
+      constraints: StreamConstraints, captureResolution: Resolution|null,
       protected readonly handler: PhotoHandler) {
     super(constraints, captureResolution);
   }
 
   produce(): ModeBase {
+    assert(this.previewVideo !== null);
     return new Photo(
         this.previewVideo, this.facing, this.captureResolution, this.handler);
   }

@@ -4,6 +4,7 @@
 
 import {
   assert,
+  assertExists,
   assertInstanceof,
 } from '../../assert.js';
 import {DeviceOperator} from '../../mojo/device_operator.js';
@@ -67,8 +68,8 @@ export type CaptureHandler =
 interface CaptureParams {
   mode: Mode;
   constraints: StreamConstraints;
-  captureResolution: Resolution;
-  videoSnapshotResolution: Resolution;
+  captureResolution: Resolution|null;
+  videoSnapshotResolution: Resolution|null;
 }
 
 /**
@@ -193,7 +194,7 @@ export class Modes {
           const params = this.getCaptureParams();
           return new VideoFactory(
               params.constraints, params.captureResolution,
-              params.videoSnapshotResolution, this.handler);
+              params.videoSnapshotResolution, assertExists(this.handler));
         },
         isSupported: async () => true,
         isSupportPTZ: () => true,
@@ -207,7 +208,8 @@ export class Modes {
               deviceId, CaptureIntent.VIDEO_RECORD);
           if (await deviceOperator.isBlobVideoSnapshotEnabled(deviceId)) {
             await deviceOperator.setStillCaptureResolution(
-                deviceId, this.getCaptureParams().videoSnapshotResolution);
+                deviceId,
+                assertExists(this.getCaptureParams().videoSnapshotResolution));
           }
 
           let minFrameRate = 0;
@@ -240,7 +242,8 @@ export class Modes {
         getCaptureFactory: () => {
           const params = this.getCaptureParams();
           return new PhotoFactory(
-              params.constraints, params.captureResolution, this.handler);
+              params.constraints, params.captureResolution,
+              assertExists(this.handler));
         },
         isSupported: async () => true,
         isSupportPTZ: checkSupportPTZForPhotoMode,
@@ -255,7 +258,8 @@ export class Modes {
         getCaptureFactory: () => {
           const params = this.getCaptureParams();
           return new SquareFactory(
-              params.constraints, params.captureResolution, this.handler);
+              params.constraints, params.captureResolution,
+              assertExists(this.handler));
         },
         isSupported: async () => true,
         isSupportPTZ: checkSupportPTZForPhotoMode,
@@ -270,7 +274,8 @@ export class Modes {
         getCaptureFactory: () => {
           const params = this.getCaptureParams();
           return new PortraitFactory(
-              params.constraints, params.captureResolution, this.handler);
+              params.constraints, params.captureResolution,
+              assertExists(this.handler));
         },
         isSupported: async (deviceId) => {
           if (deviceId === null) {
@@ -294,7 +299,8 @@ export class Modes {
         getCaptureFactory: () => {
           const params = this.getCaptureParams();
           return new ScanFactory(
-              params.constraints, params.captureResolution, this.handler);
+              params.constraints, params.captureResolution,
+              assertExists(this.handler));
         },
         isSupported: async () => state.get(state.State.SHOW_SCAN_MODE),
         isSupportPTZ: checkSupportPTZForPhotoMode,
@@ -386,8 +392,9 @@ export class Modes {
    * @param constraints Constraints for preview stream.
    */
   setCaptureParams(
-      mode: Mode, constraints: StreamConstraints, captureResolution: Resolution,
-      videoSnapshotResolution: Resolution): void {
+      mode: Mode, constraints: StreamConstraints,
+      captureResolution: Resolution|null,
+      videoSnapshotResolution: Resolution|null): void {
     this.captureParams =
         {mode, constraints, captureResolution, videoSnapshotResolution};
   }
@@ -431,7 +438,7 @@ export class Modes {
     }
     const {mode, captureResolution} = this.getCaptureParams();
     this.current = factory.produce();
-    if (deviceId && captureResolution) {
+    if (deviceId !== null && captureResolution !== null) {
       this.allModes[mode].constraintsPreferrer.updateValues(
           deviceId, stream, facing, captureResolution);
     }

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "components/viz/service/display/overlay_processor_strategy.h"
 #include "components/viz/service/display/overlay_processor_using_strategy.h"
 #include "components/viz/service/viz_service_export.h"
 
@@ -19,7 +20,7 @@ namespace viz {
 // hardware under the the scene. This is only valid for overlay contents that
 // are fully opaque.
 class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
-    : public OverlayProcessorUsingStrategy::Strategy {
+    : public OverlayProcessorStrategy {
  public:
   enum class OpaqueMode {
     // Require candidates to be |is_opaque|.
@@ -40,7 +41,7 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
 
   ~OverlayStrategyUnderlay() override;
 
-  bool Attempt(const skia::Matrix44& output_color_matrix,
+  bool Attempt(const SkM44& output_color_matrix,
                const OverlayProcessorInterface::FilterOperationsMap&
                    render_pass_backdrop_filters,
                DisplayResourceProvider* resource_provider,
@@ -50,18 +51,18 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlay
                OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 
-  void ProposePrioritized(const skia::Matrix44& output_color_matrix,
+  void ProposePrioritized(const SkM44& output_color_matrix,
                           const OverlayProcessorInterface::FilterOperationsMap&
                               render_pass_backdrop_filters,
                           DisplayResourceProvider* resource_provider,
                           AggregatedRenderPassList* render_pass_list,
                           SurfaceDamageRectList* surface_damage_rect_list,
                           const PrimaryPlane* primary_plane,
-                          OverlayProposedCandidateList* candidates,
+                          std::vector<OverlayProposedCandidate>* candidates,
                           std::vector<gfx::Rect>* content_bounds) override;
 
   bool AttemptPrioritized(
-      const skia::Matrix44& output_color_matrix,
+      const SkM44& output_color_matrix,
       const OverlayProcessorInterface::FilterOperationsMap&
           render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,

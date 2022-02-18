@@ -220,7 +220,7 @@ class DesksTemplatesTest : public OverviewTestBase {
     auto& grid_list = GetOverviewGridList();
     views::Widget* grid_widget = grid_list[0]->desks_templates_grid_widget();
     ASSERT_TRUE(grid_widget);
-    const DesksTemplatesGridView* templates_grid_view =
+    DesksTemplatesGridView* templates_grid_view =
         static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
     ASSERT_TRUE(templates_grid_view);
 
@@ -256,6 +256,8 @@ class DesksTemplatesTest : public OverviewTestBase {
                                 ->AsDialogDelegate();
     dialog_delegate->AcceptDialog();
     WaitForDesksTemplatesUI();
+    DesksTemplatesGridViewTestApi(templates_grid_view)
+        .WaitForItemMoveAnimationDone();
   }
 
   // Open overview mode if we're not in overview mode yet, and then show the
@@ -1564,12 +1566,6 @@ TEST_F(DesksTemplatesTest, HoverOnTemplateItemView) {
   event_generator->DragMouseTo(second_item->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(hover_container_view1->GetVisible());
   EXPECT_TRUE(hover_container_view2->GetVisible());
-
-  // Test to make sure hover is hidden on all items when dragging to off the
-  // grid.
-  event_generator->DragMouseTo(gfx::Point(0, 0));
-  EXPECT_FALSE(hover_container_view1->GetVisible());
-  EXPECT_FALSE(hover_container_view2->GetVisible());
 }
 
 // Tests that when a supported app doesn't have any app launch info and a
@@ -2697,6 +2693,75 @@ TEST_F(DesksTemplatesTest, CapTemplateItemsShown) {
   const std::vector<DesksTemplatesItemView*> grid_items =
       templates_grid_view->grid_items();
   EXPECT_EQ(kMaxTemplateCount, grid_items.size());
+}
+
+// Tests that click or tap could exit grid view and commit name change when
+// appropriate. Regression test for https://crbug.com/1290568.
+TEST_F(DesksTemplatesTest, ClickOrTapToExitGridView) {
+  AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "template_2", base::Time::Now());
+  AddEntry(base::GUID::GenerateRandomV4(), "template_3", base::Time::Now());
+
+  // Test mouse click.
+  {
+    OpenOverviewAndShowTemplatesGrid();
+
+    DesksTemplatesNameView* name_view =
+        GetItemViewFromTemplatesGrid(0)->name_view();
+    EXPECT_FALSE(name_view->HasFocus());
+
+    // The name view should receive focus after getting a mouse click.
+    ClickOnView(name_view);
+    EXPECT_TRUE(name_view->HasFocus());
+
+    // The name view should release focus after getting a mouse click outside
+    // the grid item.
+    std::vector<DesksTemplatesItemView*> grid_items =
+        static_cast<DesksTemplatesGridView*>(GetOverviewGridList()[0]
+                                                 ->desks_templates_grid_widget()
+                                                 ->GetContentsView())
+            ->grid_items();
+    auto* event_generator = GetEventGenerator();
+    event_generator->MoveMouseTo(grid_items[0]->GetBoundsInScreen().origin() -
+                                 gfx::Vector2d(20, 20));
+    event_generator->ClickLeftButton();
+    EXPECT_FALSE(name_view->HasFocus());
+
+    // It should exit overview when click outside the grid items.
+    event_generator->ClickLeftButton();
+    EXPECT_FALSE(GetOverviewSession());
+  }
+
+  // Test gesture tap.
+  {
+    OpenOverviewAndShowTemplatesGrid();
+
+    DesksTemplatesNameView* name_view =
+        GetItemViewFromTemplatesGrid(0)->name_view();
+    EXPECT_FALSE(name_view->HasFocus());
+
+    // The name view should receive focus after getting a gesture tap.
+    auto* event_generator = GetEventGenerator();
+    event_generator->GestureTapAt(name_view->GetBoundsInScreen().CenterPoint());
+    EXPECT_TRUE(name_view->HasFocus());
+
+    // The name view should release focus after getting a gesture tap outside
+    // the grid item.
+    std::vector<DesksTemplatesItemView*> grid_items =
+        static_cast<DesksTemplatesGridView*>(GetOverviewGridList()[0]
+                                                 ->desks_templates_grid_widget()
+                                                 ->GetContentsView())
+            ->grid_items();
+    event_generator->GestureTapAt(
+        {grid_items[0]->GetBoundsInScreen().x() - 20,
+         grid_items[0]->GetBoundsInScreen().y() - 20});
+    EXPECT_FALSE(name_view->HasFocus());
+
+    // It should exit overview when tap outside the grid items.
+    event_generator->GestureTapAt(grid_items[0]->GetBoundsInScreen().origin() -
+                                  gfx::Vector2d(20, 20));
+    EXPECT_FALSE(GetOverviewSession());
+  }
 }
 
 }  // namespace ash

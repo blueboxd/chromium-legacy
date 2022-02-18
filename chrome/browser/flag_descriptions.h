@@ -2110,6 +2110,9 @@ extern const char kXsurfaceMetricsReportingDescription[];
 extern const char kWebNotesPublishName[];
 extern const char kWebNotesPublishDescription[];
 
+extern const char kWebNotesDynamicTemplatesName[];
+extern const char kWebNotesDynamicTemplatesDescription[];
+
 extern const char kOmniboxPedalsAndroidBatch1Name[];
 extern const char kOmniboxPedalsAndroidBatch1Description[];
 
@@ -2576,6 +2579,15 @@ extern const char kQuickSettingsPWANotificationsDescription[];
 
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
+
+extern const char kCrOSDspBasedAecAllowedName[];
+extern const char kCrOSDspBasedAecAllowedDescription[];
+
+extern const char kCrOSDspBasedNsAllowedName[];
+extern const char kCrOSDspBasedNsAllowedDescription[];
+
+extern const char kCrOSDspBasedAgcAllowedName[];
+extern const char kCrOSDspBasedAgcAllowedDescription[];
 
 extern const char kCrOSEnforceSystemAecName[];
 extern const char kCrOSEnforceSystemAecDescription[];

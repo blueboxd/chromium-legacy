@@ -3690,6 +3690,10 @@ const char kWebNotesPublishName[] = "WebNotes Publish";
 const char kWebNotesPublishDescription[] =
     "Allows users to save their created notes.";
 
+const char kWebNotesDynamicTemplatesName[] = "Dynamic Templates";
+const char kWebNotesDynamicTemplatesDescription[] =
+    "Allows templates to be modified remotely on short notice.";
+
 const char kOmniboxPedalsAndroidBatch1Name[] = "Omnibox Pedals Android batch 1";
 const char kOmniboxPedalsAndroidBatch1Description[] =
     "Enable the first batch of Omnibox Pedals on Android.";
@@ -4498,6 +4502,21 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
     "Enable bidirectional native messaging for DriveFS";
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
+
+const char kCrOSDspBasedAecAllowedName[] =
+    "Allow CRAS to use a DSP-based AEC if available";
+const char kCrOSDspBasedAecAllowedDescription[] =
+    "Allows the system variant of the AEC in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedNsAllowedName[] =
+    "Allow CRAS to use a DSP-based NS if available";
+const char kCrOSDspBasedNsAllowedDescription[] =
+    "Allows the system variant of the NS in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedAgcAllowedName[] =
+    "Allow CRAS to use a DSP-based AGC if available";
+const char kCrOSDspBasedAgcAllowedDescription[] =
+    "Allows the system variant of the AGC in CRAS to be run on DSP ";
 
 const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
 const char kCrOSEnforceSystemAecDescription[] =

@@ -88,6 +88,21 @@
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
     "expiry_milestone": 101
   },
+   {
+    "name": "allow-dsp-based-aec",
+    "owners": [ "peah" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "allow-dsp-based-agc",
+    "owners": [ "peah" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "allow-dsp-based-ns",
+    "owners": [ "peah" ],
+    "expiry_milestone": 110
+  },
   {
     "name": "allow-insecure-localhost",
     "owners": [ "security-dev" ],
@@ -2255,7 +2270,7 @@
   {
     "name": "enable-instant-start",
     "owners": [ "hanxi", "wychen" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 115
   },
   {
     "name": "enable-isolated-sandboxed-iframes",
@@ -2743,7 +2758,7 @@
   {
     "name": "enable-start-surface",
     "owners": [ "hanxi", "wychen" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 115
   },
   {
     "name": "enable-storage-pressure-event",
@@ -2843,7 +2858,7 @@
   {
     "name": "enable-tab-switcher-on-return",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 115
   },
   {
     "name": "enable-tab-to-gts-animation",
@@ -3105,7 +3120,7 @@
     "owners": ["jennyz", "erikchen"],
     "expiry_milestone": 130
   },
-   {
+  {
     "name": "enforce-system-aec",
     "owners": [ "peah" ],
     "expiry_milestone": 100
@@ -4422,6 +4437,11 @@
     "name": "omnibox-most-visited-tiles",
     "owners": [ "fgorski", "ender", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 97
+  },
+  {
+    "name": "omnibox-new-popup-ui",
+    "owners": ["rkgibson@google.com", "stkhapugin", "chrome-omnibox-team@google.com"],
+    "expiry_milestone": 110
   },
   {
       "name": "omnibox-new-textfield-implementation",
@@ -6030,6 +6050,11 @@
     "name": "web-share",
     "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com", "hatalat@microsoft.com" ],
     "expiry_milestone": 114
+  },
+  {
+    "name": "webnotes-dynamic-templates",
+    "owners": ["chrome-creation@google.com"],
+    "expiry_milestone": 103
   },
   {
     "name": "webnotes-publish",

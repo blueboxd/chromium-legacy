@@ -3702,6 +3702,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"webnotes-publish", flag_descriptions::kWebNotesPublishName,
      flag_descriptions::kWebNotesPublishDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(content_creation::kWebNotesPublish)},
+    {"webnotes-dynamic-templates",
+     flag_descriptions::kWebNotesDynamicTemplatesName,
+     flag_descriptions::kWebNotesDynamicTemplatesDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(content_creation::kWebNotesDynamicTemplates)},
     {"lightweight-reactions-android",
      flag_descriptions::kLightweightReactionsAndroidName,
      flag_descriptions::kLightweightReactionsAndroidDescription, kOsAndroid,
@@ -5635,6 +5639,15 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"allow-dsp-based-aec", flag_descriptions::kCrOSDspBasedAecAllowedName,
+     flag_descriptions::kCrOSDspBasedAecAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAecAllowed)},
+    {"allow-dsp-based-ns", flag_descriptions::kCrOSDspBasedNsAllowedName,
+     flag_descriptions::kCrOSDspBasedNsAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrOSDspBasedNsAllowed)},
+    {"allow-dsp-based-agc", flag_descriptions::kCrOSDspBasedAgcAllowedName,
+     flag_descriptions::kCrOSDspBasedAgcAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kCrOSDspBasedAgcAllowed)},
     {"enforce-system-aec", flag_descriptions::kCrOSEnforceSystemAecName,
      flag_descriptions::kCrOSEnforceSystemAecDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAec)},

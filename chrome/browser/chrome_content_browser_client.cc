@@ -52,8 +52,7 @@
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/favicon/favicon_utils.h"
-#include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
-#include "chrome/browser/first_party_sets/first_party_sets_util.h"
+#include "chrome/browser/first_party_sets/first_party_sets_settings.h"
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
@@ -2258,14 +2257,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     for (size_t i = 0; i < extra_parts_.size(); ++i) {
       extra_parts_[i]->AppendExtraRendererCommandLineSwitches(command_line,
                                                               process, profile);
-    }
-
-    // This passes the preference set by an enterprise policy on to a blink
-    // switch so that we know whether to allow third-party context WebSQL.
-    if (g_browser_process->local_state()->GetBoolean(
-            policy::policy_prefs::kWebSQLInThirdPartyContextEnabled)) {
-      command_line->AppendSwitch(
-          blink::switches::kWebSQLInThirdPartyContextEnabled);
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6401,7 +6392,7 @@ bool ChromeContentBrowserClient::ShouldDisableOriginAgentClusterDefault(
 }
 
 bool ChromeContentBrowserClient::IsFirstPartySetsEnabled() {
-  return FirstPartySetsUtil::GetInstance()->IsFirstPartySetsEnabled();
+  return FirstPartySetsSettings::Get()->IsFirstPartySetsEnabled();
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr

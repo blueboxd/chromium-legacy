@@ -109,9 +109,17 @@ class TestPaymentsClient : public payments::PaymentsClient {
   void SetUseInvalidLegalMessageInGetUploadDetails(
       bool use_invalid_legal_message);
 
+  void SetUseLegalMessageWithMultipleLinesInGetUploadDetails(
+      bool use_legal_message_with_multiple_lines);
+
   void set_select_challenge_option_result(
       AutofillClient::PaymentsRpcResult result) {
     select_challenge_option_result_ = result;
+  }
+
+  void set_update_virtual_card_enrollment_result(
+      AutofillClient::PaymentsRpcResult result) {
+    update_virtual_card_enrollment_result_ = result;
   }
 
   payments::PaymentsClient::UnmaskDetails* unmask_details() {
@@ -175,9 +183,12 @@ class TestPaymentsClient : public payments::PaymentsClient {
   PaymentsClient::UploadCardSource upload_card_source_;
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
   bool use_invalid_legal_message_ = false;
+  bool use_legal_message_with_multiple_lines_ = false;
   std::unique_ptr<base::Value> LegalMessage();
   absl::optional<AutofillClient::PaymentsRpcResult>
       select_challenge_option_result_;
+  absl::optional<AutofillClient::PaymentsRpcResult>
+      update_virtual_card_enrollment_result_;
   payments::PaymentsClient::GetDetailsForEnrollmentRequestDetails
       get_details_for_enrollment_request_details_;
   payments::PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails

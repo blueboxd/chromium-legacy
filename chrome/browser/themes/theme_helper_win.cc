@@ -48,6 +48,7 @@ bool GetPlatformHighContrastColor(int id, SkColor* color) {
       break;
 
     // Window Text
+    case ThemeProperties::COLOR_BOOKMARK_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
@@ -63,7 +64,9 @@ bool GetPlatformHighContrastColor(int id, SkColor* color) {
       break;
 
     // Button Text Foreground
+    case ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON:
     case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
+    case ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR:
     case ThemeProperties::COLOR_TOOLBAR_TEXT:
     case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE:
     case ThemeProperties::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO:
@@ -73,6 +76,8 @@ bool GetPlatformHighContrastColor(int id, SkColor* color) {
     case ThemeProperties::COLOR_OMNIBOX_TEXT:
     case ThemeProperties::COLOR_OMNIBOX_SELECTED_KEYWORD:
     case ThemeProperties::COLOR_OMNIBOX_BUBBLE_OUTLINE:
+    case ThemeProperties::
+        COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
     case ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_ICON:
     case ThemeProperties::COLOR_OMNIBOX_RESULTS_URL:

@@ -28,6 +28,11 @@ chromium-metrics-reviews@google.com.
   <variant name=".PluggedIn"/>
 </variants>
 
+<variants name="TabActiveState">
+  <variant name="Active" summary="active"/>
+  <variant name="Inactive" summary="inactive"/>
+</variants>
+
 <variants name="TabCreatedReason">
   <variant name=".FromExternalApp"
       summary="This bucket is for any tabs that are created because of custom
@@ -43,6 +48,14 @@ chromium-metrics-reviews@google.com.
   <variant name=".FromTargetBlank"
       summary="This bucket is for any tabs that were created from a target
                blank link. e.g. tehchmeme.com will create tabs this way."/>
+</variants>
+
+<variants name="TabDiscardReason">
+  <variant name=".External"
+      summary="from outside of TabManager (e.g. by an extension)"/>
+  <variant name=".Urgent"
+      summary="urgently by TabManager when the system is in a critical
+               condition"/>
 </variants>
 
 <variants name="Tabs_SwitchLatency">
@@ -66,6 +79,30 @@ chromium-metrics-reviews@google.com.
   <variant name="_18000" summary="5 hours"/>
   <variant name="_43200" summary="12 hours"/>
 </variants>
+
+<histogram name="Discarding.DailyDiscards{TabDiscardReason}" units="tabs"
+    expires_after="2022-08-15">
+  <owner>vovoy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The number of tabs discards since last emit. The emit interval is at least
+    24 hours, see metrics::DailyEvent for more details. The discards are
+    requested {TabDiscardReason}.
+  </summary>
+  <token key="TabDiscardReason" variants="TabDiscardReason"/>
+</histogram>
+
+<histogram name="Discarding.DailyReloads{TabDiscardReason}" units="tabs"
+    expires_after="2022-08-15">
+  <owner>vovoy@chromium.org</owner>
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The number of tabs reloads since last emit. The emit interval is at least 24
+    hours, see metrics::DailyEvent for more details. The discards corresponding
+    to the reloads are requested {TabDiscardReason}.
+  </summary>
+  <token key="TabDiscardReason" variants="TabDiscardReason"/>
+</histogram>
 
 <histogram name="Discarding.DiscardCandidatesCount" units="tabs"
     expires_after="2022-08-07">
@@ -2437,6 +2474,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Tabs.TabSearch.DistanceOf{Action}FromInitiallySelectedTabIn{State}List"
+    units="tabs" expires_after="2022-09-27">
+  <owner>elainechien@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <owner>romanarora@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to efficiently navigate, search,
+    and interact with their open and recently closed tabs.
+
+    This metric is emitted when the user performs a {Action} action on a tab in
+    the Open Tabs or Audio and Video section in a {State} state. This records
+    the absolute distance of the index of the tab from the index of the
+    initially selected tab.
+  </summary>
+  <token key="Action">
+    <variant name="CloseTab"/>
+    <variant name="SwitchTab"/>
+  </token>
+  <token key="State">
+    <variant name="Filtered" summary="Filtered by user search query."/>
+    <variant name="Unfiltered" summary="Unfiltered by user search query."/>
+  </token>
+</histogram>
+
 <histogram name="Tabs.TabSearch.NumMediaTabsOnOpen" units="tabs"
     expires_after="2022-10-26">
   <owner>elainechien@chromium.org</owner>
@@ -2556,22 +2620,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Tabs.TabSearch.WebUI.CloseMediaTabAction"
-    enum="BooleanTabSearchWithSearchQuery" expires_after="2022-10-26">
-  <owner>elainechien@chromium.org</owner>
-  <owner>romanarora@chromium.org</owner>
-  <owner>tluk@chromium.org</owner>
-  <owner>robliao@chromium.org</owner>
-  <owner>yuhengh@chromium.org</owner>
-  <summary>
-    Tab Search is a feature that allows users to efficiently navigate, search,
-    and interact with their open and recently closed tabs. This metric will be
-    updated when the user uses Tab Search to close a tab in the Audio and Video
-    section and will track whether this action was taken from a filtered search
-    results list or the default unfiltered list.
-  </summary>
-</histogram>
-
 <histogram name="Tabs.TabSearch.WebUI.IndexOf{Action}In{State}List"
     units="tabs" expires_after="2022-10-26">
   <owner>tluk@chromium.org</owner>
@@ -2596,6 +2644,28 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="Tabs.TabSearch.WebUI.IndexRelativeToOpenTabsSectionOf{Action}InUnfilteredList"
+    units="tabs" expires_after="2022-09-27">
+  <owner>elainechien@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <owner>romanarora@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to efficiently navigate, search,
+    and interact with their open and recently closed tabs.
+
+    This records the index relative to the top of the Open Tabs section. This
+    metric is emitted when the user performs a {Action} action on a tab in the
+    Open Tabs section with no search query.
+  </summary>
+  <token key="Action">
+    <variant name="CloseTab"/>
+    <variant name="SwitchTab"/>
+  </token>
+</histogram>
+
 <histogram name="Tabs.TabSearch.WebUI.LoadCompletedTime" units="ms"
     expires_after="2022-10-26">
   <owner>tluk@chromium.org</owner>
@@ -2615,6 +2685,28 @@ chromium-metrics-reviews@google.com.
     The amount of time between the render frame host StartProvisionalLoad and
     DidFinishDocumentLoad events for the Tab Search WebUI page.
   </summary>
+</histogram>
+
+<histogram name="Tabs.TabSearch.WebUI.MediaTab{Action}Action"
+    enum="BooleanTabSearchWithSearchQuery" expires_after="2022-10-26">
+  <owner>elainechien@chromium.org</owner>
+  <owner>romanarora@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <owner>yuhengh@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to efficiently navigate, search,
+    and interact with their open and recently closed tabs.
+
+    This metric will be emitted when the user uses Tab Search to perform a
+    {Action} action on a tab in the Audio and Video section and will track
+    whether this action was taken from a filtered search results list or the
+    default unfiltered list.
+  </summary>
+  <token key="Action">
+    <variant name="CloseTab"/>
+    <variant name="SwitchTab"/>
+  </token>
 </histogram>
 
 <histogram name="Tabs.TabSearch.WebUI.RecentlyClosed{Item}OpenAction"
@@ -2641,22 +2733,6 @@ chromium-metrics-reviews@google.com.
     The time taken to run the search algorithm. The algorithm takes an
     unfiltered list of items and user search query as inputs, then generate a
     list of filtered items as output. Recorded after the measurement ends.
-  </summary>
-</histogram>
-
-<histogram name="Tabs.TabSearch.WebUI.SwitchToMediaTabAction"
-    enum="BooleanTabSearchWithSearchQuery" expires_after="2022-10-26">
-  <owner>elainechien@chromium.org</owner>
-  <owner>romanarora@chromium.org</owner>
-  <owner>tluk@chromium.org</owner>
-  <owner>robliao@chromium.org</owner>
-  <owner>yuhengh@chromium.org</owner>
-  <summary>
-    Tab Search is a feature that allows users to efficiently navigate, search,
-    and interact with their open and recently closed tabs. This metric will be
-    updated when the user uses Tab Search to switch to a tab in the Audio and
-    Video section and will track whether this action was taken from a filtered
-    search results list or the default unfiltered list.
   </summary>
 </histogram>
 
@@ -3028,6 +3104,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     The width of each open browser window, in DIPs, reported every 5 minutes.
     Desktop only.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.{TabActiveState}TabWidth" units="px"
+    expires_after="2023-01-01">
+  <owner>dpenning@chromium.org</owner>
+  <owner>tbergquist@chromium.org</owner>
+  <summary>
+    [Desktop] The size in pixels of the {TabActiveState} tab logged when a tab
+    is added. Used to collect size data for scrolling tabs.
   </summary>
 </histogram>
 

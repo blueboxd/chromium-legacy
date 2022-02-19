@@ -691,6 +691,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "ios",
@@ -2043,6 +2044,27 @@
             ]
         }
     ],
+    "CompositedCaret": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CompositedCaret"
+                    ]
+                }
+            ]
+        }
+    ],
     "ConsolidatedSiteStorageControls": [
         {
             "platforms": [
@@ -2210,21 +2232,6 @@
                     "name": "Enabled_20210713",
                     "enable_features": [
                         "CellularUseAttachApn"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CrosDeviceActiveCounting": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DeviceActiveClient"
                     ]
                 }
             ]
@@ -4130,6 +4137,24 @@
                     "name": "Disabled",
                     "disable_features": [
                         "NetworkServiceDedicatedThread"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NetworkServiceUsesDisplayThreadPriority": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NetworkServiceUsesDisplayThreadPriority"
                     ]
                 }
             ]
@@ -7330,6 +7355,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WebViewEmptyComponentLoaderPolicy"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WebViewLegacyTlsSupport": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "WebViewLegacyTlsSupport"
                     ]
                 }
             ]

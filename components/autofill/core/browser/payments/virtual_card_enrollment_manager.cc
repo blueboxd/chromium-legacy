@@ -40,9 +40,11 @@ VirtualCardEnrollmentManager::VirtualCardEnrollmentManager(
     : autofill_client_(autofill_client),
       personal_data_manager_(personal_data_manager),
       payments_client_(payments_client) {
-  StrikeDatabaseBase* strike_database = autofill_client->GetStrikeDatabase();
-  virtual_card_enrollment_strike_database_ =
-      std::make_unique<VirtualCardEnrollmentStrikeDatabase>(strike_database);
+  if (autofill_client_) {
+    StrikeDatabaseBase* strike_database = autofill_client->GetStrikeDatabase();
+    virtual_card_enrollment_strike_database_ =
+        std::make_unique<VirtualCardEnrollmentStrikeDatabase>(strike_database);
+  }
 }
 
 VirtualCardEnrollmentManager::~VirtualCardEnrollmentManager() = default;
@@ -88,8 +90,14 @@ void VirtualCardEnrollmentManager::OnCardSavedAnimationComplete() {
 }
 
 void VirtualCardEnrollmentManager::Unenroll(int64_t instrument_id) {
+  LogUpdateVirtualCardEnrollmentRequestAttempt(
+      VirtualCardEnrollmentSource::kSettingsPage,
+      VirtualCardEnrollmentRequestType::kUnenroll);
+
   payments::PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails
       request_details;
+  state_.virtual_card_enrollment_fields.virtual_card_enrollment_source =
+      VirtualCardEnrollmentSource::kSettingsPage;
 
   // Unenroll can only happen from the settings page.
   request_details.virtual_card_enrollment_source =
@@ -105,7 +113,8 @@ void VirtualCardEnrollmentManager::Unenroll(int64_t instrument_id) {
       request_details,
       base::BindOnce(&VirtualCardEnrollmentManager::
                          OnDidGetUpdateVirtualCardEnrollmentResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     VirtualCardEnrollmentRequestType::kUnenroll));
 }
 
 bool VirtualCardEnrollmentManager::IsVirtualCardEnrollmentBlocked(
@@ -133,7 +142,11 @@ void VirtualCardEnrollmentManager::
 }
 
 void VirtualCardEnrollmentManager::OnDidGetUpdateVirtualCardEnrollmentResponse(
+    VirtualCardEnrollmentRequestType type,
     AutofillClient::PaymentsRpcResult result) {
+  LogUpdateVirtualCardEnrollmentRequestResult(
+      state_.virtual_card_enrollment_fields.virtual_card_enrollment_source,
+      type, result == AutofillClient::PaymentsRpcResult::kSuccess);
   Reset();
 }
 
@@ -264,6 +277,9 @@ void VirtualCardEnrollmentManager::OnDidGetDetailsForEnrollResponse(
 }
 
 void VirtualCardEnrollmentManager::Enroll() {
+  LogUpdateVirtualCardEnrollmentRequestAttempt(
+      state_.virtual_card_enrollment_fields.virtual_card_enrollment_source,
+      VirtualCardEnrollmentRequestType::kEnroll);
   payments::PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails
       request_details;
   request_details.virtual_card_enrollment_source =
@@ -278,7 +294,8 @@ void VirtualCardEnrollmentManager::Enroll() {
       request_details,
       base::BindOnce(&VirtualCardEnrollmentManager::
                          OnDidGetUpdateVirtualCardEnrollmentResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     VirtualCardEnrollmentRequestType::kEnroll));
 }
 
 void VirtualCardEnrollmentManager::OnVirtualCardEnrollmentBubbleCancelled() {

@@ -275,6 +275,10 @@
     'chromium.fyi': {
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot',
       'CFI Linux CF (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_recover_release_static_reclient',
+      'Comparison Android (reclient)': {
+        'goma': 'android_webview_google_debug_static_bot_arm64',
+        'reclient': 'android_webview_google_debug_static_bot_arm64_reclient',
+      },
       'Comparison Linux (reclient)': {
         'goma': 'gpu_tests_release_bot',
         'reclient': 'gpu_tests_release_bot_reclient',
@@ -1135,6 +1139,7 @@
       'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'mac_upload_clang': 'release_bot',
       'mac_upload_clang_arm': 'release_bot',
+      'mac-builder-next-rel': 'mac_arm64_gpu_tests_release_bot_minimal_symbols_no_nacl',
       'mac-inverse-fieldtrials-fyi-rel': 'gpu_tests_release_trybot_invert_fieldtrials',
       'mac-rel': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage',
       'mac-rel-orchestrator': 'gpu_tests_release_trybot_no_symbols_mac_code_coverage',
@@ -1620,6 +1625,10 @@
 
     'android_webview_google_debug_static_bot_reclient': [
       'android', 'debug_static_bot_reclient', 'webview_google',
+    ],
+
+    'android_webview_google_debug_static_bot_arm64': [
+      'android', 'debug_static_bot', 'arm64', 'webview_google',
     ],
 
     'android_webview_google_debug_static_bot_arm64_reclient': [

@@ -18,11 +18,11 @@ const base::Feature kOnDeviceClustering{"HistoryClustersOnDeviceClustering",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseEngagementScoreCache{"JourneysUseEngagementScoreCache",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSplitClusteringTasksToSmallerBatches{
     "JourneysSplitClusteringTasksToSmallerBatches",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 base::TimeDelta ClusterNavigationTimeCutoff() {
   return base::Minutes(GetFieldTrialParamByFeatureAsInt(

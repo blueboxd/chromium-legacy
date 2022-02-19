@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -125,7 +126,8 @@ void TestPaymentsClient::UpdateVirtualCardEnrollment(
         request_details,
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult)> callback) {
   update_virtual_card_enrollment_request_details_ = std::move(request_details);
-  std::move(callback).Run(AutofillClient::PaymentsRpcResult::kSuccess);
+  std::move(callback).Run(update_virtual_card_enrollment_result_.value_or(
+      AutofillClient::PaymentsRpcResult::kSuccess));
 }
 
 void TestPaymentsClient::ShouldReturnUnmaskDetailsImmediately(
@@ -200,6 +202,12 @@ void TestPaymentsClient::SetUseInvalidLegalMessageInGetUploadDetails(
   use_invalid_legal_message_ = use_invalid_legal_message;
 }
 
+void TestPaymentsClient::SetUseLegalMessageWithMultipleLinesInGetUploadDetails(
+    bool use_legal_message_with_multiple_lines) {
+  use_legal_message_with_multiple_lines_ =
+      use_legal_message_with_multiple_lines;
+}
+
 std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
   if (use_invalid_legal_message_) {
     // Legal message is invalid because it's missing the url.
@@ -212,6 +220,38 @@ std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
                                          "     } ]"
                                          "  } ]"
                                          "}"));
+  } else if (use_legal_message_with_multiple_lines_) {
+    return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated(
+        "{"
+        "  \"line\": ["
+        "    {"
+        "      \"template\": \"The legal documents are: {0} and {1}.\","
+        "      \"template_parameter\": ["
+        "        {"
+        "          \"display_text\": \"Terms of Service\","
+        "          \"url\": \"http://www.example.com/tos\""
+        "        },"
+        "        {"
+        "          \"display_text\": \"Privacy Policy\","
+        "          \"url\": \"http://www.example.com/pp\""
+        "        }"
+        "      ]"
+        "    },"
+        "    {"
+        "      \"template\": \"The legal documents are: {0} and {1}.\","
+        "      \"template_parameter\": ["
+        "        {"
+        "          \"display_text\": \"Terms of Service\","
+        "          \"url\": \"http://www.example.com/tos\""
+        "        },"
+        "        {"
+        "          \"display_text\": \"Privacy Policy\","
+        "          \"url\": \"http://www.example.com/pp\""
+        "        }"
+        "      ]"
+        "    }"
+        "  ]"
+        "}"));
   } else {
     return std::unique_ptr<base::Value>(base::JSONReader::ReadDeprecated(
         "{"

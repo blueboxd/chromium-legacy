@@ -636,7 +636,7 @@ TEST_F(OnDeviceClusteringWithAllTheBackendsTest,
   histogram_tester.ExpectUniqueSample(
       "History.Clusters.Backend.NumKeywordsPerCluster.Max", 2, 1);
   histogram_tester.ExpectTotalCount(
-      "History.Clusters.Backend.BatchEntityLookupLatency", 1);
+      "History.Clusters.Backend.BatchEntityLookupLatency2", 1);
   histogram_tester.ExpectUniqueSample(
       "History.Clusters.Backend.BatchEntityLookupSize", 2, 1);
 }
@@ -773,7 +773,12 @@ TEST_P(BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest,
 
   std::vector<history::Cluster> result_clusters_1 =
       ClusterVisits(GetClusteringRequestSource(), visits);
-  EXPECT_EQ(1u, GetSiteEngagementGetScoreInvocationCount());
+
+  if (base::FeatureList::IsEnabled(features::kUseEngagementScoreCache)) {
+    EXPECT_EQ(1u, GetSiteEngagementGetScoreInvocationCount());
+  } else {
+    EXPECT_EQ(1000u, GetSiteEngagementGetScoreInvocationCount());
+  }
 
   size_t expected_number_of_batches = 1;
   size_t expected_size_of_batches = 1000;
@@ -785,11 +790,14 @@ TEST_P(BatchedClusteringTaskOnDeviceClusteringWithoutContentBackendTest,
   }
 
   histogram_tester.ExpectTotalCount(
-      "Journeys.PartialOnBatchEntityMetadataRetrieved.BatchSize",
+      "History.Clusters.Backend.ProcessBatchOfVisits.BatchSize",
       expected_number_of_batches);
   histogram_tester.ExpectUniqueSample(
-      "Journeys.PartialOnBatchEntityMetadataRetrieved.BatchSize",
+      "History.Clusters.Backend.ProcessBatchOfVisits.BatchSize",
       expected_size_of_batches, expected_number_of_batches);
+  histogram_tester.ExpectUniqueSample(
+      "History.Clusters.Backend.NumBatchesProcessedForVisits",
+      expected_number_of_batches, 1);
 }
 
 const bool kDirectExecutorEnabled[]{true, false};

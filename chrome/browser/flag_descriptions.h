@@ -639,6 +639,9 @@ extern const char kQuickActionSearchWidgetAndroidDinoVariantDescription[];
 extern const char kDownloadAutoResumptionNativeName[];
 extern const char kDownloadAutoResumptionNativeDescription[];
 
+extern const char kDownloadBubbleName[];
+extern const char kDownloadBubbleDescription[];
+
 extern const char kDownloadLaterName[];
 extern const char kDownloadLaterDescription[];
 
@@ -1079,9 +1082,6 @@ extern const char kOmniboxDynamicMaxAutocompleteDescription[];
 
 extern const char kEnableSearchPrefetchName[];
 extern const char kEnableSearchPrefetchDescription[];
-
-extern const char kOopRasterizationDDLName[];
-extern const char kOopRasterizationDDLDescription[];
 
 extern const char kOptimizationGuideDebugLogsName[];
 extern const char kOptimizationGuideDebugLogsDescription[];
@@ -2167,6 +2167,9 @@ extern const char kNtpPhotosModuleOptInTitleDescription[];
 extern const char kNtpPhotosModuleOptInArtWorkName[];
 extern const char kNtpPhotosModuleOptInArtWorkDescription[];
 
+extern const char kNtpPhotosModuleSoftOptOutName[];
+extern const char kNtpPhotosModuleSoftOptOutDescription[];
+
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];
 
@@ -3140,6 +3143,9 @@ extern const char kDesktopCaptureLacrosV2Description[];
 
 extern const char kLacrosNonSyncingProfilesName[];
 extern const char kLacrosNonSyncingProfilesDescription[];
+
+extern const char kLacrosResourcesFileSharingName[];
+extern const char kLacrosResourcesFileSharingDescription[];
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

@@ -1029,6 +1029,10 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
+const char kDownloadBubbleName[] = "Enable download bubble";
+const char kDownloadBubbleDescription[] =
+    "Enables the download bubble instead of the download shelf.";
+
 const char kDownloadLaterName[] = "Enable download later";
 const char kDownloadLaterDescription[] = "Enables download later feature.";
 
@@ -1904,13 +1908,6 @@ const char kEnableSearchPrefetchName[] = "Search Prefetch";
 const char kEnableSearchPrefetchDescription[] =
     "Allow the default search engine to specify prefetch behavior for "
     "suggestions to search results pages.";
-
-const char kOopRasterizationDDLName[] =
-    "Out of process rasterization using DDLs";
-const char kOopRasterizationDDLDescription[] =
-    "Use Skia Deferred Display Lists when performing rasterization in the GPU "
-    "process  "
-    "Must also enable OOP rasterization";
 
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
@@ -3780,6 +3777,10 @@ const char kNtpPhotosModuleOptInArtWorkName[] =
 const char kNtpPhotosModuleOptInArtWorkDescription[] =
     "Determines the art work in the NTP Photos Opt-In card";
 
+const char kNtpPhotosModuleSoftOptOutName[] = "NTP Photos Module Soft Opt-Out";
+const char kNtpPhotosModuleSoftOptOutDescription[] =
+    "Enables soft opt-out option in Photos opt-in card";
+
 const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =
     "Shows the recipe tasks module on the New Tab Page.";
@@ -5455,6 +5456,15 @@ const char kLacrosNonSyncingProfilesName[] =
     "Enable non-syncing profiles on lacros";
 const char kLacrosNonSyncingProfilesDescription[] =
     "Enables further types of profiles: (1) local, (2) signed-in non-syncing.";
+
+const char kLacrosResourcesFileSharingName[] =
+    "Share resources file with ash-chrome";
+const char kLacrosResourcesFileSharingDescription[] =
+    "Map lacros-chrome resource ids to ash-chrome resources and remove "
+    "duplicated resources to reduce the memory consumption. This feature "
+    "generate two additional paks for resources.pak, chrome_100_percent.pak "
+    "and chrome_200_percent.pak. Additional paks are mapping table and "
+    "fallback resources.";
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

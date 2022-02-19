@@ -1505,6 +1505,8 @@ const FeatureEntry::FeatureParam kNtpPhotosModuleOptInFavoriteTitle[] = {
     {ntp_features::kNtpPhotosModuleOptInTitleParam, "1"}};
 const FeatureEntry::FeatureParam kNtpPhotosModuleOptInPersonalizedTitle[] = {
     {ntp_features::kNtpPhotosModuleOptInTitleParam, "2"}};
+const FeatureEntry::FeatureParam kNtpPhotosModuleOptInTripsTitle[] = {
+    {ntp_features::kNtpPhotosModuleOptInTitleParam, "3"}};
 
 const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Recent Highlights", kNtpPhotosModuleOptInRHTitle,
@@ -1512,7 +1514,9 @@ const FeatureEntry::FeatureVariation kNtpPhotosModuleOptInTitleVariations[] = {
     {" - Favorite people", kNtpPhotosModuleOptInFavoriteTitle,
      base::size(kNtpPhotosModuleOptInFavoriteTitle), nullptr},
     {" - Personalized title", kNtpPhotosModuleOptInPersonalizedTitle,
-     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr}};
+     base::size(kNtpPhotosModuleOptInPersonalizedTitle), nullptr},
+    {" - Trips title", kNtpPhotosModuleOptInTripsTitle,
+     base::size(kNtpPhotosModuleOptInTripsTitle), nullptr}};
 
 const FeatureEntry::FeatureParam kNtpPhotosModuleLogo1ArtWork[] = {
     {ntp_features::kNtpPhotosModuleOptInArtWorkParam, "1"}};
@@ -1829,6 +1833,7 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
+    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -3112,10 +3117,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-gpu-rasterization", flag_descriptions::kGpuRasterizationName,
      flag_descriptions::kGpuRasterizationDescription, kOsAll,
      MULTI_VALUE_TYPE(kEnableGpuRasterizationChoices)},
-    {"enable-oop-rasterization-ddl",
-     flag_descriptions::kOopRasterizationDDLName,
-     flag_descriptions::kOopRasterizationDDLDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kOopRasterizationDDL)},
     {"enable-experimental-web-platform-features",
      flag_descriptions::kExperimentalWebPlatformFeaturesName,
      flag_descriptions::kExperimentalWebPlatformFeaturesDescription, kOsAll,
@@ -3128,7 +3129,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebUITabStripName,
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
-
     {"webui-tab-strip-context-menu-after-tap",
      flag_descriptions::kWebUITabStripContextMenuAfterTapName,
      flag_descriptions::kWebUITabStripContextMenuAfterTapDescription,
@@ -5202,6 +5202,11 @@ const FeatureEntry kFeatureEntries[] = {
          ntp_features::kNtpPhotosModuleCustomizedOptInTitle,
          kNtpPhotosModuleOptInTitleVariations,
          "DesktopNtpModules")},
+
+    {"ntp-photos-soft-opt-out",
+     flag_descriptions::kNtpPhotosModuleSoftOptOutName,
+     flag_descriptions::kNtpPhotosModuleSoftOptOutDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kNtpPhotosModuleSoftOptOut)},
 
     {"ntp-recipe-tasks-module", flag_descriptions::kNtpRecipeTasksModuleName,
      flag_descriptions::kNtpRecipeTasksModuleDescription, kOsDesktop,
@@ -8045,6 +8050,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLacrosNonSyncingProfilesName,
      flag_descriptions::kLacrosNonSyncingProfilesDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kLacrosNonSyncingProfiles)},
+
+    {"lacros-resources-file-sharing",
+     flag_descriptions::kLacrosResourcesFileSharingName,
+     flag_descriptions::kLacrosResourcesFileSharingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kLacrosResourcesFileSharing)},
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -8154,6 +8164,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIsolatedSandboxedIframesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kIsolateSandboxedIframes)},
 #endif
+
+    {"download-bubble", flag_descriptions::kDownloadBubbleName,
+     flag_descriptions::kDownloadBubbleDescription, kOsLinux | kOsMac | kOsWin,
+     FEATURE_VALUE_TYPE(safe_browsing::kDownloadBubble)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

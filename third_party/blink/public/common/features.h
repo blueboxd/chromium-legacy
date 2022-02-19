@@ -555,8 +555,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClientHintsDPR;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsResourceWidth;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsViewportWidth;
 BLINK_COMMON_EXPORT extern const base::Feature
-    kWebSQLInThirdPartyContextEnabled;
-BLINK_COMMON_EXPORT extern const base::Feature
     kClientHintsDeviceMemory_DEPRECATED;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsDPR_DEPRECATED;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -583,9 +581,6 @@ BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
 BLINK_COMMON_EXPORT extern const base::Feature kTabSwitchMetrics2;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLCPAnimatedImagesReporting;
-
-BLINK_COMMON_EXPORT extern const base::Feature
-    kWebSQLInThirdPartyContextThrowsWhenDisabled;
 
 // https://blog.whatwg.org/newline-normalizations-in-form-submission
 BLINK_COMMON_EXPORT extern const base::Feature kLateFormNewlineNormalization;
@@ -651,6 +646,10 @@ BLINK_COMMON_EXPORT extern const base::Feature kDurableClientHintsCache;
 // If enabled, allows web pages to use the experimental EditContext API to
 // better control text input. See crbug.com/999184.
 BLINK_COMMON_EXPORT extern const base::Feature kEditContext;
+
+// If enabled, non-required tiles in inactive windows are freed.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kFreeNonRequiredTileResourcesForInactiveWindows;
 
 // Enables the WindowPlacement RuntimeEnabledFeature.
 BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;

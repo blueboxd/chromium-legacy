@@ -24,6 +24,7 @@
 #include "ui/color/win/accent_color_observer.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/views_features.h"
 
 namespace {
 
@@ -211,17 +212,50 @@ void AddNativeChromeColorMixer(ui::ColorProvider* provider,
   // actually pass in these IDs.
   FrameColorHelper::Get()->AddBorderAccentColors(mixer);
 
-  if (key.contrast_mode == ui::ColorProviderManager::ContrastMode::kHigh) {
-    // High contrast uses system colors.
-    mixer[kColorLocationBarBorder] = {ui::kColorNativeWindowText};
-    mixer[kColorOmniboxBackground] = {ui::kColorNativeBtnFace};
-    mixer[kColorOmniboxText] = {ui::kColorNativeBtnText};
-    mixer[kColorToolbar] = {ui::kColorNativeWindow};
-    mixer[kColorToolbarText] = {ui::kColorNativeBtnText};
-    mixer[kColorTabForegroundActiveFrameActive] = {
-        ui::kColorNativeHighlightText};
+  if (key.contrast_mode != ui::ColorProviderManager::ContrastMode::kHigh) {
+    FrameColorHelper::Get()->AddNativeChromeColors(mixer, key);
     return;
   }
 
-  FrameColorHelper::Get()->AddNativeChromeColors(mixer, key);
+  // High contrast uses system colors.
+  mixer[kColorLocationBarBorder] = {ui::kColorNativeWindowText};
+  mixer[kColorOmniboxBackground] = {ui::kColorNativeBtnFace};
+  mixer[kColorOmniboxBackgroundHovered] = {kColorOmniboxBackground};
+  mixer[kColorOmniboxBubbleOutline] = {kColorOmniboxText};
+  mixer[kColorOmniboxKeywordSelected] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsBackground] = {kColorOmniboxBackground};
+  mixer[kColorOmniboxResultsBackgroundHovered] = {
+      kColorOmniboxResultsBackgroundSelected};
+  mixer[kColorOmniboxResultsBackgroundSelected] = {ui::kColorNativeHighlight};
+  mixer[kColorOmniboxResultsIcon] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsIconSelected] = {kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextDimmed] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsTextDimmedSelected] = {
+      kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextSelected] = {ui::kColorNativeHighlightText};
+  mixer[kColorOmniboxResultsUrl] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsUrlSelected] = {kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxSecurityChipDangerous] = {kColorOmniboxText};
+  mixer[kColorOmniboxSecurityChipDefault] = {kColorOmniboxText};
+  mixer[kColorOmniboxSecurityChipSecure] = {kColorOmniboxText};
+  mixer[kColorOmniboxText] = {ui::kColorNativeBtnText};
+  mixer[kColorOmniboxTextDimmed] = {kColorOmniboxText};
+  mixer[kColorTabBackgroundActiveFrameActive] = {kColorToolbar};
+  mixer[kColorTabBackgroundActiveFrameInactive] = {
+      kColorTabBackgroundActiveFrameActive};
+  mixer[kColorTabForegroundActiveFrameActive] = {ui::kColorNativeHighlightText};
+  mixer[kColorToolbar] = {ui::kColorNativeWindow};
+  mixer[kColorToolbarButtonIcon] = {kColorToolbarText};
+  const bool platform_high_contrast_ink_drop = base::FeatureList::IsEnabled(
+      views::features::kEnablePlatformHighContrastInkDrop);
+  if (platform_high_contrast_ink_drop)
+    mixer[kColorToolbarButtonIconHovered] = {ui::kColorNativeHighlightText};
+  else
+    mixer[kColorToolbarButtonIconHovered] = {kColorToolbarText};
+  mixer[kColorToolbarButtonIconInactive] = {ui::kColorNativeGrayText};
+  mixer[kColorToolbarContentAreaSeparator] = {kColorToolbarText};
+  if (platform_high_contrast_ink_drop)
+    mixer[kColorToolbarInkDrop] = {ui::kColorNativeHighlight};
+  mixer[kColorToolbarSeparator] = {ui::kColorNativeWindowText};
+  mixer[kColorToolbarText] = {ui::kColorNativeBtnText};
 }

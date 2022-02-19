@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'e8fae2e1558bfc1a19f03f894d31f6c3baf1de21',
+  'dawn_revision': '87cb7572eaef4d78135bf52cf6f66ba8ff2c4c2f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'WJi_xg251PMUQVixktNii8w4Zo3LVg8ww9mPjUwqUqQC',
+          'version': 'sf1XjO3xo0lSRURrpo03rp8aY7qCbT37TH8F8-cTaaoC',
         },
       ],
       'dep_type': 'cipd',
@@ -820,7 +820,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'XdTH3-ToWai9KD8icML_gYsgXKQAah3RRBbk45P_dy0C',
+          'version': '-QO42KGeBQYA2EIy9xzL6BHkI5usxXhNjcORqYONkG0C',
         },
       ],
       'dep_type': 'cipd',
@@ -831,7 +831,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'fpWeQCwsm_BjURsYiKqwBWUfxqJT35QyTI_3_u9S0yUC',
+          'version': 'XkDD4LFIahhhFpyorEanKsU7ux8iKPsEBsb3Qpe5mSEC',
         },
       ],
       'dep_type': 'cipd',
@@ -1805,7 +1805,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@28e2ec170ae9d5411715d9945937ef58ab5e528b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e73485b32625032501af6264f75518225c0b6a69',
     'condition': 'checkout_src_internal',
   },
 
@@ -1835,7 +1835,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'jeakBHnVnaENhYz8YS7CGbfMfVF7l78jzR74N4AhP9wC',
+        'version': 'omGlQN07sAVrBCL2nWVBZ920PQmVVIFWKaxNxPtBQ-8C',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1846,7 +1846,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'WOOj0neeZqOoIFvculwCv8FJQMdz7ZtOmwvRPkI3UiIC',
+        'version': 'eHSLdFNTqfABXP_W1cIVDbkoaf0DTpYm04M7ASwN_ZEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

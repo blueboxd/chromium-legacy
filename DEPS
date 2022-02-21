@@ -253,15 +253,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '3d1667b349141fb66a6de21aea2cd0974775725f',
+  'skia_revision': 'cd0e2027674230e9657f0d5db5077b2bb78b4f11',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'dc56565a9b7560e363e7b18d26f7ac93970b4ded',
+  'v8_revision': '71dc213d58b45408c50f2b74d15bcf003746e776',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'de37ad1754e2c7b587231a4861a782a5b4be8d92',
+  'angle_revision': '3a4f862f043c3aa29655eb6604068bc3d87717ef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '29220b1b1bf51d602892fc1486a6e946559aa785',
+  'devtools_frontend_revision': '18b29a88a27b6652ca511db083d10cfd306aa2a7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '87cb7572eaef4d78135bf52cf6f66ba8ff2c4c2f',
+  'dawn_revision': '9093ef5061b4272a3f1dead8f7298dc0e1859b1d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'sf1XjO3xo0lSRURrpo03rp8aY7qCbT37TH8F8-cTaaoC',
+          'version': 'mAqP4pY37qbnLg0C9lw9SHBvga4QvqHRsMEdKuets6wC',
         },
       ],
       'dep_type': 'cipd',
@@ -820,7 +820,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': '-QO42KGeBQYA2EIy9xzL6BHkI5usxXhNjcORqYONkG0C',
+          'version': '8YzSP4KO2Npcqf7z0CyDTPvSJjbrDVbUQ9cs5wPM7LwC',
         },
       ],
       'dep_type': 'cipd',
@@ -831,7 +831,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'XkDD4LFIahhhFpyorEanKsU7ux8iKPsEBsb3Qpe5mSEC',
+          'version': 'Faz2aHgNILAhiYcXL6TVUXRiLJuPNnaZxPPBXwku3akC',
         },
       ],
       'dep_type': 'cipd',
@@ -892,7 +892,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': 'p2_2PQvb0PTBwWQF0CrP15URUDTgUO6CdHWSK6tM9AQC',
+          'version': 'P-Ppo-T11ZsQHsj63EbgDZWkwXUSN4vluZidbR4ILY0C',
       },
     ],
     'condition': 'checkout_android',
@@ -1126,12 +1126,12 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '23cf588506f5a71780774eeebf4b7afa9914d456',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'bd903f09a68a2c4404c617014924e73db994a230',
       'condition': 'checkout_linux',
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd6d7a05085b03a232d0d849e0c043d2763bd9ba3',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0cfa90e2036681a39ff8d5734532a19a752ed092',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1271,7 +1271,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '18e09b9197a3b1d771c077c530d1a4ebad04c167',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'e94822cd43d01722869c19053303a18e893ecd00',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'b867f209e4b56b0a8c01aaaba3882ad41e438c4f',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1592,7 +1592,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/android/aemu/release/linux-amd64',
-              'version': 'qRckZ_x-qeXaii8FUKouidcReNqblo5YPuq6jjxTGHwC'
+              'version': 'Y9ntjFzLN59Ry4PCzdXQL5cgFzpaGTBF7Ol4xETrwE0C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1696,7 +1696,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@4d9fe6bf1f0c6e365245379ae88bac7966e9117a',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@5fe1b21d6ba47a8dee59068d6927a4c157ec13a3',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1735,7 +1735,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '30f22785e9b13ea82b2a9f67208a13fcc7b017c3',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'feac97bb251488bb426406afa0873627d1254db1',
+    Var('webrtc_git') + '/src.git' + '@' + 'ba2677061aa0872f742a8f4b7327e2878f461df6',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1762,7 +1762,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': 'njGzzVyYPSA__3tShsGxsvh8k5kJfL9V0wvLthXSUV4C',
+          'version': 't-kuo00LREzFSvvcKqhCDfF9a3vrU6x8bvpcqoOolxQC',
         },
       ],
       'dep_type': 'cipd',
@@ -1772,7 +1772,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'k8tTHDT2HQHQFD7TPjRrdMHGABN8YbxP1GXsJnmS9JIC',
+          'version': '7MVl6nWD2T_LTrD1aXv5dLQaPIBY04wfSmCsu5NdVdwC',
         },
       ],
       'dep_type': 'cipd',
@@ -1783,7 +1783,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-amd64',
-          'version': 'hO0OT7GrBan0deDL_pb0LFML9ueWrbdDtzCU-awv-8IC',
+          'version': 'q0e0eoFci9WHabP-U6xwl2vazg4Fh0iDyXPwa7GGoQMC',
         },
       ],
       'dep_type': 'cipd',
@@ -1794,7 +1794,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-arm64',
-          'version': 'iG5_8Fr1Z6-7hWUIaiAy_BdqEqZztiO1hsUkG8KD_csC',
+          'version': 'qRTt0rC2ItXtcqu1dxTrhYh8FVz21OFuYU2YzKfboRMC',
         },
       ],
       'dep_type': 'cipd',
@@ -1805,7 +1805,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a596c031eac177ef8c9f10d4557d4bfb788eddf6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e68bd17aa57832051e47a01622a9e5e6f03e26de',
     'condition': 'checkout_src_internal',
   },
 
@@ -1835,7 +1835,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'omGlQN07sAVrBCL2nWVBZ920PQmVVIFWKaxNxPtBQ-8C',
+        'version': 'AehqMgbjXh4IYFFaSagDYgWDqYWksxG0QcXcLFx5ZvIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1846,7 +1846,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'eHSLdFNTqfABXP_W1cIVDbkoaf0DTpYm04M7ASwN_ZEC',
+        'version': 'V5Jd3f5zXn_G6v3mOO7nqlOzkKfWjgYfcWjV3vEUnaEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1857,7 +1857,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'JoPx_BgEPCV_P0Lek1nR1yPWY6XUtATptSduruvF0O0C',
+        'version': 'sGKm1SszbbbZC751KdfZeeCJMfM00EOzjV5hN6v9m5EC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

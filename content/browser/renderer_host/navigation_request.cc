@@ -148,6 +148,7 @@
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/navigation/prefetched_signed_exchange_info.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
@@ -6656,16 +6657,20 @@ bool NavigationRequest::RequiresInitiatorBasedSourceSiteInstance() const {
     return false;
   }
 
-  const bool is_data_or_about =
+  // data: URLs, about:blank and empty URL (which are treated the same as
+  // about:blank) navigations that have initiator origins require a source
+  // SiteInstance.
+  const bool is_data_or_about_or_empty =
       common_params_->url.SchemeIs(url::kDataScheme) ||
-      common_params_->url.IsAboutBlank();
+      common_params_->url.IsAboutBlank() || common_params_->url.is_empty();
 
   const bool has_valid_initiator =
       common_params_->initiator_origin &&
       common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
           .IsValid();
 
-  return is_data_or_about && has_valid_initiator && !dest_site_instance_;
+  return is_data_or_about_or_empty && has_valid_initiator &&
+         !dest_site_instance_;
 }
 
 void NavigationRequest::SetSourceSiteInstanceToInitiatorIfNeeded() {

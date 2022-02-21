@@ -1265,21 +1265,6 @@
             ]
         }
     ],
-    "BrowserJankinessProfiling": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BrowserJankinessProfiling"
-                    ]
-                }
-            ]
-        }
-    ],
     "BrowserSwitcherNoneIsGreylist": [
         {
             "platforms": [
@@ -5141,6 +5126,25 @@
                     },
                     "enable_features": [
                         "NetworkTimeServiceQuerying"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PrivacyGuide": [
+        {
+            "platforms": [
+                "linux",
+                "windows",
+                "chromeos",
+                "chromeos_lacros",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PrivacyGuide"
                     ]
                 }
             ]

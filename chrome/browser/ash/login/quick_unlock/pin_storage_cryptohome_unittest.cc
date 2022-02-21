@@ -36,7 +36,8 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    EnabledForTesting(true);
+    test_api_ = std::make_unique<TestApi>(/*override_quick_unlock=*/true);
+    test_api_->EnablePinByPolicy(Purpose::kAny);
     SystemSaltGetter::Initialize();
     CryptohomeMiscClient::InitializeFake();
     UserDataAuthClient::InitializeFake();
@@ -48,8 +49,6 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     UserDataAuthClient::Shutdown();
     CryptohomeMiscClient::Shutdown();
     SystemSaltGetter::Shutdown();
-    EnabledForTesting(false);
-    IsFingerprintEnabled(nullptr);
   }
 
   bool IsPinSet() const {
@@ -71,7 +70,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
     bool res;
     base::RunLoop loop;
     storage_->CanAuthenticate(
-        test_account_id_,
+        test_account_id_, Purpose::kAny,
         base::BindOnce(
             [](base::OnceClosure closure, bool* res, bool can_auth) {
               *res = can_auth;
@@ -179,6 +178,7 @@ class PinStorageCryptohomeUnitTest : public testing::Test {
   std::unique_ptr<PinStorageCryptohome> storage_;
   AccountId test_account_id_{
       AccountId::FromUserEmailGaiaId("user@example.com", "11111")};
+  std::unique_ptr<TestApi> test_api_;
 };
 
 }  // namespace

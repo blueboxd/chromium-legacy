@@ -169,13 +169,13 @@ class AppUpdateTest : public testing::Test {
 
   void CheckExpects(const AppUpdate& u) {
     EXPECT_EQ(expect_readiness_, u.GetReadiness());
-    EXPECT_EQ(expect_prior_readiness_, u.GetPriorReadiness());
+    EXPECT_EQ(expect_prior_readiness_, u.PriorReadiness());
     EXPECT_EQ(expect_readiness_changed_, u.ReadinessChanged());
 
-    EXPECT_EQ(expect_name_, u.GetName());
+    EXPECT_EQ(expect_name_, u.Name());
     EXPECT_EQ(expect_name_changed_, u.NameChanged());
 
-    EXPECT_EQ(expect_short_name_, u.GetShortName());
+    EXPECT_EQ(expect_short_name_, u.ShortName());
     EXPECT_EQ(expect_short_name_changed_, u.ShortNameChanged());
 
     EXPECT_EQ(expect_publisher_id_, u.GetPublisherId());

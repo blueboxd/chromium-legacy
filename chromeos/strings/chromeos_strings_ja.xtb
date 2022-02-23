@@ -177,11 +177,13 @@
 <translation id="3340011300870565703">デバイスの右イヤフォンのバッテリー残量は <ph name="BATTERY_PERCENTAGE" />% です。</translation>
 <translation id="3368922792935385530">接続済み</translation>
 <translation id="3369013195428705271">印刷履歴をすべて削除してもよろしいですか？実行中の印刷ジョブは削除されません。</translation>
+<translation id="3413935475507503304">更新を進めるには、[次へ] をクリックしてください。</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">セキュリティ</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" /> ページを印刷しました。</translation>
 <translation id="345898999683440380"><ph name="PAGE_NUM" /> ページ目をスキャンしています。<ph name="PERCENTAGE_VALUE" />% 完了。</translation>
 <translation id="3459509316159669723">印刷</translation>
+<translation id="346539236881580388">撮り直し</translation>
 <translation id="3484914941826596830">ファームウェアのアップデート中、この外部デバイスを電源から外したり、パソコンをシャットダウンしたりしないでください。このウィンドウは最小化できます。アップデートには数分かかることがあります。その間、外部デバイスは動作しない可能性があります。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3488065109653206955">一部有効</translation>
@@ -488,6 +490,7 @@
 <translation id="7175037578838465313"><ph name="NAME" /> の設定</translation>
 <translation id="7177485034254901881">この <ph name="DEVICE_TYPE" /> は <ph name="MANAGER" /> によって管理されています。管理者がこのデバイスをリモートで設定している可能性があります。</translation>
 <translation id="7180611975245234373">更新</translation>
+<translation id="7212734716605298123">外部デバイスのファームウェア アップデート</translation>
 <translation id="7216409898977639127">モバイル プロバイダ</translation>
 <translation id="7271040990581020067">スキャナは現在使用中です。しばらくしてからもう一度お試しください。</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>

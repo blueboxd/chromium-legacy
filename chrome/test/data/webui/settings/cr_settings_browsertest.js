@@ -195,11 +195,6 @@ var CrSettingsClearBrowsingDataTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/clear_browsing_data_test.js&host=webui-test';
   }
-
-  /** @override */
-  get featureList() {
-    return {enabled: ['features::kSearchHistoryLink']};
-  }
 };
 
 // TODO(crbug.com/1107652): Flaky on Mac.
@@ -614,10 +609,9 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
  ['ZoomLevels', 'zoom_levels_tests.js'],
 ].forEach(test => registerTest(...test));
 
-// Timeout on Linux and MacOS dbg bots: https://crbug.com/1133412
-// Fails on Mac/Arm: https://crbug.com/1222886
-GEN('#if (!BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)) || ' +
-    '(defined(NDEBUG) && !defined(ARCH_CPU_ARM64))');
+// Timeout on Linux dbg bots: https://crbug.com/1133412
+// Fails on Mac bots: https://crbug.com/1222886
+GEN('#if !((BUILDFLAG(IS_LINUX) && !defined(NDEBUG)) || BUILDFLAG(IS_MAC))');
 [['SecurityPage', 'security_page_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');

@@ -3194,7 +3194,7 @@ enum WebFeature {
   kRTCPeerConnectionOfferAllowExtmapMixedFalse = 3885,
   // The items above roughly this point are available in the M91 branch.
 
-  kNewCanvas2DAPI = 3886,
+  kOBSOLETE_NewCanvas2DAPI = 3886,
   kOBSOLETE_ServiceWorkerSubresourceFilterBypassedRequest = 3887,
   kWebGPU = 3888,
   kCSSFilterColorMatrix = 3889,
@@ -3489,6 +3489,7 @@ enum WebFeature {
   kWrongBaselineOfMultiLineButtonWithNonSpace = 4168,
   kBlobStoreAccessAcrossTopLevelSite = 4169,
   kBlobStoreAccessUnknownTopLevelSite = 4170,
+  kCrossOriginAccessBasedOnDocumentDomain = 4171,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

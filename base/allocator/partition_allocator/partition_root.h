@@ -1065,13 +1065,8 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
   // these rare cases, assuming that some remain.
   //
   // On Chromecast, this is already checked in PartitionFree() in the shim.
-  //
-  // On Linux, this is intended to ease debugging of crbug.com/1266412. Enabled
-  // on 64 bit only, as the check is pretty cheap in this case (range check,
-  // essentially).
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) &&              \
-    ((BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)) || \
-     (BUILDFLAG(IS_LINUX) && defined(ARCH_CPU_64_BITS)))
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && \
+    ((BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)))
   PA_CHECK(IsManagedByPartitionAlloc(object_addr));
 #endif
 
@@ -1091,17 +1086,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
   uintptr_t slot_start = root->ObjectToSlotStart(object);
   PA_DCHECK(slot_span == SlotSpan::FromSlotStart(slot_start));
 
-  // We are going to read from |*slot_span| in all branches. Since
-  // |FromSlotSpan()| below doesn't touch *slot_span, there is some time for the
-  // prefetch to be useful.
-  //
-  // TODO(crbug.com/1207307): It would be much better to avoid touching
-  // |*slot_span| at all on the fast path, or at least to separate its read-only
-  // parts (i.e. bucket pointer) from the rest. Indeed, every thread cache miss
-  // (or batch fill) will *write* to |slot_span->freelist_head|, leading to
-  // cacheline ping-pong.
-  PA_PREFETCH(slot_span);
-
+#if defined(PA_HAS_MEMORY_TAGGING)
   const size_t slot_size = slot_span->bucket->slot_size;
   if (LIKELY(slot_size <= kMaxMemoryTaggingSize)) {
     // Incrementing the memory range returns the true underlying tag, so
@@ -1111,6 +1096,20 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
         slot_start, slot_size);
     object = ::partition_alloc::internal::RemaskPtr(object);
   }
+#else
+  // We are going to read from |*slot_span| in all branches, but haven't done it
+  // yet.
+  //
+  // TODO(crbug.com/1207307): It would be much better to avoid touching
+  // |*slot_span| at all on the fast path, or at least to separate its read-only
+  // parts (i.e. bucket pointer) from the rest. Indeed, every thread cache miss
+  // (or batch fill) will *write* to |slot_span->freelist_head|, leading to
+  // cacheline ping-pong.
+  //
+  // Don't do it when memory tagging is enabled, as |*slot_span| has already
+  // been touched above.
+  PA_PREFETCH(slot_span);
+#endif  // defined(PA_HAS_MEMORY_TAGGING)
 
   // TODO(bikineev): Change the condition to LIKELY once PCScan is enabled by
   // default.

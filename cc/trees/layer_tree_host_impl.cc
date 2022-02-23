@@ -105,6 +105,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/traced_value.h"
+#include "components/viz/common/transition_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -1976,7 +1977,7 @@ size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
 int LayerTreeHostImpl::GetMSAASampleCountForRaster(
     const scoped_refptr<DisplayItemList>& display_list) {
   constexpr int kMinNumberOfSlowPathsForMSAA = 6;
-  if (display_list->NumSlowPaths() < kMinNumberOfSlowPathsForMSAA)
+  if (display_list->num_slow_paths() < kMinNumberOfSlowPathsForMSAA)
     return 0;
 
   if (!can_use_msaa_)
@@ -2468,7 +2469,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   return metadata;
 }
 
-absl::optional<EventMetricsSet> LayerTreeHostImpl::DrawLayers(
+absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
     FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
@@ -2502,6 +2503,16 @@ absl::optional<EventMetricsSet> LayerTreeHostImpl::DrawLayers(
       events_metrics_manager_.TakeSavedEventsMetrics());
   lag_tracking_manager_.CollectScrollEventsFromFrame(frame_token,
                                                      events_metrics);
+
+  // Dump property trees and layers if run with:
+  //   --vmodule=layer_tree_host_impl=3
+  if (VLOG_IS_ON(3)) {
+    VLOG(3) << "Submitting a frame:\n"
+            << viz::TransitionUtils::RenderPassListToString(
+                   compositor_frame.render_pass_list);
+  }
+
+  base::TimeTicks submit_time = base::TimeTicks::Now();
   layer_tree_frame_sink_->SubmitCompositorFrame(
       std::move(compositor_frame),
       /*hit_test_data_changed=*/false);
@@ -2572,7 +2583,7 @@ absl::optional<EventMetricsSet> LayerTreeHostImpl::DrawLayers(
     client_->FrameSinksToThrottleUpdated(throttle_decider_.ids());
   }
 
-  return events_metrics;
+  return SubmitInfo{submit_time, std::move(events_metrics)};
 }
 
 viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(

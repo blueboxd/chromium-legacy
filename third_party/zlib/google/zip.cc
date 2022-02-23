@@ -4,7 +4,6 @@
 
 #include "third_party/zlib/google/zip.h"
 
-#include <limits>
 #include <string>
 #include <vector>
 
@@ -122,7 +121,7 @@ bool Zip(const ZipParams& params) {
 
   std::unique_ptr<internal::ZipWriter> zip_writer;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (params.dest_fd != base::kInvalidPlatformFile) {
     DCHECK(params.dest_file.empty());
     zip_writer =
@@ -186,6 +185,7 @@ bool Unzip(const base::PlatformFile& src_file,
            DirectoryCreator directory_creator,
            UnzipOptions options) {
   ZipReader reader;
+  reader.SetEncoding(std::move(options.encoding));
   reader.SetPassword(std::move(options.password));
 
   if (!reader.OpenFromPlatformFile(src_file)) {
@@ -215,8 +215,7 @@ bool Unzip(const base::PlatformFile& src_file,
 
     // It's a file.
     std::unique_ptr<WriterDelegate> writer = writer_factory.Run(entry->path);
-    if (!writer || !reader.ExtractCurrentEntry(
-                       writer.get(), std::numeric_limits<uint64_t>::max())) {
+    if (!writer || !reader.ExtractCurrentEntry(writer.get())) {
       DLOG(WARNING) << "Cannot extract " << entry->path;
       return false;
     }
@@ -242,7 +241,7 @@ bool Zip(const base::FilePath& src_dir,
               .include_hidden_files = include_hidden_files});
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ZipFiles(const base::FilePath& src_dir,
               Paths src_relative_paths,
               int dest_fd) {
@@ -251,6 +250,6 @@ bool ZipFiles(const base::FilePath& src_dir,
               .dest_fd = dest_fd,
               .src_files = src_relative_paths});
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 }  // namespace zip

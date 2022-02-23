@@ -287,23 +287,26 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // Creates and initializes a RenderFrameHost. If |for_early_commit| is true
   // then this RenderFrameHost and its RenderFrame will be prepared knowing that
   // it will be committed immediately. If false the it will be committed later,
-  // following the usual navigation path.
+  // following the usual navigation path. |browsing_context_state| is the
+  // BrowsingContextState that will be stored in the speculative
+  // RenderFrameHost.
   std::unique_ptr<RenderFrameHostImpl> CreateSpeculativeRenderFrame(
       SiteInstance* instance,
-      bool for_early_commit);
+      bool for_early_commit,
+      const scoped_refptr<BrowsingContextState>& browsing_context_state);
 
   // Helper method to create and initialize a RenderFrameProxyHost.
-  void CreateRenderFrameProxy(SiteInstance* instance);
+  // |browsing_context_state| is the BrowsingContextState in which the newly
+  // created RenderFrameProxyHost will be stored.
+  void CreateRenderFrameProxy(
+      SiteInstance* instance,
+      const scoped_refptr<BrowsingContextState>& browsing_context_state);
 
   // Creates proxies for a new child frame at FrameTreeNode |child| in all
   // SiteInstances for which the current frame has proxies.  This method is
   // called on the parent of a new child frame before the child leaves the
   // SiteInstance.
   void CreateProxiesForChildFrame(FrameTreeNode* child);
-
-  // Returns the RenderFrameProxyHost for the given SiteInstanceGroup, if any.
-  RenderFrameProxyHost* GetRenderFrameProxyHost(
-      SiteInstanceGroup* site_instance_group) const;
 
   // If |render_frame_host| is on the pending deletion list, this deletes it.
   // Returns whether it was deleted.
@@ -418,13 +421,20 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // subtree rooted at |skip_this_node| (e.g., if a node is being navigated, it
   // can be passed here to prevent proxies from being created for it, in
   // case it is in the same FrameTree as another node on its opener chain).
-  void CreateOpenerProxies(SiteInstance* instance,
-                           FrameTreeNode* skip_this_node);
+  // |browsing_context_state| is the BrowsingContextState that is used in the
+  // speculative render frame host for cross browsing-instance navigations.
+  void CreateOpenerProxies(
+      SiteInstance* instance,
+      FrameTreeNode* skip_this_node,
+      const scoped_refptr<BrowsingContextState>& browsing_context_state);
 
   // Ensure that this frame has proxies in all SiteInstances that can discover
   // this frame by name (e.g., via window.open("", "frame_name")).  See
   // https://crbug.com/511474.
-  void CreateProxiesForNewNamedFrame();
+  // |browsing_context_state| is the BrowsingContextState that is used in the
+  // speculative render frame host for cross browsing-instance navigations.
+  void CreateProxiesForNewNamedFrame(
+      const scoped_refptr<BrowsingContextState>& browsing_context_state);
 
   // Returns a blink::FrameToken for the current FrameTreeNode's opener
   // node in the given SiteInstanceGroup.  May return a frame token of either a
@@ -457,9 +467,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // Sets the child RenderWidgetHostView for this frame, which must be part of
   // an inner FrameTree.
   void SetRWHViewForInnerFrameTree(RenderWidgetHostViewChildFrame* child_rwhv);
-
-  // Returns the number of RenderFrameProxyHosts for this frame.
-  size_t GetProxyCount();
 
   // Executes a PageBroadcast Mojo method to every RenderView in the FrameTree.
   // This should only be called in the top-level RenderFrameHostManager.
@@ -610,14 +617,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
     SiteInstanceRelation relation;
   };
 
-  // Create a RenderFrameProxyHost owned by this object.
-  RenderFrameProxyHost* CreateRenderFrameProxyHost(
-      SiteInstance* site_instance,
-      scoped_refptr<RenderViewHostImpl> rvh);
-
-  // Delete a RenderFrameProxyHost owned by this object.
-  void DeleteRenderFrameProxyHost(SiteInstanceGroup* site_instance_group);
-
   // Returns kYes_* if for the navigation from `current_effective_url` to
   // `destination_url_info`, a new SiteInstance and BrowsingInstance should be
   // created (even if we are in a process model that doesn't usually swap).
@@ -756,10 +755,14 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // (2) Create proxies for the new RFH's SiteInstance in its own frame tree.
   // |recovering_without_early_commit| is true if we are reviving a crashed
   // render frame by creating a proxy and committing later rather than doing an
-  // immediate commit.
-  void CreateProxiesForNewRenderFrameHost(SiteInstance* old_instance,
-                                          SiteInstance* new_instance,
-                                          bool recovering_without_early_commit);
+  // immediate commit. |browsing_context_state| is the BrowsingContextState that
+  // is used in the speculative render frame host for cross browsing-instance
+  // navigations.
+  void CreateProxiesForNewRenderFrameHost(
+      SiteInstance* old_instance,
+      SiteInstance* new_instance,
+      bool recovering_without_early_commit,
+      const scoped_refptr<BrowsingContextState>& browsing_context_state);
 
   // Traverse the opener chain and populate |opener_frame_trees| with
   // all FrameTrees accessible by following frame openers of nodes in the
@@ -777,9 +780,13 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // SiteInstance for the current node's FrameTree.  Used as a helper function
   // in CreateOpenerProxies for creating proxies in each FrameTree on the
   // opener chain.  Don't create proxies for the subtree rooted at
-  // |skip_this_node|.
-  void CreateOpenerProxiesForFrameTree(SiteInstance* instance,
-                                       FrameTreeNode* skip_this_node);
+  // |skip_this_node|. |browsing_context_state| is the BrowsingContextState that
+  // is used in the speculative render frame host for cross browsing-instance
+  // navigations.
+  void CreateOpenerProxiesForFrameTree(
+      SiteInstance* instance,
+      FrameTreeNode* skip_this_node,
+      const scoped_refptr<BrowsingContextState>& browsing_context_state);
 
   // The different types of RenderFrameHost creation that can occur.
   // See CreateRenderFrameHost for how these influence creation.

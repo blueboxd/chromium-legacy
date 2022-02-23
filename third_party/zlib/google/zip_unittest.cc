@@ -519,6 +519,62 @@ TEST_F(ZipTest, UnzipWithDelegates) {
   ASSERT_TRUE(base::PathExists(dir_foo_bar.AppendASCII("quux.txt")));
 }
 
+// Tests that a ZIP archive containing SJIS-encoded file names can be correctly
+// extracted if the encoding is specified.
+TEST_F(ZipTest, UnzipSjis) {
+  ASSERT_TRUE(zip::Unzip(GetDataDirectory().AppendASCII("SJIS Bug 846195.zip"),
+                         test_dir_, {.encoding = "Shift_JIS"}));
+
+  const base::FilePath dir =
+      test_dir_.Append(base::FilePath::FromUTF8Unsafe("新しいフォルダ"));
+  EXPECT_TRUE(base::DirectoryExists(dir));
+
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      dir.Append(base::FilePath::FromUTF8Unsafe("SJIS_835C_ソ.txt")),
+      &contents));
+  EXPECT_EQ(
+      "This file's name contains 0x5c (backslash) as the 2nd byte of Japanese "
+      "characater \"\x83\x5c\" when encoded in Shift JIS.",
+      contents);
+
+  ASSERT_TRUE(base::ReadFileToString(dir.Append(base::FilePath::FromUTF8Unsafe(
+                                         "新しいテキスト ドキュメント.txt")),
+                                     &contents));
+  EXPECT_EQ("This file name is coded in Shift JIS in the archive.", contents);
+}
+
+// Tests that a ZIP archive containing SJIS-encoded file names can be extracted
+// even if the encoding is not specified. In this case, file names are
+// interpreted as UTF-8, which leads to garbled names where invalid UTF-8
+// sequences are replaced with the character �. Nevertheless, the files are
+// safely extracted and readable.
+TEST_F(ZipTest, UnzipSjisAsUtf8) {
+  ASSERT_TRUE(zip::Unzip(GetDataDirectory().AppendASCII("SJIS Bug 846195.zip"),
+                         test_dir_));
+
+  EXPECT_FALSE(base::DirectoryExists(
+      test_dir_.Append(base::FilePath::FromUTF8Unsafe("新しいフォルダ"))));
+
+  const base::FilePath dir =
+      test_dir_.Append(base::FilePath::FromUTF8Unsafe("�V�����t�H���_"));
+  EXPECT_TRUE(base::DirectoryExists(dir));
+
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      dir.Append(base::FilePath::FromUTF8Unsafe("SJIS_835C_�\\.txt")),
+      &contents));
+  EXPECT_EQ(
+      "This file's name contains 0x5c (backslash) as the 2nd byte of Japanese "
+      "characater \"\x83\x5c\" when encoded in Shift JIS.",
+      contents);
+
+  ASSERT_TRUE(base::ReadFileToString(dir.Append(base::FilePath::FromUTF8Unsafe(
+                                         "�V�����e�L�X�g �h�L�������g.txt")),
+                                     &contents));
+  EXPECT_EQ("This file name is coded in Shift JIS in the archive.", contents);
+}
+
 TEST_F(ZipTest, Zip) {
   base::FilePath src_dir = GetDataDirectory().AppendASCII("test");
 
@@ -578,7 +634,7 @@ TEST_F(ZipTest, ZipTimeStamp) {
   TestTimeStamp("02 Jan 2038 23:59:58", VALID_YEAR);
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 TEST_F(ZipTest, ZipFiles) {
   base::FilePath src_dir = GetDataDirectory().AppendASCII("test");
 
@@ -602,7 +658,7 @@ TEST_F(ZipTest, ZipFiles) {
     EXPECT_EQ(entry->path, zip_file_list_[i]);
   }
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 TEST_F(ZipTest, UnzipFilesWithIncorrectSize) {
   // test_mismatch_size.zip contains files with names from 0.txt to 7.txt with
@@ -859,7 +915,20 @@ TEST_F(ZipTest, NestedZip) {
 // (crbug.com/1221447). Tests that the big ZIP can be opened, that its entries
 // are correctly enumerated (crbug.com/1298347), and that the big file can be
 // extracted.
+//
+// This test is too slow with TSAN.
+// OS Fuchsia does not seem to support large files.
+// Some Android waterfall and CQ try bots are running out of space when
+// performing this test (android-asan, android-11-x86-rel,
+// android-marshmallow-x86-rel-non-cq).
+// TODO(https://crbug.com/1299736): Re-enable on Mac and debug builds when
+// timeouts are fixed.
+#if defined(THREAD_SANITIZER) || BUILDFLAG(IS_FUCHSIA) || \
+    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || !defined(NDEBUG)
 TEST_F(ZipTest, DISABLED_BigFile) {
+#else
+TEST_F(ZipTest, BigFile) {
+#endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 

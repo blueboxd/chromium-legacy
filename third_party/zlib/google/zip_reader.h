@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -15,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -60,8 +62,7 @@ class WriterDelegate {
 //
 //   while (const ZipReader::entry* entry = reader.Next()) {
 //     auto writer = CreateFilePathWriterDelegate(extract_dir, entry->path);
-//     if (!reader.ExtractCurrentEntry(
-//         writer, std::numeric_limits<uint64_t>::max())) {
+//     if (!reader.ExtractCurrentEntry(writer)) {
 //           // Cannot extract
 //           return;
 //     }
@@ -187,19 +188,21 @@ class ZipReader {
   bool ok() const { return ok_; }
 
   // Extracts |num_bytes_to_extract| bytes of the current entry to |delegate|,
-  // starting from the beginning of the entry. Return value specifies whether
-  // the entire file was extracted.
+  // starting from the beginning of the entry.
+  //
+  // Returns true if the entire file was extracted without error.
   //
   // Precondition: Next() returned a non-null Entry.
   bool ExtractCurrentEntry(WriterDelegate* delegate,
-                           uint64_t num_bytes_to_extract) const;
+                           uint64_t num_bytes_to_extract =
+                               std::numeric_limits<uint64_t>::max()) const;
 
   // Asynchronously extracts the current entry to the given output file path. If
   // the current entry is a directory it just creates the directory
   // synchronously instead.
   //
-  // success_callback will be called on success and failure_callback will be
-  // called on failure. progress_callback will be called at least once.
+  // |success_callback| will be called on success and |failure_callback| will be
+  // called on failure. |progress_callback| will be called at least once.
   // Callbacks will be posted to the current MessageLoop in-order.
   //
   // Precondition: Next() returned a non-null Entry.
@@ -207,28 +210,30 @@ class ZipReader {
       const base::FilePath& output_file_path,
       SuccessCallback success_callback,
       FailureCallback failure_callback,
-      const ProgressCallback& progress_callback);
+      ProgressCallback progress_callback);
 
   // Extracts the current entry into memory. If the current entry is a
-  // directory, the |output| parameter is set to the empty string. If the
-  // current entry is a file, the |output| parameter is filled with its
-  // contents.
+  // directory, |*output| is set to the empty string. If the current entry is a
+  // file, |*output| is filled with its contents.
   //
-  // The |output| parameter can be filled with a big amount of data, avoid
-  // passing it around by value, but by reference or pointer.
-  //
-  // The value in Entry::original_size cannot be trusted, so the real size of
+  // The value in |Entry::original_size| cannot be trusted, so the real size of
   // the uncompressed contents can be different. |max_read_bytes| limits the
-  // ammount of memory used to carry the entry.
+  // amount of memory used to carry the entry.
   //
-  // Returns true if the entire content is read. If the entry is bigger than
-  // |max_read_bytes|, returns false and |output| is filled with
-  // |max_read_bytes| of data. If an error occurs, returns false, and |output|
-  // is set to the empty string.
+  // Returns true if the entire content is read without error. If the content is
+  // bigger than |max_read_bytes|, this function returns false and |*output| is
+  // filled with |max_read_bytes| of data. If an error occurs, this function
+  // returns false and |*output| contains the content extracted so far, which
+  // might be garbage data.
   //
   // Precondition: Next() returned a non-null Entry.
   bool ExtractCurrentEntryToString(uint64_t max_read_bytes,
                                    std::string* output) const;
+
+  bool ExtractCurrentEntryToString(std::string* output) const {
+    return ExtractCurrentEntryToString(
+        base::checked_cast<uint64_t>(output->max_size()), output);
+  }
 
   // Returns the number of entries in the ZIP archive.
   //
@@ -254,7 +259,7 @@ class ZipReader {
   void ExtractChunk(base::File target_file,
                     SuccessCallback success_callback,
                     FailureCallback failure_callback,
-                    const ProgressCallback& progress_callback,
+                    ProgressCallback progress_callback,
                     const int64_t offset);
 
   std::string encoding_;

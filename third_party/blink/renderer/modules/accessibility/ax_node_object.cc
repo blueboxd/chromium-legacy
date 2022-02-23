@@ -86,6 +86,7 @@
 #include "third_party/blink/renderer/core/html/html_map_element.h"
 #include "third_party/blink/renderer/core/html/html_meter_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_table_caption_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
@@ -966,7 +967,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (IsA<HTMLSummaryElement>(*GetNode())) {
     ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
-    if (IsA<HTMLSlotElement>(parent))
+    if (ToHTMLSlotElementIfSupportsAssignmentOrNull(parent))
       parent = LayoutTreeBuilderTraversal::Parent(*parent);
     if (parent && IsA<HTMLDetailsElement>(parent))
       return ax::mojom::blink::Role::kDisclosureTriangle;
@@ -4584,20 +4585,9 @@ void AXNodeObject::ChildrenChangedWithCleanLayout() {
   // now layout is clean.
   SetNeedsToUpdateChildren();
 
-  // If this object is not included in the tree, then our parent needs to
-  // recompute its included-in-the-tree children vector. (And if our parent
-  // isn't included in the tree either, it will recursively update its parent
-  // and so on.)
-  //
-  // The first ancestor that's included in the tree will
-  // be the one that actually fires the ChildrenChanged
-  // event notification.
-  if (!LastKnownIsIncludedInTreeValue()) {
-    if (AXObject* ax_parent = CachedParentObject()) {
-      ax_parent->ChildrenChangedWithCleanLayout();
-      return;
-    }
-  }
+  SANITIZER_CHECK(LastKnownIsIncludedInTreeValue())
+      << "Should only fire children changed on included nodes: "
+      << ToString(true, true);
 
   // TODO(accessibility) Move this up.
   if (!CanHaveChildren())

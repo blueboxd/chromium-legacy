@@ -42,6 +42,7 @@
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
@@ -449,7 +450,7 @@ FileManagerPrivateGetZipProgressFunction::ZipProgressValue(
 
     // Remove the matching ZipFileCreator from the list of active ones.
     const size_t n = zip_creators->erase(zip_id_);
-    DCHECK_LT(0, n);
+    DCHECK_GT(n, 0u);
   }
 
   return TwoArguments(base::Value(static_cast<int>(progress.result)),

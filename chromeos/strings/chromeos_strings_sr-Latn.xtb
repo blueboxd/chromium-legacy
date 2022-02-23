@@ -182,6 +182,7 @@
 <translation id="3456078764689556234">Odštampanih stranica: <ph name="PRINTED_PAGES" /> od <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Skenira se <ph name="PAGE_NUM" />. stranica. Dovršeno je <ph name="PERCENTAGE_VALUE" />%.</translation>
 <translation id="3459509316159669723">Štampanje</translation>
+<translation id="346539236881580388">Ponovo snimi</translation>
 <translation id="3484914941826596830">Ne isključujte spoljni uređaj ni računar dok se firmver ažurira. Možete da umanjite ovaj prozor. Ovo ažuriranje može da potraje nekoliko minuta, a spoljni uređaj možda neće raditi tokom tog perioda.</translation>
 <translation id="3486220673238053218">definicija</translation>
 <translation id="3488065109653206955">Delimično aktivirano</translation>
@@ -231,6 +232,7 @@
 <translation id="4145784616224233563">HTTP zaštitni zid</translation>
 <translation id="4147897805161313378">Google slike</translation>
 <translation id="4155551848414053977">Proverite da li je skener uključen i dostupan preko mreže ili direktne veze</translation>
+<translation id="4170180284036919717">Slikajte</translation>
 <translation id="4170700058716978431">NIJE USPELO</translation>
 <translation id="4176463684765177261">Onemogućeno</translation>
 <translation id="4213104098953699324">USB tastatura</translation>

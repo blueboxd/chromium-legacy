@@ -152,8 +152,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
 
 // Confirms that a page using a dedicated worker with WebTransport is not
 // cached.
+// TODO(crbug.com/1299018): Flakes on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_DoNotCacheWithDedicatedWorkerWithWebTransport \
+  DISABLED_DoNotCacheWithDedicatedWorkerWithWebTransport
+#else
+#define MAYBE_DoNotCacheWithDedicatedWorkerWithWebTransport \
+  DoNotCacheWithDedicatedWorkerWithWebTransport
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheWithDedicatedWorkerBrowserTest,
-                       DoNotCacheWithDedicatedWorkerWithWebTransport) {
+                       MAYBE_DoNotCacheWithDedicatedWorkerWithWebTransport) {
   CreateHttpsServer();
   ASSERT_TRUE(https_server()->Start());
 
@@ -3817,7 +3825,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebMidiNotCached) {
 }
 
 // TODO(https://crbug.com/1286474): This test is flaking on some Android bots.
-#if BUILDFLAG(IS_ANDROID)
+// TODO(crbug.com/1297406): Also flaky on Mac and Linux.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 #define MAYBE_PresentationConnectionClosed DISABLED_PresentationConnectionClosed
 #else
 #define MAYBE_PresentationConnectionClosed PresentationConnectionClosed

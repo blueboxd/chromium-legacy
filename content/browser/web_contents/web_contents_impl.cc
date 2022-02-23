@@ -2713,9 +2713,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.canvas_2d_layers_enabled =
       command_line.HasSwitch(switches::kEnableCanvas2DLayers) ||
       base::FeatureList::IsEnabled(features::kEnableCanvas2DLayers);
-  prefs.new_canvas_2d_api_enabled =
-      command_line.HasSwitch(switches::kEnableNewCanvas2DAPI) ||
-      base::FeatureList::IsEnabled(features::kEnableNewCanvas2DAPI);
   prefs.antialiased_2d_canvas_disabled =
       command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
   prefs.antialiased_clips_2d_canvas_enabled =
@@ -3932,8 +3929,10 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   // this named frame have proxies for it.  Must be called after
   // SetSessionStorageNamespace, since this calls CreateRenderView, which uses
   // GetSessionStorageNamespace.
-  if (!params.frame_name.empty())
-    new_contents_impl->GetRenderManager()->CreateProxiesForNewNamedFrame();
+  if (!params.frame_name.empty()) {
+    new_contents_impl->GetRenderManager()->CreateProxiesForNewNamedFrame(
+        new_contents_impl->GetMainFrame()->browsing_context_state());
+  }
 
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately).
@@ -7627,10 +7626,11 @@ void WebContentsImpl::EnsureOpenerProxiesExist(
       // process but we intentionally do not expose the embedder's opener chain
       // to it.
       source_web_contents->GetRenderManager()->CreateRenderFrameProxy(
-          GetSiteInstance());
+          GetSiteInstance(),
+          source_web_contents->GetMainFrame()->browsing_context_state());
     } else {
       source_rfh->frame_tree_node()->render_manager()->CreateOpenerProxies(
-          GetSiteInstance(), nullptr);
+          GetSiteInstance(), nullptr, source_rfh->browsing_context_state());
     }
   }
 }

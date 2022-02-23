@@ -3735,10 +3735,12 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
   isolation_info_ = ComputeIsolationInfoInternal(
       new_frame_origin, net::IsolationInfo::RequestType::kOther, anonymous());
   SetLastCommittedOrigin(new_frame_origin);
-  DCHECK(isolation_info_.top_frame_origin().has_value());
+
+  url::Origin top_frame_origin =
+      CalculateTopLevelOriginForStorageKey(new_frame_origin);
+
   SetStorageKey(blink::StorageKey::CreateWithOptionalNonce(
-      new_frame_origin,
-      net::SchemefulSite(isolation_info_.top_frame_origin().value()),
+      new_frame_origin, net::SchemefulSite(top_frame_origin),
       base::OptionalOrNullptr(isolation_info_.nonce()),
       ComputeSiteForCookies().IsNull()
           ? blink::mojom::AncestorChainBit::kCrossSite
@@ -5387,7 +5389,8 @@ void RenderFrameHostImpl::DidChangeName(const std::string& name,
   std::string old_name = browsing_context_state_->frame_name();
   frame_tree_node()->SetFrameName(name, unique_name);
   if (old_name.empty() && !name.empty())
-    frame_tree_node_->render_manager()->CreateProxiesForNewNamedFrame();
+    frame_tree_node_->render_manager()->CreateProxiesForNewNamedFrame(
+        browsing_context_state_);
   delegate_->DidChangeName(this, name);
 }
 
@@ -7862,7 +7865,7 @@ void RenderFrameHostImpl::UpdateOpener() {
   // exist.
   if (frame_tree_node_->opener()) {
     frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
-        GetSiteInstance(), frame_tree_node_);
+        GetSiteInstance(), frame_tree_node_, browsing_context_state_);
   }
 
   auto opener_frame_token =
@@ -9009,7 +9012,7 @@ bool RenderFrameHostImpl::IsActive() {
 size_t RenderFrameHostImpl::GetProxyCount() {
   if (!IsActive())
     return 0;
-  return frame_tree_node_->render_manager()->GetProxyCount();
+  return browsing_context_state_->GetProxyCount();
 }
 
 bool RenderFrameHostImpl::HasSelection() {
@@ -10495,7 +10498,8 @@ bool RenderFrameHostImpl::ValidateURLAndOrigin(
                   << " origin '" << origin << "'"
                   << " lock '" << process->GetProcessLock().ToString() << "'";
       DEBUG_ALIAS_FOR_ORIGIN(origin_debug_alias, origin);
-      LogCannotCommitOriginCrashKeys(is_same_document_navigation,
+      LogCannotCommitOriginCrashKeys(url, origin, process->GetProcessLock(),
+                                     is_same_document_navigation,
                                      navigation_request);
 
       // Kills the process.
@@ -10921,9 +10925,14 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   // with `param.origin` anymore.
   const blink::StorageKey& provisional_storage_key =
       navigation_request->commit_params().storage_key;
+
+  url::Origin origin = GetLastCommittedOrigin();
+  net::SchemefulSite top_level_site =
+      net::SchemefulSite(CalculateTopLevelOriginForStorageKey(origin));
+
   blink::StorageKey storage_key_to_commit =
       blink::StorageKey::CreateWithOptionalNonce(
-          GetLastCommittedOrigin(), provisional_storage_key.top_level_site(),
+          origin, top_level_site,
           base::OptionalOrNullptr(provisional_storage_key.nonce()),
           ComputeSiteForCookies().IsNull()
               ? blink::mojom::AncestorChainBit::kCrossSite
@@ -10989,7 +10998,6 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   reporting_endpoints_.clear();
   DCHECK(navigation_request);
 
-  const url::Origin& origin = GetLastCommittedOrigin();
   // Reporting API: If a Reporting-Endpoints header was received with this
   // document over secure connection, send it to the network service to
   // configure the endpoints in the reporting cache.
@@ -12340,6 +12348,9 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
+    const GURL& url,
+    const url::Origin& origin,
+    const ProcessLock& process_lock,
     bool is_same_document_navigation,
     NavigationRequest* navigation_request) {
   LogRendererKillCrashKeys(GetSiteInstance()->GetSiteInfo());
@@ -12347,6 +12358,50 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
   // Temporary instrumentation to debug the root cause of
   // https://crbug.com/923144.
   auto bool_to_crash_key = [](bool b) { return b ? "true" : "false"; };
+
+  static auto* const target_url_key = base::debug::AllocateCrashKeyString(
+      "target_url", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(target_url_key, url.spec());
+
+  static auto* const target_origin_key = base::debug::AllocateCrashKeyString(
+      "target_origin", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(target_origin_key, origin.GetDebugString());
+
+  const url::Origin url_origin = url::Origin::Resolve(url, origin);
+  const auto target_url_origin_tuple_or_precursor_tuple =
+      url_origin.GetTupleOrPrecursorTupleIfOpaque();
+  static auto* const target_url_origin_tuple_key =
+      base::debug::AllocateCrashKeyString("target_url_origin_tuple",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(
+      target_url_origin_tuple_key,
+      target_url_origin_tuple_or_precursor_tuple.Serialize());
+
+  const auto target_origin_tuple_or_precursor_tuple =
+      origin.GetTupleOrPrecursorTupleIfOpaque();
+  static auto* const target_origin_tuple_key =
+      base::debug::AllocateCrashKeyString("target_origin_tuple",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(
+      target_origin_tuple_key,
+      target_origin_tuple_or_precursor_tuple.Serialize());
+
+  static auto* const last_committed_url_key =
+      base::debug::AllocateCrashKeyString("last_committed_url",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(last_committed_url_key,
+                                 GetLastCommittedURL().spec());
+
+  static auto* const last_committed_origin_key =
+      base::debug::AllocateCrashKeyString("last_committed_origin",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(last_committed_origin_key,
+                                 GetLastCommittedOrigin().GetDebugString());
+
+  static auto* const process_lock_key = base::debug::AllocateCrashKeyString(
+      "process_lock", base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(process_lock_key, process_lock.ToString());
+
   static auto* const is_same_document_key = base::debug::AllocateCrashKeyString(
       "is_same_document", base::debug::CrashKeySize::Size32);
   base::debug::SetCrashKeyString(

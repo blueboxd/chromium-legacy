@@ -82,17 +82,14 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   const std::string& GetAppId() const;
 
   apps::mojom::Readiness Readiness() const;
-  apps::mojom::Readiness PriorReadiness() const;
+  apps::Readiness PriorReadiness() const;
   apps::Readiness GetReadiness() const;
-  apps::Readiness GetPriorReadiness() const;
   bool ReadinessChanged() const;
 
   const std::string& Name() const;
-  const std::string& GetName() const;
   bool NameChanged() const;
 
   const std::string& ShortName() const;
-  const std::string& GetShortName() const;
   bool ShortNameChanged() const;
 
   // The publisher-specific ID for this app, e.g. for Android apps, this field

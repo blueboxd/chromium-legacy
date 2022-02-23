@@ -188,6 +188,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDriveFsMirroring;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEchePhoneHubPermissionsOnboarding;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWA;
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheCustomWidget;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWAResizing;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWADebugMode;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWAInBackground;
@@ -390,6 +391,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kOsFeedback;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeConsolidatedConsent;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kOobeHidDetectionRevamp;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeQuickStart;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeNewRecommendApps;
@@ -579,6 +582,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDragUnpinnedAppToPinEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDragWindowToNewDeskEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEchePhoneHubPermissionsOnboarding();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheCustomWidgetEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAResizingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWADebugModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAInBackgroundEnabled();
@@ -642,6 +646,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNotificationsInContextMenuEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsNotificationsRefreshEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOAuthIppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeChromeVoxHintEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeHidDetectionRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobePolymer3Enabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeNetworkScreenSkipEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeConsolidatedConsentEnabled();

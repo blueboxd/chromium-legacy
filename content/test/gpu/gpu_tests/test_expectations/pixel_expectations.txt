@@ -295,15 +295,19 @@ crbug.com/1213920 [ win10 skia-renderer-dawn ] Pixel_WebGPU* [ Failure ]
 
 # WebGPU pixel tests crash on multiple mac fyi  bots.
 crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUImport* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUImport* [ Skip ]
 crbug.com/1213170 [ mac amd-0x679e ] Pixel_WebGPUImport* [ Skip ]
 crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUImport* [ Skip ]
 
 crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUCanvas* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUCanvas2DDrawImage [ Skip ]
 crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUCanvas* [ Skip ]
 
 crbug.com/1213170 [ mac asan ] Pixel_WebGPUWebGL* [ Skip ]
 crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUCopyExternalImage* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUCopyExternalImage* [ Skip ]
 crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUCopyExternalImage* [ Skip ]
+crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUWebGLTexImage2D [ Skip ]
 
 # WebGPU pixel tests fail on Linux+SkiaRenderer+Vulkan
 crbug.com/1213657 [ linux skia-renderer-vulkan ] Pixel_WebGPU* [ Skip ]
@@ -358,9 +362,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 
 # Producing blank images on Macmini and Macbook Pro
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
-
-# Flaky test on SkiaRenderer vulkan android bot.
-crbug.com/1252081 [ android skia-renderer-vulkan android-chromium ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 
 # Producing incorrect image on Win10 Intel HD 630 and UHD 630 w/ 26.20.100.6912
 # or later drivers.
@@ -467,12 +468,15 @@ crbug.com/1213542 [ skia-renderer-gl mac intel-0x3e9b no-passthrough ] Pixel_Vid
 crbug.com/1213542 [ skia-renderer-gl mac amd-0x6821 passthrough ] Pixel_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
 
 # Flaky on Pixel 4 Android WebView
-crbug.com/1278893 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 crbug.com/1285084 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_CSS3DBlueBox [ RetryOnFailure ]
+crbug.com/1273033 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Failure ]
 
 # Flaky failures on Win10 AMD RX 5500 XT
 crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_Video_VP9_YUY2 [ Failure ]
 crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_Video_VP9_BGRA [ Failure ]
+
+# Pixel 4 Flaky Failures - Passthrough, WebView and Validating
+crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
 # Pixel 6 failures.
 crbug.com/1286915 [ android android-pixel-6 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]

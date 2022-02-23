@@ -13,10 +13,11 @@ struct PopupView: View {
           PopupMatchRowView(match: match)
             .deleteDisabled(!match.supportsDeletion)
         }
-        .onDelete { indexSet in model.matches.remove(atOffsets: indexSet) }
-      }
-      Button("Add matches") {
-        model.buttonHandler()
+        .onDelete { indexSet in
+          for matchIndex in indexSet {
+            model.matches[matchIndex].selectedForDeletion()
+          }
+        }
       }
     }
   }
@@ -26,6 +27,6 @@ struct PopupView_Previews: PreviewProvider {
   static var previews: some View {
     PopupView(
       model: PopupModel(
-        matches: PopupMatch.previews, buttonHandler: {}))
+        matches: PopupMatch.previews))
   }
 }

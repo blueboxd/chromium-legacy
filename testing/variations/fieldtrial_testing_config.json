@@ -3506,6 +3506,21 @@
             ]
         }
     ],
+    "IOSTabGridSearch": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IOSTabGridSearch"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSUseUserDefaultsForExitedCleanlyBeacon": [
         {
             "platforms": [
@@ -4412,6 +4427,25 @@
                     },
                     "enable_features": [
                         "OneTimeGeolocationPermission"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OnlySendStoragePolicyUpdatesForModifiedOrigins": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220222",
+                    "enable_features": [
+                        "OnlySendStoragePolicyUpdatesForModifiedOrigins"
                     ]
                 }
             ]
@@ -5414,21 +5448,6 @@
             ]
         }
     ],
-    "RemoveExcessNTPs": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "RemoveExcessNTPs"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReportCertificateErrors": [
         {
             "platforms": [
@@ -5569,18 +5588,18 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledTfLiteAndBaseline_20220111",
+                    "name": "EnabledTfLiteAndBaseline_20220217",
                     "params": {
-                        "reporter_omaha_tag": "27.4"
+                        "reporter_omaha_tag": "27.6"
                     },
                     "enable_features": [
                         "ClientSideDetectionTag"
                     ]
                 },
                 {
-                    "name": "EnabledTfLiteOnly_20220111",
+                    "name": "EnabledTfLiteOnly_20220217",
                     "params": {
-                        "reporter_omaha_tag": "27.3"
+                        "reporter_omaha_tag": "27.7"
                     },
                     "enable_features": [
                         "ClientSideDetectionTag"
@@ -5843,16 +5862,29 @@
             ]
         }
     ],
-    "SingleNTP": [
+    "SingleNTPRemoveExcessNTPs": [
         {
             "platforms": [
                 "ios"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_SingleNTP_RemoveExtraNTP",
+                    "enable_features": [
+                        "RemoveExcessNTPs",
+                        "SingleNTP"
+                    ]
+                },
+                {
+                    "name": "Enabled_SingleNTP",
                     "enable_features": [
                         "SingleNTP"
+                    ]
+                },
+                {
+                    "name": "Enabled_RemoveExtraNTP",
+                    "enable_features": [
+                        "RemoveExcessNTPs"
                     ]
                 }
             ]

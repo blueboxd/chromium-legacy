@@ -3233,6 +3233,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableOfficeEditingComponentAppName,
      flag_descriptions::kDisableOfficeEditingComponentAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDisableOfficeEditingComponentApp)},
+    {"oobe-hid-detection-revamp",
+     flag_descriptions::kOobeHidDetectionRevampName,
+     flag_descriptions::kOobeHidDetectionRevampDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kOobeHidDetectionRevamp)},
     {"quick-settings-network-revamp",
      flag_descriptions::kQuickSettingsNetworkRevampName,
      flag_descriptions::kQuickSettingsNetworkRevampDescription, kOsCrOS,
@@ -4651,6 +4655,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"spectre-v2-mitigation", flag_descriptions::kSpectreVariant2MitigationName,
      flag_descriptions::kSpectreVariant2MitigationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(sandbox::policy::features::kSpectreVariant2Mitigation)},
+    {"eche-custom-widget", flag_descriptions::kEcheCustomWidgetName,
+     flag_descriptions::kEcheSWADescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEcheCustomWidget)},
     {"eche-phone-hub-permissions-onboarding",
      flag_descriptions::kEchePhoneHubPermissionsOnboardingName,
      flag_descriptions::kEchePhoneHubPermissionsOnboardingDescription, kOsCrOS,
@@ -4774,9 +4781,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPedalsBatch2NonEnglishName,
      flag_descriptions::kOmniboxPedalsBatch2NonEnglishDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch2NonEnglish)},
-    {"omnibox-pedals-batch3", flag_descriptions::kOmniboxPedalsBatch3Name,
-     flag_descriptions::kOmniboxPedalsBatch3Description, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxPedalsBatch3)},
     {"omnibox-pedals-batch3-nonenglish",
      flag_descriptions::kOmniboxPedalsBatch3NonEnglishName,
      flag_descriptions::kOmniboxPedalsBatch3NonEnglishDescription, kOsDesktop,
@@ -6174,10 +6178,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "MetricsSettingsAndroid")},
 #endif
 
-    {"search-history-link", flag_descriptions::kSearchHistoryLinkName,
-     flag_descriptions::kSearchHistoryLinkDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kSearchHistoryLink)},
-
 #if BUILDFLAG(IS_ANDROID)
     {"safe-browsing-password-protection-for-signed-in-users",
      flag_descriptions::kPasswordProtectionForSignedInUsersName,
@@ -6823,10 +6823,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCanvas2DLayersDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableCanvas2DLayers)},
 
-    {"new-canvas-2d-api", flag_descriptions::kNewCanvas2DAPIName,
-     flag_descriptions::kNewCanvas2DAPIDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableNewCanvas2DAPI)},
-
     {"enable-translate-sub-frames",
      flag_descriptions::kEnableTranslateSubFramesName,
      flag_descriptions::kEnableTranslateSubFramesDescription, kOsAll,
@@ -6925,16 +6921,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoReauthenticationForAndroid)},
 #endif
-
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-    {"incognito-clear-browsing-data-dialog-for-desktop",
-     flag_descriptions::kIncognitoClearBrowsingDataDialogForDesktopName,
-     flag_descriptions::kIncognitoClearBrowsingDataDialogForDesktopDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kIncognitoClearBrowsingDataDialogForDesktop)},
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 
     {"consolidated-site-storage-controls",
      flag_descriptions::kConsolidatedSiteStorageControlsName,
@@ -7080,6 +7066,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPwaUpdateDialogForNameAndIconName,
      flag_descriptions::kPwaUpdateDialogForNameAndIconDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPwaUpdateDialogForNameAndIcon)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"sync-android-promos-revamp",
+     flag_descriptions::kSyncAndroidPromosRevampName,
+     flag_descriptions::kSyncAndroidPromosRevampDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(syncer::kSyncAndroidPromosRevamp)},
+#endif
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
     {"enable-oop-print-drivers", flag_descriptions::kEnableOopPrintDriversName,
@@ -8241,23 +8234,23 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   }
 
   if (!strcmp(kLacrosSupportInternalName, entry.internal_name)) {
-    return !crosapi::browser_util::IsLacrosSupportFlagAllowed(channel);
+    return !crosapi::browser_util::IsLacrosSupportFlagAllowed();
   }
 
   if (!strcmp(kLacrosStabilityInternalName, entry.internal_name)) {
-    return !crosapi::browser_util::IsLacrosAllowedToBeEnabled(channel);
+    return !crosapi::browser_util::IsLacrosAllowedToBeEnabled();
   }
 
   if (!strcmp(kLacrosOnlyInternalName, entry.internal_name)) {
-    return !crosapi::browser_util::IsLacrosOnlyFlagAllowed(channel);
+    return !crosapi::browser_util::IsLacrosOnlyFlagAllowed();
   }
 
   if (!strcmp(kLacrosPrimaryInternalName, entry.internal_name)) {
-    return !crosapi::browser_util::IsLacrosPrimaryFlagAllowed(channel);
+    return !crosapi::browser_util::IsLacrosPrimaryFlagAllowed();
   }
 
   if (!strcmp(kWebAppsCrosapiInternalName, entry.internal_name)) {
-    return !crosapi::browser_util::IsLacrosAllowedToBeEnabled(channel);
+    return !crosapi::browser_util::IsLacrosAllowedToBeEnabled();
   }
 
   if (!strcmp(kArcVmBalloonPolicyInternalName, entry.internal_name)) {

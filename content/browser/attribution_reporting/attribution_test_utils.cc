@@ -135,14 +135,24 @@ ConfigurableStorageDelegate::GetOfflineReportDelayConfig() const {
 }
 
 void ConfigurableStorageDelegate::ShuffleReports(
-    std::vector<AttributionReport>& reports) const {
+    std::vector<AttributionReport>& reports) {
   if (reverse_reports_on_shuffle_)
     base::ranges::reverse(reports);
 }
 
+double ConfigurableStorageDelegate::GetRandomizedResponseRate(
+    CommonSourceInfo::SourceType source_type) const {
+  switch (source_type) {
+    case CommonSourceInfo::SourceType::kNavigation:
+      return randomized_response_rates_.navigation;
+    case CommonSourceInfo::SourceType::kEvent:
+      return randomized_response_rates_.event;
+  }
+}
+
 AttributionStorageDelegate::RandomizedResponse
 ConfigurableStorageDelegate::GetRandomizedResponse(
-    const CommonSourceInfo& source) const {
+    const CommonSourceInfo& source) {
   return randomized_response_;
 }
 
@@ -409,6 +419,11 @@ ReportBuilder& ReportBuilder::SetExternalReportId(
   return *this;
 }
 
+ReportBuilder& ReportBuilder::SetRandomizedTriggerRate(double rate) {
+  randomized_trigger_rate_ = rate;
+  return *this;
+}
+
 ReportBuilder& ReportBuilder::SetReportId(
     absl::optional<AttributionReport::EventLevelData::Id> id) {
   report_id_ = id;
@@ -418,7 +433,8 @@ ReportBuilder& ReportBuilder::SetReportId(
 AttributionReport ReportBuilder::Build() const {
   return AttributionReport(
       attribution_info_, report_time_, external_report_id_,
-      AttributionReport::EventLevelData(trigger_data_, priority_, report_id_));
+      AttributionReport::EventLevelData(trigger_data_, priority_,
+                                        randomized_trigger_rate_, report_id_));
 }
 
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
@@ -482,9 +498,9 @@ bool operator==(const StoredSource& a, const StoredSource& b) {
   return tie(a) == tie(b);
 }
 
-bool operator==(const HistogramContribution& a,
-                const HistogramContribution& b) {
-  const auto tie = [](const HistogramContribution& contribution) {
+bool operator==(const AggregatableHistogramContribution& a,
+                const AggregatableHistogramContribution& b) {
+  const auto tie = [](const AggregatableHistogramContribution& contribution) {
     return std::make_tuple(contribution.bucket(), contribution.value());
   };
   return tie(a) == tie(b);
@@ -505,7 +521,8 @@ bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b) {
 bool operator==(const AttributionReport::EventLevelData& a,
                 const AttributionReport::EventLevelData& b) {
   const auto tie = [](const AttributionReport::EventLevelData& data) {
-    return std::make_tuple(data.trigger_data, data.priority);
+    return std::make_tuple(data.trigger_data, data.priority,
+                           data.randomized_trigger_rate);
   };
   return tie(a) == tie(b);
 }
@@ -702,8 +719,9 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
   return out << "]}";
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const HistogramContribution& contribution) {
+std::ostream& operator<<(
+    std::ostream& out,
+    const AggregatableHistogramContribution& contribution) {
   return out << "{bucket=" << contribution.bucket()
              << ",value=" << contribution.value() << "}";
 }
@@ -717,7 +735,7 @@ std::ostream& operator<<(
       << ",contributions=[";
 
   const char* separator = "";
-  for (const HistogramContribution& contribution :
+  for (const AggregatableHistogramContribution& contribution :
        aggregatable_attribution.contributions) {
     out << separator << contribution;
     separator = ", ";
@@ -730,6 +748,7 @@ std::ostream& operator<<(std::ostream& out,
                          const AttributionReport::EventLevelData& data) {
   return out << "{trigger_data=" << data.trigger_data
              << ",priority=" << data.priority
+             << ",randomized_trigger_rate=" << data.randomized_trigger_rate
              << ",id=" << (data.id ? base::NumberToString(**data.id) : "null")
              << "}";
 }

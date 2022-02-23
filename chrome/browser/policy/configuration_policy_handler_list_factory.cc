@@ -47,6 +47,7 @@
 #include "chrome/browser/ssl/secure_origin_policy_handler.h"
 #include "chrome/browser/themes/theme_color_policy_handler.h"
 #include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
+#include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -141,6 +142,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/accessibility/magnifier_type.h"
 #include "chrome/browser/ash/borealis/borealis_prefs.h"
@@ -152,7 +154,6 @@
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/account_manager_core/pref_names.h"
 #include "components/drive/drive_pref_names.h"  // nogncheck crbug.com/1125897
 #include "components/user_manager/user.h"
@@ -1613,6 +1614,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kWindowPlacementBlockedForUrls,
     prefs::kManagedWindowPlacementBlockedForUrls,
     base::Value::Type::LIST },
+#if !BUILDFLAG(IS_ANDROID)
+  { key::kWebAuthenticationRemoteProxiedRequestsAllowed,
+    webauthn::pref_names::kRemoteProxiedRequestsAllowed,
+    base::Value::Type::BOOLEAN },
+#endif
 };
 // clang-format on
 

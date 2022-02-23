@@ -237,6 +237,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>());
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SystemHandler>());
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  html_source->AddBoolean("isSecondaryUser", !profile->IsMainProfile());
+#endif
+
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -325,10 +329,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));
-
-  html_source->AddBoolean(
-      "searchHistoryLink",
-      base::FeatureList::IsEnabled(features::kSearchHistoryLink));
 
   // Add a handler to provide pluralized strings.
   auto plural_string_handler = std::make_unique<PluralStringHandler>();

@@ -1589,6 +1589,39 @@ TEST_F(DesksTemplatesTest, LaunchTemplateAfterClosingActiveDesk) {
   EXPECT_TRUE(InOverviewSession());
 }
 
+// Tests that multiple feedback buttons aren't created when we transition
+// between hiding and showing the templates grid without leaving overview.
+// Regression test for https://crbug.com/1299114.
+TEST_F(DesksTemplatesTest, HideAndShowTemplatesGridWithoutLeavingOverview) {
+  // One window is needed to save a template.
+  auto window = CreateAppWindow();
+
+  // Open overview and save a template. This will also take us to the desks
+  // templates grid view.
+  OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
+  ASSERT_EQ(1ul, GetAllEntries().size());
+
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
+  const auto* templates_grid_view =
+      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+
+  // The grid has one template item and one feedback button.
+  ASSERT_EQ(2ul, templates_grid_view->children().size());
+
+  // Click on the grid item to launch the template.
+  ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
+  WaitForDesksTemplatesUI();
+  EXPECT_TRUE(InOverviewSession());
+
+  // Go back to the templates grid and verify a new feedback button wasn't
+  // created. There should still be only one template item and one feedback
+  // button.
+  ShowDesksTemplatesGrids();
+  WaitForDesksTemplatesUI();
+  ASSERT_EQ(2ul, templates_grid_view->children().size());
+}
+
 // Tests that if we open the desks templates grid a second time during an
 // overview session, we can still see the template items. Opening a second time
 // can be done after deleting all the templates from the first open. Regression
@@ -2716,6 +2749,37 @@ TEST_F(DesksTemplatesTest, ClickOrTapToExitGridView) {
                                   gfx::Vector2d(20, 20));
     EXPECT_FALSE(GetOverviewSession());
   }
+}
+
+// Tests that if there is an existing visible on all desks window, after
+// launching a new desk the window is part of the new desk and is in an overview
+// item.
+TEST_F(DesksTemplatesTest, VisibleOnAllDesksWindowShownProperly) {
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(1, controller->GetNumberOfDesks());
+
+  AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now());
+
+  // Create a window which is shown on all desks.
+  auto window = CreateAppWindow(gfx::Rect(300, 300));
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window.get());
+  widget->SetVisibleOnAllWorkspaces(true);
+  ASSERT_TRUE(desks_util::IsWindowVisibleOnAllWorkspaces(window.get()));
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  // Click on the template item to launch the new template.
+  DesksTemplatesItemView* template_item =
+      GetItemViewFromTemplatesGrid(/*grid_item_index=*/0);
+  DCHECK(template_item);
+  ClickOnView(template_item);
+  WaitForDesksTemplatesUI();
+  ASSERT_EQ(2, controller->GetNumberOfDesks());
+
+  // The visible on all desks window belongs to the active desk, and has an
+  // associated overview item.
+  EXPECT_TRUE(controller->BelongsToActiveDesk(window.get()));
+  EXPECT_TRUE(GetOverviewItemForWindow(window.get()));
 }
 
 }  // namespace ash

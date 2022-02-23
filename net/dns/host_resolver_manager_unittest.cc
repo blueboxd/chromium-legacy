@@ -5561,7 +5561,7 @@ TEST_F(HostResolverManagerDnsTest, Ipv6UnreachableOnlyDisablesAAAAQuery) {
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, SeparateJobsBySecureDnsMode) {
@@ -7697,8 +7697,8 @@ TEST_F(HostResolverManagerDnsTest, DnsAliases) {
   ASSERT_THAT(response.result_error(), IsOk());
   ASSERT_TRUE(response.request()->GetAddressResults());
   EXPECT_THAT(response.request()->GetAddressResults()->dns_aliases(),
-              testing::ElementsAre("fourth.test", "third.test", "second.test",
-                                   "first.test"));
+              testing::UnorderedElementsAre("fourth.test", "third.test",
+                                            "second.test", "first.test"));
 
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
               testing::Pointee(testing::UnorderedElementsAre(
@@ -7775,64 +7775,6 @@ TEST_F(HostResolverManagerDnsTest, NoAdditionalDnsAliases) {
               testing::ElementsAre("first.test"));
   EXPECT_THAT(response.request()->GetDnsAliasResults(),
               testing::Pointee(testing::UnorderedElementsAre("first.test")));
-}
-
-TEST_F(HostResolverManagerDnsTest, SortsAndDeduplicatesAddresses) {
-  MockDnsClientRuleList rules;
-
-  {
-    std::vector<DnsResourceRecord> answers(
-        3, BuildTestAddressRecord("duplicate", IPAddress::IPv4Localhost()));
-    std::string dns_name;
-    CHECK(DNSDomainFromDot("duplicate", &dns_name));
-    absl::optional<DnsQuery> query(absl::in_place, 0, dns_name,
-                                   dns_protocol::kTypeA);
-
-    rules.emplace_back(
-        "duplicate", dns_protocol::kTypeA, false /* secure */,
-        MockDnsClientRule::Result(DnsResponse(
-            0, false, std::move(answers),
-            std::vector<DnsResourceRecord>() /* authority_records */,
-            std::vector<DnsResourceRecord>() /* additional_records */, query)),
-        false /* delay */);
-  }
-
-  {
-    std::vector<DnsResourceRecord> answers(
-        3, BuildTestAddressRecord("duplicate", IPAddress::IPv6Localhost()));
-    std::string dns_name;
-    CHECK(DNSDomainFromDot("duplicate", &dns_name));
-    absl::optional<DnsQuery> query(absl::in_place, 0, dns_name,
-                                   dns_protocol::kTypeAAAA);
-
-    rules.emplace_back(
-        "duplicate", dns_protocol::kTypeAAAA, false /* secure */,
-        MockDnsClientRule::Result(DnsResponse(
-            0, false, std::move(answers),
-            std::vector<DnsResourceRecord>() /* authority_records */,
-            std::vector<DnsResourceRecord>() /* additional_records */, query)),
-        false /* delay */);
-  }
-
-  CreateResolver();
-  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
-
-  ResolveHostResponseHelper response(resolver_->CreateRequest(
-      HostPortPair("duplicate", 80), NetworkIsolationKey(), NetLogWithSource(),
-      absl::nullopt, resolve_context_.get(), resolve_context_->host_cache()));
-  ASSERT_THAT(response.result_error(), IsOk());
-
-  EXPECT_THAT(
-      response.request()->GetAddressResults(),
-      testing::Pointee(testing::Property(
-          &AddressList::endpoints,
-          testing::ElementsAre(IPEndPoint(IPAddress::IPv6Localhost(), 80),
-                               IPEndPoint(IPAddress::IPv4Localhost(), 80)))));
-  EXPECT_THAT(
-      response.request()->GetEndpointResults(),
-      testing::Pointee(testing::ElementsAre(ExpectEndpointResult(
-          testing::ElementsAre(IPEndPoint(IPAddress::IPv6Localhost(), 80),
-                               IPEndPoint(IPAddress::IPv4Localhost(), 80))))));
 }
 
 TEST_F(HostResolverManagerTest, ResolveLocalHostname) {
@@ -9944,7 +9886,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsQuery) {
   // TODO(crbug.com/1225776): Check non-experimental HTTPS output once
   // available.
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, HttpsQueryForNonStandardPort) {
@@ -9979,7 +9921,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsQueryForNonStandardPort) {
   // TODO(crbug.com/1225776): Check non-experimental HTTPS output once
   // available.
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, HttpsQueryForHttpUpgrade) {
@@ -10011,7 +9953,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsQueryForHttpUpgrade) {
   // TODO(crbug.com/1225776): Check non-experimental HTTPS output once
   // available.
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 // Test that HTTPS requests for an http host with port 443 will result in a
@@ -10049,7 +9991,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsQueryForHttpUpgradeFromHttpsPort) {
   // TODO(crbug.com/1225776): Check non-experimental HTTPS output once
   // available.
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -10085,7 +10027,7 @@ TEST_F(HostResolverManagerDnsTest,
   // TODO(crbug.com/1225776): Check non-experimental HTTPS output once
   // available.
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery) {
@@ -10114,7 +10056,7 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery) {
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQueryRejectsIpLiteral) {
@@ -10207,7 +10149,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -10276,7 +10218,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery_MultipleResults) {
@@ -10306,7 +10248,7 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery_MultipleResults) {
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true, true)));
+              testing::Pointee(testing::ElementsAre(true, true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery_InvalidConfig) {
@@ -10550,7 +10492,7 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery_AdditionalRecords) {
   EXPECT_FALSE(response.request()->GetTextResults());
   // Additional records aren't currently used in results.
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsQuery_WrongType) {
@@ -10617,7 +10559,7 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsDnsQuery) {
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 // Same as ExperimentalHttpsInsecureQueryDisallowedWhenAdditionalTypesDisallowed
@@ -10689,7 +10631,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQuery) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithNonstandardPort) {
@@ -10732,7 +10674,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithNonstandardPort) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithoutAddresses) {
@@ -10811,7 +10753,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsQueriedInAddressQueryButNoResults) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 // For a response where DnsTransaction can at least do its basic parsing and
@@ -10857,7 +10799,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -10901,7 +10843,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -10987,7 +10929,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest, TimeoutHttpsInAddressRequestIsFatal) {
@@ -11174,7 +11116,7 @@ TEST_F(HostResolverManagerDnsTest, RefusedHttpsInAddressRequestIsIgnored) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryForWssScheme) {
@@ -11214,7 +11156,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryForWssScheme) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, NoHttpsInAddressQueryWithoutScheme) {
@@ -11340,7 +11282,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -11385,6 +11327,101 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_FALSE(response.request()->GetExperimentalResultsForTesting());
+}
+
+TEST_F(HostResolverManagerDnsTest,
+       HttpsInAddressQueryForHttpSchemeWhenUpgradeEnabledWithAliasRecord) {
+  const char kName[] = "name.test";
+
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
+
+  MockDnsClientRuleList rules;
+  std::vector<DnsResourceRecord> records = {
+      BuildTestHttpsAliasRecord(kName, "alias.test")};
+  rules.emplace_back(kName, dns_protocol::kTypeHttps, /*secure=*/true,
+                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                         kName, dns_protocol::kTypeHttps, records)),
+                     /*delay=*/false);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      /*delay=*/false);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeAAAA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      /*delay=*/false);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = SecureDnsMode::kSecure;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      url::SchemeHostPort(url::kHttpScheme, kName, 80), NetworkIsolationKey(),
+      NetLogWithSource(), absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_DNS_NAME_HTTPS_ONLY));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetEndpointResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetExperimentalResultsForTesting());
+}
+
+TEST_F(
+    HostResolverManagerDnsTest,
+    HttpsInAddressQueryForHttpSchemeWhenUpgradeEnabledWithIncompatibleServiceRecord) {
+  const char kName[] = "name.test";
+  const uint16_t kMadeUpParam = 65300;  // From the private-use block.
+
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kUseDnsHttpsSvcb, {{"UseDnsHttpsSvcbHttpUpgrade", "true"}});
+
+  MockDnsClientRuleList rules;
+  std::vector<DnsResourceRecord> records = {BuildTestHttpsServiceRecord(
+      kName, /*priority=*/1, /*service_name=*/".",
+      /*params=*/
+      {BuildTestHttpsServiceMandatoryParam({kMadeUpParam}),
+       {kMadeUpParam, "foo"}})};
+  rules.emplace_back(kName, dns_protocol::kTypeHttps, /*secure=*/true,
+                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                         kName, dns_protocol::kTypeHttps, records)),
+                     /*delay=*/false);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      /*delay=*/false);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeAAAA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      /*delay=*/false);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = SecureDnsMode::kSecure;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      url::SchemeHostPort(url::kHttpScheme, kName, 80), NetworkIsolationKey(),
+      NetLogWithSource(), absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  // Expect incompatible HTTPS record to have no effect on results (except
+  // `GetExperimentalResultsForTesting()` which returns the record
+  // compatibility).
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_TRUE(response.request()->GetAddressResults());
+  EXPECT_TRUE(response.request()->GetEndpointResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
+              testing::Pointee(testing::ElementsAre(false)));
 }
 
 // Even if no addresses are received for a request, finding an HTTPS record
@@ -11470,7 +11507,7 @@ TEST_F(HostResolverManagerDnsTest, HttpsInInsecureAddressQuery) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest, FailedHttpsInInsecureAddressRequestIgnored) {
@@ -11507,7 +11544,7 @@ TEST_F(HostResolverManagerDnsTest, FailedHttpsInInsecureAddressRequestIgnored) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -11545,7 +11582,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -11588,7 +11625,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -11628,7 +11665,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -11724,7 +11761,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest, HttpsInAddressQueryWithAbsoluteTimeout) {
@@ -12031,7 +12068,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 // Test that HTTPS timeouts are always respected for insecure requests.
@@ -12128,11 +12165,55 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsInAddressQuery) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
-       ExperimentalHttpsInAddressQuery_MultipleResults) {
+       ExperimentalHttpsInAddressQueryWithMultipleResults) {
+  const char kName[] = "combined.test";
+
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kDnsHttpssvc, {{"DnsHttpssvcUseHttpssvc", "true"},
+                               {"DnsHttpssvcExperimentDomains", kName}});
+
+  MockDnsClientRuleList rules;
+  std::vector<DnsResourceRecord> records = {
+      BuildTestHttpsAliasRecord(kName, "alias.test"),
+      BuildTestHttpsAliasRecord(kName, "another-alias.test")};
+  rules.emplace_back(kName, dns_protocol::kTypeHttps, true /* secure */,
+                     MockDnsClientRule::Result(BuildTestDnsResponse(
+                         kName, dns_protocol::kTypeHttps, records)),
+                     false /* delay */);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeA, true /* secure */,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      false /* delay */);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeAAAA, true /* secure */,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      false /* delay */);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = SecureDnsMode::kSecure;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair(kName, 108), NetworkIsolationKey(), NetLogWithSource(),
+      absl::nullopt, resolve_context_.get(), resolve_context_->host_cache()));
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_TRUE(response.request()->GetAddressResults());
+  EXPECT_TRUE(response.request()->GetEndpointResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
+              testing::Pointee(testing::UnorderedElementsAre(true, true)));
+}
+
+TEST_F(HostResolverManagerDnsTest,
+       ExperimentalHttpsInAddressQueryWithMalformedResult) {
   const char kName[] = "combined.test";
 
   base::test::ScopedFeatureList features;
@@ -12173,9 +12254,10 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_TRUE(response.request()->GetEndpointResults());
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
-  EXPECT_THAT(
-      response.request()->GetExperimentalResultsForTesting(),
-      testing::Optional(testing::UnorderedElementsAre(true, true, false)));
+
+  // HTTPS records cannot be read if any are malformed.
+  EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -12216,7 +12298,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsInAddressQuery_HttpsOnly) {
@@ -12341,7 +12423,7 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsInAddressQuery_HttpsError) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -12383,7 +12465,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -12427,7 +12509,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(false)));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsInAddressQuery_NoData) {
@@ -12516,7 +12598,7 @@ TEST_F(HostResolverManagerDnsTest, ExperimentalHttpsInAddressQuery_HttpsLast) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -12568,7 +12650,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -12655,7 +12737,7 @@ TEST_F(
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(
@@ -12756,7 +12838,7 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::ElementsAre(true)));
+              testing::Pointee(testing::ElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTest,
@@ -12914,7 +12996,7 @@ TEST_F(HostResolverManagerDnsTest, MultipleExperimentalQueries) {
   EXPECT_FALSE(response.request()->GetTextResults());
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
-              testing::Optional(testing::IsEmpty()));
+              testing::Pointee(testing::IsEmpty()));
 }
 
 TEST_F(HostResolverManagerDnsTest, MultipleExperimentalQueries_Timeout) {
@@ -13117,13 +13199,11 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQuery) {
       DoIntegrityQuery(true /* use_secure */);
 
   EXPECT_THAT(response->result_error(), IsOk());
-  absl::optional<std::vector<bool>> results =
-      response->request()->GetExperimentalResultsForTesting();
-
   EXPECT_TRUE(response->request()->GetAddressResults());
   EXPECT_TRUE(response->request()->GetEndpointResults());
   EXPECT_FALSE(response->request()->GetTextResults());
-  EXPECT_THAT(results, Optional(UnorderedElementsAre(true)));
+  EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
+              testing::Pointee(UnorderedElementsAre(true)));
 }
 
 TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryMangled) {
@@ -13135,14 +13215,11 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryMangled) {
       DoIntegrityQuery(true /* use_secure */);
 
   EXPECT_THAT(response->result_error(), IsOk());
-  absl::optional<std::vector<bool>> results =
-      response->request()->GetExperimentalResultsForTesting();
-
   EXPECT_TRUE(response->request()->GetAddressResults());
   EXPECT_TRUE(response->request()->GetEndpointResults());
   EXPECT_FALSE(response->request()->GetTextResults());
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(UnorderedElementsAre(false)));
+              testing::Pointee(UnorderedElementsAre(false)));
 }
 
 TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryOnlyOverSecure) {
@@ -13156,10 +13233,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryOnlyOverSecure) {
       DoIntegrityQuery(false /* use_secure */);
 
   EXPECT_THAT(response->result_error(), IsOk());
-  absl::optional<std::vector<bool>> results =
-      response->request()->GetExperimentalResultsForTesting();
-
-  EXPECT_FALSE(results);
+  EXPECT_FALSE(response->request()->GetExperimentalResultsForTesting());
 }
 
 // Ensure that the address results are preserved, even when the INTEGRITY query
@@ -13209,7 +13283,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryCompletesLast) {
   // Check the |kDnsHttpssvcExtraTimeMs| and |kDnsHttpssvcExtraTimePercent|
   // feature params in relation to this test's FastForward steps.
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(UnorderedElementsAre(true)));
+              testing::Pointee(UnorderedElementsAre(true)));
 }
 
 // Ensure that a successful INTEGRITY query cannot mask the appropriate
@@ -13305,7 +13379,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity, IntegrityQueryCompletesFirst) {
 
   ASSERT_THAT(response->result_error(), IsOk());
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(UnorderedElementsAre(true)));
+              testing::Pointee(UnorderedElementsAre(true)));
   ASSERT_TRUE(response->request()->GetAddressResults());
   EXPECT_THAT(response->request()->GetAddressResults()->endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 108),
@@ -13361,7 +13435,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
           ExpectEndpointResult(testing::UnorderedElementsAre(
               CreateExpected("::1", 108), CreateExpected("127.0.0.1", 108))))));
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(IsEmpty()));
+              testing::Pointee(IsEmpty()));
 }
 
 // Ensure that the address results are preserved, even when the INTEGRITY query
@@ -13400,7 +13474,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
 
   ASSERT_THAT(response->result_error(), IsOk());
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(IsEmpty()));
+              testing::Pointee(IsEmpty()));
   ASSERT_TRUE(response->request()->GetAddressResults());
   EXPECT_THAT(response->request()->GetAddressResults()->endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 108),
@@ -13452,7 +13526,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
           ExpectEndpointResult(testing::UnorderedElementsAre(
               CreateExpected("::1", 108), CreateExpected("127.0.0.1", 108))))));
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(UnorderedElementsAre(false)));
+              testing::Pointee(UnorderedElementsAre(false)));
 }
 
 TEST_F(HostResolverManagerDnsTestIntegrity,
@@ -13486,7 +13560,7 @@ TEST_F(HostResolverManagerDnsTestIntegrity,
 
   ASSERT_THAT(response->result_error(), IsOk());
   EXPECT_THAT(response->request()->GetExperimentalResultsForTesting(),
-              Optional(UnorderedElementsAre(false)));
+              testing::Pointee(UnorderedElementsAre(false)));
   ASSERT_TRUE(response->request()->GetAddressResults());
   EXPECT_THAT(response->request()->GetAddressResults()->endpoints(),
               testing::UnorderedElementsAre(CreateExpected("127.0.0.1", 108),
@@ -13985,8 +14059,9 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrap) {
   const auto* secure_result = resolve_context_->host_cache()->Lookup(
       MakeCacheKey(/*secure=*/true), GetMockTickClock()->NowTicks());
   ASSERT_THAT(secure_result, testing::NotNull());
-  EXPECT_THAT(secure_result->second.legacy_addresses(),
-              Optional(AddressesMatch(kRemoteAddrs)));
+  EXPECT_THAT(secure_result->second.GetEndpoints(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kRemoteAddrs)))));
 }
 
 // The insecure cache is ignored, so the results are identical to
@@ -14016,8 +14091,9 @@ TEST_F(HostResolverManagerBootstrapTest, BootstrapAndInsecureCache) {
   const auto* secure_result = resolve_context_->host_cache()->Lookup(
       MakeCacheKey(/*secure=*/true), GetMockTickClock()->NowTicks());
   ASSERT_THAT(secure_result, testing::NotNull());
-  EXPECT_THAT(secure_result->second.legacy_addresses(),
-              Optional(AddressesMatch(kRemoteAddrs)));
+  EXPECT_THAT(secure_result->second.GetEndpoints(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kRemoteAddrs)))));
 }
 
 // The bootstrap addrs are ignored, so the results are identical to
@@ -14197,8 +14273,9 @@ TEST_F(HostResolverManagerBootstrapTest, OnlyBootstrapTwice) {
   const auto* secure_result = resolve_context_->host_cache()->Lookup(
       MakeCacheKey(/*secure=*/true), GetMockTickClock()->NowTicks());
   ASSERT_THAT(secure_result, testing::NotNull());
-  EXPECT_THAT(secure_result->second.legacy_addresses(),
-              Optional(AddressesMatch(kRemoteAddrs)));
+  EXPECT_THAT(secure_result->second.GetEndpoints(),
+              testing::Optional(testing::ElementsAre(
+                  ExpectEndpointResult(AddressesMatch(kRemoteAddrs)))));
 }
 
 }  // namespace net

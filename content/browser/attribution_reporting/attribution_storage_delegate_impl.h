@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_STORAGE_DELEGATE_IMPL_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_STORAGE_DELEGATE_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/sequence_checker.h"
@@ -14,6 +15,7 @@
 
 namespace content {
 
+class AttributionRandomGenerator;
 class CommonSourceInfo;
 
 // Implementation of the storage delegate. This class handles assigning
@@ -24,6 +26,12 @@ class CommonSourceInfo;
 class CONTENT_EXPORT AttributionStorageDelegateImpl
     : public AttributionStorageDelegate {
  public:
+  static std::unique_ptr<AttributionStorageDelegate> CreateForTesting(
+      AttributionNoiseMode noise_mode,
+      AttributionDelayMode delay_mode,
+      std::unique_ptr<AttributionRandomGenerator> rng,
+      AttributionRandomizedResponseRates randomized_response_rates);
+
   explicit AttributionStorageDelegateImpl(
       AttributionNoiseMode noise_mode = AttributionNoiseMode::kDefault,
       AttributionDelayMode delay_mode = AttributionDelayMode::kDefault);
@@ -35,7 +43,7 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
       delete;
   AttributionStorageDelegateImpl& operator=(
       AttributionStorageDelegateImpl&& other) = delete;
-  ~AttributionStorageDelegateImpl() override = default;
+  ~AttributionStorageDelegateImpl() override;
 
   // AttributionStorageDelegate:
   base::Time GetReportTime(const CommonSourceInfo& source,
@@ -51,17 +59,17 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
   base::GUID NewReportID() const override;
   absl::optional<OfflineReportDelayConfig> GetOfflineReportDelayConfig()
       const override;
-  void ShuffleReports(std::vector<AttributionReport>& reports) const override;
+  void ShuffleReports(std::vector<AttributionReport>& reports) override;
+  double GetRandomizedResponseRate(CommonSourceInfo::SourceType) const override;
   RandomizedResponse GetRandomizedResponse(
-      const CommonSourceInfo& source) const override;
+      const CommonSourceInfo& source) override;
   int64_t GetAggregatableBudgetPerSource() const override;
 
   // Generates fake reports using a random "stars and bars" sequence index of a
   // possible output of the API.
   //
   // Exposed for testing.
-  std::vector<FakeReport> GetRandomFakeReports(
-      const CommonSourceInfo& source) const;
+  std::vector<FakeReport> GetRandomFakeReports(const CommonSourceInfo& source);
 
   // Generates fake reports from the "stars and bars" sequence index of a
   // possible output of the API. This output is determined by the following
@@ -78,8 +86,16 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
       int random_stars_and_bars_sequence_index) const;
 
  private:
+  AttributionStorageDelegateImpl(
+      AttributionNoiseMode noise_mode,
+      AttributionDelayMode delay_mode,
+      std::unique_ptr<AttributionRandomGenerator> rng,
+      AttributionRandomizedResponseRates randomized_response_rates);
+
   const AttributionNoiseMode noise_mode_;
   const AttributionDelayMode delay_mode_;
+  const std::unique_ptr<AttributionRandomGenerator> rng_;
+  const AttributionRandomizedResponseRates randomized_response_rates_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

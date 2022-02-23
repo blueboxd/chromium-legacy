@@ -306,6 +306,7 @@ public abstract class ChromeFeatureList {
             "ContextualTriggersSelectionMenu";
     public static final String CONTEXTUAL_TRIGGERS_SELECTION_SIZE =
             "ContextualTriggersSelectionSize";
+    public static final String SYNC_ANDROID_PROMOS_REVAMP = "SyncAndroidPromosRevamp";
     public static final String CONTINUOUS_SEARCH = "ContinuousSearch";
     public static final String CRITICAL_PERSISTED_TAB_DATA = "CriticalPersistedTabData";
     public static final String DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING =
@@ -469,7 +470,6 @@ public abstract class ChromeFeatureList {
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE = "SearchEnginePromo.NewDevice";
     public static final String SEARCH_ENGINE_PROMO_NEW_DEVICE_V2 =
             "SearchEnginePromo.NewDeviceVer2";
-    public static final String SEARCH_HISTORY_LINK = "SearchHistoryLink";
     public static final String SEND_TAB_TO_SELF_SIGNIN_PROMO = "SendTabToSelfSigninPromo";
     public static final String SEND_TAB_TO_SELF_V2 = "SendTabToSelfV2";
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =

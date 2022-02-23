@@ -337,7 +337,7 @@ void ZipReader::ExtractCurrentEntryToFilePathAsync(
     const base::FilePath& output_file_path,
     SuccessCallback success_callback,
     FailureCallback failure_callback,
-    const ProgressCallback& progress_callback) {
+    ProgressCallback progress_callback) {
   DCHECK(zip_file_);
   DCHECK_LT(0, next_index_);
   DCHECK(ok_);
@@ -391,7 +391,7 @@ void ZipReader::ExtractCurrentEntryToFilePathAsync(
       FROM_HERE,
       base::BindOnce(&ZipReader::ExtractChunk, weak_ptr_factory_.GetWeakPtr(),
                      std::move(output_file), std::move(success_callback),
-                     std::move(failure_callback), progress_callback,
+                     std::move(failure_callback), std::move(progress_callback),
                      0 /* initial offset */));
 }
 
@@ -415,22 +415,11 @@ bool ZipReader::ExtractCurrentEntryToString(uint64_t max_read_bytes,
   // reallocations for the common case when the uncompressed size is correct.
   // However, we need to assume that the uncompressed size could be incorrect
   // therefore this function needs to read as much data as possible.
-  output->reserve(static_cast<size_t>(std::min(
-      base::checked_cast<int64_t>(max_read_bytes), entry_.original_size)));
+  output->reserve(base::checked_cast<size_t>(std::min<uint64_t>(
+      max_read_bytes, base::checked_cast<uint64_t>(entry_.original_size))));
 
   StringWriterDelegate writer(output);
-  if (!ExtractCurrentEntry(&writer, max_read_bytes)) {
-    if (output->size() < max_read_bytes) {
-      // There was an error in extracting entry. If ExtractCurrentEntry()
-      // returns false, the entire file was not read - in which case
-      // output->size() should equal |max_read_bytes| unless an error occurred
-      // which caused extraction to be aborted.
-      output->clear();
-    }
-    return false;
-  }
-
-  return true;
+  return ExtractCurrentEntry(&writer, max_read_bytes);
 }
 
 bool ZipReader::OpenInternal() {
@@ -460,7 +449,7 @@ void ZipReader::Reset() {
 void ZipReader::ExtractChunk(base::File output_file,
                              SuccessCallback success_callback,
                              FailureCallback failure_callback,
-                             const ProgressCallback& progress_callback,
+                             ProgressCallback progress_callback,
                              int64_t offset) {
   char buffer[internal::kZipBufSize];
 
@@ -500,7 +489,8 @@ void ZipReader::ExtractChunk(base::File output_file,
       FROM_HERE,
       base::BindOnce(&ZipReader::ExtractChunk, weak_ptr_factory_.GetWeakPtr(),
                      std::move(output_file), std::move(success_callback),
-                     std::move(failure_callback), progress_callback, offset));
+                     std::move(failure_callback), std::move(progress_callback),
+                     offset));
 }
 
 // FileWriterDelegate ----------------------------------------------------------

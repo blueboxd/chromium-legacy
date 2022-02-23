@@ -883,9 +883,6 @@ extern const char kIncognitoReauthenticationForAndroidDescription[];
 extern const char kIncognitoDownloadsWarningName[];
 extern const char kIncognitoDownloadsWarningDescription[];
 
-extern const char kIncognitoClearBrowsingDataDialogForDesktopName[];
-extern const char kIncognitoClearBrowsingDataDialogForDesktopDescription[];
-
 extern const char kUpdateHistoryEntryPointsInIncognitoName[];
 extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 
@@ -957,9 +954,6 @@ extern const char kUsernameFirstFlowFillingDescription[];
 
 extern const char kCanvas2DLayersName[];
 extern const char kCanvas2DLayersDescription[];
-
-extern const char kNewCanvas2DAPIName[];
-extern const char kNewCanvas2DAPIDescription[];
 
 extern const char kDestroyProfileOnBrowserCloseName[];
 extern const char kDestroyProfileOnBrowserCloseDescription[];
@@ -1285,9 +1279,6 @@ extern const char kScrollableTabStripButtonsDescription[];
 
 extern const char kScrollUnificationName[];
 extern const char kScrollUnificationDescription[];
-
-extern const char kSearchHistoryLinkName[];
-extern const char kSearchHistoryLinkDescription[];
 
 extern const char kSearchResultInlineIconName[];
 extern const char kSearchResultInlineIconDescription[];
@@ -2051,6 +2042,9 @@ extern const char kStartSurfaceAndroidDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
+extern const char kSyncAndroidPromosRevampName[];
+extern const char kSyncAndroidPromosRevampDescription[];
+
 extern const char kTabGroupsForTabletsName[];
 extern const char kTabGroupsForTabletsDescription[];
 
@@ -2226,9 +2220,6 @@ extern const char kOmniboxExperimentalKeywordModeDescription[];
 
 extern const char kOmniboxPedalsBatch2NonEnglishName[];
 extern const char kOmniboxPedalsBatch2NonEnglishDescription[];
-
-extern const char kOmniboxPedalsBatch3Name[];
-extern const char kOmniboxPedalsBatch3Description[];
 
 extern const char kOmniboxPedalsTranslationConsoleName[];
 extern const char kOmniboxPedalsTranslationConsoleDescription[];
@@ -2706,6 +2697,9 @@ extern const char kEchePhoneHubPermissionsOnboardingDescription[];
 extern const char kEcheSWAName[];
 extern const char kEcheSWADescription[];
 
+extern const char kEcheCustomWidgetName[];
+extern const char kEcheCustomWidgetDescription[];
+
 extern const char kEcheSWAResizingName[];
 extern const char kEcheSWAResizingDescription[];
 
@@ -2971,6 +2965,9 @@ extern const char kNearbySharingSelfShareDescription[];
 
 extern const char kNearbySharingWifiLanName[];
 extern const char kNearbySharingWifiLanDescription[];
+
+extern const char kOobeHidDetectionRevampName[];
+extern const char kOobeHidDetectionRevampDescription[];
 
 extern const char kPcieBillboardNotificationName[];
 extern const char kPcieBillboardNotificationDescription[];

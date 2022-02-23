@@ -3737,6 +3737,13 @@ base::FilePath ChromeContentBrowserClient::GetNetLogDefaultDirectory() {
   return user_data_dir;
 }
 
+base::FilePath ChromeContentBrowserClient::GetFirstPartySetsDirectory() {
+  base::FilePath user_data_dir;
+  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  DCHECK(!user_data_dir.empty());
+  return user_data_dir;
+}
+
 void ChromeContentBrowserClient::DidCreatePpapiPlugin(
     content::BrowserPpapiHost* browser_host) {
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -5603,11 +5610,8 @@ bool ChromeContentBrowserClient::HandleWebUI(
     if (url->SchemeIs(content::kChromeUIScheme) &&
         url->host() == chrome::kChromeUISettingsHost) {
       if (url->path() == chrome::kChromeUISiteDataDeprecatedPath) {
-        url::Replacements<char> replacements;
-        replacements.SetPath(
-            chrome::kChromeUIAllSitesPath,
-            url::Component(0, strlen(chrome::kChromeUIAllSitesPath)));
-        *url = url->ReplaceComponents(replacements);
+        *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
+                                     chrome::kChromeUIAllSitesPath);
         UMA_HISTOGRAM_BOOLEAN("Settings.AllSites.DeprecatedRedirect", true);
       } else if (url->path() == chrome::kChromeUIAllSitesPath) {
         // Log un-redirected navigations to the page as well to provide context
@@ -5621,11 +5625,8 @@ bool ChromeContentBrowserClient::HandleWebUI(
   // TODO(crbug.com/1003960): Remove when issue is resolved.
   if (url->SchemeIs(content::kChromeUIScheme) &&
       url->host() == chrome::kChromeUIWelcomeWin10Host) {
-    url::Replacements<char> replacements;
-    replacements.SetHost(
-        chrome::kChromeUIWelcomeHost,
-        url::Component(0, strlen(chrome::kChromeUIWelcomeHost)));
-    *url = url->ReplaceComponents(replacements);
+    *url =
+        ReplaceURLHostAndPath(*url, chrome::kChromeUIWelcomeHost, url->path());
     return true;
   }
 #endif  // BUILDFLAG(IS_WIN)

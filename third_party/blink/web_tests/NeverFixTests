@@ -1275,10 +1275,6 @@ external/wpt/entries-api/filesystementry-getParent-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-attributes-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-file-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-getParent-manual.html [ Skip ]
-external/wpt/geolocation-API/getCurrentPosition_permission-manual.html [ Skip ]
-external/wpt/geolocation-API/getCurrentPosition_permission_allow-manual.html [ Skip ]
-external/wpt/geolocation-API/getCurrentPosition_permission_deny-manual.html [ Skip ]
-external/wpt/geolocation-API/watchPosition_permission-manual.html [ Skip ]
 external/wpt/hr-time/unload-manual.html [ Skip ]
 external/wpt/html-media-capture/capture_audio-manual.html [ Skip ]
 external/wpt/html-media-capture/capture_audio_cancel-manual.html [ Skip ]
@@ -2033,3 +2029,10 @@ external/wpt/app-history/per-entry-events/dispose-after-bfcache.html [ Skip ]
 virtual/bfcache-same-site/external/wpt/app-history/app-history-entry/entries-after-bfcache.html [ Pass ]
 virtual/bfcache-same-site/external/wpt/app-history/app-history-entry/entries-after-bfcache-in-iframe.html [ Pass ]
 virtual/bfcache-same-site/external/wpt/app-history/per-entry-events/dispose-after-bfcache.html [ Pass ]
+
+# Tests in the virtual/origin-agent-cluster-default suite. These tests
+# require isolation behaviour as in the actual browser and are therefore
+# incompatible with auto-wpt-origin-isolation. Thus they are only run in their
+# virtual test suite.
+wpt_internal/origin-agent-cluster-default/* [ Skip ]
+virtual/origin-agent-cluster-default/wpt_internal/origin-agent-cluster-default/* [ Pass ]

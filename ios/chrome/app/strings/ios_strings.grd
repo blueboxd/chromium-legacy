@@ -1431,8 +1431,8 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_CONTINUE_BUTTON" desc="The title of Continue button in the Import Data settings screen [30em]">
         Continue
       </message>
-      <message name="IDS_IOS_OPTIONS_IMPORT_DATA_HEADER" desc="The header for the Import Data settings screen. [400em]">
-        You have bookmarks, history, passwords, and other settings from <ph name="USER_EMAIL1">$1<ex>johndoe@gmail.com</ex></ph>.
+      <message name="IDS_IOS_OPTIONS_IMPORT_DATA_TITLE" desc="The title of the Import Data settings screen. [30em]">
+        Manage Data
       </message>
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_IMPORT_SUBTITLE" desc="The subtitle of the Import Data option on the Import Data settings screen. [400em]">
         Add existing data to <ph name="USER_EMAIL">$1<ex>john@doe.com</ex></ph>.
@@ -2853,6 +2853,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_OPEN_TABS" desc="Title for a suggested action presented at the end of search results to search through open tabs for the same search term.">
         Search Open Tabs
+      </message>
+      <message name="IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_RECENT_TABS" desc="Title for a suggested action presented at the end of search results to search through recent tabs for the same search term.">
+        Search Recent Tabs
       </message>
       <message name="IDS_IOS_TABS_SEARCH_SUGGESTED_ACTION_SEARCH_WEB" desc="Title for a suggested action presented at the end of search results to search the web for the same search term.">
         Search on the Web

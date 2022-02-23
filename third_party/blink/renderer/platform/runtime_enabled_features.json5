@@ -315,6 +315,11 @@
       name: "BlinkRuntimeCallStats",
     },
     {
+      // "blocking" attribute on scripts and link resources
+      name: "BlockingAttribute",
+      status: "experimental",
+    },
+    {
       name: "BlockingFocusWithoutUserActivation",
       status: "experimental",
     },
@@ -987,6 +992,12 @@
       status: "stable",
     },
     {
+      // Non-standard API Event.path. Should be replaced by Event.composedPath.
+      // TODO(1277431): This flag should be eventually disabled.
+      name: "EventPath",
+      status: "stable",
+    },
+    {
       name: "ExceptionMetaDataForDevTools",
       status: "stable",
     },
@@ -1577,11 +1588,6 @@
     },
     {
       name: "NeverSlowMode",
-    },
-    {
-      name: "NewCanvas2DAPI",
-      origin_trial_feature_name: "NewCanvas2DAPI",
-      status: "experimental",
     },
     {
       name: "NoIdleEncodingForWebTests",

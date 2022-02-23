@@ -461,6 +461,10 @@ const base::Feature kEchePhoneHubPermissionsOnboarding{
 // Enables the System Web App (SWA) version of Eche.
 const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Moves Eche into a custom widget.
+const base::Feature kEcheCustomWidget{"EcheCustomWidget",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the naive resize for the Eche window.
 const base::Feature kEcheSWAResizing{"EcheSWAResizing",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -996,6 +1000,12 @@ const base::Feature kOnDeviceSpeechRecognition{
 // into Consolidated Consent Screen.
 const base::Feature kOobeConsolidatedConsent{"OobeConsolidatedConsent",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables the Chrome OS OOBE HID Detection Revamp, which updates
+// the OOBE HID detection screen UI and related infrastructure. See
+// https://crbug.com/1299099.
+const base::Feature kOobeHidDetectionRevamp{"OobeHidDetectionRevamp",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Oobe quick start flow.
 const base::Feature kOobeQuickStart{"OobeQuickStart",
@@ -1574,6 +1584,10 @@ bool IsEcheSWAEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWA);
 }
 
+bool IsEcheCustomWidgetEnabled() {
+  return base::FeatureList::IsEnabled(kEcheCustomWidget);
+}
+
 bool IsEcheSWAResizingEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWAResizing);
 }
@@ -1808,6 +1822,11 @@ bool IsNotificationsRefreshEnabled() {
 
 bool IsOobeChromeVoxHintEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeChromeVoxHint);
+}
+
+bool IsOobeHidDetectionRevampEnabled() {
+  return base::FeatureList::IsEnabled(kOobeHidDetectionRevamp) &&
+         base::FeatureList::IsEnabled(kBluetoothRevamp);
 }
 
 bool IsOobePolymer3Enabled() {

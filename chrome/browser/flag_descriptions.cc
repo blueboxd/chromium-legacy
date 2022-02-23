@@ -1555,12 +1555,6 @@ const char kIncognitoReauthenticationForAndroidDescription[] =
     "When enabled, a setting appears in Settings > Privacy and Security, to "
     "enable reauthentication for accessing your existing Incognito tabs.";
 
-const char kIncognitoClearBrowsingDataDialogForDesktopName[] =
-    "Enable clear browsing data dialog in Incognito.";
-const char kIncognitoClearBrowsingDataDialogForDesktopDescription[] =
-    "When enabled, clear browsing data option would be enabled in Incognito "
-    "which upon clicking would show a dialog to close all Incognito windows.";
-
 const char kUpdateHistoryEntryPointsInIncognitoName[] =
     "Update history entry points in Incognito.";
 const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
@@ -1661,11 +1655,6 @@ const char kCanvas2DLayersName[] =
     "Enables canvas 2D methods BeginLayer and EndLayer";
 const char kCanvas2DLayersDescription[] =
     "Enables the canvas 2D methods BeginLayer and EndLayer.";
-
-const char kNewCanvas2DAPIName[] = "Experimental canvas 2D API features";
-const char kNewCanvas2DAPIDescription[] =
-    "Enables in-progress features for the canvas 2D API. See "
-    "https://github.com/fserb/canvas2d.";
 
 const char kSystemProxyForSystemServicesName[] =
     "Enable system-proxy for selected system services";
@@ -1861,8 +1850,7 @@ const char kOmniboxPedalsBatch3NonEnglishName[] =
     "Omnibox Pedals batch 3 for non-English locales";
 const char kOmniboxPedalsBatch3NonEnglishDescription[] =
     "Enable the third batch of Omnibox Pedals (Find your phone, etc.) for "
-    "locales other than 'en' and 'en-GB'. This flag has no effect unless "
-    "\"Omnibox Pedals batch 3\" is also enabled.";
+    "locales other than 'en' and 'en-GB'.";
 
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
@@ -2265,11 +2253,6 @@ const char kScrollUnificationName[] = "Scroll Unification";
 const char kScrollUnificationDescription[] =
     "Refactoring project that eliminates scroll handling code from Blink. "
     "Does not affect behavior or performance.";
-
-const char kSearchHistoryLinkName[] = "Search History Link";
-const char kSearchHistoryLinkDescription[] =
-    "Changes the Clear Browsing Data UI to display a link to clear search "
-    "history on My Google Activity.";
 
 extern const char kSearchResultInlineIconName[] = "Search Result Inline Icons";
 extern const char kSearchResultInlineIconDescription[] =
@@ -3589,6 +3572,11 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
+const char kSyncAndroidPromosRevampName[] =
+    "Enable the revamped sync promos on Android";
+const char kSyncAndroidPromosRevampDescription[] =
+    "Improves the visual design of sync promos.";
+
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
 
@@ -3869,12 +3857,7 @@ const char kOmniboxPedalsBatch2NonEnglishName[] =
     "Omnibox Pedals batch 2 for non-English locales";
 const char kOmniboxPedalsBatch2NonEnglishDescription[] =
     "Enable the second batch of Omnibox Pedals (Safety Check, etc.) for "
-    "locales other than 'en' and 'en-GB'. This flag has no effect unless "
-    "\"Omnibox Pedals batch 2\" is also enabled.";
-
-const char kOmniboxPedalsBatch3Name[] = "Omnibox Pedals batch 3";
-const char kOmniboxPedalsBatch3Description[] =
-    "Enable the third batch of Omnibox Pedals.";
+    "locales other than 'en' and 'en-GB'.";
 
 const char kOmniboxPedalsTranslationConsoleName[] =
     "Omnibox Pedals Translation Console";
@@ -4712,6 +4695,10 @@ const char kEchePhoneHubPermissionsOnboardingDescription[] =
 const char kEcheSWAName[] = "Enable Eche App SWA.";
 const char kEcheSWADescription[] = "Enable the SWA version of the Eche.";
 
+const char kEcheCustomWidgetName[] = "Move Eche in a custom widget.";
+const char kEcheCustomWidgetDescription[] =
+    "Move the Eche App into a custom widget.";
+
 const char kEcheSWAResizingName[] = "Allow resizing Eche App.";
 const char kEcheSWAResizingDescription[] =
     "Enable a naive resize for the Eche window";
@@ -5166,6 +5153,11 @@ const char kNearbySharingSelfShareDescription[] =
 const char kNearbySharingWifiLanName[] = "Nearby Sharing WifiLan";
 const char kNearbySharingWifiLanDescription[] =
     "Enables WifiLan as a Nearby Share transfer medium.";
+
+const char kOobeHidDetectionRevampName[] = "OOBE HID Detection Revamp";
+const char kOobeHidDetectionRevampDescription[] =
+    "Enables the Chrome OS HID Detection Revamp, which updates OOBE HID "
+    "detection screen UI and related infrastructure.";
 
 const char kPcieBillboardNotificationName[] = "Pcie billboard notification";
 const char kPcieBillboardNotificationDescription[] =

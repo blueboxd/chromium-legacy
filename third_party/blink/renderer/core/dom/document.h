@@ -604,7 +604,33 @@ class CORE_EXPORT Document : public ContainerNode,
   // Special support for editing
   Text* CreateEditingTextNode(const String&);
 
-  bool NeedsLayoutTreeUpdate() const;
+  enum class StyleAndLayoutTreeUpdate {
+    // Style/layout-tree is not dirty.
+    kNone,
+
+    // Style/layout-tree is dirty, and it's possible to understand whether a
+    // given element will be affected or not by analyzing its ancestor chain.
+    kAnalyzed,
+
+    // Style/layout-tree is dirty, but we cannot decide which specific elements
+    // need to have its style or layout tree updated.
+    kFull,
+  };
+
+  // Looks at various sources that cause style/layout-tree dirtiness,
+  // and returns the severity of the needed update.
+  //
+  // Note that this does not cover "implicit" style/layout-tree dirtiness
+  // via layout/container-queries. That is: this function may return kNone,
+  // and yet a subsequent layout may need to recalc container-query-dependent
+  // styles.
+  StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdate() const;
+
+  bool NeedsLayoutTreeUpdate() const {
+    return CalculateStyleAndLayoutTreeUpdate() !=
+           StyleAndLayoutTreeUpdate::kNone;
+  }
+
   // Whether we need layout tree update for this node or not, without
   // considering nodes in display locked subtrees.
   bool NeedsLayoutTreeUpdateForNode(const Node&,
@@ -952,6 +978,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Updates for :target (CSS3 selector).
   void SetCSSTarget(Element*);
   Element* CssTarget() const { return css_target_; }
+  void SetSelectorFragmentAnchorCSSTarget(Element*);
 
   void ScheduleLayoutTreeUpdateIfNeeded();
   bool HasPendingForcedStyleRecalc() const;
@@ -1853,17 +1880,21 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ShouldScheduleLayoutTreeUpdate() const;
   void ScheduleLayoutTreeUpdate();
 
-  bool NeedsFullLayoutTreeUpdate() const;
-  bool ParentFrameNeedsLayoutTreeUpdate() const;
-
   // See UpdateStyleAndLayoutTreeForThisDocument for an explanation of
   // the "ForThisDocument" suffix.
   //
   // These functions do not take into account dirtiness of parent frames:
   // they are assumed to be clean. If it isn't possible to guarantee
   // clean parent frames, use Needs[Full]LayoutTreeUpdate() instead.
-  bool NeedsLayoutTreeUpdateForThisDocument() const;
-  bool NeedsFullLayoutTreeUpdateForThisDocument() const;
+  bool NeedsLayoutTreeUpdateForThisDocument() const {
+    return CalculateStyleAndLayoutTreeUpdateForThisDocument() !=
+           StyleAndLayoutTreeUpdate::kNone;
+  }
+
+  StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdateForThisDocument()
+      const;
+  StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdateForParentFrame()
+      const;
 
   void UpdateUseShadowTreesIfNeeded();
   void EvaluateMediaQueryListIfNeeded();
@@ -2128,6 +2159,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool should_update_selection_after_layout_ = false;
 
   Member<Element> css_target_;
+  bool css_target_is_selector_fragment_ = false;
 
   bool was_discarded_;
 

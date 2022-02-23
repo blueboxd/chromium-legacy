@@ -20,9 +20,16 @@ import Foundation
 
   let pedal: Pedal?
 
+  /// Closure to execute when the trailing button is tapped.
+  let trailingButtonHandler: () -> Void
+
+  /// Closure to execute when the match is deleted.
+  let deletionHandler: () -> Void
+
   public init(
     title: String, subtitle: String?, url: URL?, isAppendable: Bool, isTabMatch: Bool,
-    supportsDeletion: Bool, pedal: Pedal?
+    supportsDeletion: Bool, pedal: Pedal?, trailingButtonHandler: @escaping () -> Void = {},
+    deletionHandler: @escaping () -> Void = {}
   ) {
     self.title = title
     self.subtitle = subtitle
@@ -31,6 +38,8 @@ import Foundation
     self.isTabMatch = isTabMatch
     self.supportsDeletion = supportsDeletion
     self.pedal = pedal
+    self.trailingButtonHandler = trailingButtonHandler
+    self.deletionHandler = deletionHandler
   }
 
   public var id: String {
@@ -38,7 +47,11 @@ import Foundation
   }
 
   func trailingButtonTapped() {
-    print("Trailing button of match \"\(title)\" tapped!")
+    trailingButtonHandler()
+  }
+
+  func selectedForDeletion() {
+    deletionHandler()
   }
 }
 

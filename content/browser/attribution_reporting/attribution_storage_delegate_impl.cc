@@ -5,23 +5,62 @@
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 
 #include <cstdlib>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_default_random_generator.h"
+#include "content/browser/attribution_reporting/attribution_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/combinatorics.h"
 
 namespace content {
 
+// static
+std::unique_ptr<AttributionStorageDelegate>
+AttributionStorageDelegateImpl::CreateForTesting(
+    AttributionNoiseMode noise_mode,
+    AttributionDelayMode delay_mode,
+    std::unique_ptr<AttributionRandomGenerator> rng,
+    AttributionRandomizedResponseRates randomized_response_rates) {
+  return base::WrapUnique(new AttributionStorageDelegateImpl(
+      noise_mode, delay_mode, std::move(rng), randomized_response_rates));
+}
+
 AttributionStorageDelegateImpl::AttributionStorageDelegateImpl(
     AttributionNoiseMode noise_mode,
     AttributionDelayMode delay_mode)
-    : noise_mode_(noise_mode), delay_mode_(delay_mode) {
+    : AttributionStorageDelegateImpl(
+          noise_mode,
+          delay_mode,
+          std::make_unique<AttributionDefaultRandomGenerator>(),
+          AttributionRandomizedResponseRates::kDefault) {}
+
+AttributionStorageDelegateImpl::AttributionStorageDelegateImpl(
+    AttributionNoiseMode noise_mode,
+    AttributionDelayMode delay_mode,
+    std::unique_ptr<AttributionRandomGenerator> rng,
+    AttributionRandomizedResponseRates randomized_response_rates)
+    : noise_mode_(noise_mode),
+      delay_mode_(delay_mode),
+      rng_(std::move(rng)),
+      randomized_response_rates_(randomized_response_rates) {
+  DCHECK(rng_);
+
+  DCHECK_GE(randomized_response_rates_.navigation, 0);
+  DCHECK_LE(randomized_response_rates_.navigation, 1);
+
+  DCHECK_GE(randomized_response_rates_.event, 0);
+  DCHECK_LE(randomized_response_rates_.event, 1);
+
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
+
+AttributionStorageDelegateImpl::~AttributionStorageDelegateImpl() = default;
 
 int AttributionStorageDelegateImpl::GetMaxAttributionsPerSource(
     CommonSourceInfo::SourceType source_type) const {
@@ -110,29 +149,39 @@ AttributionStorageDelegateImpl::GetOfflineReportDelayConfig() const {
 }
 
 void AttributionStorageDelegateImpl::ShuffleReports(
-    std::vector<AttributionReport>& reports) const {
+    std::vector<AttributionReport>& reports) {
   switch (noise_mode_) {
     case AttributionNoiseMode::kDefault:
-      base::RandomShuffle(reports.begin(), reports.end());
+      rng_->RandomShuffle(reports);
       break;
     case AttributionNoiseMode::kNone:
       break;
   }
 }
 
+double AttributionStorageDelegateImpl::GetRandomizedResponseRate(
+    CommonSourceInfo::SourceType source_type) const {
+  switch (source_type) {
+    case CommonSourceInfo::SourceType::kNavigation:
+      return randomized_response_rates_.navigation;
+    case CommonSourceInfo::SourceType::kEvent:
+      return randomized_response_rates_.event;
+  }
+}
+
 AttributionStorageDelegate::RandomizedResponse
 AttributionStorageDelegateImpl::GetRandomizedResponse(
-    const CommonSourceInfo& source) const {
+    const CommonSourceInfo& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   switch (noise_mode_) {
     case AttributionNoiseMode::kDefault: {
       double randomized_trigger_rate =
-          RandomizedTriggerRate(source.source_type());
+          GetRandomizedResponseRate(source.source_type());
       DCHECK_GE(randomized_trigger_rate, 0);
       DCHECK_LE(randomized_trigger_rate, 1);
 
-      return base::RandDouble() < randomized_trigger_rate
+      return rng_->RandDouble() < randomized_trigger_rate
                  ? absl::make_optional(GetRandomFakeReports(source))
                  : absl::nullopt;
     }
@@ -143,7 +192,7 @@ AttributionStorageDelegateImpl::GetRandomizedResponse(
 
 std::vector<AttributionStorageDelegate::FakeReport>
 AttributionStorageDelegateImpl::GetRandomFakeReports(
-    const CommonSourceInfo& source) const {
+    const CommonSourceInfo& source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(noise_mode_, AttributionNoiseMode::kDefault);
 
@@ -152,8 +201,8 @@ AttributionStorageDelegateImpl::GetRandomFakeReports(
       /*num_bars=*/TriggerDataCardinality(source.source_type()) *
           NumReportWindows(source.source_type()));
 
-  // Subtract 1 because `base::RandInt()` is inclusive.
-  const int sequence_index = base::RandInt(0, num_combinations - 1);
+  // Subtract 1 because `AttributionRandomGenerator::RandInt()` is inclusive.
+  const int sequence_index = rng_->RandInt(0, num_combinations - 1);
 
   return GetFakeReportsForSequenceIndex(source, sequence_index);
 }

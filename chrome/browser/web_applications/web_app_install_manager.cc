@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -485,9 +486,13 @@ void WebAppInstallManager::TakeTaskErrorLog(WebAppInstallTask* task) {
 }
 
 void WebAppInstallManager::DeleteTask(WebAppInstallTask* task) {
-  DCHECK(tasks_.contains(task));
   TakeTaskErrorLog(task);
-  tasks_.erase(task);
+  // If this happens after/during the call to Shutdown(), then ignore deletion
+  // as `tasks_` is emptied already.
+  if (started_) {
+    DCHECK(tasks_.contains(task));
+    tasks_.erase(task);
+  }
 }
 
 void WebAppInstallManager::OnInstallTaskCompleted(

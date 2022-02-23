@@ -299,17 +299,18 @@ apps::mojom::Readiness AppUpdate::Readiness() const {
   return apps::mojom::Readiness::kUnknown;
 }
 
-apps::mojom::Readiness AppUpdate::PriorReadiness() const {
-  return mojom_state_ ? mojom_state_->readiness
-                      : apps::mojom::Readiness::kUnknown;
+apps::Readiness AppUpdate::PriorReadiness() const {
+  if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+    return state_ ? state_->readiness : apps::Readiness::kUnknown;
+  }
+
+  return ConvertMojomReadinessToReadiness(
+      mojom_state_ ? mojom_state_->readiness
+                   : apps::mojom::Readiness::kUnknown);
 }
 
 apps::Readiness AppUpdate::GetReadiness() const {
     GET_VALUE_WITH_DEFAULT_VALUE(readiness, apps::Readiness::kUnknown)}
-
-apps::Readiness AppUpdate::GetPriorReadiness() const {
-  return state_ ? state_->readiness : apps::Readiness::kUnknown;
-}
 
 bool AppUpdate::ReadinessChanged() const {
   if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
@@ -323,6 +324,10 @@ bool AppUpdate::ReadinessChanged() const {
 }
 
 const std::string& AppUpdate::Name() const {
+  if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+    GET_VALUE_WITH_FALLBACK(name, base::EmptyString())
+  }
+
   if (mojom_delta_ && mojom_delta_->name.has_value()) {
     return mojom_delta_->name.value();
   }
@@ -330,10 +335,6 @@ const std::string& AppUpdate::Name() const {
     return mojom_state_->name.value();
   }
   return base::EmptyString();
-}
-
-const std::string& AppUpdate::GetName() const {
-  GET_VALUE_WITH_FALLBACK(name, base::EmptyString())
 }
 
 bool AppUpdate::NameChanged() const {
@@ -344,6 +345,10 @@ bool AppUpdate::NameChanged() const {
 }
 
 const std::string& AppUpdate::ShortName() const {
+  if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
+    GET_VALUE_WITH_FALLBACK(short_name, base::EmptyString())
+  }
+
   if (mojom_delta_ && mojom_delta_->short_name.has_value()) {
     return mojom_delta_->short_name.value();
   }
@@ -351,10 +356,6 @@ const std::string& AppUpdate::ShortName() const {
     return mojom_state_->short_name.value();
   }
   return base::EmptyString();
-}
-
-const std::string& AppUpdate::GetShortName() const {
-  GET_VALUE_WITH_FALLBACK(short_name, base::EmptyString())
 }
 
 bool AppUpdate::ShortNameChanged() const {

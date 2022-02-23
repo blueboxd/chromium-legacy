@@ -177,11 +177,13 @@
 <translation id="3340011300870565703">Правый наушник заряжен на <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="3368922792935385530">Подключено</translation>
 <translation id="3369013195428705271">Очистить историю печати? Текущие задания печати не будут удалены.</translation>
+<translation id="3413935475507503304">Чтобы выполнить обновление, нажмите "Далее".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Безопасность</translation>
 <translation id="3456078764689556234">Напечатано страниц: <ph name="PRINTED_PAGES" /> из <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Сканирование страницы <ph name="PAGE_NUM" />. Выполнено <ph name="PERCENTAGE_VALUE" /> %.</translation>
 <translation id="3459509316159669723">Печать</translation>
+<translation id="346539236881580388">Переснять</translation>
 <translation id="3484914941826596830">Пока выполняется обновление встроенного ПО, не отключайте внешнее устройство и не выключайте компьютер. Это окно можно свернуть. Обновление займет несколько минут, в течение которых внешнее устройство может не работать.</translation>
 <translation id="3486220673238053218">узнать определение</translation>
 <translation id="3488065109653206955">Частично активировано</translation>
@@ -488,6 +490,7 @@
 <translation id="7175037578838465313">Настроить сеть "<ph name="NAME" />"</translation>
 <translation id="7177485034254901881">Этим устройством <ph name="DEVICE_TYPE" /> управляет <ph name="MANAGER" />. Администраторы могут настраивать устройство удаленно.</translation>
 <translation id="7180611975245234373">Обновить</translation>
+<translation id="7212734716605298123">Обновление встроенного ПО на внешних устройствах</translation>
 <translation id="7216409898977639127">Оператор сотовой связи</translation>
 <translation id="7271040990581020067">Сканер уже используется. Повторите попытку позже.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>

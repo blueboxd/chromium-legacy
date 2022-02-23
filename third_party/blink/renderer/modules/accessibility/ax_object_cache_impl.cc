@@ -348,8 +348,9 @@ bool IsShadowContentRelevantForAccessibility(const Node* node) {
 
   // Outside of AXMenuList descendants, all other non-slot user agent shadow
   // nodes are relevant.
-  const HTMLSlotElement* slot_element = DynamicTo<HTMLSlotElement>(node);
-  if (!slot_element || !slot_element->SupportsAssignment())
+  const HTMLSlotElement* slot_element =
+      ToHTMLSlotElementIfSupportsAssignmentOrNull(node);
+  if (!slot_element)
     return true;
 
   // Slots are relevant if they have content.
@@ -412,8 +413,10 @@ bool IsLayoutObjectRelevantForAccessibility(const LayoutObject& layout_object) {
   if (node->IsPseudoElement())
     return AXObjectCacheImpl::IsRelevantPseudoElement(*node);
 
-  if (const HTMLSlotElement* slot = DynamicTo<HTMLSlotElement>(node))
+  if (const HTMLSlotElement* slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
     return AXObjectCacheImpl::IsRelevantSlotElement(*slot);
+  }
 
   // <optgroup> is irrelevant inside of a <select> menulist.
   if (auto* opt_group = DynamicTo<HTMLOptGroupElement>(node)) {
@@ -507,8 +510,10 @@ bool IsNodeRelevantForAccessibility(const Node* node,
   if (node->IsPseudoElement())
     return AXObjectCacheImpl::IsRelevantPseudoElement(*node);
 
-  if (const HTMLSlotElement* slot = DynamicTo<HTMLSlotElement>(node))
+  if (const HTMLSlotElement* slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(node)) {
     return AXObjectCacheImpl::IsRelevantSlotElement(*slot);
+  }
 
   // <optgroup> is irrelevant inside of a <select> menulist.
   if (auto* opt_group = DynamicTo<HTMLOptGroupElement>(node)) {
@@ -1024,8 +1029,10 @@ bool AXObjectCacheImpl::IsRelevantSlotElement(const HTMLSlotElement& slot) {
   // TODO(accessibility): There should be a better way to accomplish this.
   // Could a new function be added to the slot element?
   const Node* parent = LayoutTreeBuilderTraversal::Parent(slot);
-  if (const HTMLSlotElement* parent_slot = DynamicTo<HTMLSlotElement>(parent))
+  if (const HTMLSlotElement* parent_slot =
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(parent)) {
     return AXObjectCacheImpl::IsRelevantSlotElement(*parent_slot);
+  }
 
   if (parent && parent->GetLayoutObject())
     return true;
@@ -2400,13 +2407,23 @@ void AXObjectCacheImpl::ProcessInvalidatedObjects(Document& document) {
     Node* node = current->GetNode();
     DCHECK(node) << "Refresh() is currently only supported for objects "
                     "with a backing node.";
+    bool is_ax_layout_object = current->GetLayoutObject();
+    bool will_be_ax_layout_object =
+        node->GetLayoutObject() &&
+        IsLayoutObjectRelevantForAccessibility(*node->GetLayoutObject()) &&
+        !IsDisplayLocked(node->GetLayoutObject());
+    if (is_ax_layout_object == will_be_ax_layout_object)
+      return static_cast<AXObject*>(nullptr);  // No change in the AXObject.
+
     AXID retained_axid = current->AXObjectID();
     // Remove from relevant maps, but not from relation cache, as the relations
     // between AXIDs will still be the same.
     node_object_mapping_.erase(node);
-    if (current->GetLayoutObject()) {
+    if (is_ax_layout_object) {
       layout_object_mapping_.erase(current->GetLayoutObject());
-    } else if (node->GetLayoutObject()) {
+    } else {
+      DCHECK(will_be_ax_layout_object);
+      DCHECK(node->GetLayoutObject());
       DCHECK(!layout_object_mapping_.Contains(node->GetLayoutObject()))
           << node << " " << node->GetLayoutObject();
     }
@@ -2695,9 +2712,6 @@ void AXObjectCacheImpl::FireAXEventImmediately(
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*obj->GetDocument());
 #endif  // DCHECK_IS_ON()
 
-  PostPlatformNotification(obj, event_type, event_from, event_from_action,
-                           event_intents);
-
   if (event_type == ax::mojom::blink::Event::kChildrenChanged &&
       obj->CachedParentObject()) {
     const bool was_ignored = obj->LastKnownIsIgnoredValue();
@@ -2709,6 +2723,9 @@ void AXObjectCacheImpl::FireAXEventImmediately(
     if (is_ignored != was_ignored || was_in_tree != is_in_tree)
       ChildrenChangedWithCleanLayout(obj->CachedParentObject());
   }
+
+  PostPlatformNotification(obj, event_type, event_from, event_from_action,
+                           event_intents);
 }
 
 bool AXObjectCacheImpl::IsAriaOwned(const AXObject* object) const {
@@ -2931,7 +2948,7 @@ void AXObjectCacheImpl::SectionOrRegionRoleMaybeChanged(Element* element) {
   if (ax_object->RoleValue() == ax_object->DetermineAccessibilityRole())
     return;
 
-  Invalidate(element->GetDocument(), ax_object->AXObjectID());
+  HandleRoleChangeWithCleanLayout(element);
 }
 
 // Be as safe as possible about changes that could alter the accessibility role,
@@ -3469,7 +3486,7 @@ AXObject* AXObjectCacheImpl::GetSerializationTarget(AXObject* obj) {
   // TODO(accessibility): The relevance check probably applies to all nodes
   // not just slot elements.
   if (const HTMLSlotElement* slot =
-          DynamicTo<HTMLSlotElement>(obj->GetNode())) {
+          ToHTMLSlotElementIfSupportsAssignmentOrNull(obj->GetNode())) {
     if (!AXObjectCacheImpl::IsRelevantSlotElement(*slot))
       return nullptr;
   }
@@ -3485,7 +3502,7 @@ AXObject* AXObjectCacheImpl::GetSerializationTarget(AXObject* obj) {
   }
 
   // Return included in tree object.
-  if (obj->LastKnownIsIncludedInTreeValue())
+  if (obj->AccessibilityIsIncludedInTree())
     return obj;
 
   return obj->ParentObjectIncludedInTree();

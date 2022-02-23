@@ -177,11 +177,13 @@
 <translation id="3340011300870565703">裝置嘅右邊耳機有 <ph name="BATTERY_PERCENTAGE" />% 電。</translation>
 <translation id="3368922792935385530">已連線</translation>
 <translation id="3369013195428705271">您確定要清除所有列印記錄嗎？系統不會清除進行中的列印工作。</translation>
+<translation id="3413935475507503304">如要繼續執行更新作業，請按「下一步」</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">安全性</translation>
 <translation id="3456078764689556234">印咗 <ph name="PRINTED_PAGES" /> 頁，總共有 <ph name="TOTAL_PAGES" /> 頁。</translation>
 <translation id="345898999683440380">掃瞄緊第 <ph name="PAGE_NUM" /> 頁。完成咗 <ph name="PERCENTAGE_VALUE" />%。</translation>
 <translation id="3459509316159669723">列印</translation>
+<translation id="346539236881580388">重拍</translation>
 <translation id="3484914941826596830">韌體更新時，請勿拔除此外部裝置的插頭或關閉電腦。您可將此視窗縮到最小。此更新可能需要幾分鐘，這段期間外部裝置可能無法正常運作。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3488065109653206955">部分已啟用</translation>
@@ -488,6 +490,7 @@
 <translation id="7175037578838465313">設定「<ph name="NAME" />」</translation>
 <translation id="7177485034254901881">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。管理員可能會遠端設定裝置。</translation>
 <translation id="7180611975245234373">重新整理</translation>
+<translation id="7212734716605298123">外部裝置適用的韌體更新</translation>
 <translation id="7216409898977639127">流動服務供應商</translation>
 <translation id="7271040990581020067">掃瞄器目前正在使用中，請稍後再試。</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>

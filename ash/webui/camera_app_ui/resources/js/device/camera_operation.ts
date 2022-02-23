@@ -322,12 +322,12 @@ enum OperationType {
 export class OperationScheduler {
   public cameraInfo: CameraInfo|null = null;
   private pendingUpdateInfo: CameraInfo|null = null;
-  private firstInfoUpdate = new WaitableEvent();
+  private readonly firstInfoUpdate = new WaitableEvent();
 
   readonly reconfigurer: Reconfigurer;
   readonly capturer: Capturer;
   private ongoingOperationType: OperationType|null = null;
-  private pendingReconfigureWaiters: CancelableEvent<boolean>[] = [];
+  private pendingReconfigureWaiters: Array<CancelableEvent<boolean>> = [];
   public readonly photoPreferrer = new PhotoConstraintsPreferrer();
   public readonly videoPreferrer = new VideoConstraintsPreferrer();
   public readonly modes: Modes;

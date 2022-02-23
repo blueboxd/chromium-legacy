@@ -478,5 +478,38 @@ module.exports = {
 
     // This is covered by @typescript-eslint/naming-convention.
     'camelcase': 'off',
+
+    // go/tsstyle#arrayt-type
+    '@typescript-eslint/array-type': [
+      'error',
+      {
+        'default': 'array-simple',
+      },
+    ],
+
+    // go/tsstyle#type-assertions-syntax
+    // go/tsstyle#type-assertions-and-object-literals
+    '@typescript-eslint/consistent-type-assertions': [
+      'error',
+      {
+        assertionStyle: 'as',
+        objectLiteralTypeAssertions: 'never',
+      },
+    ],
+
+    // go/tsstyle#interfaces-vs-type-aliases
+    '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
   }),
+  'overrides': [{
+    files: ['**/*.ts'],
+    parserOptions: {
+      // eslint-disable-next-line no-undef
+      tsconfigRootDir: __dirname,
+      project: './tsconfig_base.json',
+    },
+    rules: {
+      // go/tsstyle#use-readonly
+      '@typescript-eslint/prefer-readonly': 'error',
+    },
+  }],
 };

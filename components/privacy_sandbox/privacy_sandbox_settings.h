@@ -25,6 +25,8 @@ namespace url {
 class Origin;
 }
 
+namespace privacy_sandbox {
+
 // A service which acts as a intermediary between Privacy Sandbox APIs and the
 // preferences and content settings which define when they are allowed to be
 // accessed. Privacy Sandbox APIs, regardless of where they live (renderer,
@@ -146,6 +148,10 @@ class PrivacySandboxSettings : public KeyedService {
   // appropriate context specific check.
   bool IsTrustTokensAllowed();
 
+  // Returns whether the Privacy Sandbox is being restricted by the associated
+  // delegate. Forwards directly to the corresponding delegate function.
+  bool IsPrivacySandboxRestricted();
+
   // Called when there's a broad cookies clearing action. For example, this
   // should be called on "Clear browsing data", but shouldn't be called on the
   // Clear-Site-Data header, as it's restricted to a specific site.
@@ -178,5 +184,7 @@ class PrivacySandboxSettings : public KeyedService {
   PrefChangeRegistrar pref_change_registrar_;
   bool incognito_profile_;
 };
+
+}  // namespace privacy_sandbox
 
 #endif  // COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_H_

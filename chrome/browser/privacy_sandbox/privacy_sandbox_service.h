@@ -80,14 +80,15 @@ class PrivacySandboxService : public KeyedService,
     kMaxValue = kConsentClosedNoDecision,
   };
 
-  PrivacySandboxService(PrivacySandboxSettings* privacy_sandbox_settings,
-                        content_settings::CookieSettings* cookie_settings,
-                        PrefService* pref_service,
-                        policy::PolicyService* policy_service,
-                        syncer::SyncService* sync_service,
-                        signin::IdentityManager* identity_manager,
-                        content::InterestGroupManager* interest_group_manager,
-                        profile_metrics::BrowserProfileType profile_type);
+  PrivacySandboxService(
+      privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings,
+      content_settings::CookieSettings* cookie_settings,
+      PrefService* pref_service,
+      policy::PolicyService* policy_service,
+      syncer::SyncService* sync_service,
+      signin::IdentityManager* identity_manager,
+      content::InterestGroupManager* interest_group_manager,
+      profile_metrics::BrowserProfileType profile_type);
   ~PrivacySandboxService() override;
 
   // Returns the dialog type that should be shown to the user. This consults
@@ -158,6 +159,11 @@ class PrivacySandboxService : public KeyedService,
 
   // Returns whether the state of the API is managed.
   bool IsPrivacySandboxManaged();
+
+  // Returns whether the Privacy Sandbox is currently restricted for the
+  // profile. UI code should consult this to ensure that when restricted,
+  // Privacy Sandbox related UI is updated appropriately.
+  bool IsPrivacySandboxRestricted();
 
   // Called when a preference relevant to the the Privacy Sandbox is changed.
   void OnPrivacySandboxPrefChanged();
@@ -310,7 +316,7 @@ class PrivacySandboxService : public KeyedService,
       profile_metrics::BrowserProfileType profile_type);
 
  private:
-  raw_ptr<PrivacySandboxSettings> privacy_sandbox_settings_;
+  raw_ptr<privacy_sandbox::PrivacySandboxSettings> privacy_sandbox_settings_;
   raw_ptr<content_settings::CookieSettings> cookie_settings_;
   raw_ptr<PrefService> pref_service_;
   raw_ptr<policy::PolicyService> policy_service_;

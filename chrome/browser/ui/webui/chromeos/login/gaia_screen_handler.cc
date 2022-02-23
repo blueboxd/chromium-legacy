@@ -1332,8 +1332,6 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
 
   LoadAuthExtension(!gaia_silent_load_ /* force */);
-  signin_screen_handler_->UpdateUIState(
-      SigninScreenHandler::UI_STATE_GAIA_SIGNIN);
   core_oobe_view_->UpdateKeyboardState();
 
   if (gaia_silent_load_) {
@@ -1362,7 +1360,7 @@ void GaiaScreenHandler::ShowAllowlistCheckFailedError() {
                                   &family_link_allowed);
   params.SetBoolKey("familyLinkAllowed", family_link_allowed);
 
-  CallJS("login.GaiaSigninScreen.showAllowlistCheckFailedError", true, params);
+  CallJS("login.GaiaSigninScreen.showAllowlistCheckFailedError", params);
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force) {

@@ -210,6 +210,8 @@
 #include "ash/webui/media_app_ui/media_app_ui.h"
 #include "ash/webui/media_app_ui/media_app_ui.mojom.h"
 #include "ash/webui/multidevice_debug/proximity_auth_ui.h"
+#include "ash/webui/os_feedback_ui/mojom/os_feedback_ui.mojom.h"
+#include "ash/webui/os_feedback_ui/os_feedback_ui.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 #include "ash/webui/print_management/mojom/printing_manager.mojom.h"
@@ -261,6 +263,11 @@
 #include "third_party/blink/public/mojom/digital_goods/digital_goods.mojom.h"
 #include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "components/services/screen_ai/public/cpp/screen_ai_service_router.h"
+#include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
+#endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \
     BUILDFLAG(IS_ANDROID)
@@ -555,6 +562,16 @@ void BindSpeechRecognitionRecognizerClientHandler(
 }
 #endif
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+void BindScreenAIAnnotator(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<screen_ai::mojom::ScreenAIAnnotator> receiver) {
+  ScreenAIServiceRouterFactory::GetForBrowserContext(
+      frame_host->GetProcess()->GetBrowserContext())
+      ->BindScreenAIAnnotator(std::move(receiver));
+}
+#endif
+
 void PopulateChromeFrameBinders(
     mojo::BinderMapWithContext<content::RenderFrameHost*>* map,
     content::RenderFrameHost* render_frame_host) {
@@ -683,6 +700,13 @@ void PopulateChromeFrameBinders(
       !render_frame_host->GetParent()) {
     map->Add<blink::mojom::SubAppsService>(
         base::BindRepeating(&web_app::SubAppsServiceImpl::CreateIfAllowed));
+  }
+#endif
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kScreenAI)) {
+    map->Add<screen_ai::mojom::ScreenAIAnnotator>(
+        base::BindRepeating(&BindScreenAIAnnotator));
   }
 #endif
 }
@@ -989,6 +1013,12 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       ash::common::mojom::AccessibilityFeatures, ash::ScanningUI>(map);
+
+  if (base::FeatureList::IsEnabled(ash::features::kOsFeedback)) {
+    RegisterWebUIControllerInterfaceBinder<
+        ash::os_feedback_ui::mojom::HelpContentProvider, ash::OSFeedbackUI>(
+        map);
+  }
 
   // TODO(crbug.com/1218492): When boot RMA state is available disable this when
   // not in RMA.

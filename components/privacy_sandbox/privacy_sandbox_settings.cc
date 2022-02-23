@@ -20,6 +20,8 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+namespace privacy_sandbox {
+
 namespace {
 
 bool IsCookiesClearOnExitEnabled(HostContentSettingsMap* map) {
@@ -333,6 +335,10 @@ bool PrivacySandboxSettings::IsTrustTokensAllowed() {
   return IsPrivacySandboxEnabled();
 }
 
+bool PrivacySandboxSettings::IsPrivacySandboxRestricted() {
+  return delegate_->IsPrivacySandboxRestricted();
+}
+
 void PrivacySandboxSettings::OnCookiesCleared() {
   SetFlocDataAccessibleFromNow(/*reset_calculate_timer=*/false);
 }
@@ -369,3 +375,5 @@ bool PrivacySandboxSettings::IsPrivacySandboxEnabledForContext(
       cookie_settings, url,
       top_frame_origin ? top_frame_origin->GetURL() : GURL());
 }
+
+}  // namespace privacy_sandbox

@@ -27,6 +27,7 @@
 #include "sql/test/error_callback_support.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "sql/test/test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -1293,44 +1294,33 @@ TEST_P(SQLDatabaseTest, AttachDatabaseWithOpenTransaction) {
   EXPECT_FALSE(db_->IsSQLValid("SELECT count(*) from other.bar"));
 }
 
-TEST_P(SQLDatabaseTest, Basic_QuickIntegrityCheck) {
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  ASSERT_TRUE(db_->Execute(kCreateSql));
-  EXPECT_TRUE(db_->QuickIntegrityCheck());
-  db_->Close();
-
-  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path_));
-
+TEST_P(SQLDatabaseTest, FullIntegrityCheck) {
+  static constexpr char kTableSql[] =
+      "CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL, value TEXT NOT NULL)";
+  ASSERT_TRUE(db_->Execute(kTableSql));
   {
-    sql::test::ScopedErrorExpecter expecter;
-    expecter.ExpectError(SQLITE_CORRUPT);
-    ASSERT_TRUE(db_->Open(db_path_));
-    EXPECT_FALSE(db_->QuickIntegrityCheck());
-    ASSERT_TRUE(expecter.SawExpectedErrors());
+    std::vector<std::string> messages;
+    EXPECT_TRUE(db_->FullIntegrityCheck(&messages))
+        << "FullIntegrityCheck() failed before database was corrupted";
+    EXPECT_THAT(messages, testing::ElementsAre("ok"))
+        << "FullIntegrityCheck() should report ok before database is corrupted";
   }
-}
-
-TEST_P(SQLDatabaseTest, Basic_FullIntegrityCheck) {
-  const std::string kOk("ok");
-  std::vector<std::string> messages;
-
-  const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
-  ASSERT_TRUE(db_->Execute(kCreateSql));
-  EXPECT_TRUE(db_->FullIntegrityCheck(&messages));
-  EXPECT_EQ(1u, messages.size());
-  EXPECT_EQ(kOk, messages[0]);
   db_->Close();
 
   ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path_));
-
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
     ASSERT_TRUE(db_->Open(db_path_));
-    EXPECT_TRUE(db_->FullIntegrityCheck(&messages));
-    EXPECT_LT(1u, messages.size());
-    EXPECT_NE(kOk, messages[0]);
-    ASSERT_TRUE(expecter.SawExpectedErrors());
+    EXPECT_TRUE(expecter.SawExpectedErrors())
+        << "Open() did not encounter SQLITE_CORRUPT";
+  }
+  {
+    std::vector<std::string> messages;
+    EXPECT_TRUE(db_->FullIntegrityCheck(&messages))
+        << "FullIntegrityCheck() failed on corrupted database";
+    EXPECT_THAT(messages, testing::Not(testing::ElementsAre("ok")))
+        << "FullIntegrityCheck() should not report ok for a corrupted database";
   }
 
   // TODO(shess): CorruptTableOrIndex could be used to produce a
@@ -1760,9 +1750,10 @@ TEST_P(SQLDatabaseTest, CheckpointDatabase) {
             "2");
 }
 
-TEST_P(SQLDatabaseTest, CorruptSizeInHeaderTest) {
-  ASSERT_TRUE(db_->Execute("CREATE TABLE foo (x)"));
-  ASSERT_TRUE(db_->Execute("CREATE TABLE bar (x)"));
+TEST_P(SQLDatabaseTest, OpenFailsAfterCorruptSizeInHeader) {
+  // The database file ends up empty if we don't create at least one table.
+  ASSERT_TRUE(
+      db_->Execute("CREATE TABLE rows(i INTEGER PRIMARY KEY NOT NULL)"));
   db_->Close();
 
   ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path_));
@@ -1770,11 +1761,56 @@ TEST_P(SQLDatabaseTest, CorruptSizeInHeaderTest) {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
     ASSERT_TRUE(db_->Open(db_path_));
-    EXPECT_FALSE(db_->Execute("INSERT INTO foo values (1)"));
-    EXPECT_FALSE(db_->DoesTableExist("foo"));
-    EXPECT_FALSE(db_->DoesTableExist("bar"));
-    EXPECT_FALSE(db_->Execute("SELECT * FROM foo"));
     EXPECT_TRUE(expecter.SawExpectedErrors());
+  }
+}
+
+TEST_P(SQLDatabaseTest, ExecuteFailsAfterCorruptSizeInHeader) {
+  ASSERT_TRUE(
+      db_->Execute("CREATE TABLE rows(i INTEGER PRIMARY KEY NOT NULL)"));
+  constexpr static char kSelectSql[] = "SELECT * from rows";
+  EXPECT_TRUE(db_->Execute(kSelectSql))
+      << "The test Execute() statement fails before the header is corrupted";
+  db_->Close();
+
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path_));
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    ASSERT_TRUE(db_->Open(db_path_));
+    EXPECT_TRUE(expecter.SawExpectedErrors())
+        << "Database::Open() did not encounter SQLITE_CORRUPT";
+  }
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    EXPECT_FALSE(db_->Execute(kSelectSql));
+    EXPECT_TRUE(expecter.SawExpectedErrors())
+        << "Database::Execute() did not encounter SQLITE_CORRUPT";
+  }
+}
+
+TEST_P(SQLDatabaseTest, SchemaFailsAfterCorruptSizeInHeader) {
+  ASSERT_TRUE(
+      db_->Execute("CREATE TABLE rows(i INTEGER PRIMARY KEY NOT NULL)"));
+  ASSERT_TRUE(db_->DoesTableExist("rows"))
+      << "The test schema check fails before the header is corrupted";
+  db_->Close();
+
+  ASSERT_TRUE(sql::test::CorruptSizeInHeader(db_path_));
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    ASSERT_TRUE(db_->Open(db_path_));
+    EXPECT_TRUE(expecter.SawExpectedErrors())
+        << "Database::Open() did not encounter SQLITE_CORRUPT";
+  }
+  {
+    sql::test::ScopedErrorExpecter expecter;
+    expecter.ExpectError(SQLITE_CORRUPT);
+    EXPECT_FALSE(db_->DoesTableExist("rows"));
+    EXPECT_TRUE(expecter.SawExpectedErrors())
+        << "Database::DoesTableExist() did not encounter SQLITE_CORRUPT";
   }
 }
 

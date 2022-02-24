@@ -158,8 +158,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(
       const char* name,
-      Sample minimum,
-      Sample maximum,
       const BucketRanges* ranges,
       const DelayedPersistentAllocation& counts,
       const DelayedPersistentAllocation& logged_counts,
@@ -201,8 +199,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // function on non-dcheck builds without crashing.
   // Note. Currently it allow some bad input, e.g. 0 as minimum, but silently
   // converts it to good input: 1.
-  // TODO(bcwhite): Use false returns to create "sink" histograms so that bad
-  // data doesn't create confusion on the servers.
   static bool InspectConstructionArguments(StringPiece name,
                                            Sample* minimum,
                                            Sample* maximum,
@@ -233,10 +229,7 @@ class BASE_EXPORT Histogram : public HistogramBase {
 
   // |ranges| should contain the underflow and overflow buckets. See top
   // comments for example.
-  Histogram(const char* name,
-            Sample minimum,
-            Sample maximum,
-            const BucketRanges* ranges);
+  Histogram(const char* name, const BucketRanges* ranges);
 
   // Traditionally, histograms allocate their own memory for the bucket
   // vector but "shared" histograms use memory regions allocated from a
@@ -245,8 +238,6 @@ class BASE_EXPORT Histogram : public HistogramBase {
   // of this object. Practically, this memory is never released until the
   // process exits and the OS cleans it up.
   Histogram(const char* name,
-            Sample minimum,
-            Sample maximum,
             const BucketRanges* ranges,
             const DelayedPersistentAllocation& counts,
             const DelayedPersistentAllocation& logged_counts,
@@ -341,8 +332,6 @@ class BASE_EXPORT LinearHistogram : public Histogram {
   // Create a histogram using data in persistent storage.
   static std::unique_ptr<HistogramBase> PersistentCreate(
       const char* name,
-      Sample minimum,
-      Sample maximum,
       const BucketRanges* ranges,
       const DelayedPersistentAllocation& counts,
       const DelayedPersistentAllocation& logged_counts,
@@ -377,14 +366,9 @@ class BASE_EXPORT LinearHistogram : public Histogram {
  protected:
   class Factory;
 
-  LinearHistogram(const char* name,
-                  Sample minimum,
-                  Sample maximum,
-                  const BucketRanges* ranges);
+  LinearHistogram(const char* name, const BucketRanges* ranges);
 
   LinearHistogram(const char* name,
-                  Sample minimum,
-                  Sample maximum,
                   const BucketRanges* ranges,
                   const DelayedPersistentAllocation& counts,
                   const DelayedPersistentAllocation& logged_counts,

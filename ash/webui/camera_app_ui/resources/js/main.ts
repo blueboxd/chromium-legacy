@@ -53,9 +53,13 @@ const appWindow = window.appWindow;
  */
 export class App {
   private readonly perfLogger: PerfLogger;
+
   private readonly intent: Intent|null;
+
   private readonly cameraManager: CameraManager;
+
   private readonly galleryButton = new GalleryButton();
+
   private readonly cameraView: Camera;
 
   constructor({perfLogger, intent, facing, mode: defaultMode}: {
@@ -347,7 +351,7 @@ function parseSearchParams(): {
   facing: Facing,
   mode: Mode|null,
   openFrom: string|null,
-  autoTake: boolean
+  autoTake: boolean,
 } {
   const url = new URL(window.location.href);
   const params = url.searchParams;

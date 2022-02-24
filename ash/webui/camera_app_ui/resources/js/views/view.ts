@@ -26,7 +26,9 @@ type WarningEnterOptions = string;
  */
 export class PTZPanelOptions {
   readonly stream: MediaStream;
+
   readonly vidPid: string|null;
+
   readonly resetPTZ: () => Promise<void>;
 
   constructor({stream, vidPid, resetPTZ}: {
@@ -44,15 +46,15 @@ export class PTZPanelOptions {
 // sort of "global" view registration, so we can enforce the enter / leave type
 // at compile time.
 export type EnterOptions =
-    DialogEnterOptions|WarningEnterOptions|PTZPanelOptions;
+    DialogEnterOptions|PTZPanelOptions|WarningEnterOptions;
 
 export type LeaveCondition = {
   kind: 'BACKGROUND_CLICKED',
 }|{
-  kind: 'ESC_KEY_PRESSED',
-}|{
   kind: 'CLOSED',
   val?: unknown,
+}|{
+  kind: 'ESC_KEY_PRESSED',
 };
 
 interface ViewOptions {
@@ -81,6 +83,7 @@ export class View {
   private session: WaitableEvent<LeaveCondition>|null = null;
 
   private readonly dismissByEsc: boolean;
+
   private readonly defaultFocusSelector: string;
 
   /**

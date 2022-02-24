@@ -2523,6 +2523,13 @@ mixed_component("base") {
         "trace_event/trace_event_android.cc",
       ]
     }
+
+    if (use_allocator == "partition") {
+      sources += [
+        "trace_event/address_space_dump_provider.cc",
+        "trace_event/address_space_dump_provider.h",
+      ]
+    }
   } else {
     sources += [
       "trace_event/trace_event_stub.cc",
@@ -2760,6 +2767,13 @@ component("i18n") {
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [
+      "i18n/icu_mergeable_data_file.cc",
+      "i18n/icu_mergeable_data_file.h",
+    ]
   }
 
   if (is_mac) {
@@ -3735,6 +3749,10 @@ test("base_unittests") {
       # Set rpath to find libmalloc_wrapper.so even in a non-component build.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [ "i18n/icu_mergeable_data_file_unittest.cc" ]
   }
 
   if (is_linux || is_chromeos_lacros) {

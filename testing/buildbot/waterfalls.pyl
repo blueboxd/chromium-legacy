@@ -1150,6 +1150,19 @@
         },
         'use_swarming': True,
       },
+      'android-12-x64-dbg-tests': {
+        'mixins': [
+          '12-x64-emulator',
+          'emulator-8-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_12_dbg_emulator_gtests',
+        }
+      },
       'android-12-x64-fyi-rel': {
         'mixins': [
           '12-x64-emulator',
@@ -1235,6 +1248,19 @@
         },
         'use_swarming': True,
         'os_type': 'android',
+      },
+      'android-webview-12-x64-dbg-tests': {
+        'mixins': [
+          '12-x64-emulator',
+          'emulator-8-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'webview_bot_all_gtests',
+        }
       },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'mixins': [
@@ -3349,6 +3375,7 @@
       },
       'linux-wpt-fyi-rel': {
         'mixins': [
+          'has_native_resultdb_integration',
           'linux-bionic',
         ],
         'test_suites': {
@@ -4072,21 +4099,6 @@
           'isolated_scripts': 'gpu_mobile_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
-        },
-      },
-      'Android FYI Release (Nexus 9)': {
-        'browser_config': 'android-chromium',
-        'os_type': 'android',
-        'skip_merge_script': True,
-        'mixins': [
-          'has_native_resultdb_integration',
-          'flounder',
-          'gpu-swarming-pool',
-          'marshmallow_generic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_android_gtests',
-          'gpu_telemetry_tests': 'gpu_common_telemetry_tests',
         },
       },
       'Android FYI Release (Pixel 2)': {
@@ -5871,6 +5883,22 @@
           'dimension_sets': [
             {
               'integrity': 'high',
+            }
+          ]
+        },
+      },
+      'win7-updater-tester-dbg-uac': {
+        'mixins': [
+          'win7',
+          'x86-64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'updater_gtests_win_uac',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'chromium.win.uac',
             }
           ]
         },

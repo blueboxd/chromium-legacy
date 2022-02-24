@@ -5817,7 +5817,6 @@ interface Navigator
     getter geolocation
     getter hardwareConcurrency
     getter hid
-    getter id
     getter ink
     getter keyboard
     getter language
@@ -8260,7 +8259,7 @@ interface Scheduling
     method constructor
     method isFramePending
     method isInputPending
-interface Screen
+interface Screen : EventTarget
     attribute @@toStringTag
     getter availHeight
     getter availLeft
@@ -8273,11 +8272,17 @@ interface Screen
     getter orientation
     getter pixelDepth
     getter width
-    method addEventListener
     method constructor
-    method dispatchEvent
-    method removeEventListener
     setter onchange
+interface ScreenDetailed : Screen
+    attribute @@toStringTag
+    getter devicePixelRatio
+    getter isInternal
+    getter isPrimary
+    getter label
+    getter left
+    getter top
+    method constructor
 interface ScreenDetails : EventTarget
     attribute @@toStringTag
     getter currentScreen
@@ -10603,10 +10608,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebId
-    attribute @@toStringTag
-    method constructor
-    method provide
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a

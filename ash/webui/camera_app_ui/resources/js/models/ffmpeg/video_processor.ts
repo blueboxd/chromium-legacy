@@ -275,8 +275,11 @@ declare global {
  */
 class FFMpegVideoProcessor {
   private readonly inputDevice = new InputDevice();
+
   private readonly outputDevice: OutputDevice;
+
   private readonly jobQueue = new AsyncJobQueue();
+
   /**
    * @param output The output writer.
    */
@@ -285,6 +288,10 @@ class FFMpegVideoProcessor {
     this.outputDevice = new OutputDevice(output);
 
     const outputFile = `/output.${processorArgs.outputExtension}`;
+
+    // clang-format formats one argument per line, which makes the list harder
+    // to read with comments.
+    // clang-format off
     const args = [
       // Make the procssing pipeline start earlier by shorten the initial
       // analyze durtaion from the default 5s to 1s. This reduce the
@@ -299,8 +306,9 @@ class FFMpegVideoProcessor {
       // do not ask anything
       '-nostdin', '-y',
       // output to file
-      outputFile  // eslint-disable-line comma-dangle
+      outputFile,
     ];
+    // clang-format on
 
     const config = {
       arguments: args,
@@ -312,7 +320,7 @@ class FFMpegVideoProcessor {
       preRun: () => {
         // The FS property are injected by emscripten at runtime.
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const fs = (config as unknown as {FS: FS})['FS'];
+        const fs = (config as unknown as {FS: FS}).FS;
         assert(fs !== null);
         // 80 is just a random major number that won't collide with other
         // default devices of the Emscripten runtime environment, which uses

@@ -182,7 +182,7 @@ class RecursiveObserver : public AppRegistryCache::Observer {
     EXPECT_EQ(outer.GetAppType(), inner.GetAppType());
     EXPECT_EQ(outer.GetAppId(), inner.GetAppId());
     EXPECT_EQ(outer.StateIsNull(), inner.StateIsNull());
-    EXPECT_EQ(outer.GetReadiness(), inner.GetReadiness());
+    EXPECT_EQ(outer.Readiness(), inner.Readiness());
     EXPECT_EQ(outer.Name(), inner.Name());
   }
 
@@ -291,10 +291,8 @@ class AppRegistryCacheTest : public testing::Test,
   }
 
   void CallForAllApps(AppRegistryCache& cache) {
-    if (IsOnAppUpdateWithoutMojomEnabled()) {
-      cache.ForAllApps(
-          [this](const AppUpdate& update) { OnAppUpdate(update); });
-    } else {
+    cache.ForAllApps([this](const AppUpdate& update) { OnAppUpdate(update); });
+    if (!IsOnAppUpdateWithoutMojomEnabled()) {
       cache.ForEachApp(
           [this](const AppUpdate& update) { OnAppUpdate(update); });
     }
@@ -304,13 +302,13 @@ class AppRegistryCacheTest : public testing::Test,
   void OnAppUpdate(const AppUpdate& update) override {
     EXPECT_EQ(account_id_, update.AccountId());
 
-    if (IsOnAppUpdateWithoutMojomEnabled()) {
+    if (update.state_ || update.delta_) {
       EXPECT_NE("", update.Name());
-      if (!apps_util::IsInstalled(update.GetReadiness())) {
+      if (!apps_util::IsInstalled(update.Readiness())) {
         return;
       }
       if (update.ReadinessChanged() &&
-          (update.GetReadiness() == Readiness::kReady)) {
+          (update.Readiness() == Readiness::kReady)) {
         num_freshly_installed_++;
       }
       updated_ids_.insert(update.GetAppId());
@@ -321,7 +319,7 @@ class AppRegistryCacheTest : public testing::Test,
         return;
       }
       if (update.ReadinessChanged() &&
-          (update.Readiness() == apps::mojom::Readiness::kReady)) {
+          (update.Readiness() == apps::Readiness::kReady)) {
         num_freshly_installed_++;
       }
       updated_ids_.insert(update.AppId());
@@ -338,13 +336,8 @@ class AppRegistryCacheTest : public testing::Test,
 
   std::string GetName(AppRegistryCache& cache, const std::string& app_id) {
     std::string name;
-    if (base::FeatureList::IsEnabled(kAppServiceOnAppUpdateWithoutMojom)) {
-      cache.ForApp(app_id,
-                   [&name](const AppUpdate& update) { name = update.Name(); });
-    } else {
-      cache.ForOneApp(
-          app_id, [&name](const AppUpdate& update) { name = update.Name(); });
-    }
+    cache.ForApp(app_id,
+                 [&name](const AppUpdate& update) { name = update.Name(); });
     return name;
   }
 
@@ -549,7 +542,7 @@ TEST_P(AppRegistryCacheTest, Removed) {
     // We should see one call informing us that the app was uninstalled.
     EXPECT_CALL(observer, OnAppUpdate(HasAppId("app")))
         .WillOnce(testing::Invoke([&observer, &cache](const AppUpdate& update) {
-          EXPECT_EQ(Readiness::kUninstalledByUser, update.GetReadiness());
+          EXPECT_EQ(Readiness::kUninstalledByUser, update.Readiness());
           // Even though we have queued the removal, checking the cache now
           // shows the app is still present.
           EXPECT_CALL(observer, OnAppUpdate(HasAppId("app")));
@@ -561,8 +554,7 @@ TEST_P(AppRegistryCacheTest, Removed) {
     // We should see one call informing us that the app was uninstalled.
     EXPECT_CALL(observer, OnAppUpdate(HasAppId("app")))
         .WillOnce(testing::Invoke([&observer, &cache](const AppUpdate& update) {
-          EXPECT_EQ(apps::mojom::Readiness::kUninstalledByUser,
-                    update.Readiness());
+          EXPECT_EQ(apps::Readiness::kUninstalledByUser, update.Readiness());
           // Even though we have queued the removal, checking the cache now
           // shows the app is still present.
           EXPECT_CALL(observer, OnAppUpdate(HasAppId("app")));

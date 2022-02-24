@@ -384,8 +384,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableTranslations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
 
-BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
-
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -417,6 +415,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPI;
+BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPINamespaces;
 BLINK_COMMON_EXPORT extern const base::Feature kManagedConfiguration;
 
 // Kill switch for the blocking of the navigation of top from a cross origin
@@ -656,6 +655,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;
 
 // Gates the non-standard API Event.path to help its deprecation and removal.
 BLINK_COMMON_EXPORT extern const base::Feature kEventPath;
+
+// If enabled, the minor version of the User-Agent string will be reduced.
+BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
 
 }  // namespace features
 }  // namespace blink

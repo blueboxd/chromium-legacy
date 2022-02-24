@@ -17,8 +17,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill_assistant.AssistantFeatures;
-import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantPreferencesUtil;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
@@ -32,6 +30,8 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.ui.signin.SignOutDialogFragment;
+import org.chromium.components.autofill_assistant.AssistantFeatures;
+import org.chromium.components.autofill_assistant.AutofillAssistantPreferencesUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -220,11 +220,7 @@ public class GoogleServicesSettings
     private void updatePreferences() {
         mAllowSignin.setChecked(mPrefService.getBoolean(Pref.SIGNIN_ALLOWED));
         mSearchSuggestions.setChecked(mPrefService.getBoolean(Pref.SEARCH_SUGGEST_ENABLED));
-
-        mUsageAndCrashReporting.setChecked(
-                mPrivacyPrefManager.isUsageAndCrashReportingPermittedByUser()
-                && !mPrivacyPrefManager.isMetricsReportingDisabledByPolicy());
-
+        mUsageAndCrashReporting.setChecked(mPrivacyPrefManager.isUsageAndCrashReportingPermitted());
         mUrlKeyedAnonymizedData.setChecked(
                 UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionEnabled(
                         Profile.getLastUsedRegularProfile()));
@@ -250,8 +246,8 @@ public class GoogleServicesSettings
                 return mPrefService.isManagedPreference(Pref.SEARCH_SUGGEST_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
-                return PrivacyPreferencesManagerImpl.getInstance()
-                        .isMetricsReportingDisabledByPolicy();
+                return !PrivacyPreferencesManagerImpl.getInstance()
+                                .isUsageAndCrashReportingPermittedByPolicy();
             }
             if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
                 return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged(

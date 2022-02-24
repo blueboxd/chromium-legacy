@@ -60,7 +60,7 @@ export {
 export type DoSwitchMode = () => Promise<boolean>;
 
 export type CaptureHandler =
-    PhotoHandler&VideoHandler&PortraitHandler&ScanHandler;
+    PhotoHandler&PortraitHandler&ScanHandler&VideoHandler;
 
 /**
  * Parameters for capture settings.
@@ -121,10 +121,12 @@ export class Modes {
    * Capture controller of current camera mode.
    */
   current: ModeBase|null = null;
+
   /**
    * Parameters to create mode capture controller.
    */
   private captureParams: CaptureParams|null = null;
+
   /**
    * Mode classname and related functions and attributes.
    */
@@ -214,7 +216,7 @@ export class Modes {
 
           let minFrameRate = 0;
           let maxFrameRate = 0;
-          if (constraints.video && constraints.video.frameRate) {
+          if (constraints.video?.frameRate) {
             const frameRate = constraints.video.frameRate;
             if (typeof frameRate === 'number') {
               minFrameRate = frameRate;
@@ -285,7 +287,7 @@ export class Modes {
           if (deviceOperator === null) {
             return false;
           }
-          return await deviceOperator.isPortraitModeSupported(deviceId);
+          return deviceOperator.isPortraitModeSupported(deviceId);
         },
         isSupportPTZ: checkSupportPTZForPhotoMode,
         prepareDevice: async (constraints, resolution) => prepareDeviceForPhoto(

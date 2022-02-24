@@ -100,17 +100,6 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-  // APIs for Web Authentication are not available prior to N.
-  WebRuntimeFeatures::EnableWebAuth(
-      base::FeatureList::IsEnabled(features::kWebAuth) &&
-      base::android::BuildInfo::GetInstance()->sdk_int() >=
-          base::android::SDK_VERSION_NOUGAT);
-#else
-  WebRuntimeFeatures::EnableWebAuth(
-      base::FeatureList::IsEnabled(features::kWebAuth));
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
   WebRuntimeFeatures::EnablePictureInPictureAPI(
       base::FeatureList::IsEnabled(media::kPictureInPictureAPI));
 #endif
@@ -256,8 +245,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableNeverSlowMode, features::kNeverSlowMode},
     {wf::EnableNotificationContentImage, features::kNotificationContentImage,
      kSetOnlyIfOverridden},
-    {wf::EnableParseUrlProtocolHandler,
-     blink::features::kWebAppEnableProtocolHandlers},
     {wf::EnableWebAppManifestId, blink::features::kWebAppEnableManifestId},
     {wf::EnablePaymentApp, features::kServiceWorkerPaymentApps},
     {wf::EnablePaymentRequest, features::kWebPayments},

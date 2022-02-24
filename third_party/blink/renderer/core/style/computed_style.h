@@ -393,47 +393,6 @@ class ComputedStyle : public ComputedStyleBase,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
-  bool AncestorsAffectedByHoverInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByHoverInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByHoverInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
-                                        kAncestorsAffectedByHoverInSubjectHas);
-  }
-
-  bool AncestorsAffectedByActiveInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByActiveInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByActiveInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
-                                        kAncestorsAffectedByActiveInSubjectHas);
-  }
-
-  bool AncestorsAffectedByFocusInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByFocusInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByFocusInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
-                                        kAncestorsAffectedByFocusInSubjectHas);
-  }
-
-  bool AncestorsAffectedByFocusVisibleInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByFocusVisibleInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByFocusVisibleInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(
-        DynamicRestyleFlagsForSubjectHas() |
-        kAncestorsAffectedByFocusVisibleInSubjectHas);
-  }
-
   PseudoId StyleType() const {
     return static_cast<PseudoId>(StyleTypeInternal());
   }
@@ -2121,16 +2080,13 @@ class ComputedStyle : public ComputedStyleBase,
   }
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
 
-  // Utility method which checks if legacy layout is forced for the element, or
-  // if the element is rendered as an SVG element, in addition to checking
-  // IsContainerForContainerQueries(). Query containers are not established in
-  // legacy layout or for SVG elements apart from SVG outer roots which behave
-  // as a replaced element.
-  bool IsContainerForContainerQueries(const Element& element) const;
+  // Return true if an element can match size container queries. In addition to
+  // checking if it has a size container-type, we check if we are never able to
+  // reach NGBlockNode::Layout() for legacy layout objects or SVG elements.
+  bool CanMatchSizeContainerQueries(const Element& element) const;
 
-  bool IsContainerForContainerQueries() const {
-    return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone &&
-           !InsideFragmentationContextWithNondeterministicEngine();
+  bool IsContainerForSizeContainerQueries() const {
+    return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone;
   }
 
   // Display utility functions.

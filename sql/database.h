@@ -243,11 +243,6 @@ class COMPONENT_EXPORT(SQL) Database {
   // call should succeed, and a single value "ok" should be in messages.
   bool FullIntegrityCheck(std::vector<std::string>* messages);
 
-  // Runs "PRAGMA quick_check" and, unlike the FullIntegrityCheck method,
-  // interprets the results returning true if the the statement executes
-  // without error and results in a single "ok" value.
-  [[nodiscard]] bool QuickIntegrityCheck();
-
   // Meant to be called from a client error callback so that it's able to
   // get diagnostic information about the database.
   std::string GetDiagnosticInfo(int extended_error, Statement* statement);
@@ -506,7 +501,7 @@ class COMPONENT_EXPORT(SQL) Database {
   // Returns sqlite's count of the number of rows modified by the last
   // statement executed. Will be 0 if no statement has executed or the database
   // is closed.
-  int GetLastChangeCount() const;
+  int64_t GetLastChangeCount();
 
   // Approximates the amount of memory used by SQLite for this database.
   //
@@ -731,9 +726,6 @@ class COMPONENT_EXPORT(SQL) Database {
 
   // Implementation helper for GetUniqueStatement() and GetCachedStatement().
   scoped_refptr<StatementRef> GetStatementImpl(const char* sql);
-
-  [[nodiscard]] bool IntegrityCheckHelper(const char* pragma_sql,
-                                          std::vector<std::string>* messages);
 
   // Release page-cache memory if memory-mapped I/O is enabled and the database
   // was changed.  Passing true for |implicit_change_performed| allows

@@ -637,6 +637,13 @@ const char kDarkLightTestDescription[] =
     "Enables the dark/light mode of system UI, which includes shelf, launcher, "
     "system tray etc.";
 
+extern const char kDeviceForceScheduledRebootName[] =
+    "Enable DeviceScheduledReboot policy for all sessions.";
+extern const char kDeviceForceScheduledRebootDescription[] =
+    "Schedule recurring reboot for the device. Reboots are always executed at "
+    "a scheduled time. If the session is active, user will be notified about "
+    "the reboot, but the reboot will not be delayed.";
+
 const char kDevicePostureName[] = "Device Posture API";
 const char kDevicePostureDescription[] =
     "Enables Device Posture API (foldable devices)";
@@ -888,11 +895,6 @@ const char kDesktopPWAsSubAppsDescription[] =
     "Prototype implementation of: "
     "https://github.com/ivansandrk/multi-apps/blob/main/explainer.md";
 
-const char kDesktopPWAsProtocolHandlingName[] = "Desktop PWA Protocol handling";
-const char kDesktopPWAsProtocolHandlingDescription[] =
-    "Enable web app manifests to declare protocol handling behavior."
-    "See: https://crbug.com/1019239.";
-
 const char kDesktopPWAsUrlHandlingName[] = "Desktop PWA URL handling";
 const char kDesktopPWAsUrlHandlingDescription[] =
     "Enable web app manifests to declare URL handling behavior. Prototype "
@@ -1002,6 +1004,10 @@ const char kEnableGenericSensorExtraClassesDescription[] =
 const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
 const char kEnableGpuServiceLoggingDescription[] =
     "Enable printing the actual GL driver calls.";
+
+const char kEnableRgbKeyboardName[] = "Enable RGB Keyboard Support";
+const char kEnableRgbKeyboardDescription[] =
+    "Enable RGB Keyboard support on supported devices.";
 
 const char kEnableShortcutCustomizationAppName[] =
     "Enable shortcut customization app";
@@ -2867,13 +2873,6 @@ const char kExtensionWorkflowJustificationDescription[] =
     "Enables users to justify their extension requests by causing a text field "
     "to appear on the extension request dialog.";
 
-#if !BUILDFLAG(IS_ANDROID)
-const char kShareContextMenuName[] = "Share context menu";
-const char kShareContextMenuDescription[] =
-    "Whether the sharing options in various context menus are grouped into "
-    "a common submenu.";
-#endif
-
 const char kForceMajorVersionInMinorPositionInUserAgentName[] =
     "Put major version in minor version position in User-Agent";
 const char kForceMajorVersionInMinorPositionInUserAgentDescription[] =
@@ -2885,6 +2884,13 @@ const char kForceMajorVersionInMinorPositionInUserAgentDescription[] =
 const char kDurableClientHintsCacheName[] = "Persistent client hints";
 const char kDurableClientHintsCacheDescription[] =
     "Persist the client hints cache beyond browser restarts.";
+
+const char kReduceUserAgentMinorVersionName[] =
+    "Reduce the minor version in the User-Agent string";
+const char kReduceUserAgentMinorVersionDescription[] =
+    "Reduce the minor, build, and patch versions in the User-Agent string.  "
+    "The Chrome version in the User-Agent string will be reported as "
+    "Chrome/<major_version>.0.0.0.";
 
 // Android ---------------------------------------------------------------------
 
@@ -5455,6 +5461,11 @@ const char kDesktopCaptureLacrosV2Name[] = "Enable Lacros Desktop Capture V2";
 const char kDesktopCaptureLacrosV2Description[] =
     "Enables the improved desktop/window capturer for doing screen/window "
     "sharing on Lacros";
+
+const char kLacrosMergeIcuDataFileName[] =
+    "Enable merging of icudtl.dat in Lacros";
+const char kLacrosMergeIcuDataFileDescription[] =
+    "Enables sharing common areas of icudtl.dat between Ash and Lacros.";
 
 const char kLacrosNonSyncingProfilesName[] =
     "Enable non-syncing profiles on lacros";

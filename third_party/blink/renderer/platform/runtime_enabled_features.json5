@@ -1730,15 +1730,6 @@
       origin_trial_feature_name: "Parakeet",
     },
     {
-      // This flag enables the Manifest parser to handle URL Protocols.
-      // Also enabled when blink::features::kWebAppEnableProtocolHandlers is
-      // overridden on the command line (or via chrome://flags).
-      name: "ParseUrlProtocolHandler",
-      status: "experimental",
-      origin_trial_feature_name: "ParseUrlProtocolHandler",
-      origin_trial_os: ["win", "mac", "linux"],
-    },
-    {
       name: "PartitionedCookies",
       origin_trial_feature_name: "PartitionedCookies",
       status: "experimental",
@@ -2724,7 +2715,7 @@
       name: "WindowPlacement",
       origin_trial_feature_name: "WindowPlacementOT2",
       implied_by: ["WindowPlacementV2"],
-      status: "experimental",
+      status: "stable",
     },
     // Further extends window placement functionality for multi-screen devices.
     {

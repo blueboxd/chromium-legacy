@@ -1469,12 +1469,12 @@ int64_t Database::GetLastInsertRowId() const {
   return last_rowid;
 }
 
-int Database::GetLastChangeCount() const {
+int64_t Database::GetLastChangeCount() {
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return 0;
   }
-  return sqlite3_changes(db_);
+  return sqlite3_changes64(db_);
 }
 
 int Database::GetMemoryUsage() {
@@ -1799,17 +1799,6 @@ int Database::OnSqliteError(int sqlite_error_code,
   return sqlite_error_code;
 }
 
-bool Database::FullIntegrityCheck(std::vector<std::string>* messages) {
-  return IntegrityCheckHelper("PRAGMA integrity_check", messages);
-}
-
-bool Database::QuickIntegrityCheck() {
-  std::vector<std::string> messages;
-  if (!IntegrityCheckHelper("PRAGMA quick_check", &messages))
-    return false;
-  return messages.size() == 1 && messages[0] == "ok";
-}
-
 std::string Database::GetDiagnosticInfo(int extended_error,
                                         Statement* statement) {
   // Prevent reentrant calls to the error callback.
@@ -1842,39 +1831,43 @@ std::string Database::GetDiagnosticInfo(int extended_error,
   return result;
 }
 
-// TODO(shess): Allow specifying maximum results (default 100 lines).
-bool Database::IntegrityCheckHelper(const char* pragma_sql,
-                                    std::vector<std::string>* messages) {
+bool Database::FullIntegrityCheck(std::vector<std::string>* messages) {
   messages->clear();
 
   // This has the side effect of setting SQLITE_RecoveryMode, which
   // allows SQLite to process through certain cases of corruption.
   // Failing to set this pragma probably means that the database is
   // beyond recovery.
-  static const char kWritableSchemaSql[] = "PRAGMA writable_schema=ON";
-  if (!Execute(kWritableSchemaSql))
+  if (!Execute("PRAGMA writable_schema=ON"))
     return false;
 
-  bool ret = false;
+  bool success;
   {
-    sql::Statement stmt(GetUniqueStatement(pragma_sql));
+    sql::Statement statement(GetUniqueStatement("PRAGMA integrity_check"));
 
-    // The pragma appears to return all results (up to 100 by default)
-    // as a single string.  This doesn't appear to be an API contract,
-    // it could return separate lines, so loop _and_ split.
-    while (stmt.Step()) {
-      std::string result(stmt.ColumnString(0));
-      *messages = base::SplitString(result, "\n", base::TRIM_WHITESPACE,
-                                    base::SPLIT_WANT_ALL);
+    // "PRAGMA integrity_check" currently returns multiple lines as a single
+    // row.
+    //
+    // However, since https://www.sqlite.org/pragma.html#pragma_integrity_check
+    // states that multiple records may be returned, the code below can handle
+    // multiple records, each of which has multiple lines.
+    std::vector<std::string> result_lines;
+    while (statement.Step()) {
+      std::string row = statement.ColumnString(0);
+      std::vector<base::StringPiece> row_lines = base::SplitStringPiece(
+          row, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      for (base::StringPiece row_line : row_lines)
+        result_lines.emplace_back(row_line);
     }
-    ret = stmt.Succeeded();
+
+    success = statement.Succeeded();
+    *messages = std::move(result_lines);
   }
 
   // Best effort to put things back as they were before.
-  static const char kNoWritableSchemaSql[] = "PRAGMA writable_schema=OFF";
-  std::ignore = Execute(kNoWritableSchemaSql);
+  std::ignore = Execute("PRAGMA writable_schema=OFF");
 
-  return ret;
+  return success;
 }
 
 bool Database::ReportMemoryUsage(base::trace_event::ProcessMemoryDump* pmd,

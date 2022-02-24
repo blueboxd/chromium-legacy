@@ -602,7 +602,6 @@
           'android_r',
           'bullhead',
           'flame',
-          'flounder',
           'hammerhead',
           'kitkat',
           'lollipop',
@@ -1196,6 +1195,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -1237,6 +1239,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -1262,6 +1267,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -1467,6 +1475,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -1555,6 +1566,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -2549,7 +2563,6 @@
         'use_isolated_scripts_api': True,
       },
     },
-
     # The command buffer perf tests are only run on Windows.
     # They are mostly driver and platform independent.
     'gpu_command_buffer_perf_passthrough_isolated_scripts': {
@@ -2898,38 +2911,6 @@
         'mixins': [
           'has_native_resultdb_integration',
           'skia_gold_test',
-        ],
-      },
-      'gl_renderer_screenshot_sync_tests': {
-        'telemetry_test_name': 'screenshot_sync',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--disable-features=UseSkiaRenderer',
-        ],
-        'chromeos_args': [
-          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-    },
-
-    # Very small set of test that exercise GLRenderer and produce pixels for CQ.
-    # For use where SkiaRenderer is enabled by field trial or default.
-    'gpu_gl_renderer_small_telemetry_tests': {
-      'gl_renderer_screenshot_sync': {
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--disable-features=UseSkiaRenderer',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-        ],
-        'telemetry_test_name': 'screenshot_sync',
-        'mixins': [
-          'has_native_resultdb_integration',
         ],
       },
     },
@@ -3735,7 +3716,10 @@
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--timeout-ms=30000',
         ],
-        'mixins': ['webgpu_cts'],
+        'mixins': [
+          'webgpu_cts',
+          'skia_gold_test',
+        ],
         'swarming': {
           'shards': 4,
         },
@@ -3749,7 +3733,10 @@
         'args': [
           '--flag-specific=webgpu',
         ],
-        'mixins': ['webgpu_cts'],
+        'mixins': [
+          'webgpu_cts',
+          'skia_gold_test',
+        ],
         'swarming': {
           'shards': 4,
         },
@@ -3767,7 +3754,10 @@
           # Increase the timeout when using backend validation layers (crbug.com/1208253)
           '--timeout-ms=30000',
         ],
-        'mixins': ['webgpu_cts'],
+        'mixins': [
+          'webgpu_cts',
+          'skia_gold_test',
+        ],
         'swarming': {
           'shards': 4,
         },
@@ -3912,6 +3902,17 @@
 
     'lacros_all_tast_tests': {
       'lacros_all_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'resultdb': {
+          'enable': True,
+        },
+      },
+    },
+
+    'lacros_all_tast_tests_informational': {
+      'lacros_all_tast_tests_informational': {
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
         },
@@ -4149,6 +4150,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -4507,6 +4511,7 @@
 
     'rust_gtests': {
       'base_unittests': {},
+      'rust_gtest_interop_unittests': {},
       'test_cpp_including_rust_unittests': {
         'swarming': {},
         'test': 'test_cpp_including_rust_unittests',
@@ -5020,6 +5025,9 @@
           ],
           'script': '//third_party/blink/tools/merge_web_test_results.py',
         },
+        'mixins': [
+          'skia_gold_test',
+        ],
         'resultdb': {
           'enable': True,
         },
@@ -5476,6 +5484,10 @@
       'weblayer_gtests',
       'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
+    ],
+
+    'android_12_dbg_emulator_gtests': [
+      'android_trichrome_smoke_tests',
     ],
 
     'android_12_emulator_gtests': [
@@ -6054,7 +6066,6 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
-      'gpu_gl_renderer_small_telemetry_tests',
     ],
 
     'gpu_common_telemetry_tests': [
@@ -7183,6 +7194,12 @@
     },
 
     'lacros_device_or_vm_tests_fyi': {
+      'lacros_all_tast_tests_informational': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
+          'LACROS_EVE',
+        ]
+      },
       'lacros_device_or_vm_gtests': {
         'variants': [
           'LACROS_AMD64_GENERIC',

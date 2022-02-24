@@ -514,9 +514,6 @@ extern const char kDesktopPWAsTabStripSettingsDescription[];
 extern const char kDesktopPWAsSubAppsName[];
 extern const char kDesktopPWAsSubAppsDescription[];
 
-extern const char kDesktopPWAsProtocolHandlingName[];
-extern const char kDesktopPWAsProtocolHandlingDescription[];
-
 extern const char kDesktopPWAsUrlHandlingName[];
 extern const char kDesktopPWAsUrlHandlingDescription[];
 
@@ -525,6 +522,9 @@ extern const char kDesktopPWAsWebBundlesDescription[];
 
 extern const char kDesktopPWAsWindowControlsOverlayName[];
 extern const char kDesktopPWAsWindowControlsOverlayDescription[];
+
+extern const char kDeviceForceScheduledRebootName[];
+extern const char kDeviceForceScheduledRebootDescription[];
 
 extern const char kDevicePostureName[];
 extern const char kDevicePostureDescription[];
@@ -690,6 +690,9 @@ extern const char kEnablePortalsCrossOriginDescription[];
 
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
+
+extern const char kEnableRgbKeyboardName[];
+extern const char kEnableRgbKeyboardDescription[];
 
 extern const char kEnableShortcutCustomizationAppName[];
 extern const char kEnableShortcutCustomizationAppDescription[];
@@ -1641,16 +1644,14 @@ extern const char kUsePassthroughCommandDecoderDescription[];
 extern const char kExtensionWorkflowJustificationName[];
 extern const char kExtensionWorkflowJustificationDescription[];
 
-#if !BUILDFLAG(IS_ANDROID)
-extern const char kShareContextMenuName[];
-extern const char kShareContextMenuDescription[];
-#endif
-
 extern const char kForceMajorVersionInMinorPositionInUserAgentName[];
 extern const char kForceMajorVersionInMinorPositionInUserAgentDescription[];
 
 extern const char kDurableClientHintsCacheName[];
 extern const char kDurableClientHintsCacheDescription[];
+
+extern const char kReduceUserAgentMinorVersionName[];
+extern const char kReduceUserAgentMinorVersionDescription[];
 
 // Android --------------------------------------------------------------------
 
@@ -3143,6 +3144,9 @@ extern const char kLauncherNudgeShortIntervalDescription[];
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 extern const char kDesktopCaptureLacrosV2Name[];
 extern const char kDesktopCaptureLacrosV2Description[];
+
+extern const char kLacrosMergeIcuDataFileName[];
+extern const char kLacrosMergeIcuDataFileDescription[];
 
 extern const char kLacrosNonSyncingProfilesName[];
 extern const char kLacrosNonSyncingProfilesDescription[];

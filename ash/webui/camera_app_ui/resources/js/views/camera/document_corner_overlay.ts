@@ -116,7 +116,9 @@ class Line {
  */
 class Corner {
   private readonly corner: HTMLDivElement;
+
   private readonly prevLine: Line;
+
   private readonly nextLine: Line;
 
   constructor(container: HTMLDivElement) {
@@ -150,12 +152,19 @@ const SHOW_NO_DOCUMENT_TOAST_TIMEOUT_MS = 4000;
 export class DocumentCornerOverlay {
   private readonly overlay =
       dom.get('#preview-document-corner-overlay', HTMLDivElement);
+
   private readonly noDocumentToast: HTMLDivElement;
+
   private readonly cornerContainer: HTMLDivElement;
+
   private deviceId: string|null = null;
+
   private observer: MojoEndpoint|null = null;
+
   private readonly sides: Line[];
+
   private readonly corners: Corner[];
+
   private noDocumentTimerId: number|null = null;
 
   /**
@@ -270,7 +279,7 @@ export class DocumentCornerOverlay {
       let maxEdgeLength = 0;
       const shouldUpdatePOI = (() => {
         let isPreviousPOIOutsideNewDoc = this.prevDocArea === null;
-        const {x: xp, y: yp} = this.prevDocArea?.center || {x: 0, y: 0};
+        const {x: xp, y: yp} = this.prevDocArea?.center ?? {x: 0, y: 0};
         for (let i = 0; i < corners.length; ++i) {
           const {x: x1, y: y1} = corners[i];
           const {x: x2, y: y2} = corners[(i + 1) % 4];
@@ -364,8 +373,7 @@ export class DocumentCornerOverlay {
       });
     });
 
-    /** @suppress {suspiciousCode} */
-    this.cornerContainer.offsetParent;  // Force start state of transition.
+    void this.cornerContainer.offsetParent;  // Force start state of transition.
 
     // Set end of dot transition.
     corners.forEach((corn, i) => {

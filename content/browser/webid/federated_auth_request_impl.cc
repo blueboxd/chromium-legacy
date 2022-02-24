@@ -46,7 +46,7 @@ static constexpr base::TimeDelta kIdTokenRequestDelay = base::Seconds(3);
 // TODO(yigu): We need to make sure the delay is greater than the time required
 // for a successful flow based on `Blink.FedCm.Timing.TurnaroundTime`.
 // https://crbug.com/1298316.
-static constexpr base::TimeDelta kRequestRejectionDelay = base::Seconds(40);
+static constexpr base::TimeDelta kRequestRejectionDelay = base::Seconds(60);
 
 std::string FormatRequestParams(const std::string& client_id,
                                 const std::string& nonce) {
@@ -928,6 +928,8 @@ void FederatedAuthRequestImpl::OnAccountSelected(const std::string& account_id,
                     /*should_call_callback=*/false);
     return;
   }
+
+  RecordIsSignInUser(is_sign_in);
 
   // Account selection is considered sufficient for granting request permission
   // (which also implies the logout permission).

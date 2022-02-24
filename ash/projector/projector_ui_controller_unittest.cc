@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/constants/ash_features.h"
-#include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/projector/projector_annotation_tray.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/projector_metrics.h"
@@ -62,11 +61,14 @@ class ProjectorUiControllerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    controller_ = Shell::Get()->projector_controller()->ui_controller();
+    auto* projector_controller = Shell::Get()->projector_controller();
+    projector_controller->SetClient(&projector_client_);
+    controller_ = projector_controller->ui_controller();
   }
 
  protected:
   ProjectorUiController* controller_;
+  MockProjectorClient projector_client_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -82,27 +84,18 @@ TEST_F(ProjectorUiControllerTest, ShowAndCloseToolbar) {
   EXPECT_FALSE(projector_annotation_tray->visible_preferred());
 }
 
-// Verifies that toggling on the laser pointer on Projector tools propagates to
-// the laser pointer controller.
-TEST_F(ProjectorUiControllerTest, EnablingDisablingLaserPointer) {
-  auto* laser_pointer_controller = Shell::Get()->laser_pointer_controller();
+// Verifies that toggling on the marker on Projector tools enables the
+// annotator.
+TEST_F(ProjectorUiControllerTest, EnablingDisablingMarker) {
   // Enable marker.
   controller_->OnMarkerPressed();
   EXPECT_TRUE(controller_->is_annotator_enabled());
-  EXPECT_FALSE(laser_pointer_controller->is_enabled());
+}
 
-  controller_->OnLaserPointerPressed();
-  EXPECT_TRUE(laser_pointer_controller->is_enabled());
-  EXPECT_FALSE(controller_->is_annotator_enabled());
-
-  controller_->OnMarkerPressed();
-  EXPECT_TRUE(controller_->is_annotator_enabled());
-  EXPECT_FALSE(laser_pointer_controller->is_enabled());
-
-  auto* laser_pointer_controller_ = Shell::Get()->laser_pointer_controller();
-  laser_pointer_controller_->SetEnabled(true);
-  EXPECT_TRUE(laser_pointer_controller->is_enabled());
-  EXPECT_FALSE(controller_->is_annotator_enabled());
+TEST_F(ProjectorUiControllerTest, SetAnnotatorTool) {
+  AnnotatorTool tool;
+  EXPECT_CALL(projector_client_, SetTool(tool));
+  controller_->SetAnnotatorTool(tool);
 }
 
 TEST_F(ProjectorUiControllerTest, ShowFailureNotification) {

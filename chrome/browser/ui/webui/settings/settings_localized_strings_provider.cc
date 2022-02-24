@@ -173,6 +173,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"relaunchConfirmationDialogTitle", IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE},
 #endif
+    {"remove", IDS_REMOVE},
     {"restart", IDS_SETTINGS_RESTART},
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},
@@ -1020,6 +1021,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"viewExistingPasswordAriaDescription",
        IDS_SETTINGS_PASSWORD_VIEW_EXISTING_PASSWORD_ARIA_DESCRIPTION},
       {"copyPassword", IDS_SETTINGS_PASSWORD_COPY},
+      {"sendPassword", IDS_SETTINGS_PASSWORD_SEND},
       {"passwordStoredOnDevice", IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE},
       {"passwordStoredInAccount", IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT},
       {"passwordStoredInAccountAndOnDevice",

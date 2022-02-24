@@ -7,20 +7,20 @@
 
 #include <stdint.h>
 
-#include <string>
 #include <vector>
 
 #include "base/numerics/checked_math.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
-#include "content/browser/attribution_reporting/stored_source.h"
+#include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 
 namespace content {
 
 class CONTENT_EXPORT AggregatableHistogramContribution {
  public:
-  AggregatableHistogramContribution(std::string bucket, uint32_t value);
+  AggregatableHistogramContribution(absl::uint128 key, uint32_t value);
   AggregatableHistogramContribution(
       const AggregatableHistogramContribution& other) = default;
   AggregatableHistogramContribution& operator=(
@@ -31,12 +31,12 @@ class CONTENT_EXPORT AggregatableHistogramContribution {
       AggregatableHistogramContribution&& other) = default;
   ~AggregatableHistogramContribution() = default;
 
-  const std::string& bucket() const { return bucket_; }
+  absl::uint128 key() const { return key_; }
 
   uint32_t value() const { return value_; }
 
  private:
-  std::string bucket_;
+  absl::uint128 key_;
   uint32_t value_;
 };
 
@@ -46,8 +46,7 @@ struct CONTENT_EXPORT AggregatableAttribution {
   using Id = base::StrongAlias<AggregatableAttribution, int64_t>;
 
   AggregatableAttribution(
-      StoredSource::Id source_id,
-      base::Time trigger_time,
+      AttributionInfo attribution_info,
       base::Time report_time,
       std::vector<AggregatableHistogramContribution> contributions);
   AggregatableAttribution(const AggregatableAttribution& other);
@@ -59,8 +58,7 @@ struct CONTENT_EXPORT AggregatableAttribution {
   // Returns the sum of the contributions (values) across all buckets.
   base::CheckedNumeric<int64_t> BudgetRequired() const;
 
-  StoredSource::Id source_id;
-  base::Time trigger_time;
+  AttributionInfo attribution_info;
   // Might be null if not set yet.
   base::Time report_time;
   std::vector<AggregatableHistogramContribution> contributions;

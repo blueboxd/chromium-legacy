@@ -37,6 +37,7 @@
 #include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/origin.h"
@@ -150,11 +151,21 @@ namespace content {
 // Version 24 - 2022/02/17 - https://crrev.com/c/3421226
 //
 // Version 24 adds the impressions.aggregatable_budget_consumed column.
-const int AttributionStorageSql::kCurrentVersionNumber = 24;
+//
+// Version 25 - 2022/02/22 - https://crrev.com/c/3482495
+//
+// Version 25 replaces the aggregatable_contributions.bucket column with
+// aggregatable_contributions.key_high_bits and
+// aggregatable_contributions.key_low_bits columns.
+//
+// Version 26 - 2022/02/23 - https://crrev.com/c/3472530
+//
+// Version 26 adds the aggregatable_report_metadata.debug_key column.
+const int AttributionStorageSql::kCurrentVersionNumber = 26;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 24;
+const int AttributionStorageSql::kCompatibleVersionNumber = 26;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
@@ -179,9 +190,13 @@ const int AttributionStorageSql::kCompatibleVersionNumber = 24;
 //
 // Version 23 was deprecated by https://crrev.com/c/3421226.
 //
-// Note that Versions 15-23 were introduced during the transitional state of
+// Version 24 was deprecated by https://crrev.com/c/3482495.
+//
+// Version 25 was deprecated by https://crrev.com/c/3472530.
+//
+// Note that Versions 15-25 were introduced during the transitional state of
 // the Attribution Reporting API and can be removed when done.
-const int AttributionStorageSql::kDeprecatedVersionNumber = 23;
+const int AttributionStorageSql::kDeprecatedVersionNumber = 25;
 
 namespace {
 
@@ -1704,12 +1719,13 @@ bool AttributionStorageSql::CreateSchema() {
   // Origins usually aren't _that_ big compared to a 64 bit integer(8 bytes).
   //
   // All of the columns in this table are designed to be "const" except for
-  // |num_conversions| and |active| which are updated when a new report is
-  // received. |num_conversions| is the number of times a report has
-  // been created for a given source. |delegate_| can choose to enforce a
-  // maximum limit on this. |active| indicates whether a source is able to
-  // create new associated reports. |active| can be unset on a number
-  // of conditions:
+  // |num_conversions|, |aggregatable_budget_consumed| and |active| which are
+  // updated when a new trigger is received. |num_conversions| is the number of
+  // times an event-level report has been created for a given source.
+  // |aggregatable_budget_consumed| is the aggregatable budget that has been
+  // consumed for a given source. |delegate_| can choose to enforce a maximum
+  // limit on them. |active| indicates whether a source is able to create new
+  // associated reports. |active| can be unset on a number of conditions:
   //   - A source converted too many times.
   //   - A new source was stored after a source converted, making it
   //     ineligible for new sources due to the attribution model documented
@@ -1856,7 +1872,8 @@ bool AttributionStorageSql::CreateSchema() {
       "CREATE TABLE IF NOT EXISTS aggregatable_report_metadata("
       "aggregation_id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"
       "source_id INTEGER NOT NULL,"
-      "trigger_time INTEGER NOT NULL)";
+      "trigger_time INTEGER NOT NULL,"
+      "debug_key INTEGER)";
   if (!db_->Execute(kAggregatableReportMetadataTableSql))
     return false;
 
@@ -1883,7 +1900,8 @@ bool AttributionStorageSql::CreateSchema() {
   // `aggregation_id` is the primary key of a row in the
   // [aggregatable_report_metadata] table.
   // `report_time` is the time the aggregatable report should be reported.
-  // `bucket` is the histogram bucket.
+  // `key_high_bits` and `key_low_bits` represent the histogram bucket key that
+  // is a 128-bit unsigned integer.
   // `value` is the histogram value.
   // `external_report_id` is used for deduplicating reports received by the
   // reporting origin.
@@ -1893,7 +1911,8 @@ bool AttributionStorageSql::CreateSchema() {
       "aggregation_id INTEGER NOT NULL,"
       "report_time INTEGER NOT NULL,"
       "failed_send_attempts INTEGER NOT NULL,"
-      "bucket TEXT NOT NULL,"
+      "key_high_bits INTEGER NOT NULL,"
+      "key_low_bits INTEGER NOT NULL,"
       "value INTEGER NOT NULL,"
       "external_report_id TEXT NOT NULL)";
   if (!db_->Execute(kAggregatableContributionsTableSql))
@@ -2043,8 +2062,18 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
   if (!LazyInit(DbCreationPolicy::kCreateIfAbsent))
     return false;
 
-  switch (
-      AggregatableAttributionAllowedForBudgetLimit(aggregatable_attribution)) {
+  StoredSource::Id source_id =
+      aggregatable_attribution.attribution_info.source.source_id();
+
+  absl::optional<StoredSourceData> source_to_attribute =
+      ReadSourceToAttribute(db_.get(), source_id);
+  // This is only possible if there is a corrupt DB.
+  if (!source_to_attribute.has_value())
+    return false;
+
+  switch (AggregatableAttributionAllowedForBudgetLimit(
+      aggregatable_attribution,
+      source_to_attribute->aggregatable_budget_consumed)) {
     case RateLimitResult::kAllowed:
       break;
     case RateLimitResult::kNotAllowed:
@@ -2058,12 +2087,15 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
 
   static constexpr char kInsertMetadataSql[] =
       "INSERT INTO aggregatable_report_metadata"
-      "(source_id,trigger_time)"
-      "VALUES(?,?)";
+      "(source_id,trigger_time,debug_key)"
+      "VALUES(?,?,?)";
   sql::Statement insert_metadata_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertMetadataSql));
-  insert_metadata_statement.BindInt64(0, *aggregatable_attribution.source_id);
-  insert_metadata_statement.BindTime(1, aggregatable_attribution.trigger_time);
+  insert_metadata_statement.BindInt64(0, *source_id);
+  insert_metadata_statement.BindTime(
+      1, aggregatable_attribution.attribution_info.time);
+  BindUint64OrNull(insert_metadata_statement, 2,
+                   aggregatable_attribution.attribution_info.debug_key);
   if (!insert_metadata_statement.Run())
     return false;
 
@@ -2071,9 +2103,10 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
 
   static constexpr char kInsertContributionsSql[] =
       "INSERT INTO aggregatable_contributions"
-      "(aggregation_id,report_time,failed_send_attempts,bucket,value,"
+      "(aggregation_id,report_time,failed_send_attempts,key_high_bits,"
+      "key_low_bits,value,"
       "external_report_id)"
-      "VALUES(?,?,0,?,?,?)";
+      "VALUES(?,?,0,?,?,?,?)";
   sql::Statement insert_contributions_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertContributionsSql));
 
@@ -2083,11 +2116,14 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
     insert_contributions_statement.BindInt64(0, *aggregation_id);
     insert_contributions_statement.BindTime(
         1, aggregatable_attribution.report_time);
-    insert_contributions_statement.BindString(2, contribution.bucket());
     insert_contributions_statement.BindInt64(
-        3, static_cast<int64_t>(contribution.value()));
+        2, SerializeUint64(absl::Uint128High64(contribution.key())));
+    insert_contributions_statement.BindInt64(
+        3, SerializeUint64(absl::Uint128Low64(contribution.key())));
+    insert_contributions_statement.BindInt64(
+        4, static_cast<int64_t>(contribution.value()));
     insert_contributions_statement.BindString(
-        4, delegate_->NewReportID().AsLowercaseString());
+        5, delegate_->NewReportID().AsLowercaseString());
     if (!insert_contributions_statement.Run())
       return false;
   }
@@ -2097,8 +2133,7 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
   // The value was already validated by
   // `AggregatableAttributionAllowedForBudgetLimit()` above.
   DCHECK(budget_required.IsValid());
-  if (!AdjustBudgetConsumedForSource(aggregatable_attribution.source_id,
-                                     budget_required.ValueOrDie())) {
+  if (!AdjustBudgetConsumedForSource(source_id, budget_required.ValueOrDie())) {
     return false;
   }
 
@@ -2228,10 +2263,11 @@ AttributionStorageSql::GetAggregatableContributionReportsForTesting(
   // See the comment in crrev.com/c/3379484 for more information.
   static constexpr char kGetContributionsSql[] =
       "SELECT C.contribution_id,C.report_time,C.failed_send_attempts,"
-      "C.bucket,C.value,C.external_report_id,A.trigger_time,"
-      "I.impression_origin,I.conversion_origin,I.reporting_origin,"
-      "I.impression_data,I.impression_time,I.expiry_time,I.impression_id,"
-      "I.source_type,I.priority,I.attributed_truthfully,I.debug_key "
+      "C.key_high_bits,C.key_low_bits,C.value,C.external_report_id,"
+      "A.trigger_time,I.impression_origin,I.conversion_origin,"
+      "I.reporting_origin,I.impression_data,I.impression_time,I.expiry_time,"
+      "I.impression_id,I.source_type,I.priority,I.attributed_truthfully,"
+      "I.debug_key,A.debug_key "
       "FROM aggregatable_contributions AS C "
       DCHECK_SQL_INDEXED_BY("contribution_report_time_idx")
       "JOIN aggregatable_report_metadata AS A "
@@ -2251,32 +2287,36 @@ AttributionStorageSql::GetAggregatableContributionReportsForTesting(
         statement.ColumnInt64(0));
     base::Time report_time = statement.ColumnTime(1);
     int failed_send_attempts = statement.ColumnInt(2);
-    std::string bucket = statement.ColumnString(3);
-    int64_t value = statement.ColumnInt64(4);
+    absl::uint128 bucket_key =
+        absl::MakeUint128(DeserializeUint64(statement.ColumnInt64(3)),
+                          DeserializeUint64(statement.ColumnInt64(4)));
+    int64_t value = statement.ColumnInt64(5);
     base::GUID external_report_id =
-        base::GUID::ParseLowercase(statement.ColumnString(5));
-    base::Time trigger_time = statement.ColumnTime(6);
+        base::GUID::ParseLowercase(statement.ColumnString(6));
+    base::Time trigger_time = statement.ColumnTime(7);
     url::Origin impression_origin =
-        DeserializeOrigin(statement.ColumnString(7));
-    url::Origin conversion_origin =
         DeserializeOrigin(statement.ColumnString(8));
-    url::Origin reporting_origin = DeserializeOrigin(statement.ColumnString(9));
-    uint64_t source_event_id = DeserializeUint64(statement.ColumnInt64(10));
-    base::Time impression_time = statement.ColumnTime(11);
-    base::Time expiry_time = statement.ColumnTime(12);
-    StoredSource::Id source_id(statement.ColumnInt64(13));
+    url::Origin conversion_origin =
+        DeserializeOrigin(statement.ColumnString(9));
+    url::Origin reporting_origin =
+        DeserializeOrigin(statement.ColumnString(10));
+    uint64_t source_event_id = DeserializeUint64(statement.ColumnInt64(11));
+    base::Time impression_time = statement.ColumnTime(12);
+    base::Time expiry_time = statement.ColumnTime(13);
+    StoredSource::Id source_id(statement.ColumnInt64(14));
     absl::optional<CommonSourceInfo::SourceType> source_type =
-        DeserializeSourceType(statement.ColumnInt(14));
-    int64_t attribution_source_priority = statement.ColumnInt64(15);
+        DeserializeSourceType(statement.ColumnInt(15));
+    int64_t attribution_source_priority = statement.ColumnInt64(16);
     absl::optional<StoredSource::AttributionLogic> attribution_logic =
-        DeserializeAttributionLogic(statement.ColumnInt(16));
+        DeserializeAttributionLogic(statement.ColumnInt(17));
     absl::optional<uint64_t> source_debug_key =
-        ColumnUint64OrNull(statement, 17);
+        ColumnUint64OrNull(statement, 18);
+    absl::optional<uint64_t> trigger_debug_key =
+        ColumnUint64OrNull(statement, 19);
 
     // Ensure origins are valid before continuing. This could happen if there is
     // database corruption.
-    if (bucket.empty() || value < 0 ||
-        value > std::numeric_limits<uint32_t>::max() ||
+    if (value <= 0 || value > std::numeric_limits<uint32_t>::max() ||
         !external_report_id.is_valid() || impression_origin.opaque() ||
         conversion_origin.opaque() || reporting_origin.opaque() ||
         !source_type.has_value() || !attribution_logic.has_value() ||
@@ -2294,13 +2334,11 @@ AttributionStorageSql::GetAggregatableContributionReportsForTesting(
                          source_debug_key),
         *attribution_logic, source_id);
 
-    // TODO(linnan): Store and read trigger_debug_key.
     AttributionReport report(
-        AttributionInfo(std::move(source), trigger_time,
-                        /*debug_key=*/absl::nullopt),
+        AttributionInfo(std::move(source), trigger_time, trigger_debug_key),
         report_time, std::move(external_report_id),
         AttributionReport::AggregatableContributionData(
-            AggregatableHistogramContribution(std::move(bucket),
+            AggregatableHistogramContribution(std::move(bucket_key),
                                               static_cast<uint32_t>(value)),
             report_id));
     report.set_failed_send_attempts(failed_send_attempts);
@@ -2369,20 +2407,14 @@ bool AttributionStorageSql::DeleteAggregatableContributionReport(
 
 RateLimitResult
 AttributionStorageSql::AggregatableAttributionAllowedForBudgetLimit(
-    const AggregatableAttribution& aggregatable_attribution) {
-  absl::optional<StoredSourceData> source_to_attribute =
-      ReadSourceToAttribute(db_.get(), aggregatable_attribution.source_id);
-  // This is only possible if there is a corrupt DB.
-  if (!source_to_attribute.has_value())
-    return RateLimitResult::kError;
-
+    const AggregatableAttribution& aggregatable_attribution,
+    int64_t aggregatable_budget_consumed) {
   const int64_t budget = delegate_->GetAggregatableBudgetPerSource();
   DCHECK_GT(budget, 0);
 
-  const int64_t capacity =
-      budget > source_to_attribute->aggregatable_budget_consumed
-          ? budget - source_to_attribute->aggregatable_budget_consumed
-          : 0;
+  const int64_t capacity = budget > aggregatable_budget_consumed
+                               ? budget - aggregatable_budget_consumed
+                               : 0;
 
   if (capacity == 0)
     return RateLimitResult::kNotAllowed;

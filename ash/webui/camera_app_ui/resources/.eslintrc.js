@@ -202,21 +202,21 @@ const googleRules = {
     'error',
     2,
     {
-      'CallExpression': {
-        'arguments': 2,
+      CallExpression: {
+        arguments: 2,
       },
-      'FunctionDeclaration': {
-        'body': 1,
-        'parameters': 2,
+      FunctionDeclaration: {
+        body: 1,
+        parameters: 2,
       },
-      'FunctionExpression': {
-        'body': 1,
-        'parameters': 2,
+      FunctionExpression: {
+        body: 1,
+        parameters: 2,
       },
-      'MemberExpression': 2,
-      'ObjectExpression': 1,
-      'SwitchCase': 1,
-      'ignoredNodes': [
+      MemberExpression: 2,
+      ObjectExpression: 1,
+      SwitchCase: 1,
+      ignoredNodes: [
         'ConditionalExpression',
       ],
     },
@@ -276,9 +276,11 @@ const googleRules = {
     'error',
     {
       // Quote the keys to make clang-format format it correctly.
+      /* eslint-disable quote-props */
       'var': 'never',
       'let': 'never',
       'const': 'never',
+      /* eslint-enable quote-props */
     },
   ],
   // 'one-var-declaration-per-line': 'off',
@@ -366,23 +368,23 @@ const typescriptEslintDir =
 
 /* global module */
 module.exports = {
-  'root': true,
-  'env': {
-    'browser': true,
-    'es2020': true,
-    'webextensions': true,
+  root: true,
+  env: {
+    browser: true,
+    es2020: true,
+    webextensions: true,
   },
-  'parserOptions': {
-    'ecmaVersion': 2020,
-    'sourceType': 'module',
+  parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
   },
-  'extends': ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
-  'parser': `${typescriptEslintDir}/parser`,
-  'plugins': ['@typescript-eslint'],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  parser: `${typescriptEslintDir}/parser`,
+  plugins: ['@typescript-eslint'],
   // Generally, the rules should be compatible to both bundled and the newest
   // stable eslint, so it's easier to upgrade and develop without the full
   // Chromium tree.
-  'rules': Object.assign({}, googleRules, {
+  rules: Object.assign({}, googleRules, {
     'curly': ['error', 'multi-line', 'consistent'],
     'eqeqeq': 'error',
     'no-console': ['error', {allow: ['warn', 'error']}],
@@ -440,13 +442,32 @@ module.exports = {
       },
     ],
 
-    // Disallow parseInt (go/tsstyle#type-coercion)
     'no-restricted-syntax': [
       'error',
+      // Disallow parseInt. (go/tsstyle#type-coercion)
       {
-        'selector': 'CallExpression[callee.name="parseInt"]',
-        'message': 'parseInt are not allowed, use Number() instead. ' +
+        selector: 'CallExpression[callee.name="parseInt"]',
+        message: 'parseInt are not allowed, use Number() instead. ' +
             '(go/tsstyle#type-coercion)',
+      },
+      // Disallow Array constructor. (go/tsstyle#array-constructor)
+      {
+        selector: 'NewExpression[callee.name="Array"], ' +
+            'CallExpression[callee.name="Array"]',
+        message: 'Array constructor are not allowed. ' +
+            '(go/tsstyle#array-constructor)',
+      },
+      // Disallow calling Error without new. (go/tsstyle#exceptions)
+      {
+        selector: 'CallExpression[callee.name="Error"]',
+        message: 'Error constructor should be called with new Error(...). ' +
+            '(go/tsstyle#exceptions)',
+      },
+      // Disallow for (... in ...). (go/tsstyle#iterating-objects)
+      {
+        selector: 'ForInStatement',
+        message: 'for (... in ...) is not allowed. ' +
+            '(go/tsstyle#iterating-objects)',
       },
     ],
 
@@ -483,7 +504,7 @@ module.exports = {
     '@typescript-eslint/array-type': [
       'error',
       {
-        'default': 'array-simple',
+        default: 'array-simple',
       },
     ],
 
@@ -499,8 +520,65 @@ module.exports = {
 
     // go/tsstyle#interfaces-vs-type-aliases
     '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+
+    // go/tsstyle#import-export-type
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      {
+        prefer: 'no-type-imports',
+      },
+    ],
+
+    'quote-props': ['error', 'consistent-as-needed'],
+
+    // go/tsstyle#visibility
+    '@typescript-eslint/explicit-member-accessibility': [
+      'error',
+      {
+        accessibility: 'no-public',
+      },
+    ],
+
+    // go/tsstyle#member-property-declarations
+    '@typescript-eslint/member-delimiter-style': [
+      'error',
+      {
+        multiline: {
+          delimiter: 'comma',
+          requireLast: true,
+        },
+        singleline: {
+          delimiter: 'comma',
+          requireLast: false,
+        },
+        multilineDetection: 'last-member',
+        overrides: {
+          interface: {
+            multiline: {
+              delimiter: 'semi',
+              requireLast: true,
+            },
+            singleline: {
+              delimiter: 'semi',
+              requireLast: true,
+            },
+          },
+        },
+      },
+    ],
+
+    '@typescript-eslint/prefer-optional-chain': 'error',
+
+    '@typescript-eslint/sort-type-union-intersection-members': 'error',
+
+    'comma-dangle': 'off',
+    '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
+
+    '@typescript-eslint/lines-between-class-members': 'error',
+
+    '@typescript-eslint/no-unused-expressions': 'error',
   }),
-  'overrides': [{
+  overrides: [{
     files: ['**/*.ts'],
     parserOptions: {
       // eslint-disable-next-line no-undef
@@ -510,6 +588,15 @@ module.exports = {
     rules: {
       // go/tsstyle#use-readonly
       '@typescript-eslint/prefer-readonly': 'error',
+
+      '@typescript-eslint/require-array-sort-compare': 'error',
+
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+
+      // go/tsstyle#optimization-compatibility-for-property-access
+      '@typescript-eslint/dot-notation': 'error',
+
+      '@typescript-eslint/return-await': 'error',
     },
   }],
 };

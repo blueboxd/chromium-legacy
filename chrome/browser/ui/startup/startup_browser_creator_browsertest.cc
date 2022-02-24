@@ -2809,10 +2809,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWebAppUrlHandlingTest, UrlNotCaptured) {
 
 class StartupBrowserWebAppProtocolHandlingTest : public InProcessBrowserTest {
  protected:
-  StartupBrowserWebAppProtocolHandlingTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kWebAppEnableProtocolHandlers);
-  }
+  StartupBrowserWebAppProtocolHandlingTest() = default;
 
   bool AreProtocolHandlersSupported() {
 #if BUILDFLAG(IS_WIN)
@@ -4473,7 +4470,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorLacrosNoWindowTest, SingleProfile) {
   base::RunLoop run_loop;
   ProfilePicker::AddOnProfilePickerOpenedCallbackForTesting(
       run_loop.QuitClosure());
-  ProfilePicker::Show(ProfilePicker::EntryPoint::kProfileMenuManageProfiles);
+  ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
+      ProfilePicker::EntryPoint::kProfileMenuManageProfiles));
   run_loop.Run();
   EXPECT_TRUE(ProfilePicker::IsOpen());
 }

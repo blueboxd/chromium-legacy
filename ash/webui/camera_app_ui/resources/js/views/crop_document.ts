@@ -138,6 +138,7 @@ export class CropDocument extends Review<boolean> {
   private cornerSpaceSize: Size|null = null;
 
   private readonly cropAreaContainer: SVGElement;
+
   private readonly cropArea: SVGPolygonElement;
 
   /**
@@ -146,6 +147,7 @@ export class CropDocument extends Review<boolean> {
   private rotation = 0;
 
   private initialCorners: Point[] = [];
+
   private readonly corners: Corner[];
 
   constructor() {
@@ -361,7 +363,7 @@ export class CropDocument extends Review<boolean> {
   }
 
   private findDragging(pointerId: number): Corner|null {
-    return this.corners.find(({pointerId: id}) => id === pointerId) || null;
+    return this.corners.find(({pointerId: id}) => id === pointerId) ?? null;
   }
 
   private clearDragging(pointerId: number) {

@@ -231,12 +231,12 @@ class WebAppInstallManagerTest
       const std::string& app_name,
       DisplayMode user_display_mode,
       SkColor theme_color,
-      bool locally_installed,
+      bool is_locally_installed,
       const GURL& scope,
       const std::vector<apps::IconInfo>& icon_infos) {
     auto web_app = test::CreateWebApp(start_url, Source::kSync);
     web_app->SetIsFromSyncAndPendingInstallation(true);
-    web_app->SetIsLocallyInstalled(locally_installed);
+    web_app->SetIsLocallyInstalled(is_locally_installed);
     web_app->SetUserDisplayMode(user_display_mode);
 
     WebApp::SyncFallbackData sync_fallback_data;
@@ -271,7 +271,7 @@ class WebAppInstallManagerTest
   AppId InitRegistrarWithApp(std::unique_ptr<WebApp> app) {
     DCHECK(registrar().is_empty());
 
-    const AppId app_id = app->app_id();
+    AppId app_id = app->app_id();
 
     Registry registry;
     registry.emplace(app_id, std::move(app));

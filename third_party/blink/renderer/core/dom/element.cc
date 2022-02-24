@@ -2857,7 +2857,7 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<HTMLFieldSetElement>) {
   DCHECK(ChildNeedsReattachLayoutTree());
   DCHECK(!GetShadowRoot());
   DCHECK(GetLayoutObject());
-  DCHECK(GetLayoutObject()->StyleRef().IsContainerForContainerQueries(*this));
+  DCHECK(GetLayoutObject()->StyleRef().CanMatchSizeContainerQueries(*this));
 
   constexpr bool performing_reattach = true;
 
@@ -3097,7 +3097,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
 
   if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled()) {
     if (const ComputedStyle* style = GetComputedStyle()) {
-      if (style->IsContainerForContainerQueries(*this)) {
+      if (style->CanMatchSizeContainerQueries(*this)) {
         if (RuntimeEnabledFeatures::CSSContainerSkipStyleRecalcEnabled()) {
           if (change.IsSuppressed()) {
             // IsSuppressed() means we are at the root of a container subtree
@@ -3117,8 +3117,9 @@ void Element::RecalcStyle(const StyleRecalcChange change,
             return;
           }
         }
-        child_recalc_context.container = this;
       }
+      if (style->IsContainerForSizeContainerQueries())
+        child_recalc_context.container = this;
     }
   }
 
@@ -3186,7 +3187,7 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     Element& element,
     const ComputedStyle* old_style,
     const ComputedStyle& new_style) {
-  if (!new_style.IsContainerForContainerQueries(element))
+  if (!new_style.IsContainerForSizeContainerQueries())
     return nullptr;
   // If we're switching to display:contents, any existing results cached on
   // ContainerQueryEvaluator are no longer valid, since any style recalc
@@ -3706,37 +3707,37 @@ void Element::setEditContext(EditContext* edit_context) {
 
 struct Element::AffectedByPseudoStateChange {
   bool children_or_siblings{true};
-  bool ancestors{false};
+  bool ancestors_or_siblings{false};
 
   AffectedByPseudoStateChange(CSSSelector::PseudoType pseudo_type,
                               Element& element) {
     switch (pseudo_type) {
       case CSSSelector::kPseudoFocus:
         children_or_siblings = element.ChildrenOrSiblingsAffectedByFocus();
-        if (auto* style = element.GetComputedStyle())
-          ancestors = style->AncestorsAffectedByFocusInSubjectHas();
+        ancestors_or_siblings =
+            element.AncestorsOrSiblingsAffectedByFocusInHas();
         break;
       case CSSSelector::kPseudoFocusVisible:
         children_or_siblings =
             element.ChildrenOrSiblingsAffectedByFocusVisible();
-        if (auto* style = element.GetComputedStyle())
-          ancestors = style->AncestorsAffectedByFocusVisibleInSubjectHas();
+        ancestors_or_siblings =
+            element.AncestorsOrSiblingsAffectedByFocusVisibleInHas();
         break;
       case CSSSelector::kPseudoFocusWithin:
         children_or_siblings =
             element.ChildrenOrSiblingsAffectedByFocusWithin();
-        if (auto* style = element.GetComputedStyle())
-          ancestors = style->AncestorsAffectedByFocusInSubjectHas();
+        ancestors_or_siblings =
+            element.AncestorsOrSiblingsAffectedByFocusInHas();
         break;
       case CSSSelector::kPseudoHover:
         children_or_siblings = element.ChildrenOrSiblingsAffectedByHover();
-        if (auto* style = element.GetComputedStyle())
-          ancestors = style->AncestorsAffectedByHoverInSubjectHas();
+        ancestors_or_siblings =
+            element.AncestorsOrSiblingsAffectedByHoverInHas();
         break;
       case CSSSelector::kPseudoActive:
         children_or_siblings = element.ChildrenOrSiblingsAffectedByActive();
-        if (auto* style = element.GetComputedStyle())
-          ancestors = style->AncestorsAffectedByActiveInSubjectHas();
+        ancestors_or_siblings =
+            element.AncestorsOrSiblingsAffectedByActiveInHas();
         break;
 
       case CSSSelector::kPseudoChecked:
@@ -3753,14 +3754,14 @@ struct Element::AffectedByPseudoStateChange {
       case CSSSelector::kPseudoReadWrite:
       case CSSSelector::kPseudoRequired:
       case CSSSelector::kPseudoValid:
-        ancestors = true;
+        ancestors_or_siblings = true;
         break;
       default:
         break;
     }
   }
 
-  AffectedByPseudoStateChange() : ancestors(true) {}  // For testing
+  AffectedByPseudoStateChange() : ancestors_or_siblings(true) {}  // For testing
 };
 
 void Element::PseudoStateChanged(CSSSelector::PseudoType pseudo) {
@@ -3782,7 +3783,7 @@ void Element::PseudoStateChanged(
     return;
   GetDocument().GetStyleEngine().PseudoStateChangedForElement(
       pseudo, *this, affected_by_pseudo.children_or_siblings,
-      affected_by_pseudo.ancestors);
+      affected_by_pseudo.ancestors_or_siblings);
 }
 
 void Element::SetAnimationStyleChange(bool animation_style_change) {
@@ -4866,6 +4867,54 @@ void Element::SetSiblingsAffectedByHas() {
   EnsureElementRareData().SetSiblingsAffectedByHas();
 }
 
+bool Element::AffectedByPseudoInHas() const {
+  return HasRareData() ? GetElementRareData()->AffectedByPseudoInHas() : false;
+}
+
+void Element::SetAffectedByPseudoInHas() {
+  EnsureElementRareData().SetAffectedByPseudoInHas();
+}
+
+bool Element::AncestorsOrSiblingsAffectedByHoverInHas() const {
+  return HasRareData()
+             ? GetElementRareData()->AncestorsOrSiblingsAffectedByHoverInHas()
+             : false;
+}
+
+void Element::SetAncestorsOrSiblingsAffectedByHoverInHas() {
+  EnsureElementRareData().SetAncestorsOrSiblingsAffectedByHoverInHas();
+}
+
+bool Element::AncestorsOrSiblingsAffectedByActiveInHas() const {
+  return HasRareData()
+             ? GetElementRareData()->AncestorsOrSiblingsAffectedByActiveInHas()
+             : false;
+}
+
+void Element::SetAncestorsOrSiblingsAffectedByActiveInHas() {
+  EnsureElementRareData().SetAncestorsOrSiblingsAffectedByActiveInHas();
+}
+
+bool Element::AncestorsOrSiblingsAffectedByFocusInHas() const {
+  return HasRareData()
+             ? GetElementRareData()->AncestorsOrSiblingsAffectedByFocusInHas()
+             : false;
+}
+
+void Element::SetAncestorsOrSiblingsAffectedByFocusInHas() {
+  EnsureElementRareData().SetAncestorsOrSiblingsAffectedByFocusInHas();
+}
+
+bool Element::AncestorsOrSiblingsAffectedByFocusVisibleInHas() const {
+  return HasRareData() ? GetElementRareData()
+                             ->AncestorsOrSiblingsAffectedByFocusVisibleInHas()
+                       : false;
+}
+
+void Element::SetAncestorsOrSiblingsAffectedByFocusVisibleInHas() {
+  EnsureElementRareData().SetAncestorsOrSiblingsAffectedByFocusVisibleInHas();
+}
+
 bool Element::UpdateForceLegacyLayout(const ComputedStyle& new_style,
                                       const ComputedStyle* old_style) {
   // ::first-letter may cause structure discrepancies between DOM and layout
@@ -5544,7 +5593,7 @@ const ComputedStyle* Element::EnsureComputedStyle(
     ancestors.pop_back();
     const ComputedStyle* style =
         ancestor->EnsureOwnComputedStyle(style_recalc_context, kPseudoIdNone);
-    if (style->IsContainerForContainerQueries(*ancestor))
+    if (style->IsContainerForSizeContainerQueries())
       style_recalc_context.container = ancestor;
   }
 
@@ -5615,7 +5664,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
 
   StyleRecalcContext child_recalc_context = style_recalc_context;
   if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
-      element_style->IsContainerForContainerQueries(*this)) {
+      element_style->IsContainerForSizeContainerQueries()) {
     child_recalc_context.container = this;
   }
 

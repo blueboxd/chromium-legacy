@@ -889,13 +889,6 @@ const base::Feature kWebAppEnableTranslations{
 const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables Protocol handling feature in web apps. Controls parsing of
-// "protocol_handlers" field in web app manifests. See explainer for more
-// information:
-// https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/URLProtocolHandler/explainer.md
-const base::Feature kWebAppEnableProtocolHandlers{
-    "WebAppEnableProtocolHandlers", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
 const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
@@ -957,6 +950,13 @@ const base::FeatureParam<std::string>
 // Controls whether the Sanitizer API is available.
 const base::Feature kSanitizerAPI{"SanitizerAPI",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the Sanitizer API allows namespaced content (SVG + MathML).
+//
+// This feature is unlikely to be launched as-is. The primary purpose is to
+// allow testing of different non-standard configurations.
+const base::Feature kSanitizerAPINamespaces{"SanitizerAPINamespacesForTesting",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the blocking of the navigation of top from a cross origin
 // iframe to a different protocol. TODO(https://crbug.com/1151507): Remove in
@@ -1267,10 +1267,13 @@ const base::Feature kFreeNonRequiredTileResourcesForInactiveWindows{
 
 // Enables the WindowPlacement RuntimeEnabledFeature.
 const base::Feature kWindowPlacement{"WindowPlacement",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(crbug.com/1277431): This flag should be eventually disabled.
 const base::Feature kEventPath{"EventPath", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kReduceUserAgentMinorVersion{
+    "ReduceUserAgentMinorVersion", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

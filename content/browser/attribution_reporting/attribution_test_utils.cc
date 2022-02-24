@@ -501,15 +501,14 @@ bool operator==(const StoredSource& a, const StoredSource& b) {
 bool operator==(const AggregatableHistogramContribution& a,
                 const AggregatableHistogramContribution& b) {
   const auto tie = [](const AggregatableHistogramContribution& contribution) {
-    return std::make_tuple(contribution.bucket(), contribution.value());
+    return std::make_tuple(contribution.key(), contribution.value());
   };
   return tie(a) == tie(b);
 }
 
 bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b) {
   const auto tie = [](const AggregatableAttribution& aggregatable_attribution) {
-    return std::make_tuple(aggregatable_attribution.source_id,
-                           aggregatable_attribution.trigger_time,
+    return std::make_tuple(aggregatable_attribution.attribution_info,
                            aggregatable_attribution.report_time,
                            aggregatable_attribution.contributions);
   };
@@ -722,15 +721,14 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source) {
 std::ostream& operator<<(
     std::ostream& out,
     const AggregatableHistogramContribution& contribution) {
-  return out << "{bucket=" << contribution.bucket()
+  return out << "{key=" << contribution.key()
              << ",value=" << contribution.value() << "}";
 }
 
 std::ostream& operator<<(
     std::ostream& out,
     const AggregatableAttribution& aggregatable_attribution) {
-  out << "{source_id=" << aggregatable_attribution.source_id
-      << ",trigger_time=" << aggregatable_attribution.trigger_time
+  out << "{attribution_info=" << aggregatable_attribution.attribution_info
       << ",report_time=" << aggregatable_attribution.report_time
       << ",contributions=[";
 

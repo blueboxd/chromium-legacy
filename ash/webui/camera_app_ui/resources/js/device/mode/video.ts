@@ -158,6 +158,7 @@ type RecordType = typeof RecordType[keyof typeof RecordType];
  */
 export class Video extends ModeBase {
   private readonly captureResolution: Resolution;
+
   private captureStream: MediaStream|null = null;
 
   /**
@@ -243,7 +244,7 @@ export class Video extends ModeBase {
     if (state.get(state.State.SHOULD_HANDLE_INTENT_RESULT)) {
       return RecordType.NORMAL;
     }
-    return Object.values(RecordType).find((t) => state.get(t)) ||
+    return Object.values(RecordType).find((t) => state.get(t)) ??
         RecordType.NORMAL;
   }
 
@@ -352,7 +353,7 @@ export class Video extends ModeBase {
     if (avc1Parameters !== null) {
       return avc1Parameters;
     }
-    const preference = encoderPreference.get(loadTimeData.getBoard()) ||
+    const preference = encoderPreference.get(loadTimeData.getBoard()) ??
         {profile: h264.Profile.HIGH, multiplier: 2};
     const {profile, multiplier} = preference;
     const {width, height, frameRate} =

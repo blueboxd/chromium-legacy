@@ -376,6 +376,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif BUILDFLAG(IS_ANDROID)
 #include "base/android/application_status_listener.h"
+#include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/android/modules/extra_icu/provider/module_provider.h"
@@ -753,9 +754,9 @@ std::string& GetIOThreadApplicationLocale() {
 GURL ReplaceURLHostAndPath(const GURL& url,
                            const std::string& host,
                            const std::string& path) {
-  url::Replacements<char> replacements;
-  replacements.SetHost(host.c_str(), url::Component(0, host.length()));
-  replacements.SetPath(path.c_str(), url::Component(0, path.length()));
+  GURL::Replacements replacements;
+  replacements.SetHostStr(host);
+  replacements.SetPathStr(path);
   return url.ReplaceComponents(replacements);
 }
 
@@ -3620,6 +3621,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // If the pref is not set, the default value (true) will be used:
   web_prefs->webxr_immersive_ar_allowed =
       prefs->GetBoolean(prefs::kWebXRImmersiveArEnabled);
+
+  // APIs for Web Authentication are not available prior to N.
+  web_prefs->disable_webauthn =
+      base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_NOUGAT;
 #endif
 
   for (ChromeContentBrowserClientParts* parts : extra_parts_)
@@ -5105,10 +5111,8 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
         frame_tree_node_id));
   }
 
-  if (SearchPrefetchServiceIsEnabled()) {
-    interceptors.push_back(std::make_unique<SearchPrefetchURLLoaderInterceptor>(
-        frame_tree_node_id));
-  }
+  interceptors.push_back(
+      std::make_unique<SearchPrefetchURLLoaderInterceptor>(frame_tree_node_id));
 
   if (base::FeatureList::IsEnabled(features::kHttpsOnlyMode)) {
     interceptors.push_back(
@@ -5124,11 +5128,6 @@ ChromeContentBrowserClient::
         int frame_tree_node_id,
         const network::ResourceRequest& resource_request) {
   content::ContentBrowserClient::URLLoaderRequestHandler callback;
-
-  // If search prefetch is disabled, nothing needs to be handled.
-  if (!SearchPrefetchServiceIsEnabled()) {
-    return callback;
-  }
 
   std::unique_ptr<SearchPrefetchURLLoader> loader =
       SearchPrefetchURLLoaderInterceptor::MaybeCreateLoaderForRequest(
@@ -5805,7 +5804,7 @@ void ChromeContentBrowserClient::LogWebFeatureForCurrentPage(
 }
 
 std::string ChromeContentBrowserClient::GetProduct() {
-  return embedder_support::GetProduct();
+  return version_info::GetProductNameAndVersionForUserAgent();
 }
 
 std::string ChromeContentBrowserClient::GetUserAgent() {

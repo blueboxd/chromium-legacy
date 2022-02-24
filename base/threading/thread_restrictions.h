@@ -184,6 +184,7 @@ class PepperPrintSettingsManagerImpl;
 class RenderProcessHostImpl;
 class RenderProcessHost;
 class RenderWidgetHostViewMac;
+class RendererBlinkPlatformImpl;
 class RTCVideoDecoder;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
@@ -213,6 +214,9 @@ namespace disk_cache {
 class BackendImpl;
 class InFlightIO;
 }
+namespace enterprise_connectors {
+class LinuxKeyRotationCommand;
+}  // namespace enterprise_connectors
 namespace functions {
 class ExecScriptScopedAllowBaseSyncPrimitives;
 }
@@ -568,9 +572,11 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessIOThread;
+  friend class content::RendererBlinkPlatformImpl;
   friend class content::DWriteFontCollectionProxy;
   friend class content::ServiceWorkerContextClient;
   friend class device::UsbContext;
+  friend class enterprise_connectors::LinuxKeyRotationCommand;
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
   friend class history_report::HistoryReportJniBridge;
   friend class internal::TaskTracker;

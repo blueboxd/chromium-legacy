@@ -140,7 +140,6 @@
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/webauth_request_security_checker.h"
 #include "content/browser/webid/federated_auth_request_service.h"
-#include "content/browser/webid/federated_auth_response_impl.h"
 #include "content/browser/webid/flags.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/webtransport/web_transport_connector_impl.h"
@@ -9860,12 +9859,6 @@ void RenderFrameHostImpl::BindFederatedAuthRequestReceiver(
   FederatedAuthRequestService::Create(this, std::move(receiver));
 }
 
-void RenderFrameHostImpl::BindFederatedAuthResponseReceiver(
-    mojo::PendingReceiver<blink::mojom::FederatedAuthResponse> receiver) {
-  DCHECK(IsFedCmEnabled());
-  FederatedAuthResponseImpl::Create(this, std::move(receiver));
-}
-
 void RenderFrameHostImpl::BindRestrictedCookieManager(
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   BindRestrictedCookieManagerWithOrigin(std::move(receiver),
@@ -10004,9 +9997,7 @@ void RenderFrameHostImpl::CreatePermissionService(
 void RenderFrameHostImpl::GetWebAuthenticationService(
     mojo::PendingReceiver<blink::mojom::Authenticator> receiver) {
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebAuth)) {
-    AuthenticatorImpl::Create(this, std::move(receiver));
-  }
+  AuthenticatorImpl::Create(this, std::move(receiver));
 #else
   GetJavaInterfaces()->GetInterface(std::move(receiver));
 #endif  // !BUILDFLAG(IS_ANDROID)
@@ -10028,8 +10019,7 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
     mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
         receiver) {
 #if !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebAuth) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWebAuthDeprecatedMojoTestingApi)) {
     auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
     environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_);

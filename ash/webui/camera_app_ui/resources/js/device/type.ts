@@ -18,9 +18,11 @@ export type CameraViewUI = CaptureHandler;
 
 export class CameraInfo {
   readonly devicesInfo: MediaDeviceInfo[];
+
   readonly camera3DevicesInfo: Camera3DeviceInfo[]|null;
 
   private readonly idToDeviceInfo: Map<string, MediaDeviceInfo>;
+
   private readonly idToCamera3DeviceInfo: Map<string, Camera3DeviceInfo>|null;
 
   constructor(updater: DeviceInfoUpdater) {
@@ -66,7 +68,7 @@ export interface CameraConfig {
 export interface CameraUI {
   onUpdateCapability?(cameraInfo: CameraInfo): void;
   onTryingNewConfig?(config: CameraConfig): void;
-  onUpdateConfig?(config: CameraConfig): void|Promise<void>;
+  onUpdateConfig?(config: CameraConfig): Promise<void>|void;
   onCameraUnavailable?(): void;
   onCameraAvailble?(): void;
 }

@@ -50,10 +50,8 @@
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_params.h"
-#include "chrome/browser/prefetch/search_prefetch/field_trial_settings.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/share/share_features.h"
-#include "chrome/browser/share/share_submenu_model.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sms/sms_flags.h"
@@ -250,6 +248,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/i18n/icu_mergeable_data_file.h"
 #include "chrome/browser/lacros/lacros_url_handling.h"
 #include "chrome/common/webui_url_constants.h"
 #endif
@@ -1833,6 +1832,7 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
+    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -3916,11 +3916,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsSubAppsDescription,
      kOsWin | kOsLinux | kOsMac | kOsCrOS | kOsFuchsia,
      FEATURE_VALUE_TYPE(blink::features::kDesktopPWAsSubApps)},
-    {"enable-desktop-pwas-protocol-handling",
-     flag_descriptions::kDesktopPWAsProtocolHandlingName,
-     flag_descriptions::kDesktopPWAsProtocolHandlingDescription,
-     kOsWin | kOsLinux | kOsMac | kOsFuchsia,
-     FEATURE_VALUE_TYPE(blink::features::kWebAppEnableProtocolHandlers)},
     {"enable-desktop-pwas-url-handling",
      flag_descriptions::kDesktopPWAsUrlHandlingName,
      flag_descriptions::kDesktopPWAsUrlHandlingDescription,
@@ -5002,10 +4997,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          optimization_guide::features::kPageVisibilityPageContentAnnotations)},
-
-    {"search-prefetch", flag_descriptions::kEnableSearchPrefetchName,
-     flag_descriptions::kEnableSearchPrefetchDescription, kOsAll,
-     SINGLE_VALUE_TYPE(kSearchPrefetchServiceCommandLineFlag)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"handwriting-gesture-editing",
@@ -6097,6 +6088,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableFirmwareUpdaterAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kFirmwareUpdaterApp)},
 
+    {"enable-rgb-keyboard", flag_descriptions::kEnableRgbKeyboardName,
+     flag_descriptions::kEnableRgbKeyboardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kRgbKeyboard)},
+
     {"enhanced-network-voices", flag_descriptions::kEnhancedNetworkVoicesName,
      flag_descriptions::kEnhancedNetworkVoicesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kEnhancedNetworkVoices)},
@@ -6435,6 +6430,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDevicePosture)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"device-force-scheduled-reboot",
+     flag_descriptions::kDeviceForceScheduledRebootName,
+     flag_descriptions::kDeviceForceScheduledRebootDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kDeviceForceScheduledReboot)},
     {"enable-assistant-aec", flag_descriptions::kEnableGoogleAssistantAecName,
      flag_descriptions::kEnableGoogleAssistantAecDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAudioEraser)},
@@ -7720,12 +7719,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(share::kSwapAndroidShareHubRows)},
 #endif
 
-#if !BUILDFLAG(IS_ANDROID)
-    {"share-context-menu", flag_descriptions::kShareContextMenuName,
-     flag_descriptions::kShareContextMenuDescription, kOsAll,
-     FEATURE_VALUE_TYPE(share::kShareMenu)},
-#endif
-
     {"enable-drdc", flag_descriptions::kEnableDrDcName,
      flag_descriptions::kEnableDrDcDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kEnableDrDc)},
@@ -8048,6 +8041,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopCaptureLacrosV2Description, kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(features::kDesktopCaptureLacrosV2)},
 
+    {"lacros-merge-icu-data-file",
+     flag_descriptions::kLacrosMergeIcuDataFileName,
+     flag_descriptions::kLacrosMergeIcuDataFileDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(base::i18n::kLacrosMergeIcuDataFile)},
+
     {"lacros-non-syncing-profiles",
      flag_descriptions::kLacrosNonSyncingProfilesName,
      flag_descriptions::kLacrosNonSyncingProfilesDescription, kOsAll,
@@ -8170,6 +8168,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"download-bubble", flag_descriptions::kDownloadBubbleName,
      flag_descriptions::kDownloadBubbleDescription, kOsLinux | kOsMac | kOsWin,
      FEATURE_VALUE_TYPE(safe_browsing::kDownloadBubble)},
+
+    {"reduce-user-agent-minor-version",
+     flag_descriptions::kReduceUserAgentMinorVersionName,
+     flag_descriptions::kReduceUserAgentMinorVersionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kReduceUserAgentMinorVersion)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

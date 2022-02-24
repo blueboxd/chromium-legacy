@@ -72,8 +72,10 @@ import {WarningType} from './warning.js';
  */
 export class Camera extends View implements CameraViewUI {
   private readonly cropDocument = new CropDocument();
+
   private readonly docModeDialogView =
       new Dialog(ViewName.DOCUMENT_MODE_DIALOG);
+
   private readonly subViews: View[];
 
   /**
@@ -99,7 +101,9 @@ export class Camera extends View implements CameraViewUI {
   private activeDeviceId: string|null = null;
 
   protected readonly review = new review.Review();
+
   protected facing = Facing.NOT_SET;
+
   protected shutterType = metrics.ShutterType.UNKNOWN;
 
   /**
@@ -148,7 +152,7 @@ export class Camera extends View implements CameraViewUI {
       if (e.clientX === 0 && e.clientY === 0) {
         return metrics.ShutterType.KEYBOARD;
       }
-      return e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents ?
+      return e.sourceCapabilities?.firesTouchEvents ?
           metrics.ShutterType.TOUCH :
           metrics.ShutterType.MOUSE;
     };
@@ -451,8 +455,7 @@ export class Camera extends View implements CameraViewUI {
             return 0;
           }
           assert(this.activeDeviceId !== null);
-          return await deviceOperator.getCameraFrameRotation(
-              this.activeDeviceId);
+          return deviceOperator.getCameraFrameRotation(this.activeDeviceId);
         })();
         // Translate the camera frame rotation back to the UI rotation, which is
         // what we need to rotate the captured video with.
@@ -673,7 +676,7 @@ export class Camera extends View implements CameraViewUI {
         const doCrop = (blob: Blob, corners: Point[], rotation: number) =>
             helper.convertToDocument(blob, corners, rotation, MimeType.JPEG);
         let corners =
-            refCorners || getDefaultScanCorners(originImage.resolution);
+            refCorners ?? getDefaultScanCorners(originImage.resolution);
         // This is definitely assigned in either the async doRecrop or the else
         // branch doCrop.
         let docBlob!: Blob;

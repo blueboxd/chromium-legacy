@@ -35,10 +35,6 @@
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 
-#if BUILDFLAG(IS_APPLE)
-#include "base/mac/backup_util.h"
-#endif
-
 namespace base {
 
 namespace {
@@ -557,6 +553,10 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
       ranges_data, histogram_ranges_checksum, histogram_bucket_count + 1);
   if (!created_ranges)
     return nullptr;
+  DCHECK_EQ(created_ranges->size(), histogram_bucket_count + 1);
+  DCHECK_EQ(created_ranges->range(1), histogram_minimum);
+  DCHECK_EQ(created_ranges->range(histogram_bucket_count - 1),
+            histogram_maximum);
   const BucketRanges* ranges =
       StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
           created_ranges.release());
@@ -594,16 +594,16 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   std::unique_ptr<HistogramBase> histogram;
   switch (histogram_type) {
     case HISTOGRAM:
-      histogram = Histogram::PersistentCreate(
-          name, histogram_minimum, histogram_maximum, ranges, counts_data,
-          logged_data, &histogram_data_ptr->samples_metadata,
-          &histogram_data_ptr->logged_metadata);
+      histogram =
+          Histogram::PersistentCreate(name, ranges, counts_data, logged_data,
+                                      &histogram_data_ptr->samples_metadata,
+                                      &histogram_data_ptr->logged_metadata);
       DCHECK(histogram);
       break;
     case LINEAR_HISTOGRAM:
       histogram = LinearHistogram::PersistentCreate(
-          name, histogram_minimum, histogram_maximum, ranges, counts_data,
-          logged_data, &histogram_data_ptr->samples_metadata,
+          name, ranges, counts_data, logged_data,
+          &histogram_data_ptr->samples_metadata,
           &histogram_data_ptr->logged_metadata);
       DCHECK(histogram);
       break;
@@ -714,15 +714,6 @@ bool GlobalHistogramAllocator::CreateWithFile(const FilePath& file_path,
       !FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true)) {
     return false;
   }
-
-#if BUILDFLAG(IS_APPLE)
-  // This prevents backing up and then later restoring the file created above.
-  // Preventing backup saves space and bandwidth. There is little value in
-  // backing up this file since the metrics stored in this file will likely
-  // have already been uploaded at some point between the time the backup was
-  // created and the time it is restored.
-  base::mac::SetBackupExclusion(file_path);
-#endif
 
   Set(WrapUnique(new GlobalHistogramAllocator(
       std::make_unique<FilePersistentMemoryAllocator>(std::move(mmfile), 0, id,
@@ -847,15 +838,6 @@ bool GlobalHistogramAllocator::CreateSpareFile(const FilePath& spare_path,
 
   if (success)
     success = ReplaceFile(temp_spare_path, spare_path, nullptr);
-
-#if BUILDFLAG(IS_APPLE)
-  // Then purpose of the "spare" file created above is to save time during the
-  // next startup, when this file can be used instead of creating a new one.
-  // However, this file is large, so it's not worth the storage and bandwidth
-  // costs to back up and restore it; instead, after restoration, a new file
-  // will be created on the next startup.
-  base::mac::SetBackupExclusion(spare_path);
-#endif
 
   if (!success)
     DeleteFile(temp_spare_path);

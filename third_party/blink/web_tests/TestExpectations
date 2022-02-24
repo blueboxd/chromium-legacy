@@ -1626,6 +1626,10 @@ virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-fl
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-029.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-030.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-031.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-032.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-033.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-034.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-035.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-012.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-014.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-015.html [ Pass ]
@@ -1645,6 +1649,8 @@ virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-row-f
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-016.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-017.html [ Pass ]
 virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-018.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-019.html [ Pass ]
+virtual/layout_ng_flex_frag/external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-020.html [ Pass ]
 
 ### Tests failing with LayoutNGFlexFragmentation enabled:
 crbug.com/660611 virtual/layout_ng_flex_frag/fast/multicol/flexbox/doubly-nested-with-zero-width-flexbox-and-forced-break-crash.html [ Skip ]
@@ -2827,6 +2833,10 @@ crbug.com/1299212 [ Win7 ] fast/forms/select-popup/popup-menu-appearance-tall.ht
 crbug.com/1299212 [ Win7 ] fast/forms/suggestion-picker/* [ Failure Pass Timeout ]
 crbug.com/1299212 [ Win7 ] virtual/scroll-unification/fast/forms/suggestion-picker/time-suggestion-picker-appearance-rtl.html [ Failure Pass Timeout ]
 crbug.com/1299212 [ Linux ] fast/forms/select/menulist-popup-mutation-crash.html [ Failure Pass Timeout ]
+# These appear to be flaky at least on Linux:
+crbug.com/1299212 [ Linux ] fast/forms/week/week-picker-ax.html [ Failure Pass ]
+crbug.com/1299212 [ Linux ] fast/forms/month/month-picker-ax.html [ Failure Pass ]
+crbug.com/1299212 [ Linux ] fast/forms/calendar-picker/date-picker-ax.html [ Failure Pass ]
 
 # isInputPending requires threaded compositing and layerized iframes
 crbug.com/910421 external/wpt/is-input-pending/* [ Skip ]
@@ -4288,6 +4298,10 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragment
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-029.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-030.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-031.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-032.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-033.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-034.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-035.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-012.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-014.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-015.html [ Failure ]
@@ -4307,6 +4321,8 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmen
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-016.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-017.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-018.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-019.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-020.html [ Failure ]
 crbug.com/614667 external/wpt/css/css-break/grid/grid-item-fragmentation-039.html [ Failure ]
 crbug.com/1058792 external/wpt/css/css-break/transform-007.html [ Failure ]
 crbug.com/1224888 external/wpt/css/css-break/transform-009.html [ Failure ]
@@ -5658,9 +5674,6 @@ crbug.com/476553 virtual/scroll-unification/fast/events/remove-child-onscroll.ht
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/touch-latched-scroll-node-removed.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/focus-selectionchange-on-tap.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-scrollbar.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-scrollbar-mainframe.html [ Crash Failure Pass Timeout ]
-crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-scrollbar-textarea.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-click-common-ancestor.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/gesture-tap-frame-removed.html [ Crash Failure Pass Timeout ]
 crbug.com/476553 virtual/scroll-unification/fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Crash Failure Pass Timeout ]
@@ -7301,7 +7314,7 @@ crbug.com/1274917 external/wpt/content-security-policy/inheritance/history.sub.h
 crbug.com/1274917 external/wpt/content-security-policy/inheritance/history-iframe.sub.html [ Failure Pass Timeout ]
 
 # Test is very flaky (score of 223).
-crbug.com/1274919 http/tests/inspector-protocol/page/consecutive-navigate.js [ Pass Timeout ]
+crbug.com/1274919 http/tests/inspector-protocol/page/consecutive-navigate.js [ Failure Pass Timeout ]
 
 # Sheriff 2021-11-23
 crbug.com/1046784 http/tests/devtools/tracing/timeline-receive-response-event.js [ Failure Pass ]
@@ -7601,3 +7614,6 @@ crbug.com/1299903 [ Win7 ] virtual/prerender/external/wpt/speculation-rules/prer
 crbug.com/1299946 [ Mac ] external/wpt/css/css-sizing/min-content-negative-margin-crash.html [ Pass Timeout ]
 crbug.com/1299948 [ Mac ] external/wpt/css/css-tables/crashtests/textarea-intrinsic-size-crash.html [ Pass Timeout ]
 crbug.com/1299972 [ Linux ] screen_orientation/screenorientation-unsupported-no-crash.html [ Failure Pass Timeout ]
+
+# Sheriff 2022-02-23
+crbug.com/1300256 [ Mac ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/navigate-ancestor.https.html [ Skip ]

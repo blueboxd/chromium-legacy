@@ -25,8 +25,11 @@ interface UIArgs {
  */
 export class Option<T> {
   readonly exitValue?: T;
+
   readonly hasPopup: boolean|null;
+
   readonly callback: (() => void)|null;
+
   /**
    * @param UIArgs Arguments to create corresponding UI.
    * @param handlerParams Sets |exitValue| if the review page will exit with
@@ -34,13 +37,13 @@ export class Option<T> {
    *     executed when option selected.
    */
   constructor(readonly uiArgs: UIArgs, {exitValue, callback, hasPopup}: {
-    exitValue?: T;
-    callback?: (() => void);
-    hasPopup?: boolean;
+    exitValue?: T,
+    callback?: (() => void),
+    hasPopup?: boolean,
   }) {
     this.exitValue = exitValue;
     this.hasPopup = hasPopup ?? null;
-    this.callback = callback || null;
+    this.callback = callback ?? null;
   }
 }
 
@@ -58,11 +61,12 @@ export enum ButtonGroupTemplate {
  */
 export class OptionGroup<T> {
   readonly options: Array<Option<T>>;
+
   readonly template: ButtonGroupTemplate;
 
   /** Constructs Options. */
   constructor({options, template}:
-                  {options: Array<Option<T>>; template: ButtonGroupTemplate;}) {
+                  {options: Array<Option<T>>, template: ButtonGroupTemplate}) {
     this.options = options;
     this.template = template;
   }
@@ -73,9 +77,12 @@ export class OptionGroup<T> {
  */
 export class Review<T> extends View {
   protected readonly image: HTMLElement;
+
   protected readonly video: HTMLVideoElement;
+
   private btnGroups: Array<{optionGroup: OptionGroup<T>, el: HTMLDivElement}> =
       [];
+
   private primaryBtn: HTMLButtonElement|null;
 
   /**

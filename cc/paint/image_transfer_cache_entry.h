@@ -27,8 +27,6 @@ class SkPixmap;
 
 namespace cc {
 
-class PaintOpReader;
-
 static constexpr uint32_t kInvalidImageTransferCacheEntryId =
     static_cast<uint32_t>(-1);
 
@@ -49,17 +47,15 @@ CC_PAINT_EXPORT size_t NumberOfPlanesForYUVDecodeFormat(YUVDecodeFormat format);
 class CC_PAINT_EXPORT ClientImageTransferCacheEntry final
     : public ClientTransferCacheEntryBase<TransferCacheEntryType::kImage> {
  public:
-  explicit ClientImageTransferCacheEntry(
-      const SkPixmap* pixmap,
-      absl::optional<TargetColorParams> target_color_params,
-      bool needs_mips);
+  explicit ClientImageTransferCacheEntry(const SkPixmap* pixmap,
+                                         const SkColorSpace* target_color_space,
+                                         bool needs_mips);
   explicit ClientImageTransferCacheEntry(
       const SkPixmap yuva_pixmaps[],
       SkYUVAInfo::PlaneConfig plane_config,
       SkYUVAInfo::Subsampling subsampling,
       const SkColorSpace* decoded_color_space,
       SkYUVColorSpace yuv_color_space,
-      absl::optional<TargetColorParams> target_color_params,
       bool needs_mips);
   ~ClientImageTransferCacheEntry() final;
 
@@ -76,13 +72,15 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry final
  private:
   const bool needs_mips_ = false;
   SkYUVAInfo::PlaneConfig plane_config_ = SkYUVAInfo::PlaneConfig::kUnknown;
-  absl::optional<TargetColorParams> target_color_params_;
   uint32_t id_;
   uint32_t size_ = 0;
   static base::AtomicSequenceNumber s_next_id_;
 
   // RGBX-only members.
   const raw_ptr<const SkPixmap> pixmap_;
+  const raw_ptr<const SkColorSpace>
+      target_color_space_;  // Unused for YUV because Skia handles colorspaces
+                            // at raster.
 
   // YUVA-only members.
   absl::optional<std::array<const SkPixmap*, SkYUVAInfo::kMaxPlanes>>
@@ -153,9 +151,9 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry final
   }
 
  private:
-  bool DeserializeYUVA(PaintOpReader& reader);
-  bool DeserializeRGBA(PaintOpReader& reader,
-                       absl::optional<TargetColorParams> target_color_params);
+  sk_sp<SkImage> MakeSkImage(
+      const SkPixmap& pixmap,
+      absl::optional<TargetColorParams> target_color_params);
 
   raw_ptr<GrDirectContext> context_ = nullptr;
   std::vector<sk_sp<SkImage>> plane_images_;

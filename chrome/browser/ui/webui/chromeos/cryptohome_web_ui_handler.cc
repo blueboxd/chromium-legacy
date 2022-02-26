@@ -42,7 +42,7 @@ void CryptohomeWebUIHandler::RegisterMessages() {
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CryptohomeWebUIHandler::OnPageLoaded(base::Value::ConstListView args) {
+void CryptohomeWebUIHandler::OnPageLoaded(const base::Value::List& args) {
   UserDataAuthClient* userdataauth_client = UserDataAuthClient::Get();
   CryptohomePkcs11Client* cryptohome_pkcs11_client =
       CryptohomePkcs11Client::Get();

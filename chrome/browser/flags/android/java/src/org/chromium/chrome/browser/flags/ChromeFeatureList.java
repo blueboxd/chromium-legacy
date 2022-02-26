@@ -325,6 +325,7 @@ public abstract class ChromeFeatureList {
             "UseDownloadOfflineContentProvider";
     public static final String DOWNLOAD_LATER = "DownloadLater";
     public static final String DYNAMIC_COLOR_ANDROID = "DynamicColorAndroid";
+    public static final String DYNAMIC_COLOR_BUTTONS_ANDROID = "DynamicColorButtonsAndroid";
     public static final String EARLY_LIBRARY_LOAD = "EarlyLibraryLoad";
     public static final String ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS =
             "ElidePrioritizationOfPreNativeBootstrapTasks";
@@ -476,8 +477,6 @@ public abstract class ChromeFeatureList {
             "ServiceManagerForBackgroundPrefetch";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
     public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
-    public static final String SHARE_USAGE_RANKING = "ShareUsageRanking";
-    public static final String SHARE_USAGE_RANKING_FIXED_MORE = "ShareUsageRankingFixedMore";
     public static final String SHARED_CLIPBOARD_UI = "SharedClipboardUI";
     public static final String SHARED_HIGHLIGHTING_V2 = "SharedHighlightingV2";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";

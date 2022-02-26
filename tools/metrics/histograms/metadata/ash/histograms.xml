@@ -1500,6 +1500,16 @@ chromium-metrics-reviews@google.com.
   <summary>Records the number of tabs in a template when it is saved.</summary>
 </histogram>
 
+<histogram name="Ash.DeskTemplate.TimeToLoadTemplate" units="ms"
+    expires_after="2023-01-18">
+  <owner>avynn@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Measures the amount of time it takes to launch a template from the time that
+    the launch is invoked to the time that the last window is opened.
+  </summary>
+</histogram>
+
 <histogram name="Ash.DeskTemplate.UnsupportedAppDialogShow" units="count"
     expires_after="2023-01-04">
   <owner>avynn@google.com</owner>
@@ -3963,6 +3973,16 @@ chromium-metrics-reviews@google.com.
   <owner>jdufault@chromium.org</owner>
   <summary>
     How long it took for the screen lock process to complete, for timeouts only.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Wm.WindowSnapActionSource" enum="WindowSnapActionSource"
+    expires_after="2023-02-24">
+  <owner>xdai@chromium.org</owner>
+  <owner>nupurjain@chromium.org</owner>
+  <summary>
+    Emitted when a window is to be snapped. Records different ways for a user to
+    snap a window.
   </summary>
 </histogram>
 

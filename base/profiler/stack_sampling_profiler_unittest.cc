@@ -1523,6 +1523,7 @@ PROFILER_TEST_F(
   // 10,000 samples ensures the profiler continues running until manually
   // stopped, after applying metadata.
   params.samples_per_profile = 10000;
+  ModuleCache module_cache1, module_cache2;
 
   WaitableEvent profiler1_started;
   WaitableEvent profiler2_started;
@@ -1535,11 +1536,11 @@ PROFILER_TEST_F(
     StackSamplingProfiler profiler1(
         target_thread1.thread_token(), params,
         std::make_unique<TestProfileBuilder>(
-            module_cache(), BindLambdaForTesting([&](Profile result_profile) {
+            &module_cache1, BindLambdaForTesting([&](Profile result_profile) {
               profile1 = std::move(result_profile);
               sampling_completed1.Signal();
             })),
-        CreateCoreUnwindersFactoryForTesting(module_cache()),
+        CreateCoreUnwindersFactoryForTesting(&module_cache1),
         RepeatingClosure());
     profiler1.Start();
     profiler1_started.Signal();
@@ -1563,11 +1564,11 @@ PROFILER_TEST_F(
     StackSamplingProfiler profiler2(
         target_thread2.thread_token(), params,
         std::make_unique<TestProfileBuilder>(
-            module_cache(), BindLambdaForTesting([&](Profile result_profile) {
+            &module_cache2, BindLambdaForTesting([&](Profile result_profile) {
               profile2 = std::move(result_profile);
               sampling_completed2.Signal();
             })),
-        CreateCoreUnwindersFactoryForTesting(module_cache()),
+        CreateCoreUnwindersFactoryForTesting(&module_cache2),
         RepeatingClosure());
     profiler2.Start();
     profiler2_started.Signal();

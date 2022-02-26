@@ -766,7 +766,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
       /*active_url_index=*/browser_active_index);
 
   // Verify that the active tab is correct.
-  EXPECT_EQ(browser_active_index, browser->tab_strip_model()->active_index());
+  EXPECT_EQ(static_cast<int>(browser_active_index),
+            browser->tab_strip_model()->active_index());
 
   aura::Window* window = browser->window()->GetNativeWindow();
   const int32_t browser_window_id =
@@ -791,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   Browser* new_browser = FindBrowser(browser_window_id);
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(urls, GetURLsForBrowserWindow(new_browser));
-  EXPECT_EQ(browser_active_index,
+  EXPECT_EQ(static_cast<int>(browser_active_index),
             new_browser->tab_strip_model()->active_index());
 
   // Verify that the browser window has been launched on the new desk (desk B).
@@ -843,7 +844,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   // that browser session restore did not restore any windows/tabs.
   Browser* new_browser = FindBrowser(browser_window_id);
   ASSERT_TRUE(new_browser);
-  EXPECT_EQ(expected_tab_count, GetURLsForBrowserWindow(new_browser).size());
+  EXPECT_EQ(1u * expected_tab_count,
+            GetURLsForBrowserWindow(new_browser).size());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
@@ -1167,7 +1169,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUILaunchBrowser) {
       /*active_url_index=*/browser_active_index);
 
   // Verify that the active tab is correct.
-  EXPECT_EQ(browser_active_index, browser->tab_strip_model()->active_index());
+  EXPECT_EQ(static_cast<int>(browser_active_index),
+            browser->tab_strip_model()->active_index());
 
   aura::Window* window = browser->window()->GetNativeWindow();
   const int32_t browser_window_id =
@@ -1198,7 +1201,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUILaunchBrowser) {
   Browser* new_browser = FindBrowser(browser_window_id);
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(urls, GetURLsForBrowserWindow(new_browser));
-  EXPECT_EQ(browser_active_index,
+  EXPECT_EQ(static_cast<int>(browser_active_index),
             new_browser->tab_strip_model()->active_index());
 
   // Verify that the browser window has been launched on the new desk (desk B).
@@ -1743,11 +1746,19 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 
   ash::ToggleOverview();
   ash::WaitForOverviewEnterAnimation();
+  auto* desks_controller = ash::DesksController::Get();
+  auto active_desk_index = desks_controller->GetActiveDeskIndex();
 
   // Save 3 templates.
   const int saves = 3;
   for (int i = 0; i < saves; i++) {
     ClickSaveDeskAsTemplateButton();
+
+    // Change desk name to avoid duplication on template name. Having duplicate
+    // names invokes a workflow that involves showing and accepting the replace
+    // dialog, which is unnecessary for this test.
+    desks_controller->desks()[active_desk_index]->SetName(
+        base::UTF8ToUTF16(base::NumberToString(i)), true);
 
     // Exit and renenter overview to save the next template. Once we are viewing
     // the grid we can't go back to regular overview unless we exit overview or
@@ -1925,6 +1936,28 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   constexpr char kLaunchFromTemplateHistogramName[] =
       "Ash.DeskTemplate.LaunchFromTemplate";
   histogram_tester.ExpectTotalCount(kLaunchFromTemplateHistogramName, launches);
+}
+
+// Tests that launching a desk template records the appropriate performance
+// metric.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
+                       LaunchTemplateRecordsLoadTimeMetric) {
+  base::HistogramTester histogram_tester;
+
+  // Create the settings app, which is a system web app.
+  CreateSettingsSystemWebApp(browser()->profile());
+
+  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
+  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2), GURL(kExampleUrl3)});
+
+  // Save and launch a template.
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskAsTemplateButton();
+  ClickFirstTemplateItem();
+
+  // Verify that the metric was recorded.
+  histogram_tester.ExpectTotalCount("Ash.DeskTemplate.TimeToLoadTemplate", 1ul);
 }
 
 class DesksTemplatesClientArcTest : public InProcessBrowserTest {

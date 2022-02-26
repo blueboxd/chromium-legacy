@@ -32,7 +32,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   const NGLayoutResult* RelayoutIgnoringChildScrollbarChanges();
   const NGLayoutResult* LayoutInternal();
 
-  void PlaceFlexItems(Vector<NGFlexLine>* flex_line_outputs);
+  void PlaceFlexItems(HeapVector<NGFlexLine>* flex_line_outputs);
   void CalculateTotalIntrinsicBlockSize(bool use_empty_line_block_size);
 
   Length GetUsedFlexBasis(const NGBlockNode& child) const;
@@ -72,12 +72,13 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       absl::optional<LayoutUnit> block_offset_for_fragmentation = absl::nullopt,
       bool min_block_size_should_encompass_intrinsic_size = false) const;
   void ConstructAndAppendFlexItems();
-  void ApplyFinalAlignmentAndReversals(Vector<NGFlexLine>* flex_line_outputs);
+  void ApplyFinalAlignmentAndReversals(
+      HeapVector<NGFlexLine>* flex_line_outputs);
   NGLayoutResult::EStatus GiveItemsFinalPositionAndSize(
-      Vector<NGFlexLine>* flex_line_outputs,
+      HeapVector<NGFlexLine>* flex_line_outputs,
       Vector<EBreakBetween>* row_break_between_outputs);
   NGLayoutResult::EStatus GiveItemsFinalPositionAndSizeForFragmentation(
-      Vector<NGFlexLine>* flex_line_outputs,
+      HeapVector<NGFlexLine>* flex_line_outputs,
       Vector<EBreakBetween>* row_break_between_outputs);
   NGLayoutResult::EStatus PropagateFlexItemInfo(FlexItem* flex_item,
                                                 wtf_size_t flex_line_idx,
@@ -122,7 +123,6 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
                                        EBreakBetween row_break_between,
                                        wtf_size_t row_index,
                                        NGLayoutInputNode child,
-                                       const NGLayoutResult& layout_result,
                                        bool has_container_separation);
 
   // Move past the breakpoint before the row, if possible, and return true. Also
@@ -135,20 +135,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
                              LayoutUnit row_block_size,
                              wtf_size_t row_index);
 
-  // Attempt to insert a soft break before the row, and return true if we did.
-  // If false is returned, it means that the desired breakpoint is earlier in
-  // the container, and that we need to abort and re-layout to that breakpoint.
-  // |child| and |layout_result| should be those associated with the first child
-  // in the row. |appeal_before| and |fragmentainer_block_offset| are specific
-  // to the row itself. See |::blink::AttemptSoftBreak()| for more
-  // documentation.
-  bool AttemptRowSoftBreak(NGLayoutInputNode child,
-                           const NGLayoutResult& layout_result,
-                           NGBreakAppeal appeal_before,
-                           LayoutUnit fragmentainer_block_offset);
-
 #if DCHECK_IS_ON()
-  void CheckFlexLines(const Vector<NGFlexLine>& flex_line_outputs) const;
+  void CheckFlexLines(const HeapVector<NGFlexLine>& flex_line_outputs) const;
 #endif
 
   const bool is_column_;

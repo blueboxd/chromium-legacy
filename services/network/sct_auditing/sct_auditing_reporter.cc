@@ -21,6 +21,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -58,6 +59,11 @@ constexpr char kStatusOK[] = "OK";
 // Overrides the initial retry delay in SCTAuditingReporter::kBackoffPolicy if
 // not nullopt.
 absl::optional<base::TimeDelta> g_retry_delay_for_testing = absl::nullopt;
+
+void RecordLookupQueryResult(SCTAuditingReporter::LookupQueryResult result) {
+  base::UmaHistogramEnumeration("Security.SCTAuditing.OptOut.LookupQueryResult",
+                                result);
+}
 
 // Records whether sending the report to the reporting server succeeded for each
 // report sent.
@@ -198,6 +204,7 @@ void SCTAuditingReporter::SetRetryDelayForTesting(
 }
 
 SCTAuditingReporter::SCTAuditingReporter(
+    NetworkContext* owner_network_context,
     net::HashValue reporter_key,
     std::unique_ptr<sct_auditing::SCTClientReport> report,
     bool is_hashdance,
@@ -212,7 +219,8 @@ SCTAuditingReporter::SCTAuditingReporter(
     ReporterUpdatedCallback update_callback,
     ReporterDoneCallback done_callback,
     std::unique_ptr<net::BackoffEntry> persisted_backoff_entry)
-    : reporter_key_(reporter_key),
+    : owner_network_context_(owner_network_context),
+      reporter_key_(reporter_key),
       report_(std::move(report)),
       is_hashdance_(is_hashdance),
       sct_hashdance_metadata_(std::move(sct_hashdance_metadata)),
@@ -266,7 +274,28 @@ void SCTAuditingReporter::Start() {
     return;
   }
 
-  // TODO(nsatragno): Query total number of client reports.
+  // Entrypoint for checking whether the max-reports limit has been reached.
+  // This should only get called once for the lifetime of the Reporter.
+  // TODO(crbug.com/1144205): Once reports are persisted to disk, the Reporter
+  // state should include whether it has been "counted" yet, otherwise if a
+  // Reporter gets persisted and restored many times it would cause the report
+  // cap to trigger. This can likely just be a boolean flag on the Reporter and
+  // the persisted state -- if `true`, this check (and incrementing the report
+  // count) can be skipped.
+  owner_network_context_->CanSendSCTAuditingReport(
+      base::BindOnce(&SCTAuditingReporter::OnCheckReportAllowedStatusComplete,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void SCTAuditingReporter::OnCheckReportAllowedStatusComplete(bool allowed) {
+  if (!allowed) {
+    // The maximum report cap has already been reached. Notify the handler that
+    // this Reporter is done. This will delete `this`, so do not add code after
+    // this point.
+    std::move(done_callback_).Run(reporter_key_);
+    return;
+  }
+
   // Calculate an estimated minimum delay after which the log is expected to
   // have been ingested by the server.
   base::TimeDelta random_delay = base::Seconds(
@@ -340,18 +369,26 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   bool success = url_loader_->NetError() == net::OK &&
                  response_code == net::HTTP_OK && response_body;
   if (!success) {
+    RecordLookupQueryResult(LookupQueryResult::kHTTPError);
     MaybeRetryRequest();
     return;
   }
 
   absl::optional<base::Value> result = base::JSONReader::Read(*response_body);
   if (!result) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
 
   const std::string* status = result->FindStringKey(kLookupStatusKey);
-  if (!status || *status != kStatusOK) {
+  if (!status) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
+    MaybeRetryRequest();
+    return;
+  }
+  if (*status != kStatusOK) {
+    RecordLookupQueryResult(LookupQueryResult::kStatusNotOk);
     MaybeRetryRequest();
     return;
   }
@@ -359,6 +396,7 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   const std::string* server_timestamp_string =
       result->FindStringKey(kLookupTimestampKey);
   if (!server_timestamp_string) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
@@ -366,12 +404,14 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   base::Time server_timestamp;
   if (!base::Time::FromUTCString(server_timestamp_string->c_str(),
                                  &server_timestamp)) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
 
   if (sct_hashdance_metadata_->certificate_expiry < server_timestamp) {
     // The certificate has expired. Do not report.
+    RecordLookupQueryResult(LookupQueryResult::kCertificateExpired);
     std::move(done_callback_).Run(reporter_key_);
     return;
   }
@@ -379,6 +419,7 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   // Find the corresponding log entry.
   const base::Value* logs = result->FindListKey(kLookupLogStatusKey);
   if (!logs) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
@@ -388,6 +429,7 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
     const std::string* encoded_log_id = log.FindStringKey(kLookupLogIdKey);
     std::string log_id;
     if (!encoded_log_id || !base::Base64Decode(*encoded_log_id, &log_id)) {
+      RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
       MaybeRetryRequest();
       return;
     }
@@ -399,6 +441,7 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   if (!found_log) {
     // We could not find the SCT's log. Maybe it's a new log that the server
     // doesn't know about yet, schedule a retry.
+    RecordLookupQueryResult(LookupQueryResult::kLogNotFound);
     MaybeRetryRequest();
     return;
   }
@@ -406,6 +449,7 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   const std::string* ingested_until_string =
       found_log->FindStringKey(kLookupIngestedUntilKey);
   if (!ingested_until_string) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
@@ -413,18 +457,21 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   base::Time ingested_until;
   if (!base::Time::FromString(ingested_until_string->c_str(),
                               &ingested_until)) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
 
   if (sct_hashdance_metadata_->issued > ingested_until) {
     // The log has not yet ingested this SCT. Schedule a retry.
+    RecordLookupQueryResult(LookupQueryResult::kLogNotYetIngested);
     MaybeRetryRequest();
     return;
   }
 
   const base::Value* suffix_value = result->FindListKey(kLookupHashSuffixKey);
   if (!suffix_value) {
+    RecordLookupQueryResult(LookupQueryResult::kInvalidJson);
     MaybeRetryRequest();
     return;
   }
@@ -442,11 +489,15 @@ void SCTAuditingReporter::OnSendLookupQueryComplete(
   if (std::find(suffixes.begin(), suffixes.end(), hash_suffix_value) !=
       suffixes.end()) {
     // Found the SCT in the suffix list, all done.
+    RecordLookupQueryResult(LookupQueryResult::kSCTSuffixFound);
     std::move(done_callback_).Run(reporter_key_);
     return;
   }
 
-  // The server does not know about this SCT, and it should. Notify the server.
+  // The server does not know about this SCT, and it should. Notify the
+  // embedder and start sending the full report.
+  owner_network_context_->OnNewSCTAuditingReportSent();
+  RecordLookupQueryResult(LookupQueryResult::kSCTSuffixNotFound);
   SendReport();
 }
 

@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
+#include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -37,12 +38,15 @@ class Origin;
 
 namespace content {
 
+class AggregatableReport;
 class AttributionCookieChecker;
 class AttributionReportSender;
 class AttributionStorageDelegate;
 class BrowserContext;
+class CreateReportResult;
 class StoragePartitionImpl;
 
+struct DeactivatedSource;
 struct SendResult;
 
 // Provides access to the manager owned by the default StoragePartition.
@@ -84,7 +88,8 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
       std::unique_ptr<AttributionStorageDelegate> storage_delegate,
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
-      std::unique_ptr<AttributionReportSender> report_sender);
+      std::unique_ptr<AttributionReportSender> report_sender,
+      StoragePartitionImpl* storage_partition = nullptr);
 
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
@@ -98,8 +103,8 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   ~AttributionManagerImpl() override;
 
   // AttributionManager:
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void AddObserver(AttributionObserver* observer) override;
+  void RemoveObserver(AttributionObserver* observer) override;
   AttributionDataHostManager* GetDataHostManager() override;
   void HandleSource(StorableSource source) override;
   void HandleTrigger(AttributionTrigger trigger) override;
@@ -120,10 +125,14 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   void MaybeEnqueueEventForTesting(SourceOrTrigger event);
 
+  void AddAggregatableAttributionForTesting(
+      AggregatableAttribution aggregatable_attribution);
+
  private:
   friend class AttributionManagerImplTest;
 
   AttributionManagerImpl(
+      StoragePartitionImpl* storage_partition,
       IsReportAllowedCallback is_report_allowed_callback,
       const base::FilePath& user_data_directory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
@@ -138,15 +147,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void StoreSource(StorableSource source);
   void StoreTrigger(AttributionTrigger trigger);
 
-  // Retrieves at most |limit| reports from storage whose |report_time| <=
-  // |max_report_time|, and calls |handler_function| on them; use a negative
-  // number for no limit.
-  using ReportsHandlerFunc =
-      base::OnceCallback<void(std::vector<AttributionReport>)>;
-  void GetAndHandleReports(ReportsHandlerFunc handler_function,
-                           base::Time max_report_time,
-                           int limit);
-
   void GetReportsToSend();
   void OnGetReportsToSend(std::vector<AttributionReport> reports);
 
@@ -156,22 +156,32 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void SendReports(std::vector<AttributionReport> reports,
                    bool log_metrics,
                    base::RepeatingClosure done);
+  void SendReport(AttributionReport report, base::OnceClosure done);
   void OnReportSent(base::OnceClosure done,
                     AttributionReport report,
                     SendResult info);
-  void MarkReportCompleted(AttributionReport::EventLevelData::Id report_id);
+  void AssembleAggregateReport(AttributionReport report,
+                               base::OnceClosure done);
+  void OnAggregateReportAssembled(
+      base::OnceClosure done,
+      AttributionReport report,
+      absl::optional<AggregatableReport> assembled_report,
+      AggregationService::AssemblyStatus status);
+  void MarkReportCompleted(AttributionReport::Id report_id);
 
-  void OnReportStored(AttributionStorage::CreateReportResult result);
+  void OnReportStored(CreateReportResult result);
 
   void NotifySourcesChanged();
   void NotifyReportsChanged();
-  void NotifySourceDeactivated(
-      const AttributionStorage::DeactivatedSource& source);
+  void NotifySourceDeactivated(const DeactivatedSource& source);
 
   // Friend to expose the AttributionStorage for certain tests.
-  friend std::vector<AttributionReport> GetAttributionsToReportForTesting(
+  friend std::vector<AttributionReport> GetAttributionReportsForTesting(
       AttributionManagerImpl* manager,
       base::Time max_report_time);
+
+  // Might be `nullptr` for testing.
+  raw_ptr<StoragePartitionImpl> storage_partition_;
 
   // Internally holds a non-owning pointer to `BrowserContext`.
   IsReportAllowedCallback is_report_allowed_callback_;
@@ -179,7 +189,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   // Holds pending sources and triggers in the order they were received by the
   // browser. For the time being, they must be processed in this order in order
   // to ensure that behavioral requirements are met and to ensure that
-  // `AttributionManager::Observer`s are notified in the correct order, which
+  // `AttributionObserver`s are notified in the correct order, which
   // the simulator currently depends on. We may be able to loosen this
   // requirement in the future so that there are conceptually separate queues
   // per <source origin, destination origin, reporting origin>.
@@ -201,9 +211,9 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   // Set of all conversion IDs that are currently being sent, deleted, or
   // updated. The number of concurrent conversion reports being sent at any time
   // is expected to be small, so a `flat_set` is used.
-  base::flat_set<AttributionReport::EventLevelData::Id> reports_being_sent_;
+  base::flat_set<AttributionReport::Id> reports_being_sent_;
 
-  base::ObserverList<Observer> observers_;
+  base::ObserverList<AttributionObserver> observers_;
 
   base::WeakPtrFactory<AttributionManagerImpl> weak_factory_;
 };

@@ -6,7 +6,6 @@
 
 load("./args.star", "args")
 load("./nodes.star", "nodes")
-load("//project.star", "settings")
 
 # TODO(gbeaty) Add support for PROVIDE_TEST_SPEC mirrors
 
@@ -401,17 +400,6 @@ _BUILDER_CONFIG_MIRROR = nodes.create_link_node_type(
 def _struct_to_dict(obj):
     return json.decode(json.encode(obj))
 
-_ALLOW_LIST = (
-    ("ci", "chromeos-amd64-generic-rel"),
-    ("ci", "chromeos-arm-generic-rel"),
-    ("ci", "linux-bootstrap"),
-    ("ci", "linux-bootstrap-tests"),
-    ("ci", "Win x64 Builder (reclient compare)"),
-    ("try", "chromeos-amd64-generic-rel"),
-    ("try", "chromeos-arm-generic-rel"),
-    ("try", "linux-bootstrap"),
-)
-
 def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, try_settings):
     """Registers the builder config so the properties can be computed.
 
@@ -433,11 +421,6 @@ def register_builder_config(bucket, name, builder_group, builder_spec, mirrors, 
         # TODO(gbeaty) Eventually make this a failure for the chromium
         # family of recipes
         return
-
-    # TODO(gbeaty) Allow any builders to use builder config once no other
-    # systems rely on the recipe-side config
-    if (bucket, name) not in _ALLOW_LIST:
-        fail("src-side builder config is not available for general use yet")
 
     if not builder_group:
         fail("builder_group must be set to use chromium_tests_builder_config")
@@ -528,7 +511,10 @@ def _get_mirroring_builders(node):
 
 def _builder_id(node):
     return dict(
-        project = settings.project,
+        # TODO(crbug.com/868153) Once the configs for all chromium builders are
+        # migrated src-side, switch this to settings.project and remove the use
+        # of project_trigger_override within the starlark
+        project = "chromium",
         bucket = node.props.bucket,
         builder = node.props.name,
     )

@@ -189,13 +189,6 @@ class TabStrip : public views::View,
   // Attempts to move the specified group to the right.
   void ShiftGroupRight(const tab_groups::TabGroupId& group);
 
-  // Returns true if the tab is not partly or fully clipped (due to overflow),
-  // and the tab couldn't become partly clipped due to changing the selected tab
-  // (for example, if currently the strip has the last tab selected, and
-  // changing that to the first tab would cause |tab| to be pushed over enough
-  // to clip).
-  bool ShouldTabBeVisible(const Tab* tab) const;
-
   // Returns whether or not strokes should be drawn around and under the tabs.
   bool ShouldDrawStrokes() const;
 
@@ -326,6 +319,7 @@ class TabStrip : public views::View,
   void MouseMovedOutOfHost() override;
 
   // views::View:
+  views::SizeBounds GetAvailableSize(const View* child) const override;
   void Layout() override;
   void ChildPreferredSizeChanged(views::View* child) override;
   gfx::Size GetMinimumSize() const override;
@@ -429,13 +423,6 @@ class TabStrip : public views::View,
   // move.
   void StartMoveTabAnimation();
 
-  // Animates all the views to their ideal bounds.
-  // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
-  // currently set in ideal_bounds.
-  void AnimateToIdealBounds();
-
-  void ExitTabClosingMode();
-
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
 
@@ -444,10 +431,6 @@ class TabStrip : public views::View,
 
   // Invoked from Layout if the size changes or layout is really needed.
   void CompleteAnimationAndLayout();
-
-  // Sets the visibility state of all tabs and group headers (if any) based on
-  // ShouldTabBeVisible().
-  void SetTabSlotVisibility();
 
   // Returns the current width of the active tab.
   int GetActiveTabWidth() const;
@@ -530,13 +513,6 @@ class TabStrip : public views::View,
   // use this information for other purposes - see AnimateToIdealBounds.
   void UpdateIdealBounds();
 
-  // Calculates the width that can be occupied by the tabs in the strip. This
-  // can differ from GetAvailableWidthForTabStrip() when in tab closing mode.
-  int CalculateAvailableWidthForTabs() const;
-
-  // Returns the total width available for the TabStrip's use.
-  int GetAvailableWidthForTabStrip() const;
-
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
   void StartPinnedTabAnimation();
@@ -588,26 +564,18 @@ class TabStrip : public views::View,
 
   std::unique_ptr<TabStripController> controller_;
 
+  std::unique_ptr<TabHoverCardController> hover_card_controller_;
+
+  std::unique_ptr<TabDragContextImpl> drag_context_;
+
   // The View parent for the tabs and the various group views.
   TabContainer* tab_container_;
-
-  base::RepeatingCallback<int()> available_width_callback_;
 
   // Responsible for animating the scroll of the tab strip.
   std::unique_ptr<gfx::LinearAnimation> tab_scrolling_animation_;
 
-  // If this value is defined, it is used as the width to lay out tabs
-  // (instead of GetAvailableWidthForTabStrip()). It is defined when closing
-  // tabs with the mouse, and is used to control which tab will end up under the
-  // cursor after the close animation completes.
-  absl::optional<int> override_available_width_for_tabs_;
-
   // The background offset used by inactive tabs to match the frame image.
   int background_offset_ = 0;
-
-  // True if PrepareForCloseAt has been invoked. When true remove animations
-  // preserve current tab bounds.
-  bool in_tab_close_ = false;
 
   // Valid for the lifetime of a drag over us.
   std::unique_ptr<DropArrow> drop_arrow_;
@@ -659,14 +627,10 @@ class TabStrip : public views::View,
 
   SkColor separator_color_ = gfx::kPlaceholderColor;
 
-  std::unique_ptr<TabHoverCardController> hover_card_controller_;
-
   const base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&TabStrip::OnTouchUiChanged,
                               base::Unretained(this)));
-
-  std::unique_ptr<TabDragContextImpl> drag_context_;
 
   TabContextMenuController context_menu_controller_{this};
 };

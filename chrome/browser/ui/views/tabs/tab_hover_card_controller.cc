@@ -318,7 +318,7 @@ void TabHoverCardController::UpdateOrShowCard(
     delayed_show_timer_.Start(
         FROM_HERE, GetShowDelay(tab->width()),
         base::BindOnce(&TabHoverCardController::ShowHoverCard,
-                       base::Unretained(this), true, tab));
+                       weak_ptr_factory_.GetWeakPtr(), true, tab));
   } else {
     // Just in case, cancel the timer. This shouldn't cancel a delayed capture
     // since delayed capture only happens when the hover card already exists,
@@ -333,7 +333,7 @@ void TabHoverCardController::ShowHoverCard(bool is_initial,
                                            const Tab* intended_tab) {
   // Make sure the hover card isn't accidentally shown if it's already visible
   // or if the anchor is gone or changed.
-  if (hover_card_ || !TargetTabIsValid() || target_tab_ != intended_tab)
+  if (hover_card_ || target_tab_ != intended_tab || !TargetTabIsValid())
     return;
 
   CreateHoverCard(target_tab_);
@@ -395,6 +395,24 @@ void TabHoverCardController::OnViewIsDeleting(views::View* observed_view) {
   }
 }
 
+void TabHoverCardController::OnViewVisibilityChanged(
+    views::View* observed_view,
+    views::View* starting_view) {
+  // Only care about target tab becoming invisible.
+  if (observed_view != target_tab_)
+    return;
+  // Visibility comes from `starting_view` or the widget, if no starting view;
+  // see documentation for ViewObserver::OnViewVisibilityChanged().
+  const bool visible = starting_view
+                           ? starting_view->GetVisible()
+                           : (observed_view->GetWidget() &&
+                              observed_view->GetWidget()->IsVisible());
+  // If visibility changed to false, treat it as if the target tab had gone
+  // away.
+  if (!visible)
+    OnViewIsDeleting(observed_view);
+}
+
 size_t TabHoverCardController::GetTabCount() const {
   return tab_count_metrics::TabCount();
 }
@@ -416,21 +434,21 @@ void TabHoverCardController::CreateHoverCard(Tab* tab) {
       TabHoverCardBubbleView::kHoverCardSlideDuration);
   slide_progressed_subscription_ = slide_animator_->AddSlideProgressedCallback(
       base::BindRepeating(&TabHoverCardController::OnSlideAnimationProgressed,
-                          base::Unretained(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
   slide_complete_subscription_ = slide_animator_->AddSlideCompleteCallback(
       base::BindRepeating(&TabHoverCardController::OnSlideAnimationComplete,
-                          base::Unretained(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
   fade_animator_ =
       std::make_unique<views::WidgetFadeAnimator>(hover_card_->GetWidget());
   fade_complete_subscription_ = fade_animator_->AddFadeCompleteCallback(
       base::BindRepeating(&TabHoverCardController::OnFadeAnimationEnded,
-                          base::Unretained(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
 
   if (!thumbnail_observer_ && AreHoverCardImagesEnabled()) {
     thumbnail_observer_ = std::make_unique<TabHoverCardThumbnailObserver>();
     thumbnail_subscription_ = thumbnail_observer_->AddCallback(
         base::BindRepeating(&TabHoverCardController::OnPreviewImageAvaialble,
-                            base::Unretained(this)));
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -544,8 +562,13 @@ const views::View* TabHoverCardController::GetTargetAnchorView() const {
 }
 
 bool TabHoverCardController::TargetTabIsValid() const {
+  // There are a bunch of conditions under which a tab may no longer be valid,
+  // including no longer belonging to the same tabstrip, being dragged or
+  // detached, or just not being visible. We need to be vigilant about invalid
+  // tabs due to e.g. crbug.com/1295601.
   return target_tab_ && tab_strip_->GetModelIndexOf(target_tab_) >= 0 &&
-         !target_tab_->closing();
+         !target_tab_->closing() && !target_tab_->detached() &&
+         !target_tab_->dragging() && target_tab_->GetVisible();
 }
 
 void TabHoverCardController::OnCardFullyVisible() {

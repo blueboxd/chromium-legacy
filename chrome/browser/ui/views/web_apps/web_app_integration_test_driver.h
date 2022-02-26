@@ -148,8 +148,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AcceptAppIdUpdateDialog();
   void CloseCustomToolbar();
   void ClosePwa();
-  void DisableRunOnOSLoginMode(const std::string& site_mode);
-  void EnableRunOnOSLoginMode(const std::string& site_mode);
+  void DisableRunOnOSLogin(const std::string& site_mode);
+  void EnableRunOnOSLogin(const std::string& site_mode);
   void InstallCreateShortcutTabbed(const std::string& site_mode);
   void InstallCreateShortcutWindowed(const std::string& site_mode);
   void InstallMenuOption(const std::string& site_mode);
@@ -160,14 +160,16 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void InstallPolicyAppWindowedNoShortcut(const std::string& site_mode);
   void InstallPolicyAppWindowedShortcut(const std::string& site_mode);
   // These functions install apps which are tabbed and creates shortcuts.
-  void InstallPolicyAppOsLoginModeAllowed(const std::string& site_mode);
-  void InstallPolicyAppOsLoginModeBlocked(const std::string& site_mode);
+  void ApplyRunOnOsLoginPolicyAllowed(const std::string& site_mode);
+  void ApplyRunOnOsLoginPolicyBlocked(const std::string& site_mode);
+  void ApplyRunOnOsLoginPolicyRunWindowed(const std::string& site_mode);
+  void RemoveRunOnOsLoginPolicy(const std::string& site_mode);
   void LaunchFromChromeApps(const std::string& site_mode);
   void LaunchFromLaunchIcon(const std::string& site_mode);
   void LaunchFromMenuOption(const std::string& site_mode);
   void LaunchFromShortcut(const std::string& site_mode);
-  void LaunchAppSettingsFromChromeApps(const std::string& site_mode);
-  void LaunchAppSettingsFromAppMenu(const std::string& site_mode);
+  void OpenAppSettingsFromChromeApps(const std::string& site_mode);
+  void OpenAppSettingsFromAppMenu(const std::string& site_mode);
   void NavigateBrowser(const std::string& site_mode);
   void NavigatePwaSiteATo(const std::string& site_mode);
   void NavigateNotfoundUrl();
@@ -184,6 +186,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void SyncTurnOn();
   void UninstallFromList(const std::string& site_mode);
   void UninstallFromMenu(const std::string& site_mode);
+  void UninstallFromAppSettings(const std::string& site_mode);
   void UninstallPolicyApp(const std::string& site_mode);
   void UninstallFromOs(const std::string& site_mode);
 
@@ -194,6 +197,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppInListTabbed(const std::string& site_mode);
   void CheckAppNavigationIsStartUrl();
   void CheckBrowserNavigationIsAppSettings(const std::string& site_mode);
+  void CheckAppSettingsAppState(const std::string& site_mode);
   void CheckAppNotInList(const std::string& site_mode);
   void CheckAppTitleSiteA(const std::string& title);
   void CheckAppWindowMode(const std::string& site_mode,
@@ -208,8 +212,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckCustomToolbar();
   void CheckPlatformShortcutAndIcon(const std::string& site_mode);
   void CheckPlatformShortcutNotExists(const std::string& site_mode);
-  void CheckRunOnOSLoginModeEnabled(const std::string& site_mode);
-  void CheckRunOnOSLoginModeDisabled(const std::string& site_mode);
+  void CheckRunOnOSLoginEnabled(const std::string& site_mode);
+  void CheckRunOnOSLoginDisabled(const std::string& site_mode);
   void CheckUserDisplayModeInternal(DisplayMode display_mode);
   void CheckWindowClosed();
   void CheckWindowCreated();
@@ -224,11 +228,11 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
  private:
   // Must be called at the beginning of every state change action function.
-  void BeforeStateChangeAction();
+  void BeforeStateChangeAction(const char* function);
   // Must be called at the end of every state change action function.
   void AfterStateChangeAction();
   // Must be called at the beginning of every state check action function.
-  void BeforeStateCheckAction();
+  void BeforeStateCheckAction(const char* function);
   // Must be called at the end of every state check action function.
   void AfterStateCheckAction();
 
@@ -248,11 +252,11 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   GURL GetURLForSiteMode(const std::string& site_mode);
   void InstallCreateShortcut(bool open_in_window);
 
-  void InstallPolicyAppInternal(
-      const std::string& site_mode,
-      base::Value default_launch_container,
-      const bool create_shortcut,
-      const apps::mojom::RunOnOsLoginPtr os_login_mode);
+  void InstallPolicyAppInternal(const std::string& site_mode,
+                                base::Value default_launch_container,
+                                const bool create_shortcut);
+  void ApplyRunOnOsLoginPolicy(const std::string& site_mode,
+                               const char* policy);
 
   void UninstallPolicyAppById(const AppId& id);
   // This action only works if no navigations to the given app_url occur

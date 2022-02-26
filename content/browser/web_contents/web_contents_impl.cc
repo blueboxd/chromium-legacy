@@ -2318,19 +2318,6 @@ void WebContentsImpl::WriteIntoTrace(perfetto::TracedValue context) {
            primary_frame_tree_.root()->frame_tree_node_id());
 }
 
-void WebContentsImpl::DisallowActivationNavigationsForBug1234857() {
-  disallow_activation_navigations_ = true;
-
-  // Flush any inactive frames since they will never be activated.
-  ForEachRenderFrameHost(base::BindRepeating([](RenderFrameHostImpl* rfh) {
-    // Just look at main frames since we only need to call
-    // IsInactiveAndDisallowActivation() on the main frame.
-    if (!rfh->GetParent())
-      rfh->IsInactiveAndDisallowActivation(
-          DisallowActivationReasonId::kBug1234857);
-  }));
-}
-
 const base::Location& WebContentsImpl::GetCreatorLocation() {
   return creator_location_;
 }
@@ -2465,8 +2452,9 @@ void WebContentsImpl::AttachInnerWebContents(
   // the first navigation, but when attaching a new window we don't navigate
   // before attaching. If the browser side is already initialized, the calls
   // below will just early return.
-  inner_render_manager->InitRenderView(inner_main_frame->GetSiteInstance(),
-                                       inner_render_view_host, nullptr);
+  inner_render_manager->InitRenderView(
+      inner_main_frame->GetSiteInstance()->group(), inner_render_view_host,
+      nullptr);
   if (!inner_render_manager->GetRenderWidgetHostView()) {
     inner_web_contents_impl->CreateRenderWidgetHostViewForRenderManager(
         inner_render_view_host);
@@ -3071,8 +3059,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
   if (params.desired_renderer_state ==
       CreateParams::kInitializeAndWarmupRendererProcess) {
     if (!GetRenderManager()->current_frame_host()->IsRenderFrameLive()) {
-      GetRenderManager()->InitRenderView(site_instance.get(),
-                                         GetRenderViewHost(), nullptr);
+      GetRenderManager()->InitRenderView(
+          static_cast<SiteInstanceImpl*>(site_instance.get())->group(),
+          GetRenderViewHost(), nullptr);
     }
   }
 
@@ -7465,10 +7454,6 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
   }
 }
 
-bool WebContentsImpl::IsActivationNavigationDisallowedForBug1234857() {
-  return disallow_activation_navigations_;
-}
-
 void WebContentsImpl::DidChangeName(RenderFrameHostImpl* render_frame_host,
                                     const std::string& name) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::DidChangeName",
@@ -7591,11 +7576,9 @@ void WebContentsImpl::UpdateTargetURL(RenderFrameHostImpl* render_frame_host,
 }
 
 bool WebContentsImpl::ShouldRouteMessageEvent(
-    RenderFrameHostImpl* target_rfh,
-    SiteInstance* source_site_instance) const {
-  OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::ShouldRouteMessageEvent",
-                        "render_frame_host", target_rfh, "source_site_instance",
-                        source_site_instance);
+    RenderFrameHostImpl* target_rfh) const {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::ShouldRouteMessageEvent",
+                        "render_frame_host", target_rfh);
   // Allow the message if this WebContents is dedicated to a browser plugin
   // guest.
   // Note: This check means that an embedder could theoretically receive a

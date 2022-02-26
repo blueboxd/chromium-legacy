@@ -279,13 +279,6 @@ class DictationBaseTest
         test_helper_.GetEnabledFeatures();
     std::vector<base::Feature> disabled_features =
         test_helper_.GetDisabledFeatures();
-    if (GetParam() == speech::SpeechRecognitionType::kOnDevice) {
-      enabled_features.push_back(
-          ::features::kExperimentalAccessibilityDictationOffline);
-    } else {
-      disabled_features.push_back(
-          ::features::kExperimentalAccessibilityDictationOffline);
-    }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -523,7 +516,8 @@ IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictation) {
 #define MAYBE_UserEndsDictationWhenChromeVoxEnabled \
   DISABLED_UserEndsDictationWhenChromeVoxEnabled
 #endif
-IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictationWhenChromeVoxEnabled) {
+IN_PROC_BROWSER_TEST_P(DictationTest,
+                       MAYBE_UserEndsDictationWhenChromeVoxEnabled) {
   AccessibilityManager* manager = GetManager();
 
   EnableChromeVox();
@@ -680,7 +674,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, Metrics) {
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // Ensure that we recorded the correct locale.
-  const std::string locale = on_device ? "en-US" : "en";
+  const std::string locale = "en-US";
   histogram_tester_.ExpectUniqueSample(/*name=*/kLocaleMetric,
                                        /*sample=*/base::HashMetricName(locale),
                                        /*expected_bucket_count=*/1);
@@ -690,22 +684,22 @@ IN_PROC_BROWSER_TEST_P(DictationTest, Metrics) {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/true,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
   } else {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/false,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
   }
@@ -1072,22 +1066,22 @@ IN_PROC_BROWSER_TEST_P(DictationExtensionTest, Metrics) {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/true,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
   } else {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/false,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
   }

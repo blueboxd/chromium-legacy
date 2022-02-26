@@ -22,12 +22,12 @@
 #include "content/browser/attribution_reporting/attribution_cookie_checker.h"
 #include "content/browser/attribution_reporting/attribution_default_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_insecure_random_generator.h"
-#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_observer.h"
+#include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_random_generator.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_report_sender.h"
-#include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -100,6 +100,12 @@ class SentReportAccumulator : public AttributionReportSender {
   // AttributionManagerImpl::NetworkSender:
   void SendReport(AttributionReport report,
                   ReportSentCallback sent_callback) override {
+    // TODO(linnan): Support aggregatable reports in the simulator.
+    if (!absl::holds_alternative<AttributionReport::EventLevelData>(
+            report.data())) {
+      return;
+    }
+
     base::Value report_body = report.ReportBody();
     if (remove_report_ids_)
       report_body.RemoveKey("report_id");
@@ -142,7 +148,7 @@ class SentReportAccumulator : public AttributionReportSender {
 
 // Registers sources and triggers in the `AttributionManagerImpl` and records
 // rejected sources in a JSON list.
-class AttributionEventHandler : public AttributionManager::Observer {
+class AttributionEventHandler : public AttributionObserver {
  public:
   AttributionEventHandler(AttributionManagerImpl* manager,
                           base::Value::ListStorage& rejected_sources,
@@ -175,7 +181,7 @@ class AttributionEventHandler : public AttributionManager::Observer {
   }
 
  private:
-  // AttributionManager::Observer:
+  // AttributionObserver:
 
   void OnSourceHandled(const StorableSource& source,
                        StorableSource::Result result) override {
@@ -202,8 +208,7 @@ class AttributionEventHandler : public AttributionManager::Observer {
     rejected_sources_.push_back(std::move(dict));
   }
 
-  void OnTriggerHandled(
-      const AttributionStorage::CreateReportResult& result) override {
+  void OnTriggerHandled(const CreateReportResult& result) override {
     DCHECK(!input_values_.empty());
     base::Value input_value = std::move(input_values_.front());
     input_values_.pop_front();
@@ -234,7 +239,7 @@ class AttributionEventHandler : public AttributionManager::Observer {
     rejected_triggers_.push_back(std::move(dict));
   }
 
-  base::ScopedObservation<AttributionManager, AttributionManager::Observer>
+  base::ScopedObservation<AttributionManagerImpl, AttributionObserver>
       observation_{this};
 
   base::raw_ptr<AttributionManagerImpl> manager_;

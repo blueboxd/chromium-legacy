@@ -73,7 +73,7 @@ namespace ash {
 
 class DesksTemplatesTest : public OverviewTestBase {
  public:
-  DesksTemplatesTest() = default;
+  DesksTemplatesTest() {}
   DesksTemplatesTest(const DesksTemplatesTest&) = delete;
   DesksTemplatesTest& operator=(const DesksTemplatesTest&) = delete;
   ~DesksTemplatesTest() override = default;
@@ -1618,7 +1618,6 @@ TEST_F(DesksTemplatesTest, HideAndShowTemplatesGridWithoutLeavingOverview) {
   // created. There should still be only one template item and one feedback
   // button.
   ShowDesksTemplatesGrids();
-  WaitForDesksTemplatesUI();
   ASSERT_EQ(2ul, templates_grid_view->children().size());
 }
 
@@ -2780,6 +2779,62 @@ TEST_F(DesksTemplatesTest, VisibleOnAllDesksWindowShownProperly) {
   // associated overview item.
   EXPECT_TRUE(controller->BelongsToActiveDesk(window.get()));
   EXPECT_TRUE(GetOverviewItemForWindow(window.get()));
+}
+
+// Test save same desk as template won't create name with number on the template
+// view for the second template.
+TEST_F(DesksTemplatesTest, NoDuplicateDisplayedName) {
+  // There are no saved template entries and one test window initially.
+  auto test_window = CreateAppWindow();
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  // The `save_desk_as_template_widget` is visible when at least one window is
+  // open.
+  views::Widget* save_desk_as_template_widget =
+      GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(save_desk_as_template_widget);
+  EXPECT_TRUE(save_desk_as_template_widget->GetContentsView()->GetVisible());
+
+  // Click on `save_desk_as_template_widget` button.
+  ClickOnView(save_desk_as_template_widget->GetContentsView());
+  ASSERT_EQ(1ul, GetAllEntries().size());
+  WaitForDesksTemplatesUI();
+  ASSERT_EQ(u"Desk 1", DesksController::Get()->active_desk()->name());
+  EXPECT_EQ(u"Desk 1", GetItemViewFromTemplatesGrid(0)->name_view()->GetText());
+  // The new template name still have name nudge to maintain it's uniqueness.
+  EXPECT_EQ(u"Desk 1", GetAllEntries().back()->template_name());
+
+  // Exit overview and save the same desk again.
+  ToggleOverview();
+  ASSERT_FALSE(InOverviewSession());
+  ToggleOverview();
+  WaitForDesksTemplatesUI();
+
+  save_desk_as_template_widget =
+      GetSaveDeskAsTemplateButtonForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_TRUE(save_desk_as_template_widget);
+  EXPECT_TRUE(save_desk_as_template_widget->GetContentsView()->GetVisible());
+
+  // Click on `save_desk_as_template_widget` button. At this point the template
+  // name matches the desk name.
+  ClickOnView(save_desk_as_template_widget->GetContentsView());
+  ASSERT_EQ(2ul, GetAllEntries().size());
+  WaitForDesksTemplatesUI();
+  // Newly created template name_view.
+  DesksTemplatesNameView* name_view =
+      GetItemViewFromTemplatesGrid(1)->name_view();
+  EXPECT_TRUE(name_view->HasFocus());
+  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
+  DeskNameView* desk_name_view =
+      overview_grid->desks_bar_view()->mini_views().back()->desk_name_view();
+  // Check newly created template doesn't have name nudge.
+  EXPECT_EQ(desk_name_view->GetText(), name_view->GetText());
+  ASSERT_EQ(u"Desk 1", DesksController::Get()->active_desk()->name());
+  EXPECT_EQ(u"Desk 1", name_view->GetText());
+  // The new template name still have name nudge to maintain it's uniqueness.
+  EXPECT_EQ(u"Desk 1 (1)",
+            GetItemViewFromTemplatesGrid(1)->desk_template()->template_name());
 }
 
 }  // namespace ash

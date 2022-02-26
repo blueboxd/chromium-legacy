@@ -38,6 +38,9 @@ using chrome_test_util::WindowWithNumber;
 using chrome_test_util::AddToBookmarksButton;
 using chrome_test_util::AddToReadingListButton;
 using chrome_test_util::CloseTabMenuButton;
+using chrome_test_util::TabGridSearchBar;
+using chrome_test_util::TabGridSearchCancelButton;
+using chrome_test_util::TabGridSearchTabsButton;
 using chrome_test_util::TabGridSelectTabsMenuButton;
 
 namespace {
@@ -112,6 +115,16 @@ void WaitForTabGridFullscreen() {
 @end
 
 @implementation TabGridTestCase
+
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+
+  if ([self isRunningTest:@selector(testEnterExitSearch)]) {
+    config.features_enabled.push_back(kTabsSearch);
+  }
+
+  return config;
+}
 
 - (void)setUp {
   [super setUp];
@@ -1186,6 +1199,24 @@ void WaitForTabGridFullscreen() {
                   }];
   // Wait for copy to happen or timeout after 5 seconds.
   GREYAssertTrue([copyCondition waitWithTimeout:5], @"Copying URLs failed");
+}
+
+#pragma mark - Tab Grid Search
+
+// Tests entering and exit of the tab grid search mode.
+- (void)testEnterExitSearch {
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey showTabSwitcher];
+
+  [[EarlGrey selectElementWithMatcher:TabGridSearchTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridSearchBar()]
+      performAction:grey_typeText(@"text")];
+  [[EarlGrey selectElementWithMatcher:TabGridSearchCancelButton()]
+      performAction:grey_tap()];
+
+  GREYAssertEqual([ChromeEarlGrey mainTabCount], 2,
+                  @"All tabs did not return after exiting search.");
 }
 
 #pragma mark - Helper Methods

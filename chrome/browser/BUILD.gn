@@ -923,13 +923,8 @@ static_library("browser") {
     "optimization_guide/optimization_guide_web_contents_observer.h",
     "optimization_guide/page_content_annotations_service_factory.cc",
     "optimization_guide/page_content_annotations_service_factory.h",
-    "optimization_guide/prediction/prediction_manager.cc",
-    "optimization_guide/prediction/prediction_manager.h",
     "optimization_guide/prediction/prediction_model_download_client.cc",
     "optimization_guide/prediction/prediction_model_download_client.h",
-    "optimization_guide/prediction/prediction_model_download_manager.cc",
-    "optimization_guide/prediction/prediction_model_download_manager.h",
-    "optimization_guide/prediction/prediction_model_download_observer.h",
     "page_info/about_this_site_service_factory.cc",
     "page_info/about_this_site_service_factory.h",
     "page_info/chrome_about_this_site_service_client.cc",
@@ -2124,6 +2119,7 @@ static_library("browser") {
     "//components/optimization_guide/content/browser",
     "//components/optimization_guide/core",
     "//components/optimization_guide/core:bloomfilter",
+    "//components/optimization_guide/core:prediction",
     "//components/optimization_guide/optimization_guide_internals/webui",
     "//components/os_crypt",
     "//components/page_load_metrics/browser",
@@ -5187,6 +5183,8 @@ static_library("browser") {
       "lacros/chrome_browser_main_extra_parts_lacros.h",
       "lacros/client_cert_store_lacros.cc",
       "lacros/client_cert_store_lacros.h",
+      "lacros/crosapi_pref_observer.cc",
+      "lacros/crosapi_pref_observer.h",
       "lacros/device_settings_lacros.cc",
       "lacros/device_settings_lacros.h",
       "lacros/download_controller_client_lacros.cc",
@@ -5947,8 +5945,6 @@ static_library("browser") {
       "fuchsia/chrome_browser_main_parts_fuchsia.h",
       "fuchsia/element_manager_impl.cc",
       "fuchsia/element_manager_impl.h",
-      "fuchsia/switches.cc",
-      "fuchsia/switches.h",
       "fullscreen_fuchsia.cc",
       "icon_loader_fuchsia.cc",
       "importer/firefox_profile_lock_fuchsia.cc",
@@ -7596,12 +7592,15 @@ source_set("unexpire_flags") {
 }
 
 # Use a static library here because many test binaries depend on this but don't
-# require many files from it.This makes linking more efficient.
+# require many files from it. This makes linking more efficient.
 static_library("test_support") {
   testonly = true
 
   # Always include this via the main test support target.
-  visibility = [ "//chrome/test:test_support" ]
+  visibility = [
+    "//chrome/browser/extensions:test_support",
+    "//chrome/test:test_support",
+  ]
 
   sources = [
     "autofill/mock_autofill_popup_controller.cc",
@@ -7856,52 +7855,18 @@ static_library("test_support") {
 
   if (enable_extensions) {
     sources += [
-      "extensions/chrome_extension_test_notification_observer.cc",
-      "extensions/chrome_extension_test_notification_observer.h",
-      "extensions/chrome_test_extension_loader.cc",
-      "extensions/chrome_test_extension_loader.h",
-      "extensions/extension_action_test_util.cc",
-      "extensions/extension_action_test_util.h",
-      "extensions/load_error_waiter.cc",
-      "extensions/load_error_waiter.h",
-      "extensions/mock_extension_special_storage_policy.cc",
-      "extensions/mock_extension_special_storage_policy.h",
-      "extensions/test_blocklist.cc",
-      "extensions/test_blocklist.h",
-      "extensions/test_blocklist_state_fetcher.cc",
-      "extensions/test_blocklist_state_fetcher.h",
-      "extensions/test_extension_message_bubble_delegate.cc",
-      "extensions/test_extension_message_bubble_delegate.h",
-      "extensions/test_extension_service.cc",
-      "extensions/test_extension_service.h",
-      "extensions/test_extension_system.cc",
-      "extensions/test_extension_system.h",
       "media_galleries/media_galleries_test_util.cc",
       "media_galleries/media_galleries_test_util.h",
     ]
     deps += [
       "//components/crx_file",
-      "//components/drive:test_support",
-      "//components/safe_browsing/core/browser/db:v4_test_util",
-      "//components/services/unzip:in_process",
-      "//components/storage_monitor:test_support",
-      "//components/value_store:test_support",
-      "//extensions:test_support",
       "//extensions/browser",
-      "//extensions/browser:test_support",
-      "//extensions/common:mojom",
-      "//google_apis:test_support",
-      "//services/data_decoder/public/cpp:test_support",
     ]
-    if (!is_fuchsia) {
-      # Native Messaging is not available under Fuchsia.
-      sources += [
-        "extensions/api/messaging/native_messaging_test_util.cc",
-        "extensions/api/messaging/native_messaging_test_util.h",
-      ]
-    }
     if (is_chromeos_ash) {
-      deps += [ "//chrome/browser/chromeos" ]
+      deps += [
+        "//chrome/browser/chromeos",
+        "//extensions:test_support",
+      ]
     }
   }
 

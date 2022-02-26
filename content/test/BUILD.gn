@@ -446,6 +446,7 @@ static_library("test_support") {
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//cc:test_support",
+    "//components/browsing_topics/common:common",
     "//components/network_session_configurator/common:common",
     "//components/services/storage",
     "//components/startup_metric_utils/browser",
@@ -703,8 +704,8 @@ static_library("test_support") {
   }
 }
 
-# Fuchsia gpu integration tests use web_engine and a browser like shell
-# instead of an actual browser, so Fuchsia needs a separate target.
+# Fuchsia gpu integration tests on smart displays use web_engine and a browser
+# like shell instead of an actual browser, so Fuchsia needs a separate target.
 if (is_fuchsia) {
   group("fuchsia_telemetry_gpu_integration_test") {
     testonly = true
@@ -730,6 +731,7 @@ if (is_fuchsia) {
     testonly = true
     data = [ "//content/test/gpu/fuchsia_util.py" ]
     data_deps = [
+      "//chrome/app:chrome_fuchsia",
       "//fuchsia/engine:web_engine_shell",
       "//fuchsia/engine:web_engine_with_webui_installer",
     ]
@@ -1995,6 +1997,7 @@ test("content_unittests") {
     "../browser/browsing_data/browsing_data_remover_impl_unittest.cc",
     "../browser/browsing_data/clear_site_data_handler_unittest.cc",
     "../browser/browsing_data/same_site_data_remover_impl_unittest.cc",
+    "../browser/browsing_topics/browsing_topics_site_data_storage_unittest.cc",
     "../browser/buckets/bucket_manager_host_unittest.cc",
     "../browser/byte_stream_unittest.cc",
     "../browser/cache_storage/cache_storage_blob_to_disk_cache_unittest.cc",
@@ -2296,7 +2299,6 @@ test("content_unittests") {
     "../browser/web_package/web_bundle_reader_unittest.cc",
     "../browser/web_package/web_bundle_url_loader_factory_unittest.cc",
     "../browser/web_package/web_bundle_utils_unittest.cc",
-    "../browser/webid/federated_auth_navigation_throttle_unittest.cc",
     "../browser/webid/federated_auth_request_impl_unittest.cc",
     "../browser/webid/idp_network_request_manager_unittest.cc",
     "../browser/webid/test/fake_identity_request_dialog_controller.cc",
@@ -2447,6 +2449,7 @@ test("content_unittests") {
       "data/",
       "//media/test/data/",
       "//content/test/data/attribution_reporting/databases/",
+      "//content/test/data/browsing_topics/",
     ]
   }
 

@@ -167,17 +167,19 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   void DidObserveLoadingBehavior(LoadingBehaviorFlag);
 
   // https://html.spec.whatwg.org/multipage/history.html#url-and-history-update-steps
-  void RunURLAndHistoryUpdateSteps(
-      const KURL&,
-      mojom::blink::SameDocumentNavigationType,
-      scoped_refptr<SerializedScriptValue>,
-      WebFrameLoadType = WebFrameLoadType::kReplaceCurrentItem,
-      mojom::blink::ScrollRestorationType =
-          mojom::blink::ScrollRestorationType::kAuto);
+  void RunURLAndHistoryUpdateSteps(const KURL&,
+                                   HistoryItem*,
+                                   mojom::blink::SameDocumentNavigationType,
+                                   scoped_refptr<SerializedScriptValue>,
+                                   WebFrameLoadType,
+                                   mojom::blink::ScrollRestorationType,
+                                   bool is_browser_initiated = false,
+                                   bool is_synchronously_committed = true);
 
   // |is_synchronously_committed| is described in comment for
   // CommitSameDocumentNavigation.
   void UpdateForSameDocumentNavigation(const KURL&,
+                                       HistoryItem*,
                                        mojom::blink::SameDocumentNavigationType,
                                        scoped_refptr<SerializedScriptValue>,
                                        mojom::blink::ScrollRestorationType,
@@ -237,8 +239,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const SecurityOrigin* initiator_origin,
       bool is_synchronously_committed,
       mojom::blink::TriggeringEventInfo,
-      bool is_browser_initiated,
-      std::unique_ptr<WebDocumentLoader::ExtraData>);
+      bool is_browser_initiated);
 
   void SetDefersLoading(LoaderFreezeMode);
 
@@ -415,8 +416,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
       const SecurityOrigin* initiator_origin,
       bool is_browser_initiated,
       bool is_synchronously_committed,
-      mojom::blink::TriggeringEventInfo,
-      std::unique_ptr<WebDocumentLoader::ExtraData>);
+      mojom::blink::TriggeringEventInfo);
 
   // Use these method only where it's guaranteed that |m_frame| hasn't been
   // cleared.

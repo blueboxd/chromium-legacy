@@ -28,6 +28,7 @@ class HttpResponseHeaders;
 
 namespace network {
 
+class NetworkContext;
 class SimpleURLLoader;
 
 // Owns an SCT auditing report and handles sending it and retrying on failures.
@@ -88,7 +89,50 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingReporter {
     base::Time certificate_expiry;
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class LookupQueryResult {
+    // Indicates a network status other than 200 OK.
+    kHTTPError = 0,
+
+    // The content returned by the server either did not parse as valid JSON or
+    // was missing required fields.
+    kInvalidJson = 1,
+
+    // The server returned a `responseStatus` field other than "OK".
+    kStatusNotOk = 2,
+
+    // The certificate has expired according to the timestamp returned by the
+    // server.
+    kCertificateExpired = 3,
+
+    // The server does not know about the log corresponding to the SCT.
+    kLogNotFound = 4,
+
+    // The log has not yet ingested the SCT.
+    kLogNotYetIngested = 5,
+
+    // The SCT suffix was found in the suffix list, so it should not be
+    // reported.
+    kSCTSuffixFound = 6,
+
+    // The SCT suffix was NOT found in the suffix list, so it should be
+    // reported.
+    kSCTSuffixNotFound = 7,
+    kMaxValue = kSCTSuffixNotFound,
+  };
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class CompletionStatus {
+    kSuccessFirstTry = 0,
+    kSuccessAfterRetries = 1,
+    kRetriesExhausted = 2,
+    kMaxValue = kRetriesExhausted,
+  };
+
   SCTAuditingReporter(
+      NetworkContext* owner_network_context_,
       net::HashValue reporter_key,
       std::unique_ptr<sct_auditing::SCTClientReport> report,
       bool is_hashdance,
@@ -120,18 +164,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingReporter {
     return sct_hashdance_metadata_;
   }
 
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class CompletionStatus {
-    kSuccessFirstTry = 0,
-    kSuccessAfterRetries = 1,
-    kRetriesExhausted = 2,
-    kMaxValue = kRetriesExhausted,
-  };
-
   static void SetRetryDelayForTesting(absl::optional<base::TimeDelta> delay);
 
  private:
+  void OnCheckReportAllowedStatusComplete(bool allowed);
   // Schedules a |request| using the backoff delay or |minimum_delay|, whichever
   // is greatest.
   void ScheduleRequestWithBackoff(base::OnceClosure request,
@@ -141,6 +177,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingReporter {
   void SendReport();
   void OnSendReportComplete(scoped_refptr<net::HttpResponseHeaders> headers);
   void MaybeRetryRequest();
+
+  // The NetworkContext which owns the SCTAuditingHandler that created this
+  // Reporter.
+  NetworkContext* owner_network_context_;
 
   net::HashValue reporter_key_;
   std::unique_ptr<sct_auditing::SCTClientReport> report_;

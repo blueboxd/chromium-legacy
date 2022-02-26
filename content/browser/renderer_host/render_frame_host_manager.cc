@@ -1798,6 +1798,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     bool was_server_redirect,
     bool cross_origin_opener_policy_mismatch,
     bool should_replace_current_entry,
+    bool force_new_browsing_instance,
     std::string* reason) {
   // On renderer-initiated navigations, when the frame initiating the navigation
   // and the frame being navigated differ, |source_instance| is set to the
@@ -1854,12 +1855,15 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   SiteInstanceImpl* current_instance_impl =
       static_cast<SiteInstanceImpl*>(current_instance);
   ShouldSwapBrowsingInstance should_swap_result =
-      ShouldSwapBrowsingInstancesForNavigation(
-          current_effective_url, current_is_view_source_mode, source_instance,
-          current_instance_impl, dest_instance, dest_url_info,
-          dest_is_view_source_mode, transition, is_failure, is_reload,
-          is_same_document, cross_origin_opener_policy_mismatch,
-          was_server_redirect, should_replace_current_entry);
+      force_new_browsing_instance
+          ? ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap
+          : ShouldSwapBrowsingInstancesForNavigation(
+                current_effective_url, current_is_view_source_mode,
+                source_instance, current_instance_impl, dest_instance,
+                dest_url_info, dest_is_view_source_mode, transition, is_failure,
+                is_reload, is_same_document,
+                cross_origin_opener_policy_mismatch, was_server_redirect,
+                should_replace_current_entry);
 
   TraceShouldSwapBrowsingInstanceResult(frame_tree_node_->frame_tree_node_id(),
                                         should_swap_result);
@@ -2771,7 +2775,7 @@ RenderFrameHostManager::CreateSpeculativeRenderFrame(
 
     SiteInstanceGroup* site_instance_group =
         static_cast<SiteInstanceImpl*>(instance)->group();
-    if (!InitRenderView(instance, render_view_host,
+    if (!InitRenderView(site_instance_group, render_view_host,
                         browsing_context_state->GetRenderFrameProxyHost(
                             site_instance_group))) {
       return nullptr;
@@ -2867,7 +2871,8 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
 
   // Make sure that the RenderFrameProxy is present in the renderer.
   if (frame_tree_node_->IsMainFrame() && proxy->GetRenderViewHost()) {
-    InitRenderView(instance, proxy->GetRenderViewHost(), proxy);
+    InitRenderView(static_cast<SiteInstanceImpl*>(instance)->group(),
+                   proxy->GetRenderViewHost(), proxy);
   } else {
     proxy->InitRenderFrameProxy();
   }
@@ -2919,7 +2924,7 @@ void RenderFrameHostManager::CreateProxiesForChildFrame(FrameTreeNode* child) {
 
 void RenderFrameHostManager::EnsureRenderViewInitialized(
     RenderViewHostImpl* render_view_host,
-    SiteInstance* instance) {
+    SiteInstanceGroup* group) {
   DCHECK(frame_tree_node_->IsMainFrame());
 
   if (render_view_host->IsRenderViewLive())
@@ -2929,11 +2934,11 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
   // out and shouldn't be reinitialized here.
   RenderFrameProxyHost* proxy =
       render_frame_host_->browsing_context_state()->GetRenderFrameProxyHost(
-          static_cast<SiteInstanceImpl*>(instance)->group());
+          group);
   if (!proxy)
     return;
 
-  InitRenderView(instance, render_view_host, proxy);
+  InitRenderView(group, render_view_host, proxy);
 }
 
 RenderFrameProxyHost* RenderFrameHostManager::CreateOuterDelegateProxy(
@@ -2975,7 +2980,7 @@ void RenderFrameHostManager::SetRWHViewForInnerFrameTree(
 }
 
 bool RenderFrameHostManager::InitRenderView(
-    SiteInstance* site_instance,
+    SiteInstanceGroup* site_instance_group,
     RenderViewHostImpl* render_view_host,
     RenderFrameProxyHost* proxy) {
   // Ensure the renderer process is initialized before creating the
@@ -2987,8 +2992,7 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
-  auto opener_frame_token = GetOpenerFrameToken(
-      static_cast<SiteInstanceImpl*>(site_instance)->group());
+  auto opener_frame_token = GetOpenerFrameToken(site_instance_group);
 
   bool created = delegate_->CreateRenderViewForRenderManager(
       render_view_host, opener_frame_token, proxy);
@@ -3078,7 +3082,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->GetRestoreType() == RestoreType::kRestored,
       request->commit_params().is_view_source, request->WasServerRedirect(),
       request->coop_status().require_browsing_instance_swap(),
-      request->common_params().should_replace_current_entry, reason);
+      request->common_params().should_replace_current_entry,
+      request->force_new_browsing_instance(), reason);
 
   TRACE_EVENT_INSTANT(
       "navigation",
@@ -3217,7 +3222,7 @@ bool RenderFrameHostManager::ReinitializeMainRenderFrame(
   // use InitRenderView.
   DCHECK(!render_frame_host->browsing_context_state()->GetRenderFrameProxyHost(
       render_frame_host->GetSiteInstance()->group()));
-  if (!InitRenderView(render_frame_host->GetSiteInstance(),
+  if (!InitRenderView(render_frame_host->GetSiteInstance()->group(),
                       render_frame_host->render_view_host(), nullptr))
     return false;
 

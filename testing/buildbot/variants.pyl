@@ -387,7 +387,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.12',
+          'revision': 'version:100.0.4896.13',
         }
       ],
     },
@@ -411,7 +411,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.46',
+          'revision': 'version:99.0.4844.48',
         }
       ],
     },
@@ -459,7 +459,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.12',
+          'revision': 'version:100.0.4896.13',
         }
       ],
     },
@@ -483,7 +483,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.46',
+          'revision': 'version:99.0.4844.48',
         }
       ],
     },
@@ -531,7 +531,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M100',
-          'revision': 'version:100.0.4896.12',
+          'revision': 'version:100.0.4896.13',
         }
       ],
     },
@@ -555,7 +555,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M99',
-          'revision': 'version:99.0.4844.46',
+          'revision': 'version:99.0.4844.48',
         }
       ],
     },
@@ -605,8 +605,8 @@
   'CROS_ATLAS_BETA': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_chrome_version': '99.0.4844.33',
-      'cros_img': 'atlas-release/R99-14469.24.0',
+      'cros_chrome_version': '99.0.4844.46',
+      'cros_img': 'atlas-release/R99-14469.33.0',
     },
     'enabled': True,
     'identifier': 'ATLAS_BETA',
@@ -641,8 +641,8 @@
   'CROS_EVE_BETA': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_chrome_version': '99.0.4844.33',
-      'cros_img': 'eve-release/R99-14469.24.0',
+      'cros_chrome_version': '99.0.4844.46',
+      'cros_img': 'eve-release/R99-14469.33.0',
     },
     'enabled': True,
     'identifier': 'EVE_BETA',
@@ -695,8 +695,8 @@
   'CROS_OCTOPUS_BETA': {
     'skylab': {
       'cros_board': 'octopus',
-      'cros_chrome_version': '99.0.4844.33',
-      'cros_img': 'octopus-release/R99-14469.24.0',
+      'cros_chrome_version': '99.0.4844.46',
+      'cros_img': 'octopus-release/R99-14469.33.0',
     },
     'enabled': True,
     'identifier': 'OCTOPUS_BETA',

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -275,10 +276,9 @@ class FragmentPaintPropertyTreeBuilder {
           oof_context) const {
     context_.current = oof_context;
 
-    // If we're not block-fragmented, or if we're traversing the fragment tree
-    // to an orphaned object, simply setting a new context is all we have to do.
-    if (!oof_context.is_in_block_fragmentation ||
-        (pre_paint_info_ && pre_paint_info_->is_inside_orphaned_object))
+    // If we're not block-fragmented, simply setting a new context is all we
+    // have to do.
+    if (!oof_context.is_in_block_fragmentation)
       return;
 
     // Inside NG block fragmentation we have to perform an offset adjustment.
@@ -2036,6 +2036,14 @@ static MainThreadScrollingReasons GetMainThreadScrollingReasons(
     if (!object.GetFrame()->GetSettings()->GetThreadedScrollingEnabled())
       reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
   }
+
+  if (!object.GetFrame()->Client()->GetWebFrame()) {
+    // If there's no WebFrame, then there's no WebFrameWidget, and we can't do
+    // threaded scrolling.  This currently only happens in a WebPagePopup.
+    // (However, we still allow needs_composited_scrolling to be true in this
+    // case, so that the scroller gets layerized.)
+    reasons |= cc::MainThreadScrollingReason::kPopupNoThreadedInput;
+  }
   return reasons;
 }
 
@@ -2542,10 +2550,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
         break;
       case EPosition::kAbsolute: {
 #if DCHECK_IS_ON()
-        if (!pre_paint_info_ || !pre_paint_info_->is_inside_orphaned_object) {
-          DCHECK_EQ(full_context_.container_for_absolute_position,
-                    box_model_object.Container());
-        }
+        DCHECK_EQ(full_context_.container_for_absolute_position,
+                  box_model_object.Container());
 #endif
         SwitchToOOFContext(context_.absolute_position);
 
@@ -2565,12 +2571,9 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
       case EPosition::kSticky:
         break;
       case EPosition::kFixed: {
-#if DCHECK_IS_ON()
-        if (!pre_paint_info_ || !pre_paint_info_->is_inside_orphaned_object) {
-          DCHECK_EQ(full_context_.container_for_fixed_position,
-                    box_model_object.Container());
-        }
-#endif
+        DCHECK_EQ(full_context_.container_for_fixed_position,
+                  box_model_object.Container());
+
         SwitchToOOFContext(context_.fixed_position);
         // Fixed-position elements that are fixed to the viewport have a
         // transform above the scroll of the LayoutView. Child content is

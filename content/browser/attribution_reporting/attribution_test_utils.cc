@@ -12,19 +12,19 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/check_op.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
+#include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "url/gurl.h"
 
 namespace content {
 
 namespace {
-
-using DeactivatedSource = ::content::AttributionStorage::DeactivatedSource;
 
 const char kDefaultImpressionOrigin[] = "https://impression.test/";
 const char kDefaultTriggerOrigin[] = "https://sub.conversion.test/";
@@ -160,6 +160,33 @@ int64_t ConfigurableStorageDelegate::GetAggregatableBudgetPerSource() const {
   return aggregatable_budget_per_source_;
 }
 
+uint64_t ConfigurableStorageDelegate::SanitizeTriggerData(
+    uint64_t trigger_data,
+    CommonSourceInfo::SourceType source_type) const {
+  switch (source_type) {
+    case CommonSourceInfo::SourceType::kNavigation:
+      if (!navigation_trigger_data_cardinality_)
+        return trigger_data;
+
+      return trigger_data % *navigation_trigger_data_cardinality_;
+    case CommonSourceInfo::SourceType::kEvent:
+      if (!event_trigger_data_cardinality_)
+        return trigger_data;
+
+      return trigger_data % *event_trigger_data_cardinality_;
+  }
+}
+
+void ConfigurableStorageDelegate::set_trigger_data_cardinality(
+    uint64_t navigation,
+    uint64_t event) {
+  DCHECK_GT(navigation, 0u);
+  DCHECK_GT(event, 0u);
+
+  navigation_trigger_data_cardinality_ = navigation;
+  event_trigger_data_cardinality_ = event;
+}
+
 AttributionManager* TestManagerProvider::GetManager(
     WebContents* web_contents) const {
   return manager_;
@@ -169,11 +196,11 @@ MockAttributionManager::MockAttributionManager() = default;
 
 MockAttributionManager::~MockAttributionManager() = default;
 
-void MockAttributionManager::AddObserver(Observer* observer) {
+void MockAttributionManager::AddObserver(AttributionObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void MockAttributionManager::RemoveObserver(Observer* observer) {
+void MockAttributionManager::RemoveObserver(AttributionObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -182,37 +209,37 @@ AttributionDataHostManager* MockAttributionManager::GetDataHostManager() {
 }
 
 void MockAttributionManager::NotifySourcesChanged() {
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnSourcesChanged();
 }
 
 void MockAttributionManager::NotifyReportsChanged() {
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnReportsChanged();
 }
 
 void MockAttributionManager::NotifySourceDeactivated(
     const DeactivatedSource& source) {
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnSourceDeactivated(source);
 }
 
 void MockAttributionManager::NotifySourceHandled(
     const StorableSource& source,
     StorableSource::Result result) {
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnSourceHandled(source, result);
 }
 
 void MockAttributionManager::NotifyReportSent(const AttributionReport& report,
                                               const SendResult& info) {
-  for (Observer& observer : observers_)
+  for (auto& observer : observers_)
     observer.OnReportSent(report, info);
 }
 
 void MockAttributionManager::NotifyTriggerHandled(
-    const AttributionStorage::CreateReportResult& result) {
-  for (Observer& observer : observers_)
+    const CreateReportResult& result) {
+  for (auto& observer : observers_)
     observer.OnTriggerHandled(result);
 }
 
@@ -528,6 +555,8 @@ bool operator==(const AttributionReport::EventLevelData& a,
 
 // Does not compare ID as it is set by the underlying sqlite db and
 // should not be tested.
+// Also does not compare the assembled report as it is returned by the
+// aggregation service from all the other data.
 bool operator==(const AttributionReport::AggregatableContributionData& a,
                 const AttributionReport::AggregatableContributionData& b) {
   return a.contribution == b.contribution;
@@ -823,13 +852,28 @@ std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
   }
 }
 
-std::vector<AttributionReport> GetAttributionsToReportForTesting(
+AttributionFilterSizeTestCase::Map AttributionFilterSizeTestCase::AsMap()
+    const {
+  Map map;
+
+  for (size_t i = 0; i < filter_count; i++) {
+    // Give each filter a unique name while respecting the desired size.
+    std::string filter(filter_size, 'A' + i);
+    std::vector<std::string> values(value_count, std::string(value_size, '*'));
+    map.emplace(std::move(filter), std::move(values));
+  }
+
+  DCHECK_EQ(map.size(), filter_count);
+  return map;
+}
+
+std::vector<AttributionReport> GetAttributionReportsForTesting(
     AttributionManagerImpl* manager,
     base::Time max_report_time) {
   base::RunLoop run_loop;
   std::vector<AttributionReport> attribution_reports;
   manager->attribution_storage_
-      .AsyncCall(&AttributionStorage::GetAttributionsToReport)
+      .AsyncCall(&AttributionStorage::GetAttributionReports)
       .WithArgs(max_report_time, /*limit=*/-1)
       .Then(base::BindOnce(base::BindLambdaForTesting(
           [&](std::vector<AttributionReport> reports) {

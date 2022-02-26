@@ -324,12 +324,6 @@ const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
     "When enabled, Autofill will offer to use merchant bound virtual cards in "
     "payment forms.";
 
-const char kAutofillEnableOfferNotificationCrossTabTrackingName[] =
-    "Enable cross tab status tracking for Autofill offer notification";
-const char kAutofillEnableOfferNotificationCrossTabTrackingDescription[] =
-    "When enabled, the offer notification showing will be tracked cross-tab, "
-    "and on one merchant, the notification will only be shown once.";
-
 const char kAutofillEnableOfferNotificationForPromoCodesName[] =
     "Extend Autofill offers and rewards notification to promo code offers";
 const char kAutofillEnableOfferNotificationForPromoCodesDescription[] =
@@ -400,12 +394,6 @@ const char kAutofillFillMerchantPromoCodeFieldsName[] =
 const char kAutofillFillMerchantPromoCodeFieldsDescription[] =
     "When enabled, Autofill will attempt to fill merchant promo/coupon/gift "
     "code fields when data is available.";
-
-const char kAutofillFixOfferInIncognitoName[] =
-    "Enable the fix for Autofill offer in Incognito mode";
-const char kAutofillFixOfferInIncognitoDescription[] =
-    "When enabled, the fix will be enabled and offers should work correctly in "
-    "Incognito mode.";
 
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[] =
     "Highlight only changed values in preview mode.";
@@ -1233,12 +1221,6 @@ const char kEnableManagedConfigurationWebApiName[] =
 const char kEnableManagedConfigurationWebApiDescription[] =
     "Allows website to access a managed configuration provided by the device "
     "administrator for the origin.";
-
-const char kEnablePciguardUiName[] =
-    "Enable Pciguard (Thunderbolt + USB4 tunneling) UI for settings";
-const char kEnablePciguardUiDescription[] =
-    "Enable toggling Pciguard settings through the Settings App. By default, "
-    "this flag is enabled.";
 
 const char kEnablePenetratingImageSelectionName[] =
     "Penetrating Image Selection";
@@ -3147,6 +3129,12 @@ const char kDynamicColorAndroidDescription[] =
     "Enabled dynamic colors on supported devices, such as Pixel devices "
     "running Android 12.";
 
+const char kDynamicColorButtonsAndroidName[] =
+    "Dynamic colors for buttons on Android";
+const char kDynamicColorButtonsAndroidDescription[] =
+    "If enabled, dynamic colors will be enabled for call to action buttons, "
+    "links and clickable spans.";
+
 const char kAutofillManualFallbackAndroidName[] =
     "Enable Autofill manual fallback for Addresses and Payments (Android)";
 const char kAutofillManualFallbackAndroidDescription[] =
@@ -3511,17 +3499,6 @@ const char kRequestDesktopSiteGlobalDescription[] =
     "An option in `Site settings` to persistently request the "
     "desktop version of websites.";
 
-const char kShareUsageRankingName[] =
-    "Incorporate usage history into share target ranking.";
-const char kShareUsageRankingDescription[] =
-    "Incorporate the history of which apps were shared to when producing the "
-    "ordered list of 3P share targets in the share hub.";
-const char kShareUsageRankingFixedMoreName[] =
-    "Fix the position of the 'More' item in the Android share hub.";
-const char kShareUsageRankingFixedMoreDescription[] =
-    "When enabled with #share-usage-ranking, forces the 'More' option to "
-    "occupy the right-most slot on the screen instead of moving depending on "
-    "the length of the target list.";
 const char kSwapAndroidShareHubRowsName[] = "Swap Android share hub rows.";
 const char kSwapAndroidShareHubRowsDescription[] =
     "Swap the order of the first-party and third-party rows in the Android "
@@ -4788,12 +4765,6 @@ const char kExperimentalAccessibilityDictationExtensionName[] =
 const char kExperimentalAccessibilityDictationExtensionDescription[] =
     "Enables the JavaScript dictation extension.";
 
-const char kExperimentalAccessibilityDictationOfflineName[] =
-    "Experimental accessibility dictation offline.";
-const char kExperimentalAccessibilityDictationOfflineDescription[] =
-    "Enables offline speech recognition for the accessibility dictation "
-    "feature.";
-
 const char kExperimentalAccessibilityDictationCommandsName[] =
     "Experimental accessibility dictation commands";
 const char kExperimentalAccessibilityDictationCommandsDescription[] =
@@ -5155,6 +5126,12 @@ const char kNearbySharingReceiveWifiCredentialsDescription[] =
 const char kNearbySharingSelfShareName[] = "Nearby Sharing Self Share";
 const char kNearbySharingSelfShareDescription[] =
     "Enables seamless sharing between a user's own devices.";
+
+const char kNearbySharingVisibilityReminderName[] =
+    "Nearby Sharing visibility reminder notification";
+const char kNearbySharingVisibilityReminderDescription[] =
+    "Enables notification to remind users of their Nearby Share visibility "
+    "selections";
 
 const char kNearbySharingWifiLanName[] = "Nearby Sharing WifiLan";
 const char kNearbySharingWifiLanDescription[] =

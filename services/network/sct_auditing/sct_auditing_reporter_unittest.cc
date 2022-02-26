@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
@@ -15,9 +16,14 @@
 #include "base/time/time_to_iso8601.h"
 #include "net/base/hash_value.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/proto/sct_audit_report.pb.h"
+#include "services/network/test/fake_test_cert_verifier_params_factory.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -58,7 +64,8 @@ class SCTAuditingReporterTest : public testing::Test {
     base::Time now;
   };
 
-  SCTAuditingReporterTest() {
+  SCTAuditingReporterTest()
+      : network_service_(NetworkService::CreateForTesting()) {
     SCTAuditingReporter::SetRetryDelayForTesting(base::TimeDelta());
 
     reporter_metadata_.issued = base::Time::Now() - base::Days(30);
@@ -70,6 +77,25 @@ class SCTAuditingReporterTest : public testing::Test {
 
     response_.ingested_until = base::Time::Now();
     response_.now = base::Time::Now();
+
+    // Set up a NetworkContext.
+    mojom::NetworkContextParamsPtr context_params =
+        CreateNetworkContextParamsForTesting();
+    context_params->cert_verifier_params =
+        FakeTestCertVerifierParamsFactory::GetCertVerifierParams();
+    context_params->sct_auditing_mode =
+        mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting;
+    network_context_ = std::make_unique<NetworkContext>(
+        network_service_.get(),
+        network_context_remote_.BindNewPipeAndPassReceiver(),
+        std::move(context_params));
+
+    // A NetworkContextClient is needed for querying/updating the report count.
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
+    network_context_client_ = std::make_unique<TestNetworkContextClient>(
+        network_context_client_remote.InitWithNewPipeAndPassReceiver());
+    network_context_->SetClient(std::move(network_context_client_remote));
   }
 
   // Creates a reporter.
@@ -88,7 +114,7 @@ class SCTAuditingReporterTest : public testing::Test {
         *SCTAuditingReporter::SCTHashdanceMetadata::FromValue(
             reporter_metadata_.ToValue());
     return SCTAuditingReporter(
-        net::HashValue(), std::move(report),
+        network_context_.get(), net::HashValue(), std::move(report),
         /*is_hashdance=*/true, std::move(metadata), &url_loader_factory_,
         kExpectedIngestionDelay, kMaxIngestionRandomDelay, GURL(kTestReportURL),
         GURL(kTestLookupURL),
@@ -130,16 +156,25 @@ class SCTAuditingReporterTest : public testing::Test {
             nullptr));
   }
 
-  base::test::SingleThreadTaskEnvironment task_environment_{
-      base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME,
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME,
   };
 
+  std::unique_ptr<NetworkService> network_service_;
+  std::unique_ptr<NetworkContext> network_context_;
+  std::unique_ptr<TestNetworkContextClient> network_context_client_;
   TestURLLoaderFactory url_loader_factory_;
+  base::HistogramTester histograms;
 
   // Metadata used when creating a repoter.
   SCTAuditingReporter::SCTHashdanceMetadata reporter_metadata_;
 
   Response response_;
+
+  // Stores the mojo::Remote<mojom::NetworkContext> of the most recently created
+  // NetworkContext.
+  mojo::Remote<mojom::NetworkContext> network_context_remote_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -251,6 +286,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupNotFound) {
   EXPECT_EQ(url_loader_factory_.NumPending(), 1);
   pending_request = url_loader_factory_.GetPendingRequest(0);
   EXPECT_EQ(pending_request->request.url.spec(), kTestReportURL);
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kSCTSuffixNotFound, 1);
 }
 
 // Tests that a hashdance lookup that finds the SCT does not report it.
@@ -271,6 +309,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupFound) {
 
   // SCT should not be reported.
   EXPECT_EQ(url_loader_factory_.NumPending(), 0);
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kSCTSuffixFound, 1);
 }
 
 // Tests that a hashdance lookup with a server error retries.
@@ -286,6 +327,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupServerError) {
   // Respond to the lookup request with an error.
   response_.status = "ERROR";
   SimulateResponse();
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kStatusNotOk, 1);
 
   // A retry should be rescheduled.
   EXPECT_EQ(url_loader_factory_.NumPending(), 1);
@@ -316,6 +360,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupHTTPError) {
   url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url.spec(), /*content=*/"",
       net::HTTP_TOO_MANY_REQUESTS);
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kHTTPError, 1);
 
   // A retry should be rescheduled.
   EXPECT_EQ(url_loader_factory_.NumPending(), 1);
@@ -348,6 +395,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupCertificateExpired) {
 
   // SCT should not be reported.
   EXPECT_EQ(url_loader_factory_.NumPending(), 0);
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kCertificateExpired, 1);
 }
 
 // Tests that a hashdance lookup that does not return the SCT Log ID gets
@@ -364,6 +414,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupUnknownLog) {
   // Respond to the lookup request with a different log id.
   response_.log_id = "some_other_log";
   SimulateResponse();
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kLogNotFound, 1);
 
   // A retry should be rescheduled.
   EXPECT_EQ(url_loader_factory_.NumPending(), 1);
@@ -394,6 +447,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceLookupLogNotIngested) {
   // Respond to the lookup request with a too early `ingested_until`.
   response_.ingested_until = reporter_metadata_.issued - base::Seconds(1);
   SimulateResponse();
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kLogNotYetIngested, 1);
 
   // A retry should be rescheduled.
   EXPECT_EQ(url_loader_factory_.NumPending(), 1);
@@ -437,6 +493,9 @@ TEST_F(SCTAuditingReporterTest, HashdanceSCTSuspectedNotYetIngested) {
   EXPECT_EQ(url_loader_factory_.NumPending(), 1);
   pending_request = url_loader_factory_.GetPendingRequest(0);
   EXPECT_EQ(pending_request->request.url.spec(), kTestReportURL);
+  histograms.ExpectUniqueSample(
+      "Security.SCTAuditing.OptOut.LookupQueryResult",
+      SCTAuditingReporter::LookupQueryResult::kSCTSuffixNotFound, 1);
 }
 
 }  // namespace network

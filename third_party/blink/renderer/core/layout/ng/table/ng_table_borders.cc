@@ -233,13 +233,13 @@ scoped_refptr<NGTableBorders> NGTableBorders::ComputeTableBorders(
                                       table_writing_direction,
                                       *table_borders.get());
   VisitLayoutNGTableColumn(
-      const_cast<Vector<NGBlockNode>&>(grouped_children.columns),
+      const_cast<HeapVector<NGBlockNode>&>(grouped_children.columns),
       table_column_count, &col_borders_marker);
   ColgroupBordersMarker colgroup_borders_marker(table_row_count, ++box_order,
                                                 table_writing_direction,
                                                 *table_borders.get());
   VisitLayoutNGTableColumn(
-      const_cast<Vector<NGBlockNode>&>(grouped_children.columns),
+      const_cast<HeapVector<NGBlockNode>&>(grouped_children.columns),
       table_column_count, &colgroup_borders_marker);
 
   // Mark table borders.
@@ -410,14 +410,6 @@ void NGTableBorders::ComputeCollapsedTableBorderPadding(
       GetCellBorders(0, 0, table_row_count, table_column_count);
   collapsed_visual_inline_start_ = borders.inline_start;
   collapsed_visual_inline_end_ = borders.inline_end;
-  wtf_size_t inline_start_edge = 0;
-  wtf_size_t inline_end_edge = 2 * table_column_count;
-  borders.inline_start = CanPaint(inline_start_edge)
-                             ? BorderWidth(inline_start_edge) / 2
-                             : LayoutUnit();
-  borders.inline_end = CanPaint(inline_end_edge)
-                           ? BorderWidth(inline_end_edge) / 2
-                           : LayoutUnit();
   cached_table_border_ = borders;
 }
 

@@ -400,9 +400,10 @@ const NGLayoutResult* NGGridLayoutAlgorithm::LayoutInternal() {
         grid_items, row_break_between, &grid_geometry, &offsets,
         &row_offset_adjustments, &intrinsic_block_size);
 
-    container_builder_.SetBreakTokenData(std::make_unique<NGGridBreakTokenData>(
-        container_builder_.GetBreakTokenData(), grid_geometry, offsets,
-        row_offset_adjustments, row_break_between, intrinsic_block_size));
+    container_builder_.SetBreakTokenData(
+        MakeGarbageCollected<NGGridBreakTokenData>(
+            container_builder_.GetBreakTokenData(), grid_geometry, offsets,
+            row_offset_adjustments, row_break_between, intrinsic_block_size));
   } else {
     PlaceGridItems(grid_items, grid_geometry, &row_break_between);
   }
@@ -3308,7 +3309,7 @@ void NGGridLayoutAlgorithm::PlaceGridItemsForFragmentation(
 
           // We are choosing to add an early breakpoint at a row. Propagate our
           // space shortage to the column balancer.
-          PropagateSpaceShortage(ConstraintSpace(), *result,
+          PropagateSpaceShortage(ConstraintSpace(), result,
                                  fragment_relative_block_offset,
                                  &container_builder_);
 

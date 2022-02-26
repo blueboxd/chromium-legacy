@@ -834,8 +834,10 @@ const NGLayoutResult* NGFlexLayoutAlgorithm::LayoutInternal() {
 
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
 
-  Vector<NGFlexLine> flex_line_outputs;
   Vector<EBreakBetween> row_break_between_outputs;
+  HeapVector<NGFlexLine> flex_line_outputs;
+  ClearCollectionScope<HeapVector<NGFlexLine>> scope(&flex_line_outputs);
+
   bool use_empty_line_block_size;
   if (IsResumingLayout(BreakToken())) {
     const NGFlexBreakTokenData* flex_data =
@@ -943,9 +945,10 @@ const NGLayoutResult* NGFlexLayoutAlgorithm::LayoutInternal() {
 #endif
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    container_builder_.SetBreakTokenData(std::make_unique<NGFlexBreakTokenData>(
-        container_builder_.GetBreakTokenData(), flex_line_outputs,
-        row_break_between_outputs, total_intrinsic_block_size_));
+    container_builder_.SetBreakTokenData(
+        MakeGarbageCollected<NGFlexBreakTokenData>(
+            container_builder_.GetBreakTokenData(), flex_line_outputs,
+            row_break_between_outputs, total_intrinsic_block_size_));
   }
 
   // Un-freeze descendant scrollbars before we run the OOF layout part.
@@ -956,7 +959,7 @@ const NGLayoutResult* NGFlexLayoutAlgorithm::LayoutInternal() {
 }
 
 void NGFlexLayoutAlgorithm::PlaceFlexItems(
-    Vector<NGFlexLine>* flex_line_outputs) {
+    HeapVector<NGFlexLine>* flex_line_outputs) {
   ConstructAndAppendFlexItems();
 
   LayoutUnit main_axis_start_offset;
@@ -1072,8 +1075,8 @@ void NGFlexLayoutAlgorithm::CalculateTotalIntrinsicBlockSize(
 }
 
 void NGFlexLayoutAlgorithm::ApplyFinalAlignmentAndReversals(
-    Vector<NGFlexLine>* flex_line_outputs) {
-  Vector<FlexLine>& line_contexts = algorithm_.FlexLines();
+    HeapVector<NGFlexLine>* flex_line_outputs) {
+  auto& line_contexts = algorithm_.FlexLines();
   const LayoutUnit cross_axis_start_edge =
       line_contexts.IsEmpty() ? LayoutUnit()
                               : line_contexts[0].cross_axis_offset_;
@@ -1111,7 +1114,7 @@ void NGFlexLayoutAlgorithm::ApplyFinalAlignmentAndReversals(
 }
 
 NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
-    Vector<NGFlexLine>* flex_line_outputs,
+    HeapVector<NGFlexLine>* flex_line_outputs,
     Vector<EBreakBetween>* row_break_between_outputs) {
   DCHECK(!IsResumingLayout(BreakToken()));
   LayoutUnit final_content_cross_size;
@@ -1232,7 +1235,7 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
 
 NGLayoutResult::EStatus
 NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
-    Vector<NGFlexLine>* flex_line_outputs,
+    HeapVector<NGFlexLine>* flex_line_outputs,
     Vector<EBreakBetween>* row_break_between_outputs) {
   DCHECK(involved_in_block_fragmentation_);
 
@@ -1346,7 +1349,7 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
           bool row_container_separation = has_processed_first_line_;
           NGBreakStatus row_break_status = BreakBeforeRowIfNeeded(
               line_output, (*row_break_between_outputs)[flex_line_idx],
-              flex_line_idx, flex_item->ng_input_node, *layout_result,
+              flex_line_idx, flex_item->ng_input_node,
               row_container_separation);
           if (row_break_status == NGBreakStatus::kBrokeBefore) {
             ConsumeRemainingFragmentainerSpace();
@@ -1678,7 +1681,6 @@ NGBreakStatus NGFlexLayoutAlgorithm::BreakBeforeRowIfNeeded(
     EBreakBetween row_break_between,
     wtf_size_t row_index,
     NGLayoutInputNode child,
-    const NGLayoutResult& layout_result,
     bool has_container_separation) {
   DCHECK(is_horizontal_flow_);
   DCHECK(involved_in_block_fragmentation_);
@@ -1691,9 +1693,10 @@ NGBreakStatus NGFlexLayoutAlgorithm::BreakBeforeRowIfNeeded(
   NGBreakAppeal appeal_before = kBreakAppealPerfect;
   if (has_container_separation) {
     if (IsForcedBreakValue(ConstraintSpace(), row_break_between)) {
-      BreakBeforeChild(ConstraintSpace(), child, layout_result,
+      BreakBeforeChild(ConstraintSpace(), child, /* layout_result */ nullptr,
                        fragmentainer_block_offset, kBreakAppealPerfect,
-                       /* is_forced_break */ true, &container_builder_);
+                       /* is_forced_break */ true, &container_builder_,
+                       row.line_cross_size);
       return NGBreakStatus::kBrokeBefore;
     }
   } else {
@@ -1716,8 +1719,9 @@ NGBreakStatus NGFlexLayoutAlgorithm::BreakBeforeRowIfNeeded(
   // We're out of space. Figure out where to insert a soft break. It will either
   // be before this row, or before an earlier sibling, if there's a more
   // appealing breakpoint there.
-  if (!AttemptRowSoftBreak(child, layout_result, appeal_before,
-                           fragmentainer_block_offset))
+  if (!AttemptSoftBreak(ConstraintSpace(), child, /* layout_result */ nullptr,
+                        fragmentainer_block_offset, appeal_before,
+                        &container_builder_, row.line_cross_size))
     return NGBreakStatus::kNeedsEarlierBreak;
 
   return NGBreakStatus::kBrokeBefore;
@@ -1770,32 +1774,9 @@ bool NGFlexLayoutAlgorithm::MovePastRowBreakPoint(
   return true;
 }
 
-bool NGFlexLayoutAlgorithm::AttemptRowSoftBreak(
-    NGLayoutInputNode child,
-    const NGLayoutResult& layout_result,
-    NGBreakAppeal appeal_before,
-    LayoutUnit fragmentainer_block_offset) {
-  if (container_builder_.HasEarlyBreak() &&
-      container_builder_.EarlyBreak().BreakAppeal() > appeal_before) {
-    // TODO(almaher): This will be different for rows.
-    PropagateSpaceShortage(ConstraintSpace(), layout_result,
-                           fragmentainer_block_offset, &container_builder_);
-    return false;
-  }
-
-  // Break before the row. Note that there may be a better break further up
-  // with higher appeal (but it's too early to tell), in which case this
-  // breakpoint will be replaced.
-  // TODO(almaher): PropagateSpaceShortage() will be different for rows.
-  BreakBeforeChild(ConstraintSpace(), child, layout_result,
-                   fragmentainer_block_offset, appeal_before,
-                   /* is_forced_break */ false, &container_builder_);
-  return true;
-}
-
 #if DCHECK_IS_ON()
 void NGFlexLayoutAlgorithm::CheckFlexLines(
-    const Vector<NGFlexLine>& flex_line_outputs) const {
+    const HeapVector<NGFlexLine>& flex_line_outputs) const {
   const Vector<FlexLine>& flex_lines = algorithm_.flex_lines_;
 
   DCHECK_EQ(flex_line_outputs.size(), flex_lines.size());

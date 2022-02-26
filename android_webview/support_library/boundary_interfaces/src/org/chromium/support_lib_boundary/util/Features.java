@@ -184,7 +184,7 @@ public class Features {
     public static final String SET_SUPPORT_LIBRARY_VERSION = "SET_SUPPORT_LIBRARY_VERSION";
 
     // WebViewCompat.addDocumentStartJavascript
-    public static final String DOCUMENT_START_SCRIPT = "DOCUMENT_START_SCRIPT";
+    public static final String DOCUMENT_START_SCRIPT = "DOCUMENT_START_SCRIPT:1";
 
     // WebSettingsCompat.setWebAuthnSupport
     // WebSettingsCompat.getWebAuthnSupport
@@ -195,4 +195,7 @@ public class Features {
     // ServiceWorkerWebSettingsCompat.setRequestedWithHeaderMode
     // ServiceWorkerWebSettingsCompat.getRequestedWithHeaderMode
     public static final String REQUESTED_WITH_HEADER_CONTROL = "REQUESTED_WITH_HEADER_CONTROL";
+
+    // WebViewCompat.getVariationsHeader
+    public static final String GET_VARIATIONS_HEADER = "GET_VARIATIONS_HEADER";
 }

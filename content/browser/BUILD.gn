@@ -62,6 +62,7 @@ source_set("browser") {
     "//cc/mojo_embedder",
     "//cc/paint",
     "//components/back_forward_cache:enum",
+    "//components/browsing_topics/common:common",
     "//components/cbor",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
@@ -401,6 +402,9 @@ source_set("browser") {
     "attribution_reporting/attribution_manager.h",
     "attribution_reporting/attribution_manager_impl.cc",
     "attribution_reporting/attribution_manager_impl.h",
+    "attribution_reporting/attribution_observer.h",
+    "attribution_reporting/attribution_observer_types.cc",
+    "attribution_reporting/attribution_observer_types.h",
     "attribution_reporting/attribution_page_metrics.cc",
     "attribution_reporting/attribution_page_metrics.h",
     "attribution_reporting/attribution_policy.cc",
@@ -599,6 +603,8 @@ source_set("browser") {
     "browsing_data/storage_partition_code_cache_data_remover.h",
     "browsing_instance.cc",
     "browsing_instance.h",
+    "browsing_topics/browsing_topics_site_data_storage.cc",
+    "browsing_topics/browsing_topics_site_data_storage.h",
     "buckets/bucket_context.cc",
     "buckets/bucket_context.h",
     "buckets/bucket_host.cc",
@@ -2045,8 +2051,6 @@ source_set("browser") {
     "webauth/webauth_request_security_checker.h",
     "webid/fedcm_metrics.cc",
     "webid/fedcm_metrics.h",
-    "webid/federated_auth_navigation_throttle.cc",
-    "webid/federated_auth_navigation_throttle.h",
     "webid/federated_auth_request_impl.cc",
     "webid/federated_auth_request_impl.h",
     "webid/federated_auth_request_service.cc",
@@ -3107,13 +3111,6 @@ source_set("browser") {
       "devtools/protocol/native_profiling_handler.cc",
       "devtools/protocol/native_profiling_handler.h",
       "profiling_utils.cc",
-    ]
-  }
-
-  if (is_chromeos_lacros) {
-    sources += [
-      "accessibility/browser_accessibility_state_impl_lacros.cc",
-      "accessibility/browser_accessibility_state_impl_lacros.h",
     ]
   }
 }

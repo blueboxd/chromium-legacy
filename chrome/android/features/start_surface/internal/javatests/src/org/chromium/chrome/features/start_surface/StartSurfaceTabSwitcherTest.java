@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import static org.chromium.chrome.browser.feed.FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.START_SURFACE_TEST_BASE_PARAMS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.sClassParamsForStartSurfaceTest;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
@@ -64,7 +65,6 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -164,12 +164,11 @@ public class StartSurfaceTabSwitcherTest {
 
         onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view));
 
-        OverviewModeBehaviorWatcher hideWatcher =
-                TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
         onViewWaiting(allOf(withParent(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body)),
                               withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-        hideWatcher.waitForBehavior();
+        LayoutTestUtils.waitForLayout(
+                mActivityTestRule.getActivity().getLayoutManager(), LayoutType.BROWSING);
     }
 
     @Test
@@ -329,10 +328,8 @@ public class StartSurfaceTabSwitcherTest {
                 () -> { Assert.assertNotEquals(tab1.getTitle(), tab2.getTitle()); });
 
         // Returns to the Start surface.
-        OverviewModeBehaviorWatcher overviewModeWatcher =
-                new OverviewModeBehaviorWatcher(cta.getLayoutManager(), true, false);
         StartSurfaceTestUtils.pressHomePageButton(cta);
-        overviewModeWatcher.waitForBehavior();
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         waitForView(allOf(
                 withParent(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container)),
                 withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
@@ -369,7 +366,8 @@ public class StartSurfaceTabSwitcherTest {
     @EnableFeatures(ChromeFeatureList.TAB_GROUPS_ANDROID)
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
-        "/show_tabs_in_mru_order/true/show_last_active_tab_only/true"})
+        "/show_tabs_in_mru_order/true/show_last_active_tab_only/true",
+        DISABLE_ANIMATION_SWITCH})
     public void testShowV2_GridTabSwitcher_AlwaysShowTabsInCreationOrder() {
         // clang-format on
         tabSwitcher_AlwaysShowTabsInGridTabSwitcherInCreationOrderImpl();

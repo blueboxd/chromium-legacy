@@ -85,9 +85,10 @@ class MockScreenCapturerCallback : public webrtc::DesktopCapturer::Callback {
 
   ~MockScreenCapturerCallback() override = default;
 
-  MOCK_METHOD2(OnCaptureResultPtr,
-               void(webrtc::DesktopCapturer::Result result,
-                    std::unique_ptr<webrtc::DesktopFrame>* frame));
+  MOCK_METHOD(void,
+              OnCaptureResultPtr,
+              (webrtc::DesktopCapturer::Result,
+               std::unique_ptr<webrtc::DesktopFrame>*));
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
                        std::unique_ptr<webrtc::DesktopFrame> frame) override {
     OnCaptureResultPtr(result, &frame);
@@ -376,8 +377,7 @@ void IpcDesktopEnvironmentTest::SetUp() {
   input_injector_ = desktop_environment_->CreateInputInjector();
 
   // Create the screen capturer.
-  video_capturer_ =
-      desktop_environment_->CreateVideoCapturer();
+  video_capturer_ = desktop_environment_->CreateVideoCapturer(nullptr);
 
   desktop_environment_->SetCapabilities(std::string());
 
@@ -416,7 +416,7 @@ IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
       .Times(AtMost(1))
       .WillOnce(Invoke(this, &IpcDesktopEnvironmentTest::CreateInputInjector));
   EXPECT_CALL(*desktop_environment, CreateScreenControls()).Times(AtMost(1));
-  EXPECT_CALL(*desktop_environment, CreateVideoCapturer())
+  EXPECT_CALL(*desktop_environment, CreateVideoCapturer(_))
       .Times(AtMost(1))
       .WillOnce(
           Return(ByMove(std::make_unique<protocol::FakeDesktopCapturer>())));

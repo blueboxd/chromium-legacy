@@ -215,7 +215,7 @@ void FastPairPairerImpl::OnGattClientInitializedCallback(
       // will not be able to find the device this way, and we will have to
       // connect via address and add ourselves as a pairing delegate.
 
-      QP_LOG(VERBOSE) << "Key-based pairing changed. Address: "
+      QP_LOG(VERBOSE) << "Sending pair request to device. Address: "
                       << device_address << ". Found device: "
                       << ((bt_device != nullptr) ? "Yes" : "No") << ".";
 
@@ -229,7 +229,8 @@ void FastPairPairerImpl::OnGattClientInitializedCallback(
                       PAIRING_DELEGATE_PRIORITY_HIGH);
 
         adapter_->ConnectDevice(
-            device_address, /*address_type=*/absl::nullopt,
+            device_address,
+            device::BluetoothDevice::AddressType::ADDR_TYPE_PUBLIC,
             base::BindOnce(&FastPairPairerImpl::OnConnectDevice,
                            weak_ptr_factory_.GetWeakPtr()),
             base::BindOnce(&FastPairPairerImpl::OnConnectError,
@@ -267,6 +268,9 @@ void FastPairPairerImpl::OnConnectDevice(device::BluetoothDevice* device) {
   ask_confirm_passkey_initial_time_ = base::TimeTicks::Now();
   QP_LOG(VERBOSE) << "Connect device successful.";
   RecordConnectDeviceResult(/*success=*/true);
+  // The device ID can change between device discovery and connection, so
+  // ensure that device images are mapped to the current device ID.
+  FastPairRepository::Get()->FetchDeviceImages(device_);
 }
 
 void FastPairPairerImpl::OnConnectError() {

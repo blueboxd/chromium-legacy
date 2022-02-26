@@ -187,9 +187,6 @@ extern const char kAutofillEnableGoogleIssuedCardDescription[];
 extern const char kAutofillEnableMerchantBoundVirtualCardsName[];
 extern const char kAutofillEnableMerchantBoundVirtualCardsDescription[];
 
-extern const char kAutofillEnableOfferNotificationCrossTabTrackingName[];
-extern const char kAutofillEnableOfferNotificationCrossTabTrackingDescription[];
-
 extern const char kAutofillEnableOfferNotificationForPromoCodesName[];
 extern const char kAutofillEnableOfferNotificationForPromoCodesDescription[];
 
@@ -225,9 +222,6 @@ extern const char
 
 extern const char kAutofillFillMerchantPromoCodeFieldsName[];
 extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
-
-extern const char kAutofillFixOfferInIncognitoName[];
-extern const char kAutofillFixOfferInIncognitoDescription[];
 
 extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[];
 extern const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[];
@@ -675,9 +669,6 @@ extern const char kEnableManagedConfigurationWebApiDescription[];
 
 extern const char kEnableNewDownloadBackendName[];
 extern const char kEnableNewDownloadBackendDescription[];
-
-extern const char kEnablePciguardUiName[];
-extern const char kEnablePciguardUiDescription[];
 
 extern const char kEnablePenetratingImageSelectionName[];
 extern const char kEnablePenetratingImageSelectionDescription[];
@@ -1786,6 +1777,9 @@ extern const char kCpuAffinityRestrictToLittleCoresDescription[];
 extern const char kDynamicColorAndroidName[];
 extern const char kDynamicColorAndroidDescription[];
 
+extern const char kDynamicColorButtonsAndroidName[];
+extern const char kDynamicColorButtonsAndroidDescription[];
+
 extern const char kAutofillManualFallbackAndroidName[];
 extern const char kAutofillManualFallbackAndroidDescription[];
 
@@ -2012,10 +2006,6 @@ extern const char kRequestDesktopSiteExceptionsDescription[];
 extern const char kRequestDesktopSiteGlobalName[];
 extern const char kRequestDesktopSiteGlobalDescription[];
 
-extern const char kShareUsageRankingName[];
-extern const char kShareUsageRankingDescription[];
-extern const char kShareUsageRankingFixedMoreName[];
-extern const char kShareUsageRankingFixedMoreDescription[];
 extern const char kSwapAndroidShareHubRowsName[];
 extern const char kSwapAndroidShareHubRowsDescription[];
 
@@ -2963,6 +2953,9 @@ extern const char kNearbySharingReceiveWifiCredentialsDescription[];
 
 extern const char kNearbySharingSelfShareName[];
 extern const char kNearbySharingSelfShareDescription[];
+
+extern const char kNearbySharingVisibilityReminderName[];
+extern const char kNearbySharingVisibilityReminderDescription[];
 
 extern const char kNearbySharingWifiLanName[];
 extern const char kNearbySharingWifiLanDescription[];

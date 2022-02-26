@@ -1608,14 +1608,6 @@ bool Database::OpenInternal(const std::string& file_name,
                           options_.enable_views_discouraged ? 1 : 0, nullptr);
   DCHECK_EQ(err, SQLITE_OK) << "sqlite3_db_config() should not fail";
 
-  // Enable extended result codes to provide more color on I/O errors.
-  // Not having extended result codes is not a fatal problem, as
-  // Chromium code does not attempt to handle I/O errors anyhow.  The
-  // current implementation always returns SQLITE_OK, the DCHECK is to
-  // quickly notify someone if SQLite changes.
-  err = sqlite3_extended_result_codes(db_, 1);
-  DCHECK_EQ(err, SQLITE_OK) << "Could not enable extended result codes";
-
   // sqlite3_open() does not actually read the database file (unless a hot
   // journal is found).  Successfully executing this pragma on an existing
   // database requires a valid header on page 1.  ExecuteAndReturnErrorCode() to
@@ -1834,37 +1826,65 @@ std::string Database::GetDiagnosticInfo(int extended_error,
 bool Database::FullIntegrityCheck(std::vector<std::string>* messages) {
   messages->clear();
 
-  // This has the side effect of setting SQLITE_RecoveryMode, which
+  // The PRAGMA below has the side effect of setting SQLITE_RecoveryMode, which
   // allows SQLite to process through certain cases of corruption.
-  // Failing to set this pragma probably means that the database is
-  // beyond recovery.
-  if (!Execute("PRAGMA writable_schema=ON"))
-    return false;
-
-  bool success;
-  {
-    sql::Statement statement(GetUniqueStatement("PRAGMA integrity_check"));
-
-    // "PRAGMA integrity_check" currently returns multiple lines as a single
-    // row.
-    //
-    // However, since https://www.sqlite.org/pragma.html#pragma_integrity_check
-    // states that multiple records may be returned, the code below can handle
-    // multiple records, each of which has multiple lines.
-    std::vector<std::string> result_lines;
-    while (statement.Step()) {
-      std::string row = statement.ColumnString(0);
-      std::vector<base::StringPiece> row_lines = base::SplitStringPiece(
-          row, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      for (base::StringPiece row_line : row_lines)
-        result_lines.emplace_back(row_line);
-    }
-
-    success = statement.Succeeded();
-    *messages = std::move(result_lines);
+  if (!Execute("PRAGMA writable_schema=ON")) {
+    // The "PRAGMA integrity_check" statement executed below may return less
+    // useful information. However, incomplete information is still better than
+    // nothing, so we press on.
+    messages->push_back("PRAGMA writable_schema=ON failed");
   }
 
-  // Best effort to put things back as they were before.
+  // We need to bypass sql::Statement and use raw SQLite C API calls here.
+  //
+  // "PRAGMA integrity_check" reports SQLITE_CORRUPT when the database is
+  // corrupt. Reporting SQLITE_CORRUPT is undesirable in this case, because it
+  // causes our sql::Statement infrastructure to call the database error
+  // handler, which triggers feature-level error handling. However,
+  // FullIntegrityCheck() callers presumably already know that the database is
+  // corrupted, and are trying to collect diagnostic information for reporting.
+  sqlite3_stmt* statement = nullptr;
+
+  // https://www.sqlite.org/c3ref/prepare.html states that SQLite will perform
+  // slightly better if sqlite_prepare_v3() receives a zero-terminated statement
+  // string, and a statement size that includes the zero byte. Fortunately,
+  // C++'s string literal and sizeof() operator do exactly that.
+  constexpr char kIntegrityCheckSql[] = "PRAGMA integrity_check";
+  const int prepare_result =
+      sqlite3_prepare_v3(db_, kIntegrityCheckSql, sizeof(kIntegrityCheckSql),
+                         SqlitePrepareFlags(), &statement, /*pzTail=*/nullptr);
+  if (prepare_result != SQLITE_OK)
+    return false;
+
+  // "PRAGMA integrity_check" currently returns multiple lines as a single row.
+  //
+  // However, since https://www.sqlite.org/pragma.html#pragma_integrity_check
+  // states that multiple records may be returned, the code below can handle
+  // multiple records, each of which has multiple lines.
+  std::vector<std::string> result_lines;
+
+  while (sqlite3_step(statement) == SQLITE_ROW) {
+    const uint8_t* row = chrome_sqlite3_column_text(statement, /*iCol=*/0);
+    DCHECK(row) << "PRAGMA integrity_check should never return NULL rows";
+
+    const int row_size = sqlite3_column_bytes(statement, /*iCol=*/0);
+    base::StringPiece row_string(reinterpret_cast<const char*>(row), row_size);
+
+    const std::vector<base::StringPiece> row_lines = base::SplitStringPiece(
+        row_string, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    for (base::StringPiece row_line : row_lines)
+      result_lines.emplace_back(row_line);
+  }
+
+  const int finalize_result = sqlite3_finalize(statement);
+  // sqlite3_finalize() may return SQLITE_CORRUPT when the integrity check
+  // discovers any problems. We still consider this case a success, as long as
+  // the statement produced at least one diagnostic message.
+  const bool success =
+      (result_lines.size() > 0) || (finalize_result == SQLITE_OK);
+  *messages = std::move(result_lines);
+
+  // Best-effort attempt to undo the "PRAGMA writable_schema=ON" executed above.
   std::ignore = Execute("PRAGMA writable_schema=OFF");
 
   return success;

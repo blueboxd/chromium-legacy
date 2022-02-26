@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_utils.h"
 #include "chrome/browser/apps/app_service/metrics/browser_to_tab_list.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -41,19 +42,6 @@ extern const char kAppUsageTime[];
 extern const char kAppLaunchPerAppTypeHistogramName[];
 extern const char kAppLaunchPerAppTypeV2HistogramName[];
 
-extern const char kArcHistogramName[];
-extern const char kBuiltInHistogramName[];
-extern const char kCrostiniHistogramName[];
-extern const char kChromeAppHistogramName[];
-extern const char kWebAppHistogramName[];
-extern const char kMacOsHistogramName[];
-extern const char kPluginVmHistogramName[];
-extern const char kStandaloneBrowserHistogramName[];
-extern const char kRemoteHistogramName[];
-extern const char kBorealisHistogramName[];
-extern const char kSystemWebAppHistogramName[];
-extern const char kChromeBrowserHistogramName[];
-
 extern const char kChromeAppTabHistogramName[];
 extern const char kChromeAppWindowHistogramName[];
 extern const char kWebAppTabHistogramName[];
@@ -63,7 +51,6 @@ extern const char kUsageTimeAppIdKey[];
 extern const char kUsageTimeAppTypeKey[];
 extern const char kUsageTimeDurationKey[];
 
-std::string GetAppTypeHistogramName(apps::AppTypeName app_type_name);
 std::string GetAppTypeHistogramNameV2(apps::AppTypeNameV2 app_type_name);
 
 const std::set<apps::AppTypeName>& GetAppTypeNameSet();
@@ -156,6 +143,8 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   };
 
   struct UsageTime {
+    UsageTime() = default;
+    explicit UsageTime(const base::Value& value);
     base::TimeDelta running_time;
     ukm::SourceId source_id = ukm::kInvalidSourceId;
     std::string app_id;
@@ -224,12 +213,24 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   void RecordAppsInstallUkm(const apps::AppUpdate& update,
                             InstallTime install_time);
 
+  // Updates `usage_time_per_two_hours_` each 5 minutes or when the app window
+  // is inactivated.
   void UpdateUsageTime(const base::UnguessableToken& instance_id,
                        const std::string& app_id,
                        AppTypeName app_type_name,
                        const base::TimeDelta& running_time);
 
+  // Saves the app window usage time in `usage_time_per_two_hours_` to the user
+  // pref each 5 minutes.
   void SaveUsageTime();
+
+  // Reads the app platform metrics saved in the user pref to
+  // `usage_times_from_pref_`.
+  void LoadAppsUsageTimeUkmFromPref();
+
+  // Records the app usage time UKM based on the usage time saved in
+  // `usage_times_from_pref_`.
+  void RecordAppsUsageTimeUkmFromPref();
 
   Profile* const profile_ = nullptr;
 
@@ -251,8 +252,7 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   std::map<AppTypeName, int> activated_count_;
 
   // |start_time_per_five_minutes_|, |app_type_running_time_per_five_minutes_|,
-  // |app_type_v2_running_time_per_five_minutes_|, and
-  // |usage_time_per_five_minutes_| are used for accumulating app
+  // |app_type_v2_running_time_per_five_minutes_| are used for accumulating app
   // running duration per 5 minutes interval.
   std::map<const base::UnguessableToken, RunningStartTime>
       start_time_per_five_minutes_;
@@ -261,12 +261,11 @@ class AppPlatformMetrics : public apps::AppRegistryCache::Observer,
   std::map<AppTypeNameV2, base::TimeDelta>
       app_type_v2_running_time_per_five_minutes_;
 
-  // TODO(crbug.com/1299978): Remove `usage_time_per_five_minutes_`.
-  std::map<const base::UnguessableToken, UsageTime>
-      usage_time_per_five_minutes_;
-
-  // Record the app window running duration for the app usage AppKM.
+  // Records the app window running duration for the app usage AppKM.
   std::map<const base::UnguessableToken, UsageTime> usage_time_per_two_hours_;
+
+  // The app usage time loaded from the user pref during the init phase.
+  std::vector<std::unique_ptr<UsageTime>> usage_times_from_pref_;
 };
 
 }  // namespace apps

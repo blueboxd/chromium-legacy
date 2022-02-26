@@ -694,7 +694,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
                                       frame_load_type),
         resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
         /*is_synchronously_committed=*/true, request.GetTriggeringEventInfo(),
-        false /* is_browser_initiated */, nullptr /* extra_data */);
+        false /* is_browser_initiated */);
     return;
   }
 
@@ -775,8 +775,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
               request.GetTriggeringEventInfo() ==
                       mojom::blink::TriggeringEventInfo::kFromTrustedEvent
                   ? UserNavigationInvolvement::kActivation
-                  : UserNavigationInvolvement::kNone) !=
-          AppHistory::DispatchResult::kContinue) {
+                  : UserNavigationInvolvement::kNone,
+              nullptr, nullptr) != AppHistory::DispatchResult::kContinue) {
         return;
       }
     }

@@ -26,10 +26,6 @@
 namespace cc {
 namespace {
 
-// TODO(https://crbug.com/1286076): Plumb the true parameters in here.
-constexpr float kTempMaxLuminanceNits = 100.f;
-constexpr float kTempHDRMaxLuminanceRelative = 1.f;
-
 struct Context {
   const std::vector<sk_sp<SkImage>> sk_planes_;
 };
@@ -90,44 +86,6 @@ sk_sp<SkImage> MakeYUVImageFromUploadedPlanes(
   }
 
   return image;
-}
-
-// TODO(ericrk): Replace calls to this with calls to SkImage::makeTextureImage,
-// once that function handles colorspaces. https://crbug.com/834837
-sk_sp<SkImage> MakeTextureImage(
-    GrDirectContext* context,
-    sk_sp<SkImage> source_image,
-    absl::optional<TargetColorParams> target_color_params,
-    GrMipMapped mip_mapped) {
-  // Step 1: Upload image and generate mips if necessary. If we will be applying
-  // a color-space conversion, don't generate mips yet, instead do it after
-  // conversion, in step 3.
-  // NOTE: |target_color_space| is only passed over the transfer cache if needed
-  // (non-null, different from the source color space).
-  bool add_mips_after_color_conversion =
-      target_color_params && mip_mapped == GrMipMapped::kYes;
-  sk_sp<SkImage> uploaded_image = source_image->makeTextureImage(
-      context, add_mips_after_color_conversion ? GrMipMapped::kNo : mip_mapped,
-      SkBudgeted::kNo);
-
-  // Step 2: Apply a color-space conversion if necessary.
-  if (uploaded_image && target_color_params) {
-    // TODO(https://crbug.com/1286088): Pass a shared cache as a parameter.
-    gfx::ColorConversionSkFilterCache cache;
-    uploaded_image = cache.ConvertImage(
-        uploaded_image, target_color_params->color_space.ToSkColorSpace(),
-        target_color_params->sdr_max_luminance_nits,
-        target_color_params->hdr_max_luminance_relative, context);
-  }
-
-  // Step 3: If we had a colorspace conversion, we couldn't mipmap in step 1, so
-  // add mips here.
-  if (uploaded_image && add_mips_after_color_conversion) {
-    uploaded_image = uploaded_image->makeTextureImage(
-        context, GrMipMapped::kYes, SkBudgeted::kNo);
-  }
-
-  return uploaded_image;
 }
 
 base::CheckedNumeric<uint32_t> SafeSizeForPixmap(const SkPixmap& pixmap) {
@@ -237,6 +195,57 @@ bool ReadPixmap(PaintOpReader& reader, SkPixmap& pixmap) {
   return true;
 }
 
+size_t TargetColorParamsSize(
+    const absl::optional<TargetColorParams>& target_color_params) {
+  // uint32 for whether or not there are going to be parameters.
+  size_t target_color_params_size = sizeof(uint32_t);
+  if (target_color_params) {
+    // The target color space.
+    target_color_params_size +=
+        sizeof(uint64_t) +
+        target_color_params->color_space.ToSkColorSpace()->writeToMemory(
+            nullptr);
+    // Floats for the SDR and HDR maximum luminance.
+    target_color_params_size += sizeof(float);
+    target_color_params_size += sizeof(float);
+  }
+  return target_color_params_size;
+}
+
+void WriteTargetColorParams(
+    PaintOpWriter& writer,
+    const absl::optional<TargetColorParams>& target_color_params) {
+  const uint32_t has_target_color_params = target_color_params ? 1 : 0;
+  writer.Write(has_target_color_params);
+  if (target_color_params) {
+    writer.Write(target_color_params->color_space.ToSkColorSpace().get());
+    writer.Write(target_color_params->sdr_max_luminance_nits);
+    writer.Write(target_color_params->hdr_max_luminance_relative);
+  }
+}
+
+bool ReadTargetColorParams(
+    PaintOpReader& reader,
+    absl::optional<TargetColorParams>& target_color_params) {
+  uint32_t has_target_color_params;
+  reader.Read(&has_target_color_params);
+  if (!has_target_color_params) {
+    target_color_params = absl::nullopt;
+    return true;
+  }
+
+  target_color_params = TargetColorParams();
+  sk_sp<SkColorSpace> target_color_space;
+  reader.Read(&target_color_space);
+  if (!target_color_space)
+    return false;
+
+  target_color_params->color_space = gfx::ColorSpace(*target_color_space);
+  reader.Read(&target_color_params->sdr_max_luminance_nits);
+  reader.Read(&target_color_params->hdr_max_luminance_relative);
+  return true;
+}
+
 }  // namespace
 
 size_t NumberOfPlanesForYUVDecodeFormat(YUVDecodeFormat format) {
@@ -255,15 +264,13 @@ size_t NumberOfPlanesForYUVDecodeFormat(YUVDecodeFormat format) {
 
 ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
     const SkPixmap* pixmap,
-    const SkColorSpace* target_color_space,
-    bool needs_mips)
+    bool needs_mips,
+    absl::optional<TargetColorParams> target_color_params)
     : needs_mips_(needs_mips),
+      target_color_params_(target_color_params),
       id_(GetNextId()),
       pixmap_(pixmap),
-      target_color_space_(target_color_space),
       decoded_color_space_(nullptr) {
-  size_t target_color_space_size =
-      target_color_space ? target_color_space->writeToMemory(nullptr) : 0u;
   size_t pixmap_color_space_size =
       pixmap_->colorSpace() ? pixmap_->colorSpace()->writeToMemory(nullptr)
                             : 0u;
@@ -282,7 +289,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
   safe_size += sizeof(uint32_t);  // has mips
   safe_size += sizeof(uint64_t) + align;  // pixels size + alignment
   safe_size += sizeof(uint64_t) + align;  // row bytes + alignment
-  safe_size += target_color_space_size + sizeof(uint64_t) + align;
+  safe_size += TargetColorParamsSize(target_color_params_);
   safe_size += pixmap_color_space_size + sizeof(uint64_t) + align;
   // Include 4 bytes of padding so we can always align our data pointer to a
   // 4-byte boundary.
@@ -297,12 +304,13 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
     SkYUVAInfo::Subsampling subsampling,
     const SkColorSpace* decoded_color_space,
     SkYUVColorSpace yuv_color_space,
-    bool needs_mips)
+    bool needs_mips,
+    absl::optional<TargetColorParams> target_color_params)
     : needs_mips_(needs_mips),
+      target_color_params_(target_color_params),
       plane_config_(plane_config),
       id_(GetNextId()),
       pixmap_(nullptr),
-      target_color_space_(nullptr),
       decoded_color_space_(decoded_color_space),
       subsampling_(subsampling),
       yuv_color_space_(yuv_color_space) {
@@ -328,6 +336,7 @@ ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
 
   safe_size += sizeof(uint32_t);  // has mips
   safe_size += sizeof(uint64_t);  // target color space stub (is nullptr)
+  safe_size += TargetColorParamsSize(target_color_params_);
 
   safe_size += sizeof(uint32_t);  // plane_config
   safe_size += sizeof(uint32_t);  // subsampling
@@ -374,7 +383,7 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   PaintOpWriter writer(data.data(), data.size(), options);
 
   writer.Write(static_cast<uint32_t>(needs_mips_ ? 1 : 0));
-  writer.Write(target_color_space_);
+  WriteTargetColorParams(writer, target_color_params_);
   writer.Write(plane_config_);
 
   if (plane_config_ != SkYUVAInfo::PlaneConfig::kUnknown) {
@@ -478,19 +487,15 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   uint32_t needs_mips;
   reader.Read(&needs_mips);
   has_mips_ = needs_mips;
-  sk_sp<SkColorSpace> target_color_space;
-  reader.Read(&target_color_space);
   absl::optional<TargetColorParams> target_color_params;
-  if (target_color_space) {
-    target_color_params = TargetColorParams();
-    target_color_params->color_space = gfx::ColorSpace(*target_color_space);
-    target_color_params->sdr_max_luminance_nits = kTempMaxLuminanceNits;
-    target_color_params->hdr_max_luminance_relative =
-        kTempHDRMaxLuminanceRelative;
-  }
+  ReadTargetColorParams(reader, target_color_params);
   plane_config_ = SkYUVAInfo::PlaneConfig::kUnknown;
   reader.Read(&plane_config_);
 
+  const GrMipMapped mip_mapped_for_upload =
+      has_mips_ && !target_color_params ? GrMipMapped::kYes : GrMipMapped::kNo;
+  SkPixmap rgba_pixmap;
+  sk_sp<SkImage> rgba_pixmap_image;
   if (plane_config_ != SkYUVAInfo::PlaneConfig::kUnknown) {
     SkYUVAInfo::Subsampling subsampling = SkYUVAInfo::Subsampling::kUnknown;
     reader.Read(&subsampling);
@@ -524,18 +529,20 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       }
 
       DCHECK(!target_color_params);
-      sk_sp<SkImage> plane = MakeSkImage(pixmap, target_color_params);
+      sk_sp<SkImage> plane = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
       if (!plane) {
-        DLOG(ERROR) << "Failed to upload plane pixmap";
+        DLOG(ERROR) << "Failed to create image from plane pixmap";
+        return false;
+      }
+      plane = plane->makeTextureImage(context_, mip_mapped_for_upload,
+                                      SkBudgeted::kNo);
+      if (!plane) {
+        DLOG(ERROR) << "Failed to upload plane pixmap to texture image";
         return false;
       }
       DCHECK(plane->isTextureBacked());
-
+      plane->getBackendTexture(/*flushPendingGrContextIO=*/true);
       plane_sizes_.push_back(plane->textureSize());
-      size_ += plane_sizes_.back();
-
-      // |plane_images_| must be set for use in EnsureMips(), memory dumps, and
-      // unit tests.
       plane_images_.push_back(std::move(plane));
     }
     DCHECK(yuv_color_space_.has_value());
@@ -543,59 +550,78 @@ bool ServiceImageTransferCacheEntry::Deserialize(
         context_, plane_images_, plane_config_, subsampling_.value(),
         yuv_color_space_.value(), decoded_color_space);
   } else {
-    SkPixmap pixmap;
-    if (!ReadPixmap(reader, pixmap)) {
+    if (!ReadPixmap(reader, rgba_pixmap)) {
       DLOG(ERROR) << "Failed to read pixmap";
       return false;
     }
-    fits_on_gpu_ = pixmap.width() <= max_size && pixmap.height() <= max_size;
-    image_ = MakeSkImage(pixmap, target_color_params);
-    if (image_)
-      size_ = image_->textureSize();
-  }
-
-  return true;
-}
-
-sk_sp<SkImage> ServiceImageTransferCacheEntry::MakeSkImage(
-    const SkPixmap& pixmap,
-    absl::optional<TargetColorParams> target_color_params) {
-  DCHECK(context_);
-  sk_sp<SkImage> image;
-  if (fits_on_gpu_) {
-    image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
-    if (!image)
-      return nullptr;
-    image = MakeTextureImage(context_, std::move(image), target_color_params,
-                             has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo);
-  } else {
-    // If the image is on the CPU, no work is needed to generate mips.
-    has_mips_ = true;
-    sk_sp<SkImage> original =
-        SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);
-    if (!original)
-      return nullptr;
-    if (target_color_params) {
-      // TODO(https://crbug.com/1286088): Pass a shared cache as a parameter.
-      gfx::ColorConversionSkFilterCache cache;
-      image = cache.ConvertImage(
-          original, target_color_params->color_space.ToSkColorSpace(),
-          target_color_params->sdr_max_luminance_nits,
-          target_color_params->hdr_max_luminance_relative, /*context=*/nullptr);
-      // If color space conversion is a noop, use original data.
-      if (image == original)
-        image = SkImage::MakeRasterCopy(pixmap);
+    rgba_pixmap_image = SkImage::MakeFromRaster(rgba_pixmap, nullptr, nullptr);
+    if (!rgba_pixmap_image) {
+      DLOG(ERROR) << "Failed to create image from plane pixmap";
+      return false;
+    }
+    fits_on_gpu_ =
+        rgba_pixmap.width() <= max_size && rgba_pixmap.height() <= max_size;
+    if (fits_on_gpu_) {
+      image_ = rgba_pixmap_image->makeTextureImage(
+          context, mip_mapped_for_upload, SkBudgeted::kNo);
+      if (!image_) {
+        DLOG(ERROR) << "Failed to upload pixmap to texture image";
+        return false;
+      }
     } else {
-      // No color conversion to do, use original data.
-      image = SkImage::MakeRasterCopy(pixmap);
+      // If the image is on the CPU, no work is needed to generate mips.
+      has_mips_ = true;
+      image_ = rgba_pixmap_image;
+    }
+  }
+  DCHECK(image_);
+
+  // Perform color conversion.
+  if (target_color_params) {
+    // TODO(https://crbug.com/1286088): Pass a shared cache as a parameter.
+    gfx::ColorConversionSkFilterCache cache;
+    image_ = cache.ConvertImage(
+        image_, target_color_params->color_space.ToSkColorSpace(),
+        target_color_params->sdr_max_luminance_nits,
+        target_color_params->hdr_max_luminance_relative,
+        fits_on_gpu_ ? context_ : nullptr);
+    if (!image_) {
+      DLOG(ERROR) << "Failed image color conversion";
+      return false;
+    }
+
+    // Color conversion converts to RGBA. Remove all YUV state.
+    plane_images_.clear();
+    plane_sizes_.clear();
+    plane_config_ = SkYUVAInfo::PlaneConfig::kUnknown;
+    plane_sizes_.clear();
+    subsampling_ = absl::nullopt;
+    yuv_color_space_ = absl::nullopt;
+
+    // If mipmaps were requested, create them after color conversion.
+    if (has_mips_ && fits_on_gpu_) {
+      image_ =
+          image_->makeTextureImage(context, GrMipMapped::kYes, SkBudgeted::kNo);
+      if (!image_) {
+        DLOG(ERROR) << "Failed to generate mipmaps after color conversion";
+        return false;
+      }
     }
   }
 
-  // Make sure the GPU work to create the backing texture is issued.
-  if (image)
-    image->getBackendTexture(true /* flushPendingGrContextIO */);
+  // If `image_` is still pointing at the original data from `rgba_pixmap`, make
+  // a copy of it, because `rgba_pixmap` is directly referencing the transfer
+  // buffer's memory, and will go away after this this call.
+  if (image_ == rgba_pixmap_image) {
+    image_ = SkImage::MakeRasterCopy(rgba_pixmap);
+    if (!image_) {
+      DLOG(ERROR) << "Failed to create raster copy";
+      return false;
+    }
+  }
 
-  return image;
+  size_ = image_->textureSize();
+  return true;
 }
 
 const sk_sp<SkImage>& ServiceImageTransferCacheEntry::GetPlaneImage(
@@ -636,23 +662,25 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
         context_, mipped_planes, plane_config_, subsampling_.value(),
         yuv_color_space_.value(),
         image_->refColorSpace() /* image_color_space */);
-    if (!mipped_image)
+    if (!mipped_image) {
+      DLOG(ERROR) << "Failed to create YUV image from mipmapped planes";
       return;
+    }
     // Note that we cannot update |size_| because the transfer cache keeps track
     // of a total size that is not updated after EnsureMips(). The original size
     // is used when the image is deleted from the cache.
     plane_images_ = std::move(mipped_planes);
     plane_sizes_ = std::move(mipped_plane_sizes);
     image_ = std::move(mipped_image);
-    has_mips_ = true;
-    return;
+  } else {
+    sk_sp<SkImage> mipped_image =
+        image_->makeTextureImage(context_, GrMipMapped::kYes, SkBudgeted::kNo);
+    if (!mipped_image) {
+      DLOG(ERROR) << "Failed to mipmapped image";
+      return;
+    }
+    image_ = std::move(mipped_image);
   }
-
-  sk_sp<SkImage> mipped_image =
-      image_->makeTextureImage(context_, GrMipMapped::kYes, SkBudgeted::kNo);
-  if (!mipped_image)
-    return;
-  image_ = std::move(mipped_image);
   has_mips_ = true;
 }
 

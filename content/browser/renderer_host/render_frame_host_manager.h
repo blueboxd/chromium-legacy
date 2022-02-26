@@ -411,7 +411,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       const blink::mojom::FrameOwnerProperties& properties);
 
   void EnsureRenderViewInitialized(RenderViewHostImpl* render_view_host,
-                                   SiteInstance* instance);
+                                   SiteInstanceGroup* group);
 
   // Creates RenderFrameProxies and inactive RenderViewHosts for this frame's
   // FrameTree and for its opener chain in the given SiteInstance. This allows
@@ -507,7 +507,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // null, it creates a RenderFrameProxy in the target renderer process which is
   // used to route IPC messages.  Returns early if the RenderViewHost has
   // already been initialized for another RenderFrameHost.
-  bool InitRenderView(SiteInstance* site_instance,
+  bool InitRenderView(SiteInstanceGroup* site_instance_group,
                       RenderViewHostImpl* render_view_host,
                       RenderFrameProxyHost* proxy);
 
@@ -679,6 +679,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       bool was_server_redirect,
       bool cross_origin_opener_policy_mismatch,
       bool should_replace_current_entry,
+      bool force_new_browsing_instance,
       std::string* reason);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given

@@ -304,6 +304,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
 
   _mode = mode;
+  // TODO(crbug.com/1300369): Enable dragging items from search results.
+  self.collectionView.dragInteractionEnabled = (_mode != TabGridModeSearch);
 
   if (IsTabsSearchRegularResultsSuggestedActionsEnabled()) {
     if (mode == TabGridModeSearch && self.suggestedActionsDelegate) {
@@ -337,7 +339,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   if (mode == TabGridModeNormal) {
     [self.selectedEditingItemIDs removeAllObjects];
     [self.selectedSharableEditingItemIDs removeAllObjects];
-    self.searchText = nil;
+    if (IsTabsSearchEnabled())
+      self.searchText = nil;
     // After transition from the selection mode to the normal mode, the
     // selection border doesn't show around the selection item. The collection
     // view needs to be updated with the selected item again for it to appear
@@ -689,6 +692,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
            itemsForBeginningDragSession:(id<UIDragSession>)session
                             atIndexPath:(NSIndexPath*)indexPath {
+  if (_mode == TabGridModeSearch) {
+    // TODO(crbug.com/1300369): Enable dragging items from search results.
+    return @[];
+  }
   if ([self isIndexPathForPlusSignCell:indexPath]) {
     // Return an empty array because the plus sign cell should not be dragged.
     return @[];
@@ -748,7 +755,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     canHandleDropSession:(id<UIDropSession>)session {
-  return YES;
+  // Prevent dropping tabs into grid while displaying search results.
+  return (_mode != TabGridModeSearch);
 }
 
 - (UICollectionViewDropProposal*)
@@ -881,7 +889,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)didSelectSearchRecentTabsInSuggestedActionsViewController:
     (SuggestedActionsViewController*)viewController {
-  // TODO(crbug.com/1297859): Log the user action.
+  base::RecordAction(
+      base::UserMetricsAction("TabsSearch.SuggestedActions.RecentTabs"));
   [self.suggestedActionsDelegate searchRecentTabsForText:self.searchText];
 }
 
@@ -935,6 +944,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - GridConsumer
 
+// TODO(crbug.com/1300733): Investigate this method not working correctly in the
+// main thread if the collectionview had already some items on it.
 - (void)populateItems:(NSArray<TabSwitcherItem*>*)items
        selectedItemID:(NSString*)selectedItemID {
 #ifndef NDEBUG
@@ -1546,7 +1557,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 #pragma mark Suggested Actions Section
 
 - (void)updateSuggestedActionsSection {
-  DCHECK(IsTabsSearchEnabled());
   if (!self.suggestedActionsDelegate)
     return;
   // In search mode if there is already a search query, and the suggested

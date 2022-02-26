@@ -155,7 +155,8 @@ class AttributionSimulatorInputParser {
     uint64_t event_source_trigger_data =
         ParseOptionalUint64(*cfg, "event_source_trigger_data").value_or(0);
     absl::optional<uint64_t> debug_key = ParseOptionalUint64(*cfg, "debug_key");
-    absl::optional<uint64_t> dedup_key = ParseOptionalUint64(*cfg, "dedup_key");
+    absl::optional<uint64_t> dedup_key =
+        ParseOptionalUint64(*cfg, "deduplication_key");
     int64_t priority = ParseOptionalInt64(*cfg, "priority").value_or(0);
 
     if (has_error_)
@@ -163,13 +164,10 @@ class AttributionSimulatorInputParser {
 
     events_.emplace_back(
         AttributionTriggerAndTime{
-            .trigger = AttributionTrigger(
-                SanitizeTriggerData(trigger_data,
-                                    CommonSourceInfo::SourceType::kNavigation),
-                std::move(destination), std::move(reporting_origin),
-                SanitizeTriggerData(event_source_trigger_data,
-                                    CommonSourceInfo::SourceType::kEvent),
-                priority, dedup_key, debug_key),
+            .trigger = AttributionTrigger(trigger_data, std::move(destination),
+                                          std::move(reporting_origin),
+                                          event_source_trigger_data, priority,
+                                          dedup_key, debug_key),
             .time = trigger_time,
         },
         std::move(trigger));

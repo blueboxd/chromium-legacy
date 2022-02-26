@@ -1450,6 +1450,22 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
      base::size(kNtpChromeCartModuleRBDAndCouponDiscount), nullptr},
 };
 
+// The following are consent v2 variations in the Chrome Cart module.
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpStringChange[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "1"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpInline[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "2"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpDialog[] = {
+    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"}};
+const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
+    {"Changing string", kDiscountConsentNtpStringChange,
+     base::size(kDiscountConsentNtpStringChange), nullptr},
+    {"Inline Consent", kDiscountConsentNtpInline,
+     base::size(kDiscountConsentNtpInline), nullptr},
+    {"Dialog Consent", kDiscountConsentNtpDialog,
+     base::size(kDiscountConsentNtpDialog), nullptr},
+};
+
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpRecipeTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
@@ -1832,7 +1848,6 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
-    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -2360,14 +2375,9 @@ const FeatureEntry::FeatureVariation kDrawPredictedPointVariations[] = {
 #if BUILDFLAG(IS_ANDROID)
 const FeatureEntry::FeatureParam kFedCmVariationAutoSignin[] = {
     {features::kFedCmAutoSigninFieldTrialParamName, "true"}};
-const FeatureEntry::FeatureParam kFedCmVariationInterception[] = {
-    {features::kFedCmInterceptionFieldTrialParamName, "true"}};
 const FeatureEntry::FeatureVariation kFedCmFeatureVariations[] = {
     {"- with FedCM auto-signin", kFedCmVariationAutoSignin,
-     base::size(kFedCmVariationAutoSignin), nullptr},
-    {"- with FedCM HTTP filtering (very experimental)",
-     kFedCmVariationInterception, base::size(kFedCmVariationInterception),
-     nullptr}};
+     base::size(kFedCmVariationAutoSignin), nullptr}};
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2694,8 +2704,8 @@ const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Comprehensive", kSnoopingProtectionRecall,
      base::size(kSnoopingProtectionRecall), nullptr}};
 
-const FeatureEntry::FeatureParam kQuickDim120s[] = {
-    {"QuickDim_quick_dim_ms", "120000"},
+const FeatureEntry::FeatureParam kQuickDim6s[] = {
+    {"QuickDim_quick_dim_ms", "6000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2704,8 +2714,31 @@ const FeatureEntry::FeatureParam kQuickDim120s[] = {
     {"QuickDim_negative_score_threshold", "0"},
 };
 
-const FeatureEntry::FeatureParam kQuickDim45s[] = {
+const FeatureEntry::FeatureParam kQuickDim6sQuickLock66s[] = {
+    {"QuickDim_quick_dim_ms", "6000"},
+    {"QuickDim_quick_lock_ms", "66000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "0"},
+    {"QuickDim_negative_score_threshold", "0"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim6sQuickLock126s[] = {
+    {"QuickDim_quick_dim_ms", "6000"},
+    {"QuickDim_quick_lock_ms", "126000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "0"},
+    {"QuickDim_negative_score_threshold", "0"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim45sQuickLock105s[] = {
     {"QuickDim_quick_dim_ms", "45000"},
+    {"QuickDim_quick_lock_ms", "105000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2714,51 +2747,9 @@ const FeatureEntry::FeatureParam kQuickDim45s[] = {
     {"QuickDim_negative_score_threshold", "0"},
 };
 
-const FeatureEntry::FeatureParam kQuickDim10s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDimInstantly[] = {
-    {"QuickDim_quick_dim_ms", "1000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "1"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock40s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "40000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim10sQuickLock70s[] = {
-    {"QuickDim_quick_dim_ms", "10000"},
-    {"QuickDim_quick_lock_ms", "70000"},
-    {"QuickDim_filter_config_case", "2"},
-    {"QuickDim_positive_count_threshold", "1"},
-    {"QuickDim_negative_count_threshold", "2"},
-    {"QuickDim_uncertain_count_threshold", "2"},
-    {"QuickDim_positive_score_threshold", "0"},
-    {"QuickDim_negative_score_threshold", "0"},
-};
-
-const FeatureEntry::FeatureParam kQuickDim45sQuickLock135s[] = {
+const FeatureEntry::FeatureParam kQuickDim45sQuickLock165s[] = {
     {"QuickDim_quick_dim_ms", "45000"},
-    {"QuickDim_quick_lock_ms", "135000"},
+    {"QuickDim_quick_lock_ms", "165000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2779,19 +2770,18 @@ const FeatureEntry::FeatureParam kQuickDim120sQuickLock240s[] = {
 };
 
 const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
-    {"QuickDim120s", kQuickDim120s, base::size(kQuickDim120s), nullptr},
-    {"QuickDim45s", kQuickDim45s, base::size(kQuickDim45s), nullptr},
-    {"QuickDim10s", kQuickDim10s, base::size(kQuickDim10s), nullptr},
-    {"QuickDimInstantly", kQuickDimInstantly, base::size(kQuickDimInstantly),
-     nullptr},
-    {"kQuickDim10sQuickLock40s", kQuickDim10sQuickLock40s,
-     base::size(kQuickDim10sQuickLock40s), nullptr},
-    {"kQuickDim10sQuickLock70s", kQuickDim10sQuickLock70s,
-     base::size(kQuickDim10sQuickLock70s), nullptr},
-    {"kQuickDim45sQuickLock135s", kQuickDim45sQuickLock135s,
-     base::size(kQuickDim45sQuickLock135s), nullptr},
-    {"kQuickDim120sQuickLock240s", kQuickDim120sQuickLock240s,
-     base::size(kQuickDim120sQuickLock240s), nullptr}};
+    {"Dim6sLock66s", kQuickDim6sQuickLock66s,
+     base::size(kQuickDim6sQuickLock66s), nullptr},
+    {"Dim6sLock126s", kQuickDim6sQuickLock126s,
+     base::size(kQuickDim6sQuickLock126s), nullptr},
+    {"Dim45sLock105s", kQuickDim45sQuickLock105s,
+     base::size(kQuickDim45sQuickLock105s), nullptr},
+    {"Dim45sLock165s", kQuickDim45sQuickLock165s,
+     base::size(kQuickDim45sQuickLock165s), nullptr},
+    {"Dim120sLock240s", kQuickDim120sQuickLock240s,
+     base::size(kQuickDim120sQuickLock240s), nullptr},
+    {"Dim6sNoLock", kQuickDim6s, base::size(kQuickDim6s), nullptr},
+};
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -4400,11 +4390,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          features::kExperimentalAccessibilityDictationExtension)},
-    {"enable-experimental-accessibility-dictation-offline",
-     flag_descriptions::kExperimentalAccessibilityDictationOfflineName,
-     flag_descriptions::kExperimentalAccessibilityDictationOfflineDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityDictationOffline)},
     {"enable-experimental-accessibility-dictation-commands",
      flag_descriptions::kExperimentalAccessibilityDictationCommandsName,
      flag_descriptions::kExperimentalAccessibilityDictationCommandsDescription,
@@ -5998,10 +5983,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRevenLogSourceDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kRevenLogSource)},
 
-    {"enable-pci-guard-ui", flag_descriptions::kEnablePciguardUiName,
-     flag_descriptions::kEnablePciguardUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEnablePciguardUi)},
-
     {"enable-heuristic-stylus-palm-rejection",
      flag_descriptions::kEnableHeuristicStylusPalmRejectionName,
      flag_descriptions::kEnableHeuristicStylusPalmRejectionDescription, kOsCrOS,
@@ -6782,6 +6763,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingSelfShareName,
      flag_descriptions::kNearbySharingSelfShareDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingSelfShare)},
+    {"nearby-sharing-visibility-reminder",
+     flag_descriptions::kNearbySharingVisibilityReminderName,
+     flag_descriptions::kNearbySharingVisibilityReminderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingVisibilityReminder)},
     {"nearby-sharing-wifilan", flag_descriptions::kNearbySharingWifiLanName,
      flag_descriptions::kNearbySharingWifiLanDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingWifiLan)},
@@ -7405,14 +7390,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillParseMerchantPromoCodeFields)},
 
-    {"autofill-enable-offer-notification-cross-tab-tracking",
-     flag_descriptions::kAutofillEnableOfferNotificationCrossTabTrackingName,
-     flag_descriptions::
-         kAutofillEnableOfferNotificationCrossTabTrackingDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillEnableOfferNotificationCrossTabTracking)},
-
     {"autofill-enable-virtual-cards-risk-based-authentication",
      flag_descriptions::kAutofillEnableVirtualCardsRiskBasedAuthenticationName,
      flag_descriptions::
@@ -7421,11 +7398,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::
              kAutofillEnableVirtualCardsRiskBasedAuthentication)},
-
-    {"autofill-fix-offer-in-incognito",
-     flag_descriptions::kAutofillFixOfferInIncognitoName,
-     flag_descriptions::kAutofillFixOfferInIncognitoDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillFixOfferInIncognito)},
 
     {"autofill-highlight-only-changed-value-in-preview-mode",
      flag_descriptions::kAutofillHighlightOnlyChangedValuesInPreviewModeName,
@@ -7677,6 +7649,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kDynamicColorAndroid,
                                     kDynamicColorAndroidVariations,
                                     "AndroidDynamicColor")},
+    {"dynamic-color-buttons-android",
+     flag_descriptions::kDynamicColorButtonsAndroidName,
+     flag_descriptions::kDynamicColorButtonsAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kDynamicColorButtonsAndroid)},
 #endif  //   BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
@@ -7706,13 +7682,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kUpdatedConnectionSecurityIndicators)},
 
 #if BUILDFLAG(IS_ANDROID)
-    {"share-usage-ranking", flag_descriptions::kShareUsageRankingName,
-     flag_descriptions::kShareUsageRankingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kShareUsageRanking)},
-    {"share-usage-ranking-fixed-more",
-     flag_descriptions::kShareUsageRankingFixedMoreName,
-     flag_descriptions::kShareUsageRankingFixedMoreDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kShareUsageRankingFixedMore)},
     {"swap-android-share-hub-rows",
      flag_descriptions::kSwapAndroidShareHubRowsName,
      flag_descriptions::kSwapAndroidShareHubRowsDescription, kOsAndroid,
@@ -8135,7 +8104,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if !BUILDFLAG(IS_ANDROID)
     {"enable-discount-consent-v2", flag_descriptions::kDiscountConsentV2Name,
      flag_descriptions::kDiscountConsentV2Description, kOsDesktop,
-     FEATURE_VALUE_TYPE(commerce::kDiscountConsentV2)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(commerce::kDiscountConsentV2,
+                                    kDiscountConsentV2Variations,
+                                    "DiscountConsentV2")},
 #endif
 
     {"autofill-enable-unmask-card-request-set-instrument-id",

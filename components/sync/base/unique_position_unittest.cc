@@ -14,6 +14,7 @@
 #include "base/hash/sha1.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -566,16 +567,6 @@ TEST_F(PositionFromIntTest, IsValid) {
   }
 }
 
-TEST_F(PositionFromIntTest, RoundTripConversion) {
-  for (size_t i = 0; i < kNumTestValues; ++i) {
-    const int64_t expected_value = kTestValues[i];
-    const UniquePosition pos =
-        UniquePosition::FromInt64(kTestValues[i], NextSuffix());
-    const int64_t value = pos.ToInt64();
-    EXPECT_EQ(expected_value, value) << "i = " << i;
-  }
-}
-
 template <typename T, typename LessThan = std::less<T>>
 class IndexedLessThan {
  public:
@@ -600,10 +591,10 @@ TEST_F(PositionFromIntTest, ConsistentOrdering) {
     original_ordering[i] = int64_ordering[i] = position_ordering[i] = i;
   }
 
-  std::sort(int64_ordering.begin(), int64_ordering.end(),
-            IndexedLessThan<int64_t>(kTestValues));
-  std::sort(position_ordering.begin(), position_ordering.end(),
-            IndexedLessThan<UniquePosition, PositionLessThan>(positions));
+  base::ranges::sort(int64_ordering, IndexedLessThan<int64_t>(kTestValues));
+  base::ranges::sort(
+      position_ordering,
+      IndexedLessThan<UniquePosition, PositionLessThan>(positions));
   EXPECT_NE(original_ordering, int64_ordering);
   EXPECT_EQ(int64_ordering, position_ordering);
 }

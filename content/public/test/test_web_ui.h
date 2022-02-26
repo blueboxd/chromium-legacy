@@ -48,7 +48,10 @@ class TestWebUI : public WebUI {
   void AddRequestableScheme(const char* scheme) override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
   void RegisterMessageCallback(base::StringPiece message,
-                               DeprecatedMessageCallback2 callback) override;
+                               MessageCallback callback) override;
+  void RegisterDeprecatedMessageCallback2(
+      base::StringPiece message,
+      DeprecatedMessageCallback2 callback) override;
   void RegisterDeprecatedMessageCallback(
       base::StringPiece message,
       const DeprecatedMessageCallback& callback) override;
@@ -122,6 +125,7 @@ class TestWebUI : public WebUI {
  private:
   void OnJavascriptCall(const CallData& call_data);
 
+  base::flat_map<std::string, std::vector<MessageCallback>> message_callbacks_;
   base::flat_map<std::string, std::vector<DeprecatedMessageCallback2>>
       deprecated_message_callbacks_2_;
   base::flat_map<std::string, std::vector<DeprecatedMessageCallback>>

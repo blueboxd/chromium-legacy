@@ -54,13 +54,13 @@ void AnnotatorMessageHandler::Clear() {
   FireWebUIListener("clear");
 }
 
-void AnnotatorMessageHandler::OnToolSet(base::Value::ConstListView args) {
+void AnnotatorMessageHandler::OnToolSet(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1u);
   ProjectorController::Get()->OnToolSet(AnnotatorTool::FromValue(args[0]));
 }
 
 void AnnotatorMessageHandler::OnUndoRedoAvailabilityChanged(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(args.size(), 2u);
   DCHECK(args[0].is_bool());
   DCHECK(args[1].is_bool());
@@ -68,7 +68,7 @@ void AnnotatorMessageHandler::OnUndoRedoAvailabilityChanged(
                                                             args[1].GetBool());
 }
 
-void AnnotatorMessageHandler::OnError(base::Value::ConstListView args) {
+void AnnotatorMessageHandler::OnError(const base::Value::List& args) {
   // TODO(b/200846160): The annotator is in an error state. Show creation flow
   // error notification and trigger a reload of the WebContent hosting the
   // annotator to clear the error state.

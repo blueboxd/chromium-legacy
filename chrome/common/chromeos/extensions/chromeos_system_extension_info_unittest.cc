@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ChromeOSSystemExtensionInfo, AllowlistedExtensionsSizeEqualsToOne) {
-  ASSERT_EQ(2, chromeos::GetChromeOSSystemExtensionInfosSize());
+  ASSERT_EQ(2u, chromeos::GetChromeOSSystemExtensionInfosSize());
 }
 
 TEST(ChromeOSSystemExtensionInfo, GoogleExtension) {
@@ -28,7 +28,7 @@ TEST(ChromeOSSystemExtensionInfo, HPExtension) {
   const auto extension_info =
       chromeos::GetChromeOSExtensionInfoForId(hp_extension_id);
   EXPECT_EQ("HP", extension_info.manufacturer);
-  EXPECT_EQ("*://hpcs-appschr.hpcloud.hp.com/*", extension_info.pwa_origin);
+  EXPECT_EQ("https://hpcs-appschr.hpcloud.hp.com/*", extension_info.pwa_origin);
 }
 
 TEST(ChromeOSSystemExtensionInfo, PwaOriginOverride) {

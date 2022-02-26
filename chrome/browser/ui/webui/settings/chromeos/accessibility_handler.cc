@@ -54,32 +54,32 @@ AccessibilityHandler::~AccessibilityHandler() {
 }
 
 void AccessibilityHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback2(
       "showChromeVoxSettings",
       base::BindRepeating(&AccessibilityHandler::HandleShowChromeVoxSettings,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback2(
       "showSelectToSpeakSettings",
       base::BindRepeating(
           &AccessibilityHandler::HandleShowSelectToSpeakSettings,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback2(
       "setStartupSoundEnabled",
       base::BindRepeating(&AccessibilityHandler::HandleSetStartupSoundEnabled,
                           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback2(
       "recordSelectedShowShelfNavigationButtonValue",
       base::BindRepeating(
           &AccessibilityHandler::
               HandleRecordSelectedShowShelfNavigationButtonsValue,
           base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback2(
       "manageA11yPageReady",
       base::BindRepeating(&AccessibilityHandler::HandleManageA11yPageReady,
                           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
+  web_ui()->RegisterDeprecatedMessageCallback2(
       "showChromeVoxTutorial",
       base::BindRepeating(&AccessibilityHandler::HandleShowChromeVoxTutorial,
                           base::Unretained(this)));
@@ -130,7 +130,7 @@ void AccessibilityHandler::OnJavascriptAllowed() {
 }
 
 void AccessibilityHandler::OnJavascriptDisallowed() {
-  if (features::IsDictationOfflineAvailableAndEnabled())
+  if (features::IsDictationOfflineAvailable())
     soda_observation_.Reset();
 }
 
@@ -151,7 +151,7 @@ void AccessibilityHandler::OpenExtensionOptionsPage(const char extension_id[]) {
 }
 
 void AccessibilityHandler::MaybeAddSodaInstallerObserver() {
-  if (!features::IsDictationOfflineAvailableAndEnabled())
+  if (!features::IsDictationOfflineAvailable())
     return;
 
   speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
@@ -234,9 +234,6 @@ void AccessibilityHandler::OnSodaLanguagePackError(
 }
 
 void AccessibilityHandler::MaybeAddDictationLocales() {
-  if (!features::IsExperimentalAccessibilityDictationOfflineEnabled())
-    return;
-
   base::flat_map<std::string, ash::Dictation::LocaleData> locales =
       ash::Dictation::GetAllSupportedLocales();
 

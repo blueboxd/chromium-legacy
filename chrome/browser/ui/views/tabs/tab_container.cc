@@ -4,12 +4,17 @@
 
 #include "chrome/browser/ui/views/tabs/tab_container.h"
 
+#include "base/bits.h"
+#include "base/containers/adapters.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
+#include "chrome/browser/ui/views/tabs/tab_hover_card_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
@@ -234,8 +239,12 @@ void TabContainer::RemoveTabDelegate::AnimationCanceled(
   AnimationEnded(animation);
 }
 
-TabContainer::TabContainer(TabStripController* controller)
+TabContainer::TabContainer(TabStripController* controller,
+                           TabHoverCardController* hover_card_controller,
+                           TabDragContext* drag_context)
     : controller_(controller),
+      hover_card_controller_(hover_card_controller),
+      drag_context_(drag_context),
       bounds_animator_(this),
       layout_helper_(std::make_unique<TabStripLayoutHelper>(
           controller,
@@ -250,6 +259,11 @@ TabContainer::~TabContainer() {
   group_views_.clear();
 
   RemoveAllChildViews();
+}
+
+void TabContainer::SetAvailableWidthCallback(
+    base::RepeatingCallback<int()> available_width_callback) {
+  available_width_callback_ = available_width_callback;
 }
 
 Tab* TabContainer::AddTab(std::unique_ptr<Tab> tab,
@@ -271,6 +285,8 @@ void TabContainer::MoveTab(Tab* tab, int from_model_index, int to_model_index) {
 }
 
 void TabContainer::RemoveTabFromViewModel(int index) {
+  UpdateHoverCard(nullptr, TabController::HoverCardUpdateType::kTabRemoved);
+
   Tab* tab = GetTabAtModelIndex(index);
   tabs_view_model_.Remove(index);
   layout_helper_->RemoveTabAt(index, tab);
@@ -326,7 +342,7 @@ void TabContainer::UpdateTabGroupVisuals(tab_groups::TabGroupId group_id) {
     group_views->second->UpdateBounds();
 }
 
-int TabContainer::GetModelIndexOf(const TabSlotView* slot_view) {
+int TabContainer::GetModelIndexOf(const TabSlotView* slot_view) const {
   return tabs_view_model_.GetIndexOfView(slot_view);
 }
 
@@ -336,6 +352,24 @@ Tab* TabContainer::GetTabAtModelIndex(int index) const {
 
 int TabContainer::GetTabCount() const {
   return tabs_view_model_.view_size();
+}
+
+void TabContainer::UpdateHoverCard(
+    Tab* tab,
+    TabController::HoverCardUpdateType update_type) {
+  // Some operations (including e.g. starting a drag) can cause the tab focus
+  // to change at the same time as the tabstrip is starting to animate; the
+  // hover card should not be visible at this time.
+  // See crbug.com/1220840 for an example case.
+  if (bounds_animator_.IsAnimating()) {
+    tab = nullptr;
+    update_type = TabController::HoverCardUpdateType::kAnimating;
+  }
+
+  if (!hover_card_controller_)
+    return;
+
+  hover_card_controller_->UpdateHoverCard(tab, update_type);
 }
 
 void TabContainer::UpdateAccessibleTabIndices() {
@@ -396,6 +430,8 @@ void TabContainer::OnTabSlotAnimationProgressed(TabSlotView* view) {
 }
 
 void TabContainer::AnimateToIdealBounds() {
+  UpdateHoverCard(nullptr, TabController::HoverCardUpdateType::kAnimating);
+
   for (int i = 0; i < GetTabCount(); ++i) {
     // If the tab is being dragged manually, skip it.
     Tab* tab = GetTabAtModelIndex(i);
@@ -451,6 +487,20 @@ void TabContainer::AnimateToIdealBounds() {
   PreferredSizeChanged();
 }
 
+int TabContainer::CalculateAvailableWidthForTabs() const {
+  return override_available_width_for_tabs_.value_or(
+      GetAvailableWidthForTabContainer());
+}
+
+int TabContainer::GetAvailableWidthForTabContainer() const {
+  // Falls back to views::View::GetAvailableSize() when
+  // |available_width_callback_| is not defined, e.g. when tab scrolling is
+  // disabled.
+  return available_width_callback_
+             ? available_width_callback_.Run()
+             : parent()->GetAvailableSize(this).width().value();
+}
+
 void TabContainer::SnapToIdealBounds() {
   for (int i = 0; i < GetTabCount(); ++i)
     GetTabAtModelIndex(i)->SetBoundsRect(tabs_view_model_.ideal_bounds(i));
@@ -465,6 +515,15 @@ void TabContainer::SnapToIdealBounds() {
 }
 
 void TabContainer::AnimateTabClosed(Tab* tab, int former_model_index) {
+  if (in_tab_close_ && GetTabCount() > 0 &&
+      override_available_width_for_tabs_ >
+          tabs_view_model_.ideal_bounds(GetTabCount() - 1).right()) {
+    // Tab closing mode is no longer constraining tab widths - they're at full
+    // size. Exit tab closing mode so that it doesn't artificially inflate our
+    // bounds.
+    ExitTabClosingMode();
+  }
+
   const int tab_overlap = TabStyle::GetTabOverlap();
 
   // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
@@ -504,6 +563,79 @@ void TabContainer::StartResetDragAnimation(int tab_model_index) {
           this, GetTabAtModelIndex(tab_model_index),
           base::BindRepeating(&TabContainer::OnTabSlotAnimationProgressed,
                               base::Unretained(this))));
+}
+
+void TabContainer::EnterTabClosingMode(absl::optional<int> override_width) {
+  in_tab_close_ = true;
+  override_available_width_for_tabs_ = override_width;
+}
+
+void TabContainer::ExitTabClosingMode() {
+  in_tab_close_ = false;
+  override_available_width_for_tabs_.reset();
+}
+
+void TabContainer::SetTabSlotVisibility() {
+  bool last_tab_visible = false;
+  absl::optional<tab_groups::TabGroupId> last_tab_group = absl::nullopt;
+  std::vector<Tab*> tabs = layout_helper()->GetTabs();
+  for (Tab* tab : base::Reversed(tabs)) {
+    absl::optional<tab_groups::TabGroupId> current_group = tab->group();
+    if (current_group != last_tab_group && last_tab_group.has_value()) {
+      TabGroupViews* group_view =
+          group_views().at(last_tab_group.value()).get();
+      group_view->header()->SetVisible(last_tab_visible);
+      group_view->underline()->SetVisible(last_tab_visible);
+    }
+    last_tab_visible = ShouldTabBeVisible(tab);
+    last_tab_group = tab->closing() ? absl::nullopt : current_group;
+
+    // Collapsed tabs disappear once they've reached their minimum size. This
+    // is different than very small non-collapsed tabs, because in that case
+    // the tab (and its favicon) must still be visible.
+    bool is_collapsed = (current_group.has_value() &&
+                         controller_->IsGroupCollapsed(current_group.value()) &&
+                         tab->bounds().width() <= TabStyle::GetTabOverlap());
+    tab->SetVisible(is_collapsed ? false : last_tab_visible);
+  }
+}
+
+void TabContainer::OnTabWillBeRemovedAt(int model_index, bool was_active) {
+  // The tab at |model_index| has already been removed from the model, but is
+  // still in |tabs_view_model_|.  Index math with care!
+  const int model_count = GetTabCount() - 1;
+  const int tab_overlap = TabStyle::GetTabOverlap();
+  if (in_tab_close() && model_count > 0 && model_index != model_count) {
+    // The user closed a tab other than the last tab. Set
+    // override_available_width_for_tabs_ so that as the user closes tabs with
+    // the mouse a tab continues to fall under the mouse.
+    int next_active_index = controller_->GetActiveIndex();
+    DCHECK(IsValidModelIndex(next_active_index));
+    if (model_index <= next_active_index) {
+      // At this point, model's internal state has already been updated.
+      // |contents| has been detached from model and the active index has been
+      // updated. But the tab for |contents| isn't removed yet. Thus, we need to
+      // fix up next_active_index based on it.
+      next_active_index++;
+    }
+    Tab* next_active_tab = GetTabAtModelIndex(next_active_index);
+    Tab* tab_being_removed = GetTabAtModelIndex(model_index);
+
+    int size_delta = tab_being_removed->width();
+    if (!tab_being_removed->data().pinned && was_active &&
+        layout_helper_->active_tab_width() >
+            layout_helper_->inactive_tab_width()) {
+      // When removing an active, non-pinned tab, an inactive tab will be made
+      // active and thus given the active width. Thus the width being removed
+      // from the container is really the current width of whichever inactive
+      // tab will be made active.
+      size_delta = next_active_tab->width();
+    }
+
+    override_available_width_for_tabs_ =
+        tabs_view_model_.ideal_bounds(model_count).right() - size_delta +
+        tab_overlap;
+  }
 }
 
 void TabContainer::PaintChildren(const views::PaintInfo& paint_info) {
@@ -684,9 +816,67 @@ Tab* TabContainer::FindTabHitByPoint(const gfx::Point& point) {
   return nullptr;
 }
 
+bool TabContainer::ShouldTabBeVisible(const Tab* tab) const {
+  // When the tabstrip is scrollable, it can grow to accommodate any number of
+  // tabs, so tabs can never become clipped.
+  // N.B. Tabs can still be not-visible because they're in a collapsed group,
+  // but that's handled elsewhere.
+  // N.B. This is separate from the tab being potentially scrolled offscreen -
+  // this solely determines whether the tab should be clipped for the
+  // pre-scrolling overflow behavior.
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip))
+    return true;
+
+  // Detached tabs should always be invisible (as they close).
+  if (tab->detached())
+    return false;
+
+  // If the tab would be clipped by the trailing edge of the strip, even if the
+  // tabstrip were resized to its greatest possible width, it shouldn't be
+  // visible.
+  int right_edge = tab->bounds().right();
+  const int tabstrip_right = tab->dragging()
+                                 ? drag_context_->GetTabDragAreaWidth()
+                                 : GetAvailableWidthForTabContainer();
+  if (right_edge > tabstrip_right)
+    return false;
+
+  // Non-clipped dragging tabs should always be visible.
+  if (tab->dragging())
+    return true;
+
+  // Let all non-clipped closing tabs be visible.  These will probably finish
+  // closing before the user changes the active tab, so there's little reason to
+  // try and make the more complex logic below apply.
+  if (tab->closing())
+    return true;
+
+  // Now we need to check whether the tab isn't currently clipped, but could
+  // become clipped if we changed the active tab, widening either this tab or
+  // the tabstrip portion before it.
+
+  // Pinned tabs don't change size when activated, so any tab in the pinned tab
+  // region is safe.
+  if (tab->data().pinned)
+    return true;
+
+  // If the active tab is on or before this tab, we're safe.
+  if (controller_->GetActiveIndex() <= GetModelIndexOf(tab))
+    return true;
+
+  // We need to check what would happen if the active tab were to move to this
+  // tab or before. If animating, we want to use the target bounds in this
+  // calculation.
+  if (bounds_animator_.IsAnimating())
+    right_edge = bounds_animator_.GetTargetBounds(tab).right();
+  return (right_edge + layout_helper_->active_tab_width() -
+          layout_helper_->inactive_tab_width()) <= tabstrip_right;
+}
+
 bool TabContainer::IsValidModelIndex(int model_index) const {
   return controller_->IsValidIndex(model_index);
 }
 
 BEGIN_METADATA(TabContainer, views::View)
+ADD_READONLY_PROPERTY_METADATA(int, AvailableWidthForTabContainer)
 END_METADATA

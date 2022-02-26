@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_group_views.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
@@ -20,14 +21,21 @@
 
 class TabStrip;
 class TabGroupHeader;
+class TabHoverCardController;
+class TabDragContext;
 
 // A View that contains a sequence of Tabs for the TabStrip.
 class TabContainer : public views::View, public views::ViewTargeterDelegate {
  public:
   METADATA_HEADER(TabContainer);
 
-  explicit TabContainer(TabStripController* controller_);
+  TabContainer(TabStripController* controller,
+               TabHoverCardController* hover_card_controller,
+               TabDragContext* drag_context);
   ~TabContainer() override;
+
+  void SetAvailableWidthCallback(
+      base::RepeatingCallback<int()> available_width_callback);
 
   Tab* AddTab(std::unique_ptr<Tab> tab, int model_index, TabPinned pinned);
   void MoveTab(Tab* tab, int from_model_index, int to_model_index);
@@ -48,13 +56,16 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
 
   void UpdateTabGroupVisuals(tab_groups::TabGroupId group_id);
 
-  int GetModelIndexOf(const TabSlotView* slot_view);
+  int GetModelIndexOf(const TabSlotView* slot_view) const;
 
   views::ViewModelT<Tab>* tabs_view_model() { return &tabs_view_model_; }
 
   Tab* GetTabAtModelIndex(int index) const;
 
   int GetTabCount() const;
+
+  void UpdateHoverCard(Tab* tab,
+                       TabController::HoverCardUpdateType update_type);
 
   // Updates the indexes and count for AX data on all tabs. Used by some screen
   // readers (e.g. ChromeVox).
@@ -74,6 +85,14 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
   // currently set in ideal_bounds.
   void AnimateToIdealBounds();
 
+  // Calculates the width that can be occupied by the tabs in the container.
+  // This can differ from GetAvailableWidthForTabContainer() when in tab closing
+  // mode.
+  int CalculateAvailableWidthForTabs() const;
+
+  // Returns the total width available for the TabContainer's use.
+  int GetAvailableWidthForTabContainer() const;
+
   // Teleports the tabs to their ideal bounds.
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
@@ -81,6 +100,20 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
 
   void AnimateTabClosed(Tab* tab, int former_model_index);
   void StartResetDragAnimation(int tab_model_index);
+
+  void EnterTabClosingMode(absl::optional<int> override_width);
+  void ExitTabClosingMode();
+
+  // Sets the visibility state of all tabs and group headers (if any) based on
+  // ShouldTabBeVisible().
+  void SetTabSlotVisibility();
+
+  bool in_tab_close() { return in_tab_close_; }
+  absl::optional<int> override_available_width_for_tabs() {
+    return override_available_width_for_tabs_;
+  }
+
+  void OnTabWillBeRemovedAt(int model_index, bool was_active);
 
   // TODO (1295774): Move callers down into TabContainer so this
   // encapsulation-breaking getter can be removed.
@@ -128,6 +161,13 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
   // If no tabs are hit, returns null.
   Tab* FindTabHitByPoint(const gfx::Point& point);
 
+  // Returns true if the tab is not partly or fully clipped (due to overflow),
+  // and the tab couldn't become partly clipped due to changing the selected tab
+  // (for example, if currently the strip has the last tab selected, and
+  // changing that to the first tab would cause |tab| to be pushed over enough
+  // to clip).
+  bool ShouldTabBeVisible(const Tab* tab) const;
+
   bool IsValidModelIndex(int model_index) const;
 
   std::map<tab_groups::TabGroupId, std::unique_ptr<TabGroupViews>> group_views_;
@@ -144,10 +184,28 @@ class TabContainer : public views::View, public views::ViewTargeterDelegate {
 
   TabStripController* controller_;
 
+  TabHoverCardController* hover_card_controller_;
+
+  TabDragContext* drag_context_;
+
   // Responsible for animating tabs in response to model changes.
   views::BoundsAnimator bounds_animator_;
 
   std::unique_ptr<TabStripLayoutHelper> layout_helper_;
+
+  // If this value is defined, it is used as the width to lay out tabs
+  // (instead of GetAvailableWidthForTabStrip()). It is defined when closing
+  // tabs with the mouse, and is used to control which tab will end up under the
+  // cursor after the close animation completes.
+  absl::optional<int> override_available_width_for_tabs_;
+
+  // True if EnterTabClosingMode has been invoked. Currently, this happens when
+  // a tab is closed with the mouse/touch and when collapsing a tab group. When
+  // true, remove animations preserve current tab bounds, making tabs move more
+  // predictably in case the user wants to perform more mouse-based actions.
+  bool in_tab_close_ = false;
+
+  base::RepeatingCallback<int()> available_width_callback_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_CONTAINER_H_

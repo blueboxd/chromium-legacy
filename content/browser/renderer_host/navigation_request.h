@@ -336,6 +336,7 @@ class CONTENT_EXPORT NavigationRequest
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
   bool IsCommitDeferringConditionDeferredForTesting() override;
+  CommitDeferringCondition* GetCommitDeferringConditionForTesting() override;
   bool WasStartedFromContextMenu() override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;
@@ -919,6 +920,16 @@ class CONTENT_EXPORT NavigationRequest
   void set_prerender_embedder_histogram_suffix(const std::string& suffix) {
     prerender_embedder_histogram_suffix_ = suffix;
   }
+
+  // Used in tests to indicate this navigation should force a BrowsingInstance
+  // swap.
+  void set_force_new_browsing_instance(bool force_new_browsing_instance) {
+    force_new_browsing_instance_ = force_new_browsing_instance;
+  }
+
+  // When this returns true, it indicates this navigation should force a
+  // BrowsingInstance swap. Used only in tests.
+  bool force_new_browsing_instance() { return force_new_browsing_instance_; }
 
  private:
   friend class NavigationRequestTest;
@@ -1977,6 +1988,10 @@ class CONTENT_EXPORT NavigationRequest
   // Prevents the compositor from requesting main frame updates early in
   // navigation.
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
+
+  // This navigation request should swap browsing instances as part of a test
+  // reset.
+  bool force_new_browsing_instance_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

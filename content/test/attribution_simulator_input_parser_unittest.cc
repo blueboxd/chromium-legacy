@@ -163,7 +163,7 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
         "trigger_data": "10",
         "event_source_trigger_data": "3",
         "priority": "-5",
-        "dedup_key": "123",
+        "deduplication_key": "123",
         "debug_key": "14"
       }
     },
@@ -189,8 +189,8 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
                               url::Origin::Create(GURL("https://a.r.test")))
                           .SetConversionDestination(net::SchemefulSite(
                               url::Origin::Create(GURL("https://a.d1.test"))))
-                          .SetTriggerData(2)             // sanitized to 3 bits
-                          .SetEventSourceTriggerData(1)  // sanitized to 1 bit
+                          .SetTriggerData(10)
+                          .SetEventSourceTriggerData(3)
                           .SetPriority(-5)
                           .SetDedupKey(123)
                           .SetDebugKey(14)

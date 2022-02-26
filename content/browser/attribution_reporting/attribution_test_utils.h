@@ -9,8 +9,10 @@
 
 #include <iosfwd>
 #include <limits>
+#include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -21,6 +23,7 @@
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
@@ -34,12 +37,14 @@
 #include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/attribution_reporting/constants.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
 class AggregatableHistogramContribution;
+class AttributionObserver;
 class AttributionTrigger;
 
 struct AggregatableAttribution;
@@ -154,6 +159,9 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   RandomizedResponse GetRandomizedResponse(
       const CommonSourceInfo& source) override;
   int64_t GetAggregatableBudgetPerSource() const override;
+  uint64_t SanitizeTriggerData(
+      uint64_t trigger_data,
+      CommonSourceInfo::SourceType source_type) const override;
 
   void set_max_attributions_per_source(int max) {
     max_attributions_per_source_ = max;
@@ -208,6 +216,8 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
     randomized_response_ = std::move(randomized_response);
   }
 
+  void set_trigger_data_cardinality(uint64_t navigation, uint64_t event);
+
  private:
   int max_attributions_per_source_ = INT_MAX;
   int max_sources_per_origin_ = INT_MAX;
@@ -231,11 +241,14 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   absl::optional<OfflineReportDelayConfig> offline_report_delay_config_;
 
   // If true, `ShuffleReports()` reverses the reports to allow testing the
-  // proper call from `AttributionStorage::GetAttributionsToReport()`.
+  // proper call from `AttributionStorage::GetAttributionReports()`.
   bool reverse_reports_on_shuffle_ = false;
 
   AttributionRandomizedResponseRates randomized_response_rates_;
   RandomizedResponse randomized_response_ = absl::nullopt;
+
+  absl::optional<uint64_t> navigation_trigger_data_cardinality_;
+  absl::optional<uint64_t> event_trigger_data_cardinality_;
 };
 
 // Test manager provider which can be used to inject a fake AttributionManager.
@@ -286,26 +299,24 @@ class MockAttributionManager : public AttributionManager {
                base::OnceClosure done),
               (override));
 
-  void AddObserver(Observer* observer) override;
-  void RemoveObserver(Observer* observer) override;
+  void AddObserver(AttributionObserver* observer) override;
+  void RemoveObserver(AttributionObserver* observer) override;
   AttributionDataHostManager* GetDataHostManager() override;
 
   void NotifySourcesChanged();
   void NotifyReportsChanged();
-  void NotifySourceDeactivated(
-      const AttributionStorage::DeactivatedSource& source);
+  void NotifySourceDeactivated(const DeactivatedSource& source);
   void NotifySourceHandled(const StorableSource& source,
                            StorableSource::Result result);
   void NotifyReportSent(const AttributionReport& report,
                         const SendResult& info);
-  void NotifyTriggerHandled(
-      const AttributionStorage::CreateReportResult& result);
+  void NotifyTriggerHandled(const CreateReportResult& result);
 
   void SetDataHostManager(std::unique_ptr<AttributionDataHostManager> manager);
 
  private:
   std::unique_ptr<AttributionDataHostManager> data_host_manager_;
-  base::ObserverList<Observer, /*check_empty=*/true> observers_;
+  base::ObserverList<AttributionObserver, /*check_empty=*/true> observers_;
 };
 
 // Helper class to construct a StorableSource for tests using default data.
@@ -490,13 +501,11 @@ bool operator==(const AttributionReport& a, const AttributionReport& b);
 
 bool operator==(const SendResult& a, const SendResult& b);
 
-bool operator==(const AttributionStorage::DeactivatedSource& a,
-                const AttributionStorage::DeactivatedSource& b);
+bool operator==(const DeactivatedSource& a, const DeactivatedSource& b);
 
 std::ostream& operator<<(std::ostream& out, AttributionTrigger::Result status);
 
-std::ostream& operator<<(std::ostream& out,
-                         AttributionStorage::DeactivatedSource::Reason reason);
+std::ostream& operator<<(std::ostream& out, DeactivatedSource::Reason reason);
 
 std::ostream& operator<<(std::ostream& out, RateLimitResult result);
 
@@ -541,13 +550,12 @@ std::ostream& operator<<(std::ostream& out, const SendResult& info);
 std::ostream& operator<<(std::ostream& out,
                          StoredSource::AttributionLogic attribution_logic);
 
-std::ostream& operator<<(
-    std::ostream& out,
-    const AttributionStorage::DeactivatedSource& deactivated_source);
+std::ostream& operator<<(std::ostream& out,
+                         const DeactivatedSource& deactivated_source);
 
 std::ostream& operator<<(std::ostream& out, StorableSource::Result status);
 
-std::vector<AttributionReport> GetAttributionsToReportForTesting(
+std::vector<AttributionReport> GetAttributionReportsForTesting(
     AttributionManagerImpl* manager,
     base::Time max_report_time);
 
@@ -661,6 +669,38 @@ MATCHER_P(DeactivatedSourceIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.GetDeactivatedSource(),
                             result_listener);
 }
+
+struct AttributionFilterSizeTestCase {
+  const char* description;
+  bool valid;
+
+  size_t filter_count;
+  size_t filter_size;
+  size_t value_count;
+  size_t value_size;
+
+  using Map = base::flat_map<std::string, std::vector<std::string>>;
+
+  Map AsMap() const;
+};
+
+constexpr AttributionFilterSizeTestCase kAttributionFilterSizeTestCases[] = {
+    {"empty", true, 0, 0, 0, 0},
+    {"max_filters", true, blink::kMaxAttributionFiltersPerSource, 1, 0, 0},
+    {"too_many_filters", false, blink::kMaxAttributionFiltersPerSource + 1, 1,
+     0, 0},
+    {"max_filter_size", true, 1, blink::kMaxBytesPerAttributionFilterString, 0,
+     0},
+    {"excessive_filter_size", false, 1,
+     blink::kMaxBytesPerAttributionFilterString + 1, 0, 0},
+    {"max_values", true, 1, 0, blink::kMaxValuesPerAttributionFilter, 0},
+    {"too_many_values", false, 1, 0, blink::kMaxValuesPerAttributionFilter + 1,
+     0},
+    {"max_value_size", true, 1, 0, 1,
+     blink::kMaxBytesPerAttributionFilterString},
+    {"excessive_value_size", false, 1, 0, 1,
+     blink::kMaxBytesPerAttributionFilterString + 1},
+};
 
 }  // namespace content
 

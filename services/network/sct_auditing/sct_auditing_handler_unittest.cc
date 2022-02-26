@@ -31,6 +31,7 @@
 #include "services/network/sct_auditing/sct_auditing_cache.h"
 #include "services/network/sct_auditing/sct_auditing_reporter.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
+#include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "services/network/url_loader_factory.h"
@@ -83,6 +84,14 @@ class SCTAuditingHandlerTest : public testing::Test {
     std::vector<mojom::CTLogInfoPtr> log_list;
     log_list.emplace_back(std::move(log));
     network_service_->UpdateCtLogList(std::move(log_list), base::Time::Now());
+
+    // A NetworkContextClient is needed for querying/updating the report count.
+    mojo::PendingRemote<network::mojom::NetworkContextClient>
+        network_context_client_remote;
+    network_context_client_ =
+        std::make_unique<network::TestNetworkContextClient>(
+            network_context_client_remote.InitWithNewPipeAndPassReceiver());
+    network_context_->SetClient(std::move(network_context_client_remote));
 
     // Set up SCT auditing configuration.
     auto* cache = network_service_->sct_auditing_cache();
@@ -159,6 +168,7 @@ class SCTAuditingHandlerTest : public testing::Test {
   base::FilePath persistence_path_;
   std::unique_ptr<NetworkService> network_service_;
   std::unique_ptr<NetworkContext> network_context_;
+  std::unique_ptr<TestNetworkContextClient> network_context_client_;
   scoped_refptr<net::X509Certificate> chain_;
   std::unique_ptr<SCTAuditingHandler> handler_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -290,7 +300,8 @@ TEST_F(SCTAuditingHandlerTest, ReportsOnlyIncludesValidSCTs) {
 
 // If operating on hashdance mode, calculate and store the SCT leaf hash and
 // append log metadata.
-TEST_F(SCTAuditingHandlerTest, PopularSCTMetadataOnHashdanceMode) {
+TEST_F(SCTAuditingHandlerTest, PopulateSCTMetadataOnHashdanceMode) {
+  base::HistogramTester histograms;
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list;
   const base::Time issued = base::Time::Now();
@@ -306,7 +317,6 @@ TEST_F(SCTAuditingHandlerTest, PopularSCTMetadataOnHashdanceMode) {
     handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
     auto* pending_reporters = handler_->GetPendingReportersForTesting();
     ASSERT_EQ(pending_reporters->size(), 1u);
-
     for (const auto& reporter : *pending_reporters) {
       if (mode == mojom::SCTAuditingMode::kHashdance) {
         net::ct::MerkleTreeLeaf merkle_tree_leaf;
@@ -327,6 +337,55 @@ TEST_F(SCTAuditingHandlerTest, PopularSCTMetadataOnHashdanceMode) {
         EXPECT_FALSE(reporter.second->sct_hashdance_metadata());
       }
     }
+    histograms.ExpectUniqueSample(
+        "Security.SCTAuditing.OptOut.PopularSCTSkipped", false,
+        mode == mojom::SCTAuditingMode::kHashdance ? 1 : 0);
+    handler_->ClearPendingReports();
+    network_service_->sct_auditing_cache()->ClearCache();
+  }
+}
+
+// If operating on hashdance mode, do not report popular SCTs.
+TEST_F(SCTAuditingHandlerTest, DoNotReportPopularSCT) {
+  const net::HostPortPair host_port_pair("example.com", 443);
+  net::SignedCertificateTimestampAndStatusList sct_list;
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, "extensions",
+      "valid_signature", base::Time::Now(), net::ct::SCT_STATUS_OK, &sct_list);
+  net::ct::MerkleTreeLeaf merkle_tree_leaf;
+  std::string leaf_hash_string;
+  ASSERT_TRUE(net::ct::GetMerkleTreeLeaf(chain_.get(), sct_list.at(0).sct.get(),
+                                         &merkle_tree_leaf));
+  ASSERT_TRUE(net::ct::HashMerkleTreeLeaf(merkle_tree_leaf, &leaf_hash_string));
+  std::vector<uint8_t> leaf_hash(leaf_hash_string.begin(),
+                                 leaf_hash_string.end());
+
+  // Create a list of sorted leaf hashes that will contain the SCT's leaf hash.
+  std::vector<std::vector<uint8_t>> leaf_hashes;
+  for (size_t byte = 0; byte < 256; ++byte) {
+    std::vector<uint8_t> new_leaf_hash = leaf_hash;
+    new_leaf_hash[0] = byte;
+    leaf_hashes.emplace_back(std::move(new_leaf_hash));
+  }
+
+  network_service_->sct_auditing_cache()->set_popular_scts({leaf_hash});
+
+  for (mojom::SCTAuditingMode mode :
+       {mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting,
+        mojom::SCTAuditingMode::kHashdance}) {
+    SCOPED_TRACE(testing::Message() << "Mode: " << static_cast<int>(mode));
+    base::HistogramTester histograms;
+    handler_->SetMode(mode);
+    handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
+    auto* pending_reporters = handler_->GetPendingReportersForTesting();
+    EXPECT_EQ(pending_reporters->size(),
+              mode == mojom::SCTAuditingMode::kHashdance ? 0u : 1u);
+
+    // The hashdance request should record a count for PopularSCTSkipped.
+    histograms.ExpectUniqueSample(
+        "Security.SCTAuditing.OptOut.PopularSCTSkipped", true,
+        mode == mojom::SCTAuditingMode::kHashdance ? 1 : 0);
+
     handler_->ClearPendingReports();
     network_service_->sct_auditing_cache()->ClearCache();
   }

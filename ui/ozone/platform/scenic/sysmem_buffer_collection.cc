@@ -282,7 +282,7 @@ bool SysmemBufferCollection::Initialize(
   if (register_with_image_pipe) {
     overlay_view_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     scenic_overlay_view_ = std::make_unique<ScenicOverlayView>(
-        scenic_surface_factory->CreateScenicSession(), scenic_surface_factory);
+        scenic_surface_factory->CreateScenicSession());
   }
 
   fuchsia::sysmem::BufferCollectionTokenSyncPtr collection_token;
@@ -634,8 +634,7 @@ void SysmemBufferCollection::InitializeImageCreateInfo(
   vk_image_info->usage = VK_IMAGE_USAGE_SAMPLED_BIT |
                          VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                          VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-  if (usage_ == gfx::BufferUsage::SCANOUT ||
-      usage_ == gfx::BufferUsage::SCANOUT_CPU_READ_WRITE) {
+  if (usage_ == gfx::BufferUsage::SCANOUT) {
     vk_image_info->usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
   }
 

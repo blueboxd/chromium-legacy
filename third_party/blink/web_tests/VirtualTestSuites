@@ -518,7 +518,8 @@
       "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
       "external/wpt/app-history/navigate-event/cross-window"
     ],
-    "args": ["--disable-auto-wpt-origin-isolation"]
+    "args": ["--disable-auto-wpt-origin-isolation",
+             "--reset-browsing-instance-between-tests"]
   },
   {
     "prefix": "focusless-spat-nav",
@@ -578,6 +579,7 @@
               "fast/forms/color-scheme",
               "fast/forms/validation-bubble-appearance-edge.html",
               "fast/forms/validation-bubble-appearance-wrap.html",
+              "fast/loader/plain-text-document-appearance.html",
               "http/tests/eye-dropper"],
     "args": ["--blink-settings=preferredColorScheme=0",
              "--enable-features=EyeDropper"]

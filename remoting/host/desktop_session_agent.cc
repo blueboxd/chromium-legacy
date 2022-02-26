@@ -32,6 +32,7 @@
 #include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/crash_process.h"
+#include "remoting/host/desktop_display_info_monitor.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/keyboard_layout_monitor.h"
@@ -431,8 +432,12 @@ void DesktopSessionAgent::Start(
   }
 
   // Start the video capturer and mouse cursor monitor.
+  // TODO(lambroslambrou): When supporting multiple streams, this class should
+  // create and own a single DesktopDisplayInfoMonitor and call Start() on it,
+  // instead of passing it to CreateVideoCapturer() here.
   video_capturer_ = std::make_unique<DesktopAndCursorConditionalComposer>(
-      desktop_environment_->CreateVideoCapturer());
+      desktop_environment_->CreateVideoCapturer(
+          desktop_environment_->CreateDisplayInfoMonitor()));
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
       std::make_unique<SharedMemoryFactoryImpl>(
@@ -474,25 +479,27 @@ void DesktopSessionAgent::OnCaptureResult(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  // Serialize webrtc::DesktopFrame.
-  SerializedDesktopFrame serialized_frame;
+  mojom::CaptureResultPtr capture_result;
   if (frame) {
-    serialized_frame.shared_buffer_id = frame->shared_memory()->id();
-    serialized_frame.bytes_per_row = frame->stride();
-    serialized_frame.dimensions = frame->size();
-    serialized_frame.capture_time_ms = frame->capture_time_ms();
-    serialized_frame.dpi = frame->dpi();
-    serialized_frame.capturer_id = frame->capturer_id();
+    DCHECK_EQ(result, webrtc::DesktopCapturer::Result::SUCCESS);
+    std::vector<webrtc::DesktopRect> dirty_region;
     for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
          !i.IsAtEnd(); i.Advance()) {
-      serialized_frame.dirty_region.push_back(i.rect());
+      dirty_region.push_back(i.rect());
     }
+    capture_result =
+        mojom::CaptureResult::NewDesktopFrame(mojom::DesktopFrame::New(
+            frame->shared_memory()->id(), frame->stride(), frame->size(),
+            std::move(dirty_region), frame->capture_time_ms(), frame->dpi(),
+            frame->capturer_id()));
+  } else {
+    DCHECK_NE(result, webrtc::DesktopCapturer::Result::SUCCESS);
+    capture_result = mojom::CaptureResult::NewCaptureError(result);
   }
 
   last_frame_ = std::move(frame);
 
-  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_CaptureResult>(
-      result, serialized_frame));
+  desktop_session_event_handler_->OnCaptureResult(std::move(capture_result));
 }
 
 void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {

@@ -429,7 +429,7 @@ void ClientTagBasedModelTypeProcessor::Put(
       metadata_change_list->ClearMetadata(entity->storage_key());
       entity_tracker_->UpdateOrOverrideStorageKey(data->client_tag_hash,
                                                   storage_key);
-      entity->MakeLocalChange(std::move(data));
+      entity->RecordLocalUpdate(std::move(data));
     } else {
       if (data->creation_time.is_null())
         data->creation_time = base::Time::Now();
@@ -441,7 +441,7 @@ void ClientTagBasedModelTypeProcessor::Put(
     // Ignore changes that don't actually change anything.
     return;
   } else {
-    entity->MakeLocalChange(std::move(data));
+    entity->RecordLocalUpdate(std::move(data));
   }
 
   DCHECK(entity->IsUnsynced());
@@ -469,7 +469,7 @@ void ClientTagBasedModelTypeProcessor::Delete(
     return;
   }
 
-  if (entity->Delete())
+  if (entity->RecordLocalDeletion())
     metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
   else
     RemoveEntity(entity->storage_key(), metadata_change_list);
@@ -896,10 +896,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToDebugString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = entity_tracker_->AddRemote(
-        storage_key, update.entity, update.response_version);
-    // TODO(crbug.com/1296159): Remove once create flow is refactored.
-    entity->RecordAcceptedUpdate(update);
+    ProcessorEntity* entity = entity_tracker_->AddRemote(storage_key, update);
     entity_data.push_back(
         EntityChange::CreateAdd(storage_key, std::move(update.entity)));
     if (!storage_key.empty())

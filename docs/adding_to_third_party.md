@@ -21,10 +21,14 @@ there.
 ## Before you start
 
 To make sure the inclusion of a new third_party project makes sense for the
-Chromium project, you should first obtain Chrome Eng Review approval.
-Googlers should see go/chrome-eng-review and review existing topics in
-g/chrome-eng-review. Please include information about the additional checkout
-size, build times, and binary size increase of
+Chromium project, you should first obtain
+[Chrome Eng Review](../ENG_REVIEW_OWNERS) approval. Googlers should see
+[go/chrome-eng-review](https://goto.google.com/chrome-eng-review) and review
+existing topics in g/chrome-eng-review, and can also come to office hours to ask
+questions.
+
+Please include information about the additional checkout size, build times,
+and binary size increase of
 [official](https://www.chromium.org/developers/gn-build-configuration) builds
 on Android and one desktop platform. Please also make sure that the motivation
 for your project is clear, e.g., a design doc has been circulated.
@@ -203,7 +207,9 @@ Non-Googlers can email one of the people in
 * Lastly, if all other steps are complete, get a positive code review from a
   member of [//third_party/OWNERS](../third_party/OWNERS) to land the change.
 
-Please send separate emails to the eng review and security lists.
+Please send separate emails to the eng review and security@chromium.org.
+You can skip the eng review and security@chromium.org when you are only moving
+existing directories in Chromium to //third_party/.
 
 Subsequent changes don't normally require third-party-owners or security
 approval; you can modify the code as much as you want. When you update code, be

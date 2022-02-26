@@ -17,7 +17,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
@@ -70,6 +69,7 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/preinstalled_apps.h"
+#include "chrome/browser/extensions/scoped_database_manager_for_test.h"
 #include "chrome/browser/extensions/test_blocklist.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -2198,7 +2198,7 @@ TEST_F(ExtensionServiceTest, PackPunctuatedExtension) {
     base::FilePath(FILE_PATH_LITERAL("thisextensionhasaslashinitsname.pem")),
   };
 
-  for (size_t i = 0; i < base::size(punctuated_names); ++i) {
+  for (size_t i = 0; i < std::size(punctuated_names); ++i) {
     SCOPED_TRACE(punctuated_names[i].value().c_str());
     base::FilePath output_dir = temp_dir.GetPath().Append(punctuated_names[i]);
 
@@ -3508,7 +3508,7 @@ TEST_F(ExtensionServiceTest, NoUnsetBlocklistInPrefs) {
 TEST_F(ExtensionServiceTest, BlocklistedExtensionWillNotInstall) {
   scoped_refptr<FakeSafeBrowsingDatabaseManager> blocklist_db(
       new FakeSafeBrowsingDatabaseManager(true));
-  Blocklist::ScopedDatabaseManagerForTest scoped_blocklist_db(blocklist_db);
+  ScopedDatabaseManagerForTest scoped_blocklist_db(blocklist_db);
 
   InitializeEmptyExtensionService();
   service()->Init();
@@ -7014,7 +7014,7 @@ TEST_F(ExtensionServiceTest, MultipleExternalInstallErrors) {
       {page_action, "1.0.0.0", "page_action.crx"},
       {minimal_platform_app_crx, "0.1", "minimal_platform_app.crx"}};
 
-  for (size_t i = 0; i < base::size(extension_info); ++i) {
+  for (size_t i = 0; i < std::size(extension_info); ++i) {
     reg_provider->UpdateOrAddExtension(
         extension_info[i][0], extension_info[i][1],
         data_dir().AppendASCII(extension_info[i][2]));

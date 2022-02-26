@@ -4,6 +4,7 @@
 
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
+#include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_session.h"
@@ -168,6 +169,53 @@ class CaptureModeCameraTest : public AshTestBase {
                 GetEventGenerator());
   }
 
+  // Verifies that the camera preview is placed on the correct position based on
+  // current preview snap position and the given `confine_bounds_in_screen`.
+  void VerifyPreviewAlignment(const gfx::Rect& confine_bounds_in_screen) {
+    auto* camera_controller = GetCameraController();
+    const auto* preview_widget = camera_controller->camera_preview_widget();
+    DCHECK(preview_widget);
+    const gfx::Rect camera_preview_bounds =
+        preview_widget->GetWindowBoundsInScreen();
+
+    switch (camera_controller->camera_preview_snap_position()) {
+      case CameraPreviewSnapPosition::kTopLeft: {
+        gfx::Point expect_origin = confine_bounds_in_screen.origin();
+        expect_origin.Offset(capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                             capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_origin, camera_preview_bounds.origin());
+        break;
+      }
+      case CameraPreviewSnapPosition::kBottomLeft: {
+        const gfx::Point expect_bottom_left =
+            gfx::Point(confine_bounds_in_screen.x() +
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                       confine_bounds_in_screen.bottom() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_bottom_left, camera_preview_bounds.bottom_left());
+        break;
+      }
+      case CameraPreviewSnapPosition::kBottomRight: {
+        const gfx::Point expect_bottom_right =
+            gfx::Point(confine_bounds_in_screen.right() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                       confine_bounds_in_screen.bottom() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_bottom_right, camera_preview_bounds.bottom_right());
+        break;
+      }
+      case CameraPreviewSnapPosition::kTopRight: {
+        const gfx::Point expect_top_right =
+            gfx::Point(confine_bounds_in_screen.right() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                       confine_bounds_in_screen.y() +
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_top_right, camera_preview_bounds.top_right());
+        break;
+      }
+    }
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::SystemMonitor system_monitor_;
@@ -272,6 +320,28 @@ TEST_F(CaptureModeCameraTest, SelectedCameraBecomesAvailable) {
   camera_controller->SetSelectedCamera(CameraId());
   EXPECT_FALSE(camera_controller->selected_camera().is_valid());
   EXPECT_FALSE(camera_controller->camera_preview_widget());
+}
+
+TEST_F(CaptureModeCameraTest, SelectingDifferentCameraCreatesNewPreviewWidget) {
+  AddDefaultCamera();
+  const std::string device_id = "/dev/video0";
+  const std::string display_name = "Integrated Webcam";
+  const std::string model_id = "0123:4567";
+  AddFakeCamera(device_id, display_name, model_id);
+
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  auto* camera_controller = GetCameraController();
+  EXPECT_FALSE(camera_controller->camera_preview_widget());
+
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* current_preview_widget = camera_controller->camera_preview_widget();
+  EXPECT_TRUE(current_preview_widget);
+
+  // Selecting a different camera should result in the recreation of the preview
+  // widget.
+  camera_controller->SetSelectedCamera(CameraId(model_id, 1));
+  EXPECT_TRUE(camera_controller->camera_preview_widget());
+  EXPECT_NE(current_preview_widget, camera_controller->camera_preview_widget());
 }
 
 TEST_F(CaptureModeCameraTest, MultipleCamerasOfTheSameModel) {
@@ -656,15 +726,14 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetBounds) {
   const auto* preview_widget = camera_controller->camera_preview_widget();
   EXPECT_TRUE(preview_widget);
 
-  // When snap position is `kBottomRight` and capture source is `kFullscreen`,
-  // the preview should at the bottom right corner of screen.
+  // Verifies the camera preview's alignment with `kBottomRight` snap position
+  // and `kFullscreen` capture source.
   const auto* capture_mode_session = controller->capture_mode_session();
   const gfx::Rect work_area =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(capture_mode_session->current_root())
           .work_area();
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            work_area.bottom_right());
+  VerifyPreviewAlignment(work_area);
 
   // Switching to `kRegion` without capture region set, the preview widget
   // should not be shown.
@@ -672,45 +741,48 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetBounds) {
   EXPECT_TRUE(controller->user_capture_region().IsEmpty());
   EXPECT_FALSE(preview_widget->IsVisible());
 
-  // The preview should be shown at the bottom right corner of the capture
-  // region when it is set.
+  // Verifies the camera preview's alignment with `kBottomRight` snap position
+  // and `kRegion` capture source.
   const gfx::Rect capture_region(10, 20, 300, 200);
   controller->SetUserCaptureRegion(capture_region, /*by_user=*/true);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            capture_region.bottom_right());
+  VerifyPreviewAlignment(capture_region);
 
-  // Switching back to `kFullscreen`, the preview should be shown at the bottom
-  // right of the screen again.
+  // Verifies the camera preview's alignment after switching back to
+  // `kFullscreen.`
   controller->SetSource(CaptureModeSource::kFullscreen);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            work_area.bottom_right());
+  VerifyPreviewAlignment(work_area);
 
-  // Switching back to `kRegion`, the preview should be shown at the bottom
-  // right of the current capture region again.
+  // Verifies the camera preview's alignment with `kBottomLeft` snap position
+  // and `kRegion` capture source.
   controller->SetSource(CaptureModeSource::kRegion);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            capture_region.bottom_right());
-
-  // Update the snap position should update the preview to the corresponding
-  // position.
   camera_controller->SetCameraPreviewSnapPosition(
       CameraPreviewSnapPosition::kBottomLeft);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_left(),
-            capture_region.bottom_left());
+  VerifyPreviewAlignment(capture_region);
+
+  // Verifies the camera preview's alignment with `kTopLeft` snap position
+  // and `kRegion` capture source.
+  camera_controller->SetCameraPreviewSnapPosition(
+      CameraPreviewSnapPosition::kTopLeft);
+  VerifyPreviewAlignment(capture_region);
+
+  // Verifies the camera preview's alignment with `kTopRight` snap position
+  // and `kRegion` capture source.
+  camera_controller->SetCameraPreviewSnapPosition(
+      CameraPreviewSnapPosition::kTopRight);
+  VerifyPreviewAlignment(capture_region);
 
   // Set capture region to empty, the preview should be hidden again.
   controller->SetUserCaptureRegion(gfx::Rect(), /*by_user=*/true);
   EXPECT_FALSE(preview_widget->IsVisible());
 
-  // Switching to `kWindow` and start the video recording. The preview should
-  // stay at the bottom left corner of the recording window's bounds.
+  // Verifies the camera preview's alignment with `kTopRight` snap position and
+  // `kWindow` capture source.
   StartRecordingFromSource(CaptureModeSource::kWindow);
   const auto* window_being_recorded =
       controller->video_recording_watcher_for_testing()
           ->window_being_recorded();
   DCHECK(window_being_recorded);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_left(),
-            window_being_recorded->GetBoundsInScreen().bottom_left());
+  VerifyPreviewAlignment(window_being_recorded->GetBoundsInScreen());
 }
 
 TEST_F(CaptureModeCameraTest, MultiDisplayCameraPreviewWidgetBounds) {
@@ -884,6 +956,34 @@ TEST_F(CaptureModeCameraTest, ChangeFolderWhileVideoRecordingInProgress) {
   const base::FilePath& saved_video_file = WaitForCaptureFileToBeSaved();
   EXPECT_EQ(controller->delegate_for_testing()->GetUserDefaultDownloadsFolder(),
             saved_video_file.DirName());
+}
+
+// Tests that there is no crash if moving the mouse to be on the top of the
+// camera preview after capture type switching. Selected window should not be
+// changed in this process either.
+TEST_F(CaptureModeCameraTest, HoveringMouseOverCameraPreview) {
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
+  AddDefaultCamera();
+  auto* camera_controller = GetCameraController();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(window());
+  EXPECT_TRUE(camera_controller->camera_preview_widget());
+
+  // No camera preview when it is in `kImage`.
+  controller->SetType(CaptureModeType::kImage);
+  event_generator->MoveMouseToCenterOf(window());
+  EXPECT_FALSE(camera_controller->camera_preview_widget());
+
+  // The native window of camera preview widget should be ignored from the
+  // candidates of the selected window. So moving the mouse to be on top of the
+  // camera preview should not cause any crash or selected window changes.
+  controller->SetType(CaptureModeType::kVideo);
+  event_generator->MoveMouseTo(camera_controller->camera_preview_widget()
+                                   ->GetWindowBoundsInScreen()
+                                   .CenterPoint());
+  EXPECT_EQ(window(), controller->capture_mode_session()->GetSelectedWindow());
 }
 
 }  // namespace ash

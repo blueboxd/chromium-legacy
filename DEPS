@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'c77efd394a3cdc80ad0210b5762220ffe5282df1',
+  'devtools_frontend_revision': 'd7bff2860378b174fe97c8cffc29fe79598bb58e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'R2Scs9LeEnk6Gci1aTeYhO1St6xc1j8xDHJ38D2MgfYC',
+          'version': 'YroYWbHOD0mEJC7zMZ2T6a0-6rc1g2tWrXM4Zp8O5o0C',
         },
       ],
       'dep_type': 'cipd',
@@ -820,7 +820,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'Lay0gyvZ5bikG7V3ktlmqDpwbVBYWTadIMjkw8ryY7UC',
+          'version': '5dwZtckJhPng3Ae41onM6DPbQkH_GcSiM2lLJINeAIcC',
         },
       ],
       'dep_type': 'cipd',
@@ -831,7 +831,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'X5YUlPp5VK-OorwQPdVpGyHCyLDADSQujpS7VenyLfsC',
+          'version': 'ifBQjUkeY7JX1jridKaMdrKGb_e3W8DdUxyapL46YrYC',
         },
       ],
       'dep_type': 'cipd',
@@ -1805,7 +1805,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@26b83f3b50617e4d7196b3be5f826bb082ea2dd5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0f111ddf9f9847a073884f83bf50e963bdfc9158',
     'condition': 'checkout_src_internal',
   },
 

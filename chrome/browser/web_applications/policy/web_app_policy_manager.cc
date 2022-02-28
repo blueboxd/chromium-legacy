@@ -52,7 +52,7 @@ namespace {
 
 bool IconInfosContainIconURL(const std::vector<apps::IconInfo>& icon_infos,
                              const GURL& url) {
-  for (apps::IconInfo info : icon_infos) {
+  for (const apps::IconInfo& info : icon_infos) {
     if (info.url.EqualsIgnoringRef(url))
       return true;
   }
@@ -609,6 +609,9 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
         break;
       case policy::SystemFeature::kCanvas:
         disabled_web_apps_.insert(web_app::kCanvasAppId);
+        break;
+      case policy::SystemFeature::kCrosh:
+        disabled_system_apps_.insert(SystemAppType::CROSH);
         break;
     }
   }

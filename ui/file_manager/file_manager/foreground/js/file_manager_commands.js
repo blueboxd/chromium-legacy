@@ -2082,8 +2082,22 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['extract-all'] = new class extends FilesCommand {
   execute(event, fileManager) {
-    // TODO(crbug.com/953256) wire up IOTask for extraction.
+    const dirEntry = fileManager.getCurrentDirectoryEntry();
+    if (!dirEntry ||
+        !fileManager.getSelection().entries.every(
+            CommandUtil.shouldShowMenuItemsForEntry.bind(
+                null, fileManager.volumeManager))) {
+      return;
+    }
+
+    const selectionEntries = fileManager.getSelection().entries;
+    if (util.isExtractArchiveEnabled()) {
+      chrome.fileManagerPrivate.startIOTask(
+          chrome.fileManagerPrivate.IOTaskType.EXTRACT, selectionEntries,
+          {destinationFolder: /** @type {!DirectoryEntry} */ (dirEntry)});
+    }
   }
+
   /** @override */
   canExecute(event, fileManager) {
     if (!util.isExtractArchiveEnabled()) {
@@ -2135,6 +2149,16 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
   canExecute(event, fileManager) {
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     const selection = fileManager.getSelection();
+
+    // Hide ZIP selection for single ZIP file selected.
+    if (util.isExtractArchiveEnabled()) {
+      if (selection.entries.length === 1 &&
+          FileType.getExtension(selection.entries[0]) === '.zip') {
+        event.command.setHidden(true);
+        event.canExecute = false;
+        return;
+      }
+    }
 
     if (!selection.entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
             null, fileManager.volumeManager))) {

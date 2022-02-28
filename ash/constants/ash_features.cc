@@ -510,6 +510,12 @@ const base::Feature kEnableHostnameSetting{"EnableHostnameSetting",
 const base::Feature kEnableIdleInhibit{"EnableIdleInhibit",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables selecting IKEv2 as the VPN provider type when creating a VPN network.
+// This will only take effect when running a compatible kernel, see
+// crbug/1275421.
+const base::Feature kEnableIkev2Vpn{"EnableIkev2Vpn",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the input device cards will be shown in the diagnostics app.
 const base::Feature kEnableInputInDiagnosticsApp{
     "EnableInputInDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1580,6 +1586,10 @@ bool IsDragWindowToNewDeskEnabled() {
   return base::FeatureList::IsEnabled(kDragWindowToNewDesk);
 }
 
+bool IsDriveFsMirroringEnabled() {
+  return base::FeatureList::IsEnabled(kDriveFsMirroring);
+}
+
 bool IsEchePhoneHubPermissionsOnboarding() {
   return base::FeatureList::IsEnabled(kEchePhoneHubPermissionsOnboarding);
 }
@@ -1731,6 +1741,11 @@ bool IsKeyboardBacklightToggleEnabled() {
 bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
   return base::FeatureList::IsEnabled(
       kKeyboardBasedDisplayArrangementInSettings);
+}
+
+bool IsLanguagePacksEnabled() {
+  return base::FeatureList::IsEnabled(kHandwritingLegacyRecognition) ||
+         base::FeatureList::IsEnabled(kHandwritingLegacyRecognitionAllLang);
 }
 
 bool IsLauncherAppSortEnabled() {

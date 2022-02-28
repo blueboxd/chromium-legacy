@@ -96,19 +96,15 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   // contains the Android package name. May be empty if AppId() should be
   // considered as the canonical publisher ID.
   const std::string& PublisherId() const;
-  const std::string& GetPublisherId() const;
   bool PublisherIdChanged() const;
 
   const std::string& Description() const;
-  const std::string& GetDescription() const;
   bool DescriptionChanged() const;
 
   const std::string& Version() const;
-  const std::string& GetVersion() const;
   bool VersionChanged() const;
 
   std::vector<std::string> AdditionalSearchTerms() const;
-  std::vector<std::string> GetAdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 
   apps::mojom::IconKeyPtr IconKey() const;
@@ -116,11 +112,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   bool IconKeyChanged() const;
 
   base::Time LastLaunchTime() const;
-  base::Time GetLastLaunchTime() const;
   bool LastLaunchTimeChanged() const;
 
   base::Time InstallTime() const;
-  base::Time GetInstallTime() const;
   bool InstallTimeChanged() const;
 
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
@@ -138,21 +132,17 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   // An optional ID used for policy to identify the app.
   // For web apps, it contains the install URL.
   const std::string& PolicyId() const;
-  const std::string& GetPolicyId() const;
   bool PolicyIdChanged() const;
 
   apps::mojom::OptionalBool InstalledInternally() const;
 
-  apps::mojom::OptionalBool IsPlatformApp() const;
-  absl::optional<bool> GetIsPlatformApp() const;
+  absl::optional<bool> IsPlatformApp() const;
   bool IsPlatformAppChanged() const;
 
-  apps::mojom::OptionalBool Recommendable() const;
-  absl::optional<bool> GetRecommendable() const;
+  absl::optional<bool> Recommendable() const;
   bool RecommendableChanged() const;
 
-  apps::mojom::OptionalBool Searchable() const;
-  absl::optional<bool> GetSearchable() const;
+  absl::optional<bool> Searchable() const;
   bool SearchableChanged() const;
 
   apps::mojom::OptionalBool ShowInLauncher() const;
@@ -175,8 +165,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   absl::optional<bool> GetHandlesIntents() const;
   bool HandlesIntentsChanged() const;
 
-  apps::mojom::OptionalBool AllowUninstall() const;
-  absl::optional<bool> GetAllowUninstall() const;
+  absl::optional<bool> AllowUninstall() const;
   bool AllowUninstallChanged() const;
 
   apps::mojom::OptionalBool HasBadge() const;

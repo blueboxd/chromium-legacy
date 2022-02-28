@@ -471,9 +471,8 @@ void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
 BackForwardCacheCanStoreDocumentResult::
     BackForwardCacheCanStoreDocumentResult() = default;
 BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(
-    BackForwardCacheCanStoreDocumentResult&&) = default;
-BackForwardCacheCanStoreDocumentResult&
-BackForwardCacheCanStoreDocumentResult::operator=(
+    BackForwardCacheCanStoreDocumentResult&) = default;
+BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(
     BackForwardCacheCanStoreDocumentResult&&) = default;
 BackForwardCacheCanStoreDocumentResult::
     ~BackForwardCacheCanStoreDocumentResult() = default;

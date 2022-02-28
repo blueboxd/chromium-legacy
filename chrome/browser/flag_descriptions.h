@@ -2703,6 +2703,9 @@ extern const char kEcheSWAInBackgroundDescription[];
 extern const char kEnableIdleInhibitName[];
 extern const char kEnableIdleInhibitDescription[];
 
+extern const char kEnableIkev2VpnName[];
+extern const char kEnableIkev2VpnDescription[];
+
 extern const char kEnableNetworkingInDiagnosticsAppName[];
 extern const char kEnableNetworkingInDiagnosticsAppDescription[];
 
@@ -3172,6 +3175,9 @@ extern const char kEnableTtsLacrosSupportDescription[];
 
 extern const char kLinkCapturingUiUpdateName[];
 extern const char kLinkCapturingUiUpdateDescription[];
+
+extern const char kMessagesPreinstallName[];
+extern const char kMessagesPreinstallDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)

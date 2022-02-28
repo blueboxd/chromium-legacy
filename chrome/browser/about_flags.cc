@@ -3287,6 +3287,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-dns-proxy", flag_descriptions::kEnableDnsProxyName,
      flag_descriptions::kEnableDnsProxyDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableDnsProxy)},
+    {"enable-ikev2-vpn", flag_descriptions::kEnableIkev2VpnName,
+     flag_descriptions::kEnableIkev2VpnDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableIkev2Vpn)},
     {"enable-wireguard", flag_descriptions::kEnableWireGuardName,
      flag_descriptions::kEnableWireGuardDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableWireGuard)},
@@ -7256,6 +7259,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDefaultChromeAppsMigrationName,
      flag_descriptions::kDefaultChromeAppsMigrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(policy::features::kDefaultChromeAppsMigration)},
+
+    {"messages-preinstall", flag_descriptions::kMessagesPreinstallName,
+     flag_descriptions::kMessagesPreinstallDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(web_app::kMessagesPreinstall)},
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)

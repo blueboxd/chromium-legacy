@@ -200,7 +200,8 @@ void BidderWorklet::GenerateBid(
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
-    const url::Origin& seller_origin,
+    const url::Origin& browser_signal_seller_origin,
+    const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
     GenerateBidCallback generate_bid_callback) {
@@ -213,7 +214,10 @@ void BidderWorklet::GenerateBid(
   generate_bid_task->auction_signals_json = auction_signals_json;
   generate_bid_task->per_buyer_signals_json = per_buyer_signals_json;
   generate_bid_task->per_buyer_timeout = per_buyer_timeout;
-  generate_bid_task->seller_origin = seller_origin;
+  generate_bid_task->browser_signal_seller_origin =
+      browser_signal_seller_origin;
+  generate_bid_task->browser_signal_top_level_seller_origin =
+      browser_signal_top_level_seller_origin;
   generate_bid_task->bidding_browser_signals =
       std::move(bidding_browser_signals);
   generate_bid_task->auction_start_time = auction_start_time;
@@ -249,6 +253,7 @@ void BidderWorklet::ReportWin(
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const url::Origin& browser_signal_seller_origin,
+    const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     uint32_t bidding_signals_data_version,
     bool has_bidding_signals_data_version,
     ReportWinCallback report_win_callback) {
@@ -263,6 +268,8 @@ void BidderWorklet::ReportWin(
   report_win_task->browser_signal_render_url = browser_signal_render_url;
   report_win_task->browser_signal_bid = browser_signal_bid;
   report_win_task->browser_signal_seller_origin = browser_signal_seller_origin;
+  report_win_task->browser_signal_top_level_seller_origin =
+      browser_signal_top_level_seller_origin;
   if (has_bidding_signals_data_version)
     report_win_task->bidding_signals_data_version =
         bidding_signals_data_version;
@@ -327,6 +334,7 @@ void BidderWorklet::V8State::ReportWin(
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
     const url::Origin& browser_signal_seller_origin,
+    const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     const absl::optional<uint32_t>& bidding_signals_data_version,
     ReportWinCallbackInternal callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
@@ -368,6 +376,10 @@ void BidderWorklet::V8State::ReportWin(
       !browser_signals_dict.Set("bid", browser_signal_bid) ||
       !browser_signals_dict.Set("seller",
                                 browser_signal_seller_origin.Serialize()) ||
+      (browser_signal_top_level_seller_origin &&
+       !browser_signals_dict.Set(
+           "topLevelSeller",
+           browser_signal_top_level_seller_origin->Serialize())) ||
       (bidding_signals_data_version.has_value() &&
        !browser_signals_dict.Set("dataVersion",
                                  bidding_signals_data_version.value()))) {
@@ -406,6 +418,7 @@ void BidderWorklet::V8State::GenerateBid(
     const absl::optional<std::string>& per_buyer_signals_json,
     const absl::optional<base::TimeDelta> per_buyer_timeout,
     const url::Origin& browser_signal_seller_origin,
+    const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
     mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
     scoped_refptr<TrustedSignals::Result> trusted_bidding_signals_result,
@@ -496,6 +509,10 @@ void BidderWorklet::V8State::GenerateBid(
                                 top_window_origin_.host()) ||
       !browser_signals_dict.Set("seller",
                                 browser_signal_seller_origin.Serialize()) ||
+      (browser_signal_top_level_seller_origin &&
+       !browser_signals_dict.Set(
+           "topLevelSeller",
+           browser_signal_top_level_seller_origin->Serialize())) ||
       !browser_signals_dict.Set("joinCount",
                                 bidding_browser_signals->join_count) ||
       !browser_signals_dict.Set("bidCount",
@@ -842,7 +859,9 @@ void BidderWorklet::GenerateBidIfReady(GenerateBidTaskList::iterator task) {
           std::move(task->bidder_worklet_non_shared_params),
           std::move(task->auction_signals_json),
           std::move(task->per_buyer_signals_json),
-          std::move(task->per_buyer_timeout), std::move(task->seller_origin),
+          std::move(task->per_buyer_timeout),
+          std::move(task->browser_signal_seller_origin),
+          std::move(task->browser_signal_top_level_seller_origin),
           std::move(task->bidding_browser_signals), task->auction_start_time,
           std::move(task->trusted_bidding_signals_result),
           base::BindOnce(&BidderWorklet::DeliverBidCallbackOnUserThread,
@@ -865,6 +884,7 @@ void BidderWorklet::RunReportWin(ReportWinTaskList::iterator task) {
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_bid),
           std::move(task->browser_signal_seller_origin),
+          std::move(task->browser_signal_top_level_seller_origin),
           std::move(task->bidding_signals_data_version),
           base::BindOnce(&BidderWorklet::DeliverReportWinOnUserThread,
                          weak_ptr_factory_.GetWeakPtr(), task)));

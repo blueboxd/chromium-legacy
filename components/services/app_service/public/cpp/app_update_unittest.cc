@@ -178,16 +178,16 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_short_name_, u.ShortName());
     EXPECT_EQ(expect_short_name_changed_, u.ShortNameChanged());
 
-    EXPECT_EQ(expect_publisher_id_, u.GetPublisherId());
+    EXPECT_EQ(expect_publisher_id_, u.PublisherId());
     EXPECT_EQ(expect_publisher_id_changed_, u.PublisherIdChanged());
 
-    EXPECT_EQ(expect_description_, u.GetDescription());
+    EXPECT_EQ(expect_description_, u.Description());
     EXPECT_EQ(expect_description_changed_, u.DescriptionChanged());
 
-    EXPECT_EQ(expect_version_, u.GetVersion());
+    EXPECT_EQ(expect_version_, u.Version());
     EXPECT_EQ(expect_version_changed_, u.VersionChanged());
 
-    EXPECT_EQ(expect_additional_search_terms_, u.GetAdditionalSearchTerms());
+    EXPECT_EQ(expect_additional_search_terms_, u.AdditionalSearchTerms());
     EXPECT_EQ(expect_additional_search_terms_changed_,
               u.AdditionalSearchTermsChanged());
 
@@ -199,10 +199,10 @@ class AppUpdateTest : public testing::Test {
     }
     EXPECT_EQ(expect_icon_key_changed_, u.IconKeyChanged());
 
-    EXPECT_EQ(expect_last_launch_time_, u.GetLastLaunchTime());
+    EXPECT_EQ(expect_last_launch_time_, u.LastLaunchTime());
     EXPECT_EQ(expect_last_launch_time_changed_, u.LastLaunchTimeChanged());
 
-    EXPECT_EQ(expect_install_time_, u.GetInstallTime());
+    EXPECT_EQ(expect_install_time_, u.InstallTime());
     EXPECT_EQ(expect_install_time_changed_, u.InstallTimeChanged());
 
     EXPECT_TRUE(IsEqual(expect_permissions_, u.GetPermissions()));
@@ -214,16 +214,16 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_install_source_, u.GetInstallSource());
     EXPECT_EQ(expect_install_source_changed_, u.InstallSourceChanged());
 
-    EXPECT_EQ(expect_policy_id_, u.GetPolicyId());
+    EXPECT_EQ(expect_policy_id_, u.PolicyId());
     EXPECT_EQ(expect_policy_id_changed_, u.PolicyIdChanged());
 
-    EXPECT_EQ(expect_is_platform_app_, u.GetIsPlatformApp());
+    EXPECT_EQ(expect_is_platform_app_, u.IsPlatformApp());
     EXPECT_EQ(expect_is_platform_app_changed_, u.IsPlatformAppChanged());
 
-    EXPECT_EQ(expect_recommendable_, u.GetRecommendable());
+    EXPECT_EQ(expect_recommendable_, u.Recommendable());
     EXPECT_EQ(expect_recommendable_changed_, u.RecommendableChanged());
 
-    EXPECT_EQ(expect_searchable_, u.GetSearchable());
+    EXPECT_EQ(expect_searchable_, u.Searchable());
     EXPECT_EQ(expect_searchable_changed_, u.SearchableChanged());
 
     EXPECT_EQ(expect_show_in_launcher_, u.GetShowInLauncher());
@@ -241,7 +241,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_handles_intents_, u.GetHandlesIntents());
     EXPECT_EQ(expect_handles_intents_changed_, u.HandlesIntentsChanged());
 
-    EXPECT_EQ(expect_allow_uninstall_, u.GetAllowUninstall());
+    EXPECT_EQ(expect_allow_uninstall_, u.AllowUninstall());
     EXPECT_EQ(expect_allow_uninstall_changed_, u.AllowUninstallChanged());
 
     EXPECT_EQ(expect_has_badge_, u.GetHasBadge());

@@ -69,13 +69,13 @@ class AppUpdateMojomTest : public testing::Test {
   std::string expect_policy_id_;
   bool expect_policy_id_changed_;
 
-  apps::mojom::OptionalBool expect_is_platform_app_;
+  absl::optional<bool> expect_is_platform_app_;
   bool expect_is_platform_app_changed_;
 
-  apps::mojom::OptionalBool expect_recommendable_;
+  absl::optional<bool> expect_recommendable_;
   bool expect_recommendable_changed_;
 
-  apps::mojom::OptionalBool expect_searchable_;
+  absl::optional<bool> expect_searchable_;
   bool expect_searchable_changed_;
 
   apps::mojom::OptionalBool expect_show_in_launcher_;
@@ -93,7 +93,7 @@ class AppUpdateMojomTest : public testing::Test {
   apps::mojom::OptionalBool expect_handles_intents_;
   bool expect_handles_intents_changed_;
 
-  apps::mojom::OptionalBool expect_allow_uninstall_;
+  absl::optional<bool> expect_allow_uninstall_;
   bool expect_allow_uninstall_changed_;
 
   apps::mojom::OptionalBool expect_has_badge_;
@@ -273,15 +273,15 @@ class AppUpdateMojomTest : public testing::Test {
     expect_install_reason_ = apps::mojom::InstallReason::kUnknown;
     expect_install_source_ = apps::mojom::InstallSource::kUnknown;
     expect_policy_id_ = "";
-    expect_is_platform_app_ = apps::mojom::OptionalBool::kUnknown;
-    expect_recommendable_ = apps::mojom::OptionalBool::kUnknown;
-    expect_searchable_ = apps::mojom::OptionalBool::kUnknown;
+    expect_is_platform_app_ = absl::nullopt;
+    expect_recommendable_ = absl::nullopt;
+    expect_searchable_ = absl::nullopt;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_shelf_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
     expect_handles_intents_ = apps::mojom::OptionalBool::kUnknown;
-    expect_allow_uninstall_ = apps::mojom::OptionalBool::kUnknown;
+    expect_allow_uninstall_ = absl::nullopt;
     expect_has_badge_ = apps::mojom::OptionalBool::kUnknown;
     expect_paused_ = apps::mojom::OptionalBool::kUnknown;
     expect_intent_filters_.clear();
@@ -581,14 +581,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->is_platform_app = apps::mojom::OptionalBool::kFalse;
-      expect_is_platform_app_ = apps::mojom::OptionalBool::kFalse;
+      expect_is_platform_app_ = false;
       expect_is_platform_app_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->is_platform_app = apps::mojom::OptionalBool::kTrue;
-      expect_is_platform_app_ = apps::mojom::OptionalBool::kTrue;
+      expect_is_platform_app_ = true;
       expect_is_platform_app_changed_ = true;
       CheckExpects(u);
     }
@@ -603,14 +603,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->recommendable = apps::mojom::OptionalBool::kFalse;
-      expect_recommendable_ = apps::mojom::OptionalBool::kFalse;
+      expect_recommendable_ = false;
       expect_recommendable_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->recommendable = apps::mojom::OptionalBool::kTrue;
-      expect_recommendable_ = apps::mojom::OptionalBool::kTrue;
+      expect_recommendable_ = true;
       expect_recommendable_changed_ = true;
       CheckExpects(u);
     }
@@ -625,14 +625,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->searchable = apps::mojom::OptionalBool::kFalse;
-      expect_searchable_ = apps::mojom::OptionalBool::kFalse;
+      expect_searchable_ = false;
       expect_searchable_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->searchable = apps::mojom::OptionalBool::kTrue;
-      expect_searchable_ = apps::mojom::OptionalBool::kTrue;
+      expect_searchable_ = true;
       expect_searchable_changed_ = true;
       CheckExpects(u);
     }
@@ -757,14 +757,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->allow_uninstall = apps::mojom::OptionalBool::kFalse;
-      expect_allow_uninstall_ = apps::mojom::OptionalBool::kFalse;
+      expect_allow_uninstall_ = false;
       expect_allow_uninstall_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->allow_uninstall = apps::mojom::OptionalBool::kTrue;
-      expect_allow_uninstall_ = apps::mojom::OptionalBool::kTrue;
+      expect_allow_uninstall_ = true;
       expect_allow_uninstall_changed_ = true;
       CheckExpects(u);
     }

@@ -4698,6 +4698,12 @@ const char kEnableIdleInhibitName[] = "Enable Idle Inhibit Protocol";
 const char kEnableIdleInhibitDescription[] =
     "Enables the Wayland idle-inhibit-unstable-v1 protocol";
 
+const char kEnableIkev2VpnName[] = "Enable IKEv2 VPN";
+const char kEnableIkev2VpnDescription[] =
+    "Enable selecting IKEv2 as the VPN provider type when creating a VPN "
+    "network. This will only take effect when running a compatible kernel, see "
+    "crbug/1275421.";
+
 const char kEnableNetworkingInDiagnosticsAppName[] =
     "Enable networking cards in the Diagnostics App";
 const char kEnableNetworkingInDiagnosticsAppDescription[] =
@@ -5499,6 +5505,10 @@ const char kLinkCapturingUiUpdateName[] = "Enable updated link capturing UI";
 const char kLinkCapturingUiUpdateDescription[] =
     "Enables updated UI for link capturing flows from the browser to apps, "
     "including the intent picker and an in-app link capturing prompt.";
+
+const char kMessagesPreinstallName[] = "Preinstall  Messages PWA";
+const char kMessagesPreinstallDescription[] =
+    "Enables preinstallation of the Messages for Web PWA for unmanaged users.";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)

@@ -48,7 +48,7 @@ class AppUpdateMojomTest : public testing::Test {
   std::vector<std::string> expect_additional_search_terms_;
   bool expect_additional_search_terms_changed_;
 
-  apps::mojom::IconKeyPtr expect_icon_key_;
+  absl::optional<apps::IconKey> expect_icon_key_;
   bool expect_icon_key_changed_;
 
   base::Time expect_last_launch_time_;
@@ -87,7 +87,7 @@ class AppUpdateMojomTest : public testing::Test {
   apps::mojom::OptionalBool expect_show_in_search_;
   bool expect_show_in_search_changed_;
 
-  apps::mojom::OptionalBool expect_show_in_management_;
+  absl::optional<bool> expect_show_in_management_;
   bool expect_show_in_management_changed_;
 
   apps::mojom::OptionalBool expect_handles_intents_;
@@ -99,7 +99,7 @@ class AppUpdateMojomTest : public testing::Test {
   apps::mojom::OptionalBool expect_has_badge_;
   bool expect_has_badge_changed_;
 
-  apps::mojom::OptionalBool expect_paused_;
+  absl::optional<bool> expect_paused_;
   bool expect_paused_changed_;
 
   std::vector<apps::mojom::IntentFilterPtr> expect_intent_filters_;
@@ -266,7 +266,7 @@ class AppUpdateMojomTest : public testing::Test {
     expect_description_ = "";
     expect_version_ = "";
     expect_additional_search_terms_.clear();
-    expect_icon_key_ = nullptr;
+    expect_icon_key_ = absl::nullopt;
     expect_last_launch_time_ = base::Time();
     expect_install_time_ = base::Time();
     expect_permissions_.clear();
@@ -279,11 +279,11 @@ class AppUpdateMojomTest : public testing::Test {
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_shelf_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
-    expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
+    expect_show_in_management_ = absl::nullopt;
     expect_handles_intents_ = apps::mojom::OptionalBool::kUnknown;
     expect_allow_uninstall_ = absl::nullopt;
     expect_has_badge_ = apps::mojom::OptionalBool::kUnknown;
-    expect_paused_ = apps::mojom::OptionalBool::kUnknown;
+    expect_paused_ = absl::nullopt;
     expect_intent_filters_.clear();
     expect_resize_locked_ = apps::mojom::OptionalBool::kUnknown;
     expect_window_mode_ = apps::mojom::WindowMode::kUnknown;
@@ -457,7 +457,7 @@ class AppUpdateMojomTest : public testing::Test {
     if (state) {
       auto x = apps::mojom::IconKey::New(100, 0, 0);
       state->icon_key = x.Clone();
-      expect_icon_key_ = x.Clone();
+      expect_icon_key_ = std::move(*apps::ConvertMojomIconKeyToIconKey(x));
       expect_icon_key_changed_ = false;
       CheckExpects(u);
     }
@@ -465,7 +465,7 @@ class AppUpdateMojomTest : public testing::Test {
     if (delta) {
       auto x = apps::mojom::IconKey::New(200, 0, 0);
       delta->icon_key = x.Clone();
-      expect_icon_key_ = x.Clone();
+      expect_icon_key_ = std::move(*apps::ConvertMojomIconKeyToIconKey(x));
       expect_icon_key_changed_ = true;
       CheckExpects(u);
     }
@@ -713,14 +713,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->show_in_management = apps::mojom::OptionalBool::kFalse;
-      expect_show_in_management_ = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_management_ = false;
       expect_show_in_management_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->show_in_management = apps::mojom::OptionalBool::kTrue;
-      expect_show_in_management_ = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_management_ = true;
       expect_show_in_management_changed_ = true;
       CheckExpects(u);
     }
@@ -801,14 +801,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->paused = apps::mojom::OptionalBool::kFalse;
-      expect_paused_ = apps::mojom::OptionalBool::kFalse;
+      expect_paused_ = false;
       expect_paused_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->paused = apps::mojom::OptionalBool::kTrue;
-      expect_paused_ = apps::mojom::OptionalBool::kTrue;
+      expect_paused_ = true;
       expect_paused_changed_ = true;
       CheckExpects(u);
     }

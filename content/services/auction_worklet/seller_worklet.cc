@@ -157,6 +157,25 @@ bool AppendAuctionConfig(AuctionV8Helper* const v8_helper,
   return true;
 }
 
+// Adds the top-level/component seller origin from
+// `browser_signals_other_seller` to `browser_signals_dict`. Does nothing if
+// `browser_signals_other_seller` is null. Returns false on error.
+bool AddOtherSeller(
+    mojom::ComponentAuctionOtherSeller* browser_signals_other_seller,
+    gin::Dictionary& browser_signals_dict) {
+  if (!browser_signals_other_seller)
+    return true;
+  if (browser_signals_other_seller->is_top_level_seller()) {
+    return browser_signals_dict.Set(
+        "topLevelSeller",
+        browser_signals_other_seller->get_top_level_seller().Serialize());
+  }
+  DCHECK(browser_signals_other_seller->is_component_seller());
+  return browser_signals_dict.Set(
+      "componentSeller",
+      browser_signals_other_seller->get_component_seller().Serialize());
+}
+
 }  // namespace
 
 SellerWorklet::SellerWorklet(
@@ -210,6 +229,7 @@ void SellerWorklet::ScoreAd(
     double bid,
     blink::mojom::AuctionAdConfigNonSharedParamsPtr
         auction_ad_config_non_shared_params,
+    mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
     const url::Origin& browser_signal_interest_group_owner,
     const GURL& browser_signal_render_url,
     const std::vector<GURL>& browser_signal_ad_components,
@@ -225,6 +245,8 @@ void SellerWorklet::ScoreAd(
   score_ad_task->bid = bid;
   score_ad_task->auction_ad_config_non_shared_params =
       std::move(auction_ad_config_non_shared_params);
+  score_ad_task->browser_signals_other_seller =
+      std::move(browser_signals_other_seller);
   score_ad_task->browser_signal_interest_group_owner =
       browser_signal_interest_group_owner;
   score_ad_task->browser_signal_render_url = browser_signal_render_url;
@@ -259,6 +281,7 @@ void SellerWorklet::SendPendingSignalsRequests() {
 void SellerWorklet::ReportResult(
     blink::mojom::AuctionAdConfigNonSharedParamsPtr
         auction_ad_config_non_shared_params,
+    mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
     const url::Origin& browser_signal_interest_group_owner,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
@@ -274,6 +297,8 @@ void SellerWorklet::ReportResult(
 
   report_result_task->auction_ad_config_non_shared_params =
       std::move(auction_ad_config_non_shared_params);
+  report_result_task->browser_signals_other_seller =
+      std::move(browser_signals_other_seller);
   report_result_task->browser_signal_interest_group_owner =
       browser_signal_interest_group_owner;
   report_result_task->browser_signal_render_url = browser_signal_render_url;
@@ -335,6 +360,7 @@ void SellerWorklet::V8State::ScoreAd(
     blink::mojom::AuctionAdConfigNonSharedParamsPtr
         auction_ad_config_non_shared_params,
     scoped_refptr<TrustedSignals::Result> trusted_scoring_signals,
+    mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
     const url::Origin& browser_signal_interest_group_owner,
     const GURL& browser_signal_render_url,
     const std::vector<std::string>& browser_signal_ad_components,
@@ -394,6 +420,8 @@ void SellerWorklet::V8State::ScoreAd(
   gin::Dictionary browser_signals_dict(isolate, browser_signals);
   if (!browser_signals_dict.Set("topWindowHostname",
                                 top_window_origin_.host()) ||
+      !AddOtherSeller(browser_signals_other_seller.get(),
+                      browser_signals_dict) ||
       !browser_signals_dict.Set(
           "interestGroupOwner",
           browser_signal_interest_group_owner.Serialize()) ||
@@ -443,12 +471,41 @@ void SellerWorklet::V8State::ScoreAd(
     return;
   }
 
-  if (!gin::ConvertFromV8(isolate, score_ad_result, &score) ||
-      std::isnan(score) || !std::isfinite(score)) {
-    errors_out.push_back(
-        base::StrCat({decision_logic_url_.spec(),
-                      " scoreAd() did not return a valid number."}));
+  // Try to parse the result as a number. On success, it's the desirability
+  // score.
+  if (!gin::ConvertFromV8(isolate, score_ad_result, &score)) {
+    // Otherwise, try it must be an object with the desireability score, and
+    // potentially other fields as well.
+    if (!score_ad_result->IsObject()) {
+      errors_out.push_back(
+          base::StrCat({decision_logic_url_.spec(),
+                        " scoreAd() did not return an object or a number."}));
+      PostScoreAdCallbackToUserThread(
+          std::move(callback), /*score=*/0,
+          /*scoring_signals_data_version=*/absl::nullopt,
+          /*debug_loss_report_url=*/absl::nullopt,
+          /*debug_win_report_url=*/absl::nullopt, std::move(errors_out));
+      return;
+    }
 
+    gin::Dictionary result_dict(isolate, score_ad_result.As<v8::Object>());
+    if (!result_dict.Get("desirability", &score)) {
+      errors_out.push_back(
+          base::StrCat({decision_logic_url_.spec(),
+                        " scoreAd() return value has incorrect structure."}));
+      PostScoreAdCallbackToUserThread(
+          std::move(callback), /*score=*/0,
+          /*scoring_signals_data_version=*/absl::nullopt,
+          /*debug_loss_report_url=*/absl::nullopt,
+          /*debug_win_report_url=*/absl::nullopt, std::move(errors_out));
+      return;
+    }
+  }
+
+  // Fail if the score is invalid.
+  if (std::isnan(score) || !std::isfinite(score)) {
+    errors_out.push_back(base::StrCat(
+        {decision_logic_url_.spec(), " scoreAd() returned an invalid score."}));
     PostScoreAdCallbackToUserThread(
         std::move(callback), /*score=*/0,
         /*scoring_signals_data_version=*/absl::nullopt,
@@ -476,6 +533,7 @@ void SellerWorklet::V8State::ScoreAd(
 void SellerWorklet::V8State::ReportResult(
     blink::mojom::AuctionAdConfigNonSharedParamsPtr
         auction_ad_config_non_shared_params,
+    mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
     const url::Origin& browser_signal_interest_group_owner,
     const GURL& browser_signal_render_url,
     double browser_signal_bid,
@@ -509,6 +567,8 @@ void SellerWorklet::V8State::ReportResult(
   gin::Dictionary browser_signals_dict(isolate, browser_signals);
   if (!browser_signals_dict.Set("topWindowHostname",
                                 top_window_origin_.host()) ||
+      !AddOtherSeller(browser_signals_other_seller.get(),
+                      browser_signals_dict) ||
       !browser_signals_dict.Set(
           "interestGroupOwner",
           browser_signal_interest_group_owner.Serialize()) ||
@@ -689,6 +749,7 @@ void SellerWorklet::ScoreAdIfReady(ScoreAdTaskList::iterator task) {
           task->ad_metadata_json, task->bid,
           std::move(task->auction_ad_config_non_shared_params),
           std::move(task->trusted_scoring_signals_result),
+          std::move(task->browser_signals_other_seller),
           std::move(task->browser_signal_interest_group_owner),
           std::move(task->browser_signal_render_url),
           std::move(task->browser_signal_ad_components),
@@ -728,6 +789,7 @@ void SellerWorklet::RunReportResult(ReportResultTaskList::iterator task) {
           &SellerWorklet::V8State::ReportResult,
           base::Unretained(v8_state_.get()),
           std::move(task->auction_ad_config_non_shared_params),
+          std::move(task->browser_signals_other_seller),
           std::move(task->browser_signal_interest_group_owner),
           std::move(task->browser_signal_render_url), task->browser_signal_bid,
           task->browser_signal_desirability, task->scoring_signals_data_version,

@@ -80,7 +80,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::AppType GetAppType() const;
 
   const std::string& AppId() const;
-  const std::string& GetAppId() const;
 
   apps::Readiness Readiness() const;
   apps::Readiness PriorReadiness() const;
@@ -107,8 +106,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   std::vector<std::string> AdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 
-  apps::mojom::IconKeyPtr IconKey() const;
-  absl::optional<apps::IconKey> GetIconKey() const;
+  absl::optional<apps::IconKey> IconKey() const;
   bool IconKeyChanged() const;
 
   base::Time LastLaunchTime() const;
@@ -157,8 +155,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   absl::optional<bool> GetShowInSearch() const;
   bool ShowInSearchChanged() const;
 
-  apps::mojom::OptionalBool ShowInManagement() const;
-  absl::optional<bool> GetShowInManagement() const;
+  absl::optional<bool> ShowInManagement() const;
   bool ShowInManagementChanged() const;
 
   apps::mojom::OptionalBool HandlesIntents() const;
@@ -172,8 +169,7 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   absl::optional<bool> GetHasBadge() const;
   bool HasBadgeChanged() const;
 
-  apps::mojom::OptionalBool Paused() const;
-  absl::optional<bool> GetPaused() const;
+  absl::optional<bool> Paused() const;
   bool PausedChanged() const;
 
   std::vector<apps::mojom::IntentFilterPtr> IntentFilters() const;

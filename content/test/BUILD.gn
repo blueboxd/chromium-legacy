@@ -455,6 +455,7 @@ static_library("test_support") {
     "//components/viz/host",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
+    "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/child:for_content_tests",
     "//content/gpu",
     "//content/public/browser",
@@ -704,18 +705,9 @@ static_library("test_support") {
   }
 }
 
-# Fuchsia gpu integration tests on smart displays use web_engine and a browser
+# Fuchsia performance tests on smart displays use web_engine and a browser
 # like shell instead of an actual browser, so Fuchsia needs a separate target.
 if (is_fuchsia) {
-  group("fuchsia_telemetry_gpu_integration_test") {
-    testonly = true
-    data = [ "//content/test/gpu/run_gpu_integration_test_fuchsia.py" ]
-    data_deps = [
-      ":fuchsia_telemetry_test_data",
-      ":telemetry_gpu_integration_test_scripts_only",
-      ":telemetry_gpu_integration_test_support",
-    ]
-  }
   group("performance_web_engine_test_suite") {
     testonly = true
     data = [ "//content/test/gpu/run_telemetry_benchmark_fuchsia.py" ]
@@ -1437,6 +1429,7 @@ test("content_browsertests") {
     "//components/web_package",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
+    "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/browser/background_sync:background_sync_proto",
     "//content/child:for_content_tests",
     "//content/gpu",
@@ -1953,13 +1946,13 @@ test("content_unittests") {
     "../browser/attribution_reporting/attribution_host_utils_unittest.cc",
     "../browser/attribution_reporting/attribution_insecure_random_generator_unittest.cc",
     "../browser/attribution_reporting/attribution_manager_impl_unittest.cc",
-    "../browser/attribution_reporting/attribution_policy_unittest.cc",
     "../browser/attribution_reporting/attribution_report_network_sender_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_delegate_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_migrations_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_sql_unittest.cc",
     "../browser/attribution_reporting/attribution_storage_unittest.cc",
     "../browser/attribution_reporting/combinatorics_unittest.cc",
+    "../browser/attribution_reporting/common_source_info_unittest.cc",
     "../browser/attribution_reporting/rate_limit_table_unittest.cc",
     "../browser/background_fetch/background_fetch_cross_origin_filter_unittest.cc",
     "../browser/background_fetch/background_fetch_data_manager_unittest.cc",
@@ -2495,6 +2488,7 @@ test("content_unittests") {
     "//components/viz/test:test_support",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
+    "//content/browser/attribution_reporting:attribution_reporting_proto",
     "//content/browser/background_fetch:background_fetch_proto",
     "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/devtools:devtools_background_services_proto",

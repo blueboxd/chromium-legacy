@@ -363,6 +363,20 @@ const googleRules = {
 };
 /* eslint-enable @typescript-eslint/naming-convention */
 
+// https://github.com/eslint/eslint/issues/8769
+// Hack node module system so that eslint-plugin-cca resolves to local module.
+/* global require */
+/* eslint-disable-next-line @typescript-eslint/no-var-requires */
+const m = require('module');
+const originalResolve = m._resolveFilename;
+m._resolveFilename = (request, ...args) => {
+  if (request === 'eslint-plugin-cca') {
+    return require.resolve('./eslint_plugin');
+  } else {
+    return originalResolve.call(m, request, ...args);
+  }
+};
+
 const typescriptEslintDir =
     '../../../../third_party/node/node_modules/@typescript-eslint';
 
@@ -378,9 +392,31 @@ module.exports = {
     ecmaVersion: 2020,
     sourceType: 'module',
   },
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:jsdoc/recommended',
+  ],
+  settings: {
+    jsdoc: {
+      tagNamePreference: {
+        returns: 'return',
+        // go/tsstyle#omit-comments-that-are-redundant-with-typescript
+        default: false,
+        enum: false,
+        implements: false,
+        interface: false,
+        override: false,
+        private: false,
+        protected: false,
+        template: false,
+        type: false,
+        typedef: false,
+      },
+    },
+  },
   parser: `${typescriptEslintDir}/parser`,
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'jsdoc', 'eslint-plugin-cca'],
   // Generally, the rules should be compatible to both bundled and the newest
   // stable eslint, so it's easier to upgrade and develop without the full
   // Chromium tree.
@@ -410,24 +446,47 @@ module.exports = {
     // enabled in @typescript-eslint/recommended.
     'no-unused-vars': 'off',
 
-    // TODO(pihsun): We should use eslint-plugin-jsdoc for jsdoc in
-    // TypeScript, since the Google TypeScript style guide states that
-    // redundant type or trivial arguments for params and returns can be
-    // omitted in jsdoc for TypeScript, but eslint builtin valid-jsdoc rule
-    // doesn't have fine-grained control to disable those checks (and is also
-    // deprecated).
-    // (TypeScript doesn't yet support getting types from jsdoc,
-    // https://github.com/microsoft/TypeScript/issues/42048)
+    // Use eslint-plugin-jsdoc instead of ESLint builtin valid-jsdoc /
+    // require-jsdoc, since it has better flexibility on not requiring types
+    // for jsdoc, and is also recommended on the ESLint rule page.
     'valid-jsdoc': 'off',
-
-    // TODO(pihsun): Currently there are many existing js files that have
-    // jsdoc which only contains type information and nothing else, which is
-    // all removed while converting to ts. Disabling the requirement for
-    // jsdoc for now. Note that the style guide suggest to document all
-    // properties and methods whose purpose is not immediately obvious from
-    // their name, which means that we should be able to skip jsdoc for some
-    // of the constructors and trivial structs.
     'require-jsdoc': 'off',
+
+    // go/tsstyle#omit-comments-that-are-redundant-with-typescript
+    'jsdoc/no-types': 'error',
+    'jsdoc/require-jsdoc': [
+      'error',
+      {
+        publicOnly: true,
+      },
+    ],
+    'jsdoc/require-param': 'off',
+    'jsdoc/require-param-type': 'off',
+    'jsdoc/require-returns': 'off',
+    'jsdoc/require-returns-type': 'off',
+    'jsdoc/require-yields': 'off',
+
+    'jsdoc/multiline-blocks': [
+      'error',
+      {
+        noSingleLineBlocks: true,
+      },
+    ],
+    'jsdoc/no-bad-blocks': 'error',
+    'jsdoc/no-defaults': 'error',
+    'jsdoc/no-multi-asterisks': [
+      'error',
+      {
+        allowWhitespace: true,
+      },
+    ],
+    'jsdoc/require-asterisk-prefix': 'error',
+    'jsdoc/require-description-complete-sentence': [
+      'error',
+      {
+        abbreviations: ['e.g.'],
+      },
+    ],
 
     // go/tsstyle states that no variable should have _ as prefix/suffix, but
     // there's no better alternative for unused function parameters. Since the
@@ -468,6 +527,12 @@ module.exports = {
         selector: 'ForInStatement',
         message: 'for (... in ...) is not allowed. ' +
             '(go/tsstyle#iterating-objects)',
+      },
+      // Disallow 'Interface' as identifier suffix. (go/tsstyle#naming-style)
+      {
+        selector: 'Identifier[name=/.*Interface/]',
+        message: 'Don\'t use "Interface" as identifier suffix. ' +
+            '(go/tsstyle#naming-style)',
       },
     ],
 
@@ -577,6 +642,10 @@ module.exports = {
     '@typescript-eslint/lines-between-class-members': 'error',
 
     '@typescript-eslint/no-unused-expressions': 'error',
+
+    'cca/parameter-comment-format': 'error',
+
+    'cca/generic-parameter-on-declaration-type': 'error',
   }),
   overrides: [{
     files: ['**/*.ts'],

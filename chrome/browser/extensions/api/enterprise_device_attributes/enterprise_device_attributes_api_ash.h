@@ -13,14 +13,12 @@
 
 namespace extensions {
 
-// Note: When updating this function, consider changing the way errors are
-// returned.
-// TODO(https://crbug.com/1056550): Return an error in case of unaffiliated user
-// in enterprise.deviceAttributes API
 class EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction
     : public ExtensionFunction {
  public:
   EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction();
+  explicit EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction(
+      std::unique_ptr<policy::DeviceAttributes> attributes);
 
  protected:
   ~EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction() override;
@@ -28,14 +26,12 @@ class EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction
   ResponseAction Run() override;
 
  private:
+  std::unique_ptr<policy::DeviceAttributes> attributes_;
+
   DECLARE_EXTENSION_FUNCTION("enterprise.deviceAttributes.getDirectoryDeviceId",
                              ENTERPRISE_DEVICEATTRIBUTES_GETDIRECTORYDEVICEID)
 };
 
-// Note: When updating this function, consider changing the way errors are
-// returned.
-// TODO(https://crbug.com/1056550): Return an error in case of unaffiliated user
-// in enterprise.deviceAttributes API
 class EnterpriseDeviceAttributesGetDeviceSerialNumberFunction
     : public ExtensionFunction {
  public:
@@ -52,10 +48,6 @@ class EnterpriseDeviceAttributesGetDeviceSerialNumberFunction
       ENTERPRISE_DEVICEATTRIBUTES_GETDEVICESERIALNUMBER)
 };
 
-// Note: When updating this function, consider changing the way errors are
-// returned.
-// TODO(https://crbug.com/1056550): Return an error in case of unaffiliated user
-// in enterprise.deviceAttributes API
 class EnterpriseDeviceAttributesGetDeviceAssetIdFunction
     : public ExtensionFunction {
  public:
@@ -75,14 +67,12 @@ class EnterpriseDeviceAttributesGetDeviceAssetIdFunction
                              ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEASSETID)
 };
 
-// Note: When updating this function, consider changing the way errors are
-// returned.
-// TODO(https://crbug.com/1056550): Return an error in case of unaffiliated user
-// in enterprise.deviceAttributes API
 class EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction
     : public ExtensionFunction {
  public:
   EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction();
+  explicit EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction(
+      std::unique_ptr<policy::DeviceAttributes> attributes);
 
  protected:
   ~EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction() override;
@@ -90,19 +80,19 @@ class EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction
   ResponseAction Run() override;
 
  private:
+  std::unique_ptr<policy::DeviceAttributes> attributes_;
+
   DECLARE_EXTENSION_FUNCTION(
       "enterprise.deviceAttributes.getDeviceAnnotatedLocation",
       ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEANNOTATEDLOCATION)
 };
 
-// Note: When updating this function, consider changing the way errors are
-// returned.
-// TODO(https://crbug.com/1056550): Return an error in case of unaffiliated user
-// in enterprise.deviceAttributes API
 class EnterpriseDeviceAttributesGetDeviceHostnameFunction
     : public ExtensionFunction {
  public:
   EnterpriseDeviceAttributesGetDeviceHostnameFunction();
+  explicit EnterpriseDeviceAttributesGetDeviceHostnameFunction(
+      std::unique_ptr<policy::DeviceAttributes> attributes);
 
  protected:
   ~EnterpriseDeviceAttributesGetDeviceHostnameFunction() override;
@@ -110,6 +100,8 @@ class EnterpriseDeviceAttributesGetDeviceHostnameFunction
   ResponseAction Run() override;
 
  private:
+  std::unique_ptr<policy::DeviceAttributes> attributes_;
+
   DECLARE_EXTENSION_FUNCTION("enterprise.deviceAttributes.getDeviceHostname",
                              ENTERPRISE_DEVICEATTRIBUTES_GETDEVICEHOSTNAME)
 };

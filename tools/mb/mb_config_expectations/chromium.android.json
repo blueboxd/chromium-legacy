@@ -48,6 +48,8 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview.debug",
+      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
       "target_cpu": "x64",
       "target_os": "android",
       "use_rbe": true,
@@ -548,7 +550,8 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-weblayer-x86-rel": {
@@ -566,7 +569,8 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   }
 }

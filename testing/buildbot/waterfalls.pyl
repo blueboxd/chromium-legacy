@@ -1196,6 +1196,45 @@
         'use_swarming': True,
         'os_type': 'android',
       },
+      'android-cronet-x86-dbg-kitkat-tests': {
+        'mixins': [
+          'kitkat-x86-emulator',
+          'emulator-4-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+      },
+      'android-cronet-x86-dbg-lollipop-tests': {
+        'mixins': [
+          'lollipop-x86-emulator',
+          'emulator-4-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+      },
+      'android-cronet-x86-dbg-marshmallow-tests': {
+        'mixins': [
+          'marshmallow-x86-emulator',
+          'emulator-4-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'cronet_gtests',
+        },
+      },
       'android-pie-arm64-wpt-rel-non-cq': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -1812,7 +1851,7 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'fuchsia_isolated_scripts',
-          'gpu_telemetry_tests': 'fuchsia_gpu_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_tests',
         },
       },
       'ToTFuchsiaOfficial': {
@@ -2730,6 +2769,26 @@
           'scripts': 'chromium_win_scripts',
         },
       },
+      'Win x64 Builder reclient staging': {
+        # Copied from
+        # https://source.chromium.org/chromium/chromium/src/+/7b147a6777cb32d6a12e1716c61a0ed50dc1229a:testing/buildbot/waterfalls.pyl;l=6023-6030
+        'additional_compile_targets': [
+          'pdf_fuzzers'
+        ],
+        'test_suites': {
+          'scripts': 'chromium_win_scripts',
+        },
+      },
+      'Win x64 Builder reclient test': {
+        # Copied from
+        # https://source.chromium.org/chromium/chromium/src/+/7b147a6777cb32d6a12e1716c61a0ed50dc1229a:testing/buildbot/waterfalls.pyl;l=6023-6030
+        'additional_compile_targets': [
+          'pdf_fuzzers'
+        ],
+        'test_suites': {
+          'scripts': 'chromium_win_scripts',
+        },
+      },
       'Win11 Tests x64': {
         'mixins': [
           'x86-64',
@@ -2941,7 +3000,6 @@
         'swarming': {
           'dimension_sets': [
             {
-              'gpu': '1ae0:c0de',
               'kvm': '1',
             },
           ],
@@ -2963,7 +3021,6 @@
         'swarming': {
           'dimension_sets': [
             {
-              'gpu': '1ae0:c0de',
               'kvm': '1',
             },
           ],

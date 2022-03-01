@@ -10,6 +10,7 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ambient_provider.h"
 #include "base/memory/weak_ptr.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -49,11 +50,12 @@ class PersonalizationAppAmbientProviderImpl
   void SetTopicSource(ash::AmbientModeTopicSource topic_source) override;
   void SetTemperatureUnit(
       ash::AmbientModeTemperatureUnit temperature_unit) override;
-
-  // TODO(b/216307771): Will need to add observer for this.
-  void OnAmbientModeEnabledChanged(bool ambient_mode_enabled);
+  void SetAlbumSelected(const std::string& id,
+                        ash::AmbientModeTopicSource topic_source,
+                        bool selected) override;
 
   // Notify WebUI the latest values.
+  void OnAmbientModeEnabledChanged();
   void OnTemperatureUnitChanged();
   void OnTopicSourceChanged();
   void OnAlbumsChanged();
@@ -115,6 +117,8 @@ class PersonalizationAppAmbientProviderImpl
       ambient_observer_remote_;
 
   raw_ptr<Profile> const profile_ = nullptr;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Backoff retries for `FetchSettingsAndAlbums()`.
   net::BackoffEntry fetch_settings_retry_backoff_;

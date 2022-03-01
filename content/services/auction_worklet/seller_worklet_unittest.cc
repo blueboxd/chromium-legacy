@@ -140,6 +140,7 @@ class SellerWorkletTest : public testing::Test {
         blink::mojom::AuctionAdConfigNonSharedParams::New();
 
     top_window_origin_ = url::Origin::Create(GURL("https://window.test/"));
+    browser_signals_other_seller_.reset();
     browser_signal_interest_group_owner_ =
         url::Origin::Create(GURL("https://interest.group.owner.test/"));
     browser_signal_render_url_ = GURL("https://render.url.test/");
@@ -231,6 +232,7 @@ class SellerWorkletTest : public testing::Test {
       base::OnceClosure done_closure) {
     seller_worklet->ScoreAd(
         ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
+        browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         seller_timeout_,
@@ -264,6 +266,7 @@ class SellerWorkletTest : public testing::Test {
       mojom::SellerWorklet* seller_worklet) {
     seller_worklet->ScoreAd(
         ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
+        browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         seller_timeout_,
@@ -355,6 +358,7 @@ class SellerWorkletTest : public testing::Test {
       base::OnceClosure done_closure) {
     seller_worklet->ReportResult(
         auction_ad_config_non_shared_params_.Clone(),
+        browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
         browser_signal_desireability_, browser_signal_data_version_.value_or(0),
         browser_signal_data_version_.has_value(),
@@ -379,6 +383,7 @@ class SellerWorkletTest : public testing::Test {
       mojom::SellerWorklet* seller_worklet) {
     seller_worklet->ReportResult(
         auction_ad_config_non_shared_params_.Clone(),
+        browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
         browser_signal_desireability_, browser_signal_data_version_.value_or(0),
         browser_signal_data_version_.has_value(),
@@ -482,6 +487,7 @@ class SellerWorkletTest : public testing::Test {
   blink::mojom::AuctionAdConfigNonSharedParamsPtr
       auction_ad_config_non_shared_params_;
   url::Origin top_window_origin_;
+  mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller_;
   url::Origin browser_signal_interest_group_owner_;
   GURL browser_signal_render_url_;
   std::vector<GURL> browser_signal_ad_components_;
@@ -535,29 +541,61 @@ TEST_F(SellerWorkletTest, ScoreAd) {
   // CreateBasicSellAdScript() does indeed work.
   RunScoreAdWithJavascriptExpectingResult(CreateBasicSellAdScript(), 1);
 
+  // Test returning results with the object format.
+  RunScoreAdWithReturnValueExpectingResult("{desirability:3}", 3);
+  RunScoreAdWithReturnValueExpectingResult("{desirability:0.5}", 0.5);
+  RunScoreAdWithReturnValueExpectingResult("{desirability:0}", 0);
+  RunScoreAdWithReturnValueExpectingResult("{desirability:-10}", 0);
+
+  // Test returning a number, which is interpreted as a score.
   RunScoreAdWithReturnValueExpectingResult("3", 3);
   RunScoreAdWithReturnValueExpectingResult("0.5", 0.5);
   RunScoreAdWithReturnValueExpectingResult("0", 0);
   RunScoreAdWithReturnValueExpectingResult("-10", 0);
 
+  // Unknown fields should be ignored.
+  RunScoreAdWithReturnValueExpectingResult(
+      "{desirability:3, snore:1/0, smore:[15], shore:{desirability:2}}", 3);
+
   // No return value.
   RunScoreAdWithReturnValueExpectingResult(
-      "", 0, {"https://url.test/ scoreAd() did not return a valid number."});
+      "", 0,
+      {"https://url.test/ scoreAd() did not return an object or a number."});
 
   // Wrong return type / invalid values.
   RunScoreAdWithReturnValueExpectingResult(
+      "{hats:15}", 0,
+      {"https://url.test/ scoreAd() return value has incorrect structure."});
+  RunScoreAdWithReturnValueExpectingResult(
+      "{desirability:[15]}", 0,
+      {"https://url.test/ scoreAd() return value has incorrect structure."});
+  RunScoreAdWithReturnValueExpectingResult(
+      "{desirability:1/0}", 0,
+      {"https://url.test/ scoreAd() returned an invalid score."});
+  RunScoreAdWithReturnValueExpectingResult(
+      "{desirability:0/0}", 0,
+      {"https://url.test/ scoreAd() returned an invalid score."});
+  RunScoreAdWithReturnValueExpectingResult(
+      "{desirability:1/0}", 0,
+      {"https://url.test/ scoreAd() returned an invalid score."});
+  RunScoreAdWithReturnValueExpectingResult(
+      "{desirability:true}", 0,
+      {"https://url.test/ scoreAd() return value has incorrect structure."});
+
+  // Same tests as the previous block, but returning the value directly instead
+  // of in an object.
+  RunScoreAdWithReturnValueExpectingResult(
       "[15]", 0,
-      {"https://url.test/ scoreAd() did not return a valid number."});
+      {"https://url.test/ scoreAd() return value has incorrect structure."});
   RunScoreAdWithReturnValueExpectingResult(
-      "1/0", 0, {"https://url.test/ scoreAd() did not return a valid number."});
+      "1/0", 0, {"https://url.test/ scoreAd() returned an invalid score."});
   RunScoreAdWithReturnValueExpectingResult(
-      "0/0", 0, {"https://url.test/ scoreAd() did not return a valid number."});
+      "0/0", 0, {"https://url.test/ scoreAd() returned an invalid score."});
   RunScoreAdWithReturnValueExpectingResult(
-      "-1/0", 0,
-      {"https://url.test/ scoreAd() did not return a valid number."});
+      "-1/0", 0, {"https://url.test/ scoreAd() returned an invalid score."});
   RunScoreAdWithReturnValueExpectingResult(
       "true", 0,
-      {"https://url.test/ scoreAd() did not return a valid number."});
+      {"https://url.test/ scoreAd() did not return an object or a number."});
 
   // Throw exception.
   RunScoreAdWithReturnValueExpectingResult(
@@ -592,6 +630,44 @@ TEST_F(SellerWorkletTest, ScoreAdTopWindowOrigin) {
   top_window_origin_ = url::Origin::Create(GURL("https://[::1]:40000/"));
   RunScoreAdWithReturnValueExpectingResult(
       R"(browserSignals.topWindowHostname == "[::1]" ? 3 : 0)", 3);
+}
+
+TEST_F(SellerWorkletTest, ScoreAdTopLevelSeller) {
+  browser_signals_other_seller_.reset();
+  RunScoreAdWithReturnValueExpectingResult(
+      R"("topLevelSeller" in browserSignals ? 0 : 1)", 1);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewTopLevelSeller(
+          url::Origin::Create(GURL("https://top.seller.test")));
+  RunScoreAdWithReturnValueExpectingResult(
+      R"(browserSignals.topLevelSeller === "https://top.seller.test" ? 2 : 0)",
+      2);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewComponentSeller(
+          url::Origin::Create(GURL("https://component.test")));
+  RunScoreAdWithReturnValueExpectingResult(
+      R"("topLevelSeller" in browserSignals ? 0 : 3)", 3);
+}
+
+TEST_F(SellerWorkletTest, ScoreAdComponentSeller) {
+  browser_signals_other_seller_.reset();
+  RunScoreAdWithReturnValueExpectingResult(
+      R"("componentSeller" in browserSignals ? 0 : 1)", 1);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewTopLevelSeller(
+          url::Origin::Create(GURL("https://top.seller.test")));
+  RunScoreAdWithReturnValueExpectingResult(
+      R"("componentSeller" in browserSignals ? 0 : 2)", 2);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewComponentSeller(
+          url::Origin::Create(GURL("https://component.test")));
+  RunScoreAdWithReturnValueExpectingResult(
+      R"(browserSignals.componentSeller === "https://component.test" ? 3 : 0)",
+      3);
 }
 
 TEST_F(SellerWorkletTest, ScoreAdInterestGroupOwner) {
@@ -1297,6 +1373,54 @@ TEST_F(SellerWorkletTest, ReportResultTopWindowOrigin) {
       absl::nullopt /* expected_report_url */);
 }
 
+TEST_F(SellerWorkletTest, ReportResultTopLevelSeller) {
+  browser_signals_other_seller_.reset();
+  RunReportResultCreatedScriptExpectingResult(
+      R"("topLevelSeller" in browserSignals ? 0 : 1)",
+      /*extra_code=*/std::string(), /*expected_signals_for_winner=*/"1",
+      /*expected_report_url=*/absl::nullopt);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewTopLevelSeller(
+          url::Origin::Create(GURL("https://top.seller.test")));
+  RunReportResultCreatedScriptExpectingResult(
+      R"(browserSignals.topLevelSeller === "https://top.seller.test" ? 2 : 0)",
+      /*extra_code=*/std::string(), /*expected_signals_for_winner=*/"2",
+      /*expected_report_url=*/absl::nullopt);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewComponentSeller(
+          url::Origin::Create(GURL("https://component.test")));
+  RunReportResultCreatedScriptExpectingResult(
+      R"("topLevelSeller" in browserSignals ? 0 : 3)",
+      /*extra_code=*/std::string(), /*expected_signals_for_winner=*/"3",
+      /*expected_report_url=*/absl::nullopt);
+}
+
+TEST_F(SellerWorkletTest, ReportResultComponentSeller) {
+  browser_signals_other_seller_.reset();
+  RunReportResultCreatedScriptExpectingResult(
+      R"("componentSeller" in browserSignals ? 0 : 1)",
+      /*extra_code=*/std::string(), /*expected_signals_for_winner=*/"1",
+      /*expected_report_url=*/absl::nullopt);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewTopLevelSeller(
+          url::Origin::Create(GURL("https://top.seller.test")));
+  RunReportResultCreatedScriptExpectingResult(
+      R"("componentSeller" in browserSignals ? 0 : 2)",
+      /*extra_code=*/std::string(), /*expected_signals_for_winner=*/"2",
+      /*expected_report_url=*/absl::nullopt);
+
+  browser_signals_other_seller_ =
+      mojom::ComponentAuctionOtherSeller::NewComponentSeller(
+          url::Origin::Create(GURL("https://component.test")));
+  RunReportResultCreatedScriptExpectingResult(
+      R"(browserSignals.componentSeller === "https://component.test" ? 3 : 0)",
+      /*extra_code=*/std::string(), /*expected_signals_for_winner=*/"3",
+      /*expected_report_url=*/absl::nullopt);
+}
+
 TEST_F(SellerWorkletTest, ReportResultInterestGroupOwner) {
   browser_signal_interest_group_owner_ =
       url::Origin::Create(GURL("https://foo.test/"));
@@ -1461,6 +1585,7 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
       base::RunLoop run_loop;
       seller_worklet->ScoreAd(
           ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
+          browser_signals_other_seller_.Clone(),
           browser_signal_interest_group_owner_, browser_signal_render_url_,
           browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
           seller_timeout_,
@@ -1482,6 +1607,7 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
       base::RunLoop run_loop;
       seller_worklet->ReportResult(
           auction_ad_config_non_shared_params_.Clone(),
+          browser_signals_other_seller_.Clone(),
           browser_signal_interest_group_owner_, browser_signal_render_url_,
           bid_, browser_signal_desireability_,
           browser_signal_data_version_.value_or(0),
@@ -1508,6 +1634,7 @@ TEST_F(SellerWorkletTest, DeleteBeforeScoreAdCallback) {
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
   seller_worklet->ScoreAd(
       ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
+      browser_signals_other_seller_.Clone(),
       browser_signal_interest_group_owner_, browser_signal_render_url_,
       browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
       seller_timeout_,
@@ -1535,6 +1662,7 @@ TEST_F(SellerWorkletTest, DeleteBeforeReportResultCallback) {
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
   seller_worklet->ReportResult(
       auction_ad_config_non_shared_params_.Clone(),
+      browser_signals_other_seller_.Clone(),
       browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
       browser_signal_desireability_, browser_signal_data_version_.value_or(0),
       browser_signal_data_version_.has_value(),
@@ -1775,12 +1903,13 @@ TEST_F(SellerWorkletTest, BasicDevToolsDebug) {
   decision_logic_url_ = GURL(kUrl2);
   auto worklet2 = CreateWorklet(true /* pause_for_debugger_on_start */);
   base::RunLoop run_loop2;
-  RunScoreAdOnWorkletAsync(
-      worklet2.get(), 0,
-      {"http://example.org/second.js scoreAd() did not return a valid number."},
-      /*expected_data_version=*/absl::nullopt,
-      /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt, run_loop2.QuitClosure());
+  RunScoreAdOnWorkletAsync(worklet2.get(), 0,
+                           {"http://example.org/second.js scoreAd() did not "
+                            "return an object or a number."},
+                           /*expected_data_version=*/absl::nullopt,
+                           /*expected_debug_loss_report_url=*/absl::nullopt,
+                           /*expected_debug_win_report_url=*/absl::nullopt,
+                           run_loop2.QuitClosure());
 
   mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent1, agent2;
   worklet1->ConnectDevToolsAgent(agent1.BindNewEndpointAndPassReceiver());
@@ -2160,7 +2289,7 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
           "\"invalid_score\"",
           R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
             forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
-      0, {"https://url.test/ scoreAd() did not return a valid number."},
+      0, {"https://url.test/ scoreAd() did not return an object or a number."},
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
       /*expected_debug_win_report_url=*/absl::nullopt);
@@ -2283,6 +2412,7 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
     base::RunLoop run_loop;
     seller_worklet->ScoreAd(
         ad_metadata_, i + 1, auction_ad_config_non_shared_params_.Clone(),
+        browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         seller_timeout_,

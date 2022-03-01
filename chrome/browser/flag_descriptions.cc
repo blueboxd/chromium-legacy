@@ -458,6 +458,12 @@ const char kBackForwardCacheDescription[] =
     "To enable caching pages on same-site navigations too, choose 'enabled "
     "same-site support'.";
 
+const char kEnableBackForwardCacheForScreenReaderName[] =
+    "Enable Back-forward cache for screen readers";
+const char kEnableBackForwardCacheForScreenReaderDescription[] =
+    "If enabled, allow pages to enter back/forward cache even if a screen "
+    "reader is in use. The page might still not be cached for other reasons.";
+
 const char kBentoBarName[] = "Persistent desks bar";
 const char kBentoBarDescription[] =
     "Showing a persistent desks bar at the top of the screen in clamshell mode "
@@ -2026,9 +2032,6 @@ const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
 
-const char kPdfUnseasonedName[] = "Pepper-free PDF viewer";
-const char kPdfUnseasonedDescription[] = "Enables the Pepper-free PDF viewer.";
-
 const char kPdfXfaFormsName[] = "PDF XFA support";
 const char kPdfXfaFormsDescription[] =
     "Enables support for XFA forms in PDFs. "
@@ -2688,6 +2691,11 @@ const char kWallpaperFullScreenPreviewName[] =
 const char kWallpaperFullScreenPreviewDescription[] =
     "Allows users to minimize all active windows to preview their current "
     "wallpaper";
+
+const char kWallpaperGooglePhotosIntegrationName[] =
+    "Enable Google Photos wallpaper integration";
+const char kWallpaperGooglePhotosIntegrationDescription[] =
+    "Allows users to select their wallpaper from Google Photos";
 
 const char kWallpaperPerDeskName[] =
     "Enable setting different wallpapers per desk";
@@ -3881,6 +3889,12 @@ const char kSharingDesktopScreenshotsEditDescription[] =
 
 #if BUILDFLAG(IS_WIN)
 
+const char kCalculateNativeWinOcclusionName[] =
+    "Calculate window occlusion on Windows";
+const char kCalculateNativeWinOcclusionDescription[] =
+    "Calculate window occlusion on Windows will be used in the future "
+    "to throttle and potentially unload foreground tabs in occluded windows";
+
 const char kEnableIncognitoShortcutOnDesktopName[] =
     "Enable Incognito Desktop Shortcut";
 const char kEnableIncognitoShortcutOnDesktopDescription[] =
@@ -4172,6 +4186,11 @@ const char kArcEnableUsapName[] =
 const char kArcEnableUsapDesc[] =
     "Enable ARC Unspecialized Application Processes when applicable for "
     "high-memory devices.";
+
+const char kArcEnableVirtioBlkForDataName[] =
+    "Enable virtio-blk for ARCVM /data";
+const char kArcEnableVirtioBlkForDataDesc[] =
+    "If enabled, ARCVM uses virtio-blk for /data in Android storage.";
 
 const char kAshEnablePipRoundedCornersName[] =
     "Enable Picture-in-Picture rounded corners.";
@@ -5397,11 +5416,6 @@ const char kWakeOnWifiAllowedDescription[] =
 const char kWebAppsCrosapiName[] = "Web Apps Crosapi";
 const char kWebAppsCrosapiDescription[] =
     "Support web apps publishing from Lacros browser.";
-
-const char kWebuiDarkModeName[] = "WebUI dark mode";
-const char kWebuiDarkModeDescription[] =
-    "Allows dark mode usage in WebUI. Note that this does not necessary enable "
-    "dark mode, which is enabled via the #enable-force-dark flag.";
 
 const char kWifiConnectMacAddressRandomizationName[] =
     "MAC address randomization";

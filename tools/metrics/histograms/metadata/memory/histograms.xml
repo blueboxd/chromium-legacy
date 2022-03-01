@@ -392,6 +392,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Memory.Browser.PrivateMemoryFootprint.HasZombieProfile"
     units="MB" expires_after="2022-08-21">
+  <obsolete>
+    This histogram was used to measure the impact of the
+    DestroyProfileOnBrowserClose prior to its general launch. Now that it's 100%
+    launched, there is no active A/B test.
+  </obsolete>
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -461,7 +466,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.FreeListReleaseTime" units="microseconds"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -484,7 +489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.FreelistSize.Foreground" units="KiB"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -504,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.LockingSuccess"
-    enum="BooleanLockingSuccess" expires_after="2022-06-26">
+    enum="BooleanLockingSuccess" expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -514,7 +519,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.Size.Foreground" units="KiB"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2600,6 +2605,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Memory.Total.PrivateMemoryFootprint.HasZombieProfile"
     units="MB" expires_after="2022-08-21">
+  <obsolete>
+    This histogram was used to measure the impact of the
+    DestroyProfileOnBrowserClose prior to its general launch. Now that it's 100%
+    launched, there is no active A/B test.
+  </obsolete>
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -2685,7 +2695,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.SystemCommitLimit" units="GB"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>sadrul@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>

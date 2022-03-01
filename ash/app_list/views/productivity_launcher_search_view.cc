@@ -16,6 +16,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_view.h"
 #include "ash/constants/ash_features.h"
+#include "ash/controls/rounded_scroll_bar.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -43,6 +44,9 @@ namespace {
 // result page changes are delayed.
 constexpr base::TimeDelta kNotifyA11yDelay = base::Milliseconds(1500);
 
+// Insets for the vertical scroll bar.
+constexpr gfx::Insets kVerticalScrollInsets(1, 0, 1, 1);
+
 }  // namespace
 
 ProductivityLauncherSearchView::ProductivityLauncherSearchView(
@@ -60,10 +64,17 @@ ProductivityLauncherSearchView::ProductivityLauncherSearchView(
       views::ScrollView::ScrollWithLayers::kEnabled));
   scroll_view_->ClipHeightTo(0, std::numeric_limits<int>::max());
   scroll_view_->SetDrawOverflowIndicator(false);
-  scroll_view_->SetHorizontalScrollBarMode(
-      views::ScrollView::ScrollBarMode::kDisabled);
+
   // Don't paint a background. The bubble already has one.
   scroll_view_->SetBackgroundColor(absl::nullopt);
+
+  // Set up scroll bars.
+  scroll_view_->SetHorizontalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kDisabled);
+  auto vertical_scroll =
+      std::make_unique<RoundedScrollBar>(/*horizontal=*/false);
+  vertical_scroll->SetInsets(kVerticalScrollInsets);
+  scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
 
   auto scroll_contents = std::make_unique<views::View>();
   scroll_contents->SetLayoutManager(
@@ -150,6 +161,8 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
     result_count += view->num_results();
   }
 
+  SearchResultBaseView* first_result_view = nullptr;
+
   // If the user cleared the search box text, skip animating the views. The
   // visible views will animate out and the whole search page will be hidden.
   // See AppListBubbleSearchPage::AnimateHidePage().
@@ -164,6 +177,10 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
           container_animation_info->total_views;
       aggregate_animation_info.animating_views +=
           container_animation_info->animating_views;
+      // Fetch the first visible search result view for search box autocomplete.
+      if (!first_result_view && view->GetFirstResultView()) {
+        first_result_view = view->GetFirstResultView();
+      }
     }
   }
   Layout();
@@ -171,10 +188,6 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
   last_search_result_count_ = result_count;
 
   ScheduleResultsChangedA11yNotification();
-  // Find the first result view.
-  DCHECK(!result_container_views_.empty());
-  SearchResultBaseView* first_result_view =
-      result_container_views_.front()->GetFirstResultView();
 
   // Reset selection to first when things change. The first result is set as
   // as the default result.
@@ -183,7 +196,11 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
                                                /*default_selection=*/true);
   // Update SearchBoxView search box autocomplete as necessary based on new
   // first result view.
-  search_box_view_->ProcessAutocomplete(first_result_view);
+  if (first_result_view) {
+    search_box_view_->ProcessAutocomplete(first_result_view);
+  } else {
+    search_box_view_->ClearAutocompleteText();
+  }
 }
 
 void ProductivityLauncherSearchView::GetAccessibleNodeData(

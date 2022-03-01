@@ -84,64 +84,81 @@ base::GUID DefaultExternalReportID() {
 }
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
+
 ConfigurableStorageDelegate::~ConfigurableStorageDelegate() = default;
+
+void ConfigurableStorageDelegate::DetachFromSequence() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 base::Time ConfigurableStorageDelegate::GetReportTime(
     const CommonSourceInfo& source,
     base::Time trigger_time) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return source.impression_time() + report_delay_;
 }
 
 int ConfigurableStorageDelegate::GetMaxAttributionsPerSource(
     CommonSourceInfo::SourceType source_type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_attributions_per_source_;
 }
 
 int ConfigurableStorageDelegate::GetMaxSourcesPerOrigin() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_sources_per_origin_;
 }
 
 int ConfigurableStorageDelegate::GetMaxAttributionsPerOrigin() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_attributions_per_origin_;
 }
 
 int ConfigurableStorageDelegate::
     GetMaxDestinationsPerSourceSiteReportingOrigin() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return max_destinations_per_source_site_reporting_origin_;
 }
 
 AttributionStorageDelegate::RateLimitConfig
 ConfigurableStorageDelegate::GetRateLimits() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return rate_limits_;
 }
 
 base::TimeDelta ConfigurableStorageDelegate::GetDeleteExpiredSourcesFrequency()
     const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return delete_expired_sources_frequency_;
 }
 
 base::TimeDelta
 ConfigurableStorageDelegate::GetDeleteExpiredRateLimitsFrequency() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return delete_expired_rate_limits_frequency_;
 }
 
 base::GUID ConfigurableStorageDelegate::NewReportID() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return DefaultExternalReportID();
 }
 
 absl::optional<AttributionStorageDelegate::OfflineReportDelayConfig>
 ConfigurableStorageDelegate::GetOfflineReportDelayConfig() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return offline_report_delay_config_;
 }
 
 void ConfigurableStorageDelegate::ShuffleReports(
     std::vector<AttributionReport>& reports) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (reverse_reports_on_shuffle_)
     base::ranges::reverse(reports);
 }
 
 double ConfigurableStorageDelegate::GetRandomizedResponseRate(
     CommonSourceInfo::SourceType source_type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (source_type) {
     case CommonSourceInfo::SourceType::kNavigation:
       return randomized_response_rates_.navigation;
@@ -153,16 +170,19 @@ double ConfigurableStorageDelegate::GetRandomizedResponseRate(
 AttributionStorageDelegate::RandomizedResponse
 ConfigurableStorageDelegate::GetRandomizedResponse(
     const CommonSourceInfo& source) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return randomized_response_;
 }
 
 int64_t ConfigurableStorageDelegate::GetAggregatableBudgetPerSource() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return aggregatable_budget_per_source_;
 }
 
 uint64_t ConfigurableStorageDelegate::SanitizeTriggerData(
     uint64_t trigger_data,
     CommonSourceInfo::SourceType source_type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (source_type) {
     case CommonSourceInfo::SourceType::kNavigation:
       if (!navigation_trigger_data_cardinality_)
@@ -177,9 +197,89 @@ uint64_t ConfigurableStorageDelegate::SanitizeTriggerData(
   }
 }
 
+void ConfigurableStorageDelegate::set_max_attributions_per_source(int max) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  max_attributions_per_source_ = max;
+}
+
+void ConfigurableStorageDelegate::set_max_sources_per_origin(int max) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  max_sources_per_origin_ = max;
+}
+
+void ConfigurableStorageDelegate::set_max_attributions_per_origin(int max) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  max_attributions_per_origin_ = max;
+}
+
+void ConfigurableStorageDelegate::
+    set_max_destinations_per_source_site_reporting_origin(int max) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  max_destinations_per_source_site_reporting_origin_ = max;
+}
+
+void ConfigurableStorageDelegate::set_aggregatable_budget_per_source(
+    int64_t max) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  aggregatable_budget_per_source_ = max;
+}
+
+AttributionStorageDelegate::RateLimitConfig&
+ConfigurableStorageDelegate::rate_limits() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return rate_limits_;
+}
+
+void ConfigurableStorageDelegate::set_rate_limits(RateLimitConfig c) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  rate_limits_ = c;
+}
+
+void ConfigurableStorageDelegate::set_delete_expired_sources_frequency(
+    base::TimeDelta frequency) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  delete_expired_sources_frequency_ = frequency;
+}
+
+void ConfigurableStorageDelegate::set_delete_expired_rate_limits_frequency(
+    base::TimeDelta frequency) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  delete_expired_rate_limits_frequency_ = frequency;
+}
+
+void ConfigurableStorageDelegate::set_report_delay(
+    base::TimeDelta report_delay) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  report_delay_ = report_delay;
+}
+
+void ConfigurableStorageDelegate::set_offline_report_delay_config(
+    absl::optional<OfflineReportDelayConfig> config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  offline_report_delay_config_ = config;
+}
+
+void ConfigurableStorageDelegate::set_reverse_reports_on_shuffle(bool reverse) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  reverse_reports_on_shuffle_ = reverse;
+}
+
+void ConfigurableStorageDelegate::set_randomized_response_rates(
+    AttributionRandomizedResponseRates rates) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  randomized_response_rates_ = rates;
+}
+
+void ConfigurableStorageDelegate::set_randomized_response(
+    RandomizedResponse randomized_response) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  randomized_response_ = std::move(randomized_response);
+}
+
 void ConfigurableStorageDelegate::set_trigger_data_cardinality(
     uint64_t navigation,
     uint64_t event) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GT(navigation, 0u);
   DCHECK_GT(event, 0u);
 
@@ -324,12 +424,18 @@ SourceBuilder& SourceBuilder::SetDedupKeys(std::vector<uint64_t> dedup_keys) {
   return *this;
 }
 
+SourceBuilder& SourceBuilder::SetAggregatableSources(
+    AttributionAggregatableSources aggregatable_sources) {
+  aggregatable_sources_ = std::move(aggregatable_sources);
+  return *this;
+}
+
 CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
-  return CommonSourceInfo(source_event_id_, impression_origin_,
-                          conversion_origin_, reporting_origin_,
-                          impression_time_,
-                          /*expiry_time=*/impression_time_ + expiry_,
-                          source_type_, priority_, debug_key_);
+  return CommonSourceInfo(
+      source_event_id_, impression_origin_, conversion_origin_,
+      reporting_origin_, impression_time_,
+      /*expiry_time=*/impression_time_ + expiry_, source_type_, priority_,
+      debug_key_, aggregatable_sources_);
 }
 
 StorableSource SourceBuilder::Build() const {
@@ -464,6 +570,59 @@ AttributionReport ReportBuilder::Build() const {
                                         randomized_trigger_rate_, report_id_));
 }
 
+AggregatableKeyProtoBuilder::AggregatableKeyProtoBuilder() = default;
+
+AggregatableKeyProtoBuilder::~AggregatableKeyProtoBuilder() = default;
+
+AggregatableKeyProtoBuilder& AggregatableKeyProtoBuilder::SetHighBits(
+    uint64_t high_bits) {
+  key_.set_high_bits(high_bits);
+  return *this;
+}
+
+AggregatableKeyProtoBuilder& AggregatableKeyProtoBuilder::SetLowBits(
+    uint64_t low_bits) {
+  key_.set_low_bits(low_bits);
+  return *this;
+}
+
+proto::AttributionAggregatableKey AggregatableKeyProtoBuilder::Build() const {
+  return key_;
+}
+
+AggregatableSourcesProtoBuilder::AggregatableSourcesProtoBuilder() = default;
+
+AggregatableSourcesProtoBuilder::~AggregatableSourcesProtoBuilder() = default;
+
+AggregatableSourcesProtoBuilder& AggregatableSourcesProtoBuilder::AddKey(
+    std::string key_id,
+    proto::AttributionAggregatableKey key) {
+  (*aggregatable_sources_.mutable_sources())[std::move(key_id)] =
+      std::move(key);
+  return *this;
+}
+
+proto::AttributionAggregatableSources AggregatableSourcesProtoBuilder::Build()
+    const {
+  return aggregatable_sources_;
+}
+
+AggregatableSourcesMojoBuilder::AggregatableSourcesMojoBuilder() = default;
+
+AggregatableSourcesMojoBuilder::~AggregatableSourcesMojoBuilder() = default;
+
+AggregatableSourcesMojoBuilder& AggregatableSourcesMojoBuilder::AddKey(
+    std::string key_id,
+    blink::mojom::AttributionAggregatableKeyPtr key) {
+  sources_.sources.emplace(std::move(key_id), std::move(key));
+  return *this;
+}
+
+blink::mojom::AttributionAggregatableSourcesPtr
+AggregatableSourcesMojoBuilder::Build() const {
+  return sources_.Clone();
+}
+
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   const auto tie = [](const AttributionTrigger& t) {
     return std::make_tuple(t.trigger_data(), t.conversion_destination(),
@@ -475,11 +634,11 @@ bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
 
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
   const auto tie = [](const CommonSourceInfo& source) {
-    return std::make_tuple(source.source_event_id(), source.impression_origin(),
-                           source.conversion_origin(),
-                           source.reporting_origin(), source.impression_time(),
-                           source.expiry_time(), source.source_type(),
-                           source.priority(), source.debug_key());
+    return std::make_tuple(
+        source.source_event_id(), source.impression_origin(),
+        source.conversion_origin(), source.reporting_origin(),
+        source.impression_time(), source.expiry_time(), source.source_type(),
+        source.priority(), source.debug_key(), source.aggregatable_sources());
   };
   return tie(a) == tie(b);
 }
@@ -710,6 +869,7 @@ std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
              << ",priority=" << source.priority() << ",debug_key="
              << (source.debug_key() ? base::NumberToString(*source.debug_key())
                                     : "null")
+             << ",aggregatable_sources=" << source.aggregatable_sources()
              << "}";
 }
 
@@ -865,6 +1025,65 @@ AttributionFilterSizeTestCase::Map AttributionFilterSizeTestCase::AsMap()
 
   DCHECK_EQ(map.size(), filter_count);
   return map;
+}
+
+namespace proto {
+
+bool operator==(const AttributionAggregatableKey& a,
+                const AttributionAggregatableKey& b) {
+  auto tie = [](const AttributionAggregatableKey& key) {
+    return std::make_tuple(key.has_high_bits(), key.high_bits(),
+                           key.has_low_bits(), key.low_bits());
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const AttributionAggregatableSources& a,
+                const AttributionAggregatableSources& b) {
+  if (a.sources().size() != b.sources().size())
+    return false;
+
+  return base::ranges::all_of(a.sources(), [&](const auto& source) {
+    auto iter = b.sources().find(source.first);
+    return iter != b.sources().end() && iter->second == source.second;
+  });
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionAggregatableKey& key) {
+  return out << "{high_bits="
+             << (key.has_high_bits() ? base::NumberToString(key.high_bits())
+                                     : "null")
+             << ",low_bits="
+             << (key.has_low_bits() ? base::NumberToString(key.low_bits())
+                                    : "null")
+             << "}";
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AttributionAggregatableSources& aggregatable_sources) {
+  out << "{sources=[";
+
+  const char* separator = "";
+  for (const auto& [key_id, key] : aggregatable_sources.sources()) {
+    out << separator << key_id << ":" << key;
+    separator = ", ";
+  }
+  return out << "]}";
+}
+
+}  // namespace proto
+
+bool operator==(const AttributionAggregatableSources& a,
+                const AttributionAggregatableSources& b) {
+  return a.proto() == b.proto();
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AttributionAggregatableSources& aggregatable_sources) {
+  return out << "{proto=" << aggregatable_sources.proto() << "}";
 }
 
 std::vector<AttributionReport> GetAttributionReportsForTesting(

@@ -132,7 +132,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
       .ForOneApp(app_id, [](const apps::AppUpdate& update) {
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
+        ASSERT_TRUE(update.ShowInManagement().has_value());
+        EXPECT_FALSE(update.ShowInManagement().value());
         EXPECT_EQ(apps::Readiness::kReady, update.Readiness());
       });
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -261,21 +262,20 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
             include_launch_directory);
   }
 
-  content::WebContents* LaunchApp(
-      const std::vector<base::FilePath> launch_files,
-      bool wait_for_load = true) {
+  content::WebContents* LaunchApp(std::vector<base::FilePath> launch_files,
+                                  bool wait_for_load = true) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
-    params.launch_files = launch_files;
+    params.launch_files = std::move(launch_files);
 
     return SystemWebAppBrowserTestBase::LaunchApp(std::move(params));
   }
 
   content::WebContents* LaunchAppWithoutWaiting(
-      const std::vector<base::FilePath> launch_files) {
+      std::vector<base::FilePath> launch_files) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
-    params.launch_files = launch_files;
+    params.launch_files = std::move(launch_files);
 
     return SystemWebAppBrowserTestBase::LaunchAppWithoutWaiting(
         std::move(params));
@@ -314,7 +314,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
   }
 
   std::string GetJsStatementValueAsString(content::WebContents* web_contents,
-                                          std::string js_statement) {
+                                          const std::string& js_statement) {
     std::string str;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         web_contents, "domAutomationController.send( " + js_statement + ");",
@@ -1413,8 +1413,8 @@ class SystemWebAppManagerAppSuspensionBrowserTest
     return readiness;
   }
 
-  apps::mojom::IconKeyPtr GetAppIconKey(const AppId& app_id) {
-    apps::mojom::IconKeyPtr icon_key;
+  absl::optional<apps::IconKey> GetAppIconKey(const AppId& app_id) {
+    absl::optional<apps::IconKey> icon_key;
     bool app_found =
         GetAppServiceProxy(browser()->profile())
             ->AppRegistryCache()

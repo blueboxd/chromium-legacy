@@ -166,6 +166,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Whether the scroll view is animating its content offset to the current page.
 @property(nonatomic, assign, getter=isScrollViewAnimatingContentOffset)
     BOOL scrollViewAnimatingContentOffset;
+// The height of the bottom of the tab grid which is currently covered by the
+// software keyboard.
+@property(nonatomic, assign) CGFloat keyboardOverlap;
 
 @property(nonatomic, assign) PageChangeInteraction pageChangeInteraction;
 // UIView whose background color changes to create a fade-in / fade-out effect
@@ -275,6 +278,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       pageViewController.view.accessibilityElementsHidden = YES;
     }
   }
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleKeyboardWillShow:)
+             name:UIKeyboardWillShowNotification
+           object:nil];
+
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(handleKeyboardWillHide:)
+             name:UIKeyboardWillHideNotification
+           object:nil];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -628,18 +643,21 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   TabGridMode previousMode = _tabGridMode;
   _tabGridMode = mode;
-  self.bottomToolbar.mode = self.tabGridMode;
-  self.regularTabsViewController.mode = self.tabGridMode;
-  self.incognitoTabsViewController.mode = self.tabGridMode;
-  self.topToolbar.mode = self.tabGridMode;
 
-  // Reset search state when leaving search mode.
+  // Resetting search state when leaving the search mode should happen before
+  // changing the mode in the controllers so when they do the cleanup for the
+  // new mode they will have the correct items (tabs).
   if (IsTabsSearchEnabled() && previousMode == TabGridModeSearch) {
     self.remoteTabsViewController.searchTerms = nil;
     [self.regularTabsDelegate resetToAllItems];
     [self.incognitoTabsDelegate resetToAllItems];
     [self hideScrim];
   }
+
+  self.bottomToolbar.mode = self.tabGridMode;
+  self.regularTabsViewController.mode = self.tabGridMode;
+  self.incognitoTabsViewController.mode = self.tabGridMode;
+  self.topToolbar.mode = self.tabGridMode;
 
   self.scrollView.scrollEnabled = (self.tabGridMode == TabGridModeNormal);
   if (mode == TabGridModeSelection)
@@ -937,9 +955,27 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   inset.left = self.scrollView.safeAreaInsets.left;
   inset.right = self.scrollView.safeAreaInsets.right;
   inset.top += self.scrollView.safeAreaInsets.top;
-  inset.bottom += self.scrollView.safeAreaInsets.bottom;
+  if (self.keyboardOverlap > 0) {
+    // Override normal bottom insets which will be behind keyboard.
+    inset.bottom = self.keyboardOverlap;
+  } else {
+    inset.bottom += self.scrollView.safeAreaInsets.bottom;
+  }
   self.incognitoTabsViewController.gridView.contentInset = inset;
   self.regularTabsViewController.gridView.contentInset = inset;
+}
+
+- (void)handleKeyboardWillShow:(NSNotification*)notification {
+  CGRect keyboardFrame =
+      [notification.userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
+  CGRect viewFrameInWindow = [self.scrollView convertRect:self.scrollView.bounds
+                                                   toView:nil];
+  self.keyboardOverlap =
+      CGRectIntersection(keyboardFrame, viewFrameInWindow).size.height;
+}
+
+- (void)handleKeyboardWillHide:(NSNotification*)notification {
+  self.keyboardOverlap = 0.0;
 }
 
 // Returns the corresponding GridViewController for |page|. Returns |nil| if

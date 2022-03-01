@@ -191,12 +191,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_additional_search_terms_changed_,
               u.AdditionalSearchTermsChanged());
 
-    if (expect_icon_key_.has_value()) {
-      ASSERT_TRUE(u.GetIconKey().has_value());
-      EXPECT_EQ(expect_icon_key_.value(), u.GetIconKey().value());
-    } else {
-      ASSERT_FALSE(u.GetIconKey().has_value());
-    }
+    EXPECT_EQ(expect_icon_key_, u.IconKey());
     EXPECT_EQ(expect_icon_key_changed_, u.IconKeyChanged());
 
     EXPECT_EQ(expect_last_launch_time_, u.LastLaunchTime());
@@ -235,7 +230,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_show_in_search_, u.GetShowInSearch());
     EXPECT_EQ(expect_show_in_search_changed_, u.ShowInSearchChanged());
 
-    EXPECT_EQ(expect_show_in_management_, u.GetShowInManagement());
+    EXPECT_EQ(expect_show_in_management_, u.ShowInManagement());
     EXPECT_EQ(expect_show_in_management_changed_, u.ShowInManagementChanged());
 
     EXPECT_EQ(expect_handles_intents_, u.GetHandlesIntents());
@@ -247,7 +242,7 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_has_badge_, u.GetHasBadge());
     EXPECT_EQ(expect_has_badge_changed_, u.HasBadgeChanged());
 
-    EXPECT_EQ(expect_paused_, u.GetPaused());
+    EXPECT_EQ(expect_paused_, u.Paused());
     EXPECT_EQ(expect_paused_changed_, u.PausedChanged());
 
     EXPECT_TRUE(IsEqual(expect_intent_filters_, u.GetIntentFilters()));
@@ -274,7 +269,7 @@ class AppUpdateTest : public testing::Test {
     AppUpdate u(state, delta, account_id_);
 
     EXPECT_EQ(app_type, u.GetAppType());
-    EXPECT_EQ(app_id, u.GetAppId());
+    EXPECT_EQ(app_id, u.AppId());
 
     expect_readiness_ = Readiness::kUnknown;
     expect_prior_readiness_ = Readiness::kUnknown;

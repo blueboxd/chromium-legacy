@@ -22,6 +22,7 @@
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/optimization_guide/core/model_util.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_logger.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -348,11 +349,14 @@ class TestPredictionManager : public PredictionManager {
             off_the_record,
             application_locale,
             models_dir_path,
-            /*optimization_guide_logger=*/nullptr,
+            &optimization_guide_logger_,
             /*background_download_service_provider=*/
             base::OnceCallback<download::BackgroundDownloadService*()>()) {}
 
   ~TestPredictionManager() override = default;
+
+ private:
+  OptimizationGuideLogger optimization_guide_logger_;
 };
 
 class PredictionManagerTestBase : public ProtoDatabaseProviderTestBase {
@@ -562,6 +566,11 @@ TEST_F(PredictionManagerTest, AddObserverForOptimizationTargetModel) {
   SetStoreInitialized(/* load_models= */ false,
                       /* have_models_in_store= */ false);
 
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.ModelAvailableAtRegistration."
+      "PainfulPageLoad",
+      false, 1);
+
   EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
   // Make sure the test histogram is recorded. We don't check for value here
   // since that is too much toil for someone whenever they add a new version.
@@ -589,21 +598,31 @@ TEST_F(PredictionManagerTest, AddObserverForOptimizationTargetModel) {
   model_info.add_additional_files()->set_file_path("");
 
   // Ensure observer is hooked up.
-  proto::PredictionModel model1;
-  *model1.mutable_model_info() = model_info;
-  model1.mutable_model()->set_download_url(
-      FilePathToString(temp_dir().AppendASCII("whatever")));
-  prediction_manager()->OnModelReady(model1);
-  RunUntilIdle();
+  {
+    base::HistogramTester model_ready_histogram_tester;
 
-  absl::optional<ModelInfo> received_model =
-      observer.last_received_model_for_target(
-          proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-  EXPECT_EQ(received_model->GetModelMetadata()->type_url(), "sometypeurl");
-  EXPECT_EQ(received_model->GetModelFilePath().BaseName().value(),
-            FILE_PATH_LITERAL("whatever"));
-  EXPECT_EQ(received_model->GetAdditionalFiles(),
-            base::flat_set<base::FilePath>{additional_file_path});
+    proto::PredictionModel model1;
+    *model1.mutable_model_info() = model_info;
+    model1.mutable_model()->set_download_url(
+        FilePathToString(temp_dir().AppendASCII("whatever")));
+    prediction_manager()->OnModelReady(model1);
+    RunUntilIdle();
+
+    absl::optional<ModelInfo> received_model =
+        observer.last_received_model_for_target(
+            proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+    EXPECT_EQ(received_model->GetModelMetadata()->type_url(), "sometypeurl");
+    EXPECT_EQ(received_model->GetModelFilePath().BaseName().value(),
+              FILE_PATH_LITERAL("whatever"));
+    EXPECT_EQ(received_model->GetAdditionalFiles(),
+              base::flat_set<base::FilePath>{additional_file_path});
+
+    // Make sure we do not record the model available histogram again.
+    model_ready_histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.PredictionManager.ModelAvailableAtRegistration."
+        "PainfulPageLoad",
+        0);
+  }
 
   // Reset fetcher and make sure version is sent in the new request and not
   // counted as re-loaded or updated.
@@ -780,9 +799,15 @@ TEST_F(PredictionManagerTest,
   base::HistogramTester histogram_tester;
 
   CreatePredictionManager();
+  SetStoreInitialized(/*load_models=*/false, /*have_models_in_store=*/false);
   FakeOptimizationTargetModelObserver observer;
   prediction_manager()->AddObserverForOptimizationTargetModel(
-      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt, &observer);
+      proto::OPTIMIZATION_TARGET_MODEL_VALIDATION, absl::nullopt, &observer);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.ModelAvailableAtRegistration."
+      "ModelValidation",
+      false, 1);
 }
 
 TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
@@ -931,6 +956,16 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTargetOnModelReady) {
 
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
+
+  // Now register the model.
+  FakeOptimizationTargetModelObserver observer;
+  prediction_manager()->AddObserverForOptimizationTargetModel(
+      proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, absl::nullopt, &observer);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.ModelAvailableAtRegistration."
+      "PainfulPageLoad",
+      true, 1);
 }
 
 TEST_F(PredictionManagerTest,
@@ -952,6 +987,10 @@ TEST_F(PredictionManagerTest,
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.ModelAvailableAtRegistration."
+      "PainfulPageLoad",
+      true, 1);
 }
 
 TEST_F(PredictionManagerTest,
@@ -975,6 +1014,10 @@ TEST_F(PredictionManagerTest,
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.PredictionManager.ModelAvailableAtRegistration."
+      "PainfulPageLoad",
+      true, 1);
 }
 
 TEST_F(PredictionManagerTest, ModelFetcherTimerRetryDelay) {

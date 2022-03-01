@@ -731,6 +731,28 @@
             ]
         }
     ],
+    "AutofillEnableProfileDeduplication": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableProfileDeduplication"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableSupportForMoreStructureInAddresses": [
         {
             "platforms": [
@@ -2914,6 +2936,7 @@
             "platforms": [
                 "android",
                 "android_weblayer",
+                "android_webview",
                 "chromeos",
                 "linux",
                 "mac",
@@ -3265,28 +3288,6 @@
                     },
                     "enable_features": [
                         "HappinessTrackingSystemStability"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HatsArcGames": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "custom_client_data": "{\"package_names\":[\"com.roblox.client\",\"com.dts.freefireth\",\"air.com.lunime.gachaclub\",\"com.devsisters.ck\",\"com.tocaboca.tocalifeworld\",\"com.innersloth.spacemafia\",\"com.microsoft.microsoftsolitairecollection\",\"com.king.candycrushsaga\",\"com.king.candycrushsodasaga\",\"air.com.lunime.gachalife\",\"com.playrix.township\",\"com.dts.freefiremax\",\"com.mobilityware.spider\",\"net.wooga.junes_journey_hidden_object_mystery_game\",\"com.mobile.legends\",\"com.ninjakiwi.bloonstd6\",\"com.lockwoodpublishing.avakinlife\",\"com.pixel.art.coloring.color.number\",\"com.playrix.homescapes\",\"com.miHoYo.GenshinImpact\"]}",
-                        "prob": "0.05",
-                        "survey_cycle_length": "7",
-                        "survey_start_date_ms": "1638316800000",
-                        "trigger_id": "rJ6AqzkxG0jBnuKU19R0UJFsCCjz"
-                    },
-                    "enable_features": [
-                        "HappinessTrackingArcGames"
                     ]
                 }
             ]
@@ -5551,26 +5552,6 @@
             ]
         }
     ],
-    "RetailCoupons": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Experiment_V2_20211129",
-                    "params": {
-                        "RetailCouponsWithCodeParam": "true"
-                    },
-                    "enable_features": [
-                        "RetailCoupons"
-                    ]
-                }
-            ]
-        }
-    ],
     "SRTPromptFieldTrial": [
         {
             "platforms": [
@@ -5833,6 +5814,41 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SharedHighlightingIOS"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SharedHighlightingIphClank": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IPH_SharedHighlightingBuilder",
+                        "IPH_SharedHighlightingReceiver"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SharedHighlightingIphDesktop": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IPH_DesktopSharedHighlighting"
                     ]
                 }
             ]

@@ -2556,6 +2556,8 @@ constexpr char kAmbientModeAnimationInternalName[] = "ambient-mode-animation";
 constexpr char kPersonalizationHubInternalName[] = "personalization-hub";
 constexpr char kWallpaperFullScreenPreviewInternalName[] =
     "wallpaper-fullscreen-preview";
+constexpr char kWallpaperGooglePhotosIntegrationInternalName[] =
+    "wallpaper-google-photos-integration";
 constexpr char kWallpaperPerDeskName[] = "per-desk-wallpaper";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -2626,19 +2628,30 @@ const FeatureEntry::FeatureVariation kReadLaterVariations[] = {
 
 const FeatureEntry::FeatureParam kBookmarksRefreshVisuals[] = {
     {"bookmark_visuals_enabled", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshCompactVisuals[] = {
+    {"bookmark_visuals_enabled", "true"},
+    {"bookmark_compact_visuals_enabled", "true"}};
 const FeatureEntry::FeatureParam kBookmarksRefreshAppMenu[] = {
     {"bookmark_in_app_menu", "true"}};
-const FeatureEntry::FeatureParam kBookmarksRefreshWithEverything[] = {
+const FeatureEntry::FeatureParam kBookmarksRefreshNormal[] = {
     {"bookmark_visuals_enabled", "true"},
+    {"bookmark_in_app_menu", "true"}};
+const FeatureEntry::FeatureParam kBookmarksRefreshCompact[] = {
+    {"bookmark_visuals_enabled", "true"},
+    {"bookmark_compact_visuals_enabled", "true"},
     {"bookmark_in_app_menu", "true"}};
 
 const FeatureEntry::FeatureVariation kBookmarksRefreshVariations[] = {
-    {"(manager visuals only)", kBookmarksRefreshVisuals,
+    {"(enabled w/ visuals)", kBookmarksRefreshNormal,
+     std::size(kBookmarksRefreshNormal), nullptr},
+    {"(enabled w/ compact visuals)", kBookmarksRefreshCompact,
+     std::size(kBookmarksRefreshCompact), nullptr},
+    {"(visuals only)", kBookmarksRefreshVisuals,
      std::size(kBookmarksRefreshVisuals), nullptr},
+    {"(compact visuals only)", kBookmarksRefreshCompactVisuals,
+     std::size(kBookmarksRefreshCompactVisuals), nullptr},
     {"(app menu item only)", kBookmarksRefreshAppMenu,
-     std::size(kBookmarksRefreshAppMenu), nullptr},
-    {"(everything)", kBookmarksRefreshWithEverything,
-     std::size(kBookmarksRefreshWithEverything), nullptr}};
+     std::size(kBookmarksRefreshAppMenu), nullptr}};
 #endif  // BUILDFLAG(IS_ANDROID)
 
 const FeatureEntry::FeatureParam kLargeFaviconFromGoogle96[] = {
@@ -4483,6 +4496,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-enable-usap", flag_descriptions::kArcEnableUsapName,
      flag_descriptions::kArcEnableUsapDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kEnableUsap)},
+    {"arc-enable-virtio-blk-for-data",
+     flag_descriptions::kArcEnableVirtioBlkForDataName,
+     flag_descriptions::kArcEnableVirtioBlkForDataDesc, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kEnableVirtioBlkForData)},
     {"arc-file-picker-experiment",
      flag_descriptions::kArcFilePickerExperimentName,
      flag_descriptions::kArcFilePickerExperimentDescription, kOsCrOS,
@@ -5717,6 +5734,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
 #endif
 
+#if BUILDFLAG(IS_WIN)
+    {"calculate-native-win-occlusion",
+     flag_descriptions::kCalculateNativeWinOcclusionName,
+     flag_descriptions::kCalculateNativeWinOcclusionDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kCalculateNativeWinOcclusion)},
+#endif  // BUILDFLAG(IS_WIN)
+
 #if !BUILDFLAG(IS_ANDROID)
     {"happiness-tracking-surveys-for-desktop-demo",
      flag_descriptions::kHappinessTrackingSurveysForDesktopDemoName,
@@ -6037,10 +6061,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-hostname-setting", flag_descriptions::kEnableHostnameSettingName,
      flag_descriptions::kEnableHostnameSettingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEnableHostnameSetting)},
-
-    {"webui-dark-mode", flag_descriptions::kWebuiDarkModeName,
-     flag_descriptions::kWebuiDarkModeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kWebUIDarkMode)},
 
     {"enable-networking-in-diagnostics-app",
      flag_descriptions::kEnableNetworkingInDiagnosticsAppName,
@@ -6366,6 +6386,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kBackForwardCache,
                                     kBackForwardCacheVariations,
                                     "BackForwardCache")},
+    {"enable-back-forward-cache-for-screen-reader",
+     flag_descriptions::kEnableBackForwardCacheForScreenReaderName,
+     flag_descriptions::kEnableBackForwardCacheForScreenReaderDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableBackForwardCacheForScreenReader)},
 
 #if !BUILDFLAG(IS_ANDROID)
     {"closed-tab-cache", flag_descriptions::kClosedTabCacheName,
@@ -7190,9 +7215,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
-    {"pdf-unseasoned", flag_descriptions::kPdfUnseasonedName,
-     flag_descriptions::kPdfUnseasonedDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfUnseasoned)},
     {"pdf-xfa-forms", flag_descriptions::kPdfXfaFormsName,
      flag_descriptions::kPdfXfaFormsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfXfaSupport)},
@@ -7242,6 +7264,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWallpaperFullScreenPreviewName,
      flag_descriptions::kWallpaperFullScreenPreviewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kWallpaperFullScreenPreview)},
+    {kWallpaperGooglePhotosIntegrationInternalName,
+     flag_descriptions::kWallpaperGooglePhotosIntegrationName,
+     flag_descriptions::kWallpaperGooglePhotosIntegrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kWallpaperGooglePhotosIntegration)},
     {kWallpaperPerDeskName, flag_descriptions::kWallpaperPerDeskName,
      flag_descriptions::kWallpaperPerDeskDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kWallpaperPerDesk)},
@@ -8250,6 +8276,17 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   // Only show full screen preview flag if wallpaper flag is enabled.
   if (!strcmp(kWallpaperFullScreenPreviewInternalName, entry.internal_name))
     return !ash::features::IsWallpaperWebUIEnabled();
+
+  // Only show Google Photos wallpaper integration flag if:
+  // * channel is one of Dev/Canary/Unknown, and
+  // * wallpaper Web UI flag is enabled.
+  if (!strcmp(kWallpaperGooglePhotosIntegrationInternalName,
+              entry.internal_name)) {
+    return (channel != version_info::Channel::DEV &&
+            channel != version_info::Channel::CANARY &&
+            channel != version_info::Channel::UNKNOWN) ||
+           !ash::features::IsWallpaperWebUIEnabled();
+  }
 
   // Features that are only available for Unknown/Canary/Dev channels.
   bool is_ambient_mode_animation_feature = false;

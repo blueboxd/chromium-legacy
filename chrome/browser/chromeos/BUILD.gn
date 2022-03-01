@@ -62,6 +62,7 @@ source_set("chromeos") {
     "//ui/chromeos/resources",
     "//ui/chromeos/strings",
     "//ui/chromeos/styles:cros_styles_views",
+    "//ui/file_manager/base/gn:file_types_data_cpp",
     "//ui/resources",
     "//ui/strings",
   ]
@@ -1499,6 +1500,8 @@ source_set("chromeos") {
     "../ash/file_manager/delete_io_task.h",
     "../ash/file_manager/documents_provider_root_manager.cc",
     "../ash/file_manager/documents_provider_root_manager.h",
+    "../ash/file_manager/extract_io_task.cc",
+    "../ash/file_manager/extract_io_task.h",
     "../ash/file_manager/file_browser_handlers.cc",
     "../ash/file_manager/file_browser_handlers.h",
     "../ash/file_manager/file_manager_string_util.cc",

@@ -12,6 +12,7 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.power_scheduler.PowerSchedulerFeatures;
+import org.chromium.components.variations.VariationsFeatures;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.content_public.common.ContentFeatures;
 import org.chromium.content_public.common.ContentSwitches;
@@ -221,6 +222,7 @@ public final class ProductionSupportedFlagList {
                     "Optimizes communication between URLLoader and CorsURLLoader."),
             Flag.baseFeature(NetworkServiceFeatures.COMBINE_RESPONSE_BODY,
                     "Reduces URLLoaderClient mojo calls."),
+            Flag.baseFeature(NetworkServiceFeatures.FASTER_SET_COOKIE, "Optimizes cookie access."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
@@ -272,5 +274,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_X_REQUESTED_WITH_HEADER,
                     "Enables automatic insertion of XRequestedWith header "
                             + "on all outgoing requests."),
+            Flag.baseFeature(VariationsFeatures.VARIATIONS_FAKE_CRASH_AFTER_STARTUP,
+                    "Generates a crash dump without crashing after startup."),
     };
 }

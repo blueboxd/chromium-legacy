@@ -253,6 +253,9 @@ extern const char kAutoScreenBrightnessDescription[];
 extern const char kBackForwardCacheName[];
 extern const char kBackForwardCacheDescription[];
 
+extern const char kEnableBackForwardCacheForScreenReaderName[];
+extern const char kEnableBackForwardCacheForScreenReaderDescription[];
+
 extern const char kBentoBarName[];
 extern const char kBentoBarDescription[];
 
@@ -1148,9 +1151,6 @@ extern const char kPasswordDomainCapabilitiesFetchingDescription[];
 extern const char kPasswordScriptsFetchingName[];
 extern const char kPasswordScriptsFetchingDescription[];
 
-extern const char kPdfUnseasonedName[];
-extern const char kPdfUnseasonedDescription[];
-
 extern const char kPdfXfaFormsName[];
 extern const char kPdfXfaFormsDescription[];
 
@@ -1528,6 +1528,9 @@ extern const char kWalletServiceUseSandboxDescription[];
 
 extern const char kWallpaperFullScreenPreviewName[];
 extern const char kWallpaperFullScreenPreviewDescription[];
+
+extern const char kWallpaperGooglePhotosIntegrationName[];
+extern const char kWallpaperGooglePhotosIntegrationDescription[];
 
 extern const char kWallpaperPerDeskName[];
 extern const char kWallpaperPerDeskDescription[];
@@ -2227,6 +2230,9 @@ extern const char kSCTAuditingDescription[];
 
 #if BUILDFLAG(IS_WIN)
 
+extern const char kCalculateNativeWinOcclusionName[];
+extern const char kCalculateNativeWinOcclusionDescription[];
+
 extern const char kEnableIncognitoShortcutOnDesktopName[];
 extern const char kEnableIncognitoShortcutOnDesktopDescription[];
 
@@ -2399,6 +2405,9 @@ extern const char kArcVmBalloonPolicyDesc[];
 
 extern const char kArcEnableUsapName[];
 extern const char kArcEnableUsapDesc[];
+
+extern const char kArcEnableVirtioBlkForDataName[];
+extern const char kArcEnableVirtioBlkForDataDesc[];
 
 extern const char kAshEnablePipRoundedCornersName[];
 extern const char kAshEnablePipRoundedCornersDescription[];
@@ -3111,9 +3120,6 @@ extern const char kWakeOnWifiAllowedDescription[];
 
 extern const char kWebAppsCrosapiName[];
 extern const char kWebAppsCrosapiDescription[];
-
-extern const char kWebuiDarkModeName[];
-extern const char kWebuiDarkModeDescription[];
 
 extern const char kWifiConnectMacAddressRandomizationName[];
 extern const char kWifiConnectMacAddressRandomizationDescription[];

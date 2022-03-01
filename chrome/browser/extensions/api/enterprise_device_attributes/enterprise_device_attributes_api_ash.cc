@@ -24,11 +24,15 @@
 
 namespace extensions {
 
-// TODO(http://crbug.com/1056550): Return an error if the user is not permitted
-// to get device attributes instead of an empty string.
+EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction::
+    EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction()
+    : EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction(
+          std::make_unique<policy::DeviceAttributesImpl>()) {}
 
 EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction::
-    EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction() {}
+    EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction(
+        std::unique_ptr<policy::DeviceAttributes> attributes)
+    : attributes_(std::move(attributes)) {}
 
 EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction::
     ~EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction() {}
@@ -39,9 +43,7 @@ EnterpriseDeviceAttributesGetDirectoryDeviceIdFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (crosapi::browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
           profile)) {
-    device_id = g_browser_process->platform_part()
-                    ->browser_policy_connector_ash()
-                    ->GetDirectoryApiID();
+    device_id = attributes_->GetDirectoryApiID();
   }
   return RespondNow(ArgumentList(
       api::enterprise_device_attributes::GetDirectoryDeviceId::Results::Create(
@@ -95,7 +97,14 @@ EnterpriseDeviceAttributesGetDeviceAssetIdFunction::Run() {
 }
 
 EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction::
-    EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction() {}
+    EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction()
+    : EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction(
+          std::make_unique<policy::DeviceAttributesImpl>()) {}
+
+EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction::
+    EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction(
+        std::unique_ptr<policy::DeviceAttributes> attributes)
+    : attributes_(std::move(attributes)) {}
 
 EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction::
     ~EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction() {}
@@ -106,9 +115,7 @@ EnterpriseDeviceAttributesGetDeviceAnnotatedLocationFunction::Run() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   if (crosapi::browser_util::IsSigninProfileOrBelongsToAffiliatedUser(
           profile)) {
-    annotated_location = g_browser_process->platform_part()
-                             ->browser_policy_connector_ash()
-                             ->GetDeviceAnnotatedLocation();
+    annotated_location = attributes_->GetDeviceAnnotatedLocation();
   }
   return RespondNow(ArgumentList(
       api::enterprise_device_attributes::GetDeviceAnnotatedLocation::Results::

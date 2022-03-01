@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -126,6 +127,8 @@ class MODULES_EXPORT MediaStreamTrack
       int context_sample_rate);
 
   ImageCapture* GetImageCapture() { return image_capture_; }
+
+  absl::optional<base::UnguessableToken> serializable_session_id() const;
 
 #if !BUILDFLAG(IS_ANDROID)
   // Only relevant for focusable streams (FocusableMediaStreamTrack).

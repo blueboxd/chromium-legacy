@@ -45,6 +45,9 @@ ci.builder(
         category = "builder_tester|arm64",
         short_name = "P-WPT",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -53,6 +56,9 @@ ci.builder(
         category = "builder_tester|web-platform",
         short_name = "P",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -71,6 +77,9 @@ ci.builder(
         category = "builder_tester|weblayer",
         short_name = "P",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -79,6 +88,9 @@ ci.builder(
         category = "builder_tester|weblayer",
         short_name = "P",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -87,6 +99,9 @@ ci.builder(
         category = "builder_tester|webview",
         short_name = "P",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -95,6 +110,9 @@ ci.builder(
         category = "builder|weblayer_with_aosp_webview",
         short_name = "x86",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -157,6 +175,9 @@ ci.builder(
     # vs 1h on Android-11 (For example ci.chromium.org/b/8841899947736889024)
     # TODO(crbug.com/1229245): Look into ways to improve the compile time.
     execution_timeout = 6 * time.hour,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -166,6 +187,9 @@ ci.builder(
         short_name = "and",
     ),
     notifies = ["annotator-rel"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -174,6 +198,9 @@ ci.builder(
         category = "builder|x86",
         short_name = "x86",
     ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # TODO(crbug.com/1299910): Move to non-FYI once the tester works fine.
@@ -194,4 +221,37 @@ ci.builder(
         short_name = "12",
     ),
     triggered_by = ["Android x64 Builder (dbg)"],
+)
+
+# TODO(crbug.com/1293115): [Cronet] Move to non-FYI once the tester works fine.
+ci.builder(
+    name = "android-cronet-x86-dbg-kitkat-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "k",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["ci/android-cronet-x86-dbg"],
+)
+
+# TODO(crbug.com/1293115): [Cronet] Move to non-FYI once the tester works fine.
+ci.builder(
+    name = "android-cronet-x86-dbg-lollipop-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "l",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["ci/android-cronet-x86-dbg"],
+)
+
+# TODO(crbug.com/1293115): [Cronet] Move to non-FYI once the tester works fine.
+ci.builder(
+    name = "android-cronet-x86-dbg-marshmallow-tests",
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "m",
+    ),
+    notifies = ["cronet"],
+    triggered_by = ["ci/android-cronet-x86-dbg"],
 )

@@ -172,6 +172,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
           ? ui::DeriveDefaultIconColor(kColorBookmarkBarForeground)
           : ui::ColorTransform(ui::kColorIcon);
   mixer[kColorBookmarkBarSeparator] = {kColorToolbarSeparator};
+  mixer[kColorCaptionButtonBackground] = {SK_ColorTRANSPARENT};
   mixer[kColorDownloadShelf] = {kColorToolbar};
   mixer[kColorDownloadShelfButtonBackground] = {kColorDownloadShelf};
   mixer[kColorDownloadShelfButtonText] =
@@ -181,6 +182,8 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorDownloadToolbarButtonInactive] = {ui::kColorMidground};
   mixer[kColorDownloadToolbarButtonRingBackground] = {
       SkColorSetA(kColorDownloadToolbarButtonInactive, 0x33)};
+  mixer[kColorFlyingIndicatorBackground] = {kColorToolbar};
+  mixer[kColorFlyingIndicatorForeground] = {kColorToolbarButtonIcon};
   mixer[kColorFrameCaptionActive] =
       ui::GetColorWithMaxContrast({ui::kColorFrameActive});
   mixer[kColorFrameCaptionInactive] =

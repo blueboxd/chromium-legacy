@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {AmbientModeAlbum, AmbientObserverInterface, AmbientObserverRemote, AmbientProviderInterface, TemperatureUnit, TopicSource} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 export class TestAmbientProvider extends TestBrowserProxy implements
@@ -14,6 +14,7 @@ export class TestAmbientProvider extends TestBrowserProxy implements
       'setAmbientModeEnabled',
       'setTopicSource',
       'setTemperatureUnit',
+      'setAlbumSelected',
     ]);
   }
 
@@ -34,6 +35,45 @@ export class TestAmbientProvider extends TestBrowserProxy implements
 
     // Add an arbitrary delay for simulation.
     window.setTimeout(() => {
+      const albums: AmbientModeAlbum[] = [
+        {
+          id: '0',
+          checked: false,
+          title: '0',
+          description: '0',
+          numberOfPhotos: 0,
+          topicSource: TopicSource.kArtGallery,
+          url: {url: 'http://test_url'}
+        },
+        {
+          id: '1',
+          checked: false,
+          title: '1',
+          description: '1',
+          numberOfPhotos: 0,
+          topicSource: TopicSource.kArtGallery,
+          url: {url: 'http://test_url'}
+        },
+        {
+          id: '2',
+          checked: true,
+          title: '2',
+          description: '2',
+          numberOfPhotos: 0,
+          topicSource: TopicSource.kArtGallery,
+          url: {url: 'http://test_url'}
+        },
+        {
+          id: '3',
+          checked: false,
+          title: '3',
+          description: '3',
+          numberOfPhotos: 1,
+          topicSource: TopicSource.kGooglePhotos,
+          url: {url: 'http://test_url'}
+        }
+      ];
+      this.ambientObserverRemote!.onAlbumsChanged(albums);
       this.ambientObserverRemote!.onTopicSourceChanged(TopicSource.kArtGallery);
     }, 10);
 
@@ -53,5 +93,9 @@ export class TestAmbientProvider extends TestBrowserProxy implements
 
   setTemperatureUnit(temperature_unit: TemperatureUnit) {
     this.methodCalled('setTemperatureUnit', temperature_unit);
+  }
+
+  setAlbumSelected(id: string, topic_source: TopicSource, selected: boolean) {
+    this.methodCalled('setAlbumSelected', id, topic_source, selected);
   }
 }

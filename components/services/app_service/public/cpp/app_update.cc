@@ -275,11 +275,10 @@ apps::AppType AppUpdate::GetAppType() const {
 }
 
 const std::string& AppUpdate::AppId() const {
+  if (ShouldUseNonMojom()) {
+    return delta_ ? delta_->app_id : state_->app_id;
+  }
   return mojom_delta_ ? mojom_delta_->app_id : mojom_state_->app_id;
-}
-
-const std::string& AppUpdate::GetAppId() const {
-  return delta_ ? delta_->app_id : state_->app_id;
 }
 
 apps::Readiness AppUpdate::Readiness() const {
@@ -455,22 +454,27 @@ bool AppUpdate::AdditionalSearchTermsChanged() const {
                             mojom_state_->additional_search_terms));
 }
 
-apps::mojom::IconKeyPtr AppUpdate::IconKey() const {
+absl::optional<apps::IconKey> AppUpdate::IconKey() const {
+  apps::IconKey icon_key;
+  if (ShouldUseNonMojom()) {
+    if (delta_ && delta_->icon_key.has_value()) {
+      icon_key = std::move(*delta_->icon_key->Clone());
+      return icon_key;
+    }
+    if (state_ && state_->icon_key.has_value()) {
+      icon_key = std::move(*state_->icon_key->Clone());
+      return icon_key;
+    }
+    return absl::nullopt;
+  }
+
   if (mojom_delta_ && !mojom_delta_->icon_key.is_null()) {
-    return mojom_delta_->icon_key.Clone();
+    icon_key = std::move(*ConvertMojomIconKeyToIconKey(mojom_delta_->icon_key));
+    return icon_key;
   }
   if (mojom_state_ && !mojom_state_->icon_key.is_null()) {
-    return mojom_state_->icon_key.Clone();
-  }
-  return apps::mojom::IconKeyPtr();
-}
-
-absl::optional<apps::IconKey> AppUpdate::GetIconKey() const {
-  if (delta_ && delta_->icon_key.has_value()) {
-    return absl::optional<apps::IconKey>(std::move(*delta_->icon_key->Clone()));
-  }
-  if (state_ && state_->icon_key.has_value()) {
-    return absl::optional<apps::IconKey>(std::move(*state_->icon_key->Clone()));
+    icon_key = std::move(*ConvertMojomIconKeyToIconKey(mojom_state_->icon_key));
+    return icon_key;
   }
   return absl::nullopt;
 }
@@ -778,19 +782,12 @@ bool AppUpdate::ShowInSearchChanged() const {
           (mojom_delta_->show_in_search != mojom_state_->show_in_search));
 }
 
-apps::mojom::OptionalBool AppUpdate::ShowInManagement() const {
-  if (mojom_delta_ && (mojom_delta_->show_in_management !=
-                       apps::mojom::OptionalBool::kUnknown)) {
-    return mojom_delta_->show_in_management;
+absl::optional<bool> AppUpdate::ShowInManagement() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_FALLBACK(show_in_management, absl::nullopt)
   }
-  if (mojom_state_) {
-    return mojom_state_->show_in_management;
-  }
-  return apps::mojom::OptionalBool::kUnknown;
-}
 
-absl::optional<bool> AppUpdate::GetShowInManagement() const {
-  GET_VALUE_WITH_FALLBACK(show_in_management, absl::nullopt)
+  CONVERT_MOJOM_OPTIONALBOOL_TO_OPTIONAL_VALUE(show_in_management)
 }
 
 bool AppUpdate::ShowInManagementChanged() const {
@@ -870,19 +867,12 @@ bool AppUpdate::HasBadgeChanged() const {
           (mojom_delta_->has_badge != mojom_state_->has_badge));
 }
 
-apps::mojom::OptionalBool AppUpdate::Paused() const {
-  if (mojom_delta_ &&
-      (mojom_delta_->paused != apps::mojom::OptionalBool::kUnknown)) {
-    return mojom_delta_->paused;
+absl::optional<bool> AppUpdate::Paused() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_FALLBACK(paused, absl::nullopt);
   }
-  if (mojom_state_) {
-    return mojom_state_->paused;
-  }
-  return apps::mojom::OptionalBool::kUnknown;
-}
 
-absl::optional<bool> AppUpdate::GetPaused() const {
-  GET_VALUE_WITH_FALLBACK(paused, absl::nullopt);
+  CONVERT_MOJOM_OPTIONALBOOL_TO_OPTIONAL_VALUE(paused)
 }
 
 bool AppUpdate::PausedChanged() const {
@@ -1057,12 +1047,13 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
   out << "ShowInLauncher: " << app.ShowInLauncher() << std::endl;
   out << "ShowInShelf: " << app.ShowInShelf() << std::endl;
   out << "ShowInSearch: " << app.ShowInSearch() << std::endl;
-  out << "ShowInManagement: " << app.ShowInManagement() << std::endl;
+  out << "ShowInManagement: " << PRINT_OPTIONAL_VALUE(ShowInManagement)
+      << std::endl;
   out << "HandlesIntents: " << app.HandlesIntents() << std::endl;
   out << "AllowUninstall: " << PRINT_OPTIONAL_VALUE(AllowUninstall)
       << std::endl;
   out << "HasBadge: " << app.HasBadge() << std::endl;
-  out << "Paused: " << app.Paused() << std::endl;
+  out << "Paused: " << PRINT_OPTIONAL_VALUE(Paused) << std::endl;
   out << "IntentFilters: " << std::endl;
   for (const auto& filter : app.IntentFilters()) {
     out << filter << std::endl;

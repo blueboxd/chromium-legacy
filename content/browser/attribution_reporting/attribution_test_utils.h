@@ -17,14 +17,17 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_sources.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -163,60 +166,42 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
       uint64_t trigger_data,
       CommonSourceInfo::SourceType source_type) const override;
 
-  void set_max_attributions_per_source(int max) {
-    max_attributions_per_source_ = max;
-  }
+  void set_max_attributions_per_source(int max);
 
-  void set_max_sources_per_origin(int max) { max_sources_per_origin_ = max; }
+  void set_max_sources_per_origin(int max);
 
-  void set_max_attributions_per_origin(int max) {
-    max_attributions_per_origin_ = max;
-  }
+  void set_max_attributions_per_origin(int max);
 
-  void set_max_destinations_per_source_site_reporting_origin(int max) {
-    max_destinations_per_source_site_reporting_origin_ = max;
-  }
+  void set_max_destinations_per_source_site_reporting_origin(int max);
 
-  void set_aggregatable_budget_per_source(int64_t max) {
-    aggregatable_budget_per_source_ = max;
-  }
+  void set_aggregatable_budget_per_source(int64_t max);
 
-  RateLimitConfig& rate_limits() { return rate_limits_; }
+  RateLimitConfig& rate_limits();
 
-  void set_rate_limits(RateLimitConfig c) { rate_limits_ = c; }
+  void set_rate_limits(RateLimitConfig c);
 
-  void set_delete_expired_sources_frequency(base::TimeDelta frequency) {
-    delete_expired_sources_frequency_ = frequency;
-  }
+  void set_delete_expired_sources_frequency(base::TimeDelta frequency);
 
-  void set_delete_expired_rate_limits_frequency(base::TimeDelta frequency) {
-    delete_expired_rate_limits_frequency_ = frequency;
-  }
+  void set_delete_expired_rate_limits_frequency(base::TimeDelta frequency);
 
-  void set_report_delay(base::TimeDelta report_delay) {
-    report_delay_ = report_delay;
-  }
+  void set_report_delay(base::TimeDelta report_delay);
 
   void set_offline_report_delay_config(
-      absl::optional<OfflineReportDelayConfig> config) {
-    offline_report_delay_config_ = config;
-  }
+      absl::optional<OfflineReportDelayConfig> config);
 
-  void set_reverse_reports_on_shuffle(bool reverse) {
-    reverse_reports_on_shuffle_ = reverse;
-  }
+  void set_reverse_reports_on_shuffle(bool reverse);
 
   // Note that these rates are *not* used to produce a randomized response; that
   // is controlled deterministically by `set_randomized_response()`.
-  void set_randomized_response_rates(AttributionRandomizedResponseRates rates) {
-    randomized_response_rates_ = rates;
-  }
+  void set_randomized_response_rates(AttributionRandomizedResponseRates rates);
 
-  void set_randomized_response(RandomizedResponse randomized_response) {
-    randomized_response_ = std::move(randomized_response);
-  }
+  void set_randomized_response(RandomizedResponse randomized_response);
 
   void set_trigger_data_cardinality(uint64_t navigation, uint64_t event);
+
+  // Detaches the delegate from its current sequence in preparation for being
+  // moved to storage, which runs on its own sequence.
+  void DetachFromSequence();
 
  private:
   int max_attributions_per_source_ = INT_MAX;
@@ -249,6 +234,8 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
 
   absl::optional<uint64_t> navigation_trigger_data_cardinality_;
   absl::optional<uint64_t> event_trigger_data_cardinality_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 // Test manager provider which can be used to inject a fake AttributionManager.
@@ -356,6 +343,9 @@ class SourceBuilder {
 
   SourceBuilder& SetDedupKeys(std::vector<uint64_t> dedup_keys);
 
+  SourceBuilder& SetAggregatableSources(
+      AttributionAggregatableSources aggregatable_sources);
+
   StorableSource Build() const;
 
   StoredSource BuildStored() const;
@@ -379,6 +369,7 @@ class SourceBuilder {
   // Ensure that we don't use uninitialized memory.
   StoredSource::Id source_id_{0};
   std::vector<uint64_t> dedup_keys_;
+  AttributionAggregatableSources aggregatable_sources_;
 };
 
 // Returns a AttributionTrigger with default data which matches the default
@@ -470,6 +461,56 @@ class ReportBuilder {
   absl::optional<AttributionReport::EventLevelData::Id> report_id_;
 };
 
+// Helper class to construct a `proto::AttributionAggregatableKey` for testing.
+class AggregatableKeyProtoBuilder {
+ public:
+  AggregatableKeyProtoBuilder();
+  ~AggregatableKeyProtoBuilder();
+
+  AggregatableKeyProtoBuilder& SetHighBits(uint64_t high_bits);
+
+  AggregatableKeyProtoBuilder& SetLowBits(uint64_t low_bits);
+
+  proto::AttributionAggregatableKey Build() const;
+
+ private:
+  proto::AttributionAggregatableKey key_;
+};
+
+// Helper class to construct a `proto::AttributionAggregatableSources` for
+// testing.
+class AggregatableSourcesProtoBuilder {
+ public:
+  AggregatableSourcesProtoBuilder();
+  ~AggregatableSourcesProtoBuilder();
+
+  AggregatableSourcesProtoBuilder& AddKey(
+      std::string key_id,
+      proto::AttributionAggregatableKey key);
+
+  proto::AttributionAggregatableSources Build() const;
+
+ private:
+  proto::AttributionAggregatableSources aggregatable_sources_;
+};
+
+// Helper class to construct a `blink::mojom::AttributionAggregatableSources`
+// for testing.
+class AggregatableSourcesMojoBuilder {
+ public:
+  AggregatableSourcesMojoBuilder();
+  ~AggregatableSourcesMojoBuilder();
+
+  AggregatableSourcesMojoBuilder& AddKey(
+      std::string key_id,
+      blink::mojom::AttributionAggregatableKeyPtr key);
+
+  blink::mojom::AttributionAggregatableSourcesPtr Build() const;
+
+ private:
+  blink::mojom::AttributionAggregatableSources sources_;
+};
+
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
 
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b);
@@ -555,6 +596,13 @@ std::ostream& operator<<(std::ostream& out,
 
 std::ostream& operator<<(std::ostream& out, StorableSource::Result status);
 
+bool operator==(const AttributionAggregatableSources& a,
+                const AttributionAggregatableSources& b);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AttributionAggregatableSources& aggregatable_sources);
+
 std::vector<AttributionReport> GetAttributionReportsForTesting(
     AttributionManagerImpl* manager,
     base::Time max_report_time);
@@ -602,6 +650,11 @@ MATCHER_P(SourceDebugKeyIs, matcher, "") {
 
 MATCHER_P(DedupKeysAre, matcher, "") {
   return ExplainMatchResult(matcher, arg.dedup_keys(), result_listener);
+}
+
+MATCHER_P(AggregatableSourcesAre, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().aggregatable_sources(),
+                            result_listener);
 }
 
 // Trigger matchers.

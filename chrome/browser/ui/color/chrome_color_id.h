@@ -34,6 +34,9 @@
   E(kColorBookmarkButtonIcon, ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON) \
   E(kColorBookmarkFavicon, ThemeProperties::COLOR_BOOKMARK_FAVICON) \
   E_CPONLY(kColorBookmarkFolderIcon) \
+  /* Window caption colors. */ \
+  E(kColorCaptionButtonBackground, \
+    ThemeProperties::COLOR_CONTROL_BUTTON_BACKGROUND) \
   /* Download shelf colors. */ \
   E(kColorDownloadShelf, ThemeProperties::COLOR_DOWNLOAD_SHELF) \
   E(kColorDownloadShelfButtonBackground, \
@@ -43,6 +46,11 @@
   E_CPONLY(kColorDownloadToolbarButtonActive) \
   E_CPONLY(kColorDownloadToolbarButtonInactive) \
   E_CPONLY(kColorDownloadToolbarButtonRingBackground) \
+  /* Flying Indicator colors. */ \
+  E(kColorFlyingIndicatorBackground, \
+    ThemeProperties::COLOR_FLYING_INDICATOR_BACKGROUND) \
+  E(kColorFlyingIndicatorForeground, \
+    ThemeProperties::COLOR_FLYING_INDICATOR_FOREGROUND) \
   /* Frame caption colors. */ \
   E(kColorFrameCaptionActive, ThemeProperties::COLOR_FRAME_CAPTION_ACTIVE) \
   E(kColorFrameCaptionInactive, ThemeProperties::COLOR_FRAME_CAPTION_INACTIVE) \

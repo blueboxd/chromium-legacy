@@ -246,6 +246,9 @@ std::vector<std::string> GenerateKernelCmdline(
       base::StringPrintf("androidboot.zram_size=%d", guest_zram_size),
   };
 
+  if (ShouldMountVmDebugFs())
+    result.push_back("androidboot.arcvm_mount_debugfs=1");
+
   const ArcVmUreadaheadMode mode =
       GetArcVmUreadaheadMode(base::BindRepeating(&base::GetSystemMemoryInfo));
   switch (mode) {
@@ -270,6 +273,8 @@ std::vector<std::string> GenerateKernelCmdline(
 
   if (start_params.arc_generate_play_auto_install)
     result.push_back("androidboot.arc_generate_pai=1");
+
+  result.push_back("androidboot.arcvm_virtio_blk_data=0");
 
   // Conditionally sets some properties based on |start_params|.
   switch (start_params.play_store_auto_update) {

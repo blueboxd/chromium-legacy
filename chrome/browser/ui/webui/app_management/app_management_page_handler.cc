@@ -184,7 +184,7 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
   apps::AppServiceProxyFactory::GetForProfile(profile_)
       ->AppRegistryCache()
       .ForEachApp([this, &apps](const apps::AppUpdate& update) {
-        if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue &&
+        if (update.ShowInManagement().value_or(false) &&
             apps_util::IsInstalled(update.Readiness())) {
           apps.push_back(CreateUIAppPtr(update));
         }
@@ -396,9 +396,10 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
             app->id) &&
         !provider->registrar().GetAppFileHandlers(app->id)->empty()) {
       // TODO(crbug/1245293): elide types and add clickable link.
-      file_handling_types = base::UTF16ToUTF8(
+      auto [file_handling_types16, count] =
           web_app::GetFileTypeAssociationsHandledByWebAppForDisplay(profile_,
-                                                                    app->id));
+                                                                    app->id);
+      file_handling_types = base::UTF16ToUTF8(file_handling_types16);
     }
     // TODO(crbug/1252505): add file handling policy support.
     app->file_handling_state = app_management::mojom::FileHandlingState::New(
@@ -411,12 +412,12 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 
 void AppManagementPageHandler::OnAppUpdate(const apps::AppUpdate& update) {
   if (update.ShowInManagementChanged() || update.ReadinessChanged()) {
-    if (update.ShowInManagement() == apps::mojom::OptionalBool::kTrue &&
+    if (update.ShowInManagement().value_or(false) &&
         update.Readiness() == apps::Readiness::kReady) {
       page_->OnAppAdded(CreateUIAppPtr(update));
     }
 
-    if (update.ShowInManagement() == apps::mojom::OptionalBool::kFalse ||
+    if (update.ShowInManagement().value_or(true) ||
         !apps_util::IsInstalled(update.Readiness())) {
       page_->OnAppRemoved(update.AppId());
     }

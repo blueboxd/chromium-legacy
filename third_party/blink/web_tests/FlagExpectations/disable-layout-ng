@@ -544,6 +544,11 @@ crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-002
 crbug.com/1251788 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-004.html [ Failure ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-024.html [ Failure ]
 crbug.com/1157740 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-026.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/calc-margins-block.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/calc-margins-fieldset-content.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/calc-margins-fieldset-legend.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/calc-margins-flex.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-sizing/calc-margins-table-caption.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/clone-nowrap-intrinsic-size-bidi.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Failure ]
@@ -1412,6 +1417,7 @@ crbug.com/591099 external/wpt/html/links/manifest/wrong-mime-type-text-plain-man
 crbug.com/1178754 external/wpt/html/semantics/interactive-elements/the-popup-element/popup-light-dismiss.tentative.html [ Crash ]
 
 ### external/wpt/layout-instability
+crbug.com/829028 external/wpt/layout-instability/multicol-000.html [ Failure ]
 crbug.com/829028 external/wpt/layout-instability/multicol-001.html [ Failure ]
 
 ### virtual/stable/compositing/filters/

@@ -2247,6 +2247,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Notification.CountOfNotificationsInOneGroup"
+    units="Notifications" expires_after="2023-02-27">
+  <owner>leandre@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    The number of notification contained in one group. Emitted when a
+    notification is added or removed from a group.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Notification.ExpandOrCollapse.AnimationSmoothness"
     units="%" expires_after="2022-07-02">
   <owner>leandre@chromium.org</owner>
@@ -2283,7 +2293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NotificationPopup.AnimationSmoothness" units="%"
-    expires_after="2022-06-25">
+    expires_after="2022-08-28">
   <owner>leandre@chromium.org</owner>
   <owner>amehfooz@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -2304,6 +2314,17 @@ chromium-metrics-reviews@google.com.
     Relative smoothness of the bounds change animation of the expand button
     inside a notification view. 100% represents ideally smooth 60 frames per
     second. Emitted when the animation is completed.
+  </summary>
+</histogram>
+
+<histogram name="Ash.NotificationView.ExpandButton.ClickAction"
+    enum="ExpandButtonClickAction" expires_after="2023-02-28">
+  <owner>leandre@chromium.org</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <summary>
+    The count of actions that is performed after an expand button is clicked.
+    The actions are expanding or collapsing individual or group notification.
+    Emitted when an expand button is clicked.
   </summary>
 </histogram>
 

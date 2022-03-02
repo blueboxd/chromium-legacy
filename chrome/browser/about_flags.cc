@@ -2817,6 +2817,21 @@ const FeatureEntry::FeatureVariation kGridTabSwitcherForTabletsVariations[] = {
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kTabStripImprovementsTabWidthShort[] = {
+    {"min_tab_width", "108"}};
+const FeatureEntry::FeatureParam kTabStripImprovementsTabWidthMedium[] = {
+    {"min_tab_width", "156"}};
+
+const FeatureEntry::FeatureVariation kTabStripImprovementsTabWidthVariations[] =
+    {
+        {"Short Tab Width", kTabStripImprovementsTabWidthShort,
+         std::size(kTabStripImprovementsTabWidthShort), nullptr},
+        {"Medium Tab Width", kTabStripImprovementsTabWidthMedium,
+         std::size(kTabStripImprovementsTabWidthMedium), nullptr},
+};
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4969,7 +4984,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"history-journeys-omnibox-action",
      flag_descriptions::kJourneysOmniboxActionName,
      flag_descriptions::kJourneysOmniboxActionDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(history_clusters::kOmniboxAction)},
+     FEATURE_VALUE_TYPE(history_clusters::internal::kOmniboxAction)},
 
     {"page-content-annotations", flag_descriptions::kPageContentAnnotationsName,
      flag_descriptions::kPageContentAnnotationsDescription, kOsDesktop,
@@ -5533,7 +5548,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-tab-strip-improvements",
      flag_descriptions::kTabStripImprovementsAndroidName,
      flag_descriptions::kTabStripImprovementsAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabStripImprovements)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kTabStripImprovements,
+                                    kTabStripImprovementsTabWidthVariations,
+                                    "TabStripImprovementsAndroid")},
 
     {"enable-conditional-tabstrip",
      flag_descriptions::kConditionalTabStripAndroidName,
@@ -7146,6 +7163,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(blink::features::kCheckOfflineCapability,
                                     kCheckOfflineCapabilityVariations,
                                     "CheckOfflineCapability")},
+
+    {"deferred-font-shaping", flag_descriptions::kDeferredFontShapingName,
+     flag_descriptions::kDeferredFontShapingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kDeferredFontShaping)},
+
     {"detect-form-submission-on-form-clear",
      flag_descriptions::kDetectFormSubmissionOnFormClearName,
      flag_descriptions::kDetectFormSubmissionOnFormClearDescription, kOsAll,
@@ -7215,6 +7237,13 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
+
+#if !BUILDFLAG(IS_ANDROID)
+    {"pdf-ocr", flag_descriptions::kPdfOcrName,
+     flag_descriptions::kPdfOcrDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPdfOcr)},
+#endif  // !BUILDFLAG(IS_ANDROID)
+
     {"pdf-xfa-forms", flag_descriptions::kPdfXfaFormsName,
      flag_descriptions::kPdfXfaFormsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPdfXfaSupport)},

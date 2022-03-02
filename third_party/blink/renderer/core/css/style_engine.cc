@@ -33,6 +33,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_observable_array_css_style_sheet.h"
+#include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/container_query_data.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
+#include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/has_matched_cache_scope.h"
@@ -56,6 +58,7 @@
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
 #include "third_party/blink/renderer/core/css/resolver/viewport_style_resolver.h"
 #include "third_party/blink/renderer/core/css/shadow_tree_style_sheet_collection.h"
@@ -83,6 +86,7 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
@@ -124,6 +128,7 @@ StyleEngine::StyleEngine(Document& document)
       document_style_sheet_collection_(
           MakeGarbageCollected<DocumentStyleSheetCollection>(document)),
       resolver_(MakeGarbageCollected<StyleResolver>(document)),
+      preferred_color_scheme_(mojom::blink::PreferredColorScheme::kLight),
       owner_color_scheme_(mojom::blink::ColorScheme::kLight) {
   if (document.GetFrame()) {
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
@@ -185,25 +190,25 @@ const HeapVector<Member<StyleSheet>>& StyleEngine::StyleSheetsForStyleSheetList(
 
 void StyleEngine::InjectSheet(const StyleSheetKey& key,
                               StyleSheetContents* sheet,
-                              WebDocument::CSSOrigin origin) {
+                              WebCssOrigin origin) {
   HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
       injected_style_sheets =
-          origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
-                                             : injected_author_style_sheets_;
+          origin == WebCssOrigin::kUser ? injected_user_style_sheets_
+                                        : injected_author_style_sheets_;
   injected_style_sheets.push_back(std::make_pair(
       key, MakeGarbageCollected<CSSStyleSheet>(sheet, *document_)));
-  if (origin == WebDocument::kUserOrigin)
+  if (origin == WebCssOrigin::kUser)
     MarkUserStyleDirty();
   else
     MarkDocumentDirty();
 }
 
 void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
-                                      WebDocument::CSSOrigin origin) {
+                                      WebCssOrigin origin) {
   HeapVector<std::pair<StyleSheetKey, Member<CSSStyleSheet>>>&
       injected_style_sheets =
-          origin == WebDocument::kUserOrigin ? injected_user_style_sheets_
-                                             : injected_author_style_sheets_;
+          origin == WebCssOrigin::kUser ? injected_user_style_sheets_
+                                        : injected_author_style_sheets_;
   // Remove the last sheet that matches.
   const auto& it = std::find_if(injected_style_sheets.rbegin(),
                                 injected_style_sheets.rend(),
@@ -212,7 +217,7 @@ void StyleEngine::RemoveInjectedSheet(const StyleSheetKey& key,
                                 });
   if (it != injected_style_sheets.rend()) {
     injected_style_sheets.erase(std::next(it).base());
-    if (origin == WebDocument::kUserOrigin)
+    if (origin == WebCssOrigin::kUser)
       MarkUserStyleDirty();
     else
       MarkDocumentDirty();
@@ -1066,6 +1071,7 @@ void StyleEngine::ClassChangedForElement(
   const RuleFeatureSet& features = GetRuleFeatureSet();
 
   if (RuntimeEnabledFeatures::CSSPseudoHasEnabled() &&
+      features.NeedsHasInvalidationForClassChange() &&
       PossiblyAffectingHasState(element)) {
     unsigned changed_size = changed_classes.size();
     for (unsigned i = 0; i < changed_size; ++i) {
@@ -1100,9 +1106,12 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
     return;
   }
 
+  const RuleFeatureSet& features = GetRuleFeatureSet();
+
   bool needs_schedule_invalidation = !IsSubtreeAndSiblingsStyleDirty(element);
   bool possibly_affecting_has_state =
       RuntimeEnabledFeatures::CSSPseudoHasEnabled() &&
+      features.NeedsHasInvalidationForClassChange() &&
       PossiblyAffectingHasState(element);
   if (!needs_schedule_invalidation && !possibly_affecting_has_state)
     return;
@@ -1113,7 +1122,6 @@ void StyleEngine::ClassChangedForElement(const SpaceSplitString& old_classes,
 
   InvalidationLists invalidation_lists;
   bool affecting_has_state = false;
-  const RuleFeatureSet& features = GetRuleFeatureSet();
 
   for (unsigned i = 0; i < new_classes.size(); ++i) {
     bool found = false;
@@ -1192,6 +1200,7 @@ void StyleEngine::AttributeChangedForElement(
   const RuleFeatureSet& features = GetRuleFeatureSet();
 
   if (RuntimeEnabledFeatures::CSSPseudoHasEnabled() &&
+      features.NeedsHasInvalidationForAttributeChange() &&
       PossiblyAffectingHasState(element)) {
     if (features.NeedsHasInvalidationForAttribute(attribute_name))
       InvalidateAncestorsOrSiblingsAffectedByHas(element);
@@ -1223,6 +1232,7 @@ void StyleEngine::IdChangedForElement(const AtomicString& old_id,
   const RuleFeatureSet& features = GetRuleFeatureSet();
 
   if (RuntimeEnabledFeatures::CSSPseudoHasEnabled() &&
+      features.NeedsHasInvalidationForIdChange() &&
       PossiblyAffectingHasState(element)) {
     if ((!old_id.IsEmpty() && features.NeedsHasInvalidationForId(old_id)) ||
         (!new_id.IsEmpty() && features.NeedsHasInvalidationForId(new_id))) {
@@ -1257,6 +1267,7 @@ void StyleEngine::PseudoStateChangedForElement(
 
   if (invalidate_ancestors_or_siblings &&
       RuntimeEnabledFeatures::CSSPseudoHasEnabled() &&
+      features.NeedsHasInvalidationForPseudoStateChange() &&
       PossiblyAffectingHasState(element)) {
     if (features.NeedsHasInvalidationForPseudoClass(pseudo_type))
       InvalidateAncestorsOrSiblingsAffectedByHasForPseudoChange(element);
@@ -1480,6 +1491,8 @@ void StyleEngine::ElementInsertedOrRemoved(Element* parent,
     return;
 
   const RuleFeatureSet& features = GetRuleFeatureSet();
+  if (!features.NeedsHasInvalidation())
+    return;
 
   if (features.NeedsHasInvalidationForElement(element)) {
     InvalidateAncestorsOrSiblingsAffectedByHas(
@@ -1500,6 +1513,9 @@ void StyleEngine::SubtreeInsertedOrRemoved(Element* parent,
     return;
 
   const RuleFeatureSet& features = GetRuleFeatureSet();
+  if (!features.NeedsHasInvalidation())
+    return;
+
   for (Element& element :
        ElementTraversal::InclusiveDescendantsOf(subtree_root)) {
     if (features.NeedsHasInvalidationForElement(element)) {
@@ -2740,16 +2756,15 @@ void StyleEngine::UpdateStyleAndLayoutTree() {
 void StyleEngine::ViewportDefiningElementDidChange() {
   // Guarded by if-test in UpdateStyleAndLayoutTree().
   DCHECK(GetDocument().documentElement());
+
+  // No need to update a layout object which will be destroyed.
   if (GetDocument().documentElement()->NeedsReattachLayoutTree())
     return;
   HTMLBodyElement* body = GetDocument().FirstBodyElement();
   if (!body || body->NeedsReattachLayoutTree())
     return;
-  FirstBodyElementChanged(*body);
-}
 
-void StyleEngine::FirstBodyElementChanged(HTMLBodyElement& body) {
-  LayoutObject* layout_object = body.GetLayoutObject();
+  LayoutObject* layout_object = body->GetLayoutObject();
   if (layout_object && layout_object->IsLayoutBlock()) {
     // When the overflow style for documentElement changes to or from visible,
     // it changes whether the body element's box should have scrollable overflow
@@ -2762,6 +2777,22 @@ void StyleEngine::FirstBodyElementChanged(HTMLBodyElement& body) {
     // This update is also necessary if the first body element changes because
     // another body element is inserted or removed.
     layout_object->SetStyle(ComputedStyle::Clone(*layout_object->Style()));
+  }
+}
+
+void StyleEngine::FirstBodyElementChanged(HTMLBodyElement& body) {
+  // If a body element changed status as being the first body element or not,
+  // it might have changed its needs for scrollbars even if the style didn't
+  // change. Marking it for recalc here will make sure a new ComputedStyle is
+  // set on the layout object for the next style recalc, and the scrollbars will
+  // be updated in LayoutObject::SetStyle(). SetStyle cannot be called here
+  // directly because SetStyle() relies on style information to be up-to-date,
+  // otherwise scrollbar style update might crash.
+  LayoutObject* layout_object = body.GetLayoutObject();
+  if (layout_object && layout_object->IsLayoutBlock()) {
+    body.SetNeedsStyleRecalc(
+        kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                               style_change_reason::kViewportDefiningElement));
   }
 }
 

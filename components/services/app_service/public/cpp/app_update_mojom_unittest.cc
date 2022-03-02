@@ -90,13 +90,13 @@ class AppUpdateMojomTest : public testing::Test {
   absl::optional<bool> expect_show_in_management_;
   bool expect_show_in_management_changed_;
 
-  apps::mojom::OptionalBool expect_handles_intents_;
+  absl::optional<bool> expect_handles_intents_;
   bool expect_handles_intents_changed_;
 
   absl::optional<bool> expect_allow_uninstall_;
   bool expect_allow_uninstall_changed_;
 
-  apps::mojom::OptionalBool expect_has_badge_;
+  absl::optional<bool> expect_has_badge_;
   bool expect_has_badge_changed_;
 
   absl::optional<bool> expect_paused_;
@@ -280,9 +280,9 @@ class AppUpdateMojomTest : public testing::Test {
     expect_show_in_shelf_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = absl::nullopt;
-    expect_handles_intents_ = apps::mojom::OptionalBool::kUnknown;
+    expect_handles_intents_ = absl::nullopt;
     expect_allow_uninstall_ = absl::nullopt;
-    expect_has_badge_ = apps::mojom::OptionalBool::kUnknown;
+    expect_has_badge_ = absl::nullopt;
     expect_paused_ = absl::nullopt;
     expect_intent_filters_.clear();
     expect_resize_locked_ = apps::mojom::OptionalBool::kUnknown;
@@ -735,14 +735,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->handles_intents = apps::mojom::OptionalBool::kFalse;
-      expect_handles_intents_ = apps::mojom::OptionalBool::kFalse;
+      expect_handles_intents_ = false;
       expect_handles_intents_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->handles_intents = apps::mojom::OptionalBool::kTrue;
-      expect_handles_intents_ = apps::mojom::OptionalBool::kTrue;
+      expect_handles_intents_ = true;
       expect_handles_intents_changed_ = true;
       CheckExpects(u);
     }
@@ -779,14 +779,14 @@ class AppUpdateMojomTest : public testing::Test {
 
     if (state) {
       state->has_badge = apps::mojom::OptionalBool::kFalse;
-      expect_has_badge_ = apps::mojom::OptionalBool::kFalse;
+      expect_has_badge_ = false;
       expect_has_badge_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
       delta->has_badge = apps::mojom::OptionalBool::kTrue;
-      expect_has_badge_ = apps::mojom::OptionalBool::kTrue;
+      expect_has_badge_ = true;
       expect_has_badge_changed_ = true;
       CheckExpects(u);
     }

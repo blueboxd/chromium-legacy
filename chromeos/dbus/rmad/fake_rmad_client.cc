@@ -366,10 +366,12 @@ void FakeRmadClient::TriggerCalibrationOverallProgressObservation(
 
 void FakeRmadClient::TriggerProvisioningProgressObservation(
     rmad::ProvisionStatus::Status status,
-    double progress) {
+    double progress,
+    rmad::ProvisionStatus::Error error) {
   rmad::ProvisionStatus status_proto;
   status_proto.set_status(status);
   status_proto.set_progress(progress);
+  status_proto.set_error(error);
   for (auto& observer : observers_)
     observer.ProvisioningProgress(status_proto);
 }
@@ -397,10 +399,12 @@ void FakeRmadClient::TriggerHardwareVerificationResultObservation(
 
 void FakeRmadClient::TriggerFinalizationProgressObservation(
     rmad::FinalizeStatus::Status status,
-    double progress) {
+    double progress,
+    rmad::FinalizeStatus::Error error) {
   rmad::FinalizeStatus finalizationStatus;
   finalizationStatus.set_status(status);
   finalizationStatus.set_progress(progress);
+  finalizationStatus.set_error(error);
   for (auto& observer : observers_)
     observer.FinalizationProgress(finalizationStatus);
 }

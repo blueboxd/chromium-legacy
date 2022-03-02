@@ -118,10 +118,17 @@ absl::optional<ui::ColorId> ThemeProviderColorIdToColorId(int color_id) {
       {TP::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT, kColorDownloadShelfButtonText},
       {TP::COLOR_FLYING_INDICATOR_BACKGROUND, kColorFlyingIndicatorBackground},
       {TP::COLOR_FLYING_INDICATOR_FOREGROUND, kColorFlyingIndicatorForeground},
+      {TP::COLOR_INFOBAR, kColorInfoBarBackground},
+      {TP::COLOR_INFOBAR_TEXT, kColorInfoBarForeground},
       {TP::COLOR_LOCATION_BAR_BORDER, kColorLocationBarBorder},
       {TP::COLOR_NTP_BACKGROUND, kColorNewTabPageBackground},
       {TP::COLOR_NTP_HEADER, kColorNewTabPageHeader},
+      {TP::COLOR_NTP_LINK, kColorNewTabPageLink},
+      {TP::COLOR_NTP_LOGO, kColorNewTabPageLogo},
+      {TP::COLOR_NTP_SECTION_BORDER, kColorNewTabPageSectionBorder},
+      {TP::COLOR_NTP_SHORTCUT, kColorNewTabPageMostVisitedTileBackground},
       {TP::COLOR_NTP_TEXT, kColorNewTabPageText},
+      {TP::COLOR_NTP_TEXT_LIGHT, kColorNewTabPageTextLight},
       {TP::COLOR_OMNIBOX_BACKGROUND, kColorOmniboxBackground},
       {TP::COLOR_OMNIBOX_BACKGROUND_HOVERED, kColorOmniboxBackgroundHovered},
       {TP::COLOR_OMNIBOX_BUBBLE_OUTLINE, kColorOmniboxBubbleOutline},
@@ -260,6 +267,10 @@ absl::optional<ui::ColorId> ThemeProviderColorIdToColorId(int color_id) {
       {TP::COLOR_TOOLBAR_INK_DROP, kColorToolbarInkDrop},
       {TP::COLOR_TOOLBAR_TEXT, kColorToolbarText},
       {TP::COLOR_TOOLBAR_VERTICAL_SEPARATOR, kColorToolbarSeparator},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE,
+       kColorWindowControlButtonBackgroundActive},
+      {TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
+       kColorWindowControlButtonBackgroundInactive},
   });
   // clang-format on
   auto* color_it = kMap.find(color_id);

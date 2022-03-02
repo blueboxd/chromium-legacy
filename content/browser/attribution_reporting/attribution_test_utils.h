@@ -20,11 +20,14 @@
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/aggregatable_attribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_sources.h"
+#include "content/browser/attribution_reporting/attribution_data_host_manager.h"
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_manager_provider.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
@@ -46,11 +49,9 @@
 
 namespace content {
 
-class AggregatableHistogramContribution;
+class AttributionManagerImpl;
 class AttributionObserver;
 class AttributionTrigger;
-
-struct AggregatableAttribution;
 
 enum class RateLimitResult : int;
 
@@ -106,21 +107,33 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
   ~MockDataHost() override;
 
   void WaitForSourceData(size_t num_source_data);
+  void WaitForTriggerData(size_t num_trigger_data);
 
   const std::vector<blink::mojom::AttributionSourceDataPtr>& source_data()
       const {
     return source_data_;
   }
 
+  const std::vector<blink::mojom::AttributionTriggerDataPtr>& trigger_data()
+      const {
+    return trigger_data_;
+  }
+
  private:
   // blink::mojom::AttributionDataHost:
   void SourceDataAvailable(
       blink::mojom::AttributionSourceDataPtr data) override;
+  void TriggerDataAvailable(
+      blink::mojom::AttributionTriggerDataPtr data) override;
 
   size_t min_source_data_count_ = 0;
-  mojo::Receiver<blink::mojom::AttributionDataHost> receiver_{this};
-  base::RunLoop wait_loop_;
   std::vector<blink::mojom::AttributionSourceDataPtr> source_data_;
+
+  size_t min_trigger_data_count_ = 0;
+  std::vector<blink::mojom::AttributionTriggerDataPtr> trigger_data_;
+
+  base::RunLoop wait_loop_;
+  mojo::Receiver<blink::mojom::AttributionDataHost> receiver_{this};
 };
 
 class MockDataHostManager : public AttributionDataHostManager {
@@ -137,6 +150,8 @@ class MockDataHostManager : public AttributionDataHostManager {
 };
 
 base::GUID DefaultExternalReportID();
+
+std::vector<base::GUID> DefaultExternalReportIDs(size_t size);
 
 class ConfigurableStorageDelegate : public AttributionStorageDelegate {
  public:
@@ -238,8 +253,9 @@ class ConfigurableStorageDelegate : public AttributionStorageDelegate {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-// Test manager provider which can be used to inject a fake AttributionManager.
-class TestManagerProvider : public AttributionManager::Provider {
+// Test manager provider which can be used to inject a fake
+// `AttributionManager`.
+class TestManagerProvider : public AttributionManagerProvider {
  public:
   explicit TestManagerProvider(AttributionManager* manager)
       : manager_(manager) {}
@@ -337,6 +353,8 @@ class SourceBuilder {
   SourceBuilder& SetAttributionLogic(
       StoredSource::AttributionLogic attribution_logic);
 
+  SourceBuilder& SetFilterData(AttributionFilterData filter_data);
+
   SourceBuilder& SetDebugKey(absl::optional<uint64_t> debug_key);
 
   SourceBuilder& SetSourceId(StoredSource::Id source_id);
@@ -364,6 +382,7 @@ class SourceBuilder {
   int64_t priority_ = 0;
   StoredSource::AttributionLogic attribution_logic_ =
       StoredSource::AttributionLogic::kTruthfully;
+  AttributionFilterData filter_data_;
   absl::optional<uint64_t> debug_key_;
   // `base::StrongAlias` does not automatically initialize the value here.
   // Ensure that we don't use uninitialized memory.
@@ -513,6 +532,8 @@ class AggregatableSourcesMojoBuilder {
 
 bool operator==(const AttributionTrigger& a, const AttributionTrigger& b);
 
+bool operator==(const AttributionFilterData& a, const AttributionFilterData& b);
+
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b);
 
 bool operator==(const AttributionInfo& a, const AttributionInfo& b);
@@ -529,6 +550,9 @@ bool operator==(const StoredSource& a, const StoredSource& b);
 
 bool operator==(const AggregatableHistogramContribution& a,
                 const AggregatableHistogramContribution& b);
+
+bool operator==(const AggregatableAttribution::ContributionAndExternalId& a,
+                const AggregatableAttribution::ContributionAndExternalId& b);
 
 bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b);
 
@@ -556,6 +580,9 @@ std::ostream& operator<<(std::ostream& out,
 std::ostream& operator<<(std::ostream& out,
                          const AttributionTrigger& conversion);
 
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionFilterData& filter_data);
+
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source);
 
 std::ostream& operator<<(std::ostream& out,
@@ -570,6 +597,11 @@ std::ostream& operator<<(std::ostream& out, const StoredSource& source);
 
 std::ostream& operator<<(std::ostream& out,
                          const AggregatableHistogramContribution& contribution);
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AggregatableAttribution::ContributionAndExternalId&
+        contribution_and_id);
 
 std::ostream& operator<<(
     std::ostream& out,
@@ -645,6 +677,11 @@ MATCHER_P(ImpressionTimeIs, matcher, "") {
 
 MATCHER_P(SourceDebugKeyIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.common_info().debug_key(),
+                            result_listener);
+}
+
+MATCHER_P(SourceFilterDataIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.common_info().filter_data(),
                             result_listener);
 }
 

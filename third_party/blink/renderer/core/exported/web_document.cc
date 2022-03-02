@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -228,7 +229,7 @@ WebElement WebDocument::FocusedElement() const {
 WebStyleSheetKey WebDocument::InsertStyleSheet(
     const WebString& source_code,
     const WebStyleSheetKey* key,
-    CSSOrigin origin,
+    WebCssOrigin origin,
     BackForwardCacheAware back_forward_cache_aware) {
   Document* document = Unwrap<Document>();
   DCHECK(document);
@@ -248,7 +249,7 @@ WebStyleSheetKey WebDocument::InsertStyleSheet(
 }
 
 void WebDocument::RemoveInsertedStyleSheet(const WebStyleSheetKey& key,
-                                           CSSOrigin origin) {
+                                           WebCssOrigin origin) {
   Unwrap<Document>()->GetStyleEngine().RemoveInjectedSheet(key, origin);
 }
 

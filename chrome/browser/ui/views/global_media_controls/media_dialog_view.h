@@ -127,9 +127,10 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   void UpdateBubbleSize();
 
   // SodaInstaller::Observer overrides:
-  void OnSodaInstalled() override;
-  void OnSodaError() override;
-  void OnSodaProgress(int combined_progress) override;
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaError(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override;
 
   std::unique_ptr<global_media_controls::MediaItemUIView> BuildMediaItemUIView(
       const std::string& id,

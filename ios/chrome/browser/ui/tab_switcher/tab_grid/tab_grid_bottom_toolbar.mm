@@ -54,26 +54,29 @@
   }
 }
 
-// Controls hit testing of the bottom toolbar. When the toolbar is transparent,
-// only respond to tapping on the new tab button.
+// |pointInside| is called as long as this view is on the screen (even if its
+// size is zero). It controls hit testing of the bottom toolbar. When the
+// toolbar is transparent and has the |_largeNewTabButton|, only respond to
+// tapping on that button.
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent*)event {
-  if ([self shouldShowFullBar]) {
-    return [super pointInside:point withEvent:event];
+  if ([self isShowingFloatingButton]) {
+    // Only floating new tab button is tappable.
+    return [_largeNewTabButton
+        pointInside:[self convertPoint:point toView:_largeNewTabButton]
+          withEvent:event];
   }
-  // Only floating new tab button is tappable.
-  return [_largeNewTabButton pointInside:[self convertPoint:point
-                                                     toView:_largeNewTabButton]
-                               withEvent:event];
+  return [super pointInside:point withEvent:event];
 }
 
-// Returns UIToolbar's intrinsicContentSize based on the orientation and the
-// mode.
+// Returns intrinsicContentSize based on the content of the toolbar.
+// When showing the floating Button the contentsize for the toolbar should be
+// zero so that the toolbar isn't accounted for when calculating the bottom
+// insets of the container view.
 - (CGSize)intrinsicContentSize {
-  if ([self shouldShowFullBar]) {
-    return _toolbar.intrinsicContentSize;
+  if ([self isShowingFloatingButton] || self.subviews.count == 0) {
+    return CGSizeZero;
   }
-  // Return CGSizeZero for floating button layout.
-  return CGSizeZero;
+  return _toolbar.intrinsicContentSize;
 }
 
 #pragma mark - Public
@@ -389,10 +392,10 @@
   }
 }
 
-// Returns YES if the full toolbar should be shown instead of the floating
-// button.
-- (BOOL)shouldShowFullBar {
-  return [self shouldUseCompactLayout] || self.mode == TabGridModeSelection;
+// Returns YES if the |_largeNewTabButton| is showing on the toolbar.
+- (BOOL)isShowingFloatingButton {
+  return _largeNewTabButton.superview &&
+         _largeNewTabButtonBottomAnchor.isActive;
 }
 
 // Returns YES if should use compact bottom toolbar layout.

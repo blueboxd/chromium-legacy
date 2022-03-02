@@ -135,6 +135,9 @@ const base::Feature kJSONModules{"JSONModules",
 const base::Feature kForceSynchronousHTMLParsing{
     "ForceSynchronousHTMLParsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDeferredFontShaping{"DeferredShaping",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable EditingNG by default. This feature is for a kill switch.
 const base::Feature kEditingNG{"EditingNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -222,7 +225,7 @@ const base::Feature kSharedStorageAPI{"SharedStorageAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit{
-        &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 5};
+        &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 8};
 const base::FeatureParam<int> kMaxSharedStorageStringLength = {
     &kSharedStorageAPI, "MaxSharedStorageStringLength", 1024};
 const base::FeatureParam<int> kMaxSharedStorageEntriesPerOrigin = {
@@ -1063,10 +1066,6 @@ const base::Feature kClipboardCustomFormats{"ClipboardCustomFormats",
 // heuristic where images occupying the full viewport are ignored.
 const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Send all user interaction latency data from renderer to the browser process.
-const base::Feature kSendAllUserInteractionLatencies{
-    "SendAllUserInteractionLatencies", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable `Sec-CH-UA-Platform` client hint and request header to be sent by
 // default

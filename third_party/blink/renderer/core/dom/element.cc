@@ -2918,12 +2918,21 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   auto* context = GetDisplayLockContext();
   // The common case for most elements is that we don't have a context and have
   // the default (visible) content-visibility value.
-  if (UNLIKELY(context ||
-               style->ContentVisibility() != EContentVisibility::kVisible)) {
+  if (UNLIKELY(context || !style->IsContentVisibilityVisible())) {
     if (!context)
       context = &EnsureDisplayLockContext();
-    context->SetRequestedState(style->ContentVisibility());
-    context->AdjustElementStyle(style.get());
+    const auto* block_flow = DynamicTo<LayoutBlockFlow>(GetLayoutObject());
+    bool is_shaping_deferred = block_flow && block_flow->IsShapingDeferred();
+    // If shaping is deferred and |content-visibility| is |visible|, do nothing
+    // in order to keep the "deferred" state.
+    if (!is_shaping_deferred || !style->IsContentVisibilityVisible()) {
+      // If shaping is deferred and |content-visibility| is not |visible|,
+      // leave the "deferred" state.
+      if (is_shaping_deferred)
+        block_flow->StopDeferringShaping();
+      context->SetRequestedState(style->ContentVisibility());
+      context->AdjustElementStyle(style.get());
+    }
   }
 
   return style;
@@ -6913,13 +6922,12 @@ bool Element::SetInlineStyleProperty(CSSPropertyID property_id,
   DCHECK_NE(property_id, CSSPropertyID::kVariable);
   DCHECK(IsStyledElement());
   bool did_change =
-      EnsureMutableInlineStyle()
-          .SetProperty(property_id, value, important,
-                       GetExecutionContext()
-                           ? GetExecutionContext()->GetSecureContextMode()
-                           : SecureContextMode::kInsecureContext,
-                       GetDocument().ElementSheet().Contents())
-          .did_change;
+      EnsureMutableInlineStyle().SetProperty(
+          property_id, value, important,
+          GetExecutionContext() ? GetExecutionContext()->GetSecureContextMode()
+                                : SecureContextMode::kInsecureContext,
+          GetDocument().ElementSheet().Contents()) >=
+      MutableCSSPropertyValueSet::kModifiedExisting;
   if (did_change)
     InlineStyleChanged();
   return did_change;

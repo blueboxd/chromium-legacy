@@ -233,13 +233,13 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_show_in_management_, u.ShowInManagement());
     EXPECT_EQ(expect_show_in_management_changed_, u.ShowInManagementChanged());
 
-    EXPECT_EQ(expect_handles_intents_, u.GetHandlesIntents());
+    EXPECT_EQ(expect_handles_intents_, u.HandlesIntents());
     EXPECT_EQ(expect_handles_intents_changed_, u.HandlesIntentsChanged());
 
     EXPECT_EQ(expect_allow_uninstall_, u.AllowUninstall());
     EXPECT_EQ(expect_allow_uninstall_changed_, u.AllowUninstallChanged());
 
-    EXPECT_EQ(expect_has_badge_, u.GetHasBadge());
+    EXPECT_EQ(expect_has_badge_, u.HasBadge());
     EXPECT_EQ(expect_has_badge_changed_, u.HasBadgeChanged());
 
     EXPECT_EQ(expect_paused_, u.Paused());

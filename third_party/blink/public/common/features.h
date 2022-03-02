@@ -48,6 +48,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
+BLINK_COMMON_EXPORT extern const base::Feature kDeferredFontShaping;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGBlockInInline;
@@ -489,9 +490,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClipboardCustomFormats;
 // Uses page viewport instead of frame viewport in the Largest Contentful Paint
 // heuristic where images occupying the full viewport are ignored.
 BLINK_COMMON_EXPORT extern const base::Feature kUsePageViewportInLCP;
-
-// Send all user interaction latency data from renderer to the browser process.
-BLINK_COMMON_EXPORT extern const base::Feature kSendAllUserInteractionLatencies;
 
 // Enable "Sec-CH-UA-Platform" client hint and request header for all requests
 BLINK_COMMON_EXPORT extern const base::Feature kUACHPlatformEnabledByDefault;

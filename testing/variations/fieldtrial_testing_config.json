@@ -357,21 +357,6 @@
             ]
         }
     ],
-    "ArcGmsCoreLowMemoryKillerProtection": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ArcGmsCoreLowMemoryKillerProtection"
-                    ]
-                }
-            ]
-        }
-    ],
     "ArcGuestZram": [
         {
             "platforms": [
@@ -676,7 +661,6 @@
         {
             "platforms": [
                 "android",
-                "android_webview",
                 "chromeos",
                 "chromeos_lacros",
                 "ios",
@@ -1705,6 +1689,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FeedReliabilityLogging"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ClankAppLanguagePrompt": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AppLanguagePrompt"
                     ]
                 }
             ]
@@ -6768,28 +6767,6 @@
                     ],
                     "disable_features": [
                         "V8ConcurrentSparkplug"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8FastApiCalls": [
-        {
-            "platforms": [
-                "linux",
-                "windows",
-                "android",
-                "mac",
-                "chromeos_lacros",
-                "chromeos",
-                "ios",
-                "android_webview"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "V8TurboFastApiCalls"
                     ]
                 }
             ]

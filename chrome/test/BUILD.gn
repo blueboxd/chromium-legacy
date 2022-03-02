@@ -1310,7 +1310,6 @@ if (!is_android) {
       "//components/security_interstitials/content:security_interstitial_page",
       "//components/security_interstitials/core:unsafe_resource",
       "//components/security_state/content",
-      "//components/services/app_service/public/cpp:app_url_handling",
       "//components/services/app_service/public/cpp:protocol_handling",
       "//components/services/app_service/public/mojom",
       "//components/services/language_detection/public/cpp",
@@ -2436,13 +2435,6 @@ if (!is_android) {
       data_deps += [ "//chrome:packed_resources" ]
     }
 
-    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
-      sources += [
-        "../browser/ui/startup/web_app_url_handling_startup_test_utils.cc",
-        "../browser/ui/startup/web_app_url_handling_startup_test_utils.h",
-      ]
-    }
-
     if (enable_soda) {
       sources +=
           [ "../browser/speech/speech_recognition_service_browsertest.cc" ]
@@ -2881,6 +2873,7 @@ if (!is_android) {
         "../browser/policy/extension_force_install_mixin.h",
         "../browser/prefetch/no_state_prefetch/prerender_test_utils.cc",
         "../browser/prefetch/no_state_prefetch/prerender_test_utils.h",
+        "../browser/safe_browsing/extension_telemetry/extension_telemetry_service_browsertest.cc",
         "../browser/safe_browsing/settings_reset_prompt/default_settings_fetcher_browsertest.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.cc",
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
@@ -4214,7 +4207,6 @@ if (!is_android) {
       sources += [
         "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_integration_browsertest_mac_win_linux.cc",
-        "../browser/ui/views/web_apps/web_app_url_handler_intent_picker_dialog_browsertest.cc",
       ]
     }
 
@@ -4335,7 +4327,6 @@ if (is_chromeos_lacros) {
       "../browser/chromeos/policy/dlp/dlp_content_manager_test_helper.h",
       "../browser/lacros/browser_test_util.cc",
       "../browser/lacros/browser_test_util.h",
-      "../browser/lacros/cert_db_initializer_browsertest.cc",
       "../browser/lacros/device_attributes_lacros_browsertest.cc",
 
       # download_controller_client_lacros_browsertest.cc should become a unit
@@ -4386,6 +4377,7 @@ if (is_chromeos_lacros) {
       "../browser/lacros/browser_service_lacros_browsertest.cc",
       "../browser/lacros/browser_test_util.cc",
       "../browser/lacros/browser_test_util.h",
+      "../browser/lacros/cert_db_initializer_browsertest.cc",
       "../browser/lacros/clipboard_lacros_browsertest.cc",
       "../browser/lacros/crosapi_pref_observer_lacros_browsertest.cc",
       "../browser/lacros/holding_space_service_lacros_browsertest.cc",
@@ -4421,6 +4413,7 @@ if (is_chromeos_lacros) {
       "//chrome/app:command_ids",
       "//chrome/browser/metrics/structured",
       "//chrome/browser/web_applications:web_applications_test_support",
+      "//chromeos/crosapi/cpp:cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
       "//chromeos/lacros:test_support",
@@ -5210,6 +5203,7 @@ test("unit_tests") {
       "../browser/notifications/notification_channels_provider_android_unittest.cc",
       "../browser/optimization_guide/android/optimization_guide_tab_url_provider_android_unittest.cc",
       "../browser/password_manager/android/password_ui_view_android_unittest.cc",
+      "../browser/password_manager/password_store_backend_sync_delegate_impl_unittest.cc",
       "../browser/permissions/notification_blocked_message_delegate_android_unittest.cc",
       "../browser/search/contextual_search_policy_handler_android_unittest.cc",
       "../browser/translate/android/translate_bridge_unittest.cc",
@@ -7696,6 +7690,7 @@ test("unit_tests") {
       "../browser/safe_browsing/download_protection/two_phase_uploader_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/extension_telemetry_service_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/extension_telemetry_uploader_unittest.cc",
+      "../browser/safe_browsing/extension_telemetry/remote_host_contacted_signal_processor_unittest.cc",
       "../browser/safe_browsing/extension_telemetry/tabs_execute_script_signal_processor_unittest.cc",
       "../browser/safe_browsing/incident_reporting/binary_integrity_incident_unittest.cc",
       "../browser/safe_browsing/incident_reporting/delayed_callback_runner_unittest.cc",
@@ -8119,7 +8114,6 @@ test("unit_tests") {
       "../browser/ui/views/user_education/help_bubble_view_unittest.cc",
       "../browser/ui/views/user_education/new_badge_label_unittest.cc",
       "../browser/ui/views/user_education/tip_marquee_view_unittest.cc",
-      "../browser/ui/views/webid/webid_dialog_views_unittest.cc",
       "../browser/ui/window_name_prompt/window_name_prompt_unittest.cc",
     ]
     if (is_linux) {

@@ -26,6 +26,7 @@
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_sources.h"
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
@@ -51,164 +52,18 @@
 namespace content {
 
 // Version number of the database.
-//
-// Version 1 - 2020/01/27 - https://crrev.com/c/1965450
-//
-// Version 2 - 2020/11/03 - https://crrev.com/c/2194182
-//
-// Version 2 adds a new impression column "conversion_destination" based on
-// registerable domain which is used for attribution instead of
-// "conversion_origin".
-//
-// Version 3 - 2021/03/08 - https://crrev.com/c/2743337
-//
-// Version 3 adds new impression columns source_type and attributed_truthfully.
-//
-// Version 4 - 2021/03/16 - https://crrev.com/c/2716913
-//
-// Version 4 adds a new rate_limits table.
-//
-// Version 5 - 2021/04/30 - https://crrev.com/c/2860056
-//
-// Version 5 drops the conversions.attribution_credit column.
-//
-// Version 6 - 2021/05/06 - https://crrev.com/c/2878235
-//
-// Version 6 adds the impressions.priority column.
-//
-// Version 7 - 2021/06/03 - https://crrev.com/c/2904386
-//
-// Version 7 adds the impressions.impression_site column.
-//
-// Version 8 - 2021/06/30 - https://crrev.com/c/2888906
-//
-// Version 8 changes the conversions.conversion_data and
-// impressions.impression_data columns from TEXT to INTEGER and makes
-// conversions.impression_id NOT NULL.
-//
-// Version 9 - 2021/06/30 - https://crrev.com/c/2951620
-//
-// Version 9 adds the conversions.priority column.
-//
-// Version 10 - 2021/07/16 - https://crrev.com/c/2983439
-//
-// Version 10 adds the dedup_keys table.
-//
-// Version 11 - 2021/08/10 - https://crrev.com/c/3087755
-//
-// Version 11 replaces impression_site_idx with
-// event_source_impression_site_idx, which stores less data.
-//
-// Version 12 - 2021/08/18 - https://crrev.com/c/3085887
-//
-// Version 12 adds the rate_limits.bucket and rate_limits.value columns and
-// makes rate_limits.rate_limit_id NOT NULL.
-//
-// Version 13 - 2021/09/08 - https://crrev.com/c/3149550
-//
-// Version 13 makes the impressions.impression_id and conversions.conversion_id
-// columns NOT NULL and AUTOINCREMENT, the latter to prevent ID reuse, which is
-// prone to race conditions with the queuing logic vs deletions.
-//
-// Version 14 - 2021/09/22 - https://crrev.com/c/3138353
-//
-// Version 14 adds the conversions.failed_send_attempts column.
-//
-// Version 15 - 2021/11/13 - https://crrev.com/c/3180180
-//
-// Version 15 adds the conversions.external_report_id column.
-//
-// Version 16 - 2022/01/31 - https://crrev.com/c/3421414
-//
-// Version 16 replaces the event_source_impression_site_idx with
-// impression_site_reporting_origin_idx, which applies to both source types and
-// includes the reporting origin.
-//
-// Version 17 - 2022/01/31 - https://crrev.com/c/3427311
-//
-// Version 17 removes the rate_limits.bucket and rate_limits.value columns.
-//
-// Version 18 - 2022/02/04 - https://crrev.com/c/3425176
-//
-// Version 18 adds the rate_limits.reporting_origin column and removes the
-// rate_limits.attribution_type column.
-//
-// Version 19 - 2022/02/07 - https://crrev.com/c/3421868
-//
-// Version 19 adds the impressions.debug_key and conversions.debug_key columns.
-//
-// Version 20 - 2022/02/07 - https://crrev.com/c/3444062
-//
-// Version 20 adds the rate_limits.scope column and corresponding indexes.
-//
-// Version 21 - 2022/02/16 - https://crrev.com/c/3465916
-//
-// Version 21 changes the dedup_keys.dedup_key column from int64_t to uint64_t.
-//
-// Version 22 - 2022/02/16 - https://crrev.com/c/3463875
-//
-// Version 22 renames rate_limit_report_idx to rate_limit_attribution_idx.
-//
-// Version 23 - 2022/02/17 - https://crrev.com/c/3379484
-//
-// Version 23 adds the aggregatable_report_metadata and
-// aggregatable_contributions tables.
-//
-// Version 24 - 2022/02/17 - https://crrev.com/c/3421226
-//
-// Version 24 adds the impressions.aggregatable_budget_consumed column.
-//
-// Version 25 - 2022/02/22 - https://crrev.com/c/3482495
-//
-// Version 25 replaces the aggregatable_contributions.bucket column with
-// aggregatable_contributions.key_high_bits and
-// aggregatable_contributions.key_low_bits columns.
-//
-// Version 26 - 2022/02/23 - https://crrev.com/c/3472530
-//
-// Version 26 adds the aggregatable_report_metadata.debug_key column.
-//
-// Version 27 - 2022/02/23 - https://crrev.com/c/3427362
-//
-// Version 27 adds the impressions.aggregatable_sources column.
-const int AttributionStorageSql::kCurrentVersionNumber = 27;
+const int AttributionStorageSql::kCurrentVersionNumber = 28;
 
 // Earliest version which can use a |kCurrentVersionNumber| database
 // without failing.
-const int AttributionStorageSql::kCompatibleVersionNumber = 27;
+const int AttributionStorageSql::kCompatibleVersionNumber = 28;
 
 // Latest version of the database that cannot be upgraded to
 // |kCurrentVersionNumber| without razing the database.
 //
-// Versions 1-14 were deprecated by https://crrev.com/c/3421175.
-//
-// Version 15 was deprecated by https://crrev.com/c/3421414.
-//
-// Version 16 was deprecated by https://crrev.com/c/3427311.
-//
-// Version 17 was deprecated by https://crrev.com/c/3425176.
-//
-// Version 18 was deprecated by https://crrev.com/c/3421868.
-//
-// Version 19 was deprecated by https://crrev.com/c/3444062.
-//
-// Version 20 was deprecated by https://crrev.com/c/3465916.
-//
-// Version 21 was deprecated by https://crrev.com/c/3463875.
-//
-// Version 22 was deprecated by https://crrev.com/c/3379484.
-//
-// Version 23 was deprecated by https://crrev.com/c/3421226.
-//
-// Version 24 was deprecated by https://crrev.com/c/3482495.
-//
-// Version 25 was deprecated by https://crrev.com/c/3472530.
-//
-// Version 26 was deprecated by https://crrev.com/c/3427362.
-//
-// Note that Versions 15-26 were introduced during the transitional state of
+// Note that all versions >=15 were introduced during the transitional state of
 // the Attribution Reporting API and can be removed when done.
-const int AttributionStorageSql::kDeprecatedVersionNumber = 26;
+const int AttributionStorageSql::kDeprecatedVersionNumber = 27;
 
 namespace {
 
@@ -328,7 +183,7 @@ struct StoredSourceData {
 // expected ordering of columns used for the input to this function.
 absl::optional<StoredSourceData> ReadSourceFromStatement(
     sql::Statement& statement) {
-  DCHECK_EQ(statement.ColumnCount(), 14);
+  DCHECK_EQ(statement.ColumnCount(), 15);
 
   StoredSource::Id source_id(statement.ColumnInt64(0));
   uint64_t source_event_id = DeserializeUint64(statement.ColumnInt64(1));
@@ -347,10 +202,12 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
   int64_t aggregatable_budget_consumed = statement.ColumnInt64(12);
   absl::optional<AttributionAggregatableSources> aggregatable_sources =
       ParseAggregatableSources(statement.ColumnString(13));
+  absl::optional<AttributionFilterData> filter_data =
+      AttributionFilterData::Deserialize(statement.ColumnString(14));
 
   if (!source_type.has_value() || !attribution_logic.has_value() ||
       num_conversions < 0 || aggregatable_budget_consumed < 0 ||
-      !aggregatable_sources.has_value()) {
+      !aggregatable_sources.has_value() || !filter_data.has_value()) {
     return absl::nullopt;
   }
 
@@ -359,7 +216,8 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
           CommonSourceInfo(source_event_id, std::move(impression_origin),
                            std::move(conversion_origin),
                            std::move(reporting_origin), impression_time,
-                           expiry_time, *source_type, priority, debug_key,
+                           expiry_time, *source_type, priority,
+                           std::move(*filter_data), debug_key,
                            std::move(*aggregatable_sources)),
           *attribution_logic, source_id),
       .num_conversions = num_conversions,
@@ -373,7 +231,8 @@ absl::optional<StoredSourceData> ReadSourceToAttribute(
       "SELECT impression_id,impression_data,impression_origin,"
       "conversion_origin,reporting_origin,impression_time,expiry_time,"
       "source_type,attributed_truthfully,priority,debug_key,"
-      "num_conversions,aggregatable_budget_consumed,aggregatable_sources "
+      "num_conversions,aggregatable_budget_consumed,aggregatable_sources,"
+      "filter_data "
       "FROM impressions "
       "WHERE impression_id = ?";
   sql::Statement statement(
@@ -439,7 +298,8 @@ AttributionStorageSql::DeactivateSources(
         "SELECT impression_id,impression_data,impression_origin,"
         "conversion_origin,reporting_origin,impression_time,expiry_time,"
         "source_type,attributed_truthfully,priority,debug_key,"
-        "num_conversions,aggregatable_budget_consumed,aggregatable_sources "
+        "num_conversions,aggregatable_budget_consumed,aggregatable_sources,"
+        "filter_data "
         "FROM impressions "
         DCHECK_SQL_INDEXED_BY("conversion_destination_idx")
         "WHERE conversion_destination = ? AND reporting_origin = ? AND "
@@ -585,8 +445,8 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
       "reporting_origin,impression_time,expiry_time,source_type,"
       "attributed_truthfully,priority,impression_site,"
       "num_conversions,active,debug_key,aggregatable_budget_consumed,"
-      "aggregatable_sources)"
-      "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,?)";
+      "aggregatable_sources,filter_data)"
+      "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,?,?)";
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertImpressionSql));
   statement.BindInt64(0, SerializeUint64(common_info.source_event_id()));
@@ -607,6 +467,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
 
   statement.BindBlob(
       14, common_info.aggregatable_sources().proto().SerializeAsString());
+  statement.BindBlob(15, common_info.filter_data().Serialize());
 
   if (!statement.Run())
     return StoreSourceResult(StorableSource::Result::kInternalError);
@@ -1056,7 +917,7 @@ bool AttributionStorageSql::StoreReport(
 // ordering of columns used for the input to this function.
 absl::optional<AttributionReport>
 AttributionStorageSql::ReadReportFromStatement(sql::Statement& statement) {
-  DCHECK_EQ(statement.ColumnCount(), 20);
+  DCHECK_EQ(statement.ColumnCount(), 21);
 
   uint64_t trigger_data = DeserializeUint64(statement.ColumnInt64(0));
   base::Time trigger_time = statement.ColumnTime(1);
@@ -1083,6 +944,8 @@ AttributionStorageSql::ReadReportFromStatement(sql::Statement& statement) {
       ColumnUint64OrNull(statement, 18);
   absl::optional<AttributionAggregatableSources> aggregatable_sources =
       ParseAggregatableSources(statement.ColumnString(19));
+  absl::optional<AttributionFilterData> source_filter_data =
+      AttributionFilterData::Deserialize(statement.ColumnString(20));
 
   // Ensure origins are valid before continuing. This could happen if there is
   // database corruption.
@@ -1093,7 +956,8 @@ AttributionStorageSql::ReadReportFromStatement(sql::Statement& statement) {
   if (impression_origin.opaque() || conversion_origin.opaque() ||
       reporting_origin.opaque() || !source_type.has_value() ||
       !attribution_logic.has_value() || failed_send_attempts < 0 ||
-      !external_report_id.is_valid() || !aggregatable_sources.has_value()) {
+      !external_report_id.is_valid() || !aggregatable_sources.has_value() ||
+      !source_filter_data.has_value()) {
     return absl::nullopt;
   }
 
@@ -1104,7 +968,8 @@ AttributionStorageSql::ReadReportFromStatement(sql::Statement& statement) {
                        std::move(conversion_origin),
                        std::move(reporting_origin), impression_time,
                        expiry_time, *source_type, attribution_source_priority,
-                       source_debug_key, std::move(*aggregatable_sources)),
+                       std::move(*source_filter_data), source_debug_key,
+                       std::move(*aggregatable_sources)),
       *attribution_logic, source_id);
 
   AttributionReport report(
@@ -1166,7 +1031,7 @@ AttributionStorageSql::GetEventLevelReportsInternal(base::Time max_report_time,
       "I.impression_origin,I.conversion_origin,I.reporting_origin,"
       "I.impression_data,I.impression_time,I.expiry_time,I.impression_id,"
       "I.source_type,I.priority,I.attributed_truthfully,I.debug_key,"
-      "C.debug_key,I.aggregatable_sources "
+      "C.debug_key,I.aggregatable_sources,I.filter_data "
       "FROM conversions C JOIN impressions I ON "
       "C.impression_id = I.impression_id WHERE C.report_time <= ? "
       "LIMIT ?";
@@ -1249,7 +1114,7 @@ absl::optional<AttributionReport> AttributionStorageSql::GetReport(
       "I.impression_origin,I.conversion_origin,I.reporting_origin,"
       "I.impression_data,I.impression_time,I.expiry_time,I.impression_id,"
       "I.source_type,I.priority,I.attributed_truthfully,I.debug_key,"
-      "C.debug_key,I.aggregatable_sources "
+      "C.debug_key,I.aggregatable_sources,I.filter_data "
       "FROM conversions C JOIN impressions I ON "
       "C.impression_id = I.impression_id WHERE C.conversion_id = ?";
   sql::Statement statement(
@@ -1709,7 +1574,8 @@ std::vector<StoredSource> AttributionStorageSql::GetActiveSources(int limit) {
       "SELECT impression_id,impression_data,impression_origin,"
       "conversion_origin,reporting_origin,impression_time,expiry_time,"
       "source_type,attributed_truthfully,priority,debug_key,"
-      "num_conversions,aggregatable_budget_consumed,aggregatable_sources "
+      "num_conversions,aggregatable_budget_consumed,aggregatable_sources,"
+      "filter_data "
       "FROM impressions "
       "WHERE active = 1 and expiry_time > ? "
       "LIMIT ?";
@@ -1895,6 +1761,8 @@ bool AttributionStorageSql::CreateSchema() {
   // |StoredSource::AttributionLogic| enum.
   // |impression_site| is used to optimize the lookup of sources;
   // |CommonSourceInfo::ImpressionSite| is always derived from the origin.
+  // |filter_data| is a serialized `AttributionFilterData` used for source
+  // matching.
   //
   // |impression_id| uses AUTOINCREMENT to ensure that IDs aren't reused over
   // the lifetime of the DB.
@@ -1916,7 +1784,8 @@ bool AttributionStorageSql::CreateSchema() {
       "impression_site TEXT NOT NULL,"
       "debug_key INTEGER,"
       "aggregatable_budget_consumed INTEGER NOT NULL,"
-      "aggregatable_sources BLOB NOT NULL)";
+      "aggregatable_sources BLOB NOT NULL,"
+      "filter_data BLOB NOT NULL)";
   if (!db_->Execute(kImpressionTableSql))
     return false;
 
@@ -2221,7 +2090,7 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
     return false;
 
   StoredSource::Id source_id =
-      aggregatable_attribution.attribution_info.source.source_id();
+      aggregatable_attribution.attribution_info().source.source_id();
 
   absl::optional<StoredSourceData> source_to_attribute =
       ReadSourceToAttribute(db_.get(), source_id);
@@ -2251,9 +2120,9 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertMetadataSql));
   insert_metadata_statement.BindInt64(0, *source_id);
   insert_metadata_statement.BindTime(
-      1, aggregatable_attribution.attribution_info.time);
+      1, aggregatable_attribution.attribution_info().time);
   BindUint64OrNull(insert_metadata_statement, 2,
-                   aggregatable_attribution.attribution_info.debug_key);
+                   aggregatable_attribution.attribution_info().debug_key);
   if (!insert_metadata_statement.Run())
     return false;
 
@@ -2268,20 +2137,22 @@ bool AttributionStorageSql::AddAggregatableAttributionForTesting(
   sql::Statement insert_contributions_statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kInsertContributionsSql));
 
-  for (const AggregatableHistogramContribution& contribution :
-       aggregatable_attribution.contributions) {
+  for (const auto& contribution_and_id :
+       aggregatable_attribution.contributions_and_ids()) {
     insert_contributions_statement.Reset(/*clear_bound_vars=*/true);
     insert_contributions_statement.BindInt64(0, *aggregation_id);
     insert_contributions_statement.BindTime(
-        1, aggregatable_attribution.report_time);
+        1, aggregatable_attribution.report_time());
     insert_contributions_statement.BindInt64(
-        2, SerializeUint64(absl::Uint128High64(contribution.key())));
+        2, SerializeUint64(
+               absl::Uint128High64(contribution_and_id.contribution.key())));
     insert_contributions_statement.BindInt64(
-        3, SerializeUint64(absl::Uint128Low64(contribution.key())));
+        3, SerializeUint64(
+               absl::Uint128Low64(contribution_and_id.contribution.key())));
     insert_contributions_statement.BindInt64(
-        4, static_cast<int64_t>(contribution.value()));
+        4, static_cast<int64_t>(contribution_and_id.contribution.value()));
     insert_contributions_statement.BindString(
-        5, delegate_->NewReportID().AsLowercaseString());
+        5, contribution_and_id.external_report_id.AsLowercaseString());
     if (!insert_contributions_statement.Run())
       return false;
   }
@@ -2421,7 +2292,7 @@ AttributionStorageSql::GetAggregatableContributionReportsInternal(
       "A.trigger_time,I.impression_origin,I.conversion_origin,"
       "I.reporting_origin,I.impression_data,I.impression_time,I.expiry_time,"
       "I.impression_id,I.source_type,I.priority,I.attributed_truthfully,"
-      "I.debug_key,A.debug_key,I.aggregatable_sources "
+      "I.debug_key,A.debug_key,I.aggregatable_sources,I.filter_data "
       "FROM aggregatable_contributions AS C "
       DCHECK_SQL_INDEXED_BY("contribution_report_time_idx")
       "JOIN aggregatable_report_metadata AS A "
@@ -2469,6 +2340,8 @@ AttributionStorageSql::GetAggregatableContributionReportsInternal(
         ColumnUint64OrNull(statement, 19);
     absl::optional<AttributionAggregatableSources> aggregatable_sources =
         ParseAggregatableSources(statement.ColumnString(20));
+    absl::optional<AttributionFilterData> filter_data =
+        AttributionFilterData::Deserialize(statement.ColumnString(21));
 
     // Ensure origins are valid before continuing. This could happen if there is
     // database corruption.
@@ -2476,7 +2349,8 @@ AttributionStorageSql::GetAggregatableContributionReportsInternal(
         !external_report_id.is_valid() || impression_origin.opaque() ||
         conversion_origin.opaque() || reporting_origin.opaque() ||
         !source_type.has_value() || !attribution_logic.has_value() ||
-        failed_send_attempts < 0 || !aggregatable_sources.has_value()) {
+        failed_send_attempts < 0 || !aggregatable_sources.has_value() ||
+        !filter_data.has_value()) {
       continue;
     }
 
@@ -2487,7 +2361,8 @@ AttributionStorageSql::GetAggregatableContributionReportsInternal(
                          std::move(conversion_origin),
                          std::move(reporting_origin), impression_time,
                          expiry_time, *source_type, attribution_source_priority,
-                         source_debug_key, std::move(*aggregatable_sources)),
+                         std::move(*filter_data), source_debug_key,
+                         std::move(*aggregatable_sources)),
         *attribution_logic, source_id);
 
     AttributionReport report(

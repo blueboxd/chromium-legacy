@@ -10,7 +10,7 @@
 
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
-#include "chrome/browser/ash/arc/input_overlay/display_mode.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -62,15 +62,14 @@ class TouchInjector : public ui::EventRewriter {
   // Parse Json to actions.
   // Json value format:
   // {
-  //   "tap": {
-  //     "keyboard": [],
-  //     "mouse": []
-  //   },
-  //   "move": {
-  //     "keyboard": [],
-  //     "mouse": []
-  //   },
-  //   ...
+  //   "tap": [
+  //     {},
+  //     ...
+  //   ],
+  //   "move": [
+  //     {},
+  //     ...
+  //   ]
   // }
   void ParseActions(const base::Value& root);
   // Notify the EventRewriter whether the text input is focused or not.

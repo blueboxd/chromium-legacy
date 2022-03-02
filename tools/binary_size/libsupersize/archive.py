@@ -256,6 +256,9 @@ def _CreateMetadata(container_spec):
 
   if apk_spec:
     metadata[models.METADATA_APK_SIZE] = os.path.getsize(apk_spec.apk_path)
+    if apk_spec.mapping_path:
+      metadata[models.METADATA_PROGUARD_MAPPING_FILENAME] = shorten_path(
+          apk_spec.mapping_path)
     if apk_spec.minimal_apks_path:
       metadata[models.METADATA_APK_FILENAME] = shorten_path(
           apk_spec.minimal_apks_path)
@@ -739,8 +742,13 @@ def _DeduceAuxPaths(args, apk_prefix):
   resources_pathmap_path = args.resources_pathmap_file
   if apk_prefix:
     if not mapping_path:
-      mapping_path = apk_prefix + '.mapping'
-      logging.debug('Detected --mapping-file=%s', mapping_path)
+      possible_mapping_path = apk_prefix + '.mapping'
+      if os.path.exists(possible_mapping_path):
+        mapping_path = possible_mapping_path
+        logging.debug('Detected --mapping-file=%s', mapping_path)
+      else:
+        logging.warning('Could not find proguard mapping file at %s',
+                        possible_mapping_path)
     if not resources_pathmap_path:
       possible_pathmap_path = apk_prefix + '.pathmap.txt'
       # This could be pointing to a stale pathmap file if path shortening was

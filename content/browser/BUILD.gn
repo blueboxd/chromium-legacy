@@ -392,6 +392,8 @@ source_set("browser") {
     "attribution_reporting/attribution_data_host_manager_impl.h",
     "attribution_reporting/attribution_default_random_generator.cc",
     "attribution_reporting/attribution_default_random_generator.h",
+    "attribution_reporting/attribution_filter_data.cc",
+    "attribution_reporting/attribution_filter_data.h",
     "attribution_reporting/attribution_host.cc",
     "attribution_reporting/attribution_host.h",
     "attribution_reporting/attribution_host_utils.cc",
@@ -405,6 +407,8 @@ source_set("browser") {
     "attribution_reporting/attribution_manager.h",
     "attribution_reporting/attribution_manager_impl.cc",
     "attribution_reporting/attribution_manager_impl.h",
+    "attribution_reporting/attribution_manager_provider.cc",
+    "attribution_reporting/attribution_manager_provider.h",
     "attribution_reporting/attribution_observer.h",
     "attribution_reporting/attribution_observer_types.cc",
     "attribution_reporting/attribution_observer_types.h",
@@ -604,6 +608,8 @@ source_set("browser") {
     "browsing_data/storage_partition_code_cache_data_remover.h",
     "browsing_instance.cc",
     "browsing_instance.h",
+    "browsing_topics/browsing_topics_site_data_manager_impl.cc",
+    "browsing_topics/browsing_topics_site_data_manager_impl.h",
     "browsing_topics/browsing_topics_site_data_storage.cc",
     "browsing_topics/browsing_topics_site_data_storage.h",
     "buckets/bucket_context.cc",
@@ -2058,8 +2064,6 @@ source_set("browser") {
     "webid/federated_auth_request_service.h",
     "webid/flags.cc",
     "webid/flags.h",
-    "webid/id_token_request_callback_data.cc",
-    "webid/id_token_request_callback_data.h",
     "webid/idp_network_request_manager.cc",
     "webid/idp_network_request_manager.h",
     "webid/redirect_uri_data.cc",
@@ -3112,6 +3116,13 @@ source_set("browser") {
       "devtools/protocol/native_profiling_handler.cc",
       "devtools/protocol/native_profiling_handler.h",
       "profiling_utils.cc",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    sources += [
+      "accessibility/browser_accessibility_state_impl_lacros.cc",
+      "accessibility/browser_accessibility_state_impl_lacros.h",
     ]
   }
 }

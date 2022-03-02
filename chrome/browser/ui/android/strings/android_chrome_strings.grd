@@ -1720,7 +1720,7 @@ Your Google account may have other forms of browsing history like searches and a
         No available download locations
       </message>
       <message name="IDS_DOWNLOAD_LOCATION_INCOGNITO_WARNING" desc="Text that indicates to the user that downloaded files in Incognito are still saved on the device and are visible to other users of this device.">
-        Files you download in Incognito mode are still visible to anyone who uses this device.
+        Anyone using this device can see files you download in Incognito
       </message>
       <message name="IDS_RENAME" desc="Label for the option to rename items.">
         Rename
@@ -1948,7 +1948,7 @@ Your Google account may have other forms of browsing history like searches and a
         Settings
       </message>
       <message name="IDS_SYNC_PAYMENTS_INTEGRATION" desc="Title for preference which enables import of Google Pay data for Autofill. 'Google Pay' should not be translated as it is the product name.">
-        Payment methods and addresses using Google Pay
+        Payment methods, offers, and addresses using Google Pay
       </message>
       <message name="IDS_SYNC_ENCRYPTION" desc="Preference category name for sync encryption. [CHAR_LIMIT=32]">
         Encryption

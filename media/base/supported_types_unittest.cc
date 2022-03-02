@@ -256,7 +256,7 @@ TEST(SupportedTypesTest, XHE_AACSupported) {
   is_supported = kPropCodecsEnabled &&
                  base::android::BuildInfo::GetInstance()->sdk_int() >=
                      base::android::SDK_VERSION_P;
-#elif BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_MAC) && BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (__builtin_available(macOS 10.15, *))
     is_supported = true;
 #endif

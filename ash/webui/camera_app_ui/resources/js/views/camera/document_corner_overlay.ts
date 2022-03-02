@@ -337,83 +337,83 @@ export class DocumentCornerOverlay {
     /**
      * Start point(corner coordinates + outer shift) of settle animation.
      */
-    const calSettleStart =
-        (corn: Point, corn2: Point, corn3: Point, d: number): Point => {
-          const side = vectorFromPoints(corn2, corn);
+    const calculateSettleStart =
+        (corner: Point, corner2: Point, corner3: Point, d: number): Point => {
+          const side = vectorFromPoints(corner2, corner);
           const norm = side.normal().multiply(d);
 
-          const side2 = vectorFromPoints(corn2, corn3);
+          const side2 = vectorFromPoints(corner2, corner3);
           const angle = side.rotation(side2);
           const dir = side.direction().multiply(d / Math.tan(angle / 2));
 
-          return vectorFromPoints(corn2).add(norm).add(dir).point();
+          return vectorFromPoints(corner2).add(norm).add(dir).point();
         };
     const starts = corners.map((_, idx) => {
       const prevIdx = (idx + 3) % 4;
       const nextIdx = (idx + 1) % 4;
-      return calSettleStart(
+      return calculateSettleStart(
           corners[prevIdx], corners[idx], corners[nextIdx], 50);
     });
 
     // Set start of dot transition.
-    starts.forEach((corn, idx) => {
+    for (const [idx, corner] of starts.entries()) {
       const prevIdx = (idx + 3) % 4;
       const nextIdx = (idx + 1) % 4;
-      this.corners[idx].place(corn, starts[prevIdx], starts[nextIdx]);
-    });
+      this.corners[idx].place(corner, starts[prevIdx], starts[nextIdx]);
+    }
 
     // Set start of line transition.
-    this.sides.forEach((line, i) => {
-      const startCorn = starts[i];
-      const startCorn2 = starts[(i + 1) % 4];
-      const startSide = vectorFromPoints(startCorn2, startCorn);
+    for (const [i, line] of this.sides.entries()) {
+      const startCorner = starts[i];
+      const startCorner2 = starts[(i + 1) % 4];
+      const startSide = vectorFromPoints(startCorner2, startCorner);
       line.place({
-        position: startCorn,
+        position: startCorner,
         angle: startSide.cssRotateAngle(),
         length: startSide.length(),
       });
-    });
+    }
 
     void this.cornerContainer.offsetParent;  // Force start state of transition.
 
     // Set end of dot transition.
-    corners.forEach((corn, i) => {
+    for (const [i, corner] of corners.entries()) {
       const prevIdx = (i + 3) % 4;
       const nextIdx = (i + 1) % 4;
-      this.corners[i].place(corn, corners[prevIdx], corners[nextIdx]);
-    });
+      this.corners[i].place(corner, corners[prevIdx], corners[nextIdx]);
+    }
 
-    this.sides.forEach((line, i) => {
-      const endCorn = corners[i];
-      const endCorn2 = corners[(i + 1) % 4];
-      const endSide = vectorFromPoints(endCorn2, endCorn);
+    for (const [i, line] of this.sides.entries()) {
+      const endCorner = corners[i];
+      const endCorner2 = corners[(i + 1) % 4];
+      const endSide = vectorFromPoints(endCorner2, endCorner);
       line.place({
-        position: endCorn,
+        position: endCorner,
         angle: endSide.cssRotateAngle(),
         length: endSide.length(),
       });
-    });
+    }
   }
 
   /**
    * Place first 4 corners on the overlay and play settle animation.
    */
   private updateCorners(corners: Point[]) {
-    corners.forEach((corn, i) => {
+    for (const [i, corner] of corners.entries()) {
       const prevIdx = (i + 3) % 4;
       const nextIdx = (i + 1) % 4;
-      this.corners[i].place(corn, corners[prevIdx], corners[nextIdx]);
-    });
-    this.sides.forEach((line, i) => {
-      const corn = corners[i];
-      const corn2 = corners[(i + 1) % 4];
-      const side = vectorFromPoints(corn2, corn);
+      this.corners[i].place(corner, corners[prevIdx], corners[nextIdx]);
+    }
+    for (const [i, line] of this.sides.entries()) {
+      const corner = corners[i];
+      const corner2 = corners[(i + 1) % 4];
+      const side = vectorFromPoints(corner2, corner);
       line.place({
-        position: corn,
+        position: corner,
         angle: side.cssRotateAngle(),
         length: side.length(),
       });
-    });
+    }
   }
 
   /**

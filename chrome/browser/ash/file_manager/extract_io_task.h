@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
+#include "components/services/unzip/public/cpp/unzip.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_url.h"
 
@@ -34,7 +35,15 @@ class ExtractIOTask : public IOTask {
   void Cancel() override;
 
  private:
-  void Complete(State state);
+  void Complete();
+
+  void ZipExtractCallback(bool success);
+
+  // URLs of the files that have archives in them for extraction.
+  const std::vector<storage::FileSystemURL> source_urls_;
+
+  // Parent folder of the files in 'source_urls_'.
+  const storage::FileSystemURL parent_folder_;
 
   const scoped_refptr<storage::FileSystemContext> file_system_context_;
 

@@ -382,15 +382,9 @@ void AppListBubblePresenter::OnWindowFocused(aura::Window* gained_focus,
       bubble_widget_->GetNativeWindow()->parent();
 
   // If the bubble or one of its children (e.g. an uninstall dialog) gained
-  // focus, the bubble should stay open. Likewise, certain other containers are
-  // allowed to gain focus without closing the launcher (e.g. power menu).
-  // Allowing the other containers is a speculative fix for a bug where the
-  // launcher closes spontaneously.
-  if (gained_focus) {
-    aura::Window* container = ash::GetContainerForWindow(gained_focus);
-    if (container && !ShouldCloseAppListForFocusInContainer(container->GetId()))
-      return;
-  }
+  // focus, the bubble should stay open.
+  if (gained_focus && app_list_container->Contains(gained_focus))
+    return;
 
   // Otherwise, if the bubble or one of its children lost focus, the bubble
   // should close.
@@ -415,6 +409,13 @@ void AppListBubblePresenter::OnPressOutsideBubble() {
   // Presses outside the bubble could be activating a shelf item. Record the
   // app list state prior to dismissal.
   controller_->RecordAppListState();
+
+  // The press outside the bubble might spawn a menu. If the bubble is active at
+  // the end of the hide animation, an activation change event will cause the
+  // menu to close. Deactivate now so menus stay open. https://crbug.com/1299088
+  if (bubble_widget_->IsActive()) {
+    bubble_widget_->Deactivate();
+  }
   Dismiss();
 }
 

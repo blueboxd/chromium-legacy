@@ -800,19 +800,12 @@ bool AppUpdate::ShowInManagementChanged() const {
                             mojom_state_->show_in_management));
 }
 
-apps::mojom::OptionalBool AppUpdate::HandlesIntents() const {
-  if (mojom_delta_ &&
-      (mojom_delta_->handles_intents != apps::mojom::OptionalBool::kUnknown)) {
-    return mojom_delta_->handles_intents;
+absl::optional<bool> AppUpdate::HandlesIntents() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_FALLBACK(handles_intents, absl::nullopt)
   }
-  if (mojom_state_) {
-    return mojom_state_->handles_intents;
-  }
-  return apps::mojom::OptionalBool::kUnknown;
-}
 
-absl::optional<bool> AppUpdate::GetHandlesIntents() const {
-  GET_VALUE_WITH_FALLBACK(handles_intents, absl::nullopt)
+  CONVERT_MOJOM_OPTIONALBOOL_TO_OPTIONAL_VALUE(handles_intents)
 }
 
 bool AppUpdate::HandlesIntentsChanged() const {
@@ -843,19 +836,12 @@ bool AppUpdate::AllowUninstallChanged() const {
           (mojom_delta_->allow_uninstall != mojom_state_->allow_uninstall));
 }
 
-apps::mojom::OptionalBool AppUpdate::HasBadge() const {
-  if (mojom_delta_ &&
-      (mojom_delta_->has_badge != apps::mojom::OptionalBool::kUnknown)) {
-    return mojom_delta_->has_badge;
+absl::optional<bool> AppUpdate::HasBadge() const {
+  if (ShouldUseNonMojom()) {
+    GET_VALUE_WITH_FALLBACK(has_badge, absl::nullopt)
   }
-  if (mojom_state_) {
-    return mojom_state_->has_badge;
-  }
-  return apps::mojom::OptionalBool::kUnknown;
-}
 
-absl::optional<bool> AppUpdate::GetHasBadge() const {
-  GET_VALUE_WITH_FALLBACK(has_badge, absl::nullopt);
+  CONVERT_MOJOM_OPTIONALBOOL_TO_OPTIONAL_VALUE(has_badge)
 }
 
 bool AppUpdate::HasBadgeChanged() const {
@@ -1049,10 +1035,11 @@ std::ostream& operator<<(std::ostream& out, const AppUpdate& app) {
   out << "ShowInSearch: " << app.ShowInSearch() << std::endl;
   out << "ShowInManagement: " << PRINT_OPTIONAL_VALUE(ShowInManagement)
       << std::endl;
-  out << "HandlesIntents: " << app.HandlesIntents() << std::endl;
+  out << "HandlesIntents: " << PRINT_OPTIONAL_VALUE(HandlesIntents)
+      << std::endl;
   out << "AllowUninstall: " << PRINT_OPTIONAL_VALUE(AllowUninstall)
       << std::endl;
-  out << "HasBadge: " << app.HasBadge() << std::endl;
+  out << "HasBadge: " << PRINT_OPTIONAL_VALUE(HasBadge) << std::endl;
   out << "Paused: " << PRINT_OPTIONAL_VALUE(Paused) << std::endl;
   out << "IntentFilters: " << std::endl;
   for (const auto& filter : app.IntentFilters()) {

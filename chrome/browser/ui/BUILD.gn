@@ -210,8 +210,6 @@ static_library("ui") {
     "webid/account_selection_view.h",
     "webid/identity_dialog_controller.cc",
     "webid/identity_dialog_controller.h",
-    "webid/webid_dialog.cc",
-    "webid/webid_dialog.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
     "webui/autofill_and_password_manager_internals/autofill_internals_ui.cc",
@@ -830,7 +828,6 @@ static_library("ui") {
       "android/toolbar/location_bar_model_android.h",
       "android/webid/account_selection_view_android.cc",
       "android/webid/account_selection_view_android.h",
-      "android/webid/webid_dialog_android.cc",
       "autofill/autofill_bubble_base.h",
       "autofill/autofill_bubble_controller_base.cc",
       "autofill/autofill_bubble_controller_base.h",
@@ -2963,6 +2960,8 @@ static_library("ui") {
       "//ash/quick_pair/keyed_service",
       "//ash/quick_pair/repository",
       "//ash/quick_pair/ui",
+      "//ash/services/cellular_setup",
+      "//ash/services/cellular_setup/public/mojom",
       "//ash/services/multidevice_setup",
       "//ash/services/multidevice_setup/public/cpp",
       "//ash/services/multidevice_setup/public/cpp:android_sms_app_helper_delegate",
@@ -3081,8 +3080,6 @@ static_library("ui") {
       "//chromeos/services/bluetooth_config",
       "//chromeos/services/bluetooth_config:in_process_bluetooth_config",
       "//chromeos/services/bluetooth_config/public/mojom",
-      "//chromeos/services/cellular_setup",
-      "//chromeos/services/cellular_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
       "//chromeos/services/network_health/public/mojom",
       "//chromeos/system",
@@ -3217,6 +3214,8 @@ static_library("ui") {
       "views/frame/desktop_browser_frame_lacros.h",
       "views/frame/immersive_mode_controller_chromeos.cc",
       "views/frame/immersive_mode_controller_chromeos.h",
+      "views/profiles/lacros_first_run_signed_in_flow_controller.cc",
+      "views/profiles/lacros_first_run_signed_in_flow_controller.h",
       "webui/signin/profile_picker_lacros_sign_in_provider.cc",
       "webui/signin/profile_picker_lacros_sign_in_provider.h",
       "window_sizer/window_sizer_chromeos.cc",
@@ -3252,6 +3251,7 @@ static_library("ui") {
       "autofill/payments/webauthn_dialog_view.h",
       "frame/window_frame_util.cc",
       "frame/window_frame_util.h",
+      "incognito_clear_browsing_data_dialog_interface.h",
       "signin_modal_dialog.cc",
       "signin_modal_dialog.h",
       "signin_modal_dialog_impl.cc",
@@ -3345,6 +3345,8 @@ static_library("ui") {
       "startup/default_browser_prompt.h",
       "views/profiles/badged_profile_photo.cc",
       "views/profiles/badged_profile_photo.h",
+      "views/profiles/profile_creation_signed_in_flow_controller.cc",
+      "views/profiles/profile_creation_signed_in_flow_controller.h",
       "views/profiles/profile_customization_bubble_sync_controller.cc",
       "views/profiles/profile_customization_bubble_sync_controller.h",
       "views/profiles/profile_customization_bubble_view.cc",
@@ -3890,8 +3892,6 @@ static_library("ui") {
     sources += [
       "startup/web_app_info_recorder_utils.cc",
       "startup/web_app_info_recorder_utils.h",
-      "startup/web_app_url_handling_startup_utils.cc",
-      "startup/web_app_url_handling_startup_utils.h",
     ]
   }
 
@@ -4870,12 +4870,6 @@ static_library("ui") {
       "views/webauthn/webauthn_icon_view.cc",
       "views/webauthn/webauthn_icon_view.h",
       "views/webid/webid_account_selection_views.cc",
-      "views/webid/webid_dialog_views.cc",
-      "views/webid/webid_dialog_views.h",
-      "views/webid/webid_permission_view.cc",
-      "views/webid/webid_permission_view.h",
-      "views/webid/webid_signin_page_view.cc",
-      "views/webid/webid_signin_page_view.h",
       "webauthn/account_hover_list_model.cc",
       "webauthn/account_hover_list_model.h",
       "webauthn/authenticator_request_sheet_model.cc",
@@ -5008,15 +5002,6 @@ static_library("ui") {
       sources += [
         "views/native_widget_factory.cc",
         "views/native_widget_factory.h",
-      ]
-    }
-
-    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
-      sources += [
-        "views/web_apps/web_app_url_handler_hover_button.cc",
-        "views/web_apps/web_app_url_handler_hover_button.h",
-        "views/web_apps/web_app_url_handler_intent_picker_dialog_view.cc",
-        "views/web_apps/web_app_url_handler_intent_picker_dialog_view.h",
       ]
     }
 

@@ -2020,11 +2020,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     AddSameConstraintsToSides(
         self.view, containerView,
         LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
-
-    NamedGuide* guide =
-        [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreenGuide];
-    [self.view addLayoutGuide:guide];
-    guide.constrainedView = containerView;
   }
 }
 
@@ -2040,11 +2035,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   AddSameConstraintsToSides(
       self.view, containerView,
       LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
-
-  NamedGuide* guide =
-      [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreenGuide];
-  [self.view addLayoutGuide:guide];
-  guide.constrainedView = containerView;
 }
 
 // Adds constraints to the primary and secondary toolbars, anchoring them to the
@@ -3900,23 +3890,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.sendTabToSelfCoordinator start];
 }
 
-// TODO(crbug.com/1272497): Move requestDesktopSite and requestMobileSite to the
-// WebNavigationBrowserAgent.
-- (void)requestDesktopSite {
-  [self reloadWithUserAgentType:web::UserAgentType::DESKTOP];
-
-  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
-      ->NotifyEvent(feature_engagement::events::kDesktopVersionRequested);
-
-  id<BrowserCommands> handler =
-      static_cast<id<BrowserCommands>>(self.commandDispatcher);
-  [handler showDefaultSiteViewIPH];
-}
-
-- (void)requestMobileSite {
-  [self reloadWithUserAgentType:web::UserAgentType::MOBILE];
-}
-
 // TODO(crbug.com/1272498): Refactor this command away, and add a mediator to
 // observe the active web state closing and push updates into the BVC for UI
 // work.
@@ -3997,19 +3970,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/1234532): Integrate Lens with the browser's navigation
   // stack.
   [self presentViewController:lensViewController animated:YES completion:nil];
-}
-
-#pragma mark - BrowserCommands helpers
-
-// Reloads the original url of the last non-redirect item (including non-history
-// items) with |userAgentType|.
-// TODO(crbug.com/1272497): Move this to the WebNavigationBrowserAgent.
-- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
-  if (self.userAgentType == userAgentType)
-    return;
-  web::WebState* webState = self.currentWebState;
-  web::NavigationManager* navigationManager = webState->GetNavigationManager();
-  navigationManager->ReloadWithUserAgentType(userAgentType);
 }
 
 #pragma mark - ChromeLensControllerDelegate
@@ -4234,6 +4194,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (tabURL == kChromeUINewTabURL && !_isOffTheRecord &&
       ![self canShowTabStrip]) {
+    if (IsSingleNtpEnabled()) {
+      // Update NTPCoordinator's WebState here since |self.currentWebState| has
+      // not been update to |webState| yet.
+      self.ntpCoordinator.webState = webState;
+    }
     // Add a snapshot of the primary toolbar to the background as the
     // animation runs.
     UIViewController* toolbarViewController =
@@ -4612,6 +4577,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
                                 forWebState:(web::WebState*)webState {
   if (IsSingleNtpEnabled()) {
+    if (webState != self.currentWebState) {
+      // In the instance that a pageload starts while the WebState is not the
+      // active WebState anymore, do nothing.
+      return;
+    }
     if (NTPHelper->IsActive()) {
       self.ntpCoordinator.webState = webState;
     } else {

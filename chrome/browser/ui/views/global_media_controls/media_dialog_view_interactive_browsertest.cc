@@ -538,7 +538,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void OnSodaProgress(int progress) {
-    speech::SodaInstaller::GetInstance()->NotifySodaDownloadProgressForTesting(
+    speech::SodaInstaller::GetInstance()->NotifySodaProgressForTesting(
         progress);
   }
 
@@ -547,9 +547,8 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void OnSodaLanguagePackInstalled() {
-    speech::SodaInstaller::GetInstance()
-        ->NotifyOnSodaLanguagePackInstalledForTesting(
-            speech::LanguageCode::kEnUs);
+    speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting(
+        speech::LanguageCode::kEnUs);
   }
 
  protected:

@@ -25,6 +25,7 @@
 #include "net/cert/known_roots_mac.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/x509_util.h"
+#include "net/cert/x509_util_ios_and_mac.h"
 #include "net/cert/x509_util_mac.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
@@ -947,6 +948,8 @@ TrustStoreMac::FindMatchingCertificatesForMacNormalizedSubject(
   CFDictionarySetValue(query, kSecMatchLimit, kSecMatchLimitAll);
   CFDictionarySetValue(query, kSecAttrSubject, name_data);
 
+  base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+
   base::ScopedCFTypeRef<CFArrayRef> scoped_alternate_keychain_search_list;
   if (TestKeychainSearchList::HasInstance()) {
     OSStatus status = TestKeychainSearchList::GetInstance()->CopySearchList(
@@ -957,8 +960,6 @@ TrustStoreMac::FindMatchingCertificatesForMacNormalizedSubject(
       return matching_cert_buffers;
     }
   }
-
-  base::AutoLock lock(crypto::GetMacSecurityServicesLock());
 
   // If a TestKeychainSearchList is present, it will have already set
   // |scoped_alternate_keychain_search_list|, which will be used as the

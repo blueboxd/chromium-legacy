@@ -551,7 +551,7 @@ const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
 
 // Enables skipping of network screen.
 const base::Feature kEnableOobeNetworkScreenSkip{
-    "EnableOobeNetworkScreenSkip", base::FEATURE_ENABLED_BY_DEFAULT};
+    "EnableOobeNetworkScreenSkip", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables showing notification after the password change for SAML users.
 const base::Feature kEnableSamlNotificationOnPasswordChangeSuccess{
@@ -1064,6 +1064,9 @@ const base::Feature kPhoneHubCameraRoll{"PhoneHubCameraRoll",
 const base::Feature kPhoneHubCallNotification{
     "PhoneHubCallNotification", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPhoneHubMonochromeNotificationIcons{
+    "PhoneHubMonochromeNotificationIcons", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the Recent Apps feature in Phone Hub, which allows users to relaunch
 // the streamed app.
 const base::Feature kPhoneHubRecentApps{"PhoneHubRecentApps",
@@ -1429,6 +1432,10 @@ const base::Feature kDeviceActiveClientMonthlyCheckMembership{
 // Enables or disables forced reboots when DeviceScheduledReboot policy is set.
 const base::Feature kDeviceForceScheduledReboot{
     "DeviceForceScheduledReboot", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Maximum delay added to reboot time when DeviceScheduledReboot policy is set.
+const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
+    &kDeviceForceScheduledReboot, "max-delay-in-seconds", 120};
 
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
@@ -1878,6 +1885,10 @@ bool IsPerDeskShelfEnabled() {
 
 bool IsPhoneHubCameraRollEnabled() {
   return base::FeatureList::IsEnabled(kPhoneHubCameraRoll);
+}
+
+bool IsPhoneHubMonochromeNotificationIconsEnabled() {
+  return base::FeatureList::IsEnabled(kPhoneHubMonochromeNotificationIcons);
 }
 
 bool IsPerformantSplitViewResizingEnabled() {

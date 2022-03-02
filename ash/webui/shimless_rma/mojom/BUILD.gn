@@ -41,6 +41,10 @@ mojom("mojom") {
           cpp = "::rmad::ProvisionStatus_Status"
         },
         {
+          mojom = "ash.shimless_rma.mojom.ProvisioningError"
+          cpp = "::rmad::ProvisionStatus_Error"
+        },
+        {
           mojom = "ash.shimless_rma.mojom.RmadErrorCode"
           cpp = "::rmad::RmadErrorCode"
         },
@@ -63,6 +67,10 @@ mojom("mojom") {
         {
           mojom = "ash.shimless_rma.mojom.FinalizationStatus"
           cpp = "::rmad::FinalizeStatus_Status"
+        },
+        {
+          mojom = "ash.shimless_rma.mojom.FinalizationError"
+          cpp = "::rmad::FinalizeStatus_Error"
         },
         {
           mojom = "ash.shimless_rma.mojom.UpdateRoFirmwareStatus"

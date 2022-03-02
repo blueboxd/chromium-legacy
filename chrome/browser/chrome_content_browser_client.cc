@@ -552,7 +552,6 @@
 #include "components/pdf/browser/pdf_navigation_throttle.h"
 #include "components/pdf/browser/pdf_url_loader_request_interceptor.h"
 #include "components/pdf/common/internal_plugin_helpers.h"
-#include "pdf/pdf_features.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -5053,7 +5052,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
         web_request_api->MaybeProxyURLLoaderFactory(
             browser_context, frame, render_process_id, type,
             std::move(navigation_id), ukm_source_id, factory_receiver,
-            header_client);
+            header_client, request_initiator);
     if (bypass_redirect_checks)
       *bypass_redirect_checks = use_proxy_for_web_request;
     use_proxy |= use_proxy_for_web_request;
@@ -5914,8 +5913,7 @@ ChromeContentBrowserClient::GetPluginMimeTypesWithExternalHandlers(
     mime_types.insert(pair.first);
 #endif
 #if BUILDFLAG(ENABLE_PDF)
-  if (pdf::IsInternalPluginExternallyHandled())
-    mime_types.insert(pdf::kInternalPluginMimeType);
+  mime_types.insert(pdf::kInternalPluginMimeType);
 #endif
   return mime_types;
 }
@@ -6284,8 +6282,7 @@ bool ChromeContentBrowserClient::IsFindInPageDisabledForOrigin(
 #if BUILDFLAG(ENABLE_PDF)
   // For PDF viewing with the PPAPI-free PDF Viewer, find-in-page should only
   // display results from the PDF content, and not from the UI.
-  return base::FeatureList::IsEnabled(chrome_pdf::features::kPdfUnseasoned) &&
-         IsPdfExtensionOrigin(origin);
+  return IsPdfExtensionOrigin(origin);
 #else
   return false;
 #endif

@@ -167,6 +167,8 @@ extern const base::Feature kDeviceActiveClientMonthlyCheckMembership;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDeviceForceScheduledReboot;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kDiacriticsOnPhysicalKeyboardLongpress;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDiagnosticsApp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -415,6 +417,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHub;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHubCameraRoll;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPhoneHubCallNotification;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kPhoneHubMonochromeNotificationIcons;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kPhoneHubRecentApps;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kPinSetupForManagedUsers;
@@ -664,6 +668,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPcieBillboardNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPciguardUiEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPerDeskShelfEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubCameraRollEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsPhoneHubMonochromeNotificationIconsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPerformantSplitViewResizingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPersonalizationHubEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPhoneHubEnabled();
@@ -677,7 +683,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProductivityLauncherEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorAllUserEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorManagedUserEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorFeaturePodEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorAnnotatorEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorAppDebugMode();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickDimEnabled();

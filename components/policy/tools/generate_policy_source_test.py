@@ -93,6 +93,17 @@ class PolicyGenerationTest(unittest.TestCase):
           "caption": "CloudOnlyPolicy caption",
           "desc": "CloudOnlyPolicy desc",
       }, {
+          "name": "CloudManagementEnrollmentToken",
+          "type": "string",
+          "schema": {
+              "type": "string"
+          },
+          "supported_on": ["chrome_os:1-", "android:1-"],
+          "id": 6,
+          "tags": [],
+          "caption": "CloudManagementEnrollmentToken caption",
+          "desc": "CloudManagementEnrollmentToken desc"
+      }, {
           "name": "ChunkZeroLastFieldBooleanPolicy",
           "type": "main",
           "schema": {
@@ -218,7 +229,7 @@ class PolicyGenerationTest(unittest.TestCase):
     self.assertListEqual([], stmts)
     self.assertIsNone(expr)
 
-  def _assertCallsEqual(self, call_args_list, expected_output):
+  def _assertCallsEqual(self, expected_output, call_args_list):
     # Convert mocked write calls into actual content that would be written
     # to the file. Elements of call_args_list are call objects, which are
     # two-tuples of (positional args, keyword args). With call[0] we first
@@ -229,7 +240,7 @@ class PolicyGenerationTest(unittest.TestCase):
 
     # Strip whitespace from the beginning and end of expected and actual
     # output and verify that they are equal.
-    self.assertEqual(actual_output.strip(), expected_output.strip())
+    self.assertEqual(expected_output.strip(), actual_output.strip())
 
   def testWriteCloudPolicyProtobuf(self):
     is_full_runtime_values = [False, True]
@@ -257,8 +268,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "full_runtime_suffix": full_runtime_suffix,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWriteChromeSettingsProtobuf(self):
     is_full_runtime_values = [False, True]
@@ -286,8 +297,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "full_runtime_suffix": full_runtime_suffix,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWritePolicyProto(self):
     output_path = 'mock_write_policy_proto'
@@ -297,8 +308,8 @@ class PolicyGenerationTest(unittest.TestCase):
         generate_policy_source._WritePolicyProto(f, self.policies[0])
 
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_POLICY_PROTO)
+    self._assertCallsEqual(test_data.EXPECTED_POLICY_PROTO,
+                           mocked_file().write.call_args_list)
 
   def testGetMetapoliciesOfType(self):
     merge_metapolicies = generate_policy_source._GetMetapoliciesOfType(
@@ -341,8 +352,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "windows_only_part": windows_only_part,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWritePolicyConstantSource(self):
     output_path = 'mock_policy_constants_cc'
@@ -368,8 +379,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "windows_only_part": windows_only_part,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWriteChromeOSPolicyConstantsHeader(self):
     output_path = 'mock_policy_constants_h'
@@ -383,8 +394,8 @@ class PolicyGenerationTest(unittest.TestCase):
             self.risk_tags,
         )
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_CROS_POLICY_CONSTANTS_HEADER)
+    self._assertCallsEqual(test_data.EXPECTED_CROS_POLICY_CONSTANTS_HEADER,
+                           mocked_file().write.call_args_list)
 
   def testWriteChromeOSPolicyConstantsSource(self):
     output_path = 'mock_policy_constants_cc'
@@ -398,8 +409,8 @@ class PolicyGenerationTest(unittest.TestCase):
             self.risk_tags,
         )
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_CROS_POLICY_CONSTANTS_SOURCE)
+    self._assertCallsEqual(test_data.EXPECTED_CROS_POLICY_CONSTANTS_SOURCE,
+                           mocked_file().write.call_args_list)
 
 
   def testWriteAppRestrictions(self):
@@ -414,8 +425,8 @@ class PolicyGenerationTest(unittest.TestCase):
             self.risk_tags,
         )
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_APP_RESTRICTIONS_XML)
+    self._assertCallsEqual(test_data.EXPECTED_APP_RESTRICTIONS_XML,
+                           mocked_file().write.call_args_list)
 
 
   def testChunkNumberAndFieldNumber(self):

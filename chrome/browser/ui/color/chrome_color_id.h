@@ -56,12 +56,21 @@
   E(kColorFrameCaptionInactive, ThemeProperties::COLOR_FRAME_CAPTION_INACTIVE) \
   /* Google branding colors. */ \
   E_CPONLY(kColorGooglePayLogo) \
+  /* InfoBar colors. */ \
+  E(kColorInfoBarBackground, ThemeProperties::COLOR_INFOBAR) \
+  E(kColorInfoBarForeground, ThemeProperties::COLOR_INFOBAR_TEXT) \
   /* Location bar colors. */ \
   E(kColorLocationBarBorder, ThemeProperties::COLOR_LOCATION_BAR_BORDER) \
   /* New Tab Page colors. */ \
   E(kColorNewTabPageBackground, ThemeProperties::COLOR_NTP_BACKGROUND) \
   E(kColorNewTabPageHeader, ThemeProperties::COLOR_NTP_HEADER) \
+  E(kColorNewTabPageLink, ThemeProperties::COLOR_NTP_LINK) \
+  E(kColorNewTabPageLogo, ThemeProperties::COLOR_NTP_LOGO) \
+  E(kColorNewTabPageMostVisitedTileBackground, \
+    ThemeProperties::COLOR_NTP_SHORTCUT) \
+  E(kColorNewTabPageSectionBorder, ThemeProperties::COLOR_NTP_SECTION_BORDER) \
   E(kColorNewTabPageText, ThemeProperties::COLOR_NTP_TEXT) \
+  E(kColorNewTabPageTextLight, ThemeProperties::COLOR_NTP_TEXT_LIGHT) \
   /* Omnibox colors. */ \
   E(kColorOmniboxBackground, ThemeProperties::COLOR_OMNIBOX_BACKGROUND) \
   E(kColorOmniboxBackgroundHovered, \
@@ -222,7 +231,12 @@
   E(kColorToolbarInkDrop, ThemeProperties::COLOR_TOOLBAR_INK_DROP) \
   E(kColorToolbarSeparator, \
     ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR) \
-  E(kColorToolbarText, ThemeProperties::COLOR_TOOLBAR_TEXT)
+  E(kColorToolbarText, ThemeProperties::COLOR_TOOLBAR_TEXT) \
+  /* Window control button background colors */ \
+  E(kColorWindowControlButtonBackgroundActive, \
+    ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_ACTIVE) \
+  E(kColorWindowControlButtonBackgroundInactive, \
+    ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE)
 
 #if BUILDFLAG(IS_WIN)
 #define CHROME_NATIVE_COLOR_IDS \

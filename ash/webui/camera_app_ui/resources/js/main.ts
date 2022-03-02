@@ -65,7 +65,7 @@ export class App {
   constructor({perfLogger, intent, facing, mode: defaultMode}: {
     perfLogger: PerfLogger,
     intent: Intent|null,
-    facing: Facing,
+    facing: Facing|null,
     mode: Mode|null,
   }) {
     this.perfLogger = perfLogger;
@@ -125,7 +125,7 @@ export class App {
    * Sets up toggles (checkbox and radio) by data attributes.
    */
   private setupToggles() {
-    dom.getAll('input', HTMLInputElement).forEach((element) => {
+    for (const element of dom.getAll('input', HTMLInputElement)) {
       element.addEventListener('keypress', (event) => {
         const e = assertInstanceof(event, KeyboardEvent);
         if (util.getShortcutIdentifier(e) === 'Enter') {
@@ -171,18 +171,19 @@ export class App {
             localStorage.getBool(element.dataset['key'], element.checked);
         util.toggleChecked(element, value);
       }
-    });
+    }
   }
 
   /**
    * Sets up visual effect for all applicable elements.
    */
   private setupEffect() {
-    dom.getAll('.inkdrop', HTMLElement)
-        .forEach((el) => util.setInkdropEffect(el));
+    for (const el of dom.getAll('.inkdrop', HTMLElement)) {
+      util.setInkdropEffect(el);
+    }
 
     const observer = new MutationObserver((mutationList) => {
-      mutationList.forEach((mutation) => {
+      for (const mutation of mutationList) {
         assert(mutation.type === 'childList');
         // Only the newly added nodes with inkdrop class are considered here. So
         // simply adding class attribute on existing element will not work.
@@ -190,12 +191,11 @@ export class App {
           if (!(node instanceof HTMLElement)) {
             continue;
           }
-          const el = assertInstanceof(node, HTMLElement);
-          if (el.classList.contains('inkdrop')) {
-            util.setInkdropEffect(el);
+          if (node.classList.contains('inkdrop')) {
+            util.setInkdropEffect(node);
           }
         }
-      });
+      }
     });
     observer.observe(document.body, {
       subtree: true,
@@ -350,7 +350,7 @@ export class App {
  */
 function parseSearchParams(): {
   intent: Intent|null,
-  facing: Facing,
+  facing: Facing|null,
   mode: Mode|null,
   openFrom: string|null,
   autoTake: boolean,
@@ -358,8 +358,7 @@ function parseSearchParams(): {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  const facing =
-      checkEnumVariant(Facing, params.get('facing')) ?? Facing.NOT_SET;
+  const facing = checkEnumVariant(Facing, params.get('facing'));
 
   const mode = checkEnumVariant(Mode, params.get('mode'));
 

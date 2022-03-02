@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
+#include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "url/gurl.h"
@@ -66,10 +67,27 @@ void MockDataHost::WaitForSourceData(size_t num_source_data) {
   wait_loop_.Run();
 }
 
+void MockDataHost::WaitForTriggerData(size_t num_trigger_data) {
+  min_trigger_data_count_ = num_trigger_data;
+  if (trigger_data_.size() >= min_trigger_data_count_) {
+    return;
+  }
+  wait_loop_.Run();
+}
+
 void MockDataHost::SourceDataAvailable(
     blink::mojom::AttributionSourceDataPtr data) {
   source_data_.push_back(std::move(data));
   if (source_data_.size() < min_source_data_count_) {
+    return;
+  }
+  wait_loop_.Quit();
+}
+
+void MockDataHost::TriggerDataAvailable(
+    blink::mojom::AttributionTriggerDataPtr data) {
+  trigger_data_.push_back(std::move(data));
+  if (trigger_data_.size() < min_trigger_data_count_) {
     return;
   }
   wait_loop_.Quit();
@@ -81,6 +99,10 @@ MockDataHostManager::~MockDataHostManager() = default;
 
 base::GUID DefaultExternalReportID() {
   return base::GUID::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e");
+}
+
+std::vector<base::GUID> DefaultExternalReportIDs(size_t size) {
+  return std::vector<base::GUID>(size, DefaultExternalReportID());
 }
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate() = default;
@@ -403,6 +425,11 @@ SourceBuilder& SourceBuilder::SetPriority(int64_t priority) {
   return *this;
 }
 
+SourceBuilder& SourceBuilder::SetFilterData(AttributionFilterData filter_data) {
+  filter_data_ = std::move(filter_data);
+  return *this;
+}
+
 SourceBuilder& SourceBuilder::SetDebugKey(absl::optional<uint64_t> debug_key) {
   debug_key_ = debug_key;
   return *this;
@@ -435,7 +462,7 @@ CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
       source_event_id_, impression_origin_, conversion_origin_,
       reporting_origin_, impression_time_,
       /*expiry_time=*/impression_time_ + expiry_, source_type_, priority_,
-      debug_key_, aggregatable_sources_);
+      filter_data_, debug_key_, aggregatable_sources_);
 }
 
 StorableSource SourceBuilder::Build() const {
@@ -632,13 +659,19 @@ bool operator==(const AttributionTrigger& a, const AttributionTrigger& b) {
   return tie(a) == tie(b);
 }
 
+bool operator==(const AttributionFilterData& a,
+                const AttributionFilterData& b) {
+  return a.filter_values() == b.filter_values();
+}
+
 bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
   const auto tie = [](const CommonSourceInfo& source) {
-    return std::make_tuple(
-        source.source_event_id(), source.impression_origin(),
-        source.conversion_origin(), source.reporting_origin(),
-        source.impression_time(), source.expiry_time(), source.source_type(),
-        source.priority(), source.debug_key(), source.aggregatable_sources());
+    return std::make_tuple(source.source_event_id(), source.impression_origin(),
+                           source.conversion_origin(),
+                           source.reporting_origin(), source.impression_time(),
+                           source.expiry_time(), source.source_type(),
+                           source.priority(), source.filter_data(),
+                           source.debug_key(), source.aggregatable_sources());
   };
   return tie(a) == tie(b);
 }
@@ -692,11 +725,21 @@ bool operator==(const AggregatableHistogramContribution& a,
   return tie(a) == tie(b);
 }
 
+bool operator==(const AggregatableAttribution::ContributionAndExternalId& a,
+                const AggregatableAttribution::ContributionAndExternalId& b) {
+  const auto tie = [](const AggregatableAttribution::ContributionAndExternalId&
+                          contribution_and_id) {
+    return std::make_tuple(contribution_and_id.contribution,
+                           contribution_and_id.external_report_id);
+  };
+  return tie(a) == tie(b);
+}
+
 bool operator==(const AggregatableAttribution& a, AggregatableAttribution& b) {
   const auto tie = [](const AggregatableAttribution& aggregatable_attribution) {
-    return std::make_tuple(aggregatable_attribution.attribution_info,
-                           aggregatable_attribution.report_time,
-                           aggregatable_attribution.contributions);
+    return std::make_tuple(aggregatable_attribution.attribution_info(),
+                           aggregatable_attribution.report_time(),
+                           aggregatable_attribution.contributions_and_ids());
   };
   return tie(a) == tie(b);
 }
@@ -858,6 +901,27 @@ std::ostream& operator<<(std::ostream& out,
              << "}";
 }
 
+std::ostream& operator<<(std::ostream& out,
+                         const AttributionFilterData& filter_data) {
+  out << "{";
+
+  const char* outer_separator = "";
+  for (const auto& [filter, values] : filter_data.filter_values()) {
+    out << outer_separator << filter << "=[";
+
+    const char* inner_separator = "";
+    for (const auto& value : values) {
+      out << inner_separator << value;
+      inner_separator = ", ";
+    }
+
+    out << "]";
+    outer_separator = ", ";
+  }
+
+  return out << "}";
+}
+
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
   return out << "{source_event_id=" << source.source_event_id()
              << ",impression_origin=" << source.impression_origin()
@@ -866,7 +930,8 @@ std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
              << ",impression_time=" << source.impression_time()
              << ",expiry_time=" << source.expiry_time()
              << ",source_type=" << source.source_type()
-             << ",priority=" << source.priority() << ",debug_key="
+             << ",priority=" << source.priority()
+             << ",filter_data=" << source.filter_data() << ",debug_key="
              << (source.debug_key() ? base::NumberToString(*source.debug_key())
                                     : "null")
              << ",aggregatable_sources=" << source.aggregatable_sources()
@@ -916,15 +981,24 @@ std::ostream& operator<<(
 
 std::ostream& operator<<(
     std::ostream& out,
+    const AggregatableAttribution::ContributionAndExternalId&
+        contribution_and_id) {
+  return out << "{contribution=" << contribution_and_id.contribution
+             << ",external_report_id=" << contribution_and_id.external_report_id
+             << "}";
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
     const AggregatableAttribution& aggregatable_attribution) {
-  out << "{attribution_info=" << aggregatable_attribution.attribution_info
-      << ",report_time=" << aggregatable_attribution.report_time
-      << ",contributions=[";
+  out << "{attribution_info=" << aggregatable_attribution.attribution_info()
+      << ",report_time=" << aggregatable_attribution.report_time()
+      << ",contributions_and_ids=[";
 
   const char* separator = "";
-  for (const AggregatableHistogramContribution& contribution :
-       aggregatable_attribution.contributions) {
-    out << separator << contribution;
+  for (const auto& contribution_and_id :
+       aggregatable_attribution.contributions_and_ids()) {
+    out << separator << contribution_and_id;
     separator = ", ";
   }
 

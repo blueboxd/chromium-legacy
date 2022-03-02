@@ -89,9 +89,19 @@ export const CalibrationComponentStatus =
 export const ProvisioningStatus = ash.shimlessRma.mojom.ProvisioningStatus;
 
 /**
+ * @typedef {ash.shimlessRma.mojom.ProvisioningError}
+ */
+export const ProvisioningError = ash.shimlessRma.mojom.ProvisioningError;
+
+/**
  * @typedef {ash.shimlessRma.mojom.FinalizationStatus}
  */
 export const FinalizationStatus = ash.shimlessRma.mojom.FinalizationStatus;
+
+/**
+ * @typedef {ash.shimlessRma.mojom.FinalizationError}
+ */
+export const FinalizationError = ash.shimlessRma.mojom.FinalizationError;
 
 /**
  * Type alias for OsUpdateOperation.

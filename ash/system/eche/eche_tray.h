@@ -25,6 +25,10 @@ namespace ui {
 class Event;
 }  // namespace ui
 
+namespace gfx {
+class Image;
+}  // namespace gfx
+
 namespace ash {
 
 class Shelf;
@@ -69,20 +73,24 @@ class ASH_EXPORT EcheTray : public TrayBackgroundView, public SessionObserver {
   // Setting a new value will cause the current bubble be destroyed.
   void SetUrl(const GURL& url);
 
+  // Sets the icon that will be used on the tray.
+  void SetIcon(const gfx::Image& icon);
+
   // Destroys the view inclusing the web view.
   // Note: `CloseBubble` only hides the view.
   void PurgeAndClose();
 
   void HideBubble();
 
+  // Set up the params and init the bubble.
+  // Note: This function makes the bubble active and makes the
+  // TrayBackgroundView's background inkdrop activate.
+  void InitBubble();
+
   // Test helpers
   TrayBubbleWrapper* get_bubble_wrapper_for_test() { return bubble_.get(); }
 
  private:
-  // Updates the visibility of the tray in the shelf based on the enable state
-  // of the `EcheCustomWidget` feature.
-  void UpdateVisibility();
-
   // Handles the click on the "back" arrow in the header.
   void OnArrowBackActivated();
 

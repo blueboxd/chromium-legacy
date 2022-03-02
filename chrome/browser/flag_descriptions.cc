@@ -131,6 +131,11 @@ extern const char kDefaultChromeAppsMigrationDescription[] =
     "Enable replacing policies to force install Chrome apps with policies to "
     "force install PWAs";
 
+const char kDeferredFontShapingName[] = "Deferred Font Shaping";
+const char kDeferredFontShapingDescription[] =
+    "Defer text rendering in invisible CSS boxes until the boxes become "
+    "visible.";
+
 const char kDetectFormSubmissionOnFormClearName[] =
     "Detect form submission when the form is cleared.";
 const char kDetectFormSubmissionOnFormClearDescription[] =
@@ -2031,6 +2036,11 @@ const char kPasswordDomainCapabilitiesFetchingDescription[] =
 const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
+
+const char kPdfOcrName[] = "Performs OCR on inaccessible PDFs";
+const char kPdfOcrDescription[] =
+    "Enables a feature whereby inaccessible (i.e. untagged) PDFs are made "
+    "accessible using an optical character recognition service.";
 
 const char kPdfXfaFormsName[] = "PDF XFA support";
 const char kPdfXfaFormsDescription[] =

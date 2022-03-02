@@ -8,6 +8,12 @@
 
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
+#include "ash/system/eche/eche_tray.h"
+#include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/tray/tray_bubble_wrapper.h"
+#include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_suite.h"
+#include "ash/test/test_ash_web_view_factory.h"
 #include "ash/webui/eche_app_ui/fake_feature_status_provider.h"
 #include "ash/webui/eche_app_ui/fake_launch_app_helper.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
@@ -15,11 +21,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 namespace ash {
 namespace eche_app {
 
-class EcheRecentAppClickHandlerTest : public testing::Test {
+class EcheRecentAppClickHandlerTest : public AshTestBase {
  protected:
   EcheRecentAppClickHandlerTest() = default;
   EcheRecentAppClickHandlerTest(const EcheRecentAppClickHandlerTest&) = delete;
@@ -27,15 +35,25 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
       const EcheRecentAppClickHandlerTest&) = delete;
   ~EcheRecentAppClickHandlerTest() override = default;
 
-  // testing::Test:
+  // AshTestBase::Test:
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kEcheSWA, features::kPhoneHubRecentApps,
+                              features::kEcheCustomWidget},
+        /*disabled_features=*/{});
+
+    DCHECK(test_web_view_factory_.get());
+
+    ui::ResourceBundle::CleanupSharedInstance();
+    AshTestSuite::LoadTestResources();
+    AshTestBase::SetUp();
+    eche_tray_ =
+        ash::StatusAreaWidgetTestHelper::GetStatusAreaWidget()->eche_tray();
+
     fake_phone_hub_manager_.fake_feature_status_provider()->SetStatus(
         phonehub::FeatureStatus::kEnabledAndConnected);
     fake_feature_status_provider_.SetStatus(FeatureStatus::kIneligible);
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kEcheSWA,
-                              features::kPhoneHubRecentApps},
-        /*disabled_features=*/{});
+
     launch_app_helper_ = std::make_unique<FakeLaunchAppHelper>(
         &fake_phone_hub_manager_,
         base::BindRepeating(
@@ -47,20 +65,24 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
         base::BindRepeating(
             &EcheRecentAppClickHandlerTest::FakeLaunchNotificationFunction,
             base::Unretained(this)));
+    display_stream_handler_ = std::make_unique<EcheDisplayStreamHandler>();
     handler_ = std::make_unique<EcheRecentAppClickHandler>(
         &fake_phone_hub_manager_, &fake_feature_status_provider_,
-        launch_app_helper_.get());
+        launch_app_helper_.get(), display_stream_handler_.get());
   }
 
   void TearDown() override {
+    AshTestBase::TearDown();
     launch_app_helper_.reset();
+    display_stream_handler_.reset();
     handler_.reset();
   }
 
   void FakeLaunchEcheAppFunction(const absl::optional<int64_t>& notification_id,
                                  const std::string& package_name,
                                  const std::u16string& visible_name,
-                                 const absl::optional<int64_t>& user_id) {
+                                 const absl::optional<int64_t>& user_id,
+                                 const gfx::Image& icon) {
     package_name_ = package_name;
     visible_name_ = visible_name;
     user_id_ = user_id.value();
@@ -103,11 +125,19 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
         ->FetchRecentAppMetadataList();
   }
 
+  void StartStreaming() { handler_->OnStartStreaming(); }
+
   const std::string& get_package_name() { return package_name_; }
 
   const std::u16string& get_visible_name() { return visible_name_; }
 
   int64_t get_user_id() { return user_id_; }
+
+  bool waiting_for_streaming_to_show() {
+    return handler_->waiting_for_streaming_to_show();
+  }
+
+  EcheTray* eche_tray() { return eche_tray_; }
 
  private:
   phonehub::FakePhoneHubManager fake_phone_hub_manager_;
@@ -115,9 +145,15 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
   FakeFeatureStatusProvider fake_feature_status_provider_;
   std::unique_ptr<LaunchAppHelper> launch_app_helper_;
   std::unique_ptr<EcheRecentAppClickHandler> handler_;
+  std::unique_ptr<EcheDisplayStreamHandler> display_stream_handler_;
   std::string package_name_;
   std::u16string visible_name_;
   int64_t user_id_;
+  EcheTray* eche_tray_ = nullptr;  // Not owned
+
+  // Calling the factory constructor is enough to set it up.
+  std::unique_ptr<TestAshWebViewFactory> test_web_view_factory_ =
+      std::make_unique<TestAshWebViewFactory>();
 };
 
 TEST_F(EcheRecentAppClickHandlerTest, StatusChangeTransitions) {
@@ -153,7 +189,8 @@ TEST_F(EcheRecentAppClickHandlerTest, LaunchEcheAppFunction) {
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(), user_id);
+      app_visible_name, package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   RecentAppClicked(fake_app_metadata);
 
@@ -168,7 +205,8 @@ TEST_F(EcheRecentAppClickHandlerTest, HandleNotificationClick) {
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(), user_id);
+      app_visible_name, package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   HandleNotificationClick(notification_id, fake_app_metadata);
   std::vector<phonehub::Notification::AppMetadata> app_metadata =
@@ -178,6 +216,26 @@ TEST_F(EcheRecentAppClickHandlerTest, HandleNotificationClick) {
             app_metadata[0].visible_app_name);
   EXPECT_EQ(fake_app_metadata.package_name, app_metadata[0].package_name);
   EXPECT_EQ(fake_app_metadata.user_id, app_metadata[0].user_id);
+}
+
+TEST_F(EcheRecentAppClickHandlerTest, StartStreaming) {
+  EXPECT_FALSE(waiting_for_streaming_to_show());
+
+  const int64_t user_id = 1;
+  const char16_t app_visible_name[] = u"Fake App";
+  const char package_name[] = "com.fakeapp";
+  auto fake_app_metadata = phonehub::Notification::AppMetadata(
+      app_visible_name, package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
+  RecentAppClicked(fake_app_metadata);
+
+  EXPECT_TRUE(waiting_for_streaming_to_show());
+
+  StartStreaming();
+
+  EXPECT_TRUE(
+      eche_tray()->get_bubble_wrapper_for_test()->bubble_view()->GetVisible());
+  EXPECT_FALSE(waiting_for_streaming_to_show());
 }
 
 }  // namespace eche_app

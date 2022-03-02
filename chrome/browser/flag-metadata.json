@@ -122,7 +122,7 @@
   {
     "name": "allow-scroll-settings",
     "owners": [ "khorimoto", "zentaro" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "allow-touchpad-haptic-click-settings",
@@ -383,7 +383,7 @@
   {
     "name": "auto-framing-override",
     "owners": [ "kamesan", "chromeos-camera-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "auto-screen-brightness",
@@ -866,6 +866,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "content-suggestions-uiviewcontroller-migration",
+    "owners": [ "thegreenfrog@google.com", "adamta@google.com" ],
+    "expiry_milestone": 106
+  },
+  {
     "name": "context-menu-google-lens-chip",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "lens-chrome@google.com" ],
     "expiry_milestone": 100
@@ -1067,7 +1072,7 @@
   {
     "name": "dark-light-mode",
     "owners": [ "minch", "tclaiborne" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "darken-websites-checkbox-in-themes-setting",
@@ -1135,6 +1140,11 @@
     "name": "default-wkwebview-context-menu",
     "owners": [ "gambard", "bling-flags@google.com" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "deferred-font-shaping",
+    "owners": [ "tkent", "layout-dev" ],
+    "expiry_milestone": 110
   },
   {
     "name": "deprecate-alt-based-six-pack",
@@ -1327,8 +1337,8 @@
   },
   {
     "name": "display-alignment-assistance",
-    "owners": [ "baileyberro", "cros-peripherals@google.com" ],
-    "expiry_milestone": 100
+    "owners": [ "cros-peripherals@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "dns-httpssvc",
@@ -1348,12 +1358,12 @@
    {
     "name": "document-transition",
     "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
-    "expiry_milestone" : 98
+    "expiry_milestone" : 104
   },
    {
     "name": "document-transition-slowdown-factor",
     "owners": [ "khushalsagar", "vmpstr", "chrishtr" ],
-    "expiry_milestone" : 98
+    "expiry_milestone" : 104
   },
   {
     "name": "double-buffer-compositing",
@@ -3580,7 +3590,7 @@
   {
     "name": "hdrnet-override",
     "owners": [ "jcliang", "chromeos-camera-eng@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "heavy-ad-privacy-mitigations",
@@ -3661,7 +3671,7 @@
     "name": "improved-keyboard-shortcuts",
     "owners": [ "zentaro@google.com", "jimmyxgong@google.com",
                 "cros-peripherals@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "impulse-scroll-animations",
@@ -4783,6 +4793,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "pdf-ocr",
+    "owners": [ "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "pdf-xfa-forms",
     "owners": [ "carlosil", "tsepez" ],
     "expiry_milestone": 105
@@ -5232,7 +5247,7 @@
   },
   {
     "name": "screen-ai",
-    "owners": [ "rhalavati", "dtseng" ],
+    "owners": [ "rhalavati", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 110
   },
   {

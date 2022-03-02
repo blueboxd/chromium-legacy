@@ -81,7 +81,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/feed/buildflags.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/history_clusters/core/features.h"
+#include "components/history_clusters/core/config.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/no_state_prefetch/common/prerender_url_loader_throttle.h"
 #include "components/no_state_prefetch/renderer/no_state_prefetch_client.h"
@@ -583,12 +583,16 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(IS_ANDROID)
   const bool search_result_extractor_enabled =
+      render_frame->IsMainFrame() &&
       base::FeatureList::IsEnabled(features::kContinuousSearch);
 #else
   const bool search_result_extractor_enabled =
-      history_clusters::IsJourneysEnabled(RenderThread::Get()->GetLocale());
+      render_frame->IsMainFrame() &&
+      history_clusters::GetConfig().is_journeys_enabled_no_locale_check &&
+      history_clusters::IsApplicationLocaleSupportedByJourneys(
+          RenderThread::Get()->GetLocale());
 #endif
-  if (render_frame->IsMainFrame() && search_result_extractor_enabled) {
+  if (search_result_extractor_enabled) {
     continuous_search::SearchResultExtractorImpl::Create(render_frame);
   }
 
@@ -764,8 +768,7 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
     return false;
   }
 #if BUILDFLAG(ENABLE_PDF)
-  if (plugin_info->actual_mime_type == pdf::kInternalPluginMimeType &&
-      pdf::IsInternalPluginExternallyHandled()) {
+  if (plugin_info->actual_mime_type == pdf::kInternalPluginMimeType) {
     // Only actually treat the internal PDF plugin as externally handled if
     // used within an origin allowed to create the internal PDF plugin;
     // otherwise, let Blink try to create the in-process PDF plugin.
@@ -1062,7 +1065,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         if (info.name ==
             ASCIIToUTF16(ChromeContentClient::kPDFInternalPluginName)) {
           return pdf::CreateInternalPlugin(
-              info, std::move(params), render_frame,
+              std::move(params), render_frame,
               std::make_unique<ChromePdfInternalPluginDelegate>());
         }
 #endif  // BUILDFLAG(ENABLE_PDF)

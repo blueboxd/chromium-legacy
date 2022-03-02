@@ -4344,7 +4344,13 @@ class DetachToBrowserTabDragControllerTestTouch
       const DetachToBrowserTabDragControllerTestTouch&) = delete;
   virtual ~DetachToBrowserTabDragControllerTestTouch() {}
 
-  void TearDown() override { ui::SetEventTickClockForTesting(nullptr); }
+  void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
+    clock_.reset();
+  }
+
+ protected:
+  std::unique_ptr<base::SimpleTestTickClock> clock_;
 };
 
 namespace {
@@ -4509,18 +4515,18 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   const gfx::Point tab_0_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(0));
   const gfx::Vector2d detach(0, GetDetachY(tab_strip));
-  base::SimpleTestTickClock clock;
-  clock.SetNowTicks(base::TimeTicks::Now());
-  ui::SetEventTickClockForTesting(&clock);
+  clock_ = std::make_unique<base::SimpleTestTickClock>();
+  clock_->SetNowTicks(base::TimeTicks::Now());
+  ui::SetEventTickClockForTesting(clock_.get());
   ASSERT_TRUE(PressInput(tab_0_center));
-  clock.Advance(base::Milliseconds(5));
+  clock_->Advance(base::Milliseconds(5));
   ASSERT_TRUE(DragInputToNotifyWhenDone(
       tab_0_center + detach, base::BindLambdaForTesting([&]() {
         // Drag down again; this should cause a fling-down event.
-        clock.Advance(base::Milliseconds(5));
+        clock_->Advance(base::Milliseconds(5));
         ASSERT_TRUE(DragInputToNotifyWhenDone(
             tab_0_center + detach + detach, base::BindLambdaForTesting([&]() {
-              clock.Advance(base::Milliseconds(5));
+              clock_->Advance(base::Milliseconds(5));
               ASSERT_TRUE(ReleaseInput());
             })));
       })));
@@ -4530,7 +4536,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_TRUE(browser()->window()->IsMinimized());
   EXPECT_FALSE(browser()->window()->IsVisible());
-  ui::SetEventTickClockForTesting(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
@@ -4545,15 +4550,15 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   // Sends events to the server without waiting for its reply, which will cause
   // extra touch events before PerformWindowMove starts handling events.
   test::QuitDraggingObserver observer(tab_strip);
-  base::SimpleTestTickClock clock;
-  clock.SetNowTicks(base::TimeTicks::Now());
-  ui::SetEventTickClockForTesting(&clock);
+  clock_ = std::make_unique<base::SimpleTestTickClock>();
+  clock_->SetNowTicks(base::TimeTicks::Now());
+  ui::SetEventTickClockForTesting(clock_.get());
   ASSERT_TRUE(PressInput(tab_0_center));
-  clock.Advance(base::Milliseconds(5));
+  clock_->Advance(base::Milliseconds(5));
   ASSERT_TRUE(DragInputToAsync(tab_0_center + detach));
-  clock.Advance(base::Milliseconds(5));
+  clock_->Advance(base::Milliseconds(5));
   ASSERT_TRUE(DragInputToAsync(tab_0_center + detach + detach));
-  clock.Advance(base::Milliseconds(2));
+  clock_->Advance(base::Milliseconds(2));
   ASSERT_TRUE(ReleaseInput());
   observer.Wait();
 

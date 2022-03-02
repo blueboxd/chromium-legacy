@@ -26,7 +26,7 @@
 #include "ui/gfx/skia_font_delegate.h"
 #include "ui/gfx/text_utils.h"
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 #include "ui/gfx/system_fonts_win.h"
 #endif
 
@@ -36,7 +36,7 @@ namespace {
 // The font family name which is used when a user's application font for
 // GNOME/KDE is a non-scalable one. The name should be listed in the
 // IsFallbackFontAllowed function in skia/ext/SkFontHost_fontconfig_direct.cpp.
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 const char kFallbackFontFamilyName[] = "serif";
 #else
 const char kFallbackFontFamilyName[] = "sans";
@@ -152,7 +152,7 @@ void PlatformFontSkia::EnsuresDefaultFontIsInitialized() {
   Font::Weight weight = Font::Weight::NORMAL;
   FontRenderParams params;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // On windows, the system default font is retrieved by using the GDI API
   // SystemParametersInfo(...) (see struct NONCLIENTMETRICS). The font
   // properties need to be converted as close as possible to a skia font.
@@ -162,7 +162,7 @@ void PlatformFontSkia::EnsuresDefaultFontIsInitialized() {
   size_pixels = system_font.GetFontSize();
   style = system_font.GetStyle();
   weight = system_font.GetWeight();
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
   // On Linux, SkiaFontDelegate is used to query the native toolkit (e.g.
   // GTK+) for the default UI font.
@@ -193,7 +193,19 @@ void PlatformFontSkia::EnsuresDefaultFontIsInitialized() {
   bool success = false;
   sk_sp<SkTypeface> typeface =
       CreateSkTypeface(style & Font::ITALIC, weight, &family, &success);
-  CHECK(success);
+
+  // It's possible that the Skia interface is not longer able to proxy queries
+  // to the browser process which make all requests to fail. Calling
+  // MakeDefault() will try to get the default typeface; in case of failure it
+  // returns an instance of SkEmptyTypeface. MakeDefault() should never fail.
+  // See https://crbug.com/1287371 for details.
+  if (!success) {
+    typeface = SkTypeface::MakeDefault();
+  }
+
+  // Ensure there is a typeface available. If none is available, there is
+  // nothing we can do about it and Chrome won't be able to work.
+  CHECK(typeface.get()) << "No typeface available";
 
   g_default_font.Get() = new PlatformFontSkia(
       std::move(typeface), family, size_pixels, style, weight, params);
@@ -215,7 +227,7 @@ void PlatformFontSkia::SetDefaultFontDescription(
 Font PlatformFontSkia::DeriveFont(int size_delta,
                                   int style,
                                   Font::Weight weight) const {
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   const int new_size = win::AdjustFontSize(font_size_pixels_, size_delta);
 #else
   const int new_size = font_size_pixels_ + size_delta;
@@ -404,7 +416,7 @@ void PlatformFontSkia::ComputeMetricsIfNecessary() {
     //     Linux Skia implements   : ceil(-ascent) + ceil(descent)
     // TODO(etienneb): Make both implementation consistent and fix the broken
     // unittests.
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
     height_pixels_ = SkScalarCeilToInt(metrics.fDescent - metrics.fAscent);
 #else
     height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);

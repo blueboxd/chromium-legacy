@@ -1090,6 +1090,27 @@
             ]
         }
     ],
+    "AutofillDelayPopupControllerDeletion": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillDelayPopupControllerDeletion"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDisplaceRemovedForms": [
         {
             "platforms": [
@@ -3541,6 +3562,26 @@
             ]
         }
     ],
+    "DownloadRange": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DownloadRange"
+                    ]
+                }
+            ]
+        }
+    ],
     "DriveFsBidirectionalNativeMessaging": [
         {
             "platforms": [
@@ -4276,21 +4317,6 @@
                     "name": "Disabled",
                     "disable_features": [
                         "RemoveMobileViewportDoubleTap"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSCPEPasswordGeneration": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PasswordCreationEnabled"
                     ]
                 }
             ]

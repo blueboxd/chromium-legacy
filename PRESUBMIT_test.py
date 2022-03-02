@@ -155,24 +155,15 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
     self.assertEqual(0, len(warnings))
 
 
-class InvalidOSMacroNamesTest(unittest.TestCase):
-  def testInvalidOSMacroNames(self):
-    lines = ['#if defined(OS_WINDOWS)',
+class DeprecatedOSMacroNamesTest(unittest.TestCase):
+  def testDeprecatedOSMacroNames(self):
+    lines = ['#if defined(OS_WIN)',
              ' #elif defined(OS_WINDOW)',
-             ' # if defined(OS_MAC) || defined(OS_CHROME)',
-             '# else  // defined(OS_MACOSX)',
-             '#endif  // defined(OS_MACOS)']
-    errors = PRESUBMIT._CheckForInvalidOSMacrosInFile(
+             ' # if defined(OS_MAC) || defined(OS_CHROME)']
+    errors = PRESUBMIT._CheckForDeprecatedOSMacrosInFile(
         MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
-    self.assertEqual(len(lines), len(errors))
-    self.assertTrue(':1 OS_WINDOWS' in errors[0])
-    self.assertTrue('(did you mean OS_WIN?)' in errors[0])
-
-  def testValidOSMacroNames(self):
-    lines = ['#if defined(%s)' % m for m in PRESUBMIT._VALID_OS_MACROS]
-    errors = PRESUBMIT._CheckForInvalidOSMacrosInFile(
-        MockInputApi(), MockFile('some/path/foo_platform.cc', lines))
-    self.assertEqual(0, len(errors))
+    self.assertEqual(len(lines) + 1, len(errors))
+    self.assertTrue(':1: defined(OS_WIN) -> BUILDFLAG(IS_WIN)' in errors[0])
 
 
 class InvalidIfDefinedMacroNamesTest(unittest.TestCase):
@@ -555,7 +546,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testAddedPydep(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -579,7 +570,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testRemovedPydep(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -594,7 +585,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testRandomPyIgnored(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -606,7 +597,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testRelevantPyNoChange(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -624,7 +615,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testRelevantPyOneChange(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -643,7 +634,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testRelevantPyTwoChanges(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -662,7 +653,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testRelevantAndroidPyInNonAndroidCheckout(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.mock_input_api.files = [
@@ -683,7 +674,7 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
 
   def testGnPathsAndMissingOutputFlag(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
-    if self.mock_input_api.platform.startswith('linux'):
+    if not self.mock_input_api.platform.startswith('linux'):
       return []
 
     self.checker._file_cache = {

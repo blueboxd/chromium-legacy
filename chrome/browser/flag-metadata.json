@@ -5275,7 +5275,7 @@
   {
     "name": "subframe-shutdown-delay",
     "owners": [ "jessemckenna@google.com", "olivierli" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 102
   },
   {
     "name": "swap-android-share-hub-rows",
@@ -5348,7 +5348,7 @@
   {
     "name": "tab-hover-card-images",
     "owners": [ "dfried", "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 105
   },
   {
     "name": "tab-outlines-in-low-contrast-themes",

@@ -288,10 +288,6 @@ std::string GetProduct(const bool allow_version_override) {
       base::FeatureList::IsEnabled(
           blink::features::kForceMajorVersion100InUserAgent))
     return "Chrome/" + GetM100VersionNumber();
-  if (allow_version_override &&
-      base::FeatureList::IsEnabled(
-          blink::features::kForceMinorVersion100InUserAgent))
-    return "Chrome/" + GetM100InMinorVersionNumber();
 
   // FF Priority 3: Force minor version to 100, leave the rest the same.
   if (allow_version_override &&

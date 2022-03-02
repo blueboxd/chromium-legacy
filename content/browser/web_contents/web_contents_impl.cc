@@ -1831,7 +1831,7 @@ const blink::UserAgentOverride& WebContentsImpl::GetUserAgentOverride() {
 
 bool WebContentsImpl::ShouldOverrideUserAgentForRendererInitiatedNavigation() {
   NavigationEntryImpl* current_entry = GetController().GetLastCommittedEntry();
-  if (!current_entry || current_entry->IsInitialEntry())
+  if (current_entry->IsInitialEntry())
     return should_override_user_agent_in_new_tabs_;
 
   switch (renderer_initiated_user_agent_override_option_) {
@@ -1906,12 +1906,8 @@ const std::u16string& WebContentsImpl::GetTitle() {
   }
 
   NavigationEntry* entry = GetNavigationEntryForTitle();
-  if (entry)
-    return entry->GetTitleForDisplay();
-  // |page_title_when_no_navigation_entry_| is finally used if no title can be
-  // retrieved.
-  DCHECK(!blink::features::IsInitialNavigationEntryEnabled());
-  return page_title_when_no_navigation_entry_;
+  CHECK(entry);
+  return entry->GetTitleForDisplay();
 }
 
 SiteInstanceImpl* WebContentsImpl::GetSiteInstance() {
@@ -6387,29 +6383,16 @@ void WebContentsImpl::UpdateTitleForEntry(NavigationEntry* entry,
 
 bool WebContentsImpl::UpdateTitleForEntryImpl(NavigationEntryImpl* entry,
                                               const std::u16string& title) {
+  CHECK(entry);
   std::u16string final_title;
   base::TrimWhitespace(title, base::TRIM_ALL, &final_title);
 
-  // If a page is created via window.open and never navigated,
-  // there will be no navigation entry. In this situation,
-  // |page_title_when_no_navigation_entry_| will be used for page title.
-  // For a title update from a non-primary frame tree, |entry| will always be
-  // non-null.
-  if (entry) {
-    if (final_title == entry->GetTitle())
-      return false;  // Nothing changed, don't bother.
+  if (final_title == entry->GetTitle())
+    return false;  // Nothing changed, don't bother.
 
-    entry->SetTitle(final_title);
-
-    // The title for display may differ from the title just set; grab it.
-    final_title = entry->GetTitleForDisplay();
-  } else {
-    DCHECK(!blink::features::IsInitialNavigationEntryEnabled());
-    if (page_title_when_no_navigation_entry_ == final_title)
-      return false;  // Nothing changed, don't bother.
-
-    page_title_when_no_navigation_entry_ = final_title;
-  }
+  entry->SetTitle(final_title);
+  // The title for display may differ from the title just set; grab it.
+  final_title = entry->GetTitleForDisplay();
 
   return true;
 }
@@ -6419,8 +6402,7 @@ void WebContentsImpl::NotifyTitleUpdateForEntry(NavigationEntryImpl* entry) {
   // NavigationController.
   DCHECK(!entry || GetController().GetEntryWithUniqueIDIncludingPending(
                        entry->GetUniqueID()));
-  std::u16string final_title = entry ? entry->GetTitleForDisplay()
-                                     : page_title_when_no_navigation_entry_;
+  std::u16string final_title = entry->GetTitleForDisplay();
   bool did_web_contents_title_change = entry == GetNavigationEntryForTitle();
   if (did_web_contents_title_change)
     view_->SetPageTitle(final_title);

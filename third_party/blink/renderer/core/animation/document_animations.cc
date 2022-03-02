@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
-#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -281,13 +280,10 @@ void DocumentAnimations::RemoveReplacedAnimations(
 
   // The list of animations for removal is constructed in reverse composite
   // ordering for efficiency. Flip the ordering to ensure that events are
-  // dispatched in composite order.  Queue as a microtask so that the finished
-  // event is dispatched ahead of the remove event.
+  // dispatched in composite order.
   for (auto it = animations_to_remove.rbegin();
        it != animations_to_remove.rend(); it++) {
-    Animation* animation = *it;
-    Microtask::EnqueueMicrotask(WTF::Bind(&Animation::RemoveReplacedAnimation,
-                                          WrapWeakPersistent(animation)));
+    (*it)->RemoveReplacedAnimation();
   }
 }
 

@@ -35,8 +35,6 @@
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_keep_alive_types.h"
-#include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -131,8 +129,6 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
       shared_file_task_runner_(GetExtensionFileTaskRunner()),
       update_from_settings_page_(false),
       install_flags_(kInstallFlagNone) {
-  profile_observation_.Observe(profile_);
-
   if (!approval)
     return;
 
@@ -601,12 +597,6 @@ void CrxInstaller::OnUnpackSuccessOnSharedFileThread(
 
 void CrxInstaller::OnStageChanged(InstallationStage stage) {
   ReportInstallationStage(stage);
-}
-
-void CrxInstaller::OnProfileWillBeDestroyed(Profile* profile) {
-  DCHECK_EQ(profile, profile_);
-  profile_keep_alive_.reset();
-  profile_observation_.Reset();
 }
 
 void CrxInstaller::CheckInstall() {

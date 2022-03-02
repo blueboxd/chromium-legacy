@@ -4087,11 +4087,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (oldWebState) {
     oldWebState->WasHidden();
     oldWebState->SetKeepRenderProcessAlive(false);
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(oldWebState);
-    if (NTPHelper && NTPHelper->IsActive()) {
-      [[self ntpCoordinatorForWebState:oldWebState] ntpDidChangeVisibility:NO];
-    }
+    [[self ntpCoordinatorForWebState:oldWebState] ntpDidChangeVisibility:NO];
     [self dismissPopups];
   }
   // NOTE: webStateSelected expects to always be called with a
@@ -4100,11 +4096,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
 
   self.currentWebState->GetWebViewProxy().scrollViewProxy.clipsToBounds = NO;
-  NewTabPageTabHelper* NTPHelper =
-      NewTabPageTabHelper::FromWebState(newWebState);
-  if (NTPHelper && NTPHelper->IsActive()) {
-    [[self ntpCoordinatorForWebState:newWebState] ntpDidChangeVisibility:YES];
-  }
+  [[self ntpCoordinatorForWebState:newWebState] ntpDidChangeVisibility:YES];
 
   [self webStateSelected:newWebState notifyToolbar:YES];
 }

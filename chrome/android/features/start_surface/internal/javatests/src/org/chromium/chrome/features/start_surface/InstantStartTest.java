@@ -41,12 +41,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.SysUtils;
 import org.chromium.base.library_loader.LibraryLoader;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
-import org.chromium.base.test.params.ParameterProvider;
-import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -75,7 +69,7 @@ import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
@@ -91,7 +85,6 @@ import org.chromium.ui.test.util.ViewUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -100,8 +93,7 @@ import java.util.concurrent.CountDownLatch;
  * {@link InstantStartToolbarTest}, {@link InstantStartFeedTest}, {@link
  * InstantStartTabSwitcherTest}, {@link InstantStartNewTabFromLauncherTest} for more tests.
  */
-@RunWith(ParameterizedRunner.class)
-@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 // clang-format off
 @CommandLineFlags.
     Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
@@ -130,23 +122,6 @@ public class InstantStartTest {
 
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
-
-    /**
-     * {@link ParameterProvider} used for parameterized test that provides whether it's single tab
-     * switcher or carousel tab switcher and whether last visited tab is a search result page.
-     */
-    public static class LVTIsSRPTestParams implements ParameterProvider {
-        private static final List<ParameterSet> sLVTIsSRPTestParams =
-                Arrays.asList(new ParameterSet().value(false, false).name("CarouselTab_NotSRP"),
-                        new ParameterSet().value(true, false).name("SingleTab_NotSRP"),
-                        new ParameterSet().value(false, true).name("CarouselTab_SRP"),
-                        new ParameterSet().value(true, true).name("SingleTab_SRP"));
-
-        @Override
-        public List<ParameterSet> getParameters() {
-            return sLVTIsSRPTestParams;
-        }
-    }
 
     @After
     public void tearDown() {

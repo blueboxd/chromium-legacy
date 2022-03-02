@@ -180,7 +180,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void TryRestoreContextEvent(TimerBase*) override;
 
  private:
-  void FinalizeFrame(bool printing = false) final;
+  void FinalizeFrame() final;
   void FlushRecording();
 
   bool IsPaintable() const final;

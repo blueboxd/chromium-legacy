@@ -423,9 +423,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFilesAppUIPrefsMigrated[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLoginScreenWebUILazyLoading[];
 
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kLoginScreenWebUILazyLoading[];
-
 }  // namespace prefs
 }  // namespace ash
 

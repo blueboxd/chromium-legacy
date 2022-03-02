@@ -78,7 +78,7 @@ const base::Feature kAppManagementIntentSettings{
 #if !BUILDFLAG(IS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceLoadIconWithoutMojom{
-    "AppServiceLoadIconWithoutMojom", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppServiceLoadIconWithoutMojom", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAppServiceExtension{"AppServiceExtension",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !BUILDFLAG(IS_ANDROID)

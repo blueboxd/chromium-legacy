@@ -31,10 +31,6 @@
   return false;
 }
 
-- (void)setWebState:(web::WebState*)webState {
-  // Do nothing.
-}
-
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {
   return nil;
 }

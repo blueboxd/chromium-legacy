@@ -408,7 +408,6 @@ void BrowserStatusMonitor::OnTabInserted(TabStripModel* tab_strip_model,
     // browser window Shelf ID (done by the web contents observer added by
     // AddWebContentsObserver()).
     if (tab_strip_model->GetActiveWebContents() == contents &&
-        contents->GetController().GetVisibleEntry() &&
         !contents->GetController().GetVisibleEntry()->IsInitialEntry()) {
       Browser* browser = chrome::FindBrowserWithWebContents(contents);
       SetShelfIDForBrowserWindowContents(browser, contents);

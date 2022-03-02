@@ -27,7 +27,15 @@ void LogOutcome(TailoredSecurityOutcome outcome, bool enable) {
 
 }  // namespace
 
-TailoredSecurityConsentedModalAndroid::TailoredSecurityConsentedModalAndroid(
+TailoredSecurityConsentedModalAndroid::TailoredSecurityConsentedModalAndroid() =
+    default;
+
+TailoredSecurityConsentedModalAndroid::
+    ~TailoredSecurityConsentedModalAndroid() {
+  DismissMessageInternal(messages::DismissReason::UNKNOWN);
+}
+
+void TailoredSecurityConsentedModalAndroid::DisplayMessage(
     content::WebContents* web_contents,
     bool enable,
     base::OnceClosure dismiss_callback) {
@@ -80,11 +88,6 @@ TailoredSecurityConsentedModalAndroid::TailoredSecurityConsentedModalAndroid(
       message_.get(), web_contents_->GetTopLevelNativeWindow(),
       messages::MessagePriority::kNormal);
   LogOutcome(TailoredSecurityOutcome::kShown, is_enable_message_);
-}
-
-TailoredSecurityConsentedModalAndroid::
-    ~TailoredSecurityConsentedModalAndroid() {
-  DismissMessageInternal(messages::DismissReason::UNKNOWN);
 }
 
 void TailoredSecurityConsentedModalAndroid::DismissMessageInternal(

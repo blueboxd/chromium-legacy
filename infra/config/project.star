@@ -8,10 +8,9 @@ branch_type = struct(
     STANDARD = "standard",
     DESKTOP_EXTENDED_STABLE = "desktop-extended-stable",
     CROS_LTS = "cros-lts",
-    FUCHSIA_LTS = "fuchsia-lts",
 )
 
-BRANCH_TYPES = tuple([getattr(branch_type, a) for a in dir(branch_type)])
+_BRANCH_TYPES = tuple([getattr(branch_type, a) for a in dir(branch_type)])
 
 def _project_settings(
         *,
@@ -42,7 +41,7 @@ def _project_settings(
       is_main attribute is set to True if branch_types is empty or False if
       branch_types is not empty.
     """
-    invalid_branch_types = [t for t in branch_types if t not in BRANCH_TYPES]
+    invalid_branch_types = [t for t in branch_types if t not in _BRANCH_TYPES]
     if invalid_branch_types:
         fail("The following branch types are invalid: {}".format(invalid_branch_types))
     if branch_type.STANDARD in branch_types and len(branch_types) != 1:

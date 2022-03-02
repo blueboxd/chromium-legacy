@@ -86,10 +86,6 @@ export class Viewport {
     this.scrollContent_ =
         new ScrollContent(this.window_, sizer, content, scrollbarWidth);
 
-    /** @private {!ScrollContent} */
-    this.scrollContent_ =
-        new ScrollContent(this.window_, sizer, content, this.scrollbarWidth_);
-
     /** @private {number} */
     this.defaultZoom_ = defaultZoom;
 

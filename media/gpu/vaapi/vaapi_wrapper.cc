@@ -2676,11 +2676,12 @@ uint64_t VaapiWrapper::GetEncodedChunkSize(VABufferID buffer_id,
   return coded_data_size;
 }
 
-bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
-                                        VASurfaceID sync_surface_id,
-                                        uint8_t* target_ptr,
-                                        size_t target_size,
-                                        size_t* coded_data_size) {
+bool VaapiWrapper::DownloadFromVABuffer(
+    VABufferID buffer_id,
+    absl::optional<VASurfaceID> sync_surface_id,
+    uint8_t* target_ptr,
+    size_t target_size,
+    size_t* coded_data_size) {
   CHECK(!enforce_sequence_affinity_ ||
         sequence_checker_.CalledOnValidSequence());
   DCHECK(target_ptr);
@@ -2696,7 +2697,7 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
       GetImplementationType() != VAImplementation::kIntelI965 &&
       GetImplementationType() != VAImplementation::kIntelIHD) {
     TRACE_EVENT0("media,gpu", "VaapiWrapper::DownloadFromVABuffer_SyncSurface");
-    const VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
+    const VAStatus va_res = vaSyncSurface(va_display_, *sync_surface_id);
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, false);
   }
 

@@ -142,7 +142,7 @@ void OffscreenCanvasRenderingContext2D::FlushRecording() {
   GetCanvasResourceProvider()->ReleaseLockedImages();
 }
 
-void OffscreenCanvasRenderingContext2D::FinalizeFrame(bool /*printing*/) {
+void OffscreenCanvasRenderingContext2D::FinalizeFrame() {
   TRACE_EVENT0("blink", "OffscreenCanvasRenderingContext2D::FinalizeFrame");
 
   // Make sure surface is ready for painting: fix the rendering mode now

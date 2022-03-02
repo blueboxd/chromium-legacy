@@ -913,10 +913,6 @@ const char kFilesAppUIPrefsMigrated[] = "ash.filesapp.ui_prefs_migrated";
 const char kLoginScreenWebUILazyLoading[] =
     "ash.login.LoginScreenWebUILazyLoading";
 
-// Boolean value for the DeviceLoginScreenWebUILazyLoading device policy.
-const char kLoginScreenWebUILazyLoading[] =
-    "ash.login.LoginScreenWebUILazyLoading";
-
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.
 

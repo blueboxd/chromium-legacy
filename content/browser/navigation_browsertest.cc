@@ -5399,15 +5399,11 @@ IN_PROC_BROWSER_TEST_F(
 
   // Double-check that the new shell didn't commit any navigation and that it
   // has an opaque origin.
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
-    EXPECT_TRUE(new_shell->web_contents()
-                    ->GetController()
-                    .GetLastCommittedEntry()
-                    ->IsInitialEntry());
-  } else {
-    EXPECT_EQ(0, new_shell->web_contents()->GetController().GetEntryCount());
-  }
+  ASSERT_EQ(1, new_shell->web_contents()->GetController().GetEntryCount());
+  EXPECT_TRUE(new_shell->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
   EXPECT_EQ(GURL(), main_frame->GetLastCommittedURL());
   EXPECT_EQ("null", EvalJs(main_frame, "window.origin"));
 

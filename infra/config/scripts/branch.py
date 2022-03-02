@@ -80,12 +80,7 @@ def initialize_cmd(args):
     f.write(settings)
 
 
-BRANCH_TYPES = (
-    'standard',
-    'desktop-extended-stable',
-    'cros-lts',
-    'fuchsia-lts',
-)
+BRANCH_TYPES = ('standard', 'desktop-extended-stable', 'cros-lts')
 
 
 def set_type(settings_json, branch_types):

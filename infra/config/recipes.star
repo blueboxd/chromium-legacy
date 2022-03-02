@@ -13,6 +13,7 @@ def _recipe_for_package(cipd_package):
             name,
             cipd_version = None,
             recipe = None,
+            use_python3 = False,
             bootstrappable = False,
             experiments = None):
         """Declare a recipe for the given package.
@@ -28,6 +29,7 @@ def _recipe_for_package(cipd_package):
               information.
             cipd_version: See luci.recipe.
             recipe: See luci.recipe.
+            use_python3: See luci.recipe.
             bootstrappable: Whether or not the recipe supports the chromium
               bootstrapper. A recipe supports the bootstrapper if the following
               conditions are met:
@@ -62,7 +64,7 @@ def _recipe_for_package(cipd_package):
             cipd_version = cipd_version,
             recipe = recipe,
             use_bbagent = True,
-            use_python3 = True,
+            use_python3 = use_python3,
         )
 
         register_recipe_bootstrappability(name, bootstrappable)
@@ -89,6 +91,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:android/sdk_packager",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -103,10 +106,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:binary_size_generator_tot",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:binary_size_trybot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -116,6 +121,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:branch_configuration/tester",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -142,6 +148,7 @@ build_recipe(
 build_recipe(
     name = "recipe:chromium/compilator",
     bootstrappable = True,
+    use_python3 = True,
 )
 
 build_recipe(
@@ -157,10 +164,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_afl",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_clang_coverage_tot",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -170,10 +179,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_export_metadata",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:chromium_libfuzzer",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -183,6 +194,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_rts/create_model",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -193,6 +205,7 @@ build_recipe(
 
 build_recipe(
     name = "recipe:chromium_upload_clang",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -235,14 +248,17 @@ build_recipe(
 
 build_recipe(
     name = "recipe:swarming/deterministic_build",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:swarming/staging",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:tricium_clang_tidy_wrapper",
+    use_python3 = True,
 )
 
 build_recipe(
@@ -252,10 +268,12 @@ build_recipe(
 
 build_recipe(
     name = "recipe:tricium_oilpan",
+    use_python3 = True,
 )
 
 build_recipe(
     name = "recipe:tricium_simple",
+    use_python3 = True,
 )
 
 build_recipe(

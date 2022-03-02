@@ -179,8 +179,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // Sets the last committed URL for this frame.
   void SetCurrentURL(const GURL& url);
 
-  // Sets `is_on_initial_empty_document_` to false.
-  void SetNotOnInitialEmptyDocument() { is_on_initial_empty_document_ = false; }
+  // The frame committed a document that is not the initial empty document.
+  // Update `has_committed_real_load_` and `is_on_initial_empty_document_`
+  // accordingly.
+  void DidCommitNonInitialEmptyDocument();
 
   // Returns false if the frame has committed a document that is not the initial
   // empty document, or if the current document's input stream has been opened

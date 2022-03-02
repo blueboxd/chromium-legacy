@@ -301,7 +301,6 @@ void MediaDevices::setCaptureHandleConfig(ScriptState* script_state,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "Can only be called from the top-level document.");
-    return;
   }
 
   auto config_ptr = mojom::blink::CaptureHandleConfig::New();

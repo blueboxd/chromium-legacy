@@ -574,8 +574,7 @@ scoped_refptr<NodeChannel> NodeController::GetBrokerChannel() {
 
 void NodeController::AddPeer(const ports::NodeName& name,
                              scoped_refptr<NodeChannel> channel,
-                             bool start_channel,
-                             bool allow_name_reuse) {
+                             bool start_channel) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   DCHECK(name != ports::kInvalidNodeName);

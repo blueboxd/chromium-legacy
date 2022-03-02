@@ -28,64 +28,64 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v100.0.4893.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v97.0.4683.0/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 100.0.4893.0',
+    'identifier': 'Lacros version skew testing ash 97.0.4683.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v100.0.4893.0',
-          'revision': 'version:100.0.4893.0',
+          'location': 'lacros_version_skew_tests_v97.0.4683.0',
+          'revision': 'version:97.0.4683.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_DEV': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v100.0.4880.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v97.0.4669.0/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 100.0.4880.0',
+    'identifier': 'Lacros version skew testing ash 97.0.4669.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v100.0.4880.0',
-          'revision': 'version:100.0.4880.0',
+          'location': 'lacros_version_skew_tests_v97.0.4669.0',
+          'revision': 'version:97.0.4669.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_BETA': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v99.0.4844.23/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v96.0.4664.13/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 99.0.4844.23',
+    'identifier': 'Lacros version skew testing ash 96.0.4664.13',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v99.0.4844.23',
-          'revision': 'version:99.0.4844.23',
+          'location': 'lacros_version_skew_tests_v96.0.4664.13',
+          'revision': 'version:96.0.4664.13',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_STABLE': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v98.0.4758.91/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v94.0.4606.104/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 98.0.4758.91',
+    'identifier': 'Lacros version skew testing ash 94.0.4606.104',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v98.0.4758.91',
-          'revision': 'version:98.0.4758.91',
+          'location': 'lacros_version_skew_tests_v94.0.4606.104',
+          'revision': 'version:94.0.4606.104',
         },
       ],
     },
@@ -566,7 +566,7 @@
       'cros_chrome_version': '99.0.4837.0',
       'cros_img': 'atlas-release/R99-14466.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'ATLAS_LKGM',
   },
   'CROS_ATLAS_DEV': {
@@ -575,7 +575,7 @@
       'cros_chrome_version': '99.0.4827.0',
       'cros_img': 'atlas-release/R99-14455.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'ATLAS_DEV',
   },
   'CROS_ATLAS_BETA': {
@@ -584,7 +584,7 @@
       'cros_chrome_version': '98.0.4758.51',
       'cros_img': 'atlas-release/R98-14388.27.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'ATLAS_BETA',
   },
   'CROS_ATLAS_STABLE': {
@@ -602,7 +602,7 @@
       'cros_chrome_version': '99.0.4837.0',
       'cros_img': 'eve-release/R99-14466.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'EVE_LKGM',
   },
   'CROS_EVE_DEV': {
@@ -611,7 +611,7 @@
       'cros_chrome_version': '99.0.4827.0',
       'cros_img': 'eve-release/R99-14455.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'EVE_DEV',
   },
   'CROS_EVE_BETA': {
@@ -620,7 +620,7 @@
       'cros_chrome_version': '98.0.4758.51',
       'cros_img': 'eve-release/R98-14388.27.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'EVE_BETA',
   },
   'CROS_EVE_STABLE': {
@@ -638,7 +638,7 @@
       'cros_chrome_version': '99.0.4837.0',
       'cros_img': 'kevin-release/R99-14466.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'KEVIN_LKGM',
   },
   'CROS_HANA_LKGM': {
@@ -656,7 +656,7 @@
       'cros_chrome_version': '99.0.4837.0',
       'cros_img': 'octopus-release/R99-14466.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'OCTOPUS_LKGM',
   },
   'CROS_OCTOPUS_DEV': {
@@ -665,7 +665,7 @@
       'cros_chrome_version': '99.0.4827.0',
       'cros_img': 'octopus-release/R99-14455.0.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'OCTOPUS_DEV',
   },
   'CROS_OCTOPUS_BETA': {
@@ -674,7 +674,7 @@
       'cros_chrome_version': '98.0.4758.51',
       'cros_img': 'octopus-release/R98-14388.27.0',
     },
-    'enabled': False,
+    'enabled': True,
     'identifier': 'OCTOPUS_BETA',
   },
   'CROS_OCTOPUS_STABLE': {

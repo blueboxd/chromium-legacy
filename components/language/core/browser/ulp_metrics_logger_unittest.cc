@@ -23,11 +23,10 @@ TEST(ULPMetricsLoggerTest, TestUILanguageStatus) {
   ULPMetricsLogger logger;
   base::HistogramTester histogram;
 
-  logger.RecordInitiationUILanguageInULP(
-      ULPLanguageStatus::kTopULPLanguageExactMatch);
+  logger.RecordInitiationUILanguageInULP(ULPLanguageStatus::kTopULPLanguage);
 
   histogram.ExpectUniqueSample(kInitiationUILanguageInULPHistogram,
-                               ULPLanguageStatus::kTopULPLanguageExactMatch, 1);
+                               ULPLanguageStatus::kTopULPLanguage, 1);
 }
 
 TEST(ULPMetricsLoggerTest, TestTranslateTargetStatus) {
@@ -35,11 +34,10 @@ TEST(ULPMetricsLoggerTest, TestTranslateTargetStatus) {
   base::HistogramTester histogram;
 
   logger.RecordInitiationTranslateTargetInULP(
-      ULPLanguageStatus::kNonTopULPLanguageExactMatch);
+      ULPLanguageStatus::kNonTopULPLanguage);
 
   histogram.ExpectUniqueSample(kInitiationTranslateTargetInULPHistogram,
-                               ULPLanguageStatus::kNonTopULPLanguageExactMatch,
-                               1);
+                               ULPLanguageStatus::kNonTopULPLanguage, 1);
 }
 
 TEST(ULPMetricsLoggerTest, TestTopAcceptLanguageStatus) {
@@ -61,58 +59,6 @@ TEST(ULPMetricsLoggerTest, TestAcceptLanguagesULPOverlap) {
 
   histogram.ExpectUniqueSample(kInitiationAcceptLanguagesULPOverlapHistogram,
                                21, 1);
-}
-
-TEST(ULPMetricsLoggerTest, TestDetermineLanguageStatus) {
-  ULPMetricsLogger logger;
-  std::vector<std::string> ulp_languages = {"en-US", "es-419", "pt-BR", "de",
-                                            "fr-CA"};
-
-  EXPECT_EQ(ULPLanguageStatus::kTopULPLanguageExactMatch,
-            logger.DetermineLanguageStatus("en-US", ulp_languages));
-
-  EXPECT_EQ(ULPLanguageStatus::kNonTopULPLanguageExactMatch,
-            logger.DetermineLanguageStatus("de", ulp_languages));
-
-  EXPECT_EQ(ULPLanguageStatus::kTopULPLanguageBaseMatch,
-            logger.DetermineLanguageStatus("en-GB", ulp_languages));
-
-  EXPECT_EQ(ULPLanguageStatus::kNonTopULPLanguageBaseMatch,
-            logger.DetermineLanguageStatus("pt", ulp_languages));
-
-  EXPECT_EQ(ULPLanguageStatus::kLanguageNotInULP,
-            logger.DetermineLanguageStatus("zu", ulp_languages));
-
-  EXPECT_EQ(ULPLanguageStatus::kLanguageEmpty,
-            logger.DetermineLanguageStatus("", ulp_languages));
-
-  EXPECT_EQ(ULPLanguageStatus::kLanguageEmpty,
-            logger.DetermineLanguageStatus("und", ulp_languages));
-}
-
-TEST(ULPMetricsLoggerTest, TestULPLanguagesInAcceptLanguagesRatio) {
-  ULPMetricsLogger logger;
-  std::vector<std::string> ulp_languages = {"en-US", "es", "pt-BR", "de",
-                                            "fr-CA"};
-
-  EXPECT_EQ(0, logger.ULPLanguagesInAcceptLanguagesRatio({"en-GB", "af", "zu"},
-                                                         ulp_languages));
-
-  EXPECT_EQ(20, logger.ULPLanguagesInAcceptLanguagesRatio({"en-US", "af", "zu"},
-                                                          ulp_languages));
-
-  EXPECT_EQ(40, logger.ULPLanguagesInAcceptLanguagesRatio(
-                    {"en-US", "af", "zu", "es"}, ulp_languages));
-
-  EXPECT_EQ(60, logger.ULPLanguagesInAcceptLanguagesRatio(
-                    {"en-US", "af", "pt-BR", "es"}, ulp_languages));
-
-  EXPECT_EQ(80, logger.ULPLanguagesInAcceptLanguagesRatio(
-                    {"en-US", "af", "pt-BR", "es", "de"}, ulp_languages));
-
-  EXPECT_EQ(100,
-            logger.ULPLanguagesInAcceptLanguagesRatio(
-                {"en-US", "af", "pt-BR", "es", "de", "fr-CA"}, ulp_languages));
 }
 
 }  // namespace language

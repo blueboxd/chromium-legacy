@@ -5,7 +5,6 @@
 #include "components/language/core/browser/ulp_metrics_logger.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace language {
 

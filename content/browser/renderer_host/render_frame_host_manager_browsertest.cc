@@ -1455,9 +1455,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
       shell()->web_contents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
   EXPECT_EQ("/nocontent", shell()->web_contents()->GetVisibleURL().path());
-  NavigationEntry* current_entry =
-      shell()->web_contents()->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!current_entry || current_entry->IsInitialEntry());
+  EXPECT_TRUE(shell()
+                  ->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsInitialEntry());
 
   // Renderer-initiated navigations should work.
   std::u16string expected_title = u"Title Of Awesomeness";
@@ -1519,7 +1521,7 @@ class VisibleEntryWaiter : public WebContentsObserver {
 
   void Wait() {
     if (auto* entry = web_contents()->GetController().GetVisibleEntry()) {
-      if (entry && !entry->IsInitialEntry())
+      if (!entry->IsInitialEntry())
         return;
     }
     run_loop_.Run();
@@ -1634,11 +1636,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerSpoofingTest,
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
-  // The visible entry should be the initial entry (or null), resulting in
-  // about:blank in the address bar.
-  NavigationEntry* visible_entry =
-      new_shell->web_contents()->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!visible_entry || visible_entry->IsInitialEntry());
+  // The visible entry should be the initial entry, resulting in about:blank in
+  // the address bar.
+  EXPECT_TRUE(contents->GetController().GetVisibleEntry()->IsInitialEntry());
 }
 
 // Same as ShowLoadingURLUntilSpoof, but reloads the new popup before modifying
@@ -1694,11 +1694,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerSpoofingTest,
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
-  // The visible entry should be the initial entry (or null), resulting in
-  // about:blank in the address bar.
-  NavigationEntry* visible_entry =
-      new_shell->web_contents()->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!visible_entry || visible_entry->IsInitialEntry());
+  // The visible entry should be the initial entry, resulting in about:blank in
+  // the address bar.
+  EXPECT_TRUE(contents->GetController().GetVisibleEntry()->IsInitialEntry());
 }
 
 // Similar but using document.open(): once a Document is opened, subsequent
@@ -1747,11 +1745,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerSpoofingTest,
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // At this point, we should no longer be showing the destination URL.
-  // The visible entry should be the initial entry (or null), resulting in
-  // about:blank in the address bar.
-  NavigationEntry* visible_entry =
-      new_shell->web_contents()->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!visible_entry || visible_entry->IsInitialEntry());
+  // The visible entry should be the initial entry, resulting in about:blank in
+  // the address bar.
+  EXPECT_TRUE(contents->GetController().GetVisibleEntry()->IsInitialEntry());
 }
 
 IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
@@ -2185,14 +2181,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // navigation.
   WebContents* contents = new_shell->web_contents();
   EXPECT_FALSE(contents->GetController().IsInitialNavigation());
-  // The visible entry should either be null or the entry for the synchronously
-  // committed about:blank, resulting in about:blank in the address bar
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_EQ(GURL(url::kAboutBlankURL),
-              contents->GetController().GetVisibleEntry()->GetURL());
-  } else {
-    EXPECT_FALSE(contents->GetController().GetVisibleEntry());
-  }
+  // The visible entry should be the entry for the synchronously committed
+  // about:blank, resulting in about:blank in the address bar.
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            contents->GetController().GetVisibleEntry()->GetURL());
 }
 
 // Crashes under ThreadSanitizer, http://crbug.com/356758.

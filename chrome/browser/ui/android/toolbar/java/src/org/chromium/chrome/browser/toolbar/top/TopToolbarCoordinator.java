@@ -127,6 +127,7 @@ public class TopToolbarCoordinator implements Toolbar {
      *         enabled.
      * @param initializeWithIncognitoColors Whether the toolbar should be initialized with incognito
      *         colors.
+     * @param shouldHideToolbarLayoutOnStart Whether to hide toolbar layout on startup.
      */
     public TopToolbarCoordinator(ToolbarControlContainer controlContainer,
             ToolbarLayout toolbarLayout, ToolbarDataProvider toolbarDataProvider,
@@ -150,7 +151,7 @@ public class TopToolbarCoordinator implements Toolbar {
             boolean isTabToGtsAnimationEnabled, boolean isStartSurfaceEnabled,
             boolean isTabGroupsAndroidContinuationEnabled, HistoryDelegate historyDelegate,
             BooleanSupplier partnerHomepageEnabledSupplier, OfflineDownloader offlineDownloader,
-            boolean initializeWithIncognitoColors) {
+            boolean initializeWithIncognitoColors, boolean shouldHideToolbarLayoutOnStart) {
         mControlContainer = controlContainer;
         mToolbarLayout = toolbarLayout;
         mMenuButtonCoordinator = browsingModeMenuButtonCoordinator;

@@ -19,6 +19,9 @@ namespace safe_browsing {
 
 class TailoredSecurityConsentedModalAndroid {
  public:
+  TailoredSecurityConsentedModalAndroid();
+  ~TailoredSecurityConsentedModalAndroid();
+
   // Show the message for the given `web_contents`, when the Tailored security
   // setting has been `enabled`.
   void DisplayMessage(content::WebContents* web_contents,

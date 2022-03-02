@@ -96,9 +96,7 @@ TEST_P(BarcodeDetectionImplMacTest, CreateAndDestroy) {
 }
 
 // This test generates a single barcode and scans it back.
-// Currently disabled due to failures on Mac 12.0
-// TODO(crbug.com/1279895): Re-enable this test.
-TEST_P(BarcodeDetectionImplMacTest, DISABLED_ScanOneBarcode) {
+TEST_P(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   // Barcode detection needs GPU infrastructure.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseGpuInTests)) {

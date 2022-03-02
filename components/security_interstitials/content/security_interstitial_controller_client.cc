@@ -118,9 +118,9 @@ bool SecurityInterstitialControllerClient::CanGoBackBeforeNavigation() {
   // possible if there is already at least one prior entry that is not the
   // initial entry. This preserves old behavior to when we return nullptr
   // instead of the initial entry when no navigation has committed.
-  content::NavigationEntry* current_entry =
-      web_contents_->GetController().GetLastCommittedEntry();
-  return current_entry && !current_entry->IsInitialEntry();
+  return !web_contents_->GetController()
+              .GetLastCommittedEntry()
+              ->IsInitialEntry();
 }
 
 }  // namespace security_interstitials

@@ -480,12 +480,6 @@
 
   [self.advancedSettingsSigninCoordinator stop];
   self.advancedSettingsSigninCoordinator = nil;
-
-  // Should not stay signed in. Only sign-in the user when they selects the
-  // option to or when they are already signed in.
-  [self.mediator
-      cancelSigninWithIdentitySigninState:self.signinStateOnStart
-                    signinIdentityOnStart:self.signinIdentityOnStart];
 }
 
 @end

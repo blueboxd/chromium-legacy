@@ -23,10 +23,6 @@ void SortClusters(std::vector<history::Cluster>* clusters);
 // non-SRP).
 bool IsNoisyVisit(const history::ClusterVisit& visit);
 
-// Whether the visit is considered a noisy visit (i.e. high engagement,
-// non-SRP).
-bool IsNoisyVisit(const history::ClusterVisit& visit);
-
 }  // namespace history_clusters
 
 #endif  // COMPONENTS_HISTORY_CLUSTERS_CORE_ON_DEVICE_CLUSTERING_UTIL_H_

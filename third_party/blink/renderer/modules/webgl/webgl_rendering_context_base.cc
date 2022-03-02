@@ -1457,7 +1457,7 @@ bool WebGLRenderingContextBase::PushFrameWithCopy() {
   return submitted_frame;
 }
 
-void WebGLRenderingContextBase::FinalizeFrame(bool /*printing*/) {
+void WebGLRenderingContextBase::FinalizeFrame() {
   if (Host()->LowLatencyEnabled()) {
     // PaintRenderingResultsToCanvas will export drawing buffer if the resource
     // provider is single buffered.  Otherwise it will copy the drawing buffer.

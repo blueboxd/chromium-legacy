@@ -71,7 +71,6 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-shared.h"
 
 using ::testing::IsEmpty;
@@ -384,13 +383,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::NavigationController& navigation_controller =
       new_web_contents->GetController();
   WaitForLoadStop(new_web_contents);
-  if (blink::features::IsInitialNavigationEntryEnabled()) {
-    EXPECT_TRUE(
-        navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
-    EXPECT_EQ(1, navigation_controller.GetEntryCount());
-  } else {
-    EXPECT_EQ(0, navigation_controller.GetEntryCount());
-  }
+  EXPECT_TRUE(navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
+  EXPECT_EQ(1, navigation_controller.GetEntryCount());
   EXPECT_NE(new_tab_url, new_web_contents->GetLastCommittedURL());
 
   // Verify that the pending entry is still present, even though the navigation
@@ -453,13 +447,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     content::NavigationController& navigation_controller =
         new_contents->GetController();
     WaitForLoadStop(new_contents);
-    if (blink::features::IsInitialNavigationEntryEnabled()) {
-      EXPECT_TRUE(
-          navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
-      EXPECT_EQ(1, navigation_controller.GetEntryCount());
-    } else {
-      EXPECT_EQ(0, navigation_controller.GetEntryCount());
-    }
+    EXPECT_TRUE(
+        navigation_controller.GetLastCommittedEntry()->IsInitialEntry());
+    EXPECT_EQ(1, navigation_controller.GetEntryCount());
     EXPECT_NE(test_url, new_contents->GetLastCommittedURL());
 
     // Ensure that the omnibox doesn't start with javascript: scheme.
@@ -1004,11 +994,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     popup = popup_observer.GetWebContents();
   }
   content::RenderFrameHost* popup_main_rfh = popup->GetMainFrame();
-  // Popup should be on the initial entry, or no NavigationEntry if
-  // InitialNavigationEntry is disabled.
-  content::NavigationEntry* last_entry =
-      popup->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!last_entry || last_entry->IsInitialEntry());
+  // Popup should be on the initial entry.
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
 
   // 2. Add blank iframe in popup.
   EXPECT_TRUE(content::ExecJs(popup_main_rfh,
@@ -1025,8 +1012,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   }
 
   // Check that same-document navigation doesn't commit a new navigation entry,
-  // but instead reuses the last entry (which might be null).
-  EXPECT_EQ(last_entry, popup->GetController().GetLastCommittedEntry());
+  // but instead reuses the initial entry.
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
 }
 
 // Test scenario where we attempt a synchronous renderer-initiated same-document
@@ -1044,27 +1031,26 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::WebContents* popup = nullptr;
   {
     content::WebContentsAddedObserver popup_observer;
-    ASSERT_TRUE(content::ExecJs(opener, "var w = window.open('', 'my-popup')"));
+    ASSERT_TRUE(content::ExecJs(
+        opener,
+        content::JsReplace("var w = window.open($1, 'my-popup')",
+                           embedded_test_server()->GetURL("/nocontent"))));
     popup = popup_observer.GetWebContents();
   }
-  // Popup should be on the initial entry, or no NavigationEntry if
-  // InitialNavigationEntry is disabled.
-  content::NavigationEntry* last_entry =
-      popup->GetController().GetLastCommittedEntry();
-  EXPECT_TRUE(!last_entry || last_entry->IsInitialEntry());
+  // Popup should be on the initial navigation entry.
+  EXPECT_TRUE(popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
 
   // 2. Same-document navigation in popup.
   {
     const GURL kSameDocUrl("about:blank#foo");
     content::TestNavigationManager navigation_manager(popup, kSameDocUrl);
-    EXPECT_TRUE(
-        content::ExecJs(opener, "w.history.replaceState({}, '', '#foo');"));
+    EXPECT_TRUE(content::ExecJs(
+        opener, content::JsReplace("w.location.href = $1", kSameDocUrl)));
     navigation_manager.WaitForNavigationFinished();
   }
-
-  // Check that same-document navigation doesn't commit a new navigation entry,
-  // but instead reuses the last entry (which might be null).
-  EXPECT_EQ(last_entry, popup->GetController().GetLastCommittedEntry());
+  // Popup should no longer be on the initial navigation entry.
+  EXPECT_FALSE(
+      popup->GetController().GetLastCommittedEntry()->IsInitialEntry());
 }
 
 class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {

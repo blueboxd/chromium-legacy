@@ -217,9 +217,6 @@ const base::Feature kWebGPUService{"WebGPUService",
 const base::FeatureParam<std::string> kVulkanBlockListByHardware{
     &kVulkan, "BlockListByHardware", "mt*"};
 
-const base::FeatureParam<std::string> kVulkanBlockListByHardware{
-    &kVulkan, "BlockListByHardware", "mt*"};
-
 const base::FeatureParam<std::string> kVulkanBlockListByBrand{
     &kVulkan, "BlockListByBrand", "HONOR"};
 

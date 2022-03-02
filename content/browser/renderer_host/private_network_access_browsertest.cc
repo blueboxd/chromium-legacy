@@ -120,28 +120,53 @@ class ContentBrowserClientRegistration {
   const raw_ptr<ContentBrowserClient> old_client_;
 };
 
-// A `net::EmbeddedTestServer` that pretends to be in a given IP address space.
+// A `net::EmbeddedTestServer` that only starts on demand and pretends to be
+// in a particular IP address space.
 //
 // NOTE(titouan): The IP address space overrides CLI switch is copied to utility
-// processes when said processes are started. Thus if any server is instantiated
-// after the network process has started, updates we make to our own CLI
-// switches will not propagate to the network process, yielding inconsistent
-// results.
-class FakeAddressSpaceServer {
+// processes when said processes are started. If we start a lazy server after
+// the network process has started, any updates we make to our own CLI switches
+// will not propagate to the network process, yielding inconsistent results.
+// These tests currently do not rely on this behavior - the IP address space of
+// documents is calculated in the browser process, and all network resources
+// fetched in this test are `local`. If we want to fix this, we can get rid of
+// the fancy lazy-initialization and simply start all servers at test fixture
+// construction time, then set up the CLI switch in `SetUpCommandLine()`.
+class LazyServer {
  public:
-  FakeAddressSpaceServer(net::EmbeddedTestServer::Type type,
-                         network::mojom::IPAddressSpace ip_address_space,
-                         const base::FilePath& test_data_path)
-      : server_(type) {
+  LazyServer(net::EmbeddedTestServer::Type type,
+             network::mojom::IPAddressSpace ip_address_space,
+             base::FilePath test_data_path)
+      : type_(type),
+        ip_address_space_(ip_address_space),
+        test_data_path_(std::move(test_data_path)) {}
+
+  net::EmbeddedTestServer& Get() {
+    if (!server_) {
+      Initialize();
+    }
+    return *server_;
+  }
+
+ private:
+  void Initialize() {
+    server_ = std::make_unique<net::EmbeddedTestServer>(type_);
+
     // Use a certificate valid for multiple domains, which we can use to
     // distinguish `local`, `private` and `public` address spaces.
-    server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
 
-    server_.AddDefaultHandlers(test_data_path);
-    StartServer(server_);
+    server_->AddDefaultHandlers(test_data_path_);
+    EXPECT_TRUE(server_->Start());
 
-    // Set up the command line in order for this server to be considered a part
-    // of `ip_address_space`, irrespective of the actual IP it binds to.
+    AddCommandLineOverride();
+  }
+
+  // Sets up the command line in order for this server to be considered a part
+  // of `ip_address_space_`, irrespective of the actual IP it binds to.
+  void AddCommandLineOverride() const {
+    DCHECK(server_);
+
     base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
     std::string switch_str = command_line.GetSwitchValueASCII(
         network::switches::kIpAddressSpaceOverrides);
@@ -152,22 +177,13 @@ class FakeAddressSpaceServer {
     base::StrAppend(&switch_str,
                     {
                         ",",
-                        server_.host_port_pair().ToString(),
+                        server_->host_port_pair().ToString(),
                         "=",
-                        IPAddressSpaceToSwitchValue(ip_address_space),
+                        IPAddressSpaceToSwitchValue(ip_address_space_),
                     });
 
     command_line.AppendSwitchASCII(network::switches::kIpAddressSpaceOverrides,
                                    switch_str);
-  }
-
-  net::EmbeddedTestServer& Get() { return server_; }
-
- private:
-  // Constructor helper.
-  // ASSERT macros can only be used in functions returning void.
-  static void StartServer(net::EmbeddedTestServer& server) {
-    ASSERT_TRUE(server.Start());
   }
 
   static base::StringPiece IPAddressSpaceToSwitchValue(
@@ -185,7 +201,10 @@ class FakeAddressSpaceServer {
     }
   }
 
-  net::EmbeddedTestServer server_;
+  net::EmbeddedTestServer::Type type_;
+  network::mojom::IPAddressSpace ip_address_space_;
+  base::FilePath test_data_path_;
+  std::unique_ptr<net::EmbeddedTestServer> server_;
 };
 
 }  // namespace
@@ -284,12 +303,12 @@ class PrivateNetworkAccessBrowserTestBase : public ContentBrowserTest {
 
   // All servers are started on demand. Most tests require the use of one or
   // two servers, never six at the same time.
-  FakeAddressSpaceServer insecure_local_server_;
-  FakeAddressSpaceServer insecure_private_server_;
-  FakeAddressSpaceServer insecure_public_server_;
-  FakeAddressSpaceServer secure_local_server_;
-  FakeAddressSpaceServer secure_private_server_;
-  FakeAddressSpaceServer secure_public_server_;
+  LazyServer insecure_local_server_;
+  LazyServer insecure_private_server_;
+  LazyServer insecure_public_server_;
+  LazyServer secure_local_server_;
+  LazyServer secure_private_server_;
+  LazyServer secure_public_server_;
 };
 
 // Test with insecure private network subresource requests from the `public`

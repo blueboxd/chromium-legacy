@@ -24,13 +24,10 @@ const char kInitiationAcceptLanguagesULPOverlapHistogram[] =
 // Keep up to date with ULPLanguageStatus in
 // //tools/metrics/histograms/enums.xml.
 enum class ULPLanguageStatus {
-  kTopULPLanguageExactMatch = 0,
-  kNonTopULPLanguageExactMatch = 1,
+  kTopULPLanguage = 0,
+  kNonTopULPLanguage = 1,
   kLanguageNotInULP = 2,
-  kTopULPLanguageBaseMatch = 3,
-  kNonTopULPLanguageBaseMatch = 4,
-  kLanguageEmpty = 5,
-  kMaxValue = kLanguageEmpty,
+  kMaxValue = kLanguageNotInULP,
 };
 
 // ULPMetricsLogger abstracts the UMA histograms populated by the User Language

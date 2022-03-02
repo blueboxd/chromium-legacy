@@ -191,7 +191,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
-  void FinalizeFrame(bool printing = false) override;
+  void FinalizeFrame() override;
 
   CanvasRenderingContextHost* GetCanvasRenderingContextHost() override;
   ExecutionContext* GetTopExecutionContext() const override;

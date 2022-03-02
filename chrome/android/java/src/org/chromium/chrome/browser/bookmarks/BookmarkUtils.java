@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
-import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -162,13 +161,6 @@ public class BookmarkUtils {
     public static void showSaveFlow(@NonNull Activity activity,
             @NonNull BottomSheetController bottomSheetController, boolean fromExplicitTrackUi,
             @NonNull BookmarkId bookmarkId, boolean wasBookmarkMoved) {
-        SubscriptionsManager subscriptionService = null;
-        if (ShoppingFeatures.isShoppingListEnabled()) {
-            subscriptionService = new CommerceSubscriptionsServiceFactory()
-                                          .getForLastUsedProfile()
-                                          .getSubscriptionsManager();
-        }
-
         BookmarkSaveFlowCoordinator bookmarkSaveFlowCoordinator =
                 new BookmarkSaveFlowCoordinator(activity, bottomSheetController,
                         new CommerceSubscriptionsServiceFactory()

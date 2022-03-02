@@ -19,8 +19,7 @@ to set the default value. Can also be accessed through `try_.defaults`.
 
 load("./args.star", "args")
 load("./branches.star", "branches")
-load("./builders.star", "builders", "os", "os_category")
-load("./orchestrator.star", "register_compilator", "register_orchestrator")
+load("./builders.star", "builder_url", "builders", "compilator_watcher_git_revision", "os", "os_category")
 load("//project.star", "settings")
 
 DEFAULT_EXCLUDE_REGEXPS = [
@@ -37,13 +36,6 @@ defaults = args.defaults(
     main_list_view = None,
     subproject_list_view = None,
     resultdb_bigquery_exports = [],
-    # Default overrides for more specific wrapper functions. The value is set to
-    # args.DEFAULT so that when they are passed to the corresponding standard
-    # argument, if the more-specific default has not been set it will fall back
-    # to the standard default.
-    compilator_cores = args.DEFAULT,
-    compilator_goma_jobs = args.DEFAULT,
-    orchestrator_cores = args.DEFAULT,
 )
 
 def tryjob(

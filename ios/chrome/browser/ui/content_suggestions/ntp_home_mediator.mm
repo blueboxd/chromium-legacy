@@ -209,9 +209,6 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   }
   _webState = webState;
   self.NTPMetrics.webState = webState;
-  if (IsSingleNtpEnabled()) {
-    [self.logoVendor setWebState:webState];
-  }
   if (_webState && _webStateObserver) {
     if (IsSingleNtpEnabled()) {
       [self setContentOffsetForWebState:webState];

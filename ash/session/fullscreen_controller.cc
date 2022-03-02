@@ -12,6 +12,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"

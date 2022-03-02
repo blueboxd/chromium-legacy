@@ -93,8 +93,7 @@ class BranchUnitTest(unittest.TestCase):
             "project_title": "Chromium MMM",
             "ref": "refs/branch-heads/AAAA"
         }""")
-    output = branch.set_type(
-        input, ['desktop-extended-stable', 'cros-lts', 'fuchsia-lts'])
+    output = branch.set_type(input, ['desktop-extended-stable', 'cros-lts'])
     self.assertEqual(
         output,
         textwrap.dedent("""\
@@ -104,8 +103,7 @@ class BranchUnitTest(unittest.TestCase):
                 "ref": "refs/branch-heads/AAAA",
                 "branch_types": [
                     "desktop-extended-stable",
-                    "cros-lts",
-                    "fuchsia-lts"
+                    "cros-lts"
                 ]
             }
             """))

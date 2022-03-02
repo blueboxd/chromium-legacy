@@ -114,10 +114,4 @@ bool IsNoisyVisit(const history::ClusterVisit& visit) {
          !visit.is_search_visit;
 }
 
-bool IsNoisyVisit(const history::ClusterVisit& visit) {
-  return visit.engagement_score >
-             features::NoisyClusterVisitEngagementThreshold() &&
-         !visit.is_search_visit;
-}
-
 }  // namespace history_clusters

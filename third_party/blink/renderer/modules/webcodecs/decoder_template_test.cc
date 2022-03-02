@@ -167,13 +167,6 @@ TYPED_TEST(DecoderTemplateTest, MAYBE_NoPressureByDefault) {
   ASSERT_TRUE(decoder);
   ASSERT_FALSE(v8_scope.GetExceptionState().HadException());
 
-  // Simulate backgrounding to enable reclamation.
-  if (!decoder->is_backgrounded_for_testing()) {
-    decoder->SimulateLifecycleStateForTesting(
-        scheduler::SchedulingLifecycleState::kHidden);
-    DCHECK(decoder->is_backgrounded_for_testing());
-  }
-
   // Configure the decoder.
   decoder->configure(this->CreateConfig(), v8_scope.GetExceptionState());
   ASSERT_FALSE(v8_scope.GetExceptionState().HadException());

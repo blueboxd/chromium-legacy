@@ -242,13 +242,6 @@ bool IsFencedFramesMPArchBased() {
          blink::features::FencedFramesImplementationType::kMPArch;
 }
 
-const base::Feature kInitialNavigationEntry{"InitialNavigationEntry",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsInitialNavigationEntryEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kInitialNavigationEntry);
-}
-
 // Enable limiting previews loading hints to specific resource types.
 const base::Feature kPreviewsResourceLoadingHintsSpecificResourceTypes{
     "PreviewsResourceLoadingHintsSpecificResourceTypes",

@@ -146,19 +146,3 @@ TEST_F(PriceAlertUtilTest, TestUserSettingOff) {
   SetUserSetting(false);
   EXPECT_FALSE(IsPriceAlertsEligible(browser_state_.get()));
 }
-
-TEST_F(PriceAlertUtilTest, TestUserSettingOn) {
-  SignIn();
-  SetFeatureFlag(true);
-  SetMSBB(true);
-  SetUserSetting(true);
-  EXPECT_TRUE(IsPriceAlertsEligible(browser_state_.get()));
-}
-
-TEST_F(PriceAlertUtilTest, TestUserSettingOff) {
-  SignIn();
-  SetFeatureFlag(true);
-  SetMSBB(true);
-  SetUserSetting(false);
-  EXPECT_FALSE(IsPriceAlertsEligible(browser_state_.get()));
-}

@@ -95,10 +95,6 @@ constexpr CGFloat kContentMaxWidth = 500;
   [scrollView addSubview:stackView];
   [self.view addSubview:scrollView];
 
-  // Needed to have VoiceOver working to elements added in derived view
-  // controller.
-  self.specificContentSuperview = scrollView;
-
   self.view.preservesSuperviewLayoutMargins = YES;
   UILayoutGuide* margins = self.view.layoutMarginsGuide;
 

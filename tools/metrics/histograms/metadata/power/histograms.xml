@@ -571,9 +571,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
 <histogram
     name="Power.ForegroundBatteryDrain.30SecondsAvg2{Exclusive}{DarkeningType}"
     units="uAh" expires_after="2022-11-07">
-  <obsolete>
-    Replaced with Power.ForegroundBatteryDrain.30SecondsAvg2.* in Dec 2021.
-  </obsolete>
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@chromium.org</owner>
   <summary>
@@ -595,12 +592,6 @@ Also used in tools/metrics/histograms/metadata/others/histograms.xml
     Only supported on Android. For WebView, the metric considers the time during
     in which at least one WebView is visible on the screen as
     &quot;foreground&quot; time.
-
-    This histogram was superseded by the corresponding histogram under
-    Power.ForegroundBatteryDrain.30SecondsAvg2 in Dec 2021. The new histograms
-    also emit zero values for the time after the last capacity drop but before
-    sampling was stopped due to Chrome leaving foreground / the device being
-    connected to a charger, fixing an oversight in the original metrics.
   </summary>
   <token key="Exclusive">
     <variant name="" summary=""/>

@@ -13,6 +13,17 @@
 #include "base/system/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+extern char __executable_start;
+
+extern "C" {
+
+// This function is exported by the dynamic linker but never declared in any
+// official header for some architecture/version combinations.
+int dl_iterate_phdr(int (*cb)(dl_phdr_info* info, size_t size, void* data),
+                    void* data) __attribute__((weak_import));
+
+}  // extern "C"
+
 namespace chromium_android_linker {
 
 namespace {
@@ -206,6 +217,52 @@ TEST_F(ModernLinkerTest, FindReservedMemoryRegion) {
   EXPECT_EQ(kSize, size);
   EXPECT_EQ(reinterpret_cast<void*>(address), synthetic_region_start);
   munmap(synthetic_region_start, kSize);
+}
+
+TEST_F(ModernLinkerTest, FindLibraryRanges) {
+  static int var_inside = 3;
+
+  NativeLibInfo lib_info = {0, 0};
+  uintptr_t executable_start = reinterpret_cast<uintptr_t>(&__executable_start);
+  lib_info.set_load_address(executable_start);
+
+  EXPECT_TRUE(lib_info.FindRelroAndLibraryRangesInElfForTesting());
+  EXPECT_EQ(executable_start, lib_info.load_address());
+
+  uintptr_t inside_library = reinterpret_cast<uintptr_t>(&var_inside);
+  EXPECT_LE(executable_start, inside_library);
+  EXPECT_LE(inside_library,
+            lib_info.load_address() + lib_info.get_load_size_for_testing());
+
+  EXPECT_LE(lib_info.load_address(), lib_info.get_relro_start_for_testing());
+  EXPECT_LE(lib_info.get_relro_start_for_testing(),
+            lib_info.load_address() + lib_info.get_load_size_for_testing());
+}
+
+// Check that discovering RELRO segment address ranges and the DSO ranges agrees
+// with the method based on dl_iterate_phdr(3). The check is performed on the
+// test library, not on libmonochrome.
+TEST_F(ModernLinkerTest, LibraryRangesViaIteratePhdr) {
+  // Find the ranges using dl_iterate_phdr().
+  if (!dl_iterate_phdr) {
+    ASSERT_TRUE(false) << "dl_iterate_phdr() not found";
+  }
+  uintptr_t executable_start = reinterpret_cast<uintptr_t>(&__executable_start);
+  LibraryRangeFinder finder(executable_start);
+  ASSERT_EQ(1, dl_iterate_phdr(&LibraryRangeFinder::VisitLibraryPhdrs,
+                               reinterpret_cast<void*>(&finder)));
+  ASSERT_LE(finder.relro_start() + finder.relro_size(),
+            finder.load_address() + finder.load_size());
+
+  // Find the ranges by parsing ELF.
+  NativeLibInfo lib_info2 = {0, 0};
+  lib_info2.set_load_address(executable_start);
+  EXPECT_TRUE(lib_info2.FindRelroAndLibraryRangesInElfForTesting());
+
+  // Compare results.
+  EXPECT_EQ(finder.load_address(), lib_info2.load_address());
+  EXPECT_EQ(finder.load_size(), lib_info2.get_load_size_for_testing());
+  EXPECT_EQ(finder.relro_start(), lib_info2.get_relro_start_for_testing());
 }
 
 }  // namespace chromium_android_linker

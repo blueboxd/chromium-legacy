@@ -106,8 +106,7 @@ void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
 // TranslateDriver methods
 
 bool ContentTranslateDriver::IsLinkNavigation() {
-  return web_contents()->GetController().GetLastCommittedEntry() &&
-         ui::PageTransitionCoreTypeIs(web_contents()
+  return ui::PageTransitionCoreTypeIs(web_contents()
                                           ->GetController()
                                           .GetLastCommittedEntry()
                                           ->GetTransitionType(),
@@ -168,11 +167,12 @@ ukm::SourceId ContentTranslateDriver::GetUkmSourceId() {
 
 bool ContentTranslateDriver::HasCurrentPage() {
   // TODO(https://crbug.com/524208): This function used to check the existence
-  // of GetLastCommittedEntry(), which will always exist now. Consider removing
-  // this function, making the callers assume HasCurrentPage() is always true.
-  content::NavigationEntry* current_entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  return current_entry && !current_entry->IsInitialEntry();
+  // of GetLastCommittedEntry(), which will always exist now. Should its callers
+  // just assume HasCurrentPage() is true, and can we remove this function then?
+  return !web_contents()
+              ->GetController()
+              .GetLastCommittedEntry()
+              ->IsInitialEntry();
 }
 
 void ContentTranslateDriver::OpenUrlInNewTab(const GURL& url) {
@@ -339,8 +339,7 @@ void ContentTranslateDriver::RegisterPage(
     // associated, thus avoiding the potential for corner cases where the
     // detected language is attributed to the wrong page.
     auto* const entry = web_contents()->GetController().GetLastCommittedEntry();
-    if (entry != nullptr)
-      SetPageLanguageInNavigation(details.adopted_language, entry);
+    SetPageLanguageInNavigation(details.adopted_language, entry);
   }
 
   for (auto& observer : language_detection_observers())

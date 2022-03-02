@@ -25,6 +25,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -270,7 +271,7 @@ TEST_F(SessionControllerImplTest, AddUserPolicy) {
 }
 
 // Tests that session state can be set and reflected properly.
-TEST_F(SessionControllerImplTest, SessionState) {
+TEST_F(SessionControllerImplWithShellTest, SessionState) {
   const struct {
     SessionState state;
     bool expected_is_screen_locked;
@@ -288,7 +289,7 @@ TEST_F(SessionControllerImplTest, SessionState) {
   FillDefaultSessionInfo(&info);
   for (const auto& test_case : kTestCases) {
     info.state = test_case.state;
-    SetSessionInfo(info);
+    controller()->SetSessionInfo(info);
 
     EXPECT_EQ(test_case.state, controller()->GetSessionState())
         << "Test case state=" << static_cast<int>(test_case.state);
@@ -419,24 +420,21 @@ TEST_F(SessionControllerImplTest, ActiveSession) {
 // Tests that user session is unblocked with a running unlock animation so that
 // focus rules can find a correct activatable window after screen lock is
 // dismissed.
-TEST_F(SessionControllerImplTest,
+TEST_F(SessionControllerImplWithShellTest,
        UserSessionUnblockedWithRunningUnlockAnimation) {
   SessionInfo info;
   FillDefaultSessionInfo(&info);
 
   // LOCKED means blocked user session.
   info.state = SessionState::LOCKED;
-  SetSessionInfo(info);
+  controller()->SetSessionInfo(info);
   EXPECT_TRUE(controller()->IsUserSessionBlocked());
-
-  // Mark a running unlock animation unblocks user session.
-  controller()->RunUnlockAnimation(base::OnceClosure());
-  EXPECT_FALSE(controller()->IsUserSessionBlocked());
 
   const struct {
     SessionState state;
-    bool expected_is_user_session_blocked;
+    bool expect_blocked_after_unlock_animation;
   } kTestCases[] = {
+      {SessionState::LOCKED, false},
       {SessionState::OOBE, true},
       {SessionState::LOGIN_PRIMARY, true},
       {SessionState::LOGGED_IN_NOT_ACTIVE, false},
@@ -445,12 +443,13 @@ TEST_F(SessionControllerImplTest,
   };
   for (const auto& test_case : kTestCases) {
     info.state = test_case.state;
-    SetSessionInfo(info);
+    controller()->SetSessionInfo(info);
 
     // Mark a running unlock animation.
-    controller()->RunUnlockAnimation(base::OnceClosure());
-
-    EXPECT_EQ(test_case.expected_is_user_session_blocked,
+    base::RunLoop run_loop;
+    controller()->RunUnlockAnimation(run_loop.QuitClosure());
+    run_loop.Run();
+    EXPECT_EQ(test_case.expect_blocked_after_unlock_animation,
               controller()->IsUserSessionBlocked())
         << "Test case state=" << static_cast<int>(test_case.state);
   }

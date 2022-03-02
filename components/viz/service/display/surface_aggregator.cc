@@ -291,16 +291,19 @@ struct SurfaceAggregator::PrewalkResult {
   gfx::ContentColorUsage content_color_usage = gfx::ContentColorUsage::kSRGB;
 };
 
-SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
-                                     DisplayResourceProvider* provider,
-                                     bool aggregate_only_damaged,
-                                     bool needs_surface_damage_rect_list)
+SurfaceAggregator::SurfaceAggregator(
+    SurfaceManager* manager,
+    DisplayResourceProvider* provider,
+    bool aggregate_only_damaged,
+    bool needs_surface_damage_rect_list,
+    ExtraPassForReadbackOption extra_pass_option)
     : manager_(manager),
       provider_(provider),
       aggregate_only_damaged_(aggregate_only_damaged),
       needs_surface_damage_rect_list_(needs_surface_damage_rect_list),
       de_jelly_enabled_(DeJellyEnabled()),
-      clip_prewalk_damage_(features::IsClipPrewalkDamageEnabled()) {
+      clip_prewalk_damage_(features::IsClipPrewalkDamageEnabled()),
+      extra_pass_for_readback_option_(extra_pass_option) {
   DCHECK(manager_);
   DCHECK(provider_);
 }
@@ -1032,41 +1035,72 @@ void SurfaceAggregator::AddColorConversionPass() {
     return;
   CHECK(root_render_pass->transform_to_root_target == gfx::Transform());
 
-  if (!color_conversion_render_pass_id_)
+  if (!color_conversion_render_pass_id_) {
     color_conversion_render_pass_id_ =
         render_pass_id_generator_.GenerateNextId();
+  }
 
-  auto color_conversion_pass = std::make_unique<AggregatedRenderPass>(1, 1);
-  color_conversion_pass->SetNew(color_conversion_render_pass_id_, output_rect,
-                                root_render_pass->damage_rect,
-                                root_render_pass->transform_to_root_target);
-  color_conversion_pass->has_transparent_background =
+  AddRenderPassHelper(output_rect, color_conversion_render_pass_id_,
+                      output_rect, root_render_pass->damage_rect,
+                      root_content_color_usage_,
+                      root_render_pass->has_transparent_background,
+                      /*pass_is_color_conversion_pass=*/true,
+                      /*quad_state_to_target_transform=*/gfx::Transform(),
+                      /*quad_state_contents_opaque=*/false, SkBlendMode::kSrc,
+                      root_render_pass->id);
+}
+
+void SurfaceAggregator::AddRootReadbackPass() {
+  if (extra_pass_for_readback_option_ == ExtraPassForReadbackOption::kNone) {
+    return;
+  }
+
+  auto* root_render_pass = dest_pass_list_->back().get();
+  gfx::Rect output_rect = root_render_pass->output_rect;
+  CHECK(root_render_pass->transform_to_root_target == gfx::Transform());
+  bool needs_readback_pass = false;
+  // Check if there are any render passes that draw into the root pass with
+  // a backdrop filter.
+  base::flat_set<AggregatedRenderPassId> pass_ids_drawing_to_root;
+  for (auto* quad : root_render_pass->quad_list) {
+    if (quad->material != DrawQuad::Material::kAggregatedRenderPass)
+      continue;
+    pass_ids_drawing_to_root.insert(
+        AggregatedRenderPassDrawQuad::MaterialCast(quad)->render_pass_id);
+  }
+  if (!pass_ids_drawing_to_root.empty()) {
+    for (auto& render_pass : *dest_pass_list_) {
+      if (!pass_ids_drawing_to_root.contains(render_pass->id))
+        continue;
+      if (!render_pass->backdrop_filters.IsEmpty()) {
+        needs_readback_pass = true;
+        break;
+      }
+    }
+  }
+
+  if (needs_readback_pass != last_frame_had_readback_pass_)
+    root_render_pass->damage_rect = output_rect;
+
+  last_frame_had_readback_pass_ = needs_readback_pass;
+  if (!last_frame_had_readback_pass_)
+    return;
+
+  if (!readback_render_pass_id_) {
+    readback_render_pass_id_ = render_pass_id_generator_.GenerateNextId();
+  }
+
+  // Ensure the root-that's-non-root pass is cleared to fully transparent first.
+  bool has_transparent_background =
       root_render_pass->has_transparent_background;
-  color_conversion_pass->content_color_usage = root_content_color_usage_;
-  color_conversion_pass->is_color_conversion_pass = true;
-
-  auto* shared_quad_state =
-      color_conversion_pass->CreateAndAppendSharedQuadState();
-  // Do NOT set blend mode here to SkBlendMode::kSrcOver, which will cause
-  // blending with empty (black) root pass when child pass has alpha.
-  shared_quad_state->SetAll(
-      /*quad_to_target_transform=*/gfx::Transform(),
-      /*quad_layer_rect=*/output_rect,
-      /*visible_layer_rect=*/output_rect,
-      /*mask_filter_info=*/gfx::MaskFilterInfo(),
-      /*clip_rect=*/absl::nullopt, /*are_contents_opaque=*/false,
-      /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrc, /*sorting_context_id=*/0);
-
-  auto* quad = color_conversion_pass
-                   ->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state, output_rect, output_rect,
-               root_render_pass->id, kInvalidResourceId, gfx::RectF(),
-               gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-               gfx::RectF(output_rect),
-               /*force_anti_aliasing_off=*/false,
-               /*backdrop_filter_quality*/ 1.0f);
-  dest_pass_list_->push_back(std::move(color_conversion_pass));
+  root_render_pass->has_transparent_background = true;
+  AddRenderPassHelper(output_rect, readback_render_pass_id_, output_rect,
+                      root_render_pass->damage_rect, root_content_color_usage_,
+                      has_transparent_background,
+                      /*pass_is_color_conversion_pass=*/false,
+                      /*quad_state_to_target_transform=*/gfx::Transform(),
+                      /*quad_state_contents_opaque=*/false,
+                      SkBlendMode::kSrcOver, root_render_pass->id);
 }
 
 void SurfaceAggregator::AddDisplayTransformPass() {
@@ -1074,29 +1108,12 @@ void SurfaceAggregator::AddDisplayTransformPass() {
     return;
 
   auto* root_render_pass = dest_pass_list_->back().get();
-  gfx::Rect output_rect = root_render_pass->output_rect;
   DCHECK(root_render_pass->transform_to_root_target == root_surface_transform_);
 
-  if (!display_transform_render_pass_id_)
+  if (!display_transform_render_pass_id_) {
     display_transform_render_pass_id_ =
         render_pass_id_generator_.GenerateNextId();
-
-  auto display_transform_pass = std::make_unique<AggregatedRenderPass>(1, 1);
-  display_transform_pass->SetAll(
-      display_transform_render_pass_id_,
-      cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
-          root_surface_transform_, root_render_pass->output_rect),
-      cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
-          root_surface_transform_, root_render_pass->damage_rect),
-      gfx::Transform(),
-      /*filters=*/cc::FilterOperations(),
-      /*backdrop_filters=*/cc::FilterOperations(),
-      /*backdrop_filter_bounds=*/gfx::RRectF(),
-      root_render_pass->content_color_usage,
-      root_render_pass->has_transparent_background,
-      /*cache_render_pass=*/false,
-      /*has_damage_from_contributing_content=*/false,
-      /*generate_mipmap=*/false);
+  }
 
   bool are_contents_opaque = true;
   for (const auto* sqs : root_render_pass->shared_quad_state_list) {
@@ -1106,25 +1123,58 @@ void SurfaceAggregator::AddDisplayTransformPass() {
     }
   }
 
-  auto* shared_quad_state =
-      display_transform_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(
-      /*quad_to_target_transform=*/root_surface_transform_,
-      /*quad_layer_rect=*/output_rect,
-      /*visible_layer_rect=*/output_rect,
-      /*mask_filter_info=*/gfx::MaskFilterInfo(),
-      /*clip_rect=*/absl::nullopt, are_contents_opaque, /*opacity=*/1.f,
-      /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
+  AddRenderPassHelper(
+      root_render_pass->output_rect, display_transform_render_pass_id_,
+      cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+          root_surface_transform_, root_render_pass->output_rect),
+      cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+          root_surface_transform_, root_render_pass->damage_rect),
+      root_render_pass->content_color_usage,
+      root_render_pass->has_transparent_background,
+      /*pass_is_color_conversion_pass=*/false, root_surface_transform_,
+      are_contents_opaque, SkBlendMode::kSrcOver, root_render_pass->id);
+}
 
-  auto* quad = display_transform_pass
-                   ->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
-  quad->SetNew(shared_quad_state, output_rect, output_rect,
-               root_render_pass->id, kInvalidResourceId, gfx::RectF(),
-               gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
-               gfx::RectF(output_rect),
+void SurfaceAggregator::AddRenderPassHelper(
+    const gfx::Rect& output_rect,
+    AggregatedRenderPassId render_pass_id,
+    const gfx::Rect& render_pass_output_rect,
+    const gfx::Rect& pass_damage_rect,
+    gfx::ContentColorUsage pass_color_usage,
+    bool pass_has_transparent_background,
+    bool pass_is_color_conversion_pass,
+    const gfx::Transform& quad_state_to_target_transform,
+    bool quad_state_contents_opaque,
+    SkBlendMode quad_state_blend_mode,
+    AggregatedRenderPassId quad_pass_id) {
+  auto render_pass = std::make_unique<AggregatedRenderPass>(1, 1);
+  render_pass->SetAll(render_pass_id, output_rect, pass_damage_rect,
+                      gfx::Transform(),
+                      /*filters=*/cc::FilterOperations(),
+                      /*backdrop_filters=*/cc::FilterOperations(),
+                      /*backdrop_filter_bounds=*/gfx::RRectF(),
+                      pass_color_usage, pass_has_transparent_background,
+                      /*cache_render_pass=*/false,
+                      /*has_damage_from_contributing_content=*/false,
+                      /*generate_mipmap=*/false);
+  render_pass->is_color_conversion_pass = pass_is_color_conversion_pass;
+
+  auto* shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
+  shared_quad_state->SetAll(
+      quad_state_to_target_transform,
+      /*layer_rect=*/output_rect,
+      /*visible_layer_rect=*/output_rect, gfx::MaskFilterInfo(),
+      /*clip=*/absl::nullopt, quad_state_contents_opaque, /*opacity_f=*/1.f,
+      quad_state_blend_mode, /*sorting_context=*/0);
+
+  auto* quad =
+      render_pass->CreateAndAppendDrawQuad<AggregatedRenderPassDrawQuad>();
+  quad->SetNew(shared_quad_state, output_rect, output_rect, quad_pass_id,
+               kInvalidResourceId, gfx::RectF(), gfx::Size(), gfx::Vector2dF(),
+               gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
-  dest_pass_list_->push_back(std::move(display_transform_pass));
+  dest_pass_list_->push_back(std::move(render_pass));
 }
 
 void SurfaceAggregator::CopyQuadsToPass(
@@ -2018,6 +2068,7 @@ AggregatedFrame SurfaceAggregator::Aggregate(
     HandleDeJelly(surface);
 
   AddColorConversionPass();
+  AddRootReadbackPass();
 
   ProcessAddedAndRemovedSurfaces();
   contained_surfaces_.swap(previous_contained_surfaces_);

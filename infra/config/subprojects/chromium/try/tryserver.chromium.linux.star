@@ -12,9 +12,12 @@ load("//project.star", "settings")
 try_.defaults.set(
     builder_group = "tryserver.chromium.linux",
     cores = 8,
+    orchestrator_cores = 2,
+    compilator_cores = 16,
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
+    compilator_goma_jobs = goma.jobs.J150,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
@@ -22,7 +25,10 @@ try_.defaults.set(
 
 consoles.list_view(
     name = "tryserver.chromium.linux",
-    branch_selector = branches.CROS_LTS_MILESTONE,
+    branch_selector = [
+        branches.CROS_LTS_MILESTONE,
+        branches.FUCHSIA_LTS_MILESTONE,
+    ],
 )
 
 try_.builder(
@@ -62,7 +68,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia-binary-size",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = True,
     executable = "recipe:binary_size_fuchsia_trybot",
     properties = {
@@ -82,7 +88,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia-arm64-cast",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -129,7 +135,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia-x64-cast",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -137,7 +143,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia_arm64",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -145,7 +151,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia_x64",
-    branch_selector = branches.STANDARD_MILESTONE,
+    branch_selector = branches.FUCHSIA_LTS_MILESTONE,
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -287,31 +293,36 @@ try_.builder(
     ),
 )
 
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "linux-rel",
+    compilator = "linux-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(),
-    compilator_cores = 16,
-    compilator_goma_jobs = goma.jobs.J150,
-    compilator_name = "linux-rel-compilator",
+    tryjob = try_.job(),
+)
+
+try_.compilator_builder(
+    name = "linux-rel-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 # crbug.com/1270571: Experimental bot to test pre-warming
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "linux-rel-warmed",
+    compilator = "linux-rel-warmed-compilator",
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
-    orchestrator_cores = 2,
-    orchestrator_tryjob = None,
-    compilator_cache_name = "linux_rel_warmed_compilator_warmed_cache",
-    compilator_cores = 16,
-    compilator_goma_jobs = goma.jobs.J150,
-    compilator_name = "linux-rel-warmed-compilator",
+)
+
+# crbug.com/1270571: Experimental bot to test pre-warming
+try_.compilator_builder(
+    name = "linux-rel-warmed-compilator",
+    main_list_view = "try",
+    builder_cache_name = "linux_rel_warmed_compilator_warmed_cache",
 )
 
 try_.builder(
@@ -362,15 +373,18 @@ try_.builder(
     name = "linux_chromium_archive_rel_ng",
 )
 
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "linux_chromium_asan_rel_ng",
+    compilator = "linux_chromium_asan_rel_ng-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(),
-    compilator_cores = 16,
-    compilator_goma_jobs = goma.jobs.J150,
-    compilator_name = "linux_chromium_asan_rel_ng-compilator",
+    tryjob = try_.job(),
+)
+
+try_.compilator_builder(
+    name = "linux_chromium_asan_rel_ng-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 try_.builder(
@@ -459,15 +473,18 @@ try_.builder(
     goma_jobs = goma.jobs.J150,
 )
 
-try_.orchestrator_pair_builders(
+try_.orchestrator_builder(
     name = "linux_chromium_tsan_rel_ng",
+    compilator = "linux_chromium_tsan_rel_ng-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    orchestrator_cores = 2,
-    orchestrator_tryjob = try_.job(),
-    compilator_cores = 16,
-    compilator_goma_jobs = goma.jobs.J150,
-    compilator_name = "linux_chromium_tsan_rel_ng-compilator",
+    tryjob = try_.job(),
+)
+
+try_.compilator_builder(
+    name = "linux_chromium_tsan_rel_ng-compilator",
+    branch_selector = branches.STANDARD_MILESTONE,
+    main_list_view = "try",
 )
 
 try_.builder(

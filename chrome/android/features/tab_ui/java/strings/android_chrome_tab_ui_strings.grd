@@ -495,6 +495,20 @@
       <message name="IDS_MERCHANT_VIEWER_PREVIEW_SHEET_CLOSED" desc="Accessibility string read when the merchant viewer bottom sheet is closed.">
         Information about this store closed
       </message>
+
+      <!-- Close All Tabs Dialog Strings -->
+      <message name="IDS_CLOSE_ALL_TABS_DIALOG_TITLE" desc="When users click the menu item 'Close all tabs' in tab switcher, a dialog will pop up and this text is the title of the dialog.">
+        Close all tabs?
+      </message>
+      <message name="IDS_CLOSE_ALL_TABS_DIALOG_MESSAGE" desc="When users click the menu item 'Close all tabs' in tab switcher, a dialog will pop up and this text is the message of the dialog.">
+        You can find your closed tabs in Recent tabs under the Chrome main menu
+      </message>
+      <message name="IDS_CLOSE_ALL_TABS_DIALOG_TITLE_INCOGNITO" desc="When users click the menu item 'Close all tabs' in Incognito tab switcher, a dialog will pop up and this text is the title of the dialog.">
+        Close all Incognito tabs?
+      </message>
+      <message name="IDS_CLOSE_ALL_TABS_DIALOG_MESSAGE_INCOGNITO" desc="When users click the menu item 'Close all tabs' in Incognito tab switcher, a dialog will pop up and this text is the message of the dialog.">
+        Your activity in these Incognito tabs will be cleared from this device
+      </message>
     </messages>
   </release>
 </grit>

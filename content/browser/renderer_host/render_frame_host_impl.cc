@@ -3213,7 +3213,7 @@ RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToOuterDelegate() {
 
 void RenderFrameHostImpl::DidChangeReferrerPolicy(
     network::mojom::ReferrerPolicy referrer_policy) {
-  if (!IsActive())
+  if (!IsActive() || !frame_tree_->controller().GetLastCommittedEntry())
     return;
   // The FrameNavigationEntry may want to change whether to protect its url
   // in the appHistory API when the referrer policy changes.
@@ -3442,15 +3442,11 @@ void RenderFrameHostImpl::DidNavigate(
 
   // If the navigation was a cross-document navigation and it's not the
   // synchronous about:blank commit, then it committed a document that is not
-  // the initial empty document. Note that the
-  // DidCommitNonInitialEmptyDocument() call only actually changes the state of
-  // the FrameTreeNode the first time it was called (it changes the state from
-  // "is on the initial empty document" to "not on the initial empty document",
-  // and we never go back to the former state).
+  // the initial empty document.
   if (!navigation_request->IsSameDocument() &&
       (!navigation_request->is_synchronous_renderer_commit() ||
        !navigation_request->GetURL().IsAboutBlank())) {
-    navigation_request->frame_tree_node()->DidCommitNonInitialEmptyDocument();
+    navigation_request->frame_tree_node()->SetNotOnInitialEmptyDocument();
   }
 
   // For uuid-in-package: and urn: resources served from WebBundles, use the
@@ -7690,12 +7686,23 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
 
   // Collect children first before calling PendingDeletionCheckCompleted() on
   // them, because it may delete them.
-  std::vector<RenderFrameHostImpl*> children_rfh;
-  for (std::unique_ptr<FrameTreeNode>& child : children_)
-    children_rfh.push_back(child->current_frame_host());
+  //
+  // Note: In https://crbug.com/1276535, we believe as a side effect of deleting
+  // on RenderFrameHost, a sibling gets deleted. As an attempt to verify this,
+  // this holds WeakPtr<T> instead of T*.
+  std::vector<base::WeakPtr<RenderFrameHostImpl>> children_rfh;
+  for (std::unique_ptr<FrameTreeNode>& child : children_) {
+    RenderFrameHostImpl* child_rfh = child->current_frame_host();
+    if (!child_rfh)
+      continue;
+    children_rfh.push_back(child_rfh->GetWeakPtr());
+  }
 
-  for (RenderFrameHostImpl* child_rfh : children_rfh)
+  for (base::WeakPtr<RenderFrameHostImpl>& child_rfh : children_rfh) {
+    if (!child_rfh)  // Reached. See https://crbug.com/1276535
+      continue;
     child_rfh->PendingDeletionCheckCompletedOnSubtree();
+  }
 }
 
 void RenderFrameHostImpl::ResetNavigationsForPendingDeletion() {
@@ -11570,12 +11577,13 @@ bool CalculateShouldReplaceCurrentEntry(
   // should_replace_current_entry will be true) but the renderer doesn't know
   // about it so DidCommitParams' should_replace_current_entry might differ,
   // which is why we depend on the DidCommitParams for that case (for now).
+  NavigationEntryImpl* last_entry = request->frame_tree_node()
+                                        ->navigator()
+                                        .controller()
+                                        .GetLastCommittedEntry();
   return (request->IsSameDocument() ||
-          (request->IsInMainFrame() && request->frame_tree_node()
-                                           ->navigator()
-                                           .controller()
-                                           .GetLastCommittedEntry()
-                                           ->IsInitialEntry()))
+          (request->IsInMainFrame() && last_entry &&
+           last_entry->IsInitialEntry()))
              ? params.should_replace_current_entry
              : request->common_params().should_replace_current_entry;
 }

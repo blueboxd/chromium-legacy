@@ -82,6 +82,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1351937230027495976">Contraer menú</translation>
 <translation id="1364382257761975320">Para desbloquear la Chromebook, utiliza la huella dactilar</translation>
+<translation id="1364618750746929654">No se puede generar una transcripción</translation>
 <translation id="1383597849754832576">No se pueden descargar los videos de Subtitulado instantáneo. Vuelve a intentarlo más tarde.</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1391102559483454063">Sí</translation>
@@ -370,7 +371,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="3477079411857374384">Control-Mayúscula-Espacio</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">Se ocultará la biblioteca automáticamente</translation>
-<translation id="3509391053705095206">No podemos encontrar tu teléfono. Asegúrate de que la conexión Bluetooth del teléfono esté encendida.</translation>
+<translation id="3509391053705095206">No podemos encontrar tu teléfono. Verifica si está activado el Bluetooth del teléfono.</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
 <translation id="3513798432020909783">Cuenta administrada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3518604429872942239">Bandeja de estado, hora <ph name="TIME" />,
@@ -578,6 +579,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (izquierdo)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">Se modificó la combinación de teclas <ph name="LAUNCHER_KEY_NAME" /> + un número. Para usar las teclas de función, presiona la tecla <ph name="LAUNCHER_KEY_NAME" /> + una tecla de la fila superior.</translation>
+<translation id="473775607612524610">Actualizar</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4774338217796918551">Regresa mañana a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contraseña para <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -679,6 +681,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="54609108002486618">Gestionado</translation>
 <translation id="5465662442746197494">¿Necesitas ayuda?</translation>
 <translation id="547979256943495781">Biblioteca a la derecha</translation>
+<translation id="5491186829646618080">Hay actualizaciones de firmware disponibles</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Tu administrador quitó todos los perfiles de eSIM. Para obtener más información, comunícate con el administrador.</translation>
 <translation id="5523434445161341166">Se está conectando <ph name="FEATURE_NAME" />.</translation>
@@ -1123,7 +1126,7 @@ Nueva instalación</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> tiene <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelarlo.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> no admite la resolución <ph name="SPECIFIED_RESOLUTION" />. Se cambió la resolución a <ph name="FALLBACK_RESOLUTION" />. Para mantener este cambio, haz clic en Confirmar. En <ph name="TIMEOUT_SECONDS" />, se restablecerá la configuración anterior.</translation>
-<translation id="85123341071060231">La conexión Bluetooth de tu Chromebook está desactivada. Para desbloquear la Chromebook, ingresa la contraseña.</translation>
+<translation id="85123341071060231">El Bluetooth de la Chromebook está desactivado. Para desbloquear la Chromebook, ingresa la contraseña.</translation>
 <translation id="8513108775083588393">Giro autom.</translation>
 <translation id="851458219935658693">Está seleccionado el botón que muestra las ventanas del escritorio actual</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
@@ -1177,6 +1180,7 @@ Nueva instalación</translation>
 <translation id="8876661425082386199">Revisa tu conexión</translation>
 <translation id="8877788021141246043">Establecer un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="888982883502837004">Hay actualizaciones de firmware disponibles para tu dispositivo. Haz clic para revisarlas y aplicarlas.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> se borrará de forma permanente.</translation>
 <translation id="890616557918890486">Cambiar la fuente</translation>
 <translation id="8909138438987180327">Batería al <ph name="PERCENTAGE" />%</translation>

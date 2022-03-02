@@ -21,6 +21,11 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
   <variant name="NavigationComplete" summary="completes a navigation."/>
 </variants>
 
+<variants name="ManagementTypes">
+  <variant name="ChromeManaged" summary="chrome-managed price tracking."/>
+  <variant name="UserManaged" summary="user-managed price tracking."/>
+</variants>
+
 <variants name="TabUsageStatuses">
   <variant name="">
     <obsolete>
@@ -115,6 +120,17 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
   </summary>
 </histogram>
 
+<histogram name="Commerce.PDPStateOnNavigation" enum="ShoppingPDPState"
+    expires_after="2023-02-01">
+  <owner>ayman@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records whether a navigation is to a product details page and then whether
+    the information we retrieved about the page contains a product cluster ID.
+  </summary>
+</histogram>
+
 <histogram
     name="Commerce.PowerBookmarks.ShoppingDataProvider.FallbackDataContent"
     enum="ShoppingDataProviderFallback" expires_after="2022-07-17">
@@ -147,6 +163,21 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
     Records whether a particular navigation was determined to be a product page
     by Optimization Guide. This doesn not track whether the page was actually
     bookmarked.
+  </summary>
+</histogram>
+
+<histogram name="Commerce.PowerBookmarks.SubscriptionValidationResult"
+    enum="CommerceSubscriptionValidationResult" expires_after="2022-08-01">
+  <owner>ayman@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records the result of validation of a user's subscribed products between the
+    bookmarks system and the subscriptions backend. This will tell us if a user
+    has a subscription that isn't backed by bookmark locally and if the client
+    has a bookmark that claims to be tracked but has no subscription on the
+    backend. This metric is recorded when the browser starts and whenever the
+    user enters the bookmark manager (each time validation occurs).
   </summary>
 </histogram>
 
@@ -197,6 +228,34 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
     subscriptions when Chrome becomes foreground app but at most once in a
     one-day moving window). Implemented for Android.
   </summary>
+</histogram>
+
+<histogram name="Commerce.PriceDrops.{ManagementType}.NotificationCount"
+    units="notifications" expires_after="2022-06-01">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    The number of price drop notifications shown in the given time interval (one
+    day by default) for the specified management type. Emitted for clients in
+    our experiment when Chrome is foregrounded. Recorded at most once in a
+    one-day moving window. Implemented for Android.
+  </summary>
+  <token key="ManagementType" variants="ManagementTypes"/>
+</histogram>
+
+<histogram name="Commerce.PriceDrops.{ManagementType}.NotificationReachedCap"
+    enum="Boolean" expires_after="2022-06-01">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records whether the number of shown notifications in given window (one day
+    by default) has reached the cap limit for specified management type.
+    Recorded when we are trying to show any price drop notifications.
+    Implemented for Android.
+  </summary>
+  <token key="ManagementType" variants="ManagementTypes"/>
 </histogram>
 
 <histogram
@@ -260,6 +319,20 @@ https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histogra
     initialize subscriptions when Chrome becomes foreground app but at most once
     in a one-day moving window). Implemented for Android.
   </summary>
+</histogram>
+
+<histogram name="Commerce.Subscriptions.{ManagementType}.Count"
+    units="subscriptions" expires_after="2022-06-01">
+  <owner>zhiyuancai@chromium.org</owner>
+  <owner>ayman@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    The number of price tracking subscriptions stored in local storage for the
+    specified management type. Emitted for clients in our experiment when Chrome
+    is foregrounded. Recorded at most once in a one-day moving window.
+    Implemented for Android.
+  </summary>
+  <token key="ManagementType" variants="ManagementTypes"/>
 </histogram>
 
 </histograms>

@@ -118,7 +118,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Contains the implementation to start a request for suggestions.
   void Start(const AutocompleteInput& input,
              bool minimal_changes,
-             bool is_prefetch);
+             bool is_prefetch,
+             bool bypass_cache);
 
   // BaseSearchProvider:
   const TemplateURL* GetTemplateURL(bool is_keyword) const override;
@@ -130,7 +131,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Called when the network request for suggestions has completed.
   // `is_prefetch` and `request_time` are bound to this callback and indicate if
   // the request is a prefetch one and the time it was issued respectively.
-  void OnURLLoadComplete(TemplateURLRef::SearchTermsArgs search_terms_args,
+  void OnURLLoadComplete(const base::WeakPtr<AutocompleteProviderClient> client,
+                         TemplateURLRef::SearchTermsArgs search_terms_args,
                          bool is_prefetch,
                          base::TimeTicks request_time,
                          const network::SimpleURLLoader* source,

@@ -111,6 +111,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
 #include "content/browser/renderer_host/recently_destroyed_hosts.h"
+#include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1589,8 +1590,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           storage_partition_impl_->GetGeneratedCodeCacheContext()),
       channel_connected_(false),
       sent_render_process_ready_(false),
-      instance_weak_factory_(absl::in_place, this),
-      shutdown_exit_code_(-1) {
+      shutdown_exit_code_(-1),
+      instance_weak_factory_(absl::in_place, this) {
   CHECK(!browser_context->ShutdownStarted());
   TRACE_EVENT("shutdown", "RenderProcessHostImpl",
               ChromeTrackEvent::kRenderProcessHost, *this);
@@ -2083,7 +2084,8 @@ void RenderProcessHostImpl::CreateLockManager(
   storage_partition_impl_->GetQuotaManager()->proxy()->GetOrCreateBucket(
       storage_key, storage::kDefaultBucketName, GetUIThreadTaskRunner({}),
       base::BindOnce(&RenderProcessHostImpl::CreateLockManagerWithBucketInfo,
-                     weak_factory_.GetWeakPtr(), std::move(receiver)));
+                     instance_weak_factory_->GetWeakPtr(),
+                     std::move(receiver)));
 }
 
 void RenderProcessHostImpl::CreateLockManagerWithBucketInfo(
@@ -3228,10 +3230,8 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(command_line,
                                                                 GetID());
 
-#if BUILDFLAG(IS_WIN)
   if (IsPdf())
     command_line->AppendSwitch(switches::kPdfRenderer);
-#endif
 
 #if BUILDFLAG(IS_WIN)
   command_line->AppendArg(switches::kPrefetchArgumentRenderer);
@@ -3796,6 +3796,14 @@ bool RenderProcessHostImpl::HasOnlyNonLiveRenderFrameHosts() {
       found_rfh_count++;
       if (rfh->IsRenderFrameLive())
         return false;
+
+      // If this process contains a frame from an inner WebContents, skip the
+      // process leak cleanup for now. Inner WebContents attachment can break
+      // if the process it starts with goes away before it attaches.
+      // TODO(https://crbug.com/1295431): Remove in favor of tracking pending
+      // guest initializations instead.
+      if (rfh->delegate()->IsInnerWebContentsForGuest())
+        return false;
     }
   }
 
@@ -3992,6 +4000,7 @@ void RenderProcessHostImpl::Cleanup() {
   // reused in between now and when the Delete task runs.
   UnregisterHost(GetID());
   browser_context_ = nullptr;
+  storage_partition_impl_ = nullptr;
 }
 
 void RenderProcessHostImpl::PopulateTerminationInfoRendererFields(

@@ -38,6 +38,8 @@ import org.chromium.chrome.browser.ChromeActionModeHandler;
 import org.chromium.chrome.browser.ChromePowerModeVoter;
 import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
+import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
@@ -84,6 +86,7 @@ import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialog;
 import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
+import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -242,7 +245,6 @@ public class RootUiCoordinator
     protected final Supplier<SnackbarManager> mSnackbarManagerSupplier;
     protected final @ActivityType int mActivityType;
     protected final Supplier<Boolean> mIsInOverviewModeSupplier;
-    protected final Supplier<Boolean> mShouldShowOverviewPageOnStartSupplier;
     private final Supplier<Boolean> mIsWarmOnResumeSupplier;
     private final AppMenuDelegate mAppMenuDelegate;
     private final StatusBarColorProvider mStatusBarColorProvider;
@@ -285,8 +287,6 @@ public class RootUiCoordinator
      * @param snackbarManagerSupplier Supplies the {@link SnackbarManager}.
      * @param activityType The {@link ActivityType} for the activity.
      * @param isInOverviewModeSupplier Supplies whether the app is in overview mode.
-     * @param shouldShowOverviewPageOnStartSupplier Supplies whether the overview page should be
-     *         shown on start.
      * @param isWarmOnResumeSupplier Supplies whether the app was warm on resume.
      * @param appMenuDelegate The app menu delegate.
      * @param statusBarColorProvider Provides the status bar color.
@@ -323,7 +323,6 @@ public class RootUiCoordinator
             @NonNull OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             @NonNull Supplier<SnackbarManager> snackbarManagerSupplier,
             @ActivityType int activityType, @NonNull Supplier<Boolean> isInOverviewModeSupplier,
-            @NonNull Supplier<Boolean> shouldShowOverviewPageOnStartSupplier,
             @NonNull Supplier<Boolean> isWarmOnResumeSupplier,
             @NonNull AppMenuDelegate appMenuDelegate,
             @NonNull StatusBarColorProvider statusBarColorProvider,
@@ -351,7 +350,6 @@ public class RootUiCoordinator
         mSnackbarManagerSupplier = snackbarManagerSupplier;
         mActivityType = activityType;
         mIsInOverviewModeSupplier = isInOverviewModeSupplier;
-        mShouldShowOverviewPageOnStartSupplier = shouldShowOverviewPageOnStartSupplier;
         mIsWarmOnResumeSupplier = isWarmOnResumeSupplier;
         mAppMenuDelegate = appMenuDelegate;
         mStatusBarColorProvider = statusBarColorProvider;
@@ -662,6 +660,17 @@ public class RootUiCoordinator
 
         initMerchantTrustSignals();
         initScrollCapture();
+
+        // TODO(1293885): Remove this validator once we have an API on the backend that sends
+        //                success/failure information back.
+        if (ShoppingFeatures.isShoppingListEnabled()) {
+            mBookmarkBridgeSupplier.addObserver((bridge) -> {
+                PowerBookmarkUtils.validateBookmarkedCommerceSubscriptions(bridge,
+                        new CommerceSubscriptionsServiceFactory()
+                                .getForLastUsedProfile()
+                                .getSubscriptionsManager());
+            });
+        }
     }
 
     private void initMerchantTrustSignals() {
@@ -927,9 +936,6 @@ public class RootUiCoordinator
             mButtonDataProviders =
                     Arrays.asList(mIdentityDiscController, adaptiveToolbarButtonController);
 
-            // mShouldShowOverviewPageOnStartSupplier.get() should already be ready because
-            // ChromeTabbedActivity#mInactivityTracker and getTabModelSelector() have been set up by
-            // performPostInflationStartup before this method.
             mToolbarManager = new ToolbarManager(mActivity, mBrowserControlsManager,
                     mFullscreenManager, toolbarContainer, mCompositorViewHolderSupplier.get(),
                     urlFocusChangedCallback, mTopUiThemeColorProvider,
@@ -941,9 +947,9 @@ public class RootUiCoordinator
                     shouldShowMenuUpdateBadge(), mTabModelSelectorSupplier, mStartSurfaceSupplier,
                     mOmniboxFocusStateSupplier, mIntentMetadataOneshotSupplier,
                     mPromoShownOneshotSupplier, mWindowAndroid, mIsInOverviewModeSupplier,
-                    mShouldShowOverviewPageOnStartSupplier.get(), mModalDialogManagerSupplier,
-                    mStatusBarColorController, mAppMenuDelegate, mActivityLifecycleDispatcher,
-                    mStartSurfaceParentTabSupplier, mBottomSheetController, mIsWarmOnResumeSupplier,
+                    mModalDialogManagerSupplier, mStatusBarColorController, mAppMenuDelegate,
+                    mActivityLifecycleDispatcher, mStartSurfaceParentTabSupplier,
+                    mBottomSheetController, mIsWarmOnResumeSupplier,
                     mTabContentManagerSupplier.get(), mTabCreatorManagerSupplier.get(),
                     mOverviewModeBehaviorSupplier, mSnackbarManagerSupplier.get(), mJankTracker,
                     getMerchantTrustSignalsCoordinatorSupplier(), mTabReparentingControllerSupplier,

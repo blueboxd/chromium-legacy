@@ -82,6 +82,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351937230027495976">Zbaliť ponuku</translation>
 <translation id="1364382257761975320">Ak chcete Chromebook odomknúť, použite odtlačok prsta</translation>
+<translation id="1364618750746929654">Prepis sa nedá vygenerovať</translation>
 <translation id="1383597849754832576">Súbory s balíkmi reči sa nedajú stiahnuť. Skúste to neskôr.</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1391102559483454063">Zapnuté</translation>
@@ -348,7 +349,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="334252345105450327">Vytvoriť snímku obrazovky</translation>
 <translation id="3351879221545518001">Momentálne prenášate obrazovku.</translation>
 <translation id="3364721542077212959">Nástroje pre dotykové pero</translation>
-<translation id="3365977133351922112">Telefón je príliš ďaleko. Prineste ho bližšie.</translation>
+<translation id="3365977133351922112">Telefón je príliš ďaleko, prineste ho bližšie.</translation>
 <translation id="3368922792935385530">Pripojené</translation>
 <translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
 <translation id="3375634426936648815">Pripojené</translation>
@@ -577,6 +578,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" /> % (ľavé)</translation>
 <translation id="4734965478015604180">Na šírku</translation>
 <translation id="4735498845456076464">Klávesová skratka <ph name="LAUNCHER_KEY_NAME" /> + číslo bola zmenená. Ak chcete použiť klávesy s funkciami, stlačte kláves <ph name="LAUNCHER_KEY_NAME" /> + kláves v hornom rade.</translation>
+<translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4774338217796918551">Vráť sa zajtra o <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -660,7 +662,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="5322611492012084517">Telefón sa nepodarilo nájsť</translation>
 <translation id="5327248766486351172">Názov</translation>
 <translation id="5329548388331921293">Pripája sa…</translation>
-<translation id="5330201449517439522">Zadajte klepnutím alebo kliknutím</translation>
+<translation id="5330201449517439522">Pokračujte klepnutím alebo kliknutím</translation>
 <translation id="5331975486040154427">Zariadenie USB-C (port vľavo vzadu)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" /> % (pravé)</translation>
 <translation id="5352250171825660495">Tmavý motív je zapnutý</translation>
@@ -678,6 +680,7 @@ Na začiatok môžete vyskúšať niektoré z týchto vecí.</translation>
 <translation id="54609108002486618">Spravovaný</translation>
 <translation id="5465662442746197494">Potrebujete pomoc?</translation>
 <translation id="547979256943495781">Polička vpravo</translation>
+<translation id="5491186829646618080">K dispozícii sú aktualizácie firmvéru</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Váš správca odstránil všetky profily eSIM. Ďalšie informácie vám poskytne správca.</translation>
 <translation id="5523434445161341166"><ph name="FEATURE_NAME" /> sa pripája.</translation>
@@ -1063,7 +1066,7 @@ Nová inštalácia</translation>
 <translation id="8061464966246066292">Vysoký kontrast</translation>
 <translation id="8098591350844501178">Zastaviť prenos obrazovky do zariadenia <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Zap., vš. apl.</translation>
-<translation id="8120151603115102514">Telefón nemá uzamknutú obrazovku. Ak chcete Chromebook odomknúť, zadajte heslo.</translation>
+<translation id="8120151603115102514">Telefón nemá zámku obrazovky. Ak chcete Chromebook odomknúť, zadajte heslo.</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8132487352815776550">Ukončiť skryté titulky</translation>
@@ -1176,6 +1179,7 @@ Nová inštalácia</translation>
 <translation id="8876661425082386199">Skontrolujte pripojenie</translation>
 <translation id="8877788021141246043">Nastaviť pripomenutie</translation>
 <translation id="8878886163241303700">Rozšírenie obrazovky</translation>
+<translation id="888982883502837004">Pre vaše zariadenie sú k dispozícii aktualizácie firmvéru. Kliknutím si ich zobrazte a firmvér aktualizujte.</translation>
 <translation id="8896630965521842259">Šablóna <ph name="DESK_TEMPLATE_NAME" /> bude natrvalo odstránená</translation>
 <translation id="890616557918890486">Zmeniť zdroj</translation>
 <translation id="8909138438987180327">Úroveň stavu batérie: <ph name="PERCENTAGE" /> %.</translation>

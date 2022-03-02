@@ -257,6 +257,10 @@ const char kDnsOverHttpsDescription[] =
     "try to use a secure HTTPS connection to look up the addresses of websites "
     "and other web resources.";
 
+const char kAssistantConsentModalName[] = "AssistantConsentModal";
+const char kAssistantConsentModalDescription[] =
+    "Enables the modal version of the Assistant voice search consent dialog.";
+
 const char kAssistantConsentSimplifiedTextName[] =
     "AssistantConsentSimplifiedText";
 const char kAssistantConsentSimplifiedTextDescription[] =
@@ -2923,6 +2927,11 @@ const char kChromeSharingHubLaunchAdjacentDescription[] =
     "In multi-window mode, launches share hub actions in an adjacent window. "
     "For internal debugging.";
 
+const char kCloseAllTabsModalDialogName[] = "Close all tabs modal dialog";
+const char kCloseAllTabsModalDialogDescription[] =
+    "Shows a confirmation modal dialog when clicking 'Close all tabs' in the"
+    "app menu.";
+
 const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
 const char kCloseTabSuggestionsDescription[] =
     "Suggests to the user to close Tabs that haven't been used beyond a "
@@ -3321,6 +3330,10 @@ const char kReaderModeHeuristicsAdaboost[] = "Non-mobile-friendly articles";
 const char kReaderModeHeuristicsAllArticles[] = "All articles";
 const char kReaderModeHeuristicsAlwaysOff[] = "Never";
 const char kReaderModeHeuristicsAlwaysOn[] = "Always";
+
+const char kImproveReaderModePromptName[] = "Improve Reader Mode Prompt";
+const char kImproveReaderModePromptDescription[] =
+    "Reduce prompt frequency and polish reader mode related settings.";
 
 const char kReaderModeInCCTName[] = "Reader Mode in CCT";
 const char kReaderModeInCCTDescription[] =

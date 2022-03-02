@@ -59,6 +59,12 @@ class WebStateDelegate;
 class WebStateObserver;
 class WebStatePolicyDecider;
 
+// Normally it would be a bug for multiple WebStates to be realized in quick
+// succession. However, there are some specific use cases where this is
+// expected. In these scenarios call IgnoreOverRealizationCheck() before
+// each expected -ForceRealized.
+void IgnoreOverRealizationCheck();
+
 // Core interface for interaction with the web.
 class WebState : public base::SupportsUserData {
  public:
@@ -357,6 +363,9 @@ class WebState : public base::SupportsUserData {
   // Gets the last committed URL. It represents the current page that is
   // displayed in this WebState. It represents the current security context.
   virtual const GURL& GetLastCommittedURL() const = 0;
+
+  // Gets the time at which the last committed navigation completed.
+  virtual const base::Time GetLastCommittedTimestamp() const = 0;
 
   // Returns the WebState view of the current URL. Moreover, this method
   // will set the trustLevel enum to the appropriate level from a security point

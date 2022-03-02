@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './elements/viewer-error-dialog.js';
 // <if expr="enable_ink">
 import './elements/viewer-ink-host.js';
 // </if>
 import './elements/viewer-password-dialog.js';
+import './elements/viewer-pdf-sidenav.js';
 import './elements/viewer-properties-dialog.js';
+import './elements/viewer-toolbar.js';
 import './elements/shared-vars.js';
 import './pdf_viewer_shared_style.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
@@ -565,11 +568,6 @@ export class PDFViewerElement extends PDFViewerBaseElement {
 
   /** @private */
   onPresentClick_() {
-    const onWheel = e => {
-      e.deltaY > 0 ? this.viewport.goToNextPage() :
-                     this.viewport.goToPreviousPage();
-    };
-
     const scroller = /** @type {!HTMLElement} */ (
         this.shadowRoot.querySelector('#scroller'));
 
@@ -581,8 +579,8 @@ export class PDFViewerElement extends PDFViewerBaseElement {
         .then(() => {
           this.forceFit(FittingType.FIT_TO_HEIGHT);
 
-          // Add a 'wheel' listener, only while in Presentation mode.
-          scroller.addEventListener('wheel', onWheel);
+          // Switch viewport's wheel behavior.
+          this.viewport.setPresentationMode(true);
 
           // Restrict the content to read only (e.g. disable forms and links).
           this.pluginController_.setReadOnly(true);
@@ -590,7 +588,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
           // Revert back to the normal state when exiting Presentation mode.
           eventToPromise('fullscreenchange', scroller).then(() => {
             assert(document.fullscreenElement === null);
-            scroller.removeEventListener('wheel', onWheel);
+            this.viewport.setPresentationMode(false);
             this.pluginController_.setReadOnly(false);
 
             // Ensure that directional keys still work after exiting.
@@ -816,6 +814,10 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       case 'setIsSelecting':
         this.viewportScroller.setEnableScrolling(
             /** @type {{ isSelecting: boolean }} */ (data).isSelecting);
+        return;
+      case 'setSmoothScrolling':
+        this.viewport.setSmoothScrolling(
+            /** @type {{ smoothScrolling: boolean }} */ (data).smoothScrolling);
         return;
       case 'formFocusChange':
         this.isFormFieldFocused_ =

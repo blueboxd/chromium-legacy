@@ -112,6 +112,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Tab.CloseAllTabsDialog.ClosedAllTabs" units="Boolean"
+    expires_after="2022-06-30">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>yashard@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <summary>
+    Records the whether the &quot;Close all tabs&quot; action was taken when
+    close all tabs confirmation dialog was shown through App Menu &gt; Close all
+    tabs. This is only recorded for Android.
+  </summary>
+</histogram>
+
 <histogram name="Tab.Count.Guest" units="units" expires_after="2022-06-19">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
@@ -1651,6 +1663,19 @@ chromium-metrics-reviews@google.com.
   <token key="BatteryState" variants="BatteryState"/>
 </histogram>
 
+<histogram name="Tabs.PersistedTabData.Critical.Map.Success"
+    enum="BooleanSuccess" expires_after="2023-02-08">
+  <owner>davidjm@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    CriticalPersistedTabData persists core Tab metadata (tab id, web contents
+    etc.) across restarts. This metric records if the Tab metadata is
+    successfully mapped from raw storage into an object which can be consumed in
+    Tab restoration.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.PersistedTabData.Deserialize.Critical"
     enum="BooleanSuccess" expires_after="2022-07-03">
   <owner>yusufo@chromium.org</owner>
@@ -1718,6 +1743,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Tabs.PersistedTabData.Storage.LoadAndMapTime.File" units="ms"
+    expires_after="2023-02-07">
+  <owner>davidjm@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    PersistedTabData stores Tab related data across restarts in a number of
+    storage options. This metric stores the time to load Tab data from file
+    storage and map it into an object available for consumption on Tab
+    restoration. The only client currently using File storage is
+    CriticalPersistedTabData which persists core Tab metadata (tab id, web
+    contents etc.) across restarts.
+  </summary>
+</histogram>
+
 <histogram name="Tabs.PersistedTabData.Storage.LoadTime.File" units="ms"
     expires_after="2022-03-20">
   <owner>yusufo@chromium.org</owner>
@@ -1727,7 +1767,21 @@ chromium-metrics-reviews@google.com.
   <summary>
     FilePersistedTabData storage stores serialized PersistedTabData (metadata
     persisted across restarts) in a file. This metric records how long it took
-    to load the file in the event the file exists.
+    to load the file in the event the file exists. .
+  </summary>
+</histogram>
+
+<histogram name="Tabs.PersistedTabData.Storage.MapTime.File" units="ms"
+    expires_after="2023-02-07">
+  <owner>davidjm@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    PersistedTabData stores Tab related data across restarts in a number of
+    storage options. This metric stores the time to map data acquired from raw
+    file storage into an object which can be consumed on Tab restoration. The
+    only client currently using File storage is CriticalPersistedTabData which
+    persists core Tab metadata (tab id, web contents etc.) across restarts.
   </summary>
 </histogram>
 
@@ -2285,6 +2339,26 @@ chromium-metrics-reviews@google.com.
     </variant>
     <variant name=".TabStrip" summary="The TabStrip componets"/>
   </token>
+</histogram>
+
+<histogram name="Tabs.TabRestoreMethod" enum="TabRestoreMethod"
+    expires_after="2023-02-19">
+  <owner>davidjm@chromium.org</owner>
+  <owner>dtrainor@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    CriticalPersistedTabData is a schema based Tab restoration system which
+    persists Tab metadata such as web contents and time last accessed across
+    restarts. CriticalPersistedTabData will replace legacy hand-written
+    TabState.
+
+    This metric records how many Tabs are restored using
+    CriticalPersistedTabData, TabState, are re-created, skipped or failed to be
+    restored. As we migrate from TabState to CriticalPersistedTabData it is
+    imperative we can compare the success rate of each system vs. how many Tabs
+    are re-created or failed to be restored. This metric is emitted once for
+    each Tab restoration on startup.
+  </summary>
 </histogram>
 
 <histogram name="Tabs.TabSearch.CloseAction" enum="TabSearchCloseActions"

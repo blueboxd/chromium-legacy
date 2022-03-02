@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_wrapper_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
+#import "ios/chrome/browser/ui/ntp/logo_vendor.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
@@ -209,6 +210,9 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   }
   _webState = webState;
   self.NTPMetrics.webState = webState;
+  if (IsSingleNtpEnabled()) {
+    [self.logoVendor setWebState:webState];
+  }
   if (_webState && _webStateObserver) {
     if (IsSingleNtpEnabled()) {
       [self setContentOffsetForWebState:webState];
@@ -324,6 +328,9 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   DCHECK(notificationPromo);
   notificationPromo->HandleClosed();
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_PROMO];
+  if (IsSingleCellContentSuggestionsEnabled()) {
+    [self.suggestionsMediator hidePromo];
+  }
 
   if (notificationPromo->IsURLPromo()) {
     UrlLoadParams params = UrlLoadParams::InNewTab(notificationPromo->url());
@@ -378,8 +385,7 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   [self.feedMetricsRecorder recordHeaderMenuLearnMoreTapped];
 }
 
-- (void)openMostRecentTab:(CollectionViewItem*)item {
-  DCHECK([item isKindOfClass:[ContentSuggestionsReturnToRecentTabItem class]]);
+- (void)openMostRecentTab {
   base::RecordAction(
       base::UserMetricsAction("IOS.StartSurface.OpenMostRecentTab"));
   [self.suggestionsMediator hideRecentTabTile];
@@ -396,6 +402,20 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 }
 
 #pragma mark - ContentSuggestionsGestureCommands
+
+- (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
+                            incognito:(BOOL)incognito
+                              atIndex:(NSInteger)index
+                            fromPoint:(CGPoint)point {
+  if (incognito &&
+      IsIncognitoModeDisabled(self.browser->GetBrowserState()->GetPrefs())) {
+    // This should only happen when the policy changes while the option is
+    // presented.
+    return;
+  }
+  [self logMostVisitedOpening:item atIndex:index];
+  [self openNewTabWithURL:item.URL incognito:incognito originPoint:point];
+}
 
 - (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
                             incognito:(BOOL)incognito
@@ -493,8 +513,8 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
 #pragma mark - Private
 
 // Returns the center of the cell associated with |item| in the window
-// coordinates. Returns CGPointZero is the cell isn't visible.
-- (CGPoint)cellCenterForItem:(CollectionViewItem<SuggestedContent>*)item {
+// coordinates. Returns CGPointZero if the cell isn't visible.
+- (CGPoint)cellCenterForItem:(ContentSuggestionsMostVisitedItem*)item {
   NSIndexPath* indexPath = [self.suggestionsViewController.collectionViewModel
       indexPathForItem:item];
   if (!indexPath)

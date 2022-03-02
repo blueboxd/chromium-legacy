@@ -293,6 +293,7 @@ public class ChromeProvidedSharingOptionsProvider {
             mOrderedFirstPartyOptions.add(createLightweightReactionsFirstPartyOption());
         }
         mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
+        mOrderedFirstPartyOptions.add(createCopyGifFirstPartyOption());
         mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption());
         mOrderedFirstPartyOptions.add(createCopyFirstPartyOption());
         mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
@@ -312,6 +313,8 @@ public class ChromeProvidedSharingOptionsProvider {
                         FeatureConstants.IPH_SHARE_SCREENSHOT_FEATURE);
         return new FirstPartyOptionBuilder(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT,
                 ContentType.HIGHLIGHTED_TEXT, ContentType.IMAGE)
+                .setDetailedContentTypesToDisableFor(
+                        DetailedContentType.LIGHTWEIGHT_REACTION, DetailedContentType.WEB_NOTES)
                 .setIcon(R.drawable.screenshot, R.string.sharing_screenshot)
                 .setFeatureNameForMetrics("SharingHubAndroid.ScreenshotSelected")
                 .setDisableForMultiWindow(true)
@@ -331,6 +334,8 @@ public class ChromeProvidedSharingOptionsProvider {
     private FirstPartyOption createLongScreenshotsFirstPartyOption() {
         return new FirstPartyOptionBuilder(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT,
                 ContentType.HIGHLIGHTED_TEXT, ContentType.IMAGE)
+                .setDetailedContentTypesToDisableFor(
+                        DetailedContentType.LIGHTWEIGHT_REACTION, DetailedContentType.WEB_NOTES)
                 .setIcon(R.drawable.long_screenshot, R.string.sharing_long_screenshot)
                 .setFeatureNameForMetrics("SharingHubAndroid.LongScreenshotSelected")
                 .setDisableForMultiWindow(true)
@@ -362,10 +367,28 @@ public class ChromeProvidedSharingOptionsProvider {
                 .build();
     }
 
+    private FirstPartyOption createCopyGifFirstPartyOption() {
+        return new FirstPartyOptionBuilder(ContentType.IMAGE, ContentType.IMAGE_AND_LINK)
+                .setIcon(R.drawable.ic_content_copy_black, R.string.sharing_copy_gif)
+                // Enables only for GIF and Lightweight Reactions
+                .setDetailedContentTypesToDisableFor(DetailedContentType.IMAGE,
+                        DetailedContentType.WEB_NOTES, DetailedContentType.NOT_SPECIFIED)
+                .setFeatureNameForMetrics("SharingHubAndroid.CopyGifSelected")
+                .setOnClickCallback((view) -> {
+                    if (!mShareParams.getFileUris().isEmpty()) {
+                        Clipboard.getInstance().setImageUri(mShareParams.getFileUris().get(0));
+                        Toast.makeText(mActivity, R.string.gif_copied, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .build();
+    }
+
     private FirstPartyOption createCopyImageFirstPartyOption() {
         return new FirstPartyOptionBuilder(ContentType.IMAGE, ContentType.IMAGE_AND_LINK)
                 .setIcon(R.drawable.ic_content_copy_black, R.string.sharing_copy_image)
                 .setFeatureNameForMetrics("SharingHubAndroid.CopyImageSelected")
+                .setDetailedContentTypesToDisableFor(
+                        DetailedContentType.GIF, DetailedContentType.LIGHTWEIGHT_REACTION)
                 .setOnClickCallback((view) -> {
                     if (!mShareParams.getFileUris().isEmpty()) {
                         Clipboard.getInstance().setImageUri(mShareParams.getFileUris().get(0));
@@ -407,6 +430,8 @@ public class ChromeProvidedSharingOptionsProvider {
     private FirstPartyOption createSendTabToSelfFirstPartyOption() {
         return new FirstPartyOptionBuilder(
                 ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.IMAGE)
+                .setDetailedContentTypesToDisableFor(
+                        DetailedContentType.LIGHTWEIGHT_REACTION, DetailedContentType.WEB_NOTES)
                 .setIcon(R.drawable.send_tab, R.string.send_tab_to_self_share_activity_title)
                 .setFeatureNameForMetrics("SharingHubAndroid.SendTabToSelfSelected")
                 .setOnClickCallback((view) -> {
@@ -426,6 +451,8 @@ public class ChromeProvidedSharingOptionsProvider {
     private FirstPartyOption createQrCodeFirstPartyOption() {
         return new FirstPartyOptionBuilder(
                 ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.IMAGE)
+                .setDetailedContentTypesToDisableFor(
+                        DetailedContentType.LIGHTWEIGHT_REACTION, DetailedContentType.WEB_NOTES)
                 .setIcon(R.drawable.qr_code, R.string.qr_code_share_icon_label)
                 .setFeatureNameForMetrics("SharingHubAndroid.QRCodeSelected")
                 .setOnClickCallback((view) -> {
@@ -468,6 +495,8 @@ public class ChromeProvidedSharingOptionsProvider {
     private FirstPartyOption createLightweightReactionsFirstPartyOption() {
         return new FirstPartyOptionBuilder(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT,
                 ContentType.HIGHLIGHTED_TEXT, ContentType.IMAGE)
+                .setDetailedContentTypesToDisableFor(
+                        DetailedContentType.LIGHTWEIGHT_REACTION, DetailedContentType.WEB_NOTES)
                 .setIcon(R.drawable.lightweight_reactions_icon,
                         R.string.sharing_lightweight_reactions)
                 .setFeatureNameForMetrics("SharingHubAndroid.LightweightReactions")

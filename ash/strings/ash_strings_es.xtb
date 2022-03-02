@@ -82,6 +82,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1351937230027495976">Ocultar menú</translation>
 <translation id="1364382257761975320">Para desbloquear tu Chromebook, usa tu huella digital</translation>
+<translation id="1364618750746929654">No se puede generar la transcripción</translation>
 <translation id="1383597849754832576">No se han podido descargar los archivos de voz. Prueba de nuevo más tarde.</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1391102559483454063">Activada</translation>
@@ -370,7 +371,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3477079411857374384">Control + Mayús + barra espaciadora</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">La estantería se ocultará automáticamente</translation>
-<translation id="3509391053705095206">No se puede encontrar tu teléfono. Comprueba que el Bluetooth del teléfono esté activado.</translation>
+<translation id="3509391053705095206">No encuentro tu teléfono. Comprueba que su Bluetooth esté activado.</translation>
 <translation id="3510164367642747937">Resaltar el cursor del ratón</translation>
 <translation id="3513798432020909783">Cuenta gestionada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3518604429872942239">Bandeja de estado: hora <ph name="TIME" />,
@@ -578,6 +579,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" /> % (izquierdo)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">La combinación de teclas <ph name="LAUNCHER_KEY_NAME" /> + número ha cambiado. Para usar las teclas de funciones, pulsa la tecla <ph name="LAUNCHER_KEY_NAME" /> + una tecla de la fila superior.</translation>
+<translation id="473775607612524610">Actualizar</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4774338217796918551">Vuelve mañana a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -604,7 +606,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4925542575807923399">El administrador de esta cuenta requiere que esta cuenta sea la primera en la que se inicie sesión cuando se cree una sesión de inicio de sesión múltiple.</translation>
 <translation id="4945196315133970626">Desactivar las notificaciones</translation>
-<translation id="4946376291507881335">Captar imagen</translation>
+<translation id="4946376291507881335">Hacer captura</translation>
 <translation id="495046168593986294">Desplazarse hacia arriba</translation>
 <translation id="4952936045814352993">La función de localizar el teléfono no está disponible si los sonidos de la alarma están inhabilitados</translation>
 <translation id="4960324571663582548"><ph name="MANAGER" /> requiere que restaures tu <ph name="DEVICE_TYPE" />. Tu dispositivo se reiniciará y se eliminarán todos los datos.</translation>
@@ -679,6 +681,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="54609108002486618">Administrado</translation>
 <translation id="5465662442746197494">¿Necesitas ayuda?</translation>
 <translation id="547979256943495781">La estantería está en la parte derecha</translation>
+<translation id="5491186829646618080">Hay actualizaciones de firmware disponibles</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Tu administrador ha eliminado todos los perfiles de eSIM. Ponte en contacto con tu administrador para obtener más información.</translation>
 <translation id="5523434445161341166"><ph name="FEATURE_NAME" /> se está conectando.</translation>
@@ -1104,7 +1107,7 @@ Nueva instalación</translation>
 <translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> y tu teléfono se conectarán automáticamente</translation>
 <translation id="8380784334203145311">Buenas noches,</translation>
 <translation id="8388750414311082622">No se puede quitar el último escritorio.</translation>
-<translation id="8394567579869570560">Tu padre, madre o tutor han bloqueado este dispositivo</translation>
+<translation id="8394567579869570560">Tu padre, madre o tutor/a han bloqueado este dispositivo</translation>
 <translation id="8401850874595457088">Menú de selección de idioma</translation>
 <translation id="8412677897383510995">Mostrar ajustes de pantalla</translation>
 <translation id="8413272770729657668">La grabación empezará en 3, 2. 1…</translation>
@@ -1123,7 +1126,7 @@ Nueva instalación</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> ha <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pulsa Alt + tecla de búsqueda o Mayús para cancelarlo.</translation>
 <translation id="8492573885090281069">La pantalla <ph name="DISPLAY_NAME" /> no admite <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" />. Haz clic en Confirmar para mantener los cambios. La configuración anterior se restaurará en <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="85123341071060231">El Bluetooth de tu Chromebook está desactivado. Para desbloquear tu Chromebook, escribe la contraseña.</translation>
+<translation id="85123341071060231">El Bluetooth de tu Chromebook está desactivado. Para desbloquear el Chromebook, escribe la contraseña.</translation>
 <translation id="8513108775083588393">Girar autom.</translation>
 <translation id="851458219935658693">Mostrar ventanas del escritorio actual, botón seleccionado</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
@@ -1177,6 +1180,7 @@ Nueva instalación</translation>
 <translation id="8876661425082386199">Comprobar tu conexión</translation>
 <translation id="8877788021141246043">Añadir un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="888982883502837004">Hay actualizaciones de firmware disponibles para tu dispositivo. Haz click para verlas y actualizar.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> se eliminará permanentemente.</translation>
 <translation id="890616557918890486">Cambiar fuente</translation>
 <translation id="8909138438987180327">La batería tiene un <ph name="PERCENTAGE" /> % de carga.</translation>
@@ -1228,7 +1232,7 @@ Nueva instalación</translation>
 <translation id="9211490828691860325">Todos los escritorios</translation>
 <translation id="9211681782751733685">Tiempo restante para que se cargue totalmente la batería: <ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">Fondo de pantalla</translation>
-<translation id="921989828232331238">Tu padre, madre o tutor han bloqueado tu dispositivo todo el día</translation>
+<translation id="921989828232331238">Tu padre, madre o tutor/a han bloqueado tu dispositivo todo el día</translation>
 <translation id="9220525904950070496">Quitar cuenta</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
 <translation id="925832987464884575">Ocultar vistas previas</translation>

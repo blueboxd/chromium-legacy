@@ -39,6 +39,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cc/input/scroll_utils.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -107,6 +108,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
@@ -558,6 +560,110 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
       content::EvalJs(embedder_web_contents,
                       "document.body.firstChild.hasAttribute('internalid');")
           .ExtractBool());
+}
+
+// Helper class to allow pausing the asynchronous attachment of an inner
+// WebContents between MimeHandlerViewAttachHelper's AttachToOuterWebContents()
+// and ResumeAttachOrDestroy().  This corresponds to the point where the inner
+// WebContents has been created but not yet attached or navigated.
+class InnerWebContentsAttachDelayer {
+ public:
+  explicit InnerWebContentsAttachDelayer(
+      content::RenderFrameHost* outer_frame) {
+    auto* mime_handler_view_helper =
+        extensions::MimeHandlerViewAttachHelper::Get(
+            outer_frame->GetProcess()->GetID());
+    mime_handler_view_helper->set_resume_attach_callback_for_testing(
+        base::BindOnce(&InnerWebContentsAttachDelayer::ResumeAttachCallback,
+                       base::Unretained(this)));
+  }
+
+  void ResumeAttachCallback(base::OnceClosure resume_closure) {
+    // Called to continue in the test while the attachment is paused. The
+    // attachment will continue when the test calls ResumeAttach.
+    resume_closure_ = std::move(resume_closure);
+    run_loop_.Quit();
+  }
+
+  void WaitForAttachStart() { run_loop_.Run(); }
+
+  void ResumeAttach() {
+    ASSERT_TRUE(resume_closure_);
+    std::move(resume_closure_).Run();
+  }
+
+ private:
+  base::OnceClosure resume_closure_;
+  base::RunLoop run_loop_;
+};
+
+// Ensure that when the only other PDF instance closes in the middle of
+// attaching an inner WebContents for a PDF, the inner WebContents can still
+// successfully complete its attachment and subsequent navigation.  See
+// https://crbug.com/1295431.
+IN_PROC_BROWSER_TEST_P(PDFExtensionTestWithTestGuestViewManager,
+                       PdfExtensionLoadedWhileOldPdfCloses) {
+  // Load test PDF in first tab.
+  const GURL main_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+  auto* embedder_web_contents = GetActiveWebContents();
+
+  // Verify the PDF has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  WaitForLoadStart(guest_web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
+
+  // Verify we loaded the extension.
+  const GURL extension_url(
+      "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html");
+  EXPECT_EQ(extension_url, guest_web_contents->GetLastCommittedURL());
+  EXPECT_EQ(main_url, embedder_web_contents->GetLastCommittedURL());
+
+  // Open another tab and navigate it to a same-site non-PDF URL.
+  ui_test_utils::TabAddedWaiter add_tab1(browser());
+  chrome::NewTab(browser());
+  add_tab1.Wait();
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  ASSERT_EQ(new_web_contents, GetActiveWebContents());
+  const GURL non_pdf_url(embedded_test_server()->GetURL("/title1.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), non_pdf_url));
+
+  // Start loading another PDF in the new tab, but pause during guest attach.
+  // It is important that the PDF navigation uses the same RFH as `delayer`.
+  InnerWebContentsAttachDelayer delayer(new_web_contents->GetMainFrame());
+  content::TestNavigationObserver navigation_observer(new_web_contents);
+  new_web_contents->GetController().LoadURLWithParams(
+      content::NavigationController::LoadURLParams(main_url));
+  delayer.WaitForAttachStart();
+
+  // Close the first tab, destroying the first PDF while the second PDF is in
+  // the middle of initialization. In https://crbug.com/1295431, the extension
+  // process exited here and caused a crash when the second PDF resumed.
+  EXPECT_EQ(2U, GetGuestViewManager()->GetNumGuestsActive());
+  content::WebContentsDestroyedWatcher destroyed_watcher(guest_web_contents);
+  ASSERT_TRUE(browser()->tab_strip_model()->CloseWebContentsAt(
+      0, TabStripModel::CLOSE_USER_GESTURE));
+  destroyed_watcher.Wait();
+  EXPECT_EQ(1U, GetGuestViewManager()->GetNumGuestsActive());
+
+  // Now resume the guest attachment and ensure the second PDF loads without
+  // crashing.
+  delayer.ResumeAttach();
+  navigation_observer.Wait();
+  auto* guest_web_contents2 =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents2);
+  EXPECT_NE(embedder_web_contents, guest_web_contents2);
+  WaitForLoadStart(guest_web_contents2);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents2));
+
+  // Verify we loaded the extension.
+  EXPECT_EQ(extension_url, guest_web_contents2->GetLastCommittedURL());
+  EXPECT_EQ(main_url, new_web_contents->GetLastCommittedURL());
 }
 
 // This test verifies that when a PDF is served with a restrictive
@@ -1597,6 +1703,12 @@ class PDFExtensionScrollTest : public PDFExtensionTest {
     GetActiveWebContents()->Resize({0, 0, 1024, 768});
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Smooth scrolling confuses the test cases that reads the scroll bar
+    // position.
+    command_line->AppendSwitch(switches::kDisableSmoothScrolling);
+  }
+
  protected:
   class ScrollEventWaiter {
    public:
@@ -1633,6 +1745,11 @@ class PDFExtensionScrollTest : public PDFExtensionTest {
   // //chrome/browser/resources/pdf/viewport.js.
   static constexpr int kScrollIncrement = 40;
 
+  // Scrolling by a fraction of the viewport height may introduce slight
+  // position differences on various platforms due to rounding. Tolerate this
+  // difference.
+  static constexpr float kScrollPositionEpsilon = 2.0f;
+
   static int GetViewportHeight(WebContents* guest_contents) {
     int viewport_height = 0;
     EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -1661,9 +1778,6 @@ class PDFExtensionScrollTest : public PDFExtensionTest {
   }
 };
 
-// static
-constexpr int PDFExtensionScrollTest::kScrollIncrement;
-
 IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithSpace) {
   WebContents* guest_contents = LoadPdfGetGuestContents(
       embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
@@ -1674,6 +1788,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithSpace) {
   const int viewport_height = GetViewportHeight(guest_contents);
   ASSERT_GT(viewport_height, 0);
 
+  // For web content, page down / page up scrolling only scrolls by a fraction
+  // of the viewport height. The PDF Viewer should match that behavior.
+  const float scroll_height =
+      viewport_height * cc::kMinFractionToStepWhenPaging;
+
   // Press Space to scroll down.
   ScrollEventWaiter scroll_waiter(guest_contents);
   content::SimulateKeyPress(guest_contents, ui::DomKey::FromCharacter(' '),
@@ -1681,7 +1800,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithSpace) {
                             /*control=*/false, /*shift=*/false, /*alt=*/false,
                             /*command=*/false);
   ASSERT_NO_FATAL_FAILURE(scroll_waiter.Wait());
-  EXPECT_EQ(viewport_height, GetViewportScrollPositionY(guest_contents));
+  EXPECT_NEAR(scroll_height, GetViewportScrollPositionY(guest_contents),
+              kScrollPositionEpsilon);
 
   // Press Space to scroll down again.
   scroll_waiter.Reset();
@@ -1690,7 +1810,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithSpace) {
                             /*control=*/false, /*shift=*/false, /*alt=*/false,
                             /*command=*/false);
   ASSERT_NO_FATAL_FAILURE(scroll_waiter.Wait());
-  EXPECT_EQ(viewport_height * 2, GetViewportScrollPositionY(guest_contents));
+  EXPECT_NEAR(scroll_height * 2, GetViewportScrollPositionY(guest_contents),
+              kScrollPositionEpsilon);
 
   // Press Shift+Space to scroll up.
   scroll_waiter.Reset();
@@ -1699,7 +1820,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithSpace) {
                             /*control=*/false, /*shift=*/true, /*alt=*/false,
                             /*command=*/false);
   ASSERT_NO_FATAL_FAILURE(scroll_waiter.Wait());
-  EXPECT_EQ(viewport_height, GetViewportScrollPositionY(guest_contents));
+  EXPECT_NEAR(scroll_height, GetViewportScrollPositionY(guest_contents),
+              kScrollPositionEpsilon);
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithPageDownUp) {
@@ -1712,6 +1834,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithPageDownUp) {
   const int viewport_height = GetViewportHeight(guest_contents);
   ASSERT_GT(viewport_height, 0);
 
+  // For web content, page down / page up scrolling only scrolls by a fraction
+  // of the viewport height. The PDF Viewer should match that behavior.
+  const float scroll_height =
+      viewport_height * cc::kMinFractionToStepWhenPaging;
+
   // Press PageDown to scroll down.
   ScrollEventWaiter scroll_waiter(guest_contents);
   content::SimulateKeyPressWithoutChar(guest_contents, ui::DomKey::PAGE_DOWN,
@@ -1720,7 +1847,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithPageDownUp) {
                                        /*alt=*/false,
                                        /*command=*/false);
   ASSERT_NO_FATAL_FAILURE(scroll_waiter.Wait());
-  EXPECT_EQ(viewport_height, GetViewportScrollPositionY(guest_contents));
+  EXPECT_NEAR(scroll_height, GetViewportScrollPositionY(guest_contents),
+              kScrollPositionEpsilon);
 
   // Press PageDown to scroll down again.
   scroll_waiter.Reset();
@@ -1730,7 +1858,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithPageDownUp) {
                                        /*alt=*/false,
                                        /*command=*/false);
   ASSERT_NO_FATAL_FAILURE(scroll_waiter.Wait());
-  EXPECT_EQ(viewport_height * 2, GetViewportScrollPositionY(guest_contents));
+  EXPECT_NEAR(scroll_height * 2, GetViewportScrollPositionY(guest_contents),
+              kScrollPositionEpsilon);
 
   // Press PageUp to scroll up.
   scroll_waiter.Reset();
@@ -1739,7 +1868,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithPageDownUp) {
       /*control=*/false, /*shift=*/false, /*alt=*/false,
       /*command=*/false);
   ASSERT_NO_FATAL_FAILURE(scroll_waiter.Wait());
-  EXPECT_EQ(viewport_height, GetViewportScrollPositionY(guest_contents));
+  EXPECT_NEAR(scroll_height, GetViewportScrollPositionY(guest_contents),
+              kScrollPositionEpsilon);
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionScrollTest, WithArrowLeftRight) {
@@ -3703,19 +3833,24 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DocumentWriteIntoNewPopup) {
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(popup));
 }
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, LoadPdfFromExtension) {
+  const extensions::Extension* test_extension = LoadExtension(
+      GetTestResourcesParentDir().AppendASCII("pdf/extension_with_pdf"));
+  ASSERT_TRUE(test_extension);
+
+  EXPECT_TRUE(LoadPdf(test_extension->GetResourceURL("test.pdf")));
+}
+
 // Tests that the PDF extension loads in the presence of an extension that, on
 // the completion of document loading, adds an <iframe> to the body element.
 // https://bugs.chromium.org/p/chromium/issues/detail?id=1046795
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest,
                        PdfLoadsWithExtensionThatInjectsFrame) {
-  // Load the test extension.
   const extensions::Extension* test_extension = LoadExtension(
       GetTestResourcesParentDir().AppendASCII("pdf/extension_injects_iframe"));
   ASSERT_TRUE(test_extension);
 
-  // Load the PDF. The call to LoadPdf() will return false if the pdf extension
-  // fails to load.
-  ASSERT_TRUE(LoadPdf(embedded_test_server()->GetURL("/pdf/test.pdf")));
+  EXPECT_TRUE(LoadPdf(embedded_test_server()->GetURL("/pdf/test.pdf")));
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionTest, Metrics) {

@@ -14,13 +14,18 @@
 <translation id="1028781062521375153">Преглед на подробностите</translation>
 <translation id="1030706264415084469"><ph name="URL" /> иска да съхранява за постоянно голямо количество данни на устройството ви</translation>
 <translation id="1032854598605920125">Завъртане по часовниковата стрелка</translation>
+<translation id="1033329911862281889">Режимът „инкогнито“ не ви прави невидими онлайн:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />Сайтовете и използваните от тях услуги могат да виждат посещенията.<ph name="END_LIST_ITEM" />
+<ph name="LIST_ITEM" />Работодателите или учебните заведения имат възможност да проследяват активността при сърфиране.<ph name="END_LIST_ITEM" />
+<ph name="LIST_ITEM" />Доставчиците на интернет услуги могат да следят уеб трафика.<ph name="END_LIST_ITEM" />
+<ph name="END_LIST" /></translation>
 <translation id="1036348656032585052">Изключване</translation>
 <translation id="1036982837258183574">Натиснете |<ph name="ACCELERATOR" />| за изход от режима на цял екран</translation>
 <translation id="1038106730571050514">Показване на предложения</translation>
 <translation id="1038842779957582377">неизвестно име</translation>
 <translation id="1041998700806130099">Съобщение за листа за заданието</translation>
 <translation id="1048785276086539861">Когато редактирате поясненията, изгледът на документа ще бъде на една страница</translation>
-<translation id="1049743911850919806">„Инкогнито“</translation>
 <translation id="1050038467049342496">Затворете другите приложения.</translation>
 <translation id="1055184225775184556">&amp;Отмяна на добавянето</translation>
 <translation id="1056898198331236512">Предупреждение</translation>
@@ -48,6 +53,7 @@
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
 <translation id="1130564665089811311">Бутон „Превод на страницата“. Натиснете Enter, за да преведете тази страница с Google Преводач</translation>
 <translation id="1131264053432022307">Копирано от вас изображение</translation>
+<translation id="1142846828089312304">Блокиране на „бисквитките“ на трети страни в режим „инкогнито“</translation>
 <translation id="1150979032973867961">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; операционната система на компютъра ви няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="1151972924205500581">Изисква се парола</translation>
 <translation id="1156303062776767266">Преглеждате локален или споделен файл</translation>
@@ -181,6 +187,12 @@
 <translation id="1483493594462132177">Изпращане</translation>
 <translation id="1484290072879560759">Избиране на адрес за доставка</translation>
 <translation id="1492194039220927094">Разпространение на правилата:</translation>
+<translation id="149293076951187737">Когато затворите всички раздели на Chrome в режим „инкогнито“, активността ви в тях се изчиства от устройството. Това включва:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />активността при сърфиране;<ph name="END_LIST_ITEM" />
+<ph name="LIST_ITEM" />историята на търсенията;<ph name="END_LIST_ITEM" />
+<ph name="LIST_ITEM" />информацията, въведена във формуляри.<ph name="END_LIST_ITEM" />
+<ph name="END_LIST" /></translation>
 <translation id="1495677929897281669">Назад към раздела</translation>
 <translation id="1501859676467574491">Показване на картите от профила ви в Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ще виждате това съобщение за грешка, ако използвате портал за Wi-Fi, където трябва да влезете в профил, преди да можете да преминете онлайн.&lt;/p&gt;
@@ -208,6 +220,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Не може да се установи частна връзка с/ъс <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, тъй като датата и часът на устройството ви (<ph name="DATE_AND_TIME" />) са неправилни.&lt;/p&gt;
 
 &lt;p&gt;Моля, коригирайте датата и часа от секцията &lt;strong&gt;General&lt;/strong&gt; на приложението &lt;strong&gt;Settings&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="156703335097561114">Информация за мрежите, като например адреси, конфигурация на интерфейса и качество на връзката</translation>
 <translation id="1567040042588613346">Това правило работи нормално, но на друго място е зададена същата стойност, която е заменена от него.</translation>
 <translation id="1569487616857761740">Въведете дата на валидност</translation>
 <translation id="1581080074034554886">CVC</translation>
@@ -282,6 +295,7 @@
 <translation id="1772163372082567643">Сървърът, който посещавате (<ph name="ORIGIN" />), има зададена заглавка,
      изискваща за всички заявки към него да се прилага правило за източник. Тя обаче е неправилно образувана, поради което браузърът не може да изпълни заявката ви за <ph name="SITE" />. Операторите на сайтове могат да използват правилата за източник,
 за да конфигурират сигурността и други свойства за даден сайт.</translation>
+<translation id="1774592222195216949"><ph name="BEGIN_LINK" />Научете повече за режима „инкогнито“ в Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">Тук ще се показват отворените ви раздели</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -523,6 +537,12 @@
 <translation id="2597378329261239068">Този документ е защитен с парола.  Моля, въведете я.</translation>
 <translation id="2609632851001447353">Вариации</translation>
 <translation id="2610561535971892504">Кликнете, за да копирате</translation>
+<translation id="2617988307566202237">Chrome <ph name="BEGIN_EMPHASIS" />няма да запазва<ph name="END_EMPHASIS" /> следната информация:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />историята ви на сърфиране;
+<ph name="LIST_ITEM" />„бисквитките“ и данните за сайтовете;
+<ph name="LIST_ITEM" />информацията, въведена във формуляри.
+<ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (плик)</translation>
 <translation id="2623663032199728144">Може да извежда запитвания за използване на информацията за екраните ви</translation>
 <translation id="2625385379895617796">Часовникът ви е напред</translation>
@@ -702,6 +722,7 @@
 <translation id="3234666976984236645">Важното съдържание на този сайт да се открива винаги</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />. Натиснете Tab и след това Enter, за да персонализирате облика на браузъра си</translation>
 <translation id="3240791268468473923">Листът за несъответстващи идентификационни данни за сигурни плащания е отворен</translation>
+<translation id="324180406144491771">Връзките от тип <ph name="HOST_NAME" /> са блокирани</translation>
 <translation id="3249845759089040423">Приятно</translation>
 <translation id="3252266817569339921">френски</translation>
 <translation id="3257954757204451555">Кой е източникът на тази информация?</translation>
@@ -732,12 +753,6 @@
 <translation id="3345782426586609320">Очи</translation>
 <translation id="3355823806454867987">Промяна на настройките на прокси сървъра...</translation>
 <translation id="3360103848165129075">Лист на инструмента за обработване на плащания</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />няма да съхранява<ph name="END_EMPHASIS" /> следната информация:
-<ph name="BEGIN_LIST" />
-<ph name="LIST_ITEM" />историята на сърфирането ви;
-<ph name="LIST_ITEM" />„бисквитките“ и данните за сайтове;
-<ph name="LIST_ITEM" />въведените във формуляри данни.
-<ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">Това правило е копирано автоматично от оттегленото <ph name="OLD_POLICY" />. Препоръчваме ви да използвате него.</translation>
 <translation id="3364869320075768271"><ph name="URL" /> иска да използва устройствата и данните ви за виртуална реалност</translation>
 <translation id="3366477098757335611">Преглед на картите</translation>
@@ -1156,6 +1171,7 @@
 <translation id="4628948037717959914">Снимка</translation>
 <translation id="4631649115723685955">Опцията за връщане на пари при покупка е свързана</translation>
 <translation id="4636930964841734540">Информация</translation>
+<translation id="4638670630777875591">Режим инкогнито в Chromium</translation>
 <translation id="464342062220857295">Функции за търсене</translation>
 <translation id="4644670975240021822">В обратен ред с отпечатаната страна надолу</translation>
 <translation id="4646534391647090355">Към изтеглянията</translation>
@@ -1218,12 +1234,7 @@
 <translation id="4819347708020428563">Искате ли да редактирате поясненията в стандартния изглед?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />. Натиснете Tab и след това Enter, за да създадете бързо таблица в Google Таблици</translation>
 <translation id="4825507807291741242">Впечатляващо</translation>
-<translation id="4827402517081186284">Режимът „инкогнито“ не ви прави невидими онлайн:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Когато посещавате сайтове, те знаят за това.<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />Работодателите или учебните заведения могат да проследяват активността при сърфиране.<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />Доставчиците на интернет услуги може да следят уеб трафика.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
+<translation id="4829962028570902310">Пренебрегнато, защото правилото може да бъде зададено само като правило за потребители в облака.</translation>
 <translation id="483241715238664915">Включване на предупрежденията</translation>
 <translation id="4838327282952368871">Замечтано</translation>
 <translation id="4840250757394056958">Преглед на историята ви в Chrome</translation>
@@ -1256,6 +1267,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />. Натиснете Tab и след това – Enter, за да търсите</translation>
 <translation id="4930153903256238152">Голяма вместимост</translation>
+<translation id="4940163644868678279">Режим „инкогнито“ в Chrome</translation>
 <translation id="4943872375798546930">Няма резултати</translation>
 <translation id="4950898438188848926">Бутон за превключване между раздели. Натиснете Enter, за да преминете към отворения раздел – <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Действия</translation>
@@ -1327,6 +1339,7 @@
 <translation id="5138227688689900538">Показване на по-малко</translation>
 <translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
 <translation id="5146995429444047494">Известията за <ph name="ORIGIN" /> са блокирани</translation>
+<translation id="514704532284964975"><ph name="URL" /> иска да чете и променя информацията на устройствата с NFC, които докосвате с телефона си</translation>
 <translation id="5148809049217731050">С отпечатаната страна нагоре</translation>
 <translation id="515292512908731282">C4 (плик)</translation>
 <translation id="5158275234811857234">Корица</translation>
@@ -1615,6 +1628,7 @@
 <translation id="6120179357481664955">Помните ли идентификационния си номер за UPI?</translation>
 <translation id="6124432979022149706">Конектори за Chrome Enterprise</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
+<translation id="6132161237766805930"><ph name="BEGIN_LINK" />Научете повече за режима „инкогнито“ в Chrome<ph name="END_LINK" /></translation>
 <translation id="6146055958333702838">Проверете всички кабели и рестартирайте маршрутизаторите, модемите или другите мрежови
 устройства, които може да използвате.</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
@@ -1791,7 +1805,6 @@
 <translation id="6757797048963528358">Устройството ви премина в спящ режим.</translation>
 <translation id="6767985426384634228">Да се актуализира ли адресът?</translation>
 <translation id="6768213884286397650">Hagaki (пощенска картичка)</translation>
-<translation id="6774185088257932239"><ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /> за режима „инкогнито“</translation>
 <translation id="6775759552199460396">JIS B2</translation>
 <translation id="67862343314499040">виолетово</translation>
 <translation id="6786747875388722282">Разширения</translation>
@@ -1891,6 +1904,12 @@
 <translation id="7111012039238467737">(валиден)</translation>
 <translation id="7118618213916969306">Търсене на URL адреса от буферната памет, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Затворете другите раздели или програми.</translation>
+<translation id="7129355289156517987">Когато затворите всички раздели на Chromium в режим „инкогнито“, активността ви в тях се изчиства от устройството. Това включва:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />активността при сърфиране;<ph name="END_LIST_ITEM" />
+<ph name="LIST_ITEM" />историята на търсенията;<ph name="END_LIST_ITEM" />
+<ph name="LIST_ITEM" />информацията, въведена във формуляри.<ph name="END_LIST_ITEM" />
+<ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">Този адрес за доставка не се поддържа. Изберете друг.</translation>
 <translation id="7132939140423847331">Администраторът ви е забранил копирането на тези данни.</translation>
 <translation id="7135130955892390533">Показване на състоянието</translation>
@@ -2009,6 +2028,12 @@
 <translation id="7485870689360869515">Няма намерени данни.</translation>
 <translation id="7495528107193238112">Това съдържание е блокирано. Свържете се със собственика на сайта, за да отстрани проблема.</translation>
 <translation id="7497998058912824456">Бутон за създаване на документ. Натиснете Enter, за да създадете бързо документ в Google Документи</translation>
+<translation id="7506488012654002225">Chromium <ph name="BEGIN_EMPHASIS" />няма да съхранява<ph name="END_EMPHASIS" /> следната информация:
+<ph name="BEGIN_LIST" />
+<ph name="LIST_ITEM" />историята на сърфирането ви;
+<ph name="LIST_ITEM" />„бисквитките“ и данните за сайтовете;
+<ph name="LIST_ITEM" />въведените във формуляри данни.
+<ph name="END_LIST" /></translation>
 <translation id="7508255263130623398">Върнатият от правилата идентификационен номер на устройството е празен или не съответства на текущия</translation>
 <translation id="7508870219247277067">авокадовозелено</translation>
 <translation id="7511955381719512146">Използваната от вас Wi-Fi мрежа може да изисква да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -2228,6 +2253,7 @@
 <translation id="8202370299023114387">Конфликт</translation>
 <translation id="8206978196348664717">Prc4 (плик)</translation>
 <translation id="8211406090763984747">Връзката е защитена</translation>
+<translation id="8217240300496046857">Сайтовете не могат да използват „бисквитки“, които ви следят в мрежата. Функциите в някои от тях може да не работят правилно.</translation>
 <translation id="8218327578424803826">Зададено местоположение:</translation>
 <translation id="8220146938470311105">C7/C6 (плик)</translation>
 <translation id="8225771182978767009">Човекът, който е настроил компютъра, е блокирал този сайт.</translation>
@@ -2271,12 +2297,6 @@
 <translation id="8317207217658302555">Да се актуализира ли ARCore?</translation>
 <translation id="831997045666694187">Вечерта</translation>
 <translation id="8321476692217554900">известия</translation>
-<translation id="8328484624016508118">След като затворите всички раздели в режим „инкогнито“, Chrome изчиства:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />активността ви при сърфиране от това устройство;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />историята на търсенията от това устройство;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />въведената във формуляри информация.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
 <translation id="8332188693563227489">Достъпът до <ph name="HOST_NAME" /> бе отказан</translation>
 <translation id="833262891116910667">Открояване</translation>
 <translation id="8339163506404995330">Страниците на <ph name="LANGUAGE" /> няма да се превеждат</translation>
@@ -2411,6 +2431,7 @@
 <translation id="883848425547221593">Други отметки</translation>
 <translation id="884264119367021077">Адрес за доставка</translation>
 <translation id="884923133447025588">Не е намерен механизъм за анулиране.</translation>
+<translation id="8849262850971482943">За по-голяма сигурност използвайте виртуалната си карта</translation>
 <translation id="885730110891505394">Споделяне с Google</translation>
 <translation id="8858065207712248076">Chrome препоръчва да зададете повторно паролата си за <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, ако сте я използвали и на други сайтове.</translation>
 <translation id="885906927438988819">Ако изписването е правилно, <ph name="BEGIN_LINK" />стартирайте мрежова диагностика в Windows<ph name="END_LINK" />.</translation>

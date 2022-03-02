@@ -662,7 +662,7 @@ const base::Feature kPrivateNetworkAccessRespectPreflightResults = {
 // ignored.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 const base::Feature kPrivateNetworkAccessSendPreflights = {
-    "PrivateNetworkAccessSendPreflights", base::FEATURE_ENABLED_BY_DEFAULT};
+    "PrivateNetworkAccessSendPreflights", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
 // represents a set of frames that can script each other. Currently, Chrome does
@@ -977,7 +977,7 @@ const base::Feature kWarnAboutSecurePrivateNetworkRequests{
 
 // Enable window controls overlays for desktop PWAs
 const base::Feature kWebAppWindowControlsOverlay{
-    "WebAppWindowControlsOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
+    "WebAppWindowControlsOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable WebAssembly baseline compilation (Liftoff).
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",

@@ -8,6 +8,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_drag_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
@@ -32,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
@@ -47,6 +49,7 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
@@ -66,17 +69,18 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
       !mouse_event.is_raw_movement_event &&
       mouse_event.GetType() == WebInputEvent::Type::kMouseMove &&
       last_position) {
-    // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
-    // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
-    // with the current behavior. We need to figure out what is the best
-    // behavior here.
+    // Current movementX/Y is in physical pixel when zoom-for-dsf is enabled
+    // which matches layout coordinates. If we don't have zoom-for-dsf, we
+    // apply the device-scale-factor to align with the current behavior.
     float device_scale_factor = 1;
-    if (dom_window && dom_window->GetFrame()) {
-      LocalFrame* frame = dom_window->GetFrame();
-      if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
-        ChromeClient& chrome_client = frame->GetChromeClient();
-        device_scale_factor =
-            chrome_client.GetScreenInfo(*frame).device_scale_factor;
+    if (!Platform::Current()->IsUseZoomForDSFEnabled()) {
+      if (dom_window && dom_window->GetFrame()) {
+        LocalFrame* frame = dom_window->GetFrame();
+        if (frame->GetPage()->DeviceScaleFactorDeprecated() == 1) {
+          ChromeClient& chrome_client = frame->GetChromeClient();
+          device_scale_factor =
+              chrome_client.GetScreenInfo(*frame).device_scale_factor;
+        }
       }
     }
     // movementX/Y is type int for now, so we need to truncated the coordinates
@@ -202,6 +206,15 @@ void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOut(
 void MouseEventManager::MouseEventBoundaryEventDispatcher::DispatchOver(
     EventTarget* target,
     EventTarget* related_target) {
+  if (target) {
+    HTMLImageElement* image_element =
+        DynamicTo<HTMLImageElement>(target->ToNode());
+    if (image_element && image_element->IsLCPElement()) {
+      PaintTiming& paint_timing =
+          PaintTiming::From(image_element->GetDocument());
+      paint_timing.SetLCPMouseoverDispatched();
+    }
+  }
   Dispatch(target, related_target, event_type_names::kMouseover,
            *web_mouse_event_, false);
 }

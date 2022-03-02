@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_tile_view.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
@@ -48,6 +49,10 @@
 
 - (void)configureCell:(ContentSuggestionsParentCell*)cell {
   [super configureCell:cell];
+
+  // Remove subviews from StackView in case prepareForReuse was not called (e.g.
+  // itemHasChanged: was called).
+  [cell removeContentViews];
 
   CGFloat horizontalSpacing =
       ContentSuggestionsTilesHorizontalSpacing(cell.traitCollection);
@@ -101,13 +106,12 @@
       ContentSuggestionsMostVisitedTileView* view =
           [[ContentSuggestionsMostVisitedTileView alloc]
               initWithConfiguration:item];
+      view.menuProvider = self.menuProvider;
       UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
           initWithTarget:self.tapTarget
                   action:@selector(contentSuggestionsElementTapped:)];
       [view addGestureRecognizer:tapRecognizer];
       [self.mostVisitedTapRecognizers addObject:tapRecognizer];
-      // TODO(crbug.com/1285378): Add custom accsissibility actions and context
-      // menu configuration.
       [stackView addArrangedSubview:view];
     }
     [cell addUIElement:stackView
@@ -216,12 +220,15 @@
     [_verticalStackView setCustomSpacing:spacing afterView:view];
   }
 }
-
-- (void)prepareForReuse {
-  [super prepareForReuse];
+- (void)removeContentViews {
   for (UIView* view in [self.verticalStackView arrangedSubviews]) {
     [view removeFromSuperview];
   }
+}
+
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  [self removeContentViews];
 }
 
 @end

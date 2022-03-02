@@ -129,11 +129,8 @@ ShoppingPersistedDataTabHelper::GetPriceDrop() {
 void ShoppingPersistedDataTabHelper::LogMetrics(PriceDropLogId log_id) {
   // Approximate time the Tab was last accessed based on the last committed
   // NavigationEntry
-  web::NavigationItem* navigation_item =
-      web_state_->GetNavigationManager()->GetLastCommittedItem();
-  if (!navigation_item)
-    return;
-  const char* tab_status = GetTabStatusString(navigation_item->GetTimestamp());
+  const char* tab_status =
+      GetTabStatusString(web_state_->GetLastCommittedTimestamp());
   const char* log_id_string = GetLogIdString(log_id);
   base::UmaHistogramBoolean(
       base::StringPrintf("Commerce.PriceDrops.%s%s.ContainsPrice", tab_status,

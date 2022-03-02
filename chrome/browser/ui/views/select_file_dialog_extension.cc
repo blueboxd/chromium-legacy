@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/style/color_mode_observer.h"
 #include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -193,13 +194,13 @@ SelectFileDialogExtension::RoutingID GetRoutingID(
 class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate,
                                      public ash::ColorModeObserver {
  public:
-  SystemFilesAppDialogDelegate(SelectFileDialogExtension* parent,
+  SystemFilesAppDialogDelegate(base::WeakPtr<SelectFileDialogExtension> parent,
                                const std::string& id,
                                GURL url,
                                std::u16string title)
       : chromeos::SystemWebDialogDelegate(url, title),
         id_(id),
-        parent_(parent) {
+        parent_(std::move(parent)) {
     ash::ColorProvider::Get()->AddObserver(this);
   }
   ~SystemFilesAppDialogDelegate() override {
@@ -219,6 +220,7 @@ class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate,
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override {
     params->shadow_type = views::Widget::InitParams::ShadowType::kDefault;
     auto* color_provider = ash::ColorProvider::Get();
+    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
     params->init_properties_container.SetProperty(
         chromeos::kFrameActiveColorKey,
         color_provider->GetActiveDialogTitleBarColor());
@@ -238,11 +240,17 @@ class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate,
   }
 
   void OnDialogShown(content::WebUI* webui) override {
-    parent_->OnSystemDialogShown(webui->GetWebContents(), id_);
+    if (parent_) {
+      parent_->OnSystemDialogShown(webui->GetWebContents(), id_);
+    }
     chromeos::SystemWebDialogDelegate::OnDialogShown(webui);
   }
 
-  void OnDialogWillClose() override { parent_->OnSystemDialogWillClose(); }
+  void OnDialogWillClose() override {
+    if (parent_) {
+      parent_->OnSystemDialogWillClose();
+    }
+  }
 
   void OnColorModeChanged(bool dark_mode_enabled) override {
     auto* color_provider = ash::ColorProvider::Get();
@@ -261,7 +269,7 @@ class SystemFilesAppDialogDelegate : public chromeos::SystemWebDialogDelegate,
   const std::string id_;
 
   // The parent of this delegate.
-  SelectFileDialogExtension* parent_;
+  base::WeakPtr<SelectFileDialogExtension> parent_;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -534,11 +542,8 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
       base_window ? base_window->GetNativeWindow() : owner.window;
 
   if (ash::features::IsFileManagerSwaEnabled()) {
-    // SystemFilesAppDialogDelegate is a self-deleting class that calls the
-    // delete operator once the dialog for which it was created has been closed.
-    // Hence this memory-leak looking code pattern.
     auto* dialog_delegate = new SystemFilesAppDialogDelegate(
-        this, routing_id, file_manager_url, dialog_title);
+        weak_factory_.GetWeakPtr(), routing_id, file_manager_url, dialog_title);
     dialog_delegate->SetModal(owner.window != nullptr);
     dialog_delegate->set_can_resize(can_resize_);
     dialog_delegate->ShowSystemDialogForBrowserContext(profile_, parent_window);
@@ -550,6 +555,7 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
                               kFileManagerMinimumHeight};
     dialog_params.title = dialog_title;
     auto* color_provider = ash::ColorProvider::Get();
+    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
     dialog_params.title_color = color_provider->GetActiveDialogTitleBarColor();
     dialog_params.title_inactive_color =
         color_provider->GetInactiveDialogTitleBarColor();

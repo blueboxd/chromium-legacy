@@ -130,6 +130,8 @@
 <translation id="2860473693272905224">اسکینر پر کوئی دوسرا صفحہ رکھیں</translation>
 <translation id="2872961005593481000">بند کریں</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> سیکنڈ میں <ph name="RATE" /> ڈسچارج ہوئی۔</translation>
+<translation id="291142119251986300">نااہل اجزاء</translation>
+<translation id="2926057806159140518">‏اپنا صارف نام اور پاس ورڈ درج کریں یا اپنا QR کوڈ اسکین کریں</translation>
 <translation id="3008341117444806826">ریفریش کریں</translation>
 <translation id="3009958530611748826">محفوظ کرنے کے لئے فولڈر منتخب کریں</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -170,6 +172,7 @@
 <translation id="357889014807611375">‏میٹرڈ Wi-Fi</translation>
 <translation id="3583278742022654445">‏کمزور سگنل کی مضبوطی۔ Wi-Fi سگنل ماخذ کے قریب منتقل کرنے کی کوشش کریں۔</translation>
 <translation id="3595596368722241419">بیٹری پوری چارج ہے</translation>
+<translation id="3603829704940252505">اوتار</translation>
 <translation id="360565022852130722">‏WiFi نیٹ ورک کمزور پروٹوکول WEP 802.1x کے ساتھ محفوظ ہے</translation>
 <translation id="3606583719724308068">‏HTTPS ویب سائٹس پر زیادہ تاخیر</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> ٹیسٹ</translation>
@@ -420,6 +423,7 @@
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> پر واپس جائیں</translation>
 <translation id="6910312834584889076">اسکینر کا سرورق کھلا ہوا ہے۔ سرورق کو بند کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="6911383237894364323">میڈیا سرورز سے منسلک ہونے سے قاصر</translation>
+<translation id="6935486296377631201">اسکرین سیور</translation>
 <translation id="6957231940976260713">سروس کا نام</translation>
 <translation id="6961170852793647506">شروع کرنے کیلئے، اپنی دستاویز کو اسکینر پر رکھیں</translation>
 <translation id="6965382102122355670">ٹھیک ہے</translation>

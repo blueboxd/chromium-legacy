@@ -259,8 +259,8 @@ public abstract class PersistedTabData implements UserData {
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     protected void save() {
         if (mIsTabSaveEnabledSupplier != null && mIsTabSaveEnabledSupplier.get()) {
-            mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId,
-                    getOomAndMetricsWrapper(getSerializeSupplier()));
+            mPersistedTabDataStorage.save(
+                    mTab.getId(), mPersistedTabDataId, getOomAndMetricsWrapper());
         }
     }
 
@@ -270,13 +270,17 @@ public abstract class PersistedTabData implements UserData {
     abstract Supplier<ByteBuffer> getSerializeSupplier();
 
     @VisibleForTesting
-    protected Supplier<ByteBuffer> getOomAndMetricsWrapper(Supplier<ByteBuffer> serializeSupplier) {
+    protected Supplier<ByteBuffer> getOomAndMetricsWrapper() {
+        final Supplier<ByteBuffer> supplier = getSerializeSupplierWithOomSoftFallback();
         return () -> {
+            if (supplier == null) return null;
             ByteBuffer res;
             try (TraceEvent e = TraceEvent.scoped("PersistedTabData.Serialize")) {
-                res = serializeSupplier.get();
+                res = supplier.get();
             } catch (OutOfMemoryError oe) {
-                Log.e(TAG, "Out of memory error when attempting to save PersistedTabData");
+                Log.e(TAG,
+                        "Out of memory error when attempting to save PersistedTabData. Details: "
+                                + oe.getMessage());
                 res = null;
             }
             // TODO(crbug.com/1162293) convert to enum histogram and differentiate null/not null/out
@@ -287,6 +291,17 @@ public abstract class PersistedTabData implements UserData {
         };
     }
 
+    private Supplier<ByteBuffer> getSerializeSupplierWithOomSoftFallback() {
+        try {
+            return getSerializeSupplier();
+        } catch (OutOfMemoryError oe) {
+            Log.e(TAG,
+                    "Out of memory error when attempting to save PersistedTabData "
+                            + oe.getMessage());
+        }
+        return null;
+    }
+
     /**
      * Deserialize serialized {@link PersistedTabData} and
      * assign to fields in {@link PersistedTabData}
@@ -294,7 +309,8 @@ public abstract class PersistedTabData implements UserData {
      */
     abstract boolean deserialize(@Nullable ByteBuffer bytes);
 
-    protected void deserializeAndLog(@Nullable ByteBuffer bytes) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public void deserializeAndLog(@Nullable ByteBuffer bytes) {
         boolean success;
         try (TraceEvent e = TraceEvent.scoped("PersistedTabData.Deserialize")) {
             success = deserialize(bytes);

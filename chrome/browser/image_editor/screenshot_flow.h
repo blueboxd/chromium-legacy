@@ -116,6 +116,7 @@ class ScreenshotFlow : public content::WebContentsObserver,
   // ui:EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
@@ -129,6 +130,13 @@ class ScreenshotFlow : public content::WebContentsObserver,
   // Creates and adds the overlay over the webcontnts to handle selection.
   // Adds mouse listeners.
   void CreateAndAddUIOverlay();
+
+  // Checks whether the UI overlay is visible.
+  bool IsUIOverlayShown();
+
+  // Resizes the UI overlay. It's used to make the UI overlay responsive to
+  // the frame size changes.
+  void ResetUIOverlayBounds();
 
   // Removes the UI overlay and any listeners.
   void RemoveUIOverlay();
@@ -160,6 +168,10 @@ class ScreenshotFlow : public content::WebContentsObserver,
   // Requests to set the cursor type.
   void SetCursor(ui::mojom::CursorType cursor_type);
 
+  // Attempts to capture the region defined by |drag_start_| and |drag_end_|
+  // while also making sure the points are within the web contents view bounds.
+  void AttemptRegionCapture(gfx::Rect view_bounds);
+
   base::WeakPtr<ScreenshotFlow> weak_this_;
 
   // Whether we are in drag mode on this layer.
@@ -189,6 +201,9 @@ class ScreenshotFlow : public content::WebContentsObserver,
   // Selection rectangle coordinates.
   gfx::Point drag_start_;
   gfx::Point drag_end_;
+
+  // Whether the user is currently dragging on the capture UI.
+  bool is_dragging_ = false;
 
   // Invalidation area; empty for entire region.
   gfx::Rect paint_invalidation_;

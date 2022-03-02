@@ -10,10 +10,12 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/features.h"
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/persistence/minimal_browser_persister.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/public/browser_observer.h"
 #include "weblayer/public/navigation.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/tab.h"
@@ -24,7 +26,8 @@
 
 namespace weblayer {
 
-class MinimalBrowserPersisterTest : public WebLayerBrowserTest {
+class MinimalBrowserPersisterTest : public WebLayerBrowserTest,
+                                    public BrowserObserver {
  public:
   MinimalBrowserPersisterTest() = default;
   ~MinimalBrowserPersisterTest() override = default;
@@ -57,11 +60,21 @@ class MinimalBrowserPersisterTest : public WebLayerBrowserTest {
         browser_impl()->GetMinimalPersistenceState(
             max_number_of_navigations_per_tab, max_size_in_bytes);
     tab_ = nullptr;
+    got_on_tab_added_ = false;
     browser_ = Browser::Create(GetProfile(), nullptr);
+    browser_->AddObserver(this);
     RestoreMinimalStateForBrowser(browser_impl(), minimal_state);
+    EXPECT_TRUE(got_on_tab_added_);
+    browser_->RemoveObserver(this);
     // There is always at least one tab created (even if restore fails).
     ASSERT_GE(browser_->GetTabs().size(), 1u);
     tab_ = static_cast<TabImpl*>(browser_->GetTabs()[0]);
+  }
+
+  // BrowserObserver:
+  void OnTabAdded(Tab* tab) override {
+    got_on_tab_added_ = true;
+    EXPECT_TRUE(browser_->IsRestoringPreviousState());
   }
 
  protected:
@@ -69,6 +82,7 @@ class MinimalBrowserPersisterTest : public WebLayerBrowserTest {
     return static_cast<BrowserImpl*>(browser_.get());
   }
 
+  bool got_on_tab_added_ = false;
   std::unique_ptr<Browser> browser_;
   raw_ptr<TabImpl> tab_ = nullptr;
 };
@@ -192,7 +206,11 @@ IN_PROC_BROWSER_TEST_F(MinimalBrowserPersisterTest, MAYBE_Overflow) {
 
   TabImpl* restored_tab = tab_;
   EXPECT_EQ(restored_tab, browser_->GetActiveTab());
-  EXPECT_EQ(1, restored_tab->web_contents()->GetController().GetEntryCount());
+  if (blink::features::IsInitialNavigationEntryEnabled()) {
+    EXPECT_EQ(1, restored_tab->web_contents()->GetController().GetEntryCount());
+  } else {
+    EXPECT_EQ(0, restored_tab->web_contents()->GetController().GetEntryCount());
+  }
   EXPECT_TRUE(restored_tab->web_contents()->GetController().GetPendingEntry() ==
               nullptr);
 }

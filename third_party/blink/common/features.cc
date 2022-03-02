@@ -170,7 +170,7 @@ const base::Feature kNavigationPredictor {
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
 const base::Feature kPlzDedicatedWorker{"PlzDedicatedWorker",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Portals. https://crbug.com/865123.
 // Note that default enabling this does not expose the portal
@@ -240,6 +240,13 @@ bool IsFencedFramesEnabled() {
 bool IsFencedFramesMPArchBased() {
   return blink::features::kFencedFramesImplementationTypeParam.Get() ==
          blink::features::FencedFramesImplementationType::kMPArch;
+}
+
+const base::Feature kInitialNavigationEntry{"InitialNavigationEntry",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsInitialNavigationEntryEnabled() {
+  return base::FeatureList::IsEnabled(blink::features::kInitialNavigationEntry);
 }
 
 // Enable limiting previews loading hints to specific resource types.
@@ -629,10 +636,10 @@ const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
 const base::Feature kWebviewAccelerateSmallCanvases{
     "WebviewAccelerateSmallCanvases", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use old behavior for accelerated canvases: de-accelerate after first call to
-// ctx.getImageData (crbug.com/1288118)
-const base::Feature kSoftwareCanvas2DOnReadback{
-    "SoftwareCanvas2DOnReadback", base::FEATURE_DISABLED_BY_DEFAULT};
+// Let accelerated canvases remain accelerated after readback
+// (crbug.com/1288118)
+const base::Feature kCanvas2dStaysGPUOnReadback{
+    "Canvas2dStaysGPUOnReadback", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.
@@ -1152,6 +1159,10 @@ const base::Feature kLateFormNewlineNormalization{
 const base::Feature kAutoExpandDetailsElement{"AutoExpandDetailsElement",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables loading the response body earlier in navigation.
+const base::Feature kEarlyBodyLoad{"EarlyBodyLoad",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables fetching the code cache earlier in navigation.
 const base::Feature kEarlyCodeCache{"EarlyCodeCache",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1186,6 +1197,10 @@ const base::Feature kLazyInitializeTimeZoneController{
 
 const base::Feature kCompositedCaret{"CompositedCaret",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Initialize CSSDefaultStyleSheets early in renderer startup.
+const base::Feature kDefaultStyleSheetsEarlyInit{
+    "DefaultStyleSheetsEarlyInit", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

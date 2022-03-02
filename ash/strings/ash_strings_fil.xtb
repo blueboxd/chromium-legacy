@@ -82,6 +82,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">I-collapse ang menu</translation>
 <translation id="1364382257761975320">Para i-unlock ang iyong Chromebook, gamitin ang fingerprint mo</translation>
+<translation id="1364618750746929654">Hindi mabuo ang transcription</translation>
 <translation id="1383597849754832576">Hindi ma-download ang mga speech file. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1391102559483454063">Naka-on</translation>
@@ -348,7 +349,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="334252345105450327">Kumuha ng screenshot</translation>
 <translation id="3351879221545518001">Kasalukuyan kang nagka-cast ng screen.</translation>
 <translation id="3364721542077212959">Mga stylus tool</translation>
-<translation id="3365977133351922112">Masyadong malayo ang iyong telepono. Ilapit ang iyong telepono.</translation>
+<translation id="3365977133351922112">Masyadong malayo ang iyong telepono. Ilapit ito.</translation>
 <translation id="3368922792935385530">Nakakonekta</translation>
 <translation id="3371140690572404006">USB-C device (port sa kanang bahagi sa harap)</translation>
 <translation id="3375634426936648815">Nakakonekta</translation>
@@ -577,6 +578,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (Kaliwa)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">Nagbago ang keyboard shortcut na <ph name="LAUNCHER_KEY_NAME" /> + Numero. Para magamit ang mga function key, pindutin ang <ph name="LAUNCHER_KEY_NAME" /> key + isang key sa itaas na row.</translation>
+<translation id="473775607612524610">I-update</translation>
 <translation id="4759238208242260848">Mga Download </translation>
 <translation id="4774338217796918551">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -678,6 +680,7 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="5465662442746197494">Kailangan ng tulong?</translation>
 <translation id="547979256943495781">Nasa kanan ang shelf</translation>
+<translation id="5491186829646618080">May mga available na update sa firmware</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Inalis ng iyong administrator ang lahat ng profile ng eSIM. Makipag-ugnayan sa iyong administrator para sa higit pang impormasyon.</translation>
 <translation id="5523434445161341166">Kumokonekta ang <ph name="FEATURE_NAME" />.</translation>
@@ -1122,7 +1125,7 @@ Kaka-install lang</translation>
 <translation id="8473301994082929012">Ang <ph name="ORGANIZATION_NAME" /> ay may <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8492573885090281069">Hindi sinusuportahan ng <ph name="DISPLAY_NAME" /> ang <ph name="SPECIFIED_RESOLUTION" />. Ginawang <ph name="FALLBACK_RESOLUTION" /> ang resolution. I-click ang kumpirmahin para panatilihin ang mga pagbabago. Ire-restore ang mga dating setting pagkalipas ng <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="85123341071060231">Naka-off ang Bluetooth ng iyong Chromebook. Para i-unlock ang Chromebook mo, ilagay ang password.</translation>
+<translation id="85123341071060231">Naka-off ang Bluetooth ng Chromebook mo. Para i-unlock ito, ilagay ang password.</translation>
 <translation id="8513108775083588393">I-auto rotate</translation>
 <translation id="851458219935658693">Ipakita ang mga window mula sa kasalukuyang desk at piniling radio button</translation>
 <translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>
@@ -1176,6 +1179,7 @@ Kaka-install lang</translation>
 <translation id="8876661425082386199">Suriin ang iyong koneksyon</translation>
 <translation id="8877788021141246043">Magtakda ng paalala</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
+<translation id="888982883502837004">May mga available na update sa firmware para sa iyong device. I-click para suriin at i-update.</translation>
 <translation id="8896630965521842259">Permanenteng ide-delete ang <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="890616557918890486">Baguhin ang source</translation>
 <translation id="8909138438987180327">Nasa <ph name="PERCENTAGE" /> porsyento ang baterya.</translation>

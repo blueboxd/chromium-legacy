@@ -82,6 +82,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1351937230027495976">Reduzir menu</translation>
 <translation id="1364382257761975320">Para desbloquear o Chromebook, utilize a sua impressão digital</translation>
+<translation id="1364618750746929654">Não é possível gerar a transcrição</translation>
 <translation id="1383597849754832576">Não é possível transferir os ficheiros de voz. Tente novamente mais tarde.</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
 <translation id="1391102559483454063">Ativada</translation>
@@ -577,6 +578,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (esquerdo)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">O atalho de teclado <ph name="LAUNCHER_KEY_NAME" /> + número foi alterado. Para utilizar teclas de função, prima a tecla <ph name="LAUNCHER_KEY_NAME" /> + uma tecla na linha superior.</translation>
+<translation id="473775607612524610">Atualizar</translation>
 <translation id="4759238208242260848">Transferências</translation>
 <translation id="4774338217796918551">Volte amanhã à(s) <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -660,7 +662,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5322611492012084517">Não é possível encontrar o telemóvel</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5329548388331921293">A ligar…</translation>
-<translation id="5330201449517439522">Toque ou clique para introduzir</translation>
+<translation id="5330201449517439522">Toque ou clique para entrar</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira do lado esquerdo)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (direito)</translation>
 <translation id="5352250171825660495">O tema escuro está ativado.</translation>
@@ -678,6 +680,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="54609108002486618">Geridos</translation>
 <translation id="5465662442746197494">Precisa de ajuda?</translation>
 <translation id="547979256943495781">Prateleira à direita</translation>
+<translation id="5491186829646618080">Atualizações de firmware disponíveis</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">O seu administrador removeu todos os perfis do eSIM. Contacte o administrador para obter mais informações.</translation>
 <translation id="5523434445161341166">A funcionalidade <ph name="FEATURE_NAME" /> está a estabelecer ligação.</translation>
@@ -1063,7 +1066,7 @@ Nova instalação</translation>
 <translation id="8061464966246066292">Alto contraste</translation>
 <translation id="8098591350844501178">Parar a transmissão do ecrã para <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">Ativado, todas as aplicações</translation>
-<translation id="8120151603115102514">O seu telemóvel não tem um ecrã de bloqueio. Para desbloquear o Chromebook, introduza a palavra-passe.</translation>
+<translation id="8120151603115102514">O telemóvel não tem ecrã de bloqueio. Para desbloquear o Chromebook, introduza a palavra-passe.</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8132487352815776550">Parar legendas</translation>
@@ -1122,7 +1125,7 @@ Nova instalação</translation>
 <translation id="8473301994082929012">A <ph name="ORGANIZATION_NAME" /> colocou a funcionalidade <ph name="FEATURE_NAME" /> como <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8492573885090281069">O <ph name="DISPLAY_NAME" /> não suporta a resolução <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" />. Clique em confirmar para manter as alterações. As definições anteriores serão restauradas dentro de <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="85123341071060231">O Bluetooth do Chromebook está desativado. Para desbloquear o Chromebook, introduza a palavra-passe.</translation>
+<translation id="85123341071060231">O Bluetooth do Chromebook está desativado. Para desbloquear, introduza a palavra-passe.</translation>
 <translation id="8513108775083588393">Rotação auto.</translation>
 <translation id="851458219935658693">Mostrar janelas do espaço de trabalho atual, botão de opção selecionado</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
@@ -1176,6 +1179,7 @@ Nova instalação</translation>
 <translation id="8876661425082386199">Verifique a sua ligação</translation>
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
+<translation id="888982883502837004">Estão disponíveis atualizações de firmware para o seu dispositivo. Clique para verificar e atualizar.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> será eliminado permanentemente</translation>
 <translation id="890616557918890486">Alterar origem</translation>
 <translation id="8909138438987180327">A bateria está a <ph name="PERCENTAGE" /> por cento.</translation>

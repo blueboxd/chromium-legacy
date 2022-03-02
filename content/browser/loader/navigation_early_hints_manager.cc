@@ -271,11 +271,17 @@ class NavigationEarlyHintsManager::PreloadURLLoaderClient
   // mojom::URLLoaderClient overrides:
   void OnReceiveEarlyHints(network::mojom::EarlyHintsPtr early_hints) override {
   }
-  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
-    if (head->network_accessed || !head->was_fetched_via_cache)
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head,
+                         mojo::ScopedDataPipeConsumerHandle body) override {
+    if (!head->network_accessed && head->was_fetched_via_cache) {
+      // Cancel the client since the response is already stored in the cache.
+      result_.was_canceled = true;
+      MaybeCompletePreload();
       return;
-    result_.was_canceled = true;
-    MaybeCompletePreload();
+    }
+
+    if (body)
+      OnStartLoadingResponseBody(std::move(body));
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override {}

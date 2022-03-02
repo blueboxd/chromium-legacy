@@ -57,6 +57,11 @@ embed {
   position: fixed;
   top: 0;
 }
+
+/* Hide scrollbars when in Presentation mode. */
+.fullscreen {
+  overflow: hidden;
+}
 </style>
 <div id="sizer"></div>
 <embed type="application/x-google-chrome-pdf" src="$1" original-url="$2"
@@ -95,7 +100,8 @@ void PluginResponseWriter::Start(base::OnceClosure done_callback) {
   response->headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   response->mime_type = "text/html";
-  client_->OnReceiveResponse(std::move(response));
+  client_->OnReceiveResponse(std::move(response),
+                             mojo::ScopedDataPipeConsumerHandle());
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;

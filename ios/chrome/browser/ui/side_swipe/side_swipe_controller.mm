@@ -374,6 +374,9 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
 }
 
 - (void)handlePan:(SideSwipeGestureRecognizer*)gesture {
+  // Do not trigger a CheckForOverRealization here, as it's expected
+  // that many WebStates may realize from multiple swipes.
+  web::IgnoreOverRealizationCheck();
   if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
     return [self handleiPhoneTabSwipe:gesture];
   } else {

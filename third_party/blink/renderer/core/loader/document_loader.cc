@@ -49,6 +49,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/core/app_history/app_history.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
@@ -357,11 +358,6 @@ DocumentLoader::DocumentLoader(
       response_(params_->response.ToResourceResponse()),
       load_type_(params_->frame_load_type),
       is_client_redirect_(params_->is_client_redirect),
-      // TODO(dgozman): we should get rid of this boolean field, and make client
-      // responsible for it's own view of "replaces current item", based on the
-      // frame load type.
-      replaces_current_history_item_(load_type_ ==
-                                     WebFrameLoadType::kReplaceCurrentItem),
       data_received_(false),
       is_error_page_for_failed_navigation_(
           SchemeRegistry::ShouldTreatURLSchemeAsError(
@@ -399,6 +395,7 @@ DocumentLoader::DocumentLoader(
       loading_srcdoc_(url_.IsAboutSrcdocURL()),
       loading_url_as_empty_document_(!params_->is_static_data &&
                                      WillLoadUrlAsEmpty(url_)),
+      is_static_data_(params_->is_static_data),
       web_bundle_physical_url_(params_->web_bundle_physical_url),
       web_bundle_claimed_url_(params_->web_bundle_claimed_url),
       ukm_source_id_(params_->document_ukm_source_id),
@@ -415,6 +412,20 @@ DocumentLoader::DocumentLoader(
       app_history_forward_entries_(params_->app_history_forward_entries),
       anonymous_(params_->anonymous) {
   DCHECK(frame_);
+
+  // TODO(dgozman): we should get rid of this boolean field, and make client
+  // responsible for it's own view of "replaces current item", based on the
+  // frame load type.
+  replaces_current_history_item_ =
+      (load_type_ == WebFrameLoadType::kReplaceCurrentItem);
+  if (!features::IsInitialNavigationEntryEnabled()) {
+    // TODO(https://crbug.com/524208): This is needed because the browser
+    // process DCHECKs if the first entry we commit in a new frame has
+    // replacement set. It's unclear whether the DCHECK is right. Once we always
+    // have initial NavigationEntries, we can remove this check.
+    replaces_current_history_item_ &=
+        (!frame_->Loader().Opener() || !url_.IsEmpty());
+  }
 
   // See `archive_` attribute documentation.
   if (!frame_->IsMainFrame()) {
@@ -893,6 +904,12 @@ DocumentLoader::TakePendingWorkerTimingReceiver(int request_id) {
 void DocumentLoader::BodyCodeCacheReceived(mojo_base::BigBuffer data) {
   if (cached_metadata_handler_) {
     cached_metadata_handler_->SetSerializedCachedMetadata(std::move(data));
+  }
+
+  if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
+    waiting_for_code_cache_ = false;
+    if (!waiting_for_document_loader_ && parser_)
+      parser_->CommitPreloadedData();
   }
 }
 
@@ -1696,10 +1713,30 @@ void DocumentLoader::StartLoadingResponse() {
       MakeGarbageCollected<SourceKeyedCachedMetadataHandler>(
           WTF::TextEncoding(), std::move(cached_metadata_sender));
 
+  if (waiting_for_document_loader_) {
+    // If we were just waiting for the document loader, the body has already
+    // started loading and it is safe to continue parsing if the code cache is
+    // already available.
+    waiting_for_document_loader_ = false;
+    if (!waiting_for_code_cache_)
+      parser_->CommitPreloadedData();
+  } else {
+    StartLoadingBodyWithCodeCache();
+  }
+}
+
+void DocumentLoader::StartLoadingBodyWithCodeCache() {
   CodeCacheHost* code_cache_host = nullptr;
   if (UseIsolatedCodeCache()) {
     code_cache_host = GetCodeCacheHost();
     DCHECK(code_cache_host);
+  }
+  if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
+    waiting_for_code_cache_ = true;
+    // If the body can load in parallel with the code cache, we need to enter
+    // preload mode until the code cache is received. The data will be committed
+    // once the code cache is available.
+    parser_->SetIsPreloading(true);
   }
   body_loader_->StartLoadingBody(this, code_cache_host);
 }
@@ -2490,6 +2527,21 @@ void DocumentLoader::CreateParserPostCommit() {
     DocumentEncodingData data;
     data.SetEncoding(WTF::TextEncoding(response_.TextEncodingName()));
     document->SetEncodingData(data);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kEarlyBodyLoad)) {
+    if (frame_ && body_loader_ && !loading_main_document_from_mhtml_archive_ &&
+        !loading_url_as_empty_document_ && url_.ProtocolIsInHTTPFamily() &&
+        !is_static_data_ && frame_->IsMainFrame() &&
+        !document->IsPrefetchOnly() && MimeType() == "text/html") {
+      waiting_for_document_loader_ = true;
+      StartLoadingBodyWithCodeCache();
+
+      if (!frame_ || !body_loader_)
+        return;
+    }
+
+    frame_->DomWindow()->GetScriptController().UpdateDocument();
   }
 
   // If this is a scriptable parser and there is a resource, register the

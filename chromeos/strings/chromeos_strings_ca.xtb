@@ -130,6 +130,8 @@
 <translation id="2860473693272905224">Col·loca una altra pàgina a l'escàner</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2878387241690264070">S'ha descarregat un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segons.</translation>
+<translation id="291142119251986300">Components no qualificats</translation>
+<translation id="2926057806159140518">Introdueix el nom d'usuari i la contrasenya o bé escaneja el codi QR</translation>
 <translation id="3008341117444806826">ACTUALITZA</translation>
 <translation id="3009958530611748826">Selecciona en quina carpeta vols que es desi</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -170,6 +172,7 @@
 <translation id="357889014807611375">Wi‑Fi d'ús mesurat</translation>
 <translation id="3583278742022654445">Intensitat del senyal fluixa. Prova d'apropar-te a la font de senyal de la Wi-Fi.</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
+<translation id="3603829704940252505">Avatar</translation>
 <translation id="360565022852130722">La xarxa Wi-Fi està protegida amb el protocol dèbil WEP 802.1x</translation>
 <translation id="3606583719724308068">Latència alta als llocs web HTTPS</translation>
 <translation id="3689839747745352263">Prova <ph name="TEST_NAME" /></translation>
@@ -421,6 +424,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6905724422583748843">Torna a <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">La tapa de l'escàner està oberta. Tanca-la i torna-ho a provar.</translation>
 <translation id="6911383237894364323">No es pot connectar als servidors multimèdia</translation>
+<translation id="6935486296377631201">Estalvi de pantalla</translation>
 <translation id="6957231940976260713">Nom del servei</translation>
 <translation id="6961170852793647506">Per començar, col·loca el document a l'escàner</translation>
 <translation id="6965382102122355670">D'acord</translation>

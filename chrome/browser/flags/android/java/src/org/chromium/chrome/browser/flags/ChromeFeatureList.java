@@ -219,6 +219,7 @@ public abstract class ChromeFeatureList {
             "AndroidSearchEngineChoiceNotification";
     public static final String ANONYMOUS_UPDATE_CHECKS = "AnonymousUpdateChecks";
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
+    public static final String ASSISTANT_CONSENT_MODAL = "AssistantConsentModal";
     public static final String ASSISTANT_CONSENT_SIMPLIFIED_TEXT = "AssistantConsentSimplifiedText";
     public static final String ASSISTANT_CONSENT_V2 = "AssistantConsentV2";
     public static final String ASSISTANT_INTENT_EXPERIMENT_ID = "AssistantIntentExperimentId";
@@ -252,6 +253,7 @@ public abstract class ChromeFeatureList {
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_REPORT_PARALLEL_REQUEST_STATUS =
             "CCTReportParallelRequestStatus";
+    public static final String CLOSE_ALL_TABS_MODAL_DIALOG = "CloseAllTabsModalDialog";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
     public static final String CHROME_MANAGEMENT_PAGE = "ChromeManagementPageAndroid";
@@ -260,6 +262,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SHARING_HUB_LAUNCH_ADJACENT =
             "ChromeSharingHubLaunchAdjacent";
+    public static final String CHROME_SURVEY_NEXT_ANDROID = "ChromeSurveyNextAndroid";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
     public static final String COMMERCE_MERCHANT_VIEWER = "CommerceMerchantViewer";
     public static final String COMMERCE_PRICE_TRACKING = "CommercePriceTracking";
@@ -355,8 +358,8 @@ public abstract class ChromeFeatureList {
     public static final String GRID_TAB_SWITCHER_FOR_TABLETS = "GridTabSwitcherForTablets";
     public static final String HANDLE_MEDIA_INTENTS = "HandleMediaIntents";
     public static final String HTTPS_FIRST_MODE = "HttpsOnlyMode";
-    public static final String CHROME_SURVEY_NEXT_ANDROID = "ChromeSurveyNextAndroid";
     public static final String IMMERSIVE_UI_MODE = "ImmersiveUiMode";
+    public static final String IMPROVE_READER_MODE_PROMPT = "ImproveReaderModePrompt";
     public static final String INCOGNITO_DOWNLOADS_WARNING = "IncognitoDownloadsWarning";
     public static final String INCOGNITO_NTP_REVAMP = "IncognitoNtpRevamp";
     public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
@@ -480,6 +483,7 @@ public abstract class ChromeFeatureList {
     public static final String SHARED_HIGHLIGHTING_V2 = "SharedHighlightingV2";
     public static final String SHARED_HIGHLIGHTING_AMP = "SharedHighlightingAmp";
     public static final String SHOPPING_LIST = "ShoppingList";
+    public static final String SHOW_EXTENDED_PRELOADING_SETTING = "ShowExtendedPreloadingSetting";
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =
             "SmartSuggestionForLargeDownloads";

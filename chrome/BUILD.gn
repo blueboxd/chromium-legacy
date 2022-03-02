@@ -478,6 +478,7 @@ if (is_win) {
       ":chrome_resources",
       ":chrome_versioned_bundle_data",
       "//base/allocator:early_zone_registration_mac",
+      "//build:branding_buildflags",
       "//chrome/common:buildflags",
       "//chrome/common:version_header",
     ]
@@ -703,6 +704,7 @@ if (is_win) {
 
       deps = [
         "//base/allocator:early_zone_registration_mac",
+        "//build:branding_buildflags",
         "//chrome/common:version_header",
         "//sandbox/mac:seatbelt",
       ]
@@ -840,6 +842,11 @@ if (is_win) {
       "$root_out_dir/app_mode_loader",
       "$root_out_dir/chrome_crashpad_handler",
     ]
+
+    if (is_chrome_branded) {
+      sources +=
+          [ "installer/mac/internal/developer_id_certificate_reauthorize" ]
+    }
 
     outputs = [ "{{bundle_contents_dir}}/Helpers/{{source_file_part}}" ]
 
@@ -1874,9 +1881,11 @@ if (is_linux || is_chromeos) {
         binary = "$root_out_dir/liboptimization_guide_internal.so"
         if (current_cpu == "x86") {
           # GYP used "ia32" so keep that naming for back-compat.
-          symbol_file = "$root_out_dir/optimization_guide.breakpad.ia32"
+          symbol_file =
+              "$root_out_dir/optimization_guide_internal.breakpad.ia32"
         } else {
-          symbol_file = "$root_out_dir/optimization_guide.breakpad.$current_cpu"
+          symbol_file =
+              "$root_out_dir/optimization_guide_internal.breakpad.$current_cpu"
         }
 
         deps = [ "//components/optimization_guide/internal:optimization_guide_internal" ]

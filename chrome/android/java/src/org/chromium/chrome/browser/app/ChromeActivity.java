@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
+import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
@@ -516,8 +517,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getFullscreenManager(), mCompositorViewHolderSupplier,
                 getTabContentManagerSupplier(), getOverviewModeBehaviorSupplier(),
                 this::getSnackbarManager, getActivityType(), this::isInOverviewMode,
-                this::shouldShowOverviewPageOnStart, this::isWarmOnResume,
-                /* appMenuDelegate= */ this,
+                this::isWarmOnResume, /* appMenuDelegate= */ this,
                 /* statusBarColorProvider= */ this, getIntentRequestTracker(),
                 mTabReparentingControllerSupplier, false);
         // clang-format on
@@ -1749,7 +1749,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             display.addObserver(mDisplayAndroidObserver);
 
             CommerceSubscriptionsServiceFactory factory = new CommerceSubscriptionsServiceFactory();
-            mSubscriptionsManager = factory.getForLastUsedProfile().getSubscriptionsManager();
+
+            if (ShoppingFeatures.isShoppingListEnabled()) {
+                mSubscriptionsManager = factory.getForLastUsedProfile().getSubscriptionsManager();
+            }
         }
 
         // Make sure the user is reporting into one of the feed spinner groups, so that we can
@@ -2546,13 +2549,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         if (id == R.id.disable_price_tracking_menu_id) {
-            // TODO(crbug.com/1266881): Add event here to support IPH.
             // TODO(crbug.com/1268976): Extract this code into a one-liner.
-            BookmarkId bookmarkId =
-                    mBookmarkBridgeSupplier.get().getUserBookmarkIdForTab(currentTab);
+            List<BookmarkId> bookmarkIds =
+                    PowerBookmarkUtils.getBookmarkIdsWithSharedClusterIdForTab(
+                            currentTab, mBookmarkBridgeSupplier.get());
             PowerBookmarkUtils.setPriceTrackingEnabledWithSnackbars(mSubscriptionsManager,
-                    mBookmarkBridgeSupplier.get(), bookmarkId,
-                    /*enabled=*/false, mSnackbarManager, getResources(), (status) -> {});
+                    mBookmarkBridgeSupplier.get(), bookmarkIds,
+                    /*enabled=*/false, mSnackbarManager, getResources());
             RecordUserAction.record("MobileMenuDisablePriceTracking");
             return true;
         }

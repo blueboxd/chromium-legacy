@@ -459,7 +459,8 @@ void CorsURLLoader::OnReceiveEarlyHints(mojom::EarlyHintsPtr early_hints) {
     forwarding_client_->OnReceiveEarlyHints(std::move(early_hints));
 }
 
-void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
+void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head,
+                                      mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
@@ -489,7 +490,8 @@ void CorsURLLoader::OnReceiveResponse(mojom::URLResponseHeadPtr response_head) {
   response_head->timing_allow_passed = !timing_allow_failed_flag_;
   response_head->has_authorization_covered_by_wildcard_on_preflight =
       has_authorization_covered_by_wildcard_;
-  forwarding_client_->OnReceiveResponse(std::move(response_head));
+  forwarding_client_->OnReceiveResponse(std::move(response_head),
+                                        std::move(body));
 }
 
 void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -497,6 +499,16 @@ void CorsURLLoader::OnReceiveRedirect(const net::RedirectInfo& redirect_info,
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
   DCHECK(!deferred_redirect_url_);
+
+  // When a redirect is received, we should not expect the IP address space of
+  // the target server to stay the same. The new target server's IP address
+  // space will be recomputed and Private Network Access checks will apply anew.
+  //
+  // This only affects redirects where a new request is initiated at this layer
+  // instead of being handled in `network::URLLoader`.
+  //
+  // See also: https://crbug.com/1293891
+  request_.target_ip_address_space = mojom::IPAddressSpace::kUnknown;
 
   // If `CORS flag` is set and a CORS check for `request` and `response` returns
   // failure, then return a network error.

@@ -314,6 +314,14 @@
     "expiry_milestone": 96
   },
   {
+    "name": "assistant-consent-modal",
+    "owners": [
+      "jds@google.com",
+      "chrome-voice@google.com"
+    ],
+    "expiry_milestone": 103
+  },
+  {
     "name": "assistant-consent-simplified-text",
     "owners": [
       "jds@google.com",
@@ -777,6 +785,11 @@
     "expiry_milestone": 98
   },
   {
+    "name": "close-all-tabs-modal-dialog",
+    "owners": [ "ckitagawa", "fredmello" ],
+    "expiry_milestone": 103
+  },
+  {
     "name": "closed-tab-cache",
     "owners": [
       "altimin@chromium.org",
@@ -1004,11 +1017,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "crostini-use-lxd-4",
-    "owners": [ "sidereal", "davidmunro@google.com", "nverne" ],
-    "expiry_milestone": 110
-  },
-  {
     "name": "crostini-virtual-keyboard-support",
     "owners": [ "timloh", "davidmunro@google.com" ],
     "expiry_milestone": 104
@@ -1030,8 +1038,8 @@
   },
   {
     "name": "darken-websites-checkbox-in-themes-setting",
-    "owners": [ "lazzzis@google.com", "twellington" ],
-    "expiry_milestone": 98
+    "owners": [ "nemco@google.com", "wenyufu@google.com", "twellington" ],
+    "expiry_milestone": 110
   },
   {
     "name": "dcheck-is-fatal",
@@ -2707,7 +2715,7 @@
   {
     "name": "enable-tab-grid-layout",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "enable-tab-groups",
@@ -2717,7 +2725,7 @@
   {
     "name": "enable-tab-groups-continuation",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 101
   },
   {
     "name": "enable-tab-groups-for-tablets",
@@ -3139,7 +3147,7 @@
   {
     "name": "feed-loading-placeholder",
     "owners": [ "//chrome/android/feed/OWNERS", "dewittj@chromium.org" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 101
   },
   {
     "name": "feed-share",
@@ -3483,6 +3491,12 @@
     "expiry_milestone": 112
   },
   {
+    "name": "improve-reader-mode-prompt",
+    "owners": ["lazzzis@google.com", "aishwaryarj@google.com",
+               "//chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/OWNERS"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "improved-desks-keyboard-shortcuts",
     "owners": [ "zxdan", "janetmac"],
     "expiry_milestone": 101
@@ -3668,6 +3682,15 @@
     // Once Lacros is launched, this flag can be removed. Until then, this
     // absolutely must not expire. We do not yet have a launch milestone.
     // TODO(https://crbug.com/1148474).
+    "expiry_milestone": 130
+  },
+  {
+    "name": "lacros-availability-policy",
+    "owners": [ "hidehiko", "lacros-team@google.com" ],
+    // Once Lacros is launched, and all users switch to use lacros fully,
+    // this flag can be removed. Until then, this absolutely must not expire.
+    // We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474, https://crbug.com/1286340).
     "expiry_milestone": 130
   },
   {
@@ -3903,7 +3926,7 @@
   {
     "name": "messages-for-android-reader-mode",
     "owners": [ "pavely", "lazzzis" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 105
   },
   {
     "name": "messages-for-android-safety-tip",
@@ -5743,7 +5766,7 @@
   {
     "name": "web-feed",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 99
+    "expiry_milestone": 110
   },
   {
     "name": "web-feed-ios",
@@ -5753,7 +5776,7 @@
   {
     "name": "web-feed-sort",
     "owners": ["//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "web-midi",

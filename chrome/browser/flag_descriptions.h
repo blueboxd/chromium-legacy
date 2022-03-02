@@ -154,6 +154,9 @@ extern const char kUseCustomMessagesDomainDescription[];
 extern const char kAndroidPictureInPictureAPIName[];
 extern const char kAndroidPictureInPictureAPIDescription[];
 
+extern const char kAssistantConsentModalName[];
+extern const char kAssistantConsentModalDescription[];
+
 extern const char kAssistantConsentSimplifiedTextName[];
 extern const char kAssistantConsentSimplifiedTextDescription[];
 
@@ -301,6 +304,9 @@ extern const char kClipboardCustomFormatsDescription[];
 
 extern const char kClientStorageAccessContextAuditingName[];
 extern const char kClientStorageAccessContextAuditingDescription[];
+
+extern const char kCloseAllTabsModalDialogName[];
+extern const char kCloseAllTabsModalDialogDescription[];
 
 extern const char kClosedTabCacheName[];
 extern const char kClosedTabCacheDescription[];
@@ -1905,6 +1911,9 @@ extern const char kReaderModeHeuristicsAdaboost[];
 extern const char kReaderModeHeuristicsAllArticles[];
 extern const char kReaderModeHeuristicsAlwaysOff[];
 extern const char kReaderModeHeuristicsAlwaysOn[];
+
+extern const char kImproveReaderModePromptName[];
+extern const char kImproveReaderModePromptDescription[];
 
 extern const char kReaderModeInCCTName[];
 extern const char kReaderModeInCCTDescription[];

@@ -130,6 +130,8 @@
 <translation id="2860473693272905224">صفحه دیگری روی اسکنر قرار دهید</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> در <ph name="NUM_SECONDS" /> ثانیه تخلیه شد.</translation>
+<translation id="291142119251986300">دستگاه‌های فاقد شرایط</translation>
+<translation id="2926057806159140518">نام کاربری و گذرواژه‌تان را وارد کنید یا رمزینه پاسخ‌سریع را اسکن کنید</translation>
 <translation id="3008341117444806826">بازخوانی</translation>
 <translation id="3009958530611748826">پوشه‌ای را برای ذخیره در آن انتخاب کنید</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> میلی‌آمپر</translation>
@@ -170,6 +172,7 @@
 <translation id="357889014807611375">‏Wi-Fi کنتوردار</translation>
 <translation id="3583278742022654445">‏سیگنال ضعیف است. به منبع سیگنال Wi-Fi نزدیک‌تر شوید.</translation>
 <translation id="3595596368722241419">باتری پر است</translation>
+<translation id="3603829704940252505">چهره‌نما</translation>
 <translation id="360565022852130722">‏شبکه Wi-Fi با پروتکل ضعیف WEP 802.1x ایمن شده است</translation>
 <translation id="3606583719724308068">‏تأخیر بالا در وب‌سایت‌های HTTPS</translation>
 <translation id="3689839747745352263">آزمایش <ph name="TEST_NAME" /></translation>
@@ -421,6 +424,7 @@
 <translation id="6905724422583748843">بازگشت به <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">پوشش اسکنر باز است. پوشش را ببندید و دوباره امتحان کنید.</translation>
 <translation id="6911383237894364323">امکان اتصال به سرورهای رسانه وجود ندارد</translation>
+<translation id="6935486296377631201">محافظ صفحه‌نمایش</translation>
 <translation id="6957231940976260713">نام سرویس</translation>
 <translation id="6961170852793647506">برای شروع‌، سند را روی اسکنر قرار دهید</translation>
 <translation id="6965382102122355670">قبول</translation>

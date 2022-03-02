@@ -1846,15 +1846,6 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     value = elem.GetProperty('value')
     self.assertEqual(input_value, value)
 
-  def testSendKeysNonBmp(self):
-    self._driver.Load(ChromeDriverTest.GetHttpUrlForFile(
-        '/chromedriver/two_inputs.html'))
-    elem = self._driver.FindElement('css selector', '#first')
-    expected = u'T\U0001f4a9XL\u0436'.encode('utf-8')
-    elem.SendKeys(expected)
-    actual = elem.GetProperty('value').encode('utf-8')
-    self.assertEqual(expected, actual)
-
   def testGetElementAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
         '/chromedriver/attribute_colon_test.html'))
@@ -2087,12 +2078,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/console_log.html'))
     logs = self._driver.GetLog('browser')
 
-    self.assertEqual('javascript', logs[0]['source'])
-    self.assertTrue('TypeError' in logs[0]['message'])
+    # The javascript and network logs can come in any order.
+    if logs[0]['source'] == 'javascript':
+        js_log = logs[0]
+        network_log = logs[1]
+    else:
+        network_log = logs[0]
+        js_log = logs[1]
+    self.assertEqual('javascript', js_log['source'])
+    self.assertTrue('TypeError' in js_log['message'])
 
-    self.assertEqual('network', logs[1]['source'])
-    self.assertTrue('nonexistent.png' in logs[1]['message'])
-    self.assertTrue('404' in logs[1]['message'])
+    self.assertEqual('network', network_log['source'])
+    self.assertTrue('nonexistent.png' in network_log['message'])
+    self.assertTrue('404' in network_log['message'])
 
     # Sometimes, we also get an error for a missing favicon.
     if len(logs) > 2:
@@ -3965,25 +3963,6 @@ class ChromeDriverTestLegacy(ChromeDriverBaseTestWithWebServer):
         'return arguments[0].value;', first))
     self.assertEqual('prickly pete', self._driver.ExecuteScript(
         'return arguments[0].value;', second))
-
-  def testSendingTabKeyMovesToNextInputElementEscapedTab(self):
-    """This behavior is not specified by the WebDriver standard
-    but it is supported by us de facto.
-    According to this table https://www.w3.org/TR/webdriver/#keyboard-actions
-    the code point 0x09 (HT) must be sent to the browser via a CompositionEvent.
-    We however historically have been sending it as KeyEvent
-    with code = ui::VKEY_TAB which leads to focus change.
-    For the sake of contrast GeckoDriver and Firefox do not show this behavior.
-    If in the future it turns out that our current behavior is undesirable
-    we can remove this test.
-    """
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/two_inputs.html'))
-    first = self._driver.FindElement('css selector', '#first')
-    second = self._driver.FindElement('css selector', '#second')
-    first.Click()
-    self._driver.SendKeys('snoopy\tprickly pete')
-    self.assertEqual('snoopy', first.GetProperty('value'))
-    self.assertEqual('prickly pete', second.GetProperty('value'))
 
   def testMobileEmulationDisabledByDefault(self):
     self.assertFalse(self._driver.capabilities['mobileEmulationEnabled'])

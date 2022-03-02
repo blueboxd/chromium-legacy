@@ -79,6 +79,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="1351937230027495976">Menü minimieren</translation>
 <translation id="1364382257761975320">Zum Entsperren des Chromebooks Fingerabdruck verwenden</translation>
+<translation id="1364618750746929654">Transkript konnte nicht erstellt werden</translation>
 <translation id="1383597849754832576">Sprachdateien können nicht heruntergeladen werden. Versuch es später noch einmal.</translation>
 <translation id="1383876407941801731">Durchsuchen</translation>
 <translation id="1391102559483454063">An</translation>
@@ -367,7 +368,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="3477079411857374384">Strg + Umschalttaste + Leertaste</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">Ablage automatisch ausgeblendet</translation>
-<translation id="3509391053705095206">Ihr Smartphone wurde nicht gefunden. Auf Ihrem Smartphone muss Bluetooth aktiviert sein.</translation>
+<translation id="3509391053705095206">Ihr Smartphone wurde nicht gefunden. Ist auf dem Smartphone wirklich Bluetooth aktiviert?</translation>
 <translation id="3510164367642747937">Cursor hervorheben</translation>
 <translation id="3513798432020909783">Konto verwaltet von <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3518604429872942239">Statusleiste, Uhrzeit <ph name="TIME" />,
@@ -574,6 +575,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" /> % (links)</translation>
 <translation id="4734965478015604180">Horizontal</translation>
 <translation id="4735498845456076464">Die Tastenkombination <ph name="LAUNCHER_KEY_NAME" /> + Ziffer hat sich geändert. Wenn Sie jetzt eine Funktionstaste benötigen, drücken Sie die <ph name="LAUNCHER_KEY_NAME" />-Taste + eine Taste in der oberen Reihe.</translation>
+<translation id="473775607612524610">Aktualisieren</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4774338217796918551">Du darfst das Gerät um <ph name="COME_BACK_TIME" /> wieder verwenden.</translation>
 <translation id="4776917500594043016">Passwort für <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -657,7 +659,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="5322611492012084517">Ihr Smartphone wurde nicht gefunden</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5329548388331921293">Wird verbunden…</translation>
-<translation id="5330201449517439522">Zum Anmelden tippen oder klicken</translation>
+<translation id="5330201449517439522">Zum Starten tippen oder klicken</translation>
 <translation id="5331975486040154427">USB-C-Gerät (Port hinten links)</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" /> % (rechts)</translation>
 <translation id="5352250171825660495">Dunkles Design ist aktiviert</translation>
@@ -675,6 +677,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="54609108002486618">Verwaltet</translation>
 <translation id="5465662442746197494">Brauchen Sie Hilfe?</translation>
 <translation id="547979256943495781">Ablage rechts</translation>
+<translation id="5491186829646618080">Firmwareupdates verfügbar</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">Ihr Administrator hat alle eSIM-Profile entfernt. Weitere Informationen erhalten Sie von Ihrem Administrator.</translation>
 <translation id="5523434445161341166">"<ph name="FEATURE_NAME" />" wird verbunden.</translation>
@@ -847,7 +850,7 @@ Neuinstallation</translation>
 <translation id="6667908387435388584">In Phone Hub können Sie sich mit dem Hotspot Ihres Smartphones verbinden, Ihr Gerät stummschalten und suchen und kürzlich auf Ihrem Smartphone geöffnete Chrome-Tabs aufrufen</translation>
 <translation id="6670153871843998651">Desktop 3</translation>
 <translation id="6671495933530132209">Bild kopieren</translation>
-<translation id="6671661918848783005">Entsperren des Chromebooks nicht möglich</translation>
+<translation id="6671661918848783005">Chromebook kann nicht entsperrt werden</translation>
 <translation id="6696025732084565524">Wichtiges Update für Ihre abnehmbare Tastatur</translation>
 <translation id="6700713906295497288">IME-Menüschaltfläche</translation>
 <translation id="6707693040195709527">Das Gerät wurde noch nicht auf eine frühere Version zurückgesetzt</translation>
@@ -1059,7 +1062,7 @@ Neuinstallation</translation>
 <translation id="8061464966246066292">Hoher Kontrast</translation>
 <translation id="8098591350844501178">Streamen von Bildschirm an <ph name="RECEIVER_NAME" /> beenden</translation>
 <translation id="8113423164597455979">An: alle Apps</translation>
-<translation id="8120151603115102514">Ihr Smartphone hat keinen Sperrbildschirm. Geben Sie zum Entsperren des Chromebooks das Passwort ein.</translation>
+<translation id="8120151603115102514">Ihr Smartphone hat keinen Sperrbildschirm. Geben Sie zum Entsperren das Passwort ein.</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8132487352815776550">Untertitel deaktivieren</translation>
@@ -1118,7 +1121,7 @@ Neuinstallation</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> hat <ph name="FEATURE_NAME" /> <ph name="FEATURE_STATE" />.</translation>
 <translation id="8477270416194247200">Drücken Sie Alt + Such-Taste oder die Umschalttaste, um die Aktivierung aufzuheben.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> unterstützt <ph name="SPECIFIED_RESOLUTION" /> nicht. Die Auflösung wurde zu <ph name="FALLBACK_RESOLUTION" /> geändert. Bitte bestätigen, um die Änderungen beizubehalten. Die vorherigen Einstellungen werden in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
-<translation id="85123341071060231">Die Bluetooth-Funktion Ihres Chromebooks ist deaktiviert. Wenn Sie es entsperren möchten, geben Sie das Passwort ein.</translation>
+<translation id="85123341071060231">Auf Ihrem Chromebook ist Bluetooth deaktiviert. Geben Sie zum Entsperren das Passwort ein.</translation>
 <translation id="8513108775083588393">Autom. drehen</translation>
 <translation id="851458219935658693">Fenster des aktuellen Desktops werden angezeigt, Optionsfeld ausgewählt</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
@@ -1172,6 +1175,7 @@ Neuinstallation</translation>
 <translation id="8876661425082386199">Verbindung prüfen</translation>
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
+<translation id="888982883502837004">Für Ihr Gerät sind Firmwareupdates verfügbar. Zum Prüfen und Herunterladen klicken Sie hier.</translation>
 <translation id="8896630965521842259">„<ph name="DESK_TEMPLATE_NAME" />“ wird endgültig gelöscht</translation>
 <translation id="890616557918890486">Quelle ändern</translation>
 <translation id="8909138438987180327">Akkustand: <ph name="PERCENTAGE" />.</translation>

@@ -93,6 +93,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &commerce::kCommerceMerchantViewer,
     &commerce::kCommercePriceTracking,
     &commerce::kShoppingList,
+    &commerce::kShoppingPDPMetrics,
     &content_creation::kLightweightReactions,
     &content_settings::kDarkenWebsitesCheckboxInThemesSetting,
     &device::kWebAuthPhoneSupport,
@@ -157,6 +158,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAndroidLayoutChangeTabReparenting,
     &kAndroidSearchEngineChoiceNotification,
+    &kAssistantConsentModal,
     &kAssistantConsentSimplifiedText,
     &kAssistantConsentV2,
     &kAssistantIntentExperimentId,
@@ -168,6 +170,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBackgroundThreadPool,
     &kBookmarkBottomSheet,
     &kCastDeviceFilter,
+    &kCloseAllTabsModalDialog,
     &kCloseTabSuggestions,
     &kCriticalPersistedTabData,
     &kCCTBackgroundTab,
@@ -251,6 +254,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kQuickActionSearchWidgetAndroid,
     &kReachedCodeProfiler,
+    &kImproveReaderModePrompt,
     &kReaderModeInCCT,
     &kReengagementNotification,
     &kRelatedSearches,
@@ -289,6 +293,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTrustedWebActivityQualityEnforcement,
     &kTrustedWebActivityQualityEnforcementForced,
     &kTrustedWebActivityQualityEnforcementWarning,
+    &kShowExtendedPreloadingSetting,
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
     &kUpdateHistoryEntryPointsInIncognito,
@@ -399,6 +404,9 @@ const base::Feature kFocusOmniboxInIncognitoTabIntents{
 const base::Feature kAndroidSearchEngineChoiceNotification{
     "AndroidSearchEngineChoiceNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAssistantConsentModal{"AssistantConsentModal",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAssistantConsentSimplifiedText{
     "AssistantConsentSimplifiedText", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -435,6 +443,9 @@ const base::Feature kConditionalTabStripAndroid{
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCloseAllTabsModalDialog{"CloseAllTabsModalDialog",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -593,6 +604,9 @@ const base::Feature kDisableCompositedProgressBar{
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
+extern const base::Feature kDownloadHomeForExternalApp{
+    "DownloadHomeForExternalApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -646,6 +660,9 @@ const base::Feature kHomepagePromoCard{"HomepagePromoCard",
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kImproveReaderModePrompt{"ImproveReaderModePrompt",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIncognitoReauthenticationForAndroid{
     "IncognitoReauthenticationForAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -802,6 +819,9 @@ const base::Feature kTrustedWebActivityQualityEnforcementForced{
 const base::Feature kTrustedWebActivityQualityEnforcementWarning{
     "TrustedWebActivityQualityEnforcementWarning",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kShowExtendedPreloadingSetting{
+    "ShowExtendedPreloadingSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

@@ -82,6 +82,7 @@
 <translation id="1346748346194534595">راست</translation>
 <translation id="1351937230027495976">کوچک کردن منو</translation>
 <translation id="1364382257761975320">‏برای باز کردن قفل Chromebook، از اثر انگشتتان استفاده کنید</translation>
+<translation id="1364618750746929654">ترانویسی ایجاد نمی‌شود</translation>
 <translation id="1383597849754832576">نمی‌توان فایل‌های گفتاری را بارگیری کرد. بعداً دوباره امتحان کنید.</translation>
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1391102559483454063">روشن</translation>
@@ -370,7 +371,7 @@
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">پنهان شدن خودکار قفسه</translation>
-<translation id="3509391053705095206">نمی‌توان تلفنتان را پیدا کرد. مطمئن شوید بلوتوث تلفن روشن باشد.</translation>
+<translation id="3509391053705095206">تلفنتان پیدا نشد. مطمئن شوید بلوتوث تلفن روشن باشد.</translation>
 <translation id="3510164367642747937">برجسته کردن نشانگر موشواره</translation>
 <translation id="3513798432020909783">حساب تحت مدیریت <ph name="MANAGER_EMAIL" /> است</translation>
 <translation id="3518604429872942239">سینی وضعیت، زمان <ph name="TIME" />,
@@ -577,6 +578,7 @@
 <translation id="4733161265940833579"><ph name="BATTERY_PERCENTAGE" />% (چپ)</translation>
 <translation id="4734965478015604180">افقی</translation>
 <translation id="4735498845456076464">میان‌بر صفحه‌کلید «<ph name="LAUNCHER_KEY_NAME" /> + عدد» تغییر کرده است. برای استفاده از کلیدهای عملکرد، کلید <ph name="LAUNCHER_KEY_NAME" /> + یکی از کلیدهای ردیف بالا را فشار دهید.</translation>
+<translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4774338217796918551">فردا ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -657,7 +659,7 @@
 <translation id="5314219114274263156">ضبط صفحه‌نمایش انجام شد</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5319712128756744240">مرتبط‌سازی دستگاه جدید</translation>
-<translation id="5322611492012084517">نمی‌توان تلفنتان را پیدا کرد</translation>
+<translation id="5322611492012084517">تلفنتان پیدا نشد</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5329548388331921293">درحال اتصال...</translation>
 <translation id="5330201449517439522">برای ورود، ضربه بزنید یا کلیک کنید</translation>
@@ -678,6 +680,7 @@
 <translation id="54609108002486618">مدیریت شده</translation>
 <translation id="5465662442746197494">به راهنمایی نیاز دارید؟</translation>
 <translation id="547979256943495781">قفسه در سمت چپ است</translation>
+<translation id="5491186829646618080">به‌روزرسانی‌های سفت‌افزار دردسترس است</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">سرپرستتان همه نمایه‌های سیم‌کارت داخلی را برداشته است. برای اطلاعات بیشتر، با سرپرست تماس بگیرید.</translation>
 <translation id="5523434445161341166"><ph name="FEATURE_NAME" /> درحال اتصال است.</translation>
@@ -1176,6 +1179,7 @@
 <translation id="8876661425082386199">بررسی اتصال</translation>
 <translation id="8877788021141246043">‏Set a reminder (یادآوری تنظیم کن)</translation>
 <translation id="8878886163241303700">صفحه گسترش یافته است</translation>
+<translation id="888982883502837004">به‌روزرسانی‌های سفت‌افزار برای دستگاهتان دردسترس است. برای مرور و به‌روزرسانی، کلیک کنید.</translation>
 <translation id="8896630965521842259"><ph name="DESK_TEMPLATE_NAME" /> برای همیشه حذف می‌شود</translation>
 <translation id="890616557918890486">تغییر منبع</translation>
 <translation id="8909138438987180327">شارژ باتری <ph name="PERCENTAGE" /> درصد است.</translation>

@@ -130,6 +130,8 @@
 <translation id="2860473693272905224">Letakkan halaman lain di atas pengimbas</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2878387241690264070">Dinyahcas <ph name="RATE" /> dalam masa <ph name="NUM_SECONDS" /> saat.</translation>
+<translation id="291142119251986300">Komponen tidak layak</translation>
+<translation id="2926057806159140518">Masukkan nama pengguna dan kata laluan anda atau imbas kod QR anda</translation>
 <translation id="3008341117444806826">MUAT SEMULA</translation>
 <translation id="3009958530611748826">Pilih folder untuk menyimpan imbasan</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -170,6 +172,7 @@
 <translation id="357889014807611375">Wi-Fi bermeter</translation>
 <translation id="3583278742022654445">Kekuatan isyarat lemah. Cuba bergerak lebih rapat ke sumber isyarat Wi-Fi.</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
+<translation id="3603829704940252505">Avatar</translation>
 <translation id="360565022852130722">Rangkaian Wi-Fi selamat dengan protokol lemah WEP 802.1x</translation>
 <translation id="3606583719724308068">Kependaman tinggi ke laman web HTTPS</translation>
 <translation id="3689839747745352263">Ujian <ph name="TEST_NAME" /></translation>
@@ -421,6 +424,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="6905724422583748843">Kembali ke <ph name="PAGE_NAME" /></translation>
 <translation id="6910312834584889076">Penutup pengimbas terbuka. Tutup penutup dan cuba lagi.</translation>
 <translation id="6911383237894364323">Tidak dapat menyambung kepada pelayan media</translation>
+<translation id="6935486296377631201">Penyelamat skrin</translation>
 <translation id="6957231940976260713">Nama perkhidmatan</translation>
 <translation id="6961170852793647506">Untuk bermula, letakkan dokumen anda di atas pengimbas</translation>
 <translation id="6965382102122355670">OK</translation>

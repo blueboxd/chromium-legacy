@@ -132,4 +132,22 @@ public class FilePersistedTabDataStorageTest {
         semaphore.acquire();
         Assert.assertTrue(storage.mQueue.isEmpty());
     }
+
+    @Test
+    @SmallTest
+    public void testOutOfMemoryError() throws InterruptedException {
+        // Ensure no data for Tab ID 1 / Data ID 1 (could be cross talk from other batch tests)
+        File file = FilePersistedTabDataStorage.getFile(TAB_ID_1, DATA_ID_1);
+        file.delete();
+        Assert.assertFalse(file.exists());
+        FilePersistedTabDataStorage storage = new FilePersistedTabDataStorage();
+        final Semaphore semaphore = new Semaphore(0);
+        storage.addSaveRequest(storage.new FileSaveRequest(TAB_ID_1, DATA_ID_1, () -> {
+            // OutOfMemory error on ByteBuffer supplier.
+            throw new OutOfMemoryError("OutOfMemoryError mock");
+        }, semaphore::release));
+        ThreadUtils.runOnUiThreadBlocking(() -> { storage.processNextItemOnQueue(); });
+        semaphore.acquire();
+        Assert.assertFalse(file.exists());
+    }
 }

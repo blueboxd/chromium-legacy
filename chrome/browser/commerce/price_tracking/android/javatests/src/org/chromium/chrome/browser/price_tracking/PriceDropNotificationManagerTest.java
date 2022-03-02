@@ -25,6 +25,7 @@ import android.provider.Settings;
 
 import androidx.test.filters.MediumTest;
 
+import org.json.JSONArray;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -43,7 +44,9 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker.SystemNotificationType;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager.DismissNotificationChromeActivity;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscription.CommerceSubscriptionType;
@@ -67,7 +70,8 @@ import org.chromium.components.browser_ui.notifications.MockNotificationManagerP
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.COMMERCE_PRICE_TRACKING + "<Study",
         "force-fieldtrials=Study/Group",
-        "force-fieldtrial-params=Study.Group:enable_price_notification/true"})
+        "force-fieldtrial-params=Study.Group:enable_price_notification/true"
+            + "/user_managed_notification_max_number/2"})
 @Features.DisableFeatures({ChromeFeatureList.START_SURFACE_ANDROID})
 public class PriceDropNotificationManagerTest {
     // clang-format on
@@ -285,5 +289,52 @@ public class PriceDropNotificationManagerTest {
     @MediumTest
     public void testNotificationTypeEnabled() {
         assertTrue(mPriceDropNotificationManager.isEnabled());
+    }
+
+    @Test
+    @MediumTest
+    public void testUpdateNotificationTimestamps() {
+        SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
+        int mockType = SystemNotificationType.PRICE_DROP_ALERTS_USER_MANAGED;
+        long mockTimestamp = System.currentTimeMillis()
+                - 2 * PriceTrackingNotificationConfig.getNotificationTimestampsStoreWindowMs();
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(mockTimestamp);
+        preferencesManager.writeString(
+                PriceDropNotificationManager.USER_MANAGED_TIMESTAMPS, jsonArray.toString());
+        assertEquals(
+                0, mPriceDropNotificationManager.updateNotificationTimestamps(mockType, false));
+
+        mockTimestamp = System.currentTimeMillis();
+        jsonArray = new JSONArray();
+        jsonArray.put(mockTimestamp);
+        preferencesManager.writeString(
+                PriceDropNotificationManager.USER_MANAGED_TIMESTAMPS, jsonArray.toString());
+        assertEquals(
+                1, mPriceDropNotificationManager.updateNotificationTimestamps(mockType, false));
+
+        assertEquals(2, mPriceDropNotificationManager.updateNotificationTimestamps(mockType, true));
+        assertEquals(3, mPriceDropNotificationManager.updateNotificationTimestamps(mockType, true));
+
+        preferencesManager.writeString(PriceDropNotificationManager.USER_MANAGED_TIMESTAMPS, "");
+        assertEquals(
+                0, mPriceDropNotificationManager.updateNotificationTimestamps(mockType, false));
+        assertEquals(1, mPriceDropNotificationManager.updateNotificationTimestamps(mockType, true));
+    }
+
+    @Test
+    @MediumTest
+    public void testHasReachedMaxAllowedNotificationNumber() {
+        int mockType = SystemNotificationType.PRICE_DROP_ALERTS_USER_MANAGED;
+        assertEquals(false,
+                mPriceDropNotificationManager.hasReachedMaxAllowedNotificationNumber(mockType));
+
+        mPriceDropNotificationManager.updateNotificationTimestamps(mockType, true);
+        assertEquals(false,
+                mPriceDropNotificationManager.hasReachedMaxAllowedNotificationNumber(mockType));
+
+        mPriceDropNotificationManager.updateNotificationTimestamps(mockType, true);
+        assertEquals(true,
+                mPriceDropNotificationManager.hasReachedMaxAllowedNotificationNumber(mockType));
     }
 }

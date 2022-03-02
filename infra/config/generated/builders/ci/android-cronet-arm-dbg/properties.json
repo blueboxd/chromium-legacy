@@ -1,6 +1,7 @@
 {
   "$build/chromium_tests": {
     "project_trigger_overrides": {
+<<<<<<< HEAD
       "chromium": "chromium-m98"
     }
   },
@@ -10,6 +11,15 @@
     "rpc_extra_params": "?prod",
     "server_host": "goma.chromium.org",
     "use_luci_auth": true
+=======
+      "chromium": "chromium-m99"
+    }
+  },
+  "$build/reclient": {
+    "instance": "rbe-chromium-trusted",
+    "jobs": 500,
+    "metrics_project": "chromium-reclient-metrics"
+>>>>>>> 99.0.4844.51
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

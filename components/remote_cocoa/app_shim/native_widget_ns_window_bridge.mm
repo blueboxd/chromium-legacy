@@ -1268,8 +1268,9 @@ base::TimeDelta NativeWidgetNSWindowBridge::PreCommitTimeout() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetNSWindowBridge, CocoaMouseCaptureDelegate:
 
-void NativeWidgetNSWindowBridge::PostCapturedEvent(NSEvent* event) {
+bool NativeWidgetNSWindowBridge::PostCapturedEvent(NSEvent* event) {
   [bridged_view_ processCapturedMouseEvent:event];
+  return true;
 }
 
 void NativeWidgetNSWindowBridge::OnMouseCaptureLost() {

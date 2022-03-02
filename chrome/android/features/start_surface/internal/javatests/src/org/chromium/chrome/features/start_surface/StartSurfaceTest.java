@@ -41,7 +41,6 @@ import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.uiautomator.UiDevice;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -94,7 +93,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -195,6 +193,8 @@ public class StartSurfaceTest {
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
         "/home_button_on_grid_tab_switcher/false"})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O,
+                     message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -233,6 +233,8 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O,
+                     message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage_NoIncognitoSwitch() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
@@ -356,7 +358,7 @@ public class StartSurfaceTest {
         onView(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_container))
                 .check(matches(withEffectiveVisibility(GONE)));
         onView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_title))
-                .check(matches(isDisplayed()));
+                .check(matches(withEffectiveVisibility(GONE)));
         onView(withId(org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container))
                 .check(matches(isDisplayed()));
         onView(withId(org.chromium.chrome.tab_ui.R.id.single_tab_view))
@@ -414,7 +416,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 0, 1);
 
         // Simulates pressing the Android's home button and bringing Chrome to the background.
-        pressHome();
+        StartSurfaceTestUtils.pressHome();
 
         // Simulates pressing Chrome's icon and launching Chrome from warm start.
         mActivityTestRule.resumeMainActivityFromLauncher();
@@ -1058,7 +1060,7 @@ public class StartSurfaceTest {
             AppMenuTestSupport.showAppMenu(mActivityTestRule.getAppMenuCoordinator(), null, false);
         });
 
-        assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
+        assertNull(AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.icon_row_menu_id));
         assertNotNull(AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.new_tab_menu_id));
@@ -1092,7 +1094,7 @@ public class StartSurfaceTest {
                 != null;
         ModelList menuItemsModelList =
                 AppMenuTestSupport.getMenuModelList(mActivityTestRule.getAppMenuCoordinator());
-        assertEquals(hasUpdateMenuItem ? 12 : 11, menuItemsModelList.size());
+        assertEquals(hasUpdateMenuItem ? 11 : 10, menuItemsModelList.size());
     }
 
     @Test
@@ -1180,11 +1182,5 @@ public class StartSurfaceTest {
      */
     private boolean isInstantReturn() {
         return mUseInstantStart && mImmediateReturn;
-    }
-
-    private void pressHome() {
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        device.pressHome();
-        ChromeApplicationTestUtils.waitUntilChromeInBackground();
     }
 }

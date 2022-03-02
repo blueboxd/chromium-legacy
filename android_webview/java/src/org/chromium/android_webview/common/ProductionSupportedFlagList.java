@@ -215,6 +215,8 @@ public final class ProductionSupportedFlagList {
                             + " number in the minor version position in the User-Agent string."),
             Flag.baseFeature(NetworkServiceFeatures.URL_LOADER_SYNC_CLIENT,
                     "Optimizes communication between URLLoader and CorsURLLoader."),
+            Flag.baseFeature(NetworkServiceFeatures.COMBINE_RESPONSE_BODY,
+                    "Reduces URLLoaderClient mojo calls."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
@@ -236,5 +238,9 @@ public final class ProductionSupportedFlagList {
                     "Whether legacy TLS versions (TLS 1.0/1.1) conections are allowed."),
             Flag.baseFeature(WebRtcOverridesFeatures.WEB_RTC_METRONOME_TASK_QUEUE,
                     "Enables more efficient scheduling of work in WebRTC."),
+            Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
+                    "Enables creation of initial NavigationEntries on WebContents creation."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_SEND_VARIATIONS_HEADERS,
+                    "Whether WebView will send variations headers on URLs where applicable."),
     };
 }

@@ -65,6 +65,7 @@
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/lacros_availability_policy_observer.h"
 #include "chrome/browser/ash/crostini/crostini_unsupported_action_notifier.h"
 #include "chrome/browser/ash/dbus/ash_dbus_helper.h"
 #include "chrome/browser/ash/dbus/chrome_features_service_provider.h"
@@ -901,8 +902,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   crosapi_manager_ = std::make_unique<crosapi::CrosapiManager>();
   browser_manager_ = std::make_unique<crosapi::BrowserManager>(
       g_browser_process->platform_part()->cros_component_manager());
-
   browser_manager_->AddObserver(SessionControllerClientImpl::Get());
+  lacros_availability_policy_observer_ =
+      std::make_unique<crosapi::LacrosAvailabilityPolicyObserver>();
 
   chromeos::machine_learning::ServiceConnection::GetInstance()->Initialize();
 
@@ -933,8 +935,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
 
-    if (BrowserDataMigratorImpl::MaybeRestartToMigrate(account_id,
-                                                       user_id_hash)) {
+    if (BrowserDataMigratorImpl::MaybeRestartToMigrate(
+            account_id, user_id_hash,
+            crosapi::browser_util::PolicyInitState::kBeforeInit)) {
       LOG(WARNING) << "Restarting chrome to run profile migration.";
       return;
     }
@@ -1183,6 +1186,8 @@ void ChromeBrowserMainPartsAsh::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsAsh::PostBrowserStart() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Branded builds are packaged with valid google chrome api keys.
   if (base::FeatureList::IsEnabled(features::kDeviceActiveClient)) {
     device_activity_controller_ =
         std::make_unique<device_activity::DeviceActivityController>();
@@ -1192,6 +1197,7 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
         g_browser_process->system_network_context_manager()
             ->GetSharedURLLoaderFactory());
   }
+#endif
 
   // Construct a delegate to connect the accessibility component extensions and
   // AccessibilityEventRewriter.
@@ -1465,6 +1471,11 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
 
   // Cleans up dbus services depending on ash.
   dbus_services_->PreAshShutdown();
+
+  // LacrosAvailabilityPolicyObserver has the dependency to ProfileManager,
+  // so it needs to be destroyed before ProfileManager destruction,
+  // which happens inside PostMainMessageLoop below.
+  lacros_availability_policy_observer_.reset();
 
   // NOTE: Closes ash and destroys `Shell`.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();

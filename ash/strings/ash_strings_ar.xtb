@@ -82,6 +82,7 @@
 <translation id="1346748346194534595">يمين</translation>
 <translation id="1351937230027495976">تصغير القائمة</translation>
 <translation id="1364382257761975320">‏لفتح قفل جهاز Chromebook، استخدِم بصمة إصبعك.</translation>
+<translation id="1364618750746929654">يتعذَّر تحويل الصوت إلى نص.</translation>
 <translation id="1383597849754832576">يتعذّر تنزيل ملفات ميزة "النسخ النصي التلقائي". يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1391102559483454063">مُفعَّلة</translation>
@@ -578,6 +579,7 @@
 <translation id="4733161265940833579">%<ph name="BATTERY_PERCENTAGE" /> (السماعة اليسرى)</translation>
 <translation id="4734965478015604180">أفقي</translation>
 <translation id="4735498845456076464">تم تغيير اختصارات لوحة المفاتيح "<ph name="LAUNCHER_KEY_NAME" /> + رقم". لاستخدام مفاتيح الوظائف، اضغط على المفتاح <ph name="LAUNCHER_KEY_NAME" /> مع الضغط على مفتاح في الصف العلوي.</translation>
+<translation id="473775607612524610">تحديث</translation>
 <translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4774338217796918551">يمكنك العودة غدًا في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -679,6 +681,7 @@
 <translation id="54609108002486618">تتم إدارته</translation>
 <translation id="5465662442746197494">هل تريد المساعدة؟</translation>
 <translation id="547979256943495781">الرف على يسار الشاشة</translation>
+<translation id="5491186829646618080">تتوفّر تحديثات للبرامج الثابتة</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5520229639206813572">‏أزال المشرف جميع الملفات الشخصية لشريحة eSIM. يمكنك التواصل مع المشرف للحصول على مزيد من المعلومات.</translation>
 <translation id="5523434445161341166">جارٍ اتصال <ph name="FEATURE_NAME" />.</translation>
@@ -1123,7 +1126,7 @@
 <translation id="8473301994082929012">الميزة <ph name="FEATURE_NAME" /> حالتها <ph name="FEATURE_STATE" /> في <ph name="ORGANIZATION_NAME" />.</translation>
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير درجة الدقة إلى <ph name="FALLBACK_RESOLUTION" />. انقر على "تأكيد" لحفظ التغييرات. ستتم استعادة الإعدادات السابقة خلال <ph name="TIMEOUT_SECONDS" />.</translation>
-<translation id="85123341071060231">‏تقنية البلوتوث غير مفعّلة على جهاز Chromebook. لفتح قفل جهاز Chromebook، أدخِل كلمة المرور.</translation>
+<translation id="85123341071060231">‏البلوتوث غير مفعّل على جهاز Chromebook. لفتح قفل جهاز Chromebook، أدخِل كلمة المرور.</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="851458219935658693">عرض النوافذ المفتوحة في سطح المكتب الحالي، تم النقر على زر الاختيار.</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
@@ -1177,6 +1180,7 @@
 <translation id="8876661425082386199">التحقُّق من الاتصال</translation>
 <translation id="8877788021141246043">ضبط تذكير</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
+<translation id="888982883502837004">تتوفّر تحديثات للبرامج الثابتة على جهازك. انقر للمراجعة والتحديث.</translation>
 <translation id="8896630965521842259">سيتم حذف النموذج <ph name="DESK_TEMPLATE_NAME" /> نهائيًا.</translation>
 <translation id="890616557918890486">تغيير المصدر</translation>
 <translation id="8909138438987180327">مستوى طاقة البطارية عند <ph name="PERCENTAGE" /> في المئة.</translation>
@@ -1225,7 +1229,7 @@
 <translation id="9201044636667689546">‏عليك ربط جهاز <ph name="NAME" /> بجهاز Chromebook هذا.</translation>
 <translation id="9201374708878217446">حالة الاتصال <ph name="CONNECTION_STATUS" />، يديرها المشرف</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
-<translation id="9211490828691860325">جميع أجهزة سطح المكتب</translation>
+<translation id="9211490828691860325">جميع أسطح المكتب</translation>
 <translation id="9211681782751733685">الوقت المتبقي حتى يتم شحن البطارية بالكامل<ph name="TIME_REMAINING" />.</translation>
 <translation id="9215934040295798075">ضبط الخلفية</translation>
 <translation id="921989828232331238">قفّل أحد الوالدين جهازك لليوم</translation>

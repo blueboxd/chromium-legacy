@@ -717,6 +717,25 @@ const FeatureEntry::Choice kLacrosSelectionChoices[] = {
      crosapi::browser_util::kLacrosSelectionRootfs},
 };
 
+const FeatureEntry::Choice kLacrosAvailabilityPolicyChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {crosapi::browser_util::kLacrosAvailabilityPolicyUserChoice,
+     crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
+     crosapi::browser_util::kLacrosAvailabilityPolicyUserChoice},
+    {crosapi::browser_util::kLacrosAvailabilityPolicyLacrosDisabled,
+     crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
+     crosapi::browser_util::kLacrosAvailabilityPolicyLacrosDisabled},
+    {crosapi::browser_util::kLacrosAvailabilityPolicySideBySide,
+     crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
+     crosapi::browser_util::kLacrosAvailabilityPolicySideBySide},
+    {crosapi::browser_util::kLacrosAvailabilityPolicyLacrosPrimary,
+     crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
+     crosapi::browser_util::kLacrosAvailabilityPolicyLacrosPrimary},
+    {crosapi::browser_util::kLacrosAvailabilityPolicyLacrosOnly,
+     crosapi::browser_util::kLacrosAvailabilityPolicySwitch,
+     crosapi::browser_util::kLacrosAvailabilityPolicyLacrosOnly},
+};
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const FeatureEntry::Choice kForceUIDirectionChoices[] = {
@@ -1220,44 +1239,26 @@ const FeatureEntry::FeatureVariation
         {"All Users", {}, 0, "t4693177"}};
 
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration15Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "15"}};
-constexpr FeatureEntry::FeatureParam
-    kOmniboxZeroSuggestCacheDuration15SecsCounterfactual[] = {
-        {"ZeroSuggestCacheDurationSec", "15"},
-        {"ZeroSuggestCacheCounterfactual", "true"}};
+    {{"ZeroSuggestCacheDurationSec", "15"},
+     {"ZeroSuggestCacheCounterfactual", "true"},
+     {"ZeroSuggestPrefetchBypassCache", "true"}};
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration30Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "30"}};
-constexpr FeatureEntry::FeatureParam
-    kOmniboxZeroSuggestCacheDuration30SecsCounterfactual[] = {
-        {"ZeroSuggestCacheDurationSec", "30"},
-        {"ZeroSuggestCacheCounterfactual", "true"}};
+    {{"ZeroSuggestCacheDurationSec", "30"},
+     {"ZeroSuggestCacheCounterfactual", "true"},
+     {"ZeroSuggestPrefetchBypassCache", "true"}};
 constexpr FeatureEntry::FeatureParam kOmniboxZeroSuggestCacheDuration60Secs[] =
-    {{"ZeroSuggestCacheDurationSec", "60"}};
-constexpr FeatureEntry::FeatureParam
-    kOmniboxZeroSuggestCacheDuration60SecsCounterfactual[] = {
-        {"ZeroSuggestCacheDurationSec", "60"},
-        {"ZeroSuggestCacheCounterfactual", "true"}};
+    {{"ZeroSuggestCacheDurationSec", "60"},
+     {"ZeroSuggestCacheCounterfactual", "true"},
+     {"ZeroSuggestPrefetchBypassCache", "true"}};
 
 constexpr FeatureEntry::FeatureVariation
     kOmniboxZeroSuggestPrefetchingVariations[] = {
         {"15 seconds", kOmniboxZeroSuggestCacheDuration15Secs,
          base::size(kOmniboxZeroSuggestCacheDuration15Secs), nullptr},
-        {"15 seconds (counterfactual)",
-         kOmniboxZeroSuggestCacheDuration15SecsCounterfactual,
-         base::size(kOmniboxZeroSuggestCacheDuration15SecsCounterfactual),
-         nullptr},
         {"30 seconds", kOmniboxZeroSuggestCacheDuration30Secs,
          base::size(kOmniboxZeroSuggestCacheDuration30Secs), nullptr},
-        {"30 seconds (counterfactual)",
-         kOmniboxZeroSuggestCacheDuration30SecsCounterfactual,
-         base::size(kOmniboxZeroSuggestCacheDuration30SecsCounterfactual),
-         nullptr},
         {"60 seconds", kOmniboxZeroSuggestCacheDuration60Secs,
-         base::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr},
-        {"60 seconds (counterfactual)",
-         kOmniboxZeroSuggestCacheDuration60SecsCounterfactual,
-         base::size(kOmniboxZeroSuggestCacheDuration60SecsCounterfactual),
-         nullptr}};
+         base::size(kOmniboxZeroSuggestCacheDuration60Secs), nullptr}};
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -3103,6 +3104,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-notifications-revamp", flag_descriptions::kNotificationsRevampName,
      flag_descriptions::kNotificationsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kNotificationsRefresh)},
+    // Used to carry the policy value crossing the Chrome process lifetime.
+    {crosapi::browser_util::kLacrosAvailabilityPolicyInternalName, "", "",
+     kOsCrOS, MULTI_VALUE_TYPE(kLacrosAvailabilityPolicyChoices)},
     {kLacrosSupportInternalName, flag_descriptions::kLacrosSupportName,
      flag_descriptions::kLacrosSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kLacrosSupport)},
@@ -3484,10 +3488,17 @@ const FeatureEntry kFeatureEntries[] = {
     {"reader-mode-heuristics", flag_descriptions::kReaderModeHeuristicsName,
      flag_descriptions::kReaderModeHeuristicsDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kReaderModeHeuristicsChoices)},
+    {"improve-reader-mode-prompt",
+     flag_descriptions::kImproveReaderModePromptName,
+     flag_descriptions::kImproveReaderModePromptDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kImproveReaderModePrompt)},
     {"voice-button-in-top-toolbar",
      flag_descriptions::kVoiceButtonInTopToolbarName,
      flag_descriptions::kVoiceButtonInTopToolbarDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kVoiceButtonInTopToolbar)},
+    {"assistant-consent-modal", flag_descriptions::kAssistantConsentModalName,
+     flag_descriptions::kAssistantConsentModalDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAssistantConsentModal)},
     {"assistant-consent-simplified-text",
      flag_descriptions::kAssistantConsentSimplifiedTextName,
      flag_descriptions::kAssistantConsentSimplifiedTextDescription, kOsAndroid,
@@ -3589,9 +3600,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTerminalTmuxIntegrationName,
      flag_descriptions::kTerminalTmuxIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kTerminalTmuxIntegration)},
-    {"crostini-use-lxd-4", flag_descriptions::kCrostiniUseLxd4Name,
-     flag_descriptions::kCrostiniUseLxd4Description, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseLxd4)},
     {"crostini-multi-container", flag_descriptions::kCrostiniMultiContainerName,
      flag_descriptions::kCrostiniMultiContainerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniMultiContainer)},
@@ -7733,6 +7741,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(switches::kLacrosNonSyncingProfiles)},
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+    {"close-all-tabs-modal-dialog",
+     flag_descriptions::kCloseAllTabsModalDialogName,
+     flag_descriptions::kCloseAllTabsModalDialogDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCloseAllTabsModalDialog)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -7788,6 +7803,13 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   // enable-ui-devtools is only available on for non Stable channels.
   if (!strcmp(ui_devtools::switches::kEnableUiDevTools, entry.internal_name) &&
       channel == version_info::Channel::STABLE) {
+    return true;
+  }
+
+  // Skip lacros-availability-policy always. This is a pseudo entry
+  // and used to carry the policy value crossing the Chrome's lifetime.
+  if (!strcmp(crosapi::browser_util::kLacrosAvailabilityPolicyInternalName,
+              entry.internal_name)) {
     return true;
   }
 

@@ -1,7 +1,7 @@
 {
   "$build/chromium_tests": {
     "project_trigger_overrides": {
-      "chromium": "chromium-m98"
+      "chromium": "chromium-m99"
     }
   },
   "$build/reclient": {

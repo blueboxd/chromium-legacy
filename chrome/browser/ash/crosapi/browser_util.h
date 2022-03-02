@@ -115,6 +115,15 @@ extern const char kLacrosSelectionSwitch[];
 extern const char kLacrosSelectionRootfs[];
 extern const char kLacrosSelectionStateful[];
 
+// A command-line switch that is converted and set via the feature flag.
+extern const char kLacrosAvailabilityPolicyInternalName[];
+extern const char kLacrosAvailabilityPolicySwitch[];
+extern const char kLacrosAvailabilityPolicyUserChoice[];
+extern const char kLacrosAvailabilityPolicyLacrosDisabled[];
+extern const char kLacrosAvailabilityPolicySideBySide[];
+extern const char kLacrosAvailabilityPolicyLacrosPrimary[];
+extern const char kLacrosAvailabilityPolicyLacrosOnly[];
+
 // Boolean preference. Whether to launch lacros-chrome on login.
 extern const char kLaunchOnLoginPref[];
 
@@ -150,13 +159,21 @@ bool IsLacrosEnabled();
 // As above, but takes a channel. Exposed for testing.
 bool IsLacrosEnabled(version_info::Channel channel);
 
+// Represents whether the function is being called before the Policy is
+// initialized or not.
+enum class PolicyInitState {
+  kBeforeInit,
+  kAfterInit,
+};
+
 // Similar to `IsLacrosEnabled()` but does not check if profile migration has
 // been completed. This is to be used inside `BrowserDataMigrator`. Unlike
 // `IsLacrosEnabled()` it can be called before the primary user profile is
 // created.
 // TODO(crbug.com/1265800): Refactor `IsLacrosEnabled()` and
 // `IsLacrosEnabledForMigration()` to reduce duplicated code.
-bool IsLacrosEnabledForMigration(const user_manager::User* user);
+bool IsLacrosEnabledForMigration(const user_manager::User* user,
+                                 PolicyInitState policy_init_state);
 
 // Returns true if |chromeos::features::kLacrosSupport| flag is allowed.
 bool IsLacrosSupportFlagAllowed(version_info::Channel channel);
@@ -281,6 +298,9 @@ void SetProfileMigrationCompletedForTest(bool is_completed);
 // Returns who decided how Lacros should be used - or not: The User, the policy
 // or another edge case.
 LacrosLaunchSwitchSource GetLacrosLaunchSwitchSource();
+
+// Returns the policy value name from the given value.
+base::StringPiece GetLacrosAvailabilityPolicyName(LacrosLaunchSwitch value);
 
 }  // namespace browser_util
 }  // namespace crosapi

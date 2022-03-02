@@ -93,6 +93,12 @@ BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
 BLINK_COMMON_EXPORT bool IsFencedFramesMPArchBased();
 
+// Whether we will create initial NavigationEntry or not on FrameTree creation,
+// which also impacts the session history replacement decisions made in the
+// renderer.
+BLINK_COMMON_EXPORT extern const base::Feature kInitialNavigationEntry;
+BLINK_COMMON_EXPORT bool IsInitialNavigationEntryEnabled();
+
 BLINK_COMMON_EXPORT extern const base::Feature
     kPreviewsResourceLoadingHintsSpecificResourceTypes;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -200,7 +206,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebviewAccelerateSmallCanvases;
 
-BLINK_COMMON_EXPORT extern const base::Feature kSoftwareCanvas2DOnReadback;
+BLINK_COMMON_EXPORT extern const base::Feature kCanvas2dStaysGPUOnReadback;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 
@@ -553,6 +559,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kLateFormNewlineNormalization;
 // and released to stable with no issues.
 BLINK_COMMON_EXPORT extern const base::Feature kAutoExpandDetailsElement;
 
+BLINK_COMMON_EXPORT extern const base::Feature kEarlyBodyLoad;
+
 BLINK_COMMON_EXPORT extern const base::Feature kEarlyCodeCache;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -582,6 +590,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kLazyInitializeTimeZoneController;
 
 BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
+
+BLINK_COMMON_EXPORT extern const base::Feature kDefaultStyleSheetsEarlyInit;
 
 }  // namespace features
 }  // namespace blink

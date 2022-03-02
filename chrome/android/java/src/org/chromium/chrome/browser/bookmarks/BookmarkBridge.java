@@ -8,6 +8,7 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -457,13 +458,16 @@ public class BookmarkBridge {
     }
 
     /**
+     * Gets the {@link BookmarkItem} which is referenced by the given {@link BookmarkId}.
+     * @param id The {@link BookmarkId} used to lookup the corresponding {@link BookmarkItem}.
      * @return A BookmarkItem instance for the given BookmarkId.
      *         <code>null</code> if it doesn't exist.
      */
     @Nullable
-    public BookmarkItem getBookmarkById(BookmarkId id) {
+    public BookmarkItem getBookmarkById(@Nullable BookmarkId id) {
         ThreadUtils.assertOnUiThread();
         assert mIsNativeBookmarkModelLoaded;
+        if (id == null) return null;
 
         if (BookmarkId.SHOPPING_FOLDER.equals(id)) {
             return new BookmarkItem(id, /*title=*/null, /*url=*/null,
@@ -758,6 +762,20 @@ public class BookmarkBridge {
         int typeInt = powerBookmarkType == null ? -1 : powerBookmarkType.getNumber();
         BookmarkBridgeJni.get().searchBookmarks(mNativeBookmarkBridge, BookmarkBridge.this,
                 bookmarkMatches, query, tags, typeInt, maxNumberOfResult);
+        return bookmarkMatches;
+    }
+
+    /**
+     * Synchronously gets a list of bookmarks of the given type
+     * @param powerBookmarkType The type of power bookmark type to search for (or null for all).
+     * @return List of bookmark IDs that are related to the given query.
+     */
+    public List<BookmarkId> getBookmarksOfType(@NonNull PowerBookmarkType powerBookmarkType) {
+        ThreadUtils.assertOnUiThread();
+        List<BookmarkId> bookmarkMatches = new ArrayList<>();
+        int typeInt = powerBookmarkType.getNumber();
+        BookmarkBridgeJni.get().getBookmarksOfType(
+                mNativeBookmarkBridge, BookmarkBridge.this, bookmarkMatches, typeInt);
         return bookmarkMatches;
     }
 
@@ -1421,6 +1439,8 @@ public class BookmarkBridge {
         void searchBookmarks(long nativeBookmarkBridge, BookmarkBridge caller,
                 List<BookmarkId> bookmarkMatches, String query, String[] tags,
                 int powerBookmarkType, int maxNumber);
+        void getBookmarksOfType(long nativeBookmarkBridge, BookmarkBridge caller,
+                List<BookmarkId> bookmarkMatches, int powerBookmarkType);
         long init(BookmarkBridge caller, Profile profile);
         boolean isDoingExtensiveChanges(long nativeBookmarkBridge, BookmarkBridge caller);
         void destroy(long nativeBookmarkBridge, BookmarkBridge caller);

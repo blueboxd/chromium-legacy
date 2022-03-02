@@ -14,13 +14,18 @@
 <translation id="1028781062521375153">Voir les renseignements</translation>
 <translation id="1030706264415084469">L'URL <ph name="URL" /> veut stocker de façon permanente de grandes quantités de données sur votre appareil</translation>
 <translation id="1032854598605920125">Faire pivoter dans le sens horaire</translation>
+<translation id="1033329911862281889">La navigation privée ne vous rend pas invisible en ligne :
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />Les sites et les services qu'ils utilisent peuvent voir les visites.<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />Les employeurs ou les écoles peuvent suivre l'activité de navigation.<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />Les fournisseurs d'accès Internet peuvent surveiller le trafic Web.<ph name="END_LIST_ITEM" />
+        <ph name="END_LIST" /></translation>
 <translation id="1036348656032585052">Désactiver</translation>
 <translation id="1036982837258183574">Appuyez sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran</translation>
 <translation id="1038106730571050514">Afficher les suggestions</translation>
 <translation id="1038842779957582377">nom inconnu</translation>
 <translation id="1041998700806130099">Message de la feuille de travail</translation>
 <translation id="1048785276086539861">Lorsque vous modifiez des annotations, ce document s'affiche au format de vue par page</translation>
-<translation id="1049743911850919806">Navigation privée</translation>
 <translation id="1050038467049342496">Fermer les autres applications</translation>
 <translation id="1055184225775184556">&amp;Annuler l'ajout</translation>
 <translation id="1056898198331236512">Avertissement</translation>
@@ -48,6 +53,7 @@
 <translation id="112840717907525620">Cache de la règle valide</translation>
 <translation id="1130564665089811311">Bouton Traduire la page, appuyez sur la touche Entrée pour traduire cette page avec Google Traduction</translation>
 <translation id="1131264053432022307">L'image que vous avez copiée</translation>
+<translation id="1142846828089312304">Bloquer les témoins tiers en navigation privée</translation>
 <translation id="1150979032973867961">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre ordinateur. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1151972924205500581">Veuillez entrer le mot de passe</translation>
 <translation id="1156303062776767266">Vous consultez un fichier local ou partagé</translation>
@@ -181,6 +187,12 @@
 <translation id="1483493594462132177">Envoi</translation>
 <translation id="1484290072879560759">Choisir une adresse d'expédition</translation>
 <translation id="1492194039220927094">Notifications poussées des politiques :</translation>
+<translation id="149293076951187737">Lorsque vous fermez tous les onglets de navigation privée de Chrome, votre activité dans ces onglets est effacée de cet appareil :
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />Votre activité de navigation<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Votre historique de recherche<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Les informations saisies dans les formulaires<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="1495677929897281669">Retour à l'onglet</translation>
 <translation id="1501859676467574491">Afficher les cartes enregistrées dans votre compte Google</translation>
 <translation id="1507202001669085618">&lt;p&gt;Cette erreur s'affiche si vous utilisez un portail Wi-Fi auquel vous devez vous connecter avant de pouvoir aller en ligne.&lt;/p&gt;
@@ -208,6 +220,7 @@
 <translation id="1559572115229829303">&lt;p&gt;Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, car la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrects.&lt;/p&gt;
 
           &lt;p&gt;Veuillez régler la date et l'heure depuis la section &lt;strong&gt;Général&lt;/strong&gt; de l'application &lt;strong&gt;Paramètres&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="156703335097561114">Renseignements relatifs au réseautage tels que les adresses, la configuration d'interface et la qualité de connexion</translation>
 <translation id="1567040042588613346">Cette politique fonctionne comme prévu, mais notez que la même valeur a été définie ailleurs et que cette politique la remplace.</translation>
 <translation id="1569487616857761740">Entrez la date d'expiration</translation>
 <translation id="1581080074034554886">CVC</translation>
@@ -280,6 +293,7 @@
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Essayer d'exécuter Windows Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="1772163372082567643">Le serveur auquel vous accédez, <ph name="ORIGIN" />, a défini un en-tête qui exige qu'une politique d'origine soit appliquée à toutes les demandes qu'il reçoit. Mais l'en-tête est formaté de manière incorrecte, ce qui empêche le navigateur de répondre à votre demande pour <ph name="SITE" />. Les exploitants de sites peuvent utiliser des politiques d'origine pour configurer la sécurité et d'autres propriétés d'un site.</translation>
+<translation id="1774592222195216949"><ph name="BEGIN_LINK" />En savoir plus sur la navigation privée dans Chromium<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">Vos onglets ouverts s'affichent ici</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -521,6 +535,12 @@
 <translation id="2597378329261239068">Ce document est protégé par un mot de passe. Veuillez entrer ce mot de passe.</translation>
 <translation id="2609632851001447353">Variations</translation>
 <translation id="2610561535971892504">Cliquer pour copier</translation>
+<translation id="2617988307566202237">Chrome <ph name="BEGIN_EMPHASIS" />n'enregistre pas<ph name="END_EMPHASIS" /> les informations suivantes :
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />Votre historique de navigation
+          <ph name="LIST_ITEM" />Les témoins et les données relatives aux sites
+          <ph name="LIST_ITEM" />Les informations saisies dans les formulaires
+        <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">Enveloppe C10</translation>
 <translation id="2623663032199728144">Vous pouvez demander à utiliser des renseignements sur vos écrans</translation>
 <translation id="2625385379895617796">Votre horloge avance</translation>
@@ -700,6 +720,7 @@
 <translation id="3234666976984236645">Toujours détecter le contenu important sur ce site</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Tabulation, puis sur la touche Entrée pour personnaliser le style de votre navigateur</translation>
 <translation id="3240791268468473923">La zone de contenu dans le bas de l'écran indiquant qu'aucun authentifiant ne correspond au paiement sécurisé est ouverte</translation>
+<translation id="324180406144491771">Les liens de « <ph name="HOST_NAME" /> » sont bloqués</translation>
 <translation id="3249845759089040423">Pimpant</translation>
 <translation id="3252266817569339921">Français</translation>
 <translation id="3257954757204451555">Qui est derrière cette information?</translation>
@@ -730,12 +751,6 @@
 <translation id="3345782426586609320">Yeux</translation>
 <translation id="3355823806454867987">Modifier les paramètres du mandataire...</translation>
 <translation id="3360103848165129075">Feuille du module de traitement du paiement</translation>
-<translation id="3361596688432910856">Chrome <ph name="BEGIN_EMPHASIS" />n'enregistrera pas<ph name="END_EMPHASIS" /> les données suivantes :
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />votre historique de navigation;
-          <ph name="LIST_ITEM" />les témoins et les données de sites;
-          <ph name="LIST_ITEM" />les renseignements fournis dans les formulaires.
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">Cette politique a été automatiquement copiée à partir de la politique obsolète <ph name="OLD_POLICY" />. Vous devriez utiliser cette politique à la place.</translation>
 <translation id="3364869320075768271"><ph name="URL" /> souhaite utiliser vos appareils et vos données de réalité virtuelle</translation>
 <translation id="3366477098757335611">Afficher les cartes</translation>
@@ -1149,6 +1164,7 @@
 <translation id="4628948037717959914">Photo</translation>
 <translation id="4631649115723685955">Avec remise en argent</translation>
 <translation id="4636930964841734540">Renseignements</translation>
+<translation id="4638670630777875591">Navigation privée dans Chromium</translation>
 <translation id="464342062220857295">Rechercher des fonctionnalités</translation>
 <translation id="4644670975240021822">Ordre inversé, face vers le bas</translation>
 <translation id="4646534391647090355">Y accéder maintenant</translation>
@@ -1211,12 +1227,7 @@
 <translation id="4819347708020428563">Modifier les annotations dans la vue par défaut?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur Tabulation, puis sur Entrée pour rapidement créer une feuille Google</translation>
 <translation id="4825507807291741242">Puissant</translation>
-<translation id="4827402517081186284">La navigation privée ne vous rend pas invisible en ligne :
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />Les sites savent que vous les consultez.<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />Votre employeur ou votre établissement scolaire peuvent suivre votre activité de navigation.<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />Les fournisseurs d'accès Internet peuvent surveiller le trafic Web.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
+<translation id="4829962028570902310">Ignoré parce que la politique peut uniquement être définie par la politique utilisateur du nuage.</translation>
 <translation id="483241715238664915">Activer les avertissements</translation>
 <translation id="4838327282952368871">Rêveur</translation>
 <translation id="4840250757394056958">Afficher votre historique de Chrome</translation>
@@ -1249,6 +1260,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, appuyez sur la touche Tabulation, puis sur la touche Entrée pour lancer la recherche</translation>
 <translation id="4930153903256238152">Grande capacité</translation>
+<translation id="4940163644868678279">Navigation privée dans Chrome</translation>
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4950898438188848926">Bouton de commutation d'onglet, appuyez sur Entrée pour basculer vers l'onglet ouvert, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Actions</translation>
@@ -1320,6 +1332,7 @@
 <translation id="5138227688689900538">Afficher moins</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la politique</translation>
 <translation id="5146995429444047494">Les notifications pour <ph name="ORIGIN" /> sont bloquées</translation>
+<translation id="514704532284964975">Le site <ph name="URL" /> veut consulter et modifier les données stockées sur les appareils CCP que vous touchez avec votre téléphone</translation>
 <translation id="5148809049217731050">Face vers le haut</translation>
 <translation id="515292512908731282">Enveloppe C4</translation>
 <translation id="5158275234811857234">Couverture</translation>
@@ -1608,6 +1621,7 @@
 <translation id="6120179357481664955">Se souvenir de votre identifiant UPI?</translation>
 <translation id="6124432979022149706">Connecteurs Chrome Enterprise</translation>
 <translation id="6127379762771434464">Élément supprimé</translation>
+<translation id="6132161237766805930"><ph name="BEGIN_LINK" />En savoir plus sur la navigation privée dans Chrome<ph name="END_LINK" /></translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
     ou tout autre périphérique réseau utilisé.</translation>
 <translation id="614940544461990577">Essayez ceci :</translation>
@@ -1784,7 +1798,6 @@
 <translation id="6757797048963528358">Votre appareil s'est mis en veille.</translation>
 <translation id="6767985426384634228">Mettre à jour l'adresse?</translation>
 <translation id="6768213884286397650">Carte postale hagaki</translation>
-<translation id="6774185088257932239"><ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> à propos de la navigation privée</translation>
 <translation id="6775759552199460396">JIS B2</translation>
 <translation id="67862343314499040">Violet</translation>
 <translation id="6786747875388722282">Extensions</translation>
@@ -1884,6 +1897,12 @@
 <translation id="7111012039238467737">(Valide)</translation>
 <translation id="7118618213916969306">Rechercher l'URL du presse-papiers : <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Fermer les autres onglets ou programmes</translation>
+<translation id="7129355289156517987">Lorsque vous fermez tous les onglets de navigation privée de Chromium, votre activité dans ces onglets est effacée de cet appareil :
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />Votre activité de navigation<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Votre historique de recherche<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Les informations saisies dans les formulaires<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">Impossible d'effectuer une livraison à cette adresse. Sélectionnez une autre adresse.</translation>
 <translation id="7132939140423847331">Votre administrateur a interdit la copie de ces données.</translation>
 <translation id="7135130955892390533">Afficher l’état</translation>
@@ -2002,6 +2021,12 @@ Détails supplémentaires :
 <translation id="7485870689360869515">Aucune donnée trouvée.</translation>
 <translation id="7495528107193238112">Ce contenu est bloqué. Communiquez avec le propriétaire du site pour corriger le problème.</translation>
 <translation id="7497998058912824456">Bouton Créer un document, appuyez sur la touche Entrée pour rapidement créer un document Google</translation>
+<translation id="7506488012654002225">Chromium <ph name="BEGIN_EMPHASIS" />n'enregistre pas<ph name="END_EMPHASIS" /> les informations suivantes :
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />Votre historique de navigation
+          <ph name="LIST_ITEM" />Les témoins et les données relatives aux sites
+          <ph name="LIST_ITEM" />Les informations saisies dans les formulaires
+        <ph name="END_LIST" /></translation>
 <translation id="7508255263130623398">L'ID d'appareil de la règle renvoyé est vide ou ne correspond pas à l'ID d'appareil actuel</translation>
 <translation id="7508870219247277067">Avocat</translation>
 <translation id="7511955381719512146">Le réseau Wi-Fi que vous utilisez peut vous demander de visiter <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -2221,6 +2246,7 @@ Détails supplémentaires :
 <translation id="8202370299023114387">Conflit</translation>
 <translation id="8206978196348664717">Enveloppe Prc4</translation>
 <translation id="8211406090763984747">Connexion sécurisée</translation>
+<translation id="8217240300496046857">Les sites ne peuvent pas utiliser de témoins qui suivent votre activité sur le Web. Les fonctionnalités sur certains sites peuvent ne pas fonctionner.</translation>
 <translation id="8218327578424803826">Emplacement attribué :</translation>
 <translation id="8220146938470311105">Enveloppe C7/C6</translation>
 <translation id="8225771182978767009">La personne qui a configuré cet ordinateur a choisi de bloquer ce site.</translation>
@@ -2264,12 +2290,6 @@ Détails supplémentaires :
 <translation id="8317207217658302555">Mettre à jour ARCore?</translation>
 <translation id="831997045666694187">Soirée</translation>
 <translation id="8321476692217554900">Notifications</translation>
-<translation id="8328484624016508118">Lorsque vous fermez tous les onglets de navigation privée, Chrome efface :
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />votre activité de navigation sur cet appareil;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />l'historique de vos recherches sur cet appareil;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />les renseignements entrés dans des formulaires.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
 <translation id="8332188693563227489">Accès à l'adresse <ph name="HOST_NAME" /> refusé</translation>
 <translation id="833262891116910667">Surligner</translation>
 <translation id="8339163506404995330">Les pages en <ph name="LANGUAGE" /> ne seront pas traduites</translation>
@@ -2404,6 +2424,7 @@ Détails supplémentaires :
 <translation id="883848425547221593">Autres favoris</translation>
 <translation id="884264119367021077">Adresse d'expédition</translation>
 <translation id="884923133447025588">Aucun mécanisme de révocation découvert.</translation>
+<translation id="8849262850971482943">Utilisez votre carte virtuelle pour renforcer la sécurité</translation>
 <translation id="885730110891505394">Partage avec Google</translation>
 <translation id="8858065207712248076">Chrome recommande de réinitialiser votre mot de passe <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="885906927438988819">S'il n'y a pas d'erreur, <ph name="BEGIN_LINK" />essayez d'exécuter Diagnostics réseau de Windows<ph name="END_LINK" />.</translation>

@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_category_wrapper.h"
@@ -130,6 +131,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     BOOL showMostRecentTabStartSurfaceTile;
 // Whether the incognito mode is available.
 @property(nonatomic, assign) BOOL incognitoAvailable;
+// Whether the user already tapped on the NTP promo and therefore should be
+// hidden.
+@property(nonatomic, assign) BOOL shouldHidePromoAfterTap;
 
 @end
 
@@ -274,6 +278,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   }
 }
 
+- (void)hidePromo {
+  self.shouldHidePromoAfterTap = YES;
+  // By reloading data, checking |notificationPromo| will remove the promo view.
+  [self reloadAllData];
+}
+
 #pragma mark - StartSurfaceRecentTabObserving
 
 - (void)mostRecentTabWasRemoved:(web::WebState*)web_state {
@@ -303,12 +313,21 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       app_group::ContentWidgetFaviconsFolder());
 
   self.freshMostVisitedItems = [NSMutableArray array];
+  int index = 0;
   for (const ntp_tiles::NTPTile& tile : mostVisited) {
     ContentSuggestionsMostVisitedItem* item =
         ConvertNTPTile(tile, self.mostVisitedSectionInfo);
     item.commandHandler = self.commandHandler;
     item.incognitoAvailable = self.incognitoAvailable;
-    [self.faviconMediator fetchFaviconForMostVisited:item];
+    item.index = index;
+    DCHECK(index < kShortcutMinimumIndex);
+    index++;
+    if (IsSingleCellContentSuggestionsEnabled()) {
+      [self.faviconMediator fetchFaviconForMostVisited:item
+                                            parentItem:self.parentItem];
+    } else {
+      [self.faviconMediator fetchFaviconForMostVisited:item];
+    }
     [self.freshMostVisitedItems addObject:item];
   }
 
@@ -335,7 +354,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
     if (item.URL == siteURL) {
-      [self.faviconMediator fetchFaviconForMostVisited:item];
+      if (IsSingleCellContentSuggestionsEnabled()) {
+        [self.faviconMediator fetchFaviconForMostVisited:item
+                                              parentItem:self.parentItem];
+      } else {
+        [self.faviconMediator fetchFaviconForMostVisited:item];
+      }
       return;
     }
   }
@@ -412,7 +436,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     }
   } else if (sectionInfo == self.singleCellSectionInfo) {
     self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
-    if (_notificationPromo->CanShow()) {
+    if (_notificationPromo->CanShow() && !self.shouldHidePromoAfterTap) {
       ContentSuggestionsWhatsNewItem* item =
           [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
       item.icon = _notificationPromo->GetIcon();

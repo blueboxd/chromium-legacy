@@ -14,13 +14,18 @@
 <translation id="1028781062521375153">ਵੇਰਵੇ ਦੇਖੋ</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ਦੀ ਤੁਹਾਡੇ ਡੀਵਾਈਸ 'ਤੇ ਸਥਾਈ ਤੌਰ 'ਤੇ ਬਹੁਤ ਜ਼ਿਆਦਾ ਡਾਟਾ ਸਟੋਰ ਕਰਨ ਦੀ ਇੱਛਾ ਹੈ</translation>
 <translation id="1032854598605920125">ਕਲੌਕਵਾਈਜ ਰੋਟੇਟ ਕਰੋ</translation>
+<translation id="1033329911862281889">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਤੁਹਾਨੂੰ ਆਨਲਾਈਨ ਅਦਿੱਖ ਨਹੀਂ ਬਣਾਉਂਦਾ:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />ਉਨ੍ਹਾਂ ਵੱਲੋਂ ਵਰਤੀਆਂ ਜਾਣ ਵਾਲੀਆਂ ਸਾਈਟਾਂ ਅਤੇ ਸੇਵਾਵਾਂ ਫੇਰੀਆਂ ਨੂੰ ਦੇਖ ਸਕਦੇ ਹਨ<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />ਰੁਜ਼ਗਾਰਦਾਤੇ ਜਾਂ ਸਕੂਲ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਨੂੰ ਟਰੈਕ ਕਰ ਸਕਦੇ ਹਨ<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />ਇੰਟਰਨੈੱਟ ਸੇਵਾ ਪ੍ਰਦਾਨਕ ਵੈੱਬ ਟਰੈਫ਼ਿਕ ਦੀ ਨਿਗਰਾਨੀ ਕਰ ਸਕਦੇ ਹਨ<ph name="END_LIST_ITEM" />
+        <ph name="END_LIST" /></translation>
 <translation id="1036348656032585052">ਬੰਦ ਕਰੋ</translation>
 <translation id="1036982837258183574">ਪੂਰੀ ਸਕ੍ਰੀਨ ਤੋਂ ਬਾਹਰ ਜਾਣ ਲਈ |<ph name="ACCELERATOR" />| ਦਬਾਓ</translation>
 <translation id="1038106730571050514">ਸੁਝਾਅ ਦਿਖਾਓ</translation>
 <translation id="1038842779957582377">ਅਗਿਆਤ ਨਾਮ</translation>
 <translation id="1041998700806130099">ਕਾਰਵਾਈ ਸ਼ੀਟ ਸੁਨੇਹਾ</translation>
 <translation id="1048785276086539861">ਜਦੋਂ ਤੁਸੀਂ ਐਨੋਟੇਸ਼ਨਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰਦੇ ਹੋ, ਤਾਂ ਇਹ ਦਸਤਾਵੇਜ਼ ਇਕਹਿਰੇ ਪੰਨਾ-ਦ੍ਰਿਸ਼ 'ਤੇ ਵਾਪਸ ਆ ਜਾਵੇਗਾ</translation>
-<translation id="1049743911850919806">ਗੁਮਨਾਮ</translation>
 <translation id="1050038467049342496">ਦੂਜੀਆਂ ਐਪਾਂ ਬੰਦ ਕਰੋ</translation>
 <translation id="1055184225775184556">&amp;ਜੋੜੋ ਨੂੰ ਅਨਡੂ ਕਰੋ</translation>
 <translation id="1056898198331236512">ਚਿਤਾਵਨੀ</translation>
@@ -48,6 +53,7 @@
 <translation id="112840717907525620">ਨੀਤੀ ਕੈਸ਼ੇ OK</translation>
 <translation id="1130564665089811311">'ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਕਰੋ' ਬਟਨ, Google Translate ਨਾਲ ਇਸ ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="1131264053432022307">ਤੁਹਾਡੇ ਵੱਲੋਂ ਕਾਪੀ ਕੀਤਾ ਚਿੱਤਰ</translation>
+<translation id="1142846828089312304">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਵਿੱਚ ਤੀਜੀ ਧਿਰ ਦੀਆਂ ਕੁਕੀਜ਼ ਨੂੰ ਬਲਾਕ ਕਰੋ</translation>
 <translation id="1150979032973867961">ਇਹ ਸਰਵਰ ਇਹ ਸਾਬਤ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿ ਇਹ <ph name="DOMAIN" /> ਹੈ; ਇਸਦਾ ਸੁਰੱਖਿਆ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਦੇ ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਵੱਲੋਂ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹੈ। ਇਹ ਇੱਕ ਗਲਤ ਸੰਰੂਪਣ ਕਾਰਨ ਹੋ ਸਕਦਾ ਹੈ ਜਾਂ ਕੋਈ ਹਮਲਾਵਰ ਤੁਹਾਡੇ ਕਨੈਕਸ਼ਨ ਨੂੰ ਰਾਹ ਵਿੱਚ ਰੋਕ ਰਿਹਾ ਹੈ।</translation>
 <translation id="1151972924205500581">ਪਾਸਵਰਡ ਲੋੜੀਂਦਾ</translation>
 <translation id="1156303062776767266">ਤੁਸੀਂ ਸਥਾਨਕ ਜਾਂ ਸਾਂਝੀ ਕੀਤੀ ਗਈ ਫ਼ਾਈਲ ਦੇਖ ਰਹੇ ਹੋ</translation>
@@ -86,7 +92,7 @@
 <translation id="1248573052514400575"><ph name="MANAGE_CHROMEOS_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾ ਕੇ, ਫਿਰ Chrome OS ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਆਪਣੇ ਪਹੁੰਚਯੋਗਤਾ ਟੂਲਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="1250759482327835220">ਅਗਲੀ ਵਾਰ ਵਧੇਰੇ ਤੇਜ਼ੀ ਨਾਲ ਭੁਗਤਾਨ ਕਰਨ ਲਈ, ਆਪਣੇ 'Google ਖਾਤੇ' ਵਿੱਚ ਆਪਣਾ ਕਾਰਡ, ਨਾਮ ਅਤੇ ਬਿਲਿੰਗ ਪਤਾ ਰੱਖਿਅਤ ਕਰੋ।</translation>
 <translation id="1252799212227771492">'ਸ਼ੀਟ ਬਣਾਓ' ਬਟਨ, ਤੇਜ਼ੀ ਨਾਲ ਨਵੀਂ Google ਸ਼ੀਟ ਬਣਾਉਣ ਲਈ Enter ਦਬਾਓ</translation>
-<translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (ਸਮਕਾਲੀਕਿਰਤ ਕੀਤੇ ਗਏ)</translation>
+<translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (ਸਿੰਕ ਕੀਤੇ ਗਏ)</translation>
 <translation id="1256368399071562588">&lt;p&gt;ਜੇਕਰ ਤੁਸੀਂ ਇੱਕ ਵੈੱਬਸਾਈਟ 'ਤੇ ਜਾਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰਦੇ ਹੋ ਅਤੇ ਉਹ ਨਹੀਂ ਖੁੱਲ੍ਹਦੀ, ਤਾਂ ਪਹਿਲਾਂ ਇਹਨਾਂ ਸਮੱਸਿਆ-ਨਿਪਟਾਰਾ ਪੜਾਵਾਂ ਨਾਲ ਗੜਬੜ ਠੀਕ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ:&lt;/p&gt;
     &lt;ol&gt;
     &lt;li&gt;ਟਾਈਪਿੰਗ ਦੀਆਂ ਗਲਤੀਆਂ ਲਈ ਵੈੱਬ ਪਤੇ ਦੀ ਜਾਂਚ ਕਰੋ।&lt;/li&gt;
@@ -181,6 +187,12 @@
 <translation id="1483493594462132177">ਭੇਜੋ</translation>
 <translation id="1484290072879560759">ਸ਼ਿਪਿੰਗ ਪਤਾ ਚੁਣੋ</translation>
 <translation id="1492194039220927094">ਨੀਤੀਆਂ ਦਾ ਅਮਲੀਕਰਨ:</translation>
+<translation id="149293076951187737">ਜਦੋਂ ਤੁਸੀਂ Chrome ਵਿੱਚ ਸਾਰੀਆਂ ਇਨਕੋਗਨਿਟੋ ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਉਨ੍ਹਾਂ ਟੈਬਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਨੂੰ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਕਲੀਅਰ ਕਰ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />ਖੋਜ ਇਤਿਹਾਸ<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />ਫ਼ਾਰਮਾਂ ਵਿੱਚ ਦਾਖਲ ਕੀਤੀ ਜਾਣਕਾਰੀ<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="1495677929897281669">ਟੈਬ 'ਤੇ ਵਾਪਸ ਜਾਓ</translation>
 <translation id="1501859676467574491">ਤੁਹਾਡੇ Google ਖਾਤੇ ਤੋਂ ਕਾਰਡ ਦਿਖਾਓ</translation>
 <translation id="1507202001669085618">&lt;p&gt;ਜੇਕਰ ਤੁਸੀਂ ਵਾਈ-ਫਾਈ ਪੋਰਟਲ ਦੀ ਵਰਤੋਂ ਕਰ ਰਹੇ ਹੋ ਤਾਂ ਤੁਹਾਨੂੰ ਇਹ ਗੜਬੜ ਦਿਖਾਈ ਦੇਵੇਗੀ ਜਿੱਥੇ ਤੁਹਾਨੂੰ ਆਨਲਾਈਨ ਹੋਣ ਤੋਂ ਪਹਿਲਾਂ ਸਾਈਨ-ਇਨ ਕਰਨਾ ਪਵੇਗਾ।&lt;/p&gt;
@@ -208,6 +220,7 @@
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />ਨਾਲ ਇੱਕ ਨਿੱਜੀ ਕਨੈਕਸ਼ਨ ਨੂੰ ਸਥਾਪਿਤ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਦੀ ਮਿਤੀ ਅਤੇ ਸਮਾਂ (<ph name="DATE_AND_TIME" />) ਗ਼ਲਤ ਹੈ।&lt;/p&gt;
 
           &lt;p&gt;ਕਿਰਪਾ ਕਰਕੇ &lt;strong&gt;ਸੈਟਿੰਗਾਂ&lt;/strong&gt; ਐਪ ਦੇ &lt;strong&gt;ਸਧਾਰਨ&lt;/strong&gt; ਭਾਗ ਤੋਂ ਮਿਤੀ ਅਤੇ ਸਮਾਂ ਅਨੁਕੂਲਿਤ ਕਰੋ।&lt;/p&gt;</translation>
+<translation id="156703335097561114">ਨੈੱਟਵਰਕਿੰਗ ਜਾਣਕਾਰੀ ਜਿਵੇਂ ਕਿ ਪਤੇ, ਇੰਟਰਫੇਸ ਸੰਰੂਪਣ, ਅਤੇ ਕਨੈਕਸ਼ਨ ਗੁਣਵੱਤਾ</translation>
 <translation id="1567040042588613346">ਇਹ ਨੀਤੀ ਉਮੀਦ ਮੁਤਾਬਕ ਕੰਮ ਕਰ ਰਹੀ ਹੈ ਪਰ ਸਮਾਨ ਮੁੱਲ ਕਿਸੇ ਹੋਰ ਥਾਂ 'ਤੇ ਸੈੱਟ ਹੈ ਅਤੇ ਇਸ ਨੀਤੀ ਵੱਲੋਂ ਪ੍ਰਤਿਸਥਾਪਨ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
 <translation id="1569487616857761740">ਮਿਆਦ ਮੁੱਕਣ ਦੀ ਤਾਰੀਖ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="1581080074034554886">CVC</translation>
@@ -280,6 +293,7 @@
 <translation id="1763864636252898013">ਇਹ ਸਰਵਰ ਇਹ ਸਿੱਧ ਨਹੀਂ ਕਰ ਸਕਿਆ ਕਿ ਇਹ <ph name="DOMAIN" /> ਹੈ; ਇਸਦਾ ਸੁਰੱਖਿਆ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਤੁਹਾਡੀ ਡਿਵਾਈਸ ਦੇ ਓਪਰੇਟਿੰਗ ਸਿਸਟਮ ਵੱਲੋਂ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹੈ। ਇਸ ਦਾ ਕਾਰਨ ਗਲਤ ਸੰਰੂਪਣ ਹੋ ਸਕਦਾ ਹੈ ਜਾਂ ਕੋਈ ਹਮਲਾਵਰ ਤੁਹਾਡੇ ਕਨੈਕਸ਼ਨ ਦੇ ਰਾਹ ਨੂੰ ਰੋਕ ਰਿਹਾ ਹੈ।</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸਾਂ ਨੂੰ ਚਲਾਉਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ<ph name="END_LINK" />।</translation>
 <translation id="1772163372082567643">ਜਿਸ ਸਰਵਰ 'ਤੇ ਤੁਸੀਂ ਜਾ ਰਹੇ ਹੋ, <ph name="ORIGIN" />, ਉਸਨੇ ਇੱਕ ਸਿਰਲੇਖ ਸੈੱਟ ਕੀਤਾ ਹੈ ਜਿਸ ਵਿੱਚ ਇਹ ਚੀਜ਼ ਲੋੜੀਂਦੀ ਹੈ ਕਿ ਮੂਲ ਨੀਤੀ ਨੂੰ ਇਸ 'ਤੇ ਕੀਤੀਆਂ ਗਈਆਂ ਸਾਰੀਆਂ ਬੇਨਤੀਆਂ 'ਤੇ ਲਾਗੂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਪਰ ਸਿਰਲੇਖ ਨੁਕਸਦਾਰ ਹੈ, ਜੋ ਬ੍ਰਾਊਜ਼ਰ ਨੂੰ <ph name="SITE" /> ਲਈ ਤੁਹਾਡੀ ਬੇਨਤੀ ਨੂੰ ਪੂਰਾ ਕਰਨ ਤੋਂ ਰੋਕਦਾ ਹੈ। ਮੂਲ ਸੰਬੰਧੀ ਨੀਤੀਆਂ ਨੂੰ ਕਿਸੇ ਸਾਈਟ ਦੀ ਸੁਰੱਖਿਆ ਅਤੇ ਹੋਰ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦਾ ਸੰਰੂਪਣ ਕਰਨ ਲਈ ਸਾਈਟ ਓਪਰੇਟਰਾਂ ਵੱਲੋਂ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਹੈ।</translation>
+<translation id="1774592222195216949"><ph name="BEGIN_LINK" />Chromium ਵਿੱਚ ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਬਾਰੇ ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">ਤੁਹਾਡੇ ਖੁੱਲ੍ਹੇ ਟੈਬ ਇੱਥੇ ਵਿਖਾਈ ਦੇਣਗੇ</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -521,6 +535,12 @@
 <translation id="2597378329261239068">ਇਹ ਦਸਤਾਵੇਜ਼ ਪਾਸਵਰਡ ਰੱਖਿਅਤ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਾਸਵਰਡ ਦਰਜ ਕਰੋ।</translation>
 <translation id="2609632851001447353">ਵੈਰੀਏਸ਼ੰਸ</translation>
 <translation id="2610561535971892504">ਕਾਪੀ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ</translation>
+<translation id="2617988307566202237">Chrome ਅੱਗੇ ਦਿੱਤੀ ਜਾਣਕਾਰੀ ਨੂੰ <ph name="BEGIN_EMPHASIS" />ਰੱਖਿਅਤ ਨਹੀਂ ਕਰੇਗਾ<ph name="END_EMPHASIS" />:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ
+          <ph name="LIST_ITEM" />ਕੁਕੀਜ਼ ਅਤੇ ਸਾਈਟ ਡਾਟਾ 
+          <ph name="LIST_ITEM" />ਫ਼ਾਰਮਾਂ ਵਿੱਚ ਦਾਖਲ ਕੀਤੀ ਜਾਣਕਾਰੀ
+        <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="2623663032199728144">ਤੁਹਾਡੀਆਂ ਸਕ੍ਰੀਨਾਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਵਰਤਣ ਲਈ ਇਜਾਜ਼ਤ ਮੰਗ ਸਕਦੀਆਂ ਹਨ</translation>
 <translation id="2625385379895617796">ਤੁਹਾਡੀ ਘੜੀ ਅੱਗੇ ਹੈ</translation>
@@ -698,6 +718,7 @@
 <translation id="3234666976984236645">ਇਸ ਸਾਈਟ 'ਤੇ ਹਮੇਸ਼ਾਂ ਆਯਾਤ ਸਮੱਗਰੀ ਖੋਜੋ</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾ ਕੇ, ਫਿਰ ਆਪਣੇ ਬ੍ਰਾਊਜ਼ਰ ਦੀ ਦਿੱਖ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="3240791268468473923">ਭਗਤਾਨ ਕ੍ਰੀਡੈਂਸ਼ੀਅਲ ਨੂੰ ਸੁਰੱਖਿਅਤ ਬਣਾਓ ਕੋਈ ਮੇਲ ਖਾਂਦੇ ਕ੍ਰੀਡੈਂਸ਼ੀਅਲ ਸੰਬੰਧੀ ਸ਼ੀਟ ਖੁੱਲ੍ਹੀ ਨਹੀਂ ਹੈ</translation>
+<translation id="324180406144491771">“<ph name="HOST_NAME" />” ਲਿੰਕਾਂ ਨੂੰ ਬਲਾਕ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="3249845759089040423">ਗਰੂਵੀ</translation>
 <translation id="3252266817569339921">ਫਰੈਂਚ</translation>
 <translation id="3257954757204451555">ਇਸ ਜਾਣਕਾਰੀ ਪਿੱਛੇ ਕੌਣ ਹੈ?</translation>
@@ -728,12 +749,6 @@
 <translation id="3345782426586609320">ਅੱਖਾਂ</translation>
 <translation id="3355823806454867987">ਪ੍ਰੌਕਸੀ ਸੈਟਿੰਗਾਂ ਬਦਲੋ...</translation>
 <translation id="3360103848165129075">ਭੁਗਤਾਨ ਹੈਂਡਲਰ ਸ਼ੀਟ</translation>
-<translation id="3361596688432910856">Chrome ਅੱਗੇ ਦਿੱਤੀ ਜਾਣਕਾਰੀ ਨੂੰ <ph name="BEGIN_EMPHASIS" />ਰੱਖਿਅਤ ਨਹੀਂ ਕਰੇਗਾ<ph name="END_EMPHASIS" />:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ
-          <ph name="LIST_ITEM" />ਕੁਕੀਜ਼ ਅਤੇ ਸਾਈਟ  ਡਾਟਾ 
-          <ph name="LIST_ITEM" />ਫ਼ਾਰਮਾਂ ਵਿੱਚ ਦਾਖਲ ਕੀਤੀ ਜਾਣਕਾਰੀ
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">ਇਹ ਨੀਤੀ ਨਾਪਸੰਦ ਕੀਤੀ <ph name="OLD_POLICY" /> ਨੀਤੀ ਤੋਂ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਕਾਪੀ ਕੀਤੀ ਗਈ। ਤੁਹਾਨੂੰ ਇਸਦੀ ਬਜਾਏ ਇਸ ਨੀਤੀ ਨੂੰ ਵਰਤਣਾ ਚਾਹੀਦਾ ਹੈ।</translation>
 <translation id="3364869320075768271"><ph name="URL" /> ਦੀ ਤੁਹਾਡੇ ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ ਡੀਵਾਈਸ ਅਤੇ ਡਾਟੇ ਨੂੰ ਵਰਤਣ ਦੀ ਇੱਛਾ ਹੈ</translation>
 <translation id="3366477098757335611">ਕਾਰਡ ਦੇਖੋ</translation>
@@ -797,7 +812,7 @@
 <translation id="3518941727116570328">ਬਹੁ-ਗਿਣਤੀ ਵਸਤੂ ਸਾਂਭ-ਸੰਭਾਲ</translation>
 <translation id="3528171143076753409">ਸਰਵਰ ਦਾ ਪ੍ਰਮਾਣ-ਪੱਤਰ ਭਰੋਸੇਯੋਗ ਨਹੀਂ ਹੈ।</translation>
 <translation id="3528485271872257980">ਗੂੜ੍ਹਾ ਭੂਰਾ</translation>
-<translation id="3530944546672790857">{COUNT,plural, =0{ਸਮਕਾਲੀਕਿਰਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਘੱਟੋ-ਘੱਟ 1 ਆਈਟਮ}=1{1 ਆਈਟਮ (ਅਤੇ ਸਮਕਾਲੀਕਿਰਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਹੋਰ)}other{ # ਆਈਟਮਾਂ (ਅਤੇ ਸਮਕਾਲੀਕਿਰਤ ਡੀਵਾਈਸਾਂ 'ਤੇ ਹੋਰ)}}</translation>
+<translation id="3530944546672790857">{COUNT,plural, =0{ਸਿੰਕ ਕੀਤੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਘੱਟੋ-ਘੱਟ 1 ਆਈਟਮ}=1{1 ਆਈਟਮ (ਅਤੇ ਸਿੰਕ ਕੀਤੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਹੋਰ)}other{ # ਆਈਟਮਾਂ (ਅਤੇ ਸਿੰਕ ਕੀਤੇ ਡੀਵਾਈਸਾਂ 'ਤੇ ਹੋਰ)}}</translation>
 <translation id="3531780078352352885">ਕਾਰਵਾਈ ਸ਼ੀਟਾਂ</translation>
 <translation id="3532844647053365774"><ph name="HOST" /> ਦੀ ਤੁਹਾਡੇ ਮਾਈਕ੍ਰੋਫ਼ੋਨ ਨੂੰ ਵਰਤਣ ਦੀ ਇੱਛਾ ਹੈ</translation>
 <translation id="3533328374079021623">ਮੇਲਬਾਕਸ 5</translation>
@@ -1103,7 +1118,7 @@
 <translation id="4481251927743463293">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਕੀ ਕਰਦਾ ਹੈ</translation>
 <translation id="4482953324121162758">ਇਸ ਸਾਈਟ ਦਾ ਅਨੁਵਾਦ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="4490717597759821841">A7</translation>
-<translation id="449126573531210296">ਸਮਕਾਲੀਕਿਰਤ ਪਾਸਵਰਡਾਂ ਨੂੰ ਆਪਣੇ Google ਖਾਤੇ ਨਾਲ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
+<translation id="449126573531210296">ਸਿੰਕ ਕੀਤੇ ਪਾਸਵਰਡਾਂ ਨੂੰ ਆਪਣੇ Google ਖਾਤੇ ਨਾਲ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
 <translation id="4492519888999857993">ਇਹ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਤੌਰ 'ਤੇ ਬੰਦ ਹਨ। ਇਹ Chrome ਦੇ ਭਵਿੱਖੀ ਵਰਜਨਾਂ ਵਿੱਚ ਉਪਲਬਧ ਨਹੀਂ ਹੋਣਗੀਆਂ।</translation>
 <translation id="4493480324863638523">ਅਵੈਧ URL ਕਿਸੇ ਮਿਆਰੀ ਸਕੀਮ ਵਾਲਾ URL ਹੋਣਾ ਲਾਜ਼ਮੀ ਹੈੇ, ਜਿਵੇਂ ਕਿ http://example.com ਜਾਂ https://example.com</translation>
 <translation id="4500587658229086076">ਅਸੁਰੱਖਿਅਤ ਸਮੱਗਰੀ</translation>
@@ -1146,6 +1161,7 @@
 <translation id="4628948037717959914">ਫ਼ੋਟੋ</translation>
 <translation id="4631649115723685955">ਕੈਸ਼ਬੈਕ ਨੂੰ ਲਿੰਕ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="4636930964841734540">ਜਾਣਕਾਰੀ</translation>
+<translation id="4638670630777875591">Chromium ਵਿੱਚ ਇਨਕੋਗਨਿਟੋ ਮੋਡ</translation>
 <translation id="464342062220857295">'ਖੋਜ' ਦੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ</translation>
 <translation id="4644670975240021822">ਉਲਟੇ ਕ੍ਰਮ ਵਿੱਚ ਪਾਸਾ ਹੇਠਾਂ ਕੀਤੇ ਹੋਏ</translation>
 <translation id="4646534391647090355">ਮੈਨੂੰ ਹੁਣੇ ਉੱਥੇ ਲੈ ਜਾਓ</translation>
@@ -1208,12 +1224,7 @@
 <translation id="4819347708020428563">ਕੀ ਪੂਰਵ-ਨਿਰਧਾਰਤ ਦ੍ਰਿਸ਼ ਵਿੱਚ ਐਨੋਟੇਸ਼ਨਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰਨਾ ਹੈ?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, ਤੇਜ਼ੀ ਨਾਲ ਨਵੀਂ Google ਸ਼ੀਟ ਬਣਾਉਣ ਲਈ Tab ਦਬਾ ਕੇ ਫਿਰ Enter ਦਬਾਓ</translation>
 <translation id="4825507807291741242">ਸ਼ਕਤੀਸ਼ਾਲੀ</translation>
-<translation id="4827402517081186284">ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਤੁਹਾਨੂੰ ਆਨਲਾਈਨ ਅਦਿੱਖ ਨਹੀਂ ਬਣਾਉਂਦਾ:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />ਜਦੋਂ ਤੁਸੀਂ ਸਾਈਟਾਂ 'ਤੇ ਜਾਂਦੇ ਹੋ, ਤਾਂ ਉਨ੍ਹਾਂ ਨੂੰ ਇਸ ਬਾਰੇ ਪਤਾ ਲੱਗਦਾ ਹੈ<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />ਰੁਜ਼ਗਾਰਦਾਤੇ ਜਾਂ ਸਕੂਲ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਨੂੰ ਟਰੈਕ ਕਰ ਸਕਦੇ ਹਨ<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />ਇੰਟਰਨੈੱਟ ਸੇਵਾ ਪ੍ਰਦਾਨਕ ਵੈੱਬ ਟਰੈਫ਼ਿਕ ਨੂੰ ਮਾਨੀਟਰ ਕਰ ਸਕਦੇ ਹਨ<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
+<translation id="4829962028570902310">ਅਣਡਿੱਠ ਕੀਤਾ ਗਿਆ ਕਿਉਂਕਿ ਨੀਤੀ ਨੂੰ ਸਿਰਫ਼ ਕਲਾਊਡ ਵਰਤੋਂਕਾਰ ਨੀਤੀ ਮੁਤਾਬਕ ਹੀ ਸੈੱਟ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ।</translation>
 <translation id="483241715238664915">ਚਿਤਾਵਨੀਆਂ ਚਾਲੂ ਕਰੋ</translation>
 <translation id="4838327282952368871">ਸੁਪਨਮਈ</translation>
 <translation id="4840250757394056958">ਆਪਣਾ Chrome ਇਤਿਹਾਸ ਦੇਖੋ</translation>
@@ -1246,6 +1257,7 @@
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Tab ਦਬਾਓ, ਫਿਰ ਖੋਜ ਕਰਨ ਲਈ Enter ਦਬਾਓ</translation>
 <translation id="4930153903256238152">ਵੱਧ ਸਮਰੱਥਾ</translation>
+<translation id="4940163644868678279">Chrome ਵਿੱਚ ਇਨਕੋਗਨਿਟੋ ਮੋਡ</translation>
 <translation id="4943872375798546930">ਕੋਈ ਨਤੀਜੇ ਨਹੀਂ</translation>
 <translation id="4950898438188848926">ਟੈਬ ਬਦਲਣ ਦਾ ਬਟਨ, ਖੁੱਲ੍ਹੀ ਟੈਬ, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> 'ਤੇ ਜਾਣ ਲਈ ਐਂਟਰ ਦਬਾਓ</translation>
 <translation id="495170559598752135">ਕਿਰਿਆਵਾਂ</translation>
@@ -1317,6 +1329,7 @@
 <translation id="5138227688689900538">ਘੱਟ ਦਿਖਾਓ</translation>
 <translation id="5145883236150621069">ਨੀਤੀ ਜਵਾਬ ਵਿੱਚ ਗੜਬੜ ਕੋਡ ਹੈ</translation>
 <translation id="5146995429444047494"><ph name="ORIGIN" /> ਦੀਆਂ ਸੂਚਨਾਵਾਂ ਬਲਾਕ ਹਨ</translation>
+<translation id="514704532284964975"><ph name="URL" /> ਨੂੰ ਉਨ੍ਹਾਂ NFC ਡੀਵਾਈਸਾਂ 'ਤੇ ਜਾਣਕਾਰੀ ਦੇਖਣ ਅਤੇ ਬਦਲਣ ਦੀ ਇਜਾਜ਼ਤ ਚਾਹੀਦੀ ਹੈ ਜੋ ਤੁਸੀਂ ਆਪਣੇ ਫ਼ੋਨ ਨਾਲ ਟੈਪ ਕਰਦੇ ਹੋ</translation>
 <translation id="5148809049217731050">ਉੱਪਰ ਵੱਲ ਪਾਸਾ ਕੀਤੇ</translation>
 <translation id="515292512908731282">C4 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="5158275234811857234">ਕਵਰ</translation>
@@ -1533,7 +1546,7 @@
 <translation id="5901630391730855834">ਪੀਲਾ</translation>
 <translation id="5903264686717710770">ਸਿਰਲੇਖ:</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" /> ਦੀ ਮੂਲ ਸੰਬੰਧੀ ਨੀਤੀ ਮੁਤਾਬਕ ਬਲਾਕ ਕੀਤਾ ਗਿਆ।</translation>
-<translation id="5908541034548427511"><ph name="TYPE_1" /> (ਸਮਕਾਲੀਕਿਰਤ ਕੀਤੇ ਗਏ)</translation>
+<translation id="5908541034548427511"><ph name="TYPE_1" /> (ਸਿੰਕ ਕੀਤਾ)</translation>
 <translation id="59174027418879706">ਸਮਰਥਿਤ</translation>
 <translation id="5919090499915321845">B10</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ਵਰਤੋਂ ਵਿੱਚ ਹੈ}one{# ਵਰਤੋਂ ਵਿੱਚ ਹਨ}other{# ਵਰਤੋਂ ਵਿੱਚ ਹਨ}}</translation>
@@ -1566,7 +1579,7 @@
 <translation id="6015796118275082299">ਸਾਲ</translation>
 <translation id="6017514345406065928">ਹਰਾ</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 'ਤੇ ਹਮਲਾਵਰ ਤੁਹਾਡੀ ਡੀਵਾਈਸ 'ਤੇ ਭਰਮਪੂਰਨ ਐਪਾਂ ਨੂੰ ਸਥਾਪਤ ਕਰ ਸਕਦੇ ਹਨ, ਜੋ ਕੁਝ ਹੋਰ ਹੋਣ ਦਾ ਦਾਅਵਾ ਕਰਦੀਆਂ ਹਨ ਜਾਂ ਅਜਿਹਾ ਡਾਟਾ ਇਕੱਠਾ ਕਰਦੀਆਂ ਹਨ ਜਿਸਦੀ ਵਰਤੋਂ ਨਾਲ ਤੁਹਾਡੇ 'ਤੇ ਨਜ਼ਰ ਰੱਖੀ ਜਾ ਸਕਦੀ ਹੈ। <ph name="BEGIN_LEARN_MORE_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (ਸਮਕਾਲੀਕਿਰਤ ਕੀਤੇ ਗਏ)</translation>
+<translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (ਸਿੰਕ ਕੀਤੇ ਗਏ)</translation>
 <translation id="6027201098523975773">ਕੋਈ ਨਾਮ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="603068602130820122">ਸੱਜੇ ਪਾਸੇ ਦੋ ਪਿੰਨਾਂ</translation>
 <translation id="6032524144326295339">ਮੇਲਬਾਕਸ 2</translation>
@@ -1605,6 +1618,7 @@
 <translation id="6120179357481664955">ਕੀ ਤੁਹਾਨੂੰ ਆਪਣੀ UPI ਆਈਡੀ ਯਾਦ ਹੈ?</translation>
 <translation id="6124432979022149706">Chrome ਐਂਟਰਪ੍ਰਾਈਜ਼ ਕਨੈਕਟਰ</translation>
 <translation id="6127379762771434464">ਆਈਟਮ ਹਟਾਈ ਗਈ</translation>
+<translation id="6132161237766805930"><ph name="BEGIN_LINK" />Chrome ਵਿੱਚ ਇਨਕੋਗਨਿਟੋ ਮੋਡ ਬਾਰੇ ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
 <translation id="6146055958333702838">ਸਾਰੀਆਂ ਕੇਬਲਾਂ ਦੀ ਜਾਂਚ ਕਰੋ ਅਤੇ ਤੁਹਾਡੇ ਵੱਲੋਂ ਵਰਤੇ ਜਾਣ ਵਾਲੇ ਕੋਈ ਵੀ ਰੂਟਰਾਂ, ਮਾਡਮਾਂ ਅਤੇ ਹੋਰ ਡੀਵਾਈਸਾਂ ਨੂੰ ਰੀਬੂਟ ਕਰੋ।</translation>
 <translation id="614940544461990577">ਅਜ਼ਮਾਓ:</translation>
 <translation id="6150036310511284407">ਖੱਬੇ ਤਿੰਨ ਮੋਰੀਆਂ</translation>
@@ -1659,7 +1673,7 @@
 <translation id="6337534724793800597">ਨਾਮ ਮੁਤਾਬਕ ਨੀਤੀਆਂ ਫਿਲਟਰ ਕਰੋ</translation>
 <translation id="6340739886198108203">ਗੁਪਤ ਸਮੱਗਰੀ ਦੇ ਦਿਸਣਯੋਗ ਹੋਣ 'ਤੇ ਪ੍ਰਸ਼ਾਸਕ ਨੀਤੀ ਸਕ੍ਰੀਨਸ਼ਾਟ ਲੈਣ ਜਾਂ ਰਿਕਾਰਡਿੰਗਾਂ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਨਹੀਂ ਕਰਦੀ ਹੈ:</translation>
 <translation id="6349101878882523185"><ph name="APP_NAME" /> ਸਥਾਪਤ ਕਰੋ</translation>
-<translation id="6353505687280762741">{COUNT,plural, =0{ਕੋਈ ਨਹੀਂ}=1{1 ਪਾਸਵਰਡ (<ph name="DOMAIN_LIST" /> ਲਈ, ਸਮਕਾਲੀਕਿਰਤ ਕੀਤਾ ਗਿਆ)}=2{2 ਪਾਸਵਰਡ (<ph name="DOMAIN_LIST" /> ਲਈ, ਸਮਕਾਲੀਕਿਰਤ ਕੀਤੇ ਗਏ)}other{# ਪਾਸਵਰਡ (<ph name="DOMAIN_LIST" /> ਲਈ, ਸਮਕਾਲੀਕਿਰਤ ਕੀਤੇ ਗਏ)}}</translation>
+<translation id="6353505687280762741">{COUNT,plural, =0{ਕੋਈ ਨਹੀਂ}=1{1 ਪਾਸਵਰਡ (<ph name="DOMAIN_LIST" /> ਲਈ, ਸਿੰਕ ਕੀਤਾ ਗਿਆ)}=2{2 ਪਾਸਵਰਡ (<ph name="DOMAIN_LIST" /> ਲਈ, ਸਿੰਕ ਕੀਤੇ ਗਏ)}other{# ਪਾਸਵਰਡ (<ph name="DOMAIN_LIST" /> ਲਈ, ਸਿੰਕ ਕੀਤੇ ਗਏ)}}</translation>
 <translation id="6355392890578844978">ਇਹ ਬ੍ਰਾਊਜ਼ਰ ਦਾ ਪ੍ਰਬੰਧਨ ਕਿਸੇ ਕੰਪਨੀ ਜਾਂ ਹੋਰ ਸੰਸਥਾ ਵੱਲੋਂ ਨਹੀਂ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਇਸ ਡੀਵਾਈਸ ਦੀ ਸਰਗਰਮੀ ਦਾ ਪ੍ਰਬੰਧਨ Chromium ਤੋਂ ਬਾਹਰ ਕੀਤਾ ਜਾ ਸਕਦਾ ਹੈ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
 <translation id="6358450015545214790">ਇਹਨਾਂ ਦਾ ਕੀ ਮਤਲਬ ਹੈ?</translation>
 <translation id="6361757823711327522">B7</translation>
@@ -1780,7 +1794,6 @@
 <translation id="6757797048963528358">ਤੁਹਾਡੀ ਡੀਵਾਈਸ ਸਲੀਪ ਵਿੱਚ ਚਲੀ ਗਈ।</translation>
 <translation id="6767985426384634228">ਕੀ ਪਤਾ ਅੱਪਡੇਟ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?</translation>
 <translation id="6768213884286397650">Hagaki (ਪੋਸਟਕਾਰਡ)</translation>
-<translation id="6774185088257932239">ਇਨਕੋਗਨਿਟੋ ਬਾਰੇ <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
 <translation id="6775759552199460396">JIS B2</translation>
 <translation id="67862343314499040">ਬੈਂਗਣੀ</translation>
 <translation id="6786747875388722282">ਐਕਸਟੈਂਸ਼ਨਾਂ</translation>
@@ -1880,6 +1893,12 @@
 <translation id="7111012039238467737">(ਵੈਧ)</translation>
 <translation id="7118618213916969306">ਕਲਿੱਪਬੋਰਡ URL, <ph name="SHORT_URL" /> ਖੋਜੋ</translation>
 <translation id="7119414471315195487">ਦੂਜੀਆਂ ਟੈਬਾਂ ਜਾਂ ਪ੍ਰੋਗਰਾਮਾਂ ਨੂੰ ਬੰਦ ਕਰੋ</translation>
+<translation id="7129355289156517987">ਜਦੋਂ ਤੁਸੀਂ Chromium ਵਿੱਚ ਸਾਰੀਆਂ ਇਨਕੋਗਨਿਟੋ ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਉਨ੍ਹਾਂ ਟੈਬਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਨੂੰ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਕਲੀਅਰ ਕਰ ਦਿੱਤਾ ਜਾਂਦਾ ਹੈ:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />ਖੋਜ ਇਤਿਹਾਸ<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />ਫ਼ਾਰਮਾਂ ਵਿੱਚ ਦਾਖਲ ਕੀਤੀ ਜਾਣਕਾਰੀ<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">ਇਸ ਪਤੇ 'ਤੇ ਸ਼ਿਪ ਨਹੀਂ ਕਰ ਸਕਦੇ। ਕੋਈ ਵੱਖਰਾ ਪਤਾ ਚੁਣੋ।</translation>
 <translation id="7132939140423847331">ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਨੇ ਇਸ ਡਾਟੇ ਨੂੰ ਕਾਪੀ ਕੀਤੇ ਜਾਣ ਤੋਂ ਪ੍ਰਤਿਬੰਧਿਤ ਕੀਤਾ ਹੈ।</translation>
 <translation id="7135130955892390533">ਸਥਿਤੀ ਦਿਖਾਓ</translation>
@@ -1998,6 +2017,12 @@
 <translation id="7485870689360869515">ਕੋਈ ਡਾਟਾ ਨਹੀਂ ਮਿਲਿਆ।</translation>
 <translation id="7495528107193238112">ਇਹ ਸਮੱਗਰੀ ਬਲਾਕ ਕੀਤੀ ਗਈ ਹੈ। ਸਮੱਸਿਆ ਨੂੰ ਠੀਕ ਕਰਨ ਲਈ ਸਾਈਟ ਦੇ ਮਾਲਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="7497998058912824456">'ਡੌਕ ਬਣਾਓ' ਬਟਨ, ਤੇਜ਼ੀ ਨਾਲ ਨਵਾਂ Google ਡੌਕ ਬਣਾਉਣ ਲਈ Enter ਦਬਾਓ</translation>
+<translation id="7506488012654002225">Chromium ਅੱਗੇ ਦਿੱਤੀ ਜਾਣਕਾਰੀ ਨੂੰ <ph name="BEGIN_EMPHASIS" />ਰੱਖਿਅਤ ਨਹੀਂ ਕਰੇਗਾ<ph name="END_EMPHASIS" />:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />ਤੁਹਾਡਾ ਬ੍ਰਾਊਜ਼ਿੰਗ ਇਤਿਹਾਸ
+          <ph name="LIST_ITEM" />ਕੁਕੀਜ਼ ਅਤੇ ਸਾਈਟ ਡਾਟਾ 
+          <ph name="LIST_ITEM" />ਫ਼ਾਰਮਾਂ ਵਿੱਚ ਦਾਖਲ ਕੀਤੀ ਜਾਣਕਾਰੀ
+        <ph name="END_LIST" /></translation>
 <translation id="7508255263130623398">ਵਾਪਸੀ ਸੰਬੰਧੀ ਨੀਤੀ ਡੀਵਾਈਸ ਆਈ.ਡੀ. ਖਾਲੀ ਹੈ ਜਾਂ ਵਰਤਮਾਨ ਡੀਵਾਈਸ ਆਈ.ਡੀ. ਨਾਲ ਮੇਲ ਨਹੀਂ ਖਾਂਦੀ ਹੈ</translation>
 <translation id="7508870219247277067">ਐਵੋਕਾਡੋ ਹਰਾ</translation>
 <translation id="7511955381719512146">ਜੋ Wi-Fi ਤੁਸੀਂ ਵਰਤ ਰਹੇ ਹੋ, ਉਸ ਲਈ ਤੁਹਾਨੂੰ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> ਤੇ ਵਿਜਿਟ ਕਰਨ ਦੀ ਲੋੜ ਹੋ ਸਕਦੀ ਹੈ।</translation>
@@ -2217,6 +2242,7 @@
 <translation id="8202370299023114387">ਵਿਵਾਦ</translation>
 <translation id="8206978196348664717">Prc4 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="8211406090763984747">ਕਨੈਕਸ਼ਨ ਸੁਰੱਖਿਅਤ ਹੈ</translation>
+<translation id="8217240300496046857">ਸਾਈਟਾਂ ਉਨ੍ਹਾਂ ਕੁਕੀਜ਼ ਦੀ ਵਰਤੋਂ ਨਹੀਂ ਕਰ ਸਕਦੀਆਂ ਜੋ ਵੈੱਬ 'ਤੇ ਤੁਹਾਨੂੰ ਟਰੈਕ ਕਰਦੀਆਂ ਹਨ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ 'ਤੇ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਠੀਕ ਤਰੀਕੇ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ।</translation>
 <translation id="8218327578424803826">ਅਸਾਈਨ ਕੀਤਾ ਗਿਆ ਨਿਰਧਾਰਿਤ ਸਥਾਨ:</translation>
 <translation id="8220146938470311105">C7/C6 (ਲਿਫ਼ਾਫ਼ਾ)</translation>
 <translation id="8225771182978767009">ਜਿਸ ਵਿਅਕਤੀ ਨੇ ਇਸ ਕੰਪਿਊਟਰ ਦਾ ਸੈੱਟ ਅੱਪ ਕੀਤਾ ਹੈ ਉਸ ਵੱਲੋਂ ਇਸ ਸਾਈਟ ਨੂੰ ਬਲਾਕ ਕਰਨਾ ਚੁਣਿਆ ਗਿਆ ਹੈ।</translation>
@@ -2260,12 +2286,6 @@
 <translation id="8317207217658302555">ਕੀ ARCore ਨੂੰ ਅੱਪਡੇਟ ਕਰਨਾ ਹੈ?</translation>
 <translation id="831997045666694187">ਸ਼ਾਮ</translation>
 <translation id="8321476692217554900">ਸੂਚਨਾਵਾਂ</translation>
-<translation id="8328484624016508118">ਸਾਰੀਆਂ ਇਨਕੋਗਨਿਟੋ ਟੈਬਾਂ ਨੂੰ ਬੰਦ ਕਰਨ ਤੋਂ ਬਾਅਦ, Chrome ਇਨ੍ਹਾਂ ਚੀਜ਼ਾਂ ਨੂੰ ਕਲੀਅਰ ਕਰਦਾ ਹੈ:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡਾ ਖੋਜ ਇਤਿਹਾਸ<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />ਫ਼ਾਰਮਾਂ ਵਿੱਚ ਦਾਖਲ ਕੀਤੀ ਜਾਣਕਾਰੀ<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> 'ਤੇ ਪਹੁੰਚ ਨੂੰ ਇਨਕਾਰਿਆ ਗਿਆ ਸੀ</translation>
 <translation id="833262891116910667">ਉਜਾਗਰ ਕਰੋ</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" /> ਭਾਸ਼ਾ ਵਾਲੇ ਪੰਨਿਆਂ ਦਾ ਅਨੁਵਾਦ ਨਹੀਂ ਕੀਤਾ ਜਾਵੇਗਾ</translation>
@@ -2302,7 +2322,7 @@
 <translation id="8446884382197647889">ਹੋਰ ਜਾਣੋ</translation>
 <translation id="8449836157089738489">ਸਾਰਿਆਂ ਨੂੰ ਨਵੇਂ ਟੈਬ ਗਰੁੱਪ ਵਿੱਚ ਖੋਲ੍ਹੋ</translation>
 <translation id="8457125768502047971">ਅਨਿਸ਼ਚਿਤ</translation>
-<translation id="8461694314515752532">ਆਪਣੇ ਖੁਦ ਦੇ ਸਿੰਕ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਸਮਕਾਲੀਕਿਰਤ ਡਾਟੇ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
+<translation id="8461694314515752532">ਆਪਣੇ ਖੁਦ ਦੇ ਸਿੰਕ ਪਾਸਫਰੇਜ਼ ਨਾਲ ਸਿੰਕ ਕੀਤੇ ਡਾਟੇ ਨੂੰ ਇਨਕ੍ਰਿਪਟ ਕਰੋ</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ਕ੍ਰੈਡਿਟ ਕਾਰਡ}one{# ਕ੍ਰੈਡਿਟ ਕਾਰਡ}other{ # ਕ੍ਰੈਡਿਟ ਕਾਰਡ}}</translation>
 <translation id="8473863474539038330">ਪਤੇ ਅਤੇ ਹੋਰ</translation>
 <translation id="8474910779563686872">ਵਿਕਾਸਕਾਰ ਵੇਰਵੇ ਦਿਖਾਓ</translation>
@@ -2400,6 +2420,7 @@
 <translation id="883848425547221593">ਹੋਰ ਬੁੱਕਮਾਰਕ</translation>
 <translation id="884264119367021077">ਸ਼ਿਪਿੰਗ ਪਤਾ</translation>
 <translation id="884923133447025588">ਕੋਈ ਖੰਡਨ ਮਕੈਨਿਜ਼ਮ ਨਹੀਂ ਮਿਲਿਆ।</translation>
+<translation id="8849262850971482943">ਵਾਧੂ ਸੁਰੱਖਿਆ ਲਈ ਆਪਣੇ ਆਭਾਸੀ ਕਾਰਡ ਦੀ ਵਰਤੋਂ ਕਰੋ</translation>
 <translation id="885730110891505394">Google ਨਾਲ ਸ਼ੇਅਰਿੰਗ</translation>
 <translation id="8858065207712248076">ਜੇਕਰ ਤੁਸੀਂ ਆਪਣੇ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> ਪਾਸਵਰਡ ਨੂੰ ਹੋਰ ਸਾਈਟਾਂ 'ਤੇ ਮੁੜ ਵਰਤਿਆ ਹੈ, ਤਾਂ Chrome ਵੱਲੋਂ ਇਸਨੂੰ ਰੀਸੈੱਟ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
 <translation id="885906927438988819">ਜੇ ਸ਼ਬਦ-ਜੋੜ ਸਹੀ ਹੈ, ਤਾਂ <ph name="BEGIN_LINK" />Windows ਨੈੱਟਵਰਕ ਤਸ਼ਖੀਸਾਂ ਨੂੰ ਚਲਾ ਕੇ ਦੇਖੋ<ph name="END_LINK" />।</translation>

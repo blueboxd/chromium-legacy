@@ -14,13 +14,18 @@
 <translation id="1028781062521375153">Žr. išsamią informaciją</translation>
 <translation id="1030706264415084469"><ph name="URL" /> prašo leidimo nuolat saugoti daug duomenų įrenginyje</translation>
 <translation id="1032854598605920125">Pasukti pagal laikrodžio rodyklę</translation>
+<translation id="1033329911862281889">Naudodami inkognito režimą netampate nematomi internete:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />svetainėse ir jų naudojamose paslaugose gali būti rodomi apsilankymai;<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />darbdaviai ar mokyklos gali stebėti naršymo veiklą;<ph name="END_LIST_ITEM" />
+          <ph name="LIST_ITEM" />interneto paslaugų teikėjai gali stebėti žiniatinklio srautą.<ph name="END_LIST_ITEM" />
+        <ph name="END_LIST" /></translation>
 <translation id="1036348656032585052">Išjungti</translation>
 <translation id="1036982837258183574">Paspauskite |<ph name="ACCELERATOR" />|, kad išeitumėte iš viso ekrano režimo</translation>
 <translation id="1038106730571050514">Rodyti pasiūlymus</translation>
 <translation id="1038842779957582377">nežinomas pavadinimas</translation>
 <translation id="1041998700806130099">Užduoties lapo pranešimas</translation>
 <translation id="1048785276086539861">Kai redaguosite komentarus, bus pateikta šio dokumento vieno puslapio peržiūra</translation>
-<translation id="1049743911850919806">Inkognito</translation>
 <translation id="1050038467049342496">Uždarykite kitas programas</translation>
 <translation id="1055184225775184556">&amp;Anuliuoti pridėjimą</translation>
 <translation id="1056898198331236512">Įspėjimas</translation>
@@ -48,6 +53,7 @@
 <translation id="112840717907525620">Gera politikos talpykla</translation>
 <translation id="1130564665089811311">Mygtukas „Versti puslapį“, paspauskite „Enter“, kad šis puslapis būtų verčiamas naudojant „Google“ vertėją</translation>
 <translation id="1131264053432022307">Nukopijuotas vaizdas</translation>
+<translation id="1142846828089312304">Blokuoti trečiųjų šalių slapukus inkognito režimu</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1151972924205500581">Būtinas slaptažodis</translation>
 <translation id="1156303062776767266">Peržiūrite vietinį arba bendrinamą failą</translation>
@@ -181,6 +187,12 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="1483493594462132177">Siųsti</translation>
 <translation id="1484290072879560759">Pasirinkti pristatymo adresą</translation>
 <translation id="1492194039220927094">Politikos gavimas:</translation>
+<translation id="149293076951187737">Kai uždarote visus „Chrome“ inkognito skirtukus, iš šio įrenginio išvaloma jūsų veikla toliau nurodytuose skirtukuose.
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />Naršymo veikla<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Paieškos istorija<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Formose įvesta informacija<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="1495677929897281669">Atgal į skirtuką</translation>
 <translation id="1501859676467574491">Rodyti korteles iš „Google“ paskyros</translation>
 <translation id="1507202001669085618">&lt;p&gt;Ši klaida rodoma, jei naudojate „Wi-Fi“ portalą, prie kurio reikia prisijungti, kad galėtumėte naudotis internetu.&lt;/p&gt;
@@ -208,6 +220,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="1559572115229829303">&lt;p&gt;Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.&lt;/p&gt;
 
       &lt;p&gt;Koreguokite datą ir laiką programos &lt;strong&gt;Settings&lt;/strong&gt; skiltyje &lt;strong&gt;General&lt;/strong&gt;.&lt;/p&gt;</translation>
+<translation id="156703335097561114">Tinklų informacija, pvz., adresai, sąsajos konfigūracija ir ryšio kokybė</translation>
 <translation id="1567040042588613346">Ši politika veikia, kaip numatyta, bet ta pati vertė yra nustatyta kitur ir ją pakeičia ši politika.</translation>
 <translation id="1569487616857761740">Įveskite galiojimo laiko pabaigos datą</translation>
 <translation id="1581080074034554886">CVC</translation>
@@ -284,6 +297,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
     antraštė netinkamai suformatuota, todėl naršyklė negali įvykdyti
     <ph name="SITE" /> užklausos. Pradinę politiką gali naudoti
     svetainių operatoriai, siekdami konfigūruoti svetainės saugą ir kitas nuosavybes.</translation>
+<translation id="1774592222195216949"><ph name="BEGIN_LINK" />Sužinokite daugiau apie inkognito režimą naršyklėje „Chromium“<ph name="END_LINK" /></translation>
 <translation id="1778646502362731194">JIS B0</translation>
 <translation id="1787142507584202372">Atidaryti skirtukai bus rodomi čia</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
@@ -525,6 +539,12 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="2597378329261239068">Šis dokumentas apsaugotas slaptažodžiu. Įveskite slaptažodį.</translation>
 <translation id="2609632851001447353">Variantai</translation>
 <translation id="2610561535971892504">Spustelėkite, jei norite kopijuoti</translation>
+<translation id="2617988307566202237">„Chrome“ <ph name="BEGIN_EMPHASIS" />nesaugos<ph name="END_EMPHASIS" /> šios informacijos:
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />naršymo istorijos;
+            <ph name="LIST_ITEM" />slapukų ir svetainių duomenų;
+            <ph name="LIST_ITEM" />formose įvestos informacijos.
+          <ph name="END_LIST" /></translation>
 <translation id="2618023639789766142">C10 (vokas)</translation>
 <translation id="2623663032199728144">Gali prašyti naudoti informaciją apie ekranus</translation>
 <translation id="2625385379895617796">Jūsų laikrodis skuba</translation>
@@ -705,6 +725,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="3234666976984236645">Visada aptikti svarbų turinį šioje svetainėje</translation>
 <translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />; paspauskite tabuliavimo klavišą, tada – „Enter“, jei norite tinkinti naršyklės išvaizdą</translation>
 <translation id="3240791268468473923">Saugaus mokėjimo prisijungimo duomenų lapas, informuojantis, kad atitinkančių prisijungimo duomenų nerasta, atidarytas</translation>
+<translation id="324180406144491771">„<ph name="HOST_NAME" />“ nuorodos užblokuotos</translation>
 <translation id="3249845759089040423">Klasiška</translation>
 <translation id="3252266817569339921">Prancūzų</translation>
 <translation id="3257954757204451555">Iš kur ši informacija?</translation>
@@ -735,12 +756,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="3345782426586609320">Akys</translation>
 <translation id="3355823806454867987">Pakeisti įgaliotojo serverio nustatymus...</translation>
 <translation id="3360103848165129075">Mokėjimo doroklės lapas</translation>
-<translation id="3361596688432910856">„Chrome“ <ph name="BEGIN_EMPHASIS" />nesaugos<ph name="END_EMPHASIS" /> šios informacijos:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />naršymo istorijos;
-          <ph name="LIST_ITEM" />slapukų ir svetainių duomenų;
-          <ph name="LIST_ITEM" />formose įvestos informacijos.
-        <ph name="END_LIST" /></translation>
 <translation id="3362968246557010467">Ši politika automatiškai nukopijuota iš nebenaudojamos politikos „<ph name="OLD_POLICY" />“. Turėtumėte naudoti šią politiką vietoj senosios.</translation>
 <translation id="3364869320075768271"><ph name="URL" /> nori naudoti jūsų virtualiosios realybės įrenginį ir duomenis</translation>
 <translation id="3366477098757335611">Peržiūrėti korteles</translation>
@@ -1159,6 +1174,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="4628948037717959914">Nuotrauka</translation>
 <translation id="4631649115723685955">Grynųjų grąžinimas susietas</translation>
 <translation id="4636930964841734540">Informacija</translation>
+<translation id="4638670630777875591">Inkognito režimas naršyklėje „Chromium“</translation>
 <translation id="464342062220857295">Paieškos funkcijos</translation>
 <translation id="4644670975240021822">Atvirkštine tvarka, gerąja puse į apačią</translation>
 <translation id="4646534391647090355">Eiti dabar</translation>
@@ -1221,12 +1237,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="4819347708020428563">Redaguoti komentarus numatytajame rodinyje?</translation>
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, paspauskite tabuliavimo klavišą, tada – „Enter“, jei norite greitai sukurti naują „Google“ skaičiuoklę</translation>
 <translation id="4825507807291741242">Veiksminga</translation>
-<translation id="4827402517081186284">Naudodami inkognito režimą netampate nematomi internete:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />svetainės žino, kada apsilankote;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />darbdaviai ar mokyklos gali stebėti naršymo veiklą;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />interneto paslaugų teikėjai galistebėti žiniatinklio srautą.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
+<translation id="4829962028570902310">Nepaisoma, nes politika gali būti nustatyta tik pagal debesies naudotojo politiką.</translation>
 <translation id="483241715238664915">Įjungti įspėjimus</translation>
 <translation id="4838327282952368871">Svajinga</translation>
 <translation id="4840250757394056958">Peržiūrėti „Chrome“ istoriją</translation>
@@ -1259,6 +1270,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> / <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, norėdami ieškoti paspauskite skirtuką, tada – „Enter“</translation>
 <translation id="4930153903256238152">Didelė talpa</translation>
+<translation id="4940163644868678279">Inkognito režimas naršyklėje „Chrome“</translation>
 <translation id="4943872375798546930">Rezultatų nėra</translation>
 <translation id="4950898438188848926">Skirtuko perjungimo mygtukas. Paspauskite „Enter“, kad perjungtumėte į atidarytą skirtuką „<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />“</translation>
 <translation id="495170559598752135">Veiksmai</translation>
@@ -1330,6 +1342,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="5138227688689900538">Rodyti mažiau</translation>
 <translation id="5145883236150621069">Politikos atsakyme yra klaidos kodas</translation>
 <translation id="5146995429444047494"><ph name="ORIGIN" /> pranešimai užblokuoti</translation>
+<translation id="514704532284964975"><ph name="URL" /> nori peržiūrėti ir keisti informaciją NFC įrenginiuose, kurią paliečiate telefonu</translation>
 <translation id="5148809049217731050">Gerąja puse į viršų</translation>
 <translation id="515292512908731282">C4 (vokas)</translation>
 <translation id="5158275234811857234">Viršelis</translation>
@@ -1618,6 +1631,7 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6120179357481664955">Prisiminti UPI ID?</translation>
 <translation id="6124432979022149706">Chrome Enterprise Connectors</translation>
 <translation id="6127379762771434464">Elementas pašalintas</translation>
+<translation id="6132161237766805930"><ph name="BEGIN_LINK" />Sužinokite daugiau apie inkognito režimą naršyklėje „Chrome“<ph name="END_LINK" /></translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
         naudojamus tinklo įrenginius.</translation>
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
@@ -1794,7 +1808,6 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="6757797048963528358">Įjungta įrenginio miego būsena.</translation>
 <translation id="6767985426384634228">Atnaujinti adresą?</translation>
 <translation id="6768213884286397650">„Hagaki“ (atvirukas)</translation>
-<translation id="6774185088257932239"><ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /> apie inkognito režimą.</translation>
 <translation id="6775759552199460396">JIS B2</translation>
 <translation id="67862343314499040">Violetinė</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
@@ -1894,6 +1907,12 @@ Kitu atveju tai bus užblokuota pagal jūsų privatumo nustatymus. Taip turinys,
 <translation id="7111012039238467737">(tinkamas)</translation>
 <translation id="7118618213916969306">Ieškoti iškarpinės URL, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Uždarykite kitus skirtukus ir programas</translation>
+<translation id="7129355289156517987">Kai uždarote visus „Chromium“ inkognito skirtukus, iš šio įrenginio išvaloma jūsų veikia toliau nurodytuose skirtukuose.
+          <ph name="BEGIN_LIST" />
+            <ph name="LIST_ITEM" />Naršymo veikla<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Paieškos istorija<ph name="END_LIST_ITEM" />
+            <ph name="LIST_ITEM" />Formose įvesta informacija<ph name="END_LIST_ITEM" />
+          <ph name="END_LIST" /></translation>
 <translation id="7129409597930077180">Negalima pristatyti šiuo adresu. Pasirinkite kitą adresą.</translation>
 <translation id="7132939140423847331">Jūsų administratorius uždraudė kopijuoti šiuos duomenis.</translation>
 <translation id="7135130955892390533">Rodyti būseną</translation>
@@ -2012,6 +2031,12 @@ Papildoma išsami informacija:
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
 <translation id="7495528107193238112">Šis turinys užblokuotas. Susisiekite su svetainės savininku, kad išspręstų problemą.</translation>
 <translation id="7497998058912824456">Mygtukas „Sukurti dokumentą“ – paspauskite klavišą „Enter“, jei norite greitai sukurti naują „Google“ dokumentą</translation>
+<translation id="7506488012654002225">„Chromium“ <ph name="BEGIN_EMPHASIS" />nesaugos<ph name="END_EMPHASIS" /> šios informacijos:
+        <ph name="BEGIN_LIST" />
+          <ph name="LIST_ITEM" />naršymo istorijos;
+          <ph name="LIST_ITEM" />slapukų ir svetainių duomenų;
+          <ph name="LIST_ITEM" />formose įvestos informacijos.
+        <ph name="END_LIST" /></translation>
 <translation id="7508255263130623398">Sugrąžinto politikos įrenginio ID nenurodytas arba neatitinka dabartinio įrenginio ID</translation>
 <translation id="7508870219247277067">Avokado žalia</translation>
 <translation id="7511955381719512146">Naudojant šį „Wi-Fi“ tinklą gali būti prašoma apsilankyti <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -2231,6 +2256,7 @@ Papildoma išsami informacija:
 <translation id="8202370299023114387">Konfliktas</translation>
 <translation id="8206978196348664717">„Prc4“ (vokas)</translation>
 <translation id="8211406090763984747">Ryšys saugus</translation>
+<translation id="8217240300496046857">Svetainės negali naudoti slapukų, stebinčių jus žiniatinklyje. Funkcijos gali neveikti tam tikrose svetainėse.</translation>
 <translation id="8218327578424803826">Priskirta vieta:</translation>
 <translation id="8220146938470311105">C7 / C6 (vokas)</translation>
 <translation id="8225771182978767009">Šį kompiuterį nustatęs asmuo pasirinko blokuoti šią svetainę.</translation>
@@ -2274,12 +2300,6 @@ Papildoma išsami informacija:
 <translation id="8317207217658302555">Atnaujinti „ARCore“?</translation>
 <translation id="831997045666694187">Vakaras</translation>
 <translation id="8321476692217554900">pranešimai</translation>
-<translation id="8328484624016508118">Uždarius visus inkognito skirtukus, „Chrome“ išvalo:
-        <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />naršymo veiklą iš šio įrenginio;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />paieškos istoriją iš šio įrenginio;<ph name="END_LIST_ITEM" />
-          <ph name="LIST_ITEM" />formose įvestą informaciją.<ph name="END_LIST_ITEM" />
-        <ph name="END_LIST" /></translation>
 <translation id="8332188693563227489">Prieiga prie <ph name="HOST_NAME" /> atmesta</translation>
 <translation id="833262891116910667">Paryškinti</translation>
 <translation id="8339163506404995330">Puslapiai, parašyti <ph name="LANGUAGE" />, verčiami nebus</translation>
@@ -2415,6 +2435,7 @@ Papildoma išsami informacija:
 <translation id="883848425547221593">Kitos žymės</translation>
 <translation id="884264119367021077">Siuntimo adresas</translation>
 <translation id="884923133447025588">Nerasta atšaukimo mechanizmo.</translation>
+<translation id="8849262850971482943">Naudokite virtualią kortelę didesnei saugai užtikrinti</translation>
 <translation id="885730110891505394">Bendrinimas su „Google“</translation>
 <translation id="8858065207712248076">„Chrome“ rekomenduoja iš naujo nustatyti <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> slaptažodį, jei naudojate jį kitose svetainėse.</translation>
 <translation id="885906927438988819">Jei parašyta tinkamai, <ph name="BEGIN_LINK" />pabandykite paleisti „Windows“ tinklo diagnostiką<ph name="END_LINK" />.</translation>
